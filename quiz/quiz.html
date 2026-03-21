@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>P4 Maths Quiz — Superholic Lab</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(160deg, #f5f0ff 0%, #ede9fe 100%);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Rounded, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      color: #1e1b4b;
+    }
+
+    .brand {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #7c3aed;
+      margin-bottom: 4px;
+    }
+
+    h1 {
+      font-size: clamp(1.3rem, 4vw, 1.8rem);
+      font-weight: 800;
+      color: #4c1d95;
+      margin-bottom: 6px;
+      text-align: center;
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      color: #7c3aed;
+      margin-bottom: 28px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 24px;
+      box-shadow: 0 8px 32px rgba(124, 58, 237, 0.12);
+      padding: clamp(24px, 5vw, 40px);
+      width: 100%;
+      max-width: 560px;
+    }
+
+    /* Progress bar */
+    .progress-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .progress-bar {
+      flex: 1;
+      height: 8px;
+      background: #ede9fe;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #7c3aed, #a855f7);
+      border-radius: 99px;
+      transition: width 0.4s ease;
+    }
+
+    .progress-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #7c3aed;
+      white-space: nowrap;
+    }
+
+    /* Question */
+    .question-num {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #a855f7;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .question-text {
+      font-size: clamp(1rem, 3vw, 1.2rem);
+      font-weight: 700;
+      color: #1e1b4b;
+      line-height: 1.45;
+      margin-bottom: 24px;
+    }
+
+    /* Options */
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .option-btn {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: #faf5ff;
+      border: 2px solid #ddd6fe;
+      border-radius: 14px;
+      padding: 13px 18px;
+      cursor: pointer;
+      font-size: 0.97rem;
+      font-weight: 600;
+      color: #1e1b4b;
+      text-align: left;
+      transition: all 0.15s;
+      width: 100%;
+    }
+
+    .option-btn:hover:not(:disabled) {
+      background: #ede9fe;
+      border-color: #a855f7;
+      transform: translateX(3px);
+    }
+
+    .option-btn:disabled { cursor: default; }
+
+    .option-letter {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      min-width: 30px;
+      background: #ede9fe;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: #7c3aed;
+      transition: all 0.15s;
+    }
+
+    .option-btn.correct {
+      background: #f0fdf4;
+      border-color: #22c55e;
+      color: #15803d;
+    }
+
+    .option-btn.correct .option-letter {
+      background: #22c55e;
+      color: #fff;
+    }
+
+    .option-btn.wrong {
+      background: #fff1f2;
+      border-color: #f43f5e;
+      color: #be123c;
+    }
+
+    .option-btn.wrong .option-letter {
+      background: #f43f5e;
+      color: #fff;
+    }
+
+    .option-btn.dimmed {
+      opacity: 0.4;
+    }
+
+    /* Feedback */
+    .feedback {
+      display: none;
+      border-radius: 14px;
+      padding: 14px 18px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+
+    .feedback.correct {
+      display: block;
+      background: #f0fdf4;
+      border: 1.5px solid #86efac;
+      color: #15803d;
+    }
+
+    .feedback.wrong {
+      display: block;
+      background: #fff1f2;
+      border: 1.5px solid #fda4af;
+      color: #be123c;
+    }
+
+    .feedback-icon {
+      font-size: 1.2rem;
+      margin-right: 6px;
+    }
+
+    /* Next button */
+    .btn-next {
+      display: none;
+      width: 100%;
+      background: linear-gradient(90deg, #7c3aed, #a855f7);
+      border: none;
+      border-radius: 14px;
+      padding: 14px;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+
+    .btn-next:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-next:active { transform: translateY(0); }
+
+    /* Results screen */
+    .results { text-align: center; }
+
+    .score-circle {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #7c3aed, #a855f7);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      box-shadow: 0 8px 24px rgba(124, 58, 237, 0.3);
+    }
+
+    .score-number {
+      font-size: 2.6rem;
+      font-weight: 900;
+      color: #fff;
+      line-height: 1;
+    }
+
+    .score-denom {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.8);
+      font-weight: 600;
+    }
+
+    .results-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #4c1d95;
+      margin-bottom: 8px;
+    }
+
+    .results-msg {
+      font-size: 0.95rem;
+      color: #6d28d9;
+      margin-bottom: 28px;
+      line-height: 1.5;
+    }
+
+    .btn-retry {
+      background: linear-gradient(90deg, #7c3aed, #a855f7);
+      border: none;
+      border-radius: 14px;
+      padding: 14px 40px;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+
+    .btn-retry:hover { opacity: 0.9; transform: translateY(-1px); }
+  </style>
+</head>
+<body>
+
+  <div class="brand">Superholic Lab</div>
+  <h1>P4 Maths Quiz</h1>
+  <p class="subtitle">5 questions · Do your best!</p>
+
+  <div class="card" id="quizCard">
+
+    <!-- Quiz screen -->
+    <div id="quizScreen">
+      <div class="progress-wrap">
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        <span class="progress-label" id="progressLabel">1 / 5</span>
+      </div>
+
+      <div class="question-num" id="questionNum">Question 1</div>
+      <div class="question-text" id="questionText"></div>
+
+      <div class="options" id="optionsList"></div>
+
+      <div class="feedback" id="feedback"></div>
+
+      <button class="btn-next" id="nextBtn"></button>
+    </div>
+
+    <!-- Results screen -->
+    <div id="resultsScreen" style="display:none;" class="results">
+      <div class="score-circle">
+        <span class="score-number" id="scoreNum">0</span>
+        <span class="score-denom">out of 5</span>
+      </div>
+      <div class="results-title" id="resultsTitle"></div>
+      <div class="results-msg" id="resultsMsg"></div>
+      <button class="btn-retry" id="retryBtn">Try Again</button>
+    </div>
+
+  </div>
+
+  <script>
+    const questions = [
+      {
+        text: "What is 4,567 rounded to the nearest thousand?",
+        options: ["4,000", "4,500", "5,000", "4,600"],
+        answer: 2,
+        explanation: "4,567 is closer to 5,000 than to 4,000. The hundreds digit is 5, so we round up to 5,000."
+      },
+      {
+        text: "What is ¾ + ⅛?",
+        options: ["4/12", "7/8", "4/8", "1/2"],
+        answer: 1,
+        explanation: "Change ¾ to eighths: ¾ = 6/8. Then 6/8 + 1/8 = 7/8."
+      },
+      {
+        text: "A rectangle is 9 cm long and 5 cm wide. What is its perimeter?",
+        options: ["14 cm", "28 cm", "45 cm", "45 cm²"],
+        answer: 1,
+        explanation: "Perimeter = 2 × (length + width) = 2 × (9 + 5) = 2 × 14 = 28 cm."
+      },
+      {
+        text: "Round 3.76 to 1 decimal place.",
+        options: ["3.7", "4.0", "3.8", "3.76"],
+        answer: 2,
+        explanation: "Look at the second decimal digit: it is 6 (5 or more), so we round up the first decimal digit from 7 to 8. Answer: 3.8."
+      },
+      {
+        text: "Sarah had $12.50. She spent $4.85. How much does she have left?",
+        options: ["$7.65", "$8.35", "$17.35", "$7.15"],
+        answer: 0,
+        explanation: "$12.50 − $4.85 = $7.65. Subtract the cents first: 50¢ − 85¢, borrow $1 → 150¢ − 85¢ = 65¢. Then $11 − $4 = $7. Total: $7.65."
+      }
+    ];
+
+    const letters = ['A', 'B', 'C', 'D'];
+
+    let current = 0;
+    let score = 0;
+    let answered = false;
+
+    function loadQuestion() {
+      answered = false;
+      const q = questions[current];
+
+      document.getElementById('questionNum').textContent = `Question ${current + 1}`;
+      document.getElementById('questionText').textContent = q.text;
+
+      const pct = (current / questions.length) * 100;
+      document.getElementById('progressFill').style.width = pct + '%';
+      document.getElementById('progressLabel').textContent = `${current + 1} / ${questions.length}`;
+
+      const list = document.getElementById('optionsList');
+      list.innerHTML = '';
+      q.options.forEach((opt, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerHTML = `<span class="option-letter">${letters[i]}</span> ${opt}`;
+        btn.addEventListener('click', () => selectAnswer(i));
+        list.appendChild(btn);
+      });
+
+      const fb = document.getElementById('feedback');
+      fb.className = 'feedback';
+      fb.textContent = '';
+
+      const nextBtn = document.getElementById('nextBtn');
+      nextBtn.style.display = 'none';
+      nextBtn.textContent = current === questions.length - 1 ? 'See My Score 🎉' : 'Next Question →';
+    }
+
+    function selectAnswer(chosen) {
+      if (answered) return;
+      answered = true;
+
+      const q = questions[current];
+      const btns = document.querySelectorAll('.option-btn');
+      const fb = document.getElementById('feedback');
+
+      btns.forEach((btn, i) => {
+        btn.disabled = true;
+        if (i === q.answer) {
+          btn.classList.add('correct');
+        } else if (i === chosen && chosen !== q.answer) {
+          btn.classList.add('wrong');
+        } else {
+          btn.classList.add('dimmed');
+        }
+      });
+
+      if (chosen === q.answer) {
+        score++;
+        fb.className = 'feedback correct';
+        fb.innerHTML = '<span class="feedback-icon">✅</span> Great job! That\'s correct!';
+      } else {
+        fb.className = 'feedback wrong';
+        fb.innerHTML = `<span class="feedback-icon">❌</span> Not quite. ${q.explanation}`;
+      }
+
+      document.getElementById('nextBtn').style.display = 'block';
+    }
+
+    document.getElementById('nextBtn').addEventListener('click', () => {
+      current++;
+      if (current < questions.length) {
+        loadQuestion();
+      } else {
+        showResults();
+      }
+    });
+
+    function showResults() {
+      document.getElementById('progressFill').style.width = '100%';
+      document.getElementById('quizScreen').style.display = 'none';
+      document.getElementById('resultsScreen').style.display = 'block';
+
+      document.getElementById('scoreNum').textContent = score;
+
+      let title, msg;
+      if (score === 5) {
+        title = "Perfect Score! 🌟";
+        msg = "Wow, you got every single question right! You are a Maths superstar. Keep it up!";
+      } else if (score >= 4) {
+        title = "Excellent Work! 🎉";
+        msg = "So close to perfect! You really know your stuff. Review the one you missed and you'll nail it next time.";
+      } else if (score >= 3) {
+        title = "Good Effort! 👍";
+        msg = "You're getting there! Go back and read the explanations for the ones you missed — you've got this!";
+      } else {
+        title = "Keep Practising! 💪";
+        msg = "Maths takes practice, and every attempt makes you better. Read the explanations and try again — you can do it!";
+      }
+
+      document.getElementById('resultsTitle').textContent = title;
+      document.getElementById('resultsMsg').textContent = msg;
+    }
+
+    document.getElementById('retryBtn').addEventListener('click', () => {
+      current = 0;
+      score = 0;
+      document.getElementById('quizScreen').style.display = 'block';
+      document.getElementById('resultsScreen').style.display = 'none';
+      loadQuestion();
+    });
+
+    loadQuestion();
+  </script>
+
+</body>
+</html>

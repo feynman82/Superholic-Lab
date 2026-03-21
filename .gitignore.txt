@@ -1,0 +1,15 @@
+# Environment variables — NEVER push API keys
+.env
+.env.local
+.env.production
+
+# System files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Node modules (large, not needed on GitHub)
+node_modules/
+
+# Claude Code session files
+.claude/
