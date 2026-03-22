@@ -283,7 +283,7 @@
 
   <div class="brand">Superholic Lab</div>
   <h1>P4 Maths Quiz</h1>
-  <p class="subtitle">5 questions · Do your best!</p>
+  <p class="subtitle">Angles &amp; Word Problems · 5 questions</p>
 
   <div class="card" id="quizCard">
 
@@ -320,34 +320,59 @@
   <script>
     const questions = [
       {
-        text: "What is 4,567 rounded to the nearest thousand?",
-        options: ["4,000", "4,500", "5,000", "4,600"],
-        answer: 2,
-        explanation: "4,567 is closer to 5,000 than to 4,000. The hundreds digit is 5, so we round up to 5,000."
-      },
-      {
-        text: "What is ¾ + ⅛?",
-        options: ["4/12", "7/8", "4/8", "1/2"],
+        text: "What is the sum of angles on a straight line?",
+        options: ["90°", "180°", "270°", "360°"],
         answer: 1,
-        explanation: "Change ¾ to eighths: ¾ = 6/8. Then 6/8 + 1/8 = 7/8."
+        wrongExplanations: [
+          "90° is the sum of angles in a right angle, not a straight line. A straight line is exactly double that.",
+          null,
+          "270° is a reflex angle measurement, not the sum of angles on a straight line.",
+          "360° is the sum of angles at a point (full turn), not on a straight line."
+        ]
       },
       {
-        text: "A rectangle is 9 cm long and 5 cm wide. What is its perimeter?",
-        options: ["14 cm", "28 cm", "45 cm", "45 cm²"],
-        answer: 1,
-        explanation: "Perimeter = 2 × (length + width) = 2 × (9 + 5) = 2 × 14 = 28 cm."
-      },
-      {
-        text: "Round 3.76 to 1 decimal place.",
-        options: ["3.7", "4.0", "3.8", "3.76"],
+        text: "Angle PQR measures 135°. What type of angle is it?",
+        options: ["Acute", "Right", "Obtuse", "Reflex"],
         answer: 2,
-        explanation: "Look at the second decimal digit: it is 6 (5 or more), so we round up the first decimal digit from 7 to 8. Answer: 3.8."
+        wrongExplanations: [
+          "Acute angles are less than 90°. 135° is greater than 90° so it cannot be acute.",
+          "A right angle is exactly 90°. 135° is not 90°.",
+          null,
+          "Reflex angles are greater than 180°. 135° is less than 180° so it is not reflex."
+        ]
       },
       {
-        text: "Sarah had $12.50. She spent $4.85. How much does she have left?",
-        options: ["$7.65", "$8.35", "$17.35", "$7.15"],
+        text: "Two angles on a straight line are 47° and x°. What is the value of x?",
+        options: ["43°", "133°", "143°", "313°"],
+        answer: 1,
+        wrongExplanations: [
+          "This subtracts 47 from 90 instead of 180. Angles on a straight line sum to 180°, not 90°.",
+          null,
+          "Arithmetic error: 180 − 47 = 133, not 143. Check the subtraction carefully.",
+          "This subtracts 47 from 360. That would be angles at a point, not on a straight line."
+        ]
+      },
+      {
+        text: "Amir has $120. He spends ⅓ on books and $25 on food. How much does he have left?",
+        options: ["$55", "$40", "$55", "$35"],
         answer: 0,
-        explanation: "$12.50 − $4.85 = $7.65. Subtract the cents first: 50¢ − 85¢, borrow $1 → 150¢ − 85¢ = 65¢. Then $11 − $4 = $7. Total: $7.65."
+        wrongExplanations: [
+          null,
+          "Only subtracted the food cost ($25) and forgot to subtract the books (⅓ of $120 = $40).",
+          "Same value as A but arrived incorrectly — check your working carefully.",
+          "Subtracted both amounts from ⅓ of $120 instead of from the total $120."
+        ]
+      },
+      {
+        text: "A baker bakes 144 muffins. He packs them into boxes of 8 and sells each box for $4.50. How much does he earn in total?",
+        options: ["$81", "$72", "$648", "$63"],
+        answer: 0,
+        wrongExplanations: [
+          null,
+          "Divided 144 by 8 correctly to get 18 boxes but multiplied by $4 instead of $4.50.",
+          "Multiplied 144 directly by $4.50 without first dividing into boxes of 8.",
+          "Divided 144 by 8 to get 18 boxes then multiplied by $3.50 instead of $4.50."
+        ]
       }
     ];
 
@@ -412,7 +437,7 @@
         fb.innerHTML = '<span class="feedback-icon">✅</span> Great job! That\'s correct!';
       } else {
         fb.className = 'feedback wrong';
-        fb.innerHTML = `<span class="feedback-icon">❌</span> Not quite. ${q.explanation}`;
+        fb.innerHTML = `<span class="feedback-icon">❌</span> Not quite. ${q.wrongExplanations[chosen]}`;
       }
 
       document.getElementById('nextBtn').style.display = 'block';
