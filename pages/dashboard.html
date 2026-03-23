@@ -4,10 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard — Superholic Lab</title>
+  <meta name="robots" content="noindex, nofollow" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="icon" href="../assets/favicon.ico" />
+  <!-- Analytics: ⚠️ CONFIGURE — sign up at plausible.io and add superholiclab.com -->
+  <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js"></script>
 </head>
 <body class="has-bottom-nav">
   <header class="navbar is-scrolled" id="navbar">
@@ -23,22 +26,14 @@
         <div class="navbar-actions">
           <a href="subjects.html" class="btn btn-primary btn-sm">Start Practising</a>
         </div>
-        <button class="navbar-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false">
-          <span></span><span></span><span></span>
-        </button>
       </nav>
     </div>
   </header>
 
   <div style="background: var(--hero-gradient); padding: var(--space-8) 0 var(--space-14); position:relative; overflow:hidden;">
     <div class="container" style="position:relative;z-index:1;">
-      <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="../index.html" style="color:rgba(255,255,255,0.7);">Home</a>
-        <span class="breadcrumb-sep" style="color:rgba(255,255,255,0.4);">›</span>
-        <span style="color:white;">Dashboard</span>
-      </nav>
-      <h1 class="animate-in delay-1" style="color:white; margin-top:var(--space-3);">Good morning! 👋</h1>
-      <p class="animate-in delay-2" style="color:rgba(255,255,255,0.82);">Ready to practise today?</p>
+      <h1 class="animate-in delay-1" style="color:white; margin-top:var(--space-2);" id="dash-greeting">Welcome back!</h1>
+      <p class="animate-in delay-2" style="color:rgba(255,255,255,0.82);" id="dash-subline">Ready to practise today?</p>
     </div>
     <div class="wave-divider" aria-hidden="true">
       <svg viewBox="0 0 1440 70" preserveAspectRatio="none">
@@ -49,12 +44,77 @@
 
   <main style="padding: var(--space-8) 0 var(--space-16);">
     <div class="container">
-      <div class="alert alert-info reveal">
-        Student dashboard coming in Week 2. Will show quiz history, streak, subject accuracy.
+
+      <!-- Checkout success banner -->
+      <div id="checkout-success-banner" class="alert alert-success mb-6" hidden role="status">
+        Subscription activated — welcome to Superholic Lab! Your child now has unlimited access.
       </div>
-      <div class="text-center mt-8 reveal">
-        <a href="subjects.html" class="btn btn-primary btn-lg">Start Practising Now</a>
+
+      <!-- Trial status banner (populated by JS) -->
+      <div id="trial-banner" class="alert alert-info mb-6" hidden>
+        <span id="trial-banner-text"></span>
+        <a href="pricing.html" style="font-weight:600; margin-left:var(--space-3);">Upgrade now</a>
       </div>
+
+      <!-- Quick action cards -->
+      <div class="grid grid-3 reveal-group" style="margin-bottom:var(--space-8);">
+
+        <a href="subjects.html" class="card" style="text-decoration:none; display:block;">
+          <div class="card-body text-center" style="padding:var(--space-6);">
+            <div style="width:52px;height:52px;border-radius:var(--radius-lg);background:var(--primary-light);display:flex;align-items:center;justify-content:center;margin:0 auto var(--space-4);">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+              </svg>
+            </div>
+            <div style="font-weight:700; margin-bottom:var(--space-1);">Start a Quiz</div>
+            <div class="text-secondary text-sm">Pick a subject and level</div>
+          </div>
+        </a>
+
+        <a href="tutor.html" class="card" style="text-decoration:none; display:block;">
+          <div class="card-body text-center" style="padding:var(--space-6);">
+            <div style="width:52px;height:52px;border-radius:var(--radius-lg);background:#f0fdf4;display:flex;align-items:center;justify-content:center;margin:0 auto var(--space-4);">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#065f46" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+              </svg>
+            </div>
+            <div style="font-weight:700; margin-bottom:var(--space-1);">Ask AI Tutor</div>
+            <div class="text-secondary text-sm">Get guided explanations</div>
+          </div>
+        </a>
+
+        <a href="progress.html" class="card" style="text-decoration:none; display:block;">
+          <div class="card-body text-center" style="padding:var(--space-6);">
+            <div style="width:52px;height:52px;border-radius:var(--radius-lg);background:#fffbeb;display:flex;align-items:center;justify-content:center;margin:0 auto var(--space-4);">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#92400e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+              </svg>
+            </div>
+            <div style="font-weight:700; margin-bottom:var(--space-1);">My Progress</div>
+            <div class="text-secondary text-sm">Accuracy, streaks, weak topics</div>
+          </div>
+        </a>
+
+      </div>
+
+      <!-- Subject quick-launch -->
+      <div class="card no-hover reveal" style="margin-bottom:var(--space-6);">
+        <div class="card-header">
+          <h2 style="font-size:1rem; font-weight:600;">Quick Start</h2>
+          <p class="text-secondary text-sm mt-1">Jump straight into a topic</p>
+        </div>
+        <div class="card-body">
+          <div class="flex gap-3" style="flex-wrap:wrap;">
+            <a href="quiz.html?subject=mathematics&level=primary-4" class="btn btn-secondary btn-sm" style="border-left:3px solid var(--maths-colour);">P4 Mathematics</a>
+            <a href="quiz.html?subject=mathematics&level=primary-2" class="btn btn-secondary btn-sm" style="border-left:3px solid var(--maths-colour);">P2 Mathematics</a>
+            <a href="quiz.html?subject=science&level=primary-4"     class="btn btn-secondary btn-sm" style="border-left:3px solid var(--science-colour);">P4 Science</a>
+            <a href="quiz.html?subject=english&level=primary-4"     class="btn btn-secondary btn-sm" style="border-left:3px solid var(--english-colour);">P4 English</a>
+            <a href="quiz.html?subject=english&level=primary-2"     class="btn btn-secondary btn-sm" style="border-left:3px solid var(--english-colour);">P2 English</a>
+            <a href="subjects.html" class="btn btn-secondary btn-sm">All subjects →</a>
+          </div>
+        </div>
+      </div>
+
     </div>
   </main>
 
@@ -68,28 +128,68 @@
   </footer>
 
   <nav class="bottom-nav" aria-label="Mobile navigation">
-    <a href="../index.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>Home
-    </a>
-    <a href="subjects.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>Practise
-    </a>
-    <a href="tutor.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>AI Tutor
-    </a>
-    <a href="progress.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Progress
-    </a>
+    <a href="../index.html" class="bottom-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>Home</a>
+    <a href="subjects.html" class="bottom-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>Practise</a>
+    <a href="tutor.html" class="bottom-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>AI Tutor</a>
+    <a href="progress.html" class="bottom-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Progress</a>
   </nav>
 
   <script src="../js/supabase-client.js"></script>
   <script src="../js/auth.js"></script>
   <script>
-    (function(){
-      const t=document.getElementById('navToggle'), m=document.getElementById('navMobile');
-      if(t&&m) t.addEventListener('click',function(){const o=m.classList.toggle('is-open');t.setAttribute('aria-expanded',String(o));});
-      const r=document.querySelectorAll('.reveal,.reveal-group');
-      if('IntersectionObserver' in window){const io=new IntersectionObserver(function(e){e.forEach(function(x){if(x.isIntersecting){x.target.classList.add('revealed');io.unobserve(x.target);}});},{threshold:0.1});r.forEach(function(el){io.observe(el);});}else{r.forEach(function(el){el.classList.add('revealed');});}
+    (function () {
+      // Greeting based on time of day
+      const hour = new Date().getHours();
+      const greet = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+      const greetEl = document.getElementById('dash-greeting');
+
+      // Checkout success detection
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('checkout') === 'success') {
+        document.getElementById('checkout-success-banner').hidden = false;
+        history.replaceState({}, '', window.location.pathname);
+      }
+
+      // Personalise greeting with user's name
+      document.addEventListener('DOMContentLoaded', async () => {
+        try {
+          const user = await getCurrentUser();
+          if (user) {
+            const profile = await getProfile(user.id);
+            const name = profile?.full_name?.split(' ')[0] || '';
+            if (greetEl) greetEl.textContent = name ? `${greet}, ${name}!` : `${greet}!`;
+
+            // Show trial banner if trial is active and <3 days left
+            if (profile && isTrialActive(profile)) {
+              const msLeft   = new Date(profile.trial_ends_at) - new Date();
+              const daysLeft = Math.ceil(msLeft / (1000 * 60 * 60 * 24));
+              if (daysLeft <= 3) {
+                const banner  = document.getElementById('trial-banner');
+                const textEl  = document.getElementById('trial-banner-text');
+                if (textEl) textEl.textContent = `Your free trial ends in ${daysLeft} ${daysLeft === 1 ? 'day' : 'days'}.`;
+                if (banner)  banner.hidden = false;
+              }
+            } else if (profile && !isTrialActive(profile) &&
+                       profile.subscription_tier === 'trial') {
+              const banner  = document.getElementById('trial-banner');
+              const textEl  = document.getElementById('trial-banner-text');
+              if (textEl) textEl.textContent = 'Your free trial has ended.';
+              if (banner)  banner.hidden = false;
+            }
+          }
+        } catch { /* non-blocking */ }
+      });
+
+      // Scroll reveals
+      const r = document.querySelectorAll('.reveal,.reveal-group');
+      if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver(function (e) {
+          e.forEach(function (x) { if (x.isIntersecting) { x.target.classList.add('revealed'); io.unobserve(x.target); } });
+        }, { threshold: 0.1 });
+        r.forEach(function (el) { io.observe(el); });
+      } else {
+        r.forEach(function (el) { el.classList.add('revealed'); });
+      }
     })();
   </script>
 </body>
