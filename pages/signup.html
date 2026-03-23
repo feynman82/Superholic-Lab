@@ -36,11 +36,75 @@
           <p class="text-secondary text-sm mt-4">Join Singapore families already practising with Superholic Lab</p>
         </div>
         <div class="card-body">
-          <!-- PLACEHOLDER: Task 2.3 — signup form with Supabase auth -->
-          <div class="alert alert-info">
-            Signup form coming in Task 2.3. Full name, email, password, terms checkbox.
-          </div>
-          <p class="text-center text-sm text-secondary mt-4">
+
+          <div id="signup-error" class="alert alert-danger" hidden role="alert"></div>
+          <div id="signup-success" class="alert alert-info" hidden role="status"></div>
+
+          <form id="signup-form" novalidate>
+            <div class="form-group">
+              <label class="form-label" for="signup-name">Your name (parent)</label>
+              <input
+                type="text"
+                id="signup-name"
+                class="form-input"
+                placeholder="e.g. Sarah Tan"
+                autocomplete="name"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="signup-email">Email address</label>
+              <input
+                type="email"
+                id="signup-email"
+                class="form-input"
+                placeholder="hello@example.com"
+                autocomplete="email"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="signup-password">Password</label>
+              <input
+                type="password"
+                id="signup-password"
+                class="form-input"
+                placeholder="At least 8 characters"
+                autocomplete="new-password"
+                minlength="8"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="signup-confirm">Confirm password</label>
+              <input
+                type="password"
+                id="signup-confirm"
+                class="form-input"
+                placeholder="Repeat your password"
+                autocomplete="new-password"
+                required
+              />
+            </div>
+
+            <div class="form-group" style="display:flex; align-items:flex-start; gap:var(--space-3);">
+              <input type="checkbox" id="signup-terms" style="margin-top:3px; flex-shrink:0;" required />
+              <label for="signup-terms" style="font-size:0.875rem; color:var(--text-secondary); cursor:pointer;">
+                I agree to the <a href="terms.html" target="_blank">Terms of Service</a> and
+                <a href="privacy.html" target="_blank">Privacy Policy</a>. I understand my child's
+                data is protected under Singapore's PDPA.
+              </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-full mt-4" id="signup-btn">
+              Start Free Trial
+            </button>
+          </form>
+
+          <p class="text-center text-sm text-secondary mt-6">
             Already have an account? <a href="login.html">Log in</a>
           </p>
         </div>
@@ -59,5 +123,99 @@
       </div>
     </div>
   </footer>
+
+  <script src="../js/supabase-client.js"></script>
+  <script src="../js/auth.js"></script>
+  <script>
+    (function () {
+      const form        = document.getElementById('signup-form');
+      const nameEl      = document.getElementById('signup-name');
+      const emailEl     = document.getElementById('signup-email');
+      const passEl      = document.getElementById('signup-password');
+      const confirmEl   = document.getElementById('signup-confirm');
+      const termsEl     = document.getElementById('signup-terms');
+      const errorEl     = document.getElementById('signup-error');
+      const successEl   = document.getElementById('signup-success');
+      const submitBtn   = document.getElementById('signup-btn');
+
+      // Redirect already-logged-in users
+      document.addEventListener('DOMContentLoaded', async () => {
+        const user = await getCurrentUser();
+        if (user) {
+          window.location.href = '../pages/dashboard.html';
+        }
+      });
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        errorEl.hidden   = true;
+        successEl.hidden = true;
+
+        const fullName = nameEl.value.trim();
+        const email    = emailEl.value.trim();
+        const password = passEl.value;
+        const confirm  = confirmEl.value;
+
+        // Client-side validation
+        if (!fullName) {
+          showError('Please enter your name.'); nameEl.focus(); return;
+        }
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          showError('Please enter a valid email address.'); emailEl.focus(); return;
+        }
+        if (password.length < 8) {
+          showError('Password must be at least 8 characters.'); passEl.focus(); return;
+        }
+        if (password !== confirm) {
+          showError('Passwords do not match.'); confirmEl.focus(); return;
+        }
+        if (!termsEl.checked) {
+          showError('Please accept the Terms of Service and Privacy Policy to continue.');
+          return;
+        }
+
+        setLoading(true);
+        const { user, session, error } = await signUp(email, password, fullName);
+        setLoading(false);
+
+        if (error) {
+          showError(friendlyError(error));
+          return;
+        }
+
+        if (session) {
+          // Immediately signed in — go to dashboard
+          window.location.href = '../pages/dashboard.html';
+        } else {
+          // Email confirmation required
+          form.hidden = true;
+          successEl.hidden = false;
+          successEl.textContent =
+            'Account created! Check your inbox and click the confirmation link to activate your trial.';
+        }
+      });
+
+      function setLoading(on) {
+        submitBtn.disabled    = on;
+        submitBtn.textContent = on ? 'Creating account…' : 'Start Free Trial';
+      }
+
+      function showError(msg) {
+        errorEl.textContent = msg;
+        errorEl.hidden      = false;
+        errorEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+
+      function friendlyError(msg) {
+        if (/already registered/i.test(msg) || /already been registered/i.test(msg)) {
+          return 'An account with this email already exists. Try logging in instead.';
+        }
+        if (/password.*characters/i.test(msg)) {
+          return 'Password must be at least 8 characters.';
+        }
+        return msg;
+      }
+    })();
+  </script>
 </body>
 </html>

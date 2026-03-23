@@ -35,12 +35,44 @@
           <p class="text-secondary text-sm mt-4">Log in to continue practising</p>
         </div>
         <div class="card-body">
-          <!-- PLACEHOLDER: Task 2.3 — login form with Supabase auth -->
-          <div class="alert alert-info">
-            Login form coming in Task 2.3. Supabase email + password auth.
-          </div>
-          <p class="text-center text-sm text-secondary mt-4">
-            Don't have an account? <a href="signup.html">Start free trial</a>
+
+          <div id="login-error" class="alert alert-danger" hidden role="alert"></div>
+
+          <form id="login-form" novalidate>
+            <div class="form-group">
+              <label class="form-label" for="login-email">Email address</label>
+              <input
+                type="email"
+                id="login-email"
+                class="form-input"
+                placeholder="hello@example.com"
+                autocomplete="email"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="login-password">
+                Password
+                <a href="#" id="forgot-link" style="float:right; font-size:0.8125rem; font-weight:400;">Forgot password?</a>
+              </label>
+              <input
+                type="password"
+                id="login-password"
+                class="form-input"
+                placeholder="Your password"
+                autocomplete="current-password"
+                required
+              />
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-full mt-6" id="login-btn">
+              Log In
+            </button>
+          </form>
+
+          <p class="text-center text-sm text-secondary mt-6">
+            Don't have an account? <a href="signup.html">Start your free trial</a>
           </p>
         </div>
       </div>
@@ -58,5 +90,103 @@
       </div>
     </div>
   </footer>
+
+  <script src="../js/supabase-client.js"></script>
+  <script src="../js/auth.js"></script>
+  <script>
+    (function () {
+      const form      = document.getElementById('login-form');
+      const emailEl   = document.getElementById('login-email');
+      const passEl    = document.getElementById('login-password');
+      const errorEl   = document.getElementById('login-error');
+      const submitBtn = document.getElementById('login-btn');
+      const forgotLink = document.getElementById('forgot-link');
+
+      // Redirect already-logged-in users
+      document.addEventListener('DOMContentLoaded', async () => {
+        const user = await getCurrentUser();
+        if (user) {
+          window.location.href = '../pages/dashboard.html';
+        }
+      });
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        errorEl.hidden = true;
+
+        const email    = emailEl.value.trim();
+        const password = passEl.value;
+
+        if (!email || !password) {
+          showError('Please enter your email and password.');
+          return;
+        }
+
+        setLoading(true);
+        const { error } = await signIn(email, password);
+        setLoading(false);
+
+        if (error) {
+          showError(friendlyError(error));
+          return;
+        }
+
+        // Redirect to the page the user was trying to reach, or dashboard
+        const returnUrl = sessionStorage.getItem('auth_redirect');
+        sessionStorage.removeItem('auth_redirect');
+        window.location.href = returnUrl || '../pages/dashboard.html';
+      });
+
+      forgotLink.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const email = emailEl.value.trim();
+        if (!email) {
+          showError('Enter your email address above, then click Forgot password.');
+          emailEl.focus();
+          return;
+        }
+
+        setLoading(true);
+        try {
+          const db = await getSupabase();
+          const { error } = await db.auth.resetPasswordForEmail(email, {
+            redirectTo: 'https://www.superholiclab.com/pages/login.html',
+          });
+          setLoading(false);
+          if (error) {
+            showError(error.message);
+          } else {
+            showInfo('Password reset email sent — check your inbox.');
+          }
+        } catch {
+          setLoading(false);
+          showError('Could not send reset email. Please try again.');
+        }
+      });
+
+      function setLoading(on) {
+        submitBtn.disabled   = on;
+        submitBtn.textContent = on ? 'Logging in…' : 'Log In';
+      }
+
+      function showError(msg) {
+        errorEl.textContent = msg;
+        errorEl.className   = 'alert alert-danger';
+        errorEl.hidden      = false;
+      }
+
+      function showInfo(msg) {
+        errorEl.textContent = msg;
+        errorEl.className   = 'alert alert-info';
+        errorEl.hidden      = false;
+      }
+
+      function friendlyError(msg) {
+        if (/invalid login/i.test(msg))   return 'Incorrect email or password. Please try again.';
+        if (/email not confirmed/i.test(msg)) return 'Please confirm your email address first. Check your inbox.';
+        return msg;
+      }
+    })();
+  </script>
 </body>
 </html>
