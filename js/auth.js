@@ -304,3 +304,158 @@ function todayISO() {
 function rootPath() {
   return window.location.pathname.includes('/pages/') ? '../' : '';
 }
+
+// ── Paywall ────────────────────────────────────────────────────────────────────
+
+const TRIAL_QUESTIONS_PER_DAY = 20;
+
+/**
+ * Checks whether the current user is allowed to practise the given subject.
+ * Returns { allowed: true } or { allowed: false, reason: string }.
+ *
+ * Reasons:
+ *   'not_authenticated'  — no active session
+ *   'trial_expired'      — 7-day trial has ended
+ *   'daily_limit'        — trial user has hit 20 questions today
+ *   'subject_locked'     — single_subject tier, wrong subject
+ *
+ * @param {string} subject    e.g. 'mathematics'
+ * @param {string} [studentId]
+ * @returns {Promise<{allowed: boolean, reason?: string}>}
+ */
+async function enforcePaywall(subject, studentId) {
+  const user = await getCurrentUser();
+  if (!user) return { allowed: false, reason: 'not_authenticated' };
+
+  const profile = await getProfile(user.id);
+  if (!profile) return { allowed: false, reason: 'not_authenticated' };
+
+  const tier = profile.subscription_tier;
+
+  // Active paid subscribers — always allowed
+  if (tier === 'all_subjects' || tier === 'family') return { allowed: true };
+
+  if (tier === 'single_subject') {
+    // Fetch the student's chosen subject (stored on the students row)
+    if (studentId) {
+      try {
+        const db = await getSupabase();
+        const { data: stu } = await db
+          .from('students')
+          .select('selected_subject')
+          .eq('id', studentId)
+          .single();
+        if (stu?.selected_subject &&
+            stu.selected_subject.toLowerCase() !== subject.toLowerCase()) {
+          return { allowed: false, reason: 'subject_locked' };
+        }
+      } catch { /* non-blocking */ }
+    }
+    return { allowed: true };
+  }
+
+  // Trial tier
+  if (!isTrialActive(profile)) {
+    return { allowed: false, reason: 'trial_expired' };
+  }
+  if (studentId) {
+    const usage = await checkDailyUsage(studentId);
+    if ((usage.questions_attempted || 0) >= TRIAL_QUESTIONS_PER_DAY) {
+      return { allowed: false, reason: 'daily_limit' };
+    }
+  }
+  return { allowed: true };
+}
+
+/**
+ * Creates and displays the upgrade modal with a message appropriate to the
+ * reason the paywall was triggered.
+ * @param {'trial_expired'|'daily_limit'|'subject_locked'|string} reason
+ */
+function showUpgradeModal(reason) {
+  // Remove any previously-injected modal
+  const old = document.getElementById('upgrade-modal-overlay');
+  if (old) old.remove();
+
+  const messages = {
+    trial_expired: {
+      title: 'Your free trial has ended',
+      body:  'Your 7-day free trial is over. Subscribe to keep your child practising with unlimited questions and AI tutor access.',
+    },
+    daily_limit: {
+      title: 'Daily practice limit reached',
+      body:  `You have answered ${TRIAL_QUESTIONS_PER_DAY} questions today on the free trial. Upgrade for unlimited daily practice.`,
+    },
+    subject_locked: {
+      title: 'Subject not included in your plan',
+      body:  'Your Single Subject plan covers one subject only. Upgrade to All Subjects for full access.',
+    },
+  };
+
+  const { title, body } = messages[reason] || {
+    title: 'Subscription required',
+    body:  'Choose a plan to continue practising.',
+  };
+
+  const pricingHref = rootPath() + 'pages/pricing.html';
+
+  const overlay = document.createElement('div');
+  overlay.id        = 'upgrade-modal-overlay';
+  overlay.className = 'modal-overlay';
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+
+  // Build modal DOM without innerHTML for title/body to avoid any XSS risk
+  const modal = document.createElement('div');
+  modal.className = 'modal';
+
+  const header = document.createElement('div');
+  header.className = 'modal-header';
+  const titleEl = document.createElement('h2');
+  titleEl.id            = 'upgrade-modal-title';
+  titleEl.style.cssText = 'font-size:1.125rem;';
+  titleEl.textContent   = title;
+  const closeBtn = document.createElement('button');
+  closeBtn.className    = 'modal-close';
+  closeBtn.setAttribute('aria-label', 'Close');
+  closeBtn.innerHTML    = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>';
+  header.append(titleEl, closeBtn);
+
+  const modalBody = document.createElement('div');
+  modalBody.className = 'modal-body';
+  const bodyText = document.createElement('p');
+  bodyText.style.color    = 'var(--text-secondary)';
+  bodyText.textContent    = body;
+  // Featured plan preview
+  const planPreview = document.createElement('div');
+  planPreview.style.cssText = 'margin-top:var(--space-5); padding:var(--space-4); border:2px solid var(--primary); border-radius:var(--radius-lg); display:flex; justify-content:space-between; align-items:center; background:var(--primary-light);';
+  planPreview.innerHTML = '<div><div style="font-weight:600;color:var(--primary);">All Subjects</div><div style="color:var(--text-secondary);font-size:0.875rem;">Unlimited · All subjects · 1 child</div></div><span style="font-weight:800;color:var(--primary);font-size:1.125rem;">S$19.99/mo</span>';
+  modalBody.append(bodyText, planPreview);
+
+  const footer = document.createElement('div');
+  footer.className = 'modal-footer';
+  const laterBtn = document.createElement('button');
+  laterBtn.className   = 'btn btn-secondary';
+  laterBtn.textContent = 'Maybe later';
+  const plansLink = document.createElement('a');
+  plansLink.href        = pricingHref;
+  plansLink.className   = 'btn btn-primary';
+  plansLink.textContent = 'See all plans';
+  footer.append(laterBtn, plansLink);
+
+  modal.append(header, modalBody, footer);
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+
+  // Animate in
+  requestAnimationFrame(() => overlay.classList.add('is-open'));
+
+  // Close handlers
+  const close = () => overlay.classList.remove('is-open');
+  closeBtn.addEventListener('click', close);
+  laterBtn.addEventListener('click', close);
+  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+  document.addEventListener('keydown', function onEsc(e) {
+    if (e.key === 'Escape') { close(); document.removeEventListener('keydown', onEsc); }
+  });
+}

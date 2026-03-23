@@ -3,9 +3,10 @@
  * Quiz engine: reads ?subject=&level= URL params → loads JSON →
  * picks up to 10 random questions → renders one at a time →
  * shows worked solution + wrong-answer explanation on answer →
- * score screen at end.
+ * score screen at end → saves results to Supabase.
  *
- * Supports: mcq (4 options A–D), fill_blank (text input), true_false
+ * Paywall: checks trial status and daily usage before loading questions.
+ * Supports: mcq (A-D options), fill_blank (text input), true_false
  *
  * TEST: Open pages/quiz.html?subject=mathematics&level=primary-4
  *       and verify a question card appears with MCQ options.
@@ -33,37 +34,65 @@
 
   // ── State ─────────────────────────────────────────────────────
   const QUIZ_SIZE = 10;
-  let questions = [];
-  let current   = 0;
-  let score     = 0;
-  let answered  = false;
+  let questions        = [];
+  let current          = 0;
+  let score            = 0;
+  let answered         = false;
+  let answers          = []; // per-question answer log for Supabase
+  let currentStudentId = null;
+  let currentSubject   = '';
+  let currentLevel     = '';
 
   // ── Boot ──────────────────────────────────────────────────────
   init();
 
   async function init() {
     const params  = new URLSearchParams(window.location.search);
-    const subject = (params.get('subject') || '').toLowerCase().trim();
-    const level   = (params.get('level')   || '').toLowerCase().trim();
+    currentSubject = (params.get('subject') || '').toLowerCase().trim();
+    currentLevel   = (params.get('level')   || '').toLowerCase().trim();
 
-    const filePath = resolveFile(subject, level);
+    const filePath = resolveFile(currentSubject, currentLevel);
     if (!filePath) {
       showError('Invalid subject or level. Please go back and choose a topic.');
       return;
     }
 
-    document.title = `${capitalise(subject)} ${labelLevel(level)} Quiz — Superholic Lab`;
+    document.title = `${capitalise(currentSubject)} ${labelLevel(currentLevel)} Quiz — Superholic Lab`;
     const breadcrumb = document.getElementById('quiz-breadcrumb');
-    if (breadcrumb) {
-      breadcrumb.textContent = `${labelLevel(level)} ${capitalise(subject)}`;
+    if (breadcrumb) breadcrumb.textContent = `${labelLevel(currentLevel)} ${capitalise(currentSubject)}`;
+
+    // Load student ID for paywall + usage tracking
+    try {
+      const user = await getCurrentUser();
+      if (user) {
+        const db = await getSupabase();
+        const { data: students } = await db
+          .from('students')
+          .select('id')
+          .eq('parent_id', user.id)
+          .limit(1);
+        if (students?.length) currentStudentId = students[0].id;
+      }
+    } catch { /* non-blocking — quiz can still run */ }
+
+    // Paywall check before loading questions
+    if (typeof enforcePaywall === 'function') {
+      const wall = await enforcePaywall(currentSubject, currentStudentId);
+      if (!wall.allowed) {
+        loadingEl.hidden = true;
+        if (typeof showUpgradeModal === 'function') showUpgradeModal(wall.reason);
+        return;
+      }
     }
 
+    // Load question bank
     try {
       const res = await fetch(filePath);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const all = await res.json();
       questions = shuffle(all).slice(0, QUIZ_SIZE);
       if (questions.length === 0) throw new Error('No questions found in file.');
+      answers          = [];
       loadingEl.hidden = true;
       quizArea.hidden  = false;
       renderQuestion();
@@ -90,22 +119,18 @@
     answered = false;
     const q = questions[current];
 
-    // Progress bar
     const pct = Math.round((current / questions.length) * 100);
     progressFill.style.width  = pct + '%';
     progressLabel.textContent = `${current + 1} / ${questions.length}`;
 
-    // Meta badges
     quizMeta.innerHTML = `
       <span class="badge badge-info">${escapeText(q.topic)}</span>
       <span class="badge badge-${diffBadge(q.difficulty)}">${capitalise(q.difficulty)}</span>
     `;
 
-    // Question text — set via textContent to prevent XSS
     questionText.textContent = q.question_text;
 
-    // Reset all answer areas
-    optionsEl.innerHTML = '';
+    optionsEl.innerHTML  = '';
     optionsEl.hidden     = true;
     fillArea.hidden      = true;
     tfArea.hidden        = true;
@@ -132,17 +157,16 @@
 
   function renderMCQ(q) {
     q.options.forEach(opt => {
-      // Options are formatted "A. text" — split on first ". "
       const dotIdx = opt.indexOf('. ');
       const key    = dotIdx > -1 ? opt.slice(0, dotIdx)  : opt.charAt(0);
       const text   = dotIdx > -1 ? opt.slice(dotIdx + 2) : opt.slice(3);
 
       const btn = document.createElement('button');
-      btn.className = 'quiz-option';
+      btn.className   = 'quiz-option';
       btn.dataset.key = key;
 
       const keySpan = document.createElement('span');
-      keySpan.className = 'quiz-option-key';
+      keySpan.className   = 'quiz-option-key';
       keySpan.textContent = key;
 
       const textSpan = document.createElement('span');
@@ -163,21 +187,25 @@
     const isRight = chosen === correct;
     if (isRight) score++;
 
+    // Record this answer
+    answers.push({
+      question_text: q.question_text.slice(0, 500),
+      topic:         q.topic,
+      difficulty:    q.difficulty,
+      correct:       isRight,
+      answer_chosen: chosen,
+      correct_answer: correct,
+    });
+
     optionsEl.querySelectorAll('.quiz-option').forEach(btn => {
       const k = btn.dataset.key;
       btn.disabled = true;
-      if (k === correct) {
-        btn.classList.add('is-correct');
-      } else if (k === chosen) {
-        btn.classList.add('is-wrong');
-      } else {
-        btn.classList.add('is-dimmed');
-      }
+      if (k === correct)           btn.classList.add('is-correct');
+      else if (k === chosen)       btn.classList.add('is-wrong');
+      else                         btn.classList.add('is-dimmed');
     });
 
-    const wrongExp = (!isRight && q.wrong_explanations)
-      ? q.wrong_explanations[chosen]
-      : null;
+    const wrongExp = (!isRight && q.wrong_explanations) ? q.wrong_explanations[chosen] : null;
     showExplanation(isRight, q.worked_solution, wrongExp);
     nextBtn.hidden = false;
   }
@@ -198,6 +226,16 @@
     const q = questions[current];
     const isRight = val.toLowerCase() === String(q.correct_answer).toLowerCase();
     if (isRight) score++;
+
+    answers.push({
+      question_text: q.question_text.slice(0, 500),
+      topic:         q.topic,
+      difficulty:    q.difficulty,
+      correct:       isRight,
+      answer_chosen: val.slice(0, 200),
+      correct_answer: String(q.correct_answer),
+    });
+
     fillInput.disabled  = true;
     fillSubmit.disabled = true;
     showExplanation(isRight, q.worked_solution, null, q.correct_answer);
@@ -217,19 +255,24 @@
     const isRight = chosen === q.correct_answer;
     if (isRight) score++;
 
+    answers.push({
+      question_text: q.question_text.slice(0, 500),
+      topic:         q.topic,
+      difficulty:    q.difficulty,
+      correct:       isRight,
+      answer_chosen: chosen,
+      correct_answer: q.correct_answer,
+    });
+
     tfTrue.disabled  = true;
     tfFalse.disabled = true;
 
-    const trueBtn  = tfTrue;
-    const falseBtn = tfFalse;
-
-    // Mark correct answer green, wrong selection red
     if (q.correct_answer === 'True') {
-      trueBtn.classList.add('is-tf-correct');
-      if (!isRight) falseBtn.classList.add('is-tf-wrong');
+      tfTrue.classList.add('is-tf-correct');
+      if (!isRight) tfFalse.classList.add('is-tf-wrong');
     } else {
-      falseBtn.classList.add('is-tf-correct');
-      if (!isRight) trueBtn.classList.add('is-tf-wrong');
+      tfFalse.classList.add('is-tf-correct');
+      if (!isRight) tfTrue.classList.add('is-tf-wrong');
     }
 
     showExplanation(isRight, q.worked_solution);
@@ -242,7 +285,6 @@
     explanationEl.className = `quiz-explanation ${isRight ? 'is-correct-explanation' : 'is-wrong-explanation'}`;
 
     let html = `<p class="quiz-explanation-title">${isRight ? '&#10003; Correct!' : '&#10007; Not quite'}</p>`;
-
     if (!isRight && correctAnswer !== undefined) {
       html += `<p><strong>Correct answer:</strong> ${escapeText(String(correctAnswer))}</p>`;
     }
@@ -252,7 +294,6 @@
     if (solution) {
       html += `<p style="margin-top:var(--space-2);"><strong>Worked solution:</strong> ${escapeText(solution)}</p>`;
     }
-
     explanationEl.innerHTML = html;
   }
 
@@ -263,7 +304,6 @@
       showScore();
     } else {
       renderQuestion();
-      // Scroll card into view on mobile
       const card = document.getElementById('quiz-card');
       if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
@@ -274,7 +314,6 @@
     quizArea.hidden    = true;
     scoreScreen.hidden = false;
 
-    // Final progress bar at 100%
     progressFill.style.width  = '100%';
     progressLabel.textContent = `${questions.length} / ${questions.length}`;
 
@@ -297,17 +336,84 @@
     `;
 
     document.getElementById('btn-retry').addEventListener('click', () => {
-      current  = 0;
-      score    = 0;
-      answered = false;
+      current   = 0;
+      score     = 0;
+      answered  = false;
+      answers   = [];
       questions = shuffle(questions);
       scoreScreen.hidden = true;
       quizArea.hidden    = false;
       renderQuestion();
     });
 
-    // TODO Task 2.4: persist to Supabase quiz_attempts + question_attempts
-    // saveResults();
+    // Persist results to Supabase
+    saveResults().catch(err => console.error('[quiz] saveResults:', err));
+  }
+
+  // ── Supabase save ─────────────────────────────────────────────
+  async function saveResults() {
+    if (!currentStudentId) return;
+
+    const db = await getSupabase();
+
+    // Determine primary topic (most common across answered questions)
+    const topicCounts = {};
+    answers.forEach(a => {
+      if (a.topic) topicCounts[a.topic] = (topicCounts[a.topic] || 0) + 1;
+    });
+    const primaryTopic = Object.entries(topicCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Mixed';
+
+    // Insert quiz attempt
+    const { data: attempt, error: attErr } = await db
+      .from('quiz_attempts')
+      .insert({
+        student_id:      currentStudentId,
+        subject:         currentSubject,
+        level:           currentLevel,
+        topic:           primaryTopic,
+        difficulty:      'Mixed',
+        score:           score,
+        total_questions: questions.length,
+      })
+      .select('id')
+      .single();
+
+    if (attErr) throw attErr;
+
+    // Insert per-question attempts
+    if (answers.length > 0) {
+      const rows = answers.map(a => ({
+        quiz_attempt_id: attempt.id,
+        student_id:      currentStudentId,
+        question_text:   a.question_text,
+        topic:           a.topic,
+        difficulty:      a.difficulty,
+        correct:         a.correct,
+        answer_chosen:   a.answer_chosen,
+        correct_answer:  a.correct_answer,
+      }));
+      await db.from('question_attempts').insert(rows);
+    }
+
+    // Increment daily usage counter by number of questions answered
+    if (typeof incrementDailyUsage === 'function') {
+      const usage = await checkDailyUsage(currentStudentId);
+      const db2   = await getSupabase();
+      const today = new Date().toISOString().slice(0, 10);
+      const newCount = (usage.questions_attempted || 0) + answers.length;
+      if (usage.questions_attempted === 0 && !usage.id) {
+        await db2.from('daily_usage').insert({
+          student_id:           currentStudentId,
+          date:                 today,
+          questions_attempted:  newCount,
+        });
+      } else {
+        await db2.from('daily_usage')
+          .update({ questions_attempted: newCount })
+          .eq('student_id', currentStudentId)
+          .eq('date', today);
+      }
+    }
   }
 
   // ── Utilities ─────────────────────────────────────────────────
@@ -320,19 +426,10 @@
     return a;
   }
 
-  function capitalise(s) {
-    return s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
-  }
+  function capitalise(s)  { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
+  function labelLevel(l)  { return l.replace('primary-', 'Primary '); }
+  function diffBadge(d)   { return d === 'easy' ? 'success' : d === 'medium' ? 'amber' : 'danger'; }
 
-  function labelLevel(l) {
-    return l.replace('primary-', 'Primary ');
-  }
-
-  function diffBadge(d) {
-    return d === 'easy' ? 'success' : d === 'medium' ? 'amber' : 'danger';
-  }
-
-  /** Safely escape a string for use inside innerHTML */
   function escapeText(str) {
     const div = document.createElement('div');
     div.textContent = String(str);
