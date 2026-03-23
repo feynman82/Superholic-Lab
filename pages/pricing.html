@@ -85,8 +85,14 @@
         <span class="trust-item">MOE-aligned content</span>
       </div>
 
+      <!-- Trial status banner (shown by stripe.js for logged-in trial users) -->
+      <div id="trial-status-banner" class="alert alert-info reveal mb-6" hidden>
+        You have <strong><span data-days-left>7</span> days</strong> left on your free trial.
+        Choose a plan below to keep your child's progress going.
+      </div>
+
       <!-- Pricing cards -->
-      <div class="grid grid-3 reveal-group" style="align-items:start; max-width:980px; margin:0 auto;">
+      <div id="pricing-cards" class="grid grid-3 reveal-group" style="align-items:start; max-width:980px; margin:0 auto;">
 
         <!-- Tier 1: Single Subject -->
         <div class="pricing-card no-hover" style="cursor:default;">
@@ -111,7 +117,7 @@
             </ul>
           </div>
           <div class="card-footer">
-            <a href="signup.html" class="btn btn-secondary btn-full">Start Free Trial</a>
+            <a href="signup.html" class="btn btn-secondary btn-full" data-checkout-plan="single_subject">Start Free Trial</a>
           </div>
         </div>
 
@@ -141,7 +147,7 @@
             </ul>
           </div>
           <div class="card-footer">
-            <a href="signup.html" class="btn btn-primary btn-full">Start Free Trial</a>
+            <a href="signup.html" class="btn btn-primary btn-full" data-checkout-plan="all_subjects">Start Free Trial</a>
           </div>
         </div>
 
@@ -171,7 +177,7 @@
             </ul>
           </div>
           <div class="card-footer">
-            <a href="signup.html" class="btn btn-secondary btn-full">Start Free Trial</a>
+            <a href="signup.html" class="btn btn-secondary btn-full" data-checkout-plan="family">Start Free Trial</a>
           </div>
         </div>
 
@@ -364,6 +370,9 @@
     </a>
   </nav>
 
+  <script src="../js/supabase-client.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/stripe.js"></script>
   <script>
     (function () {
       'use strict';

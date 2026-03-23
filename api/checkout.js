@@ -1,14 +1,84 @@
 /**
  * api/checkout.js — Vercel Serverless Function
- * Creates a Stripe Checkout Session and returns the URL.
- * The frontend redirects the user to that URL.
- * PLACEHOLDER: Full implementation coming in Task 3.2
  *
- * ⚠️ CONFIGURE: STRIPE_SECRET_KEY must be set in .env
- * and in Vercel dashboard. Never expose this key in frontend JS.
- * ⚠️ CONFIGURE: Set STRIPE_SINGLE_SUBJECT_PRICE_ID,
- * STRIPE_ALL_SUBJECTS_PRICE_ID, STRIPE_FAMILY_PRICE_ID in .env
+ * Creates a Stripe Checkout Session for a subscription plan and
+ * returns the hosted checkout URL for the frontend to redirect to.
+ *
+ * Request body:
+ *   { plan: 'single_subject'|'all_subjects'|'family', userId: string, email: string }
+ *
+ * Response:
+ *   200 → { url: string }
+ *   400 → { error: string }
+ *   500 → { error: string }
+ *
+ * ⚠️ CONFIGURE: The following must be set in .env and Vercel dashboard:
+ *   STRIPE_SECRET_KEY
+ *   STRIPE_SINGLE_SUBJECT_PRICE_ID
+ *   STRIPE_ALL_SUBJECTS_PRICE_ID
+ *   STRIPE_FAMILY_PRICE_ID
+ *   NEXT_PUBLIC_APP_URL  (e.g. https://www.superholiclab.com)
+ *
+ * TEST: POST { plan: 'all_subjects', userId: 'uuid', email: 'test@test.com' }
+ *   to /api/checkout and verify a Stripe Checkout URL is returned.
  */
 
-// TEST: POST { priceId: 'price_...', userId: '...' } to /api/checkout
-// and verify a Stripe Checkout URL is returned.
+const Stripe = require('stripe');
+
+/** Maps plan names to their Stripe Price ID env var. */
+function getPriceId(plan) {
+  const map = {
+    single_subject: process.env.STRIPE_SINGLE_SUBJECT_PRICE_ID,
+    all_subjects:   process.env.STRIPE_ALL_SUBJECTS_PRICE_ID,
+    family:         process.env.STRIPE_FAMILY_PRICE_ID,
+  };
+  return map[plan] || null;
+}
+
+module.exports = async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  if (!process.env.STRIPE_SECRET_KEY) {
+    console.error('[checkout] STRIPE_SECRET_KEY is not set');
+    return res.status(500).json({ error: 'Checkout is not configured. Please contact support.' });
+  }
+
+  const { plan, userId, email } = req.body || {};
+
+  if (!plan || !userId) {
+    return res.status(400).json({ error: 'plan and userId are required' });
+  }
+
+  const priceId = getPriceId(plan);
+  if (!priceId) {
+    return res.status(400).json({ error: `Unknown plan: ${plan}` });
+  }
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.superholiclab.com';
+
+  try {
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-06-20' });
+
+    const session = await stripe.checkout.sessions.create({
+      mode:                 'subscription',
+      payment_method_types: ['card'],
+      line_items: [{ price: priceId, quantity: 1 }],
+      // Store our Supabase user ID so the webhook can link the subscription back
+      client_reference_id:  userId,
+      // Prefill email if known
+      ...(email ? { customer_email: email } : {}),
+      success_url: `${appUrl}/pages/dashboard.html?checkout=success&plan=${plan}`,
+      cancel_url:  `${appUrl}/pages/pricing.html`,
+      subscription_data: {
+        metadata: { supabase_user_id: userId, plan },
+      },
+    });
+
+    return res.status(200).json({ url: session.url });
+  } catch (err) {
+    console.error('[checkout] Stripe error:', err?.message || err);
+    return res.status(500).json({ error: 'Could not create checkout session. Please try again.' });
+  }
+};

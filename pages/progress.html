@@ -34,7 +34,10 @@
         <span class="breadcrumb-sep" style="color:rgba(255,255,255,0.4);">›</span>
         <span style="color:white;">My Progress</span>
       </nav>
-      <h1 class="animate-in delay-1" style="color:white; margin-top:var(--space-3);">My Progress</h1>
+      <h1 class="animate-in delay-1" style="color:white; margin-top:var(--space-3);">
+        My Progress
+        <span id="student-name" style="opacity:0.75; font-size:0.6em; font-weight:700; margin-left:var(--space-3);"></span>
+      </h1>
       <p class="animate-in delay-2" style="color:rgba(255,255,255,0.82);">Track your accuracy, streaks, and topic gaps</p>
     </div>
     <div class="wave-divider" aria-hidden="true">
@@ -46,30 +49,104 @@
 
   <main style="padding: var(--space-8) 0 var(--space-16);">
     <div class="container">
-      <!-- Stats placeholder -->
-      <div class="grid grid-3 reveal-group" style="margin-bottom:var(--space-8);">
-        <div class="card stat-card no-hover">
-          <div class="skeleton skeleton-title" style="width:60%;margin:0 auto var(--space-3);"></div>
-          <div class="skeleton skeleton-text" style="width:40%;margin:0 auto;"></div>
+
+      <!-- Loading skeleton -->
+      <div id="progress-loading">
+        <div class="grid grid-3" style="margin-bottom:var(--space-8);">
+          <div class="card no-hover text-center" style="padding:var(--space-6);">
+            <div class="skeleton skeleton-title" style="width:50%;margin:0 auto var(--space-3);"></div>
+            <div class="skeleton skeleton-text" style="width:70%;margin:0 auto;"></div>
+          </div>
+          <div class="card no-hover text-center" style="padding:var(--space-6);">
+            <div class="skeleton skeleton-title" style="width:50%;margin:0 auto var(--space-3);"></div>
+            <div class="skeleton skeleton-text" style="width:70%;margin:0 auto;"></div>
+          </div>
+          <div class="card no-hover text-center" style="padding:var(--space-6);">
+            <div class="skeleton skeleton-title" style="width:50%;margin:0 auto var(--space-3);"></div>
+            <div class="skeleton skeleton-text" style="width:70%;margin:0 auto;"></div>
+          </div>
         </div>
-        <div class="card stat-card no-hover">
-          <div class="skeleton skeleton-title" style="width:60%;margin:0 auto var(--space-3);"></div>
-          <div class="skeleton skeleton-text" style="width:40%;margin:0 auto;"></div>
-        </div>
-        <div class="card stat-card no-hover">
-          <div class="skeleton skeleton-title" style="width:60%;margin:0 auto var(--space-3);"></div>
-          <div class="skeleton skeleton-text" style="width:40%;margin:0 auto;"></div>
+        <div class="card no-hover" style="padding:var(--space-8);">
+          <div class="skeleton skeleton-title" style="width:30%; margin-bottom:var(--space-6);"></div>
+          <div class="skeleton skeleton-text" style="margin-bottom:var(--space-4);"></div>
+          <div class="skeleton skeleton-text" style="margin-bottom:var(--space-4);"></div>
+          <div class="skeleton skeleton-text" style="width:80%;"></div>
         </div>
       </div>
-      <div class="alert alert-info reveal">
-        <!-- PLACEHOLDER: Task 3.1 — progress tracker -->
-        Progress tracker coming in Task 3.1. Will query quiz_attempts and
-        question_attempts from Supabase and show accuracy by subject, topic breakdown,
-        streak counter, and total questions answered.
+
+      <!-- Error state -->
+      <div id="progress-error" class="alert alert-danger mt-6" hidden role="alert"></div>
+
+      <!-- Empty state -->
+      <div id="progress-empty" class="text-center" style="padding: var(--space-12) 0;" hidden>
+        <div style="font-size:3rem; margin-bottom:var(--space-4);" aria-hidden="true">
+          <svg width="64" height="64" viewBox="0 0 64 64" fill="none" style="display:block;margin:0 auto;">
+            <circle cx="32" cy="32" r="30" stroke="var(--border)" stroke-width="3"/>
+            <path d="M20 44 C20 30 44 30 44 44" stroke="var(--primary)" stroke-width="3" stroke-linecap="round" fill="none"/>
+            <circle cx="24" cy="26" r="3" fill="var(--text-secondary)"/>
+            <circle cx="40" cy="26" r="3" fill="var(--text-secondary)"/>
+          </svg>
+        </div>
+        <h2 style="font-size:1.25rem; margin-bottom:var(--space-3);">No quiz history yet</h2>
+        <p class="text-secondary" style="max-width:360px; margin:0 auto var(--space-6);">
+          Complete your first quiz to start tracking accuracy, streaks, and weak topics.
+        </p>
+        <a href="subjects.html" class="btn btn-primary btn-lg">Start Your First Quiz</a>
       </div>
-      <div class="text-center mt-8 reveal">
-        <a href="subjects.html" class="btn btn-primary btn-lg">Start a Quiz to Build Your Progress</a>
-      </div>
+
+      <!-- Stats area (hidden until data loads) -->
+      <div id="progress-stats" hidden>
+
+        <!-- Summary stat cards -->
+        <div class="grid grid-3" style="margin-bottom:var(--space-8);">
+          <div class="card no-hover text-center" style="padding:var(--space-6);">
+            <div id="stat-total" style="font-family:'Nunito',sans-serif;font-size:2.5rem;font-weight:900;color:var(--primary);line-height:1;">—</div>
+            <div class="text-secondary text-sm mt-2">Questions Answered</div>
+          </div>
+          <div class="card no-hover text-center" style="padding:var(--space-6);">
+            <div id="stat-accuracy" style="font-family:'Nunito',sans-serif;font-size:2.5rem;font-weight:900;line-height:1;">—</div>
+            <div class="text-secondary text-sm mt-2">Overall Accuracy</div>
+          </div>
+          <div class="card no-hover text-center" style="padding:var(--space-6);">
+            <div id="stat-streak" style="font-family:'Nunito',sans-serif;font-size:2.5rem;font-weight:900;color:var(--accent);line-height:1;">—</div>
+            <div class="text-secondary text-sm mt-2">Current Streak</div>
+          </div>
+        </div>
+
+        <!-- Subject accuracy -->
+        <div class="card no-hover" style="margin-bottom:var(--space-6);">
+          <div class="card-header">
+            <h2 style="font-size:1rem; font-weight:600;">Accuracy by Subject</h2>
+          </div>
+          <div class="card-body">
+            <div id="subject-bars"></div>
+          </div>
+        </div>
+
+        <!-- Weak topics -->
+        <div class="card no-hover" id="weak-topics-card" style="margin-bottom:var(--space-6);">
+          <div class="card-header">
+            <h2 style="font-size:1rem; font-weight:600;">Topics to Work On</h2>
+            <p class="text-secondary text-sm mt-1">Topics where you scored below average (minimum 5 questions)</p>
+          </div>
+          <div class="card-body">
+            <div id="weak-topics"></div>
+          </div>
+        </div>
+
+        <!-- Recent quiz history -->
+        <div class="card no-hover">
+          <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
+            <h2 style="font-size:1rem; font-weight:600;">Recent Quizzes</h2>
+            <a href="subjects.html" class="btn btn-secondary btn-sm">New Quiz</a>
+          </div>
+          <div class="card-body" style="padding-top:0;">
+            <div id="recent-history"></div>
+          </div>
+        </div>
+
+      </div><!-- /progress-stats -->
+
     </div>
   </main>
 
@@ -88,12 +165,6 @@
     <a href="progress.html" class="bottom-nav-item is-active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Progress</a>
   </nav>
 
-  <script>
-    (function(){
-      const r=document.querySelectorAll('.reveal,.reveal-group');
-      if('IntersectionObserver' in window){const io=new IntersectionObserver(function(e){e.forEach(function(x){if(x.isIntersecting){x.target.classList.add('revealed');io.unobserve(x.target);}});},{threshold:0.1});r.forEach(function(el){io.observe(el);});}else{r.forEach(function(el){el.classList.add('revealed');});}
-    })();
-  </script>
   <script src="../js/supabase-client.js"></script>
   <script src="../js/auth.js"></script>
   <script src="../js/progress.js"></script>
