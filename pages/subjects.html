@@ -4,16 +4,462 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Choose a Subject — Superholic Lab</title>
+  <meta name="description" content="Choose a subject and level to start practising MOE-aligned questions." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="../css/style.css" />
+  <link rel="icon" href="../assets/favicon.ico" />
+  <style>
+    /* Page-specific layout tweaks — no new colours or variables */
+    .subjects-page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .subjects-main {
+      flex: 1;
+      padding: var(--space-10) 0 var(--space-16);
+    }
+    .subject-card {
+      cursor: pointer;
+      transition: box-shadow var(--transition), transform var(--transition),
+                  border-color var(--transition);
+      border: 2px solid var(--border);
+    }
+    .subject-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+    /* Expanded state — card grows to show level grid */
+    .subject-card.is-selected {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px var(--primary-light), var(--shadow-md);
+      transform: none;
+    }
+    .subject-levels {
+      /* Hidden by default; shown when card is selected */
+      display: none;
+      margin-top: var(--space-5);
+      padding-top: var(--space-5);
+      border-top: 1px solid var(--border);
+    }
+    .subject-card.is-selected .subject-levels {
+      display: block;
+    }
+    /* Chevron rotation */
+    .subject-chevron {
+      transition: transform var(--transition);
+      flex-shrink: 0;
+    }
+    .subject-card.is-selected .subject-chevron {
+      transform: rotate(180deg);
+    }
+    /* Subject icon backgrounds */
+    .icon-maths   { background: var(--primary-light); }
+    .icon-science { background: #d1fae5; }
+    .icon-english { background: #fef3c7; }
+  </style>
 </head>
-<body>
-  <!-- PLACEHOLDER: Task 1.5 — subject selection page -->
-  <main class="container">
-    <h1>Choose a Subject</h1>
-    <p>Subject + level selector coming in Task 1.5.</p>
+<body class="subjects-page">
+
+  <!-- ═══════════════════════════════════
+       NAVBAR
+       ═══════════════════════════════════ -->
+  <header class="navbar">
+    <div class="container">
+      <nav class="navbar-inner">
+        <a href="../index.html" class="navbar-logo">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+            <rect width="28" height="28" rx="8" fill="#4338ca"/>
+            <path d="M8 14.5L12.5 19L20 10" stroke="white" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Superholic Lab
+        </a>
+        <ul class="navbar-nav" role="list">
+          <li><a href="../index.html">Home</a></li>
+          <li><a href="pricing.html">Pricing</a></li>
+        </ul>
+        <div class="navbar-actions">
+          <a href="login.html"  class="btn btn-secondary btn-sm">Log In</a>
+          <a href="signup.html" class="btn btn-primary  btn-sm">Start Free Trial</a>
+        </div>
+        <button class="navbar-toggle" id="navToggle"
+                aria-label="Open menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </nav>
+      <div class="navbar-mobile" id="navMobile" role="navigation">
+        <a href="../index.html">Home</a>
+        <a href="pricing.html">Pricing</a>
+        <a href="login.html"  class="btn btn-secondary btn-sm mt-4">Log In</a>
+        <a href="signup.html" class="btn btn-primary  btn-sm">Start Free Trial</a>
+      </div>
+    </div>
+  </header>
+
+
+  <!-- ═══════════════════════════════════
+       MAIN
+       ═══════════════════════════════════ -->
+  <main class="subjects-main">
+    <div class="container">
+
+      <!-- Page header -->
+      <div class="text-center mb-6" style="max-width: 560px; margin-left: auto; margin-right: auto;">
+        <h1>What would you like to practise?</h1>
+        <p class="text-secondary mt-4">
+          Choose a subject, then pick your child's level.
+          Superholic Lab loads MOE-aligned questions instantly.
+        </p>
+      </div>
+
+      <!-- Subject cards -->
+      <div class="grid grid-3" id="subjectGrid" style="max-width: 860px; margin: 0 auto;">
+
+        <!-- ── MATHEMATICS ── -->
+        <div class="card subject-card" id="card-mathematics"
+             role="button" tabindex="0"
+             aria-expanded="false"
+             aria-label="Mathematics — click to choose a level"
+             data-subject="mathematics">
+          <div class="card-body">
+
+            <!-- Card header row -->
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-4">
+                <div class="subject-icon icon-maths">
+                  <span aria-hidden="true">➕</span>
+                </div>
+                <div>
+                  <h2 style="font-size: 1.125rem;">Mathematics</h2>
+                  <p class="text-sm text-secondary">Primary 1 – Secondary 4</p>
+                </div>
+              </div>
+              <svg class="subject-chevron" width="20" height="20" viewBox="0 0 20 20"
+                   fill="none" aria-hidden="true">
+                <path d="M5 7.5L10 12.5L15 7.5" stroke="#6b7280"
+                      stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+
+            <!-- Topics preview -->
+            <div class="flex gap-2 mt-4" style="flex-wrap: wrap;">
+              <span class="badge badge-info">Fractions</span>
+              <span class="badge badge-info">Algebra</span>
+              <span class="badge badge-info">Geometry</span>
+              <span class="badge badge-info">+ more</span>
+            </div>
+
+            <!-- Level selector (shown on expand) -->
+            <div class="subject-levels" id="levels-mathematics">
+              <p class="text-sm font-medium mb-4" style="color: var(--primary);">
+                Select a level:
+              </p>
+
+              <p class="text-xs text-secondary mb-4" style="text-transform: uppercase;
+                         letter-spacing: 0.08em; font-weight: 600;">Primary</p>
+              <div class="level-grid mb-6">
+                <button class="level-btn" data-subject="mathematics" data-level="primary-1">P1</button>
+                <button class="level-btn" data-subject="mathematics" data-level="primary-2">P2</button>
+                <button class="level-btn" data-subject="mathematics" data-level="primary-3">P3</button>
+                <button class="level-btn" data-subject="mathematics" data-level="primary-4">P4</button>
+                <button class="level-btn" data-subject="mathematics" data-level="primary-5">P5</button>
+                <button class="level-btn" data-subject="mathematics" data-level="primary-6">P6</button>
+              </div>
+
+              <p class="text-xs text-secondary mb-4" style="text-transform: uppercase;
+                         letter-spacing: 0.08em; font-weight: 600;">Secondary</p>
+              <div class="level-grid">
+                <button class="level-btn" data-subject="mathematics" data-level="secondary-1">S1</button>
+                <button class="level-btn" data-subject="mathematics" data-level="secondary-2">S2</button>
+                <button class="level-btn" data-subject="mathematics" data-level="secondary-3">S3</button>
+                <button class="level-btn" data-subject="mathematics" data-level="secondary-4">S4</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── SCIENCE ── -->
+        <div class="card subject-card" id="card-science"
+             role="button" tabindex="0"
+             aria-expanded="false"
+             aria-label="Science — click to choose a level"
+             data-subject="science">
+          <div class="card-body">
+
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-4">
+                <div class="subject-icon icon-science">
+                  <span aria-hidden="true">🔬</span>
+                </div>
+                <div>
+                  <h2 style="font-size: 1.125rem;">Science</h2>
+                  <p class="text-sm text-secondary">Primary 3 – Secondary 4</p>
+                </div>
+              </div>
+              <svg class="subject-chevron" width="20" height="20" viewBox="0 0 20 20"
+                   fill="none" aria-hidden="true">
+                <path d="M5 7.5L10 12.5L15 7.5" stroke="#6b7280"
+                      stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+
+            <div class="flex gap-2 mt-4" style="flex-wrap: wrap;">
+              <span class="badge badge-info">Plants</span>
+              <span class="badge badge-info">Forces</span>
+              <span class="badge badge-info">Cycles</span>
+              <span class="badge badge-info">+ more</span>
+            </div>
+
+            <div class="subject-levels" id="levels-science">
+              <p class="text-sm font-medium mb-4" style="color: var(--primary);">
+                Select a level:
+              </p>
+
+              <p class="text-xs text-secondary mb-4" style="text-transform: uppercase;
+                         letter-spacing: 0.08em; font-weight: 600;">Primary</p>
+              <div class="level-grid mb-6">
+                <button class="level-btn" data-subject="science" data-level="primary-3"
+                        title="Science starts at P3">P3</button>
+                <button class="level-btn" data-subject="science" data-level="primary-4">P4</button>
+                <button class="level-btn" data-subject="science" data-level="primary-5">P5</button>
+                <button class="level-btn" data-subject="science" data-level="primary-6">P6</button>
+              </div>
+
+              <p class="text-xs text-secondary mb-4" style="text-transform: uppercase;
+                         letter-spacing: 0.08em; font-weight: 600;">Secondary</p>
+              <div class="level-grid">
+                <button class="level-btn" data-subject="science" data-level="secondary-1">S1</button>
+                <button class="level-btn" data-subject="science" data-level="secondary-2">S2</button>
+                <button class="level-btn" data-subject="science" data-level="secondary-3">S3</button>
+                <button class="level-btn" data-subject="science" data-level="secondary-4">S4</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── ENGLISH ── -->
+        <div class="card subject-card" id="card-english"
+             role="button" tabindex="0"
+             aria-expanded="false"
+             aria-label="English — click to choose a level"
+             data-subject="english">
+          <div class="card-body">
+
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-4">
+                <div class="subject-icon icon-english">
+                  <span aria-hidden="true">📝</span>
+                </div>
+                <div>
+                  <h2 style="font-size: 1.125rem;">English</h2>
+                  <p class="text-sm text-secondary">Primary 1 – Secondary 4</p>
+                </div>
+              </div>
+              <svg class="subject-chevron" width="20" height="20" viewBox="0 0 20 20"
+                   fill="none" aria-hidden="true">
+                <path d="M5 7.5L10 12.5L15 7.5" stroke="#6b7280"
+                      stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+
+            <div class="flex gap-2 mt-4" style="flex-wrap: wrap;">
+              <span class="badge badge-info">Comprehension</span>
+              <span class="badge badge-info">Grammar</span>
+              <span class="badge badge-info">Vocabulary</span>
+              <span class="badge badge-info">+ more</span>
+            </div>
+
+            <div class="subject-levels" id="levels-english">
+              <p class="text-sm font-medium mb-4" style="color: var(--primary);">
+                Select a level:
+              </p>
+
+              <p class="text-xs text-secondary mb-4" style="text-transform: uppercase;
+                         letter-spacing: 0.08em; font-weight: 600;">Primary</p>
+              <div class="level-grid mb-6">
+                <button class="level-btn" data-subject="english" data-level="primary-1">P1</button>
+                <button class="level-btn" data-subject="english" data-level="primary-2">P2</button>
+                <button class="level-btn" data-subject="english" data-level="primary-3">P3</button>
+                <button class="level-btn" data-subject="english" data-level="primary-4">P4</button>
+                <button class="level-btn" data-subject="english" data-level="primary-5">P5</button>
+                <button class="level-btn" data-subject="english" data-level="primary-6">P6</button>
+              </div>
+
+              <p class="text-xs text-secondary mb-4" style="text-transform: uppercase;
+                         letter-spacing: 0.08em; font-weight: 600;">Secondary</p>
+              <div class="level-grid">
+                <button class="level-btn" data-subject="english" data-level="secondary-1">S1</button>
+                <button class="level-btn" data-subject="english" data-level="secondary-2">S2</button>
+                <button class="level-btn" data-subject="english" data-level="secondary-3">S3</button>
+                <button class="level-btn" data-subject="english" data-level="secondary-4">S4</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /subjectGrid -->
+
+
+      <!-- Coming soon notice for non-P4-Maths combos -->
+      <div class="alert alert-info mt-8" id="comingSoonNotice" style="display:none;
+           max-width: 860px; margin: var(--space-6) auto 0;">
+        <span>📖</span>
+        <span id="comingSoonText">
+          Full question banks are being added weekly. P4 Mathematics (Fractions)
+          is available now — more topics and levels launch in Week 2.
+        </span>
+      </div>
+
+      <!-- Bank available notice -->
+      <div class="alert alert-success mt-8" id="bankReadyNotice" style="display:none;
+           max-width: 860px; margin: var(--space-6) auto 0;">
+        <span>✓</span>
+        <span>P4 Mathematics (Fractions) is ready. Click a level above to begin.</span>
+      </div>
+
+    </div><!-- /container -->
   </main>
-  <script src="../js/auth.js"></script>
+
+
+  <!-- ═══════════════════════════════════
+       FOOTER (minimal)
+       ═══════════════════════════════════ -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <p>&copy; 2026 Superholic Lab. All rights reserved.</p>
+        <div class="flex gap-4">
+          <a href="privacy.html">Privacy</a>
+          <a href="terms.html">Terms</a>
+          <a href="contact.html">Contact</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+
+  <!-- ═══════════════════════════════════
+       SCRIPTS
+       ═══════════════════════════════════ -->
+  <script>
+    /**
+     * subjects.html — subject + level selection logic.
+     *
+     * Behaviour:
+     *  1. Click a subject card → expand it, collapse any other open card.
+     *  2. Click a level button → navigate to quiz.html?subject=X&level=Y.
+     *  3. Keyboard support: Enter / Space on a card triggers expand.
+     */
+
+    (function () {
+      'use strict';
+
+      /* ── Navbar toggle ── */
+      const navToggle = document.getElementById('navToggle');
+      const navMobile = document.getElementById('navMobile');
+
+      if (navToggle && navMobile) {
+        navToggle.addEventListener('click', function () {
+          const isOpen = navMobile.classList.toggle('is-open');
+          navToggle.setAttribute('aria-expanded', String(isOpen));
+        });
+        navMobile.querySelectorAll('a').forEach(function (link) {
+          link.addEventListener('click', function () {
+            navMobile.classList.remove('is-open');
+            navToggle.setAttribute('aria-expanded', 'false');
+          });
+        });
+      }
+
+      /* ── Subject card expand / collapse ── */
+      const subjectCards = document.querySelectorAll('.subject-card');
+      const comingSoonNotice = document.getElementById('comingSoonNotice');
+      const bankReadyNotice  = document.getElementById('bankReadyNotice');
+      const comingSoonText   = document.getElementById('comingSoonText');
+
+      /**
+       * Collapses all subject cards and hides any open notices.
+       */
+      function collapseAll() {
+        subjectCards.forEach(function (card) {
+          card.classList.remove('is-selected');
+          card.setAttribute('aria-expanded', 'false');
+        });
+        comingSoonNotice.style.display = 'none';
+        bankReadyNotice.style.display  = 'none';
+      }
+
+      /**
+       * Expands the given card and shows the appropriate notice.
+       * @param {Element} card
+       */
+      function expandCard(card) {
+        card.classList.add('is-selected');
+        card.setAttribute('aria-expanded', 'true');
+        card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+
+      subjectCards.forEach(function (card) {
+        /* Click handler */
+        card.addEventListener('click', function (e) {
+          /* Ignore clicks on level buttons — those are handled separately */
+          if (e.target.classList.contains('level-btn')) return;
+
+          const isAlreadyOpen = card.classList.contains('is-selected');
+          collapseAll();
+          if (!isAlreadyOpen) {
+            expandCard(card);
+          }
+        });
+
+        /* Keyboard: Enter or Space triggers expand */
+        card.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            card.click();
+          }
+        });
+      });
+
+      /* ── Level button navigation ── */
+      const levelButtons = document.querySelectorAll('.level-btn');
+
+      levelButtons.forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+          e.stopPropagation(); /* Prevent card collapse */
+
+          const subject = btn.getAttribute('data-subject');
+          const level   = btn.getAttribute('data-level');
+
+          /* Mark the selected level visually */
+          const siblingBtns = btn.closest('.subject-levels')
+                                 .querySelectorAll('.level-btn');
+          siblingBtns.forEach(function (b) {
+            b.classList.remove('is-selected');
+          });
+          btn.classList.add('is-selected');
+
+          /* Navigate to the quiz page */
+          window.location.href = 'quiz.html?subject=' +
+            encodeURIComponent(subject) + '&level=' + encodeURIComponent(level);
+        });
+      });
+
+    })();
+  </script>
+
+  <!-- TEST: Open pages/subjects.html and verify:
+       1. Three cards render: Mathematics, Science, English
+       2. Clicking a card expands it to show Primary + Secondary level buttons
+       3. Clicking a second card collapses the first and expands the new one
+       4. Clicking the same card a second time collapses it
+       5. Clicking P4 under Mathematics navigates to:
+          quiz.html?subject=mathematics&level=primary-4
+       6. Keyboard: Tab to a card, press Enter — it expands
+       7. Page is mobile-friendly at 375px width
+       8. Science card starts at P3 (no P1/P2 buttons) -->
+
 </body>
 </html>
