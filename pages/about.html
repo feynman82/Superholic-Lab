@@ -5,14 +5,120 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>About — Superholic Lab</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="../css/style.css" />
+  <link rel="icon" href="../assets/favicon.ico" />
 </head>
-<body>
-  <!-- PLACEHOLDER: Task 4.4 — about page -->
-  <main class="container">
-    <h1>About Superholic Lab</h1>
-    <p>About page coming in Task 4.4.</p>
+<body class="has-bottom-nav">
+  <header class="navbar is-scrolled" id="navbar">
+    <div class="container">
+      <nav class="navbar-inner">
+        <a href="../index.html" class="navbar-logo">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+            <rect width="28" height="28" rx="8" fill="#4338ca"/>
+            <path d="M8 14.5L12.5 19L20 10" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Superholic Lab
+        </a>
+        <ul class="navbar-nav" role="list">
+          <li><a href="../index.html">Home</a></li>
+          <li><a href="pricing.html">Pricing</a></li>
+        </ul>
+        <div class="navbar-actions">
+          <a href="login.html"  class="btn btn-secondary btn-sm">Log In</a>
+          <a href="signup.html" class="btn btn-primary   btn-sm">Start Free Trial</a>
+        </div>
+        <button class="navbar-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </nav>
+      <div class="navbar-mobile" id="navMobile">
+        <a href="../index.html">Home</a>
+        <a href="pricing.html">Pricing</a>
+        <a href="login.html"  class="btn btn-secondary btn-sm mt-4">Log In</a>
+        <a href="signup.html" class="btn btn-primary   btn-sm">Start Free Trial</a>
+      </div>
+    </div>
+  </header>
+
+  <div style="background: var(--hero-gradient); padding: var(--space-10) 0 var(--space-16); position:relative; overflow:hidden;">
+    <div class="container" style="position:relative;z-index:1;text-align:center;">
+      <nav class="breadcrumb justify-center" aria-label="Breadcrumb">
+        <a href="../index.html" style="color:rgba(255,255,255,0.7);">Home</a>
+        <span class="breadcrumb-sep" style="color:rgba(255,255,255,0.4);">›</span>
+        <span style="color:white;">About</span>
+      </nav>
+      <h1 class="animate-in delay-1" style="color:white; margin-top:var(--space-4);">Our Story</h1>
+    </div>
+    <div class="wave-divider" aria-hidden="true">
+      <svg viewBox="0 0 1440 70" preserveAspectRatio="none">
+        <path d="M0,40 C360,70 720,10 1080,40 C1260,55 1380,30 1440,40 L1440,70 L0,70 Z" fill="var(--surface)"/>
+      </svg>
+    </div>
+  </div>
+
+  <main style="padding: var(--space-10) 0 var(--space-16);">
+    <div class="container">
+      <div class="card no-hover reveal" style="max-width:680px; margin:0 auto;">
+        <div class="card-body">
+          <h2>Why we built Superholic Lab</h2>
+          <p class="text-secondary mt-4" style="line-height:1.85; font-size:1.0625rem;">
+            The bill arrived every month like clockwork. Two kids, three subjects each,
+            six tuition slots a week — and still, the quiet anxiety of wondering whether
+            it was enough.
+          </p>
+          <p class="text-secondary" style="line-height:1.85; font-size:1.0625rem;">
+            Superholic Lab began with a simple frustration: why does exam-ready practice
+            cost a fortune, and why does it only happen twice a week in someone else's
+            living room? Singapore children sit high-stakes exams. They need to practise
+            constantly — on the bus, between activities, after dinner. Not just when
+            the tutor is available.
+          </p>
+          <p class="text-secondary" style="line-height:1.85; font-size:1.0625rem;">
+            So we built what we wished existed. A platform that generates unlimited,
+            MOE-aligned practice for any topic, any level, any time — for a fraction
+            of what a single tuition session costs. No scheduling. No travelling. No waiting.
+          </p>
+          <p class="text-secondary" style="line-height:1.85; font-size:1.0625rem;">
+            Every child deserves to walk into the exam hall having practised more than
+            the kid next to them. That is what Superholic Lab is for.
+          </p>
+          <div class="mt-6 pt-6" style="border-top:1px solid var(--border);">
+            <a href="signup.html" class="btn btn-primary">Start Free Trial</a>
+            <a href="contact.html" class="btn btn-ghost" style="margin-left:var(--space-3);">Contact Us</a>
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <p>&copy; 2026 Superholic Lab. All rights reserved. 🇸🇬 Made in Singapore</p>
+        <div class="flex gap-4">
+          <a href="privacy.html">Privacy</a>
+          <a href="terms.html">Terms</a>
+          <a href="contact.html">Contact</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <nav class="bottom-nav" aria-label="Mobile navigation">
+    <a href="../index.html" class="bottom-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>Home</a>
+    <a href="subjects.html" class="bottom-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>Practise</a>
+    <a href="tutor.html" class="bottom-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>AI Tutor</a>
+    <a href="progress.html" class="bottom-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Progress</a>
+  </nav>
+
+  <script>
+    (function(){
+      const t=document.getElementById('navToggle'),m=document.getElementById('navMobile');
+      if(t&&m) t.addEventListener('click',function(){const o=m.classList.toggle('is-open');t.setAttribute('aria-expanded',String(o));});
+      const r=document.querySelectorAll('.reveal,.reveal-group');
+      if('IntersectionObserver' in window){const io=new IntersectionObserver(function(e){e.forEach(function(x){if(x.isIntersecting){x.target.classList.add('revealed');io.unobserve(x.target);}});},{threshold:0.1});r.forEach(function(el){io.observe(el);});}else{r.forEach(function(el){el.classList.add('revealed');});}
+    })();
+  </script>
 </body>
 </html>

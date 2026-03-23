@@ -5,15 +5,58 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Log In — Superholic Lab</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="../css/style.css" />
+  <link rel="icon" href="../assets/favicon.ico" />
 </head>
 <body>
-  <!-- PLACEHOLDER: Task 2.3 — login page -->
-  <main class="container">
-    <h1>Log In</h1>
-    <p>Login form coming in Task 2.3.</p>
+  <header class="navbar is-scrolled">
+    <div class="container">
+      <nav class="navbar-inner">
+        <a href="../index.html" class="navbar-logo">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+            <rect width="28" height="28" rx="8" fill="#4338ca"/>
+            <path d="M8 14.5L12.5 19L20 10" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Superholic Lab
+        </a>
+        <div class="navbar-actions">
+          <a href="signup.html" class="btn btn-primary btn-sm">Start Free Trial</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main style="min-height:calc(100vh - 66px); display:flex; align-items:center; padding: var(--space-8) 0; background: linear-gradient(135deg, var(--primary-light) 0%, var(--surface) 100%);">
+    <div class="container">
+      <div class="card no-hover animate-in" style="max-width:420px; margin:0 auto;">
+        <div class="card-header text-center">
+          <h1 style="font-size:1.5rem;">Welcome back</h1>
+          <p class="text-secondary text-sm mt-4">Log in to continue practising</p>
+        </div>
+        <div class="card-body">
+          <!-- PLACEHOLDER: Task 2.3 — login form with Supabase auth -->
+          <div class="alert alert-info">
+            Login form coming in Task 2.3. Supabase email + password auth.
+          </div>
+          <p class="text-center text-sm text-secondary mt-4">
+            Don't have an account? <a href="signup.html">Start free trial</a>
+          </p>
+        </div>
+      </div>
+    </div>
   </main>
-  <script src="../js/auth.js"></script>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <p>&copy; 2026 Superholic Lab. All rights reserved. 🇸🇬 Made in Singapore</p>
+        <div class="flex gap-4">
+          <a href="privacy.html">Privacy</a>
+          <a href="terms.html">Terms</a>
+        </div>
+      </div>
+    </div>
+  </footer>
 </body>
 </html>

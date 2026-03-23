@@ -5,15 +5,85 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI Tutor — Superholic Lab</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="../css/style.css" />
+  <link rel="icon" href="../assets/favicon.ico" />
 </head>
-<body>
-  <!-- PLACEHOLDER: Task 2.5 — AI tutor chat -->
-  <main class="container">
-    <h1>AI Tutor</h1>
-    <p>AI tutor chat coming in Task 2.5.</p>
+<body class="has-bottom-nav">
+  <header class="navbar is-scrolled">
+    <div class="container">
+      <nav class="navbar-inner">
+        <a href="../index.html" class="navbar-logo">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+            <rect width="28" height="28" rx="8" fill="#4338ca"/>
+            <path d="M8 14.5L12.5 19L20 10" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Superholic Lab
+        </a>
+        <div class="navbar-actions">
+          <a href="subjects.html" class="btn btn-primary btn-sm">Practice Quiz</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main style="padding: var(--space-8) 0 var(--space-16);">
+    <div class="container" style="max-width:760px;">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="../index.html">Home</a>
+        <span class="breadcrumb-sep">›</span>
+        <span class="breadcrumb-current">AI Tutor</span>
+      </nav>
+
+      <!-- Chat preview shell -->
+      <div class="card no-hover mt-6" style="overflow:hidden;">
+        <div class="card-header flex items-center gap-3">
+          <div style="width:40px;height:40px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M10 2C6.13 2 3 5.13 3 9c0 2.06.83 3.93 2.18 5.28L4 18l3.72-1.18A6.95 6.95 0 0010 17c3.87 0 7-3.13 7-7s-3.13-8-7-8z" fill="white"/>
+            </svg>
+          </div>
+          <div>
+            <div style="font-weight:600;">AI Tutor</div>
+            <div class="text-xs text-secondary">Mathematics · Primary 4</div>
+          </div>
+          <span class="badge badge-success" style="margin-left:auto;">Online</span>
+        </div>
+        <div style="padding: var(--space-6); min-height:260px; background:var(--bg);">
+          <!-- Example tutor bubble -->
+          <div class="chat-bubble chat-bubble-tutor" style="max-width:80%;">
+            Hello! I'm your AI Maths tutor. Ask me anything about the topic you're practising
+            and I'll guide you step by step. What are you working on today?
+          </div>
+          <div class="alert alert-info mt-6">
+            <!-- PLACEHOLDER: Task 2.5 — AI tutor chat -->
+            Full chat interface coming in Task 2.5. Connected to Anthropic API via api/chat.js
+            with subject-specific system prompts.
+          </div>
+        </div>
+        <div class="card-footer flex gap-3">
+          <input type="text" class="chat-input" placeholder="Ask a question… (coming soon)" disabled />
+          <button class="btn btn-primary" disabled>Send</button>
+        </div>
+      </div>
+    </div>
   </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <p>&copy; 2026 Superholic Lab. All rights reserved. 🇸🇬 Made in Singapore</p>
+      </div>
+    </div>
+  </footer>
+
+  <nav class="bottom-nav" aria-label="Mobile navigation">
+    <a href="../index.html" class="bottom-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>Home</a>
+    <a href="subjects.html" class="bottom-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>Practise</a>
+    <a href="tutor.html" class="bottom-nav-item is-active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>AI Tutor</a>
+    <a href="progress.html" class="bottom-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Progress</a>
+  </nav>
+
   <script src="../js/auth.js"></script>
   <script src="../js/tutor.js"></script>
 </body>
