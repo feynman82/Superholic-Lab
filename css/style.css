@@ -1,0 +1,33 @@
+/* =============================================================
+   SUPERHOLIC LAB — Design System
+   PLACEHOLDER: Full styles coming in Task 1.3
+   ============================================================= */
+
+/* CSS Variables — defined here, used everywhere */
+:root {
+  --primary:        #4338ca;
+  --primary-light:  #eef2ff;
+  --primary-dark:   #3730a3;
+  --accent:         #f59e0b;
+  --success:        #10b981;
+  --danger:         #ef4444;
+  --text-primary:   #111827;
+  --text-secondary: #6b7280;
+  --bg:             #f9fafb;
+  --white:          #ffffff;
+  --border:         #e5e7eb;
+}
+
+/* PLACEHOLDER: Full CSS design system coming in Task 1.3 */
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
