@@ -1,3 +1,6 @@
+# MCP config — contains secrets, never push
+.mcp.json
+
 # Environment variables — NEVER push API keys
 .env
 .env.local
