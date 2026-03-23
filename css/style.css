@@ -1507,6 +1507,20 @@ small, .text-sm  { font-size: 0.875rem; }
 }
 .quiz-option.is-dimmed { opacity: 0.4; pointer-events: none; }
 
+/* True/False button states */
+.is-tf-correct {
+  background: #f0fdf4 !important;
+  border-color: var(--success) !important;
+  color: #065f46 !important;
+  animation: correctPulse 0.7s ease-out;
+}
+.is-tf-wrong {
+  background: #fff5f5 !important;
+  border-color: var(--danger) !important;
+  color: #991b1b !important;
+  animation: wrongShake 0.45s ease-out;
+}
+
 .quiz-explanation {
   margin-top: var(--space-5);
   padding: var(--space-5);
