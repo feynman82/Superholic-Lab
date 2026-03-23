@@ -1,97 +1,548 @@
-<!-- Superholic Lab v0.1 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Superholic Lab — Coming Soon</title>
-  <style>
-    *, *::before, *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      min-height: 100vh;
-      background-color: #4338ca;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      color: #ffffff;
-      padding: 2rem;
-    }
-
-    .container {
-      text-align: center;
-      max-width: 600px;
-      width: 100%;
-    }
-
-    h1 {
-      font-size: clamp(2.5rem, 8vw, 4rem);
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      margin-bottom: 1rem;
-    }
-
-    .subheading {
-      font-size: clamp(1rem, 3vw, 1.25rem);
-      font-style: italic;
-      opacity: 0.9;
-      margin-bottom: 1.75rem;
-    }
-
-    .body-text {
-      font-size: clamp(0.95rem, 2.5vw, 1.05rem);
-      line-height: 1.6;
-      opacity: 0.85;
-      margin-bottom: 0.75rem;
-    }
-
-    .domain {
-      font-size: 0.85rem;
-      opacity: 0.6;
-      letter-spacing: 0.04em;
-      margin-bottom: 2.5rem;
-    }
-
-    .links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.75rem;
-      justify-content: center;
-    }
-
-    .pill {
-      display: inline-block;
-      padding: 0.5rem 1.25rem;
-      border: 2px solid rgba(255, 255, 255, 0.7);
-      border-radius: 999px;
-      color: #ffffff;
-      text-decoration: none;
-      font-size: 0.9rem;
-      font-weight: 500;
-      transition: background-color 0.2s, border-color 0.2s;
-    }
-
-    .pill:hover {
-      background-color: rgba(255, 255, 255, 0.15);
-      border-color: #ffffff;
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Superholic Lab — AI-Powered Learning for Singapore Students</title>
+  <meta name="description" content="Unlimited, MOE-aligned practice questions for Primary 1 to Secondary 4. Full worked solutions and wrong-answer explanations. From S$9.99/month. 7-day free trial." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="assets/favicon.ico" />
 </head>
 <body>
-  <div class="container">
-    <h1>Superholic Lab</h1>
-    <p class="subheading">Learn like a champion. Think like a winner.</p>
-    <p class="body-text">Singapore's AI-powered learning platform for Primary 1 to Secondary 4. Launching soon.</p>
-    <p class="domain">www.superholiclab.com</p>
-    <nav class="links">
-      <a class="pill" href="/quiz/index.html">Quiz Demo</a>
-      <a class="pill" href="/countdown-timer/index.html">Countdown</a>
-    </nav>
-  </div>
+
+  <!-- ═══════════════════════════════════════════
+       NAVBAR
+       ═══════════════════════════════════════════ -->
+  <header class="navbar">
+    <div class="container">
+      <nav class="navbar-inner">
+
+        <!-- Logo -->
+        <a href="/" class="navbar-logo">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+            <rect width="28" height="28" rx="8" fill="#4338ca"/>
+            <path d="M8 14.5L12.5 19L20 10" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Superholic Lab
+        </a>
+
+        <!-- Desktop nav links -->
+        <ul class="navbar-nav" role="list">
+          <li><a href="/">Home</a></li>
+          <li><a href="#how-it-works">How It Works</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+        </ul>
+
+        <!-- Desktop CTAs -->
+        <div class="navbar-actions">
+          <a href="pages/login.html" class="btn btn-secondary btn-sm">Log In</a>
+          <a href="pages/signup.html" class="btn btn-primary btn-sm">Start Free Trial</a>
+        </div>
+
+        <!-- Mobile hamburger -->
+        <button class="navbar-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+      </nav>
+
+      <!-- Mobile drawer -->
+      <div class="navbar-mobile" id="navMobile" role="navigation">
+        <a href="/">Home</a>
+        <a href="#how-it-works">How It Works</a>
+        <a href="#pricing">Pricing</a>
+        <a href="pages/login.html" class="btn btn-secondary btn-sm mt-4">Log In</a>
+        <a href="pages/signup.html" class="btn btn-primary btn-sm">Start Free Trial</a>
+      </div>
+    </div>
+  </header>
+
+
+  <main>
+
+    <!-- ═══════════════════════════════════════════
+         HERO
+         ═══════════════════════════════════════════ -->
+    <section class="hero" aria-labelledby="hero-heading">
+      <div class="container">
+
+        <div class="hero-eyebrow">MOE-aligned · P1 to S4 · Any device</div>
+
+        <h1 id="hero-heading">
+          Practise any topic.<br>
+          <span style="color: var(--primary);">Wherever the day takes you.</span>
+        </h1>
+
+        <p class="hero-subtitle">
+          Unlimited practice questions with full worked solutions and
+          wrong-answer explanations — for a fraction of what a single
+          tuition session costs.
+        </p>
+
+        <div class="hero-cta">
+          <a href="pages/signup.html" class="btn btn-primary btn-lg">
+            Start Free Trial
+          </a>
+          <a href="#how-it-works" class="btn btn-secondary btn-lg">
+            See How It Works
+          </a>
+        </div>
+
+        <p class="hero-trust">
+          7-day free trial &nbsp;·&nbsp; No credit card required &nbsp;·&nbsp; Cancel any time
+        </p>
+
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════
+         VALUE PROPOSITION — 3 CARDS
+         ═══════════════════════════════════════════ -->
+    <section class="section" aria-labelledby="value-heading">
+      <div class="container">
+
+        <div class="text-center mb-6">
+          <h2 id="value-heading">Everything your child needs. Nothing they don't.</h2>
+          <p class="text-secondary mt-4" style="max-width: 540px; margin-left: auto; margin-right: auto;">
+            Built specifically for the Singapore syllabus — so every question, every answer,
+            and every explanation is exactly what your child will face in the exam hall.
+          </p>
+        </div>
+
+        <div class="grid grid-3">
+
+          <!-- Card 1: MOE Aligned -->
+          <div class="card">
+            <div class="card-body">
+              <div class="subject-icon" style="background: var(--primary-light);">
+                <span aria-hidden="true" style="font-size: 1.5rem;">📚</span>
+              </div>
+              <h3>MOE Syllabus Aligned</h3>
+              <p class="text-secondary mt-4">
+                Every question maps to a named MOE topic for your child's exact level —
+                Primary 1 through Secondary 4. No off-syllabus surprises before exam day.
+              </p>
+              <div class="flex gap-2 mt-4" style="flex-wrap: wrap;">
+                <span class="badge badge-info">Maths</span>
+                <span class="badge badge-info">Science</span>
+                <span class="badge badge-info">English</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: Wrong Answer Explanations -->
+          <div class="card card-featured">
+            <div class="card-body">
+              <div class="subject-icon" style="background: #fef3c7;">
+                <span aria-hidden="true" style="font-size: 1.5rem;">💡</span>
+              </div>
+              <h3>Wrong-Answer Explanations</h3>
+              <p class="text-secondary mt-4">
+                Every MCQ option — right and wrong — comes with a full explanation.
+                Your child learns exactly which misconception leads to each wrong answer.
+                No other platform in Singapore does this systematically.
+              </p>
+              <span class="badge badge-info mt-4" style="display: inline-flex;">
+                Unique to Superholic Lab
+              </span>
+            </div>
+          </div>
+
+          <!-- Card 3: Available Any Time -->
+          <div class="card">
+            <div class="card-body">
+              <div class="subject-icon" style="background: #d1fae5;">
+                <span aria-hidden="true" style="font-size: 1.5rem;">📱</span>
+              </div>
+              <h3>Available Any Time</h3>
+              <p class="text-secondary mt-4">
+                Bus ride to school. Ten-minute lunch break. Late-night revision.
+                Superholic Lab works on any device — so practice never has to wait
+                for the next tutor slot.
+              </p>
+              <p class="text-sm mt-4" style="color: var(--success); font-weight: 500;">
+                ✓ Mobile-friendly · Works offline
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════
+         HOW IT WORKS — 3 STEPS
+         ═══════════════════════════════════════════ -->
+    <section class="section" id="how-it-works" aria-labelledby="how-heading"
+             style="background: var(--primary-light);">
+      <div class="container">
+
+        <div class="text-center mb-6">
+          <h2 id="how-heading">Up and practising in under a minute</h2>
+          <p class="text-secondary mt-4">
+            No setup. No scheduling. No waiting.
+          </p>
+        </div>
+
+        <div class="grid grid-3">
+
+          <!-- Step 1 -->
+          <div class="card text-center">
+            <div class="card-body">
+              <div style="width: 48px; height: 48px; background: var(--primary); color: var(--white);
+                          border-radius: 50%; display: flex; align-items: center; justify-content: center;
+                          font-size: 1.25rem; font-weight: 600; margin: 0 auto var(--space-4);">
+                1
+              </div>
+              <h3>Choose a subject and level</h3>
+              <p class="text-secondary mt-4">
+                Pick Maths, Science, or English. Select your child's level — from Primary 1
+                right through to Secondary 4. Superholic Lab loads the right questions instantly.
+              </p>
+            </div>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="card text-center">
+            <div class="card-body">
+              <div style="width: 48px; height: 48px; background: var(--primary); color: var(--white);
+                          border-radius: 50%; display: flex; align-items: center; justify-content: center;
+                          font-size: 1.25rem; font-weight: 600; margin: 0 auto var(--space-4);">
+                2
+              </div>
+              <h3>Answer, then see the full breakdown</h3>
+              <p class="text-secondary mt-4">
+                After each answer, your child sees the worked solution step-by-step —
+                and an explanation of exactly what went wrong in every incorrect option,
+                not just a tick or a cross.
+              </p>
+            </div>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="card text-center">
+            <div class="card-body">
+              <div style="width: 48px; height: 48px; background: var(--primary); color: var(--white);
+                          border-radius: 50%; display: flex; align-items: center; justify-content: center;
+                          font-size: 1.25rem; font-weight: 600; margin: 0 auto var(--space-4);">
+                3
+              </div>
+              <h3>Track progress over time</h3>
+              <p class="text-secondary mt-4">
+                Every quiz result is saved. Parents and students can see accuracy by subject,
+                topic gaps, and improvement streaks — so you always know where to focus next.
+              </p>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="text-center mt-8">
+          <a href="pages/signup.html" class="btn btn-primary btn-lg">
+            Try It Free for 7 Days
+          </a>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════
+         PRICING PREVIEW
+         ═══════════════════════════════════════════ -->
+    <section class="section" id="pricing" aria-labelledby="pricing-heading">
+      <div class="container">
+
+        <div class="text-center mb-6">
+          <h2 id="pricing-heading">Less than one tuition session. Every month.</h2>
+          <p class="text-secondary mt-4" style="max-width: 520px; margin-left: auto; margin-right: auto;">
+            All plans include a 7-day free trial. No credit card required to start.
+            Cancel any time — no questions asked.
+          </p>
+        </div>
+
+        <div class="grid grid-3">
+
+          <!-- Tier 1: Single Subject -->
+          <div class="card pricing-card">
+            <div class="card-header">
+              <span class="badge badge-info">Starter</span>
+              <h3 class="mt-4">Single Subject</h3>
+              <p class="text-secondary text-sm mt-4">
+                One subject, fully covered. Perfect for focused PSLE prep.
+              </p>
+            </div>
+            <div class="card-body">
+              <div class="pricing-price">
+                S$9.99 <span>/ month</span>
+              </div>
+              <p class="text-sm" style="color: var(--success); font-weight: 500;">
+                Save 17% billed annually
+              </p>
+              <ul class="pricing-features mt-4">
+                <li class="pricing-feature">Unlimited questions for 1 subject</li>
+                <li class="pricing-feature">Full worked solutions</li>
+                <li class="pricing-feature">Wrong-answer explanations</li>
+                <li class="pricing-feature">MOE aligned, P1–P6</li>
+                <li class="pricing-feature">Mobile-friendly</li>
+              </ul>
+              <a href="pages/signup.html" class="btn btn-secondary btn-full mt-6">
+                Start Free Trial
+              </a>
+            </div>
+          </div>
+
+          <!-- Tier 2: All Subjects (FEATURED) -->
+          <div class="card pricing-card card-featured">
+            <div class="card-header" style="background: var(--primary);">
+              <span class="pricing-tag">Most Popular</span>
+              <h3 style="color: var(--white);">All Subjects</h3>
+              <p class="text-sm mt-4" style="color: rgba(255,255,255,0.8);">
+                Every subject, one child. The full Superholic Lab experience.
+              </p>
+            </div>
+            <div class="card-body">
+              <div class="pricing-price" style="color: var(--primary);">
+                S$19.99 <span>/ month</span>
+              </div>
+              <p class="text-sm" style="color: var(--success); font-weight: 500;">
+                Save 17% billed annually
+              </p>
+              <ul class="pricing-features mt-4">
+                <li class="pricing-feature">Unlimited questions across <strong>all subjects</strong></li>
+                <li class="pricing-feature">Full worked solutions</li>
+                <li class="pricing-feature">Wrong-answer explanations</li>
+                <li class="pricing-feature">MOE aligned, P1–P6</li>
+                <li class="pricing-feature">Mobile-friendly</li>
+                <li class="pricing-feature">Mock exam paper generator</li>
+              </ul>
+              <a href="pages/signup.html" class="btn btn-primary btn-full mt-6">
+                Start Free Trial
+              </a>
+            </div>
+          </div>
+
+          <!-- Tier 3: Family -->
+          <div class="card pricing-card">
+            <div class="card-header">
+              <span class="badge badge-success">Best Value</span>
+              <h3 class="mt-4">Family</h3>
+              <p class="text-secondary text-sm mt-4">
+                All subjects, up to 3 children. One plan for the whole family.
+              </p>
+            </div>
+            <div class="card-body">
+              <div class="pricing-price">
+                S$29.99 <span>/ month</span>
+              </div>
+              <p class="text-sm" style="color: var(--success); font-weight: 500;">
+                ~S$10 per child · Save 17% billed annually
+              </p>
+              <ul class="pricing-features mt-4">
+                <li class="pricing-feature">Everything in All Subjects</li>
+                <li class="pricing-feature"><strong>Up to 3 child profiles</strong></li>
+                <li class="pricing-feature">Each child tracks progress independently</li>
+                <li class="pricing-feature">Different levels per child — P1–P6 mixed</li>
+                <li class="pricing-feature">Parent dashboard for all 3 children</li>
+                <li class="pricing-feature">Priority support</li>
+              </ul>
+              <a href="pages/signup.html" class="btn btn-secondary btn-full mt-6">
+                Start Free Trial
+              </a>
+            </div>
+          </div>
+
+        </div>
+
+        <p class="text-center text-secondary text-sm mt-6">
+          7-day free trial on all plans &nbsp;·&nbsp; No credit card required &nbsp;·&nbsp; Cancel any time
+        </p>
+        <p class="text-center mt-4">
+          <a href="pages/pricing.html" class="btn btn-ghost">
+            See full pricing details →
+          </a>
+        </p>
+
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════
+         SOCIAL PROOF — PLACEHOLDER
+         ═══════════════════════════════════════════ -->
+    <section class="section" style="background: var(--bg);" aria-labelledby="social-heading">
+      <div class="container">
+
+        <div class="text-center mb-6">
+          <h2 id="social-heading">Singapore parents are already practising</h2>
+          <p class="text-secondary mt-4">
+            Early access families from Primary 3 to Primary 6.
+          </p>
+        </div>
+
+        <div class="grid grid-3">
+
+          <!-- Testimonial 1 -->
+          <div class="card">
+            <div class="card-body">
+              <div style="color: var(--accent); font-size: 1.25rem; margin-bottom: var(--space-3);">
+                ★★★★★
+              </div>
+              <p class="text-secondary" style="font-style: italic; line-height: 1.7;">
+                "The wrong-answer explanations are what I've always wanted. My daughter finally
+                understands why she keeps making the same fractions mistake — not just that she
+                got it wrong."
+              </p>
+              <p class="text-sm font-medium mt-4">Parent of a Primary 4 student</p>
+            </div>
+          </div>
+
+          <!-- Testimonial 2 -->
+          <div class="card">
+            <div class="card-body">
+              <div style="color: var(--accent); font-size: 1.25rem; margin-bottom: var(--space-3);">
+                ★★★★★
+              </div>
+              <p class="text-secondary" style="font-style: italic; line-height: 1.7;">
+                "We cancelled one of his three tuition slots and put it here instead. He practises
+                every night on his iPad without being told. That alone is worth the subscription."
+              </p>
+              <p class="text-sm font-medium mt-4">Parent of a Primary 6 student</p>
+            </div>
+          </div>
+
+          <!-- Testimonial 3 -->
+          <div class="card">
+            <div class="card-body">
+              <div style="color: var(--accent); font-size: 1.25rem; margin-bottom: var(--space-3);">
+                ★★★★★
+              </div>
+              <p class="text-secondary" style="font-style: italic; line-height: 1.7;">
+                "The Family plan for our three kids costs less than one Science tuition session.
+                I wish this existed three years ago when our eldest was doing PSLE."
+              </p>
+              <p class="text-sm font-medium mt-4">Parent of Primary 3, 4 and 6 students</p>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="text-center mt-8">
+          <a href="pages/signup.html" class="btn btn-primary btn-lg">
+            Start Your Free Trial Today
+          </a>
+          <p class="hero-trust mt-4">
+            7-day free trial &nbsp;·&nbsp; No credit card required &nbsp;·&nbsp; Cancel any time
+          </p>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+
+  <!-- ═══════════════════════════════════════════
+       FOOTER
+       ═══════════════════════════════════════════ -->
+  <footer class="footer">
+    <div class="container">
+
+      <div class="footer-grid">
+
+        <!-- Brand -->
+        <div>
+          <div class="footer-brand">Superholic Lab</div>
+          <p class="footer-tagline">
+            Learn like a champion. Think like a winner.<br><br>
+            Singapore's AI-powered learning platform for Primary 1
+            to Secondary 4 — MOE-aligned, mobile-friendly, and
+            available any time.
+          </p>
+        </div>
+
+        <!-- Platform -->
+        <div>
+          <div class="footer-heading">Platform</div>
+          <ul class="footer-links">
+            <li><a href="pages/subjects.html">Choose a Subject</a></li>
+            <li><a href="pages/quiz.html">Take a Quiz</a></li>
+            <li><a href="pages/tutor.html">AI Tutor</a></li>
+            <li><a href="pages/progress.html">My Progress</a></li>
+            <li><a href="pages/pricing.html">Pricing</a></li>
+          </ul>
+        </div>
+
+        <!-- Company -->
+        <div>
+          <div class="footer-heading">Company</div>
+          <ul class="footer-links">
+            <li><a href="pages/about.html">About</a></li>
+            <li><a href="pages/contact.html">Contact</a></li>
+            <li><a href="pages/privacy.html">Privacy Policy</a></li>
+            <li><a href="pages/terms.html">Terms of Service</a></li>
+          </ul>
+        </div>
+
+      </div>
+
+      <div class="footer-bottom">
+        <p>&copy; 2026 Superholic Lab. All rights reserved.</p>
+        <div class="flex gap-4">
+          <a href="pages/privacy.html">Privacy</a>
+          <a href="pages/terms.html">Terms</a>
+          <a href="pages/contact.html">Contact</a>
+        </div>
+      </div>
+
+    </div>
+  </footer>
+
+
+  <!-- ═══════════════════════════════════════════
+       SCRIPTS
+       ═══════════════════════════════════════════ -->
+  <script>
+    /**
+     * Mobile nav toggle — opens/closes the hamburger drawer.
+     */
+    (function () {
+      const toggle = document.getElementById('navToggle');
+      const mobile = document.getElementById('navMobile');
+
+      if (!toggle || !mobile) return;
+
+      toggle.addEventListener('click', function () {
+        const isOpen = mobile.classList.toggle('is-open');
+        toggle.setAttribute('aria-expanded', String(isOpen));
+      });
+
+      // Close drawer when a link inside is clicked
+      mobile.querySelectorAll('a').forEach(function (link) {
+        link.addEventListener('click', function () {
+          mobile.classList.remove('is-open');
+          toggle.setAttribute('aria-expanded', 'false');
+        });
+      });
+    })();
+  </script>
+
+  <!-- TEST: Open index.html in a browser and verify:
+       1. Navbar sticks to top on scroll; hamburger works on mobile
+       2. Hero headline and two CTA buttons render correctly
+       3. Three value-prop cards display with correct icons/colours
+       4. How It Works section has 3 numbered steps
+       5. Pricing shows S$9.99 / S$19.99 / S$29.99; middle card is highlighted
+       6. Three testimonials appear in the social proof section
+       7. Footer shows Privacy / Terms / Contact links
+       8. All buttons link to the correct pages/ URLs
+       9. Page is readable at 375px mobile width -->
+
 </body>
 </html>
