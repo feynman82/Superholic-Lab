@@ -14,5 +14,8 @@ desktop.ini
 # Node modules (large, not needed on GitHub)
 node_modules/
 
-# Claude Code session files
-.claude/
+# Claude Code local settings (permissions, MCP config)
+.claude/settings.local.json
+
+# Keep .claude/rules/ and .claude/commands/ tracked (ECC framework)
+# They are NOT ignored — only settings.local.json is
