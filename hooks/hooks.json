@@ -1,0 +1,22 @@
+{
+  "hooks": [
+    {
+      "matcher": "event == 'PostToolUse' && tool == 'Edit' && tool_input.file_path matches '\\.(js|html)$'",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "node -e \"const fs=require('fs'); const f=process.argv[1]; const c=fs.readFileSync(f,'utf8'); const patterns=['ANTHROPIC_API_KEY','SUPABASE_SERVICE_ROLE_KEY','STRIPE_SECRET_KEY','sk-ant-','sk_test_','sbp_']; const found=patterns.filter(p=>c.includes(p)&&!c.includes('process.env')); if(found.length){console.error('[SECURITY] Possible secret exposure in '+f+': '+found.join(', ')); process.exit(1)}\" \"$file_path\""
+        }
+      ]
+    },
+    {
+      "matcher": "event == 'PostToolUse' && tool == 'Edit' && tool_input.file_path matches '\\.css$'",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "node -e \"const fs=require('fs'); const f=process.argv[1]; const c=fs.readFileSync(f,'utf8'); const hex=c.match(/#[0-9a-fA-F]{3,8}(?![;\\w])/g)||[]; const allowed=['#4338ca','#eef2ff','#3730a3','#f59e0b','#10b981','#ef4444','#111827','#6b7280','#f9fafb','#ffffff','#e5e7eb','#f0fdf4','#15803d','#f0fdfa','#0f766e','#fffbeb','#b45309','#fff1f2','#be123c','#000']; const bad=hex.filter(h=>!allowed.includes(h.toLowerCase())); if(bad.length) console.error('[STYLE] Hardcoded colors found: '+bad.join(', ')+'. Use CSS variables instead.')\" \"$file_path\""
+        }
+      ]
+    }
+  ]
+}
