@@ -9,10 +9,10 @@
     "type": "mcq",
     "question_text": "During a Mathematics lesson at Ahmad's school, the teacher wrote the numbers 12 and 18 on the board. She asked the class to find a common factor of both numbers that is greater than 3.\n\nWhich number is a common factor of both 12 and 18?",
     "options": [
-      "4 is a common factor of 12 and 18, because 12 ÷ 4 = 3 and 18 ÷ 4 also divides evenly.",
-      "5 is a common factor of 12 and 18, because 5 is between 4 and 6 and so it divides into any number between 12 and 18.",
-      "6 is a common factor of 12 and 18, because 12 ÷ 6 = 2 and 18 ÷ 6 = 3, both of which are whole numbers.",
-      "8 is a common factor of 12 and 18, because 8 is larger than 6 and larger numbers make better common factors for larger values."
+      "4",
+      "5",
+      "6",
+      "8"
     ],
     "correct_answer": "C",
     "worked_solution": "Step 1: List the factors of 12 and 18.\n  Factors of 12: 1, 2, 3, 4, 6, 12\n  Factors of 18: 1, 2, 3, 6, 9, 18\nStep 2: Identify the common factors (appear in both lists).\n  Common factors: 1, 2, 3, 6\nStep 3: From the options, 6 is a common factor greater than 3.\n  12 ÷ 6 = 2 ✓\n  18 ÷ 6 = 3 ✓\n\n6 is a common factor of both 12 and 18.",
@@ -34,10 +34,10 @@
     "type": "mcq",
     "question_text": "During a class activity at Priya's school, the teacher wrote the expression '5 + 3 × 4' on the board and asked two students for the answer. Ahmad said the answer is 32. Siti said the answer is 17.\n\nWhose answer is correct, and why?",
     "options": [
-      "Ahmad's answer of 32 is correct because in mathematics, all calculations must be solved from left to right in the order the operations appear.",
-      "Siti's answer of 17 is correct because multiplication must always be performed before addition, so 3 × 4 = 12 is calculated first, giving 5 + 12 = 17.",
-      "Ahmad's answer of 32 is correct because when there are no brackets, you always do the operation with the larger result first, and 5 + 3 = 8 gives a larger product.",
-      "Both answers are wrong because the correct answer is 23, found by adding the outer numbers (5 + 4 = 9) and then multiplying by the middle number (9 × 3 = 27) and adjusting."
+      "Ahmad — 32 (left to right)",
+      "Siti — 17 (multiply first)",
+      "Ahmad — 32 (larger result first)",
+      "Neither — 23"
     ],
     "correct_answer": "B",
     "worked_solution": "Step 1: Apply the order of operations (BODMAS/BIDMAS).\n  Brackets → Orders → Division/Multiplication → Addition/Subtraction\nStep 2: Multiplication comes before addition, so calculate 3 × 4 first.\n  3 × 4 = 12\nStep 3: Now add.\n  5 + 12 = 17\n\nSiti's answer of 17 is correct.",
@@ -59,10 +59,10 @@
     "type": "mcq",
     "question_text": "A biscuit factory in Jurong Industrial Estate packages 256 boxes of biscuits every hour. The factory runs for 6 hours each day.\n\nHow many boxes of biscuits does the factory package in one day?",
     "options": [
-      "The factory packages 1,536 boxes per day, because 256 × 6 = 1,536, which is found by multiplying each digit of 256 by 6 with correct carrying.",
-      "The factory packages 262 boxes per day, because to find the daily total, you add the number of hours (6) to the hourly rate (256), giving 256 + 6 = 262.",
-      "The factory packages 1,256 boxes per day, because you write the 6 in front of the three-digit number 256 to show 6 hours of production.",
-      "The factory packages 1,500 boxes per day, because you round 256 to 250 for a clean calculation, giving 250 × 6 = 1,500 as the exact answer."
+      "1,536 boxes",
+      "262 boxes",
+      "1,256 boxes",
+      "1,500 boxes"
     ],
     "correct_answer": "A",
     "worked_solution": "Step 1: The factory makes 256 boxes per hour for 6 hours.\n  Operation: 256 × 6\nStep 2: Multiply column by column.\n  Ones: 6 × 6 = 36, write 6, carry 3\n  Tens: 5 × 6 = 30, + 3 = 33, write 3, carry 3\n  Hundreds: 2 × 6 = 12, + 3 = 15, write 15\nStep 3: 256 × 6 = 1,536.\n\nThe factory packages 1,536 boxes in one day.",

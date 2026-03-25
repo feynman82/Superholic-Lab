@@ -9,10 +9,10 @@
     "type": "mcq",
     "question_text": "Ahmad saved $3.47 from his weekly allowance to buy a new pencil case from the school bookshop.\n\nWhat is the value of the digit 4 in the amount $3.47?",
     "options": [
-      "The digit 4 has a value of 4 dollars, because 4 is the first digit to appear after the dollar sign.",
-      "The digit 4 has a value of 40 cents, because 4 is in the tenths place, which represents 4/10 of a dollar, and 4/10 of $1.00 equals 40 cents.",
-      "The digit 4 has a value of 4 cents, because it is the second digit after the decimal point, which puts it in the hundredths place.",
-      "The digit 4 has a value of 0.04 dollars, because any digit after the decimal point has a value of less than one cent."
+      "4 dollars",
+      "40 cents",
+      "4 cents",
+      "0.04 dollars"
     ],
     "correct_answer": "B",
     "worked_solution": "Step 1: Identify the place value of each digit in $3.47.\n  3 is in the ones place → value = $3.00\n  4 is in the tenths place → value = $0.40 (40 cents)\n  7 is in the hundredths place → value = $0.07 (7 cents)\nStep 2: The digit 4 is in the TENTHS place.\n  Value = 4 × $0.10 = $0.40 = 40 cents\n\nThe value of the digit 4 is 40 cents.",
@@ -34,10 +34,10 @@
     "type": "mcq",
     "question_text": "Siti bought three items at the NTUC FairPrice supermarket near her home: a packet of biscuits for $1.85, a carton of soya milk for $2.45, and a bottle of ketchup for $3.27.\n\nShe wants to estimate the total cost by rounding each price to the nearest dollar before adding. What is her estimated total?",
     "options": [
-      "Siti's estimated total is $7.00, because rounding $1.85 to $2, $2.45 to $2, and $3.27 to $3, then adding $2 + $2 + $3 gives $7.",
-      "Siti's estimated total is $8.00, because when shopping, you should always round every price UP to the next whole dollar to make sure you have enough money.",
-      "Siti's estimated total is $6.00, because to round to the nearest dollar, you always drop the cents and keep only the whole dollar amount.",
-      "Siti's estimated total is $7.57, because you should add all three exact prices first ($1.85 + $2.45 + $3.27 = $7.57) and then round the total."
+      "$7",
+      "$8",
+      "$6",
+      "$7.57"
     ],
     "correct_answer": "A",
     "worked_solution": "Step 1: Round each price to the nearest dollar.\n  $1.85 → the cents are 85 (≥ 50), so round UP → $2\n  $2.45 → the cents are 45 (< 50), so round DOWN → $2\n  $3.27 → the cents are 27 (< 50), so round DOWN → $3\nStep 2: Add the rounded prices.\n  $2 + $2 + $3 = $7\n\nSiti's estimated total is $7.",
@@ -59,10 +59,10 @@
     "type": "mcq",
     "question_text": "During Sports Day at Tampines Primary School, Ahmad ran 1.35 km in the morning relay race and 0.8 km during the afternoon individual sprint.\n\nWhat was the total distance Ahmad ran on Sports Day?",
     "options": [
-      "Ahmad ran a total of 2.15 km, because aligning the decimal points and adding 1.35 and 0.80 column by column gives 2.15.",
-      "Ahmad ran a total of 1.358 km, because when two decimal numbers have a different number of decimal places, you write the digits of the shorter number directly after the digits of the longer number.",
-      "Ahmad ran a total of 1.43 km, because 0.8 is the same as 0.08, so adding 1.35 and 0.08 gives 1.43.",
-      "Ahmad ran a total of 2.13 km, because 5 plus 8 equals 13, so you write 13 in the last column without carrying, giving 2.13."
+      "2.15 km",
+      "1.358 km",
+      "1.43 km",
+      "2.13 km"
     ],
     "correct_answer": "A",
     "worked_solution": "Step 1: Write both numbers with the decimal points aligned. Add a zero to make the decimal places equal.\n   1.35\n + 0.80\nStep 2: Add column by column from right to left.\n  Hundredths: 5 + 0 = 5\n  Tenths: 3 + 8 = 11, write 1 carry 1\n  Ones: 1 + 0 + 1 (carried) = 2\nStep 3: Place the decimal point.\n  Answer: 2.15 km\n\nAhmad ran 2.15 km in total.",
@@ -84,10 +84,10 @@
     "type": "mcq",
     "question_text": "MeiLing's mother bought 3/4 of a kilogram of minced pork from the wet market at Toa Payoh. Her father asked MeiLing to enter the weight into a recipe app, which only accepts decimal numbers.\n\nWhat is 3/4 written as a decimal?",
     "options": [
-      "3/4 as a decimal is 0.34, because the fraction 3/4 can be written directly as 0.34 with 3 in the tenths place and 4 in the hundredths place.",
-      "3/4 as a decimal is 0.43, because the fraction's denominator 4 goes in the tenths place and numerator 3 goes in the hundredths place, giving 0.43.",
-      "3/4 as a decimal is 0.75, because 3/4 equals 75/100, and 75 hundredths written as a decimal is 0.75.",
-      "3/4 as a decimal is 1.33, because dividing 4 by 3 gives approximately 1.33, which is the decimal form of the fraction."
+      "0.34",
+      "0.43",
+      "0.75",
+      "1.33"
     ],
     "correct_answer": "C",
     "worked_solution": "Step 1: Method 1 — Convert to hundredths.\n  3/4 = ?/100\n  4 × 25 = 100, so multiply numerator by 25 too.\n  3 × 25 = 75\n  3/4 = 75/100 = 0.75\n\nStep 2: Method 2 — Divide numerator by denominator.\n  3 ÷ 4 = 0.75\n\n3/4 as a decimal is 0.75.",

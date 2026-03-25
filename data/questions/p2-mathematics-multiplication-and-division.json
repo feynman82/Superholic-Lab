@@ -9,10 +9,10 @@
     "type": "mcq",
     "question_text": "Siti is helping to set up chairs for a school event. She arranges 4 rows of chairs, with 5 chairs in each row.\n\nHow many chairs are there in total?",
     "options": [
-      "There are 9 chairs in total, because 4 rows plus 5 chairs in each row means you add them: 4 + 5 = 9.",
-      "There are 15 chairs in total, because 3 rows of 5 would be 15, and 4 rows is close to 3 rows.",
-      "There are 20 chairs in total, because 4 rows of 5 chairs means 5 chairs added 4 times: 5 + 5 + 5 + 5 = 20.",
-      "There are 25 chairs in total, because 5 rows of 5 would be 25, and adding 4 groups gives a similar result."
+      "9",
+      "15",
+      "20",
+      "25"
     ],
     "correct_answer": "C",
     "worked_solution": "Step 1: 4 rows with 5 chairs each → multiplication.\n  4 × 5 = 20\nStep 2: Check using repeated addition:\n  5 + 5 + 5 + 5 = 20 ✓\n\nThere are 20 chairs in total.",
@@ -34,10 +34,10 @@
     "type": "mcq",
     "question_text": "Ahmad's mother bought 18 kueh lapis from the Geylang Serai bazaar. She wants to share them equally among Ahmad and his 2 brothers, so all 3 children get the same amount.\n\nHow many pieces of kueh lapis does each child get?",
     "options": [
-      "Each child gets 3 pieces, because 18 divided by the number of brothers (2) gives 18 ÷ 2 = 9, and then subtracting gives a smaller number.",
-      "Each child gets 5 pieces, because 3 × 5 = 15, which is close to 18, so each child gets about 5 pieces.",
-      "Each child gets 6 pieces, because dividing 18 equally among 3 children means 18 ÷ 3 = 6.",
-      "Each child gets 9 pieces, because 18 ÷ 2 = 9, as there are 2 brothers to share among."
+      "3",
+      "5",
+      "6",
+      "9"
     ],
     "correct_answer": "C",
     "worked_solution": "Step 1: Total kueh lapis = 18.\n  Sharing equally among 3 children (Ahmad + 2 brothers = 3 children).\nStep 2: 18 ÷ 3 = 6.\nStep 3: Check: 6 × 3 = 18 ✓.\n\nEach child gets 6 pieces.",

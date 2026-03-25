@@ -38,13 +38,33 @@ QUALITY STANDARD — MANDATORY RULES
    - Singapore foods and items: Milo, curry puff, chicken rice, pandan cake, red packet, kaya toast
    - MOE-specific context: PSLE, school tuck shop, school bookshop, Sports Day, National Day concert
 
-2. FULL-SENTENCE OPTIONS (NON-NEGOTIABLE)
-   Every option must be a complete sentence that explains what the answer IS and WHY.
-   ✗ WRONG: "Contracts (smaller)"
-   ✗ WRONG: "8/5"
-   ✗ WRONG: "Fixed shape"
+2. MCQ OPTIONS — SUBJECT-SPECIFIC FORMAT (NON-NEGOTIABLE)
+
+   MATHEMATICS questions:
+   - Options must be SHORT ANSWER VALUES ONLY — the number, fraction, measurement, or brief label.
+   - Do NOT include explanations or working in the option text.
+   - The explanation belongs in wrong_explanations and worked_solution, NOT in options.
+   ✗ WRONG: "The answer is 8/5, because converting 1 and 3/5 gives (1×5+3)/5 = 8/5."
+   ✗ WRONG: "20 students attended the session because dividing 36 by 9 gives 4 per ninth..."
+   ✓ CORRECT: "8/5"
+   ✓ CORRECT: "20"
+   ✓ CORRECT: "$3.30"
+   ✓ CORRECT: "2 and 1/4"
+   ✓ CORRECT: "132°"
+   For conceptual Maths questions (e.g. "who is correct?"), use a short label:
+   ✓ CORRECT: "Ahmad — 32 (left to right)"
+   ✓ CORRECT: "Siti — 17 (multiply first)"
+
+   SCIENCE questions:
+   - Options must be full sentences explaining what happens AND why.
+   - PSLE Science tests reasoning, not just recall, so explanations belong in the options.
    ✓ CORRECT: "The metal ball contracts and becomes smaller, because cooling causes particles to lose energy and move closer together."
-   ✓ CORRECT: "The answer is 8/5, because converting 1 and 3/5 gives (1×5+3)/5 = 8/5."
+
+   ENGLISH questions:
+   - Options are single words or short phrases (e.g. grammar choices, vocabulary alternatives).
+   ✓ CORRECT: "ran"
+   ✓ CORRECT: "however"
+   ✓ CORRECT: "furious"
 
 3. SPECIFIC WRONG-ANSWER EXPLANATIONS
    Each wrong-answer explanation must:

@@ -9,10 +9,10 @@
     "type": "mcq",
     "question_text": "Priya's mother wants to grow a rectangular vegetable garden beside their HDB block. The garden will be 8 metres long and 5 metres wide. They need to put a wire fence all the way around the garden.\n\nHow many metres of wire fence do they need?",
     "options": [
-      "They need 26 metres of wire fence, because the perimeter of a rectangle is 2 × (length + width) = 2 × (8 + 5) = 2 × 13 = 26 metres.",
-      "They need 13 metres of wire fence, because you only need to measure one length and one width and add them: 8 + 5 = 13 metres.",
-      "They need 40 metres of wire fence, because the area of the garden is length × width = 8 × 5 = 40 square metres, and fencing is the same as area.",
-      "They need 20 metres of wire fence, because the garden has 4 equal sides, so you multiply the width by 4 to get 5 × 4 = 20 metres."
+      "26 m",
+      "13 m",
+      "40 m",
+      "20 m"
     ],
     "correct_answer": "A",
     "worked_solution": "Step 1: Perimeter = total distance around the outside of the shape.\nStep 2: A rectangle has 2 lengths and 2 widths.\n  Perimeter = length + width + length + width\n           = 2 × (length + width)\n           = 2 × (8 + 5)\n           = 2 × 13\n           = 26 metres\n\nPriya's mother needs 26 metres of wire fence.",
@@ -34,10 +34,10 @@
     "type": "mcq",
     "question_text": "Ahmad's classroom at Queenstown Primary School has a rectangular floor that is 9 metres long and 7 metres wide. His teacher asked the class to calculate the floor area so they could order the right amount of carpet.\n\nWhat is the area of the classroom floor?",
     "options": [
-      "The area of the classroom floor is 63 square metres, because area = length × width = 9 × 7 = 63 square metres.",
-      "The area of the classroom floor is 32 square metres, because area is calculated by adding all four sides: 9 + 7 + 9 + 7 = 32 square metres.",
-      "The area of the classroom floor is 16 square metres, because area = length + width = 9 + 7 = 16 square metres.",
-      "The area of the classroom floor is 81 square metres, because the classroom must be square-shaped, so you multiply the longer side by itself: 9 × 9 = 81 square metres."
+      "63 m²",
+      "32 m²",
+      "16 m²",
+      "81 m²"
     ],
     "correct_answer": "A",
     "worked_solution": "Step 1: Area of a rectangle = length × width.\nStep 2: Area = 9 × 7 = 63 square metres.\n\nAhmad's classroom floor has an area of 63 square metres.\n\nNote: Area is measured in square units (cm², m², etc.) because it covers a 2D surface.",
@@ -59,10 +59,10 @@
     "type": "mcq",
     "question_text": "During a Geometry lesson, MeiLing drew a straight line and then drew a ray from a point on the line, creating two angles. She measured the smaller angle as 48°.\n\nWithout using a protractor, what is the size of the larger angle?",
     "options": [
-      "The larger angle is 132°, because angles on a straight line always add up to 180°, and 180° − 48° = 132°.",
-      "The larger angle is 42°, because angles on a straight line add up to 90° just like the angles in a right angle, and 90° − 48° = 42°.",
-      "The larger angle is 312°, because angles around a full point add up to 360°, and 360° − 48° = 312°.",
-      "The larger angle is 48°, because when a ray divides a straight line into two angles, the two angles are always equal to each other."
+      "132°",
+      "42°",
+      "312°",
+      "48°"
     ],
     "correct_answer": "A",
     "worked_solution": "Step 1: Recall the angle property: angles on a straight line add up to 180°.\nStep 2: The two angles together make a straight line (180°).\n  Smaller angle + Larger angle = 180°\n  48° + Larger angle = 180°\n  Larger angle = 180° − 48° = 132°\n\nThe larger angle is 132°.",

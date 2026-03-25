@@ -9,10 +9,10 @@
     "type": "mcq",
     "question_text": "MeiLing baked a chocolate cake and cut it into 12 equal slices. She gave away 8 slices to her neighbours. Her brother says that MeiLing gave away the same fraction as 2/3 of the cake.\n\nWhich of the following correctly shows whether her brother is right?",
     "options": [
-      "Her brother is wrong because the numbers in 8/12 are larger than in 2/3, so 8/12 must represent a larger amount.",
-      "Her brother is right because dividing both the numerator 8 and the denominator 12 by their highest common factor of 4 gives 2/3.",
-      "Her brother is wrong because you can only simplify fractions by dividing by 2, so 8/12 simplifies to 4/6, not 2/3.",
-      "Her brother is approximately right because 8 is close to half of 12, making 8/12 roughly equal to 1/2, which is close to 2/3."
+      "No — bigger numbers mean a bigger fraction",
+      "Yes — 8/12 = 2/3",
+      "No — 8/12 = 4/6 only",
+      "Approximately — 8/12 ≈ 1/2"
     ],
     "correct_answer": "B",
     "worked_solution": "Step 1: To check if 8/12 = 2/3, simplify 8/12 to its lowest terms.\nStep 2: Find the Highest Common Factor (HCF) of 8 and 12.\n  Factors of 8: 1, 2, 4, 8\n  Factors of 12: 1, 2, 3, 4, 6, 12\n  HCF = 4\nStep 3: Divide numerator and denominator by 4.\n  8 ÷ 4 = 2, 12 ÷ 4 = 3\n  So 8/12 = 2/3.\n\nMeiLing's brother is correct. She gave away exactly 2/3 of the cake.",
@@ -34,10 +34,10 @@
     "type": "mcq",
     "question_text": "Siti helped her mother prepare curry puffs for a Hari Raya gathering. The recipe needed 9/4 cups of flour. Siti's mother asked her to write this as a mixed number so it would be easier to measure.\n\nWhich mixed number is equal to 9/4?",
     "options": [
-      "9/4 is equal to 2 and 1/4 because when you divide 9 by 4, the quotient is 2 and the remainder is 1, giving the mixed number 2 and 1/4.",
-      "9/4 is equal to 1 and 5/4 because dividing 9 by 4 gives 1 whole group of 4 with 5 left over, so 5/4 becomes the fractional part.",
-      "9/4 is equal to 3 and 1/4 because you divide the numerator 9 by 3 (a factor of 9) to get 3, then keep the denominator as 4.",
-      "9/4 is equal to 2 and 3/4 because subtracting 4 from 9 gives 5, and then subtracting 4 again gives a remainder of 3, so the answer is 2 and 3/4."
+      "2 and 1/4",
+      "1 and 5/4",
+      "3 and 1/4",
+      "2 and 3/4"
     ],
     "correct_answer": "A",
     "worked_solution": "Step 1: Divide the numerator by the denominator.\n  9 ÷ 4 = 2 remainder 1\nStep 2: The quotient (2) becomes the whole number.\nStep 3: The remainder (1) becomes the new numerator. The denominator stays as 4.\nStep 4: 9/4 = 2 and 1/4.\n\nCheck: 2 and 1/4 = (2 × 4 + 1)/4 = 9/4 ✓\n\nSiti needs 2 and 1/4 cups of flour.",
@@ -84,10 +84,10 @@
     "type": "mcq",
     "question_text": "Priya had 5/6 of a bottle of orange juice left in her fridge after dinner. She drank 1/4 of the full bottle as an afternoon snack the next day.\n\nWhat fraction of the full bottle does Priya have left?",
     "options": [
-      "7/12 of the bottle remains, because converting both fractions to twelfths gives 10/12 minus 3/12, which equals 7/12.",
-      "4/2 of the bottle remains, because subtracting the numerators separately gives 5 minus 1 equals 4, and subtracting the denominators gives 6 minus 4 equals 2.",
-      "4/6 of the bottle remains, because you keep the first denominator of 6 and subtract only the numerators, treating 1/4 as if it were 1/6.",
-      "1/2 of the bottle remains, because 5/6 and 1/4 are close to each other, so the difference is roughly half a bottle."
+      "7/12",
+      "4/2",
+      "4/6",
+      "1/2"
     ],
     "correct_answer": "A",
     "worked_solution": "Step 1: Subtract 1/4 from 5/6. These are unlike fractions.\nStep 2: Find the LCD of 6 and 4.\n  Multiples of 6: 6, 12, 18...\n  Multiples of 4: 4, 8, 12...\n  LCD = 12\nStep 3: Convert both fractions.\n  5/6 = 10/12 (multiply by 2/2)\n  1/4 = 3/12 (multiply by 3/3)\nStep 4: Subtract.\n  10/12 − 3/12 = 7/12\n\nPriya has 7/12 of the bottle left.",
@@ -109,10 +109,10 @@
     "type": "mcq",
     "question_text": "Ahmad's school chess club has 36 students. During the June holidays, 5/9 of the students attended an online training session.\n\nHow many students attended the online training session?",
     "options": [
-      "5 students attended the session because the numerator 5 directly tells you how many students went.",
-      "9 students attended the session because the denominator 9 tells you the number of students who attended.",
-      "20 students attended the session because dividing 36 by 9 gives 4 students per ninth, and multiplying by 5 gives 20.",
-      "31 students attended the session because you subtract the numerator 5 from the total of 36 to find those who attended."
+      "5",
+      "9",
+      "20",
+      "31"
     ],
     "correct_answer": "C",
     "worked_solution": "Step 1: Find 1/9 of 36 first.\n  36 ÷ 9 = 4 students (this is 1/9 of the group)\nStep 2: Multiply by the numerator to find 5/9.\n  4 × 5 = 20 students\n\n20 students attended the online training session.",
@@ -134,10 +134,10 @@
     "type": "mcq",
     "question_text": "Ahmad saved $3.47 from his weekly allowance to buy a new pencil case from the school bookshop.\n\nWhat is the value of the digit 4 in the amount $3.47?",
     "options": [
-      "The digit 4 has a value of 4 dollars, because 4 is the first digit to appear after the dollar sign.",
-      "The digit 4 has a value of 40 cents, because 4 is in the tenths place, which represents 4/10 of a dollar, and 4/10 of $1.00 equals 40 cents.",
-      "The digit 4 has a value of 4 cents, because it is the second digit after the decimal point, which puts it in the hundredths place.",
-      "The digit 4 has a value of 0.04 dollars, because any digit after the decimal point has a value of less than one cent."
+      "4 dollars",
+      "40 cents",
+      "4 cents",
+      "0.04 dollars"
     ],
     "correct_answer": "B",
     "worked_solution": "Step 1: Identify the place value of each digit in $3.47.\n  3 is in the ones place → value = $3.00\n  4 is in the tenths place → value = $0.40 (40 cents)\n  7 is in the hundredths place → value = $0.07 (7 cents)\nStep 2: The digit 4 is in the TENTHS place.\n  Value = 4 × $0.10 = $0.40 = 40 cents\n\nThe value of the digit 4 is 40 cents.",
@@ -159,10 +159,10 @@
     "type": "mcq",
     "question_text": "Siti bought three items at the NTUC FairPrice supermarket near her home: a packet of biscuits for $1.85, a carton of soya milk for $2.45, and a bottle of ketchup for $3.27.\n\nShe wants to estimate the total cost by rounding each price to the nearest dollar before adding. What is her estimated total?",
     "options": [
-      "Siti's estimated total is $7.00, because rounding $1.85 to $2, $2.45 to $2, and $3.27 to $3, then adding $2 + $2 + $3 gives $7.",
-      "Siti's estimated total is $8.00, because when shopping, you should always round every price UP to the next whole dollar to make sure you have enough money.",
-      "Siti's estimated total is $6.00, because to round to the nearest dollar, you always drop the cents and keep only the whole dollar amount.",
-      "Siti's estimated total is $7.57, because you should add all three exact prices first ($1.85 + $2.45 + $3.27 = $7.57) and then round the total."
+      "$7",
+      "$8",
+      "$6",
+      "$7.57"
     ],
     "correct_answer": "A",
     "worked_solution": "Step 1: Round each price to the nearest dollar.\n  $1.85 → the cents are 85 (≥ 50), so round UP → $2\n  $2.45 → the cents are 45 (< 50), so round DOWN → $2\n  $3.27 → the cents are 27 (< 50), so round DOWN → $3\nStep 2: Add the rounded prices.\n  $2 + $2 + $3 = $7\n\nSiti's estimated total is $7.",
@@ -184,10 +184,10 @@
     "type": "mcq",
     "question_text": "During Sports Day at Tampines Primary School, Ahmad ran 1.35 km in the morning relay race and 0.8 km during the afternoon individual sprint.\n\nWhat was the total distance Ahmad ran on Sports Day?",
     "options": [
-      "Ahmad ran a total of 2.15 km, because aligning the decimal points and adding 1.35 and 0.80 column by column gives 2.15.",
-      "Ahmad ran a total of 1.358 km, because when two decimal numbers have a different number of decimal places, you write the digits of the shorter number directly after the digits of the longer number.",
-      "Ahmad ran a total of 1.43 km, because 0.8 is the same as 0.08, so adding 1.35 and 0.08 gives 1.43.",
-      "Ahmad ran a total of 2.13 km, because 5 plus 8 equals 13, so you write 13 in the last column without carrying, giving 2.13."
+      "2.15 km",
+      "1.358 km",
+      "1.43 km",
+      "2.13 km"
     ],
     "correct_answer": "A",
     "worked_solution": "Step 1: Write both numbers with the decimal points aligned. Add a zero to make the decimal places equal.\n   1.35\n + 0.80\nStep 2: Add column by column from right to left.\n  Hundredths: 5 + 0 = 5\n  Tenths: 3 + 8 = 11, write 1 carry 1\n  Ones: 1 + 0 + 1 (carried) = 2\nStep 3: Place the decimal point.\n  Answer: 2.15 km\n\nAhmad ran 2.15 km in total.",
@@ -209,10 +209,10 @@
     "type": "mcq",
     "question_text": "MeiLing's mother bought 3/4 of a kilogram of minced pork from the wet market at Toa Payoh. Her father asked MeiLing to enter the weight into a recipe app, which only accepts decimal numbers.\n\nWhat is 3/4 written as a decimal?",
     "options": [
-      "3/4 as a decimal is 0.34, because the fraction 3/4 can be written directly as 0.34 with 3 in the tenths place and 4 in the hundredths place.",
-      "3/4 as a decimal is 0.43, because the fraction's denominator 4 goes in the tenths place and numerator 3 goes in the hundredths place, giving 0.43.",
-      "3/4 as a decimal is 0.75, because 3/4 equals 75/100, and 75 hundredths written as a decimal is 0.75.",
-      "3/4 as a decimal is 1.33, because dividing 4 by 3 gives approximately 1.33, which is the decimal form of the fraction."
+      "0.34",
+      "0.43",
+      "0.75",
+      "1.33"
     ],
     "correct_answer": "C",
     "worked_solution": "Step 1: Method 1 — Convert to hundredths.\n  3/4 = ?/100\n  4 × 25 = 100, so multiply numerator by 25 too.\n  3 × 25 = 75\n  3/4 = 75/100 = 0.75\n\nStep 2: Method 2 — Divide numerator by denominator.\n  3 ÷ 4 = 0.75\n\n3/4 as a decimal is 0.75.",
@@ -234,10 +234,10 @@
     "type": "mcq",
     "question_text": "During a Mathematics lesson at Ahmad's school, the teacher wrote the numbers 12 and 18 on the board. She asked the class to find a common factor of both numbers that is greater than 3.\n\nWhich number is a common factor of both 12 and 18?",
     "options": [
-      "4 is a common factor of 12 and 18, because 12 ÷ 4 = 3 and 18 ÷ 4 also divides evenly.",
-      "5 is a common factor of 12 and 18, because 5 is between 4 and 6 and so it divides into any number between 12 and 18.",
-      "6 is a common factor of 12 and 18, because 12 ÷ 6 = 2 and 18 ÷ 6 = 3, both of which are whole numbers.",
-      "8 is a common factor of 12 and 18, because 8 is larger than 6 and larger numbers make better common factors for larger values."
+      "4",
+      "5",
+      "6",
+      "8"
     ],
     "correct_answer": "C",
     "worked_solution": "Step 1: List the factors of 12 and 18.\n  Factors of 12: 1, 2, 3, 4, 6, 12\n  Factors of 18: 1, 2, 3, 6, 9, 18\nStep 2: Identify the common factors (appear in both lists).\n  Common factors: 1, 2, 3, 6\nStep 3: From the options, 6 is a common factor greater than 3.\n  12 ÷ 6 = 2 ✓\n  18 ÷ 6 = 3 ✓\n\n6 is a common factor of both 12 and 18.",
@@ -259,10 +259,10 @@
     "type": "mcq",
     "question_text": "During a class activity at Priya's school, the teacher wrote the expression '5 + 3 × 4' on the board and asked two students for the answer. Ahmad said the answer is 32. Siti said the answer is 17.\n\nWhose answer is correct, and why?",
     "options": [
-      "Ahmad's answer of 32 is correct because in mathematics, all calculations must be solved from left to right in the order the operations appear.",
-      "Siti's answer of 17 is correct because multiplication must always be performed before addition, so 3 × 4 = 12 is calculated first, giving 5 + 12 = 17.",
-      "Ahmad's answer of 32 is correct because when there are no brackets, you always do the operation with the larger result first, and 5 + 3 = 8 gives a larger product.",
-      "Both answers are wrong because the correct answer is 23, found by adding the outer numbers (5 + 4 = 9) and then multiplying by the middle number (9 × 3 = 27) and adjusting."
+      "Ahmad — 32 (left to right)",
+      "Siti — 17 (multiply first)",
+      "Ahmad — 32 (larger result first)",
+      "Neither — 23"
     ],
     "correct_answer": "B",
     "worked_solution": "Step 1: Apply the order of operations (BODMAS/BIDMAS).\n  Brackets → Orders → Division/Multiplication → Addition/Subtraction\nStep 2: Multiplication comes before addition, so calculate 3 × 4 first.\n  3 × 4 = 12\nStep 3: Now add.\n  5 + 12 = 17\n\nSiti's answer of 17 is correct.",
@@ -284,10 +284,10 @@
     "type": "mcq",
     "question_text": "A biscuit factory in Jurong Industrial Estate packages 256 boxes of biscuits every hour. The factory runs for 6 hours each day.\n\nHow many boxes of biscuits does the factory package in one day?",
     "options": [
-      "The factory packages 1,536 boxes per day, because 256 × 6 = 1,536, which is found by multiplying each digit of 256 by 6 with correct carrying.",
-      "The factory packages 262 boxes per day, because to find the daily total, you add the number of hours (6) to the hourly rate (256), giving 256 + 6 = 262.",
-      "The factory packages 1,256 boxes per day, because you write the 6 in front of the three-digit number 256 to show 6 hours of production.",
-      "The factory packages 1,500 boxes per day, because you round 256 to 250 for a clean calculation, giving 250 × 6 = 1,500 as the exact answer."
+      "1,536 boxes",
+      "262 boxes",
+      "1,256 boxes",
+      "1,500 boxes"
     ],
     "correct_answer": "A",
     "worked_solution": "Step 1: The factory makes 256 boxes per hour for 6 hours.\n  Operation: 256 × 6\nStep 2: Multiply column by column.\n  Ones: 6 × 6 = 36, write 6, carry 3\n  Tens: 5 × 6 = 30, + 3 = 33, write 3, carry 3\n  Hundreds: 2 × 6 = 12, + 3 = 15, write 15\nStep 3: 256 × 6 = 1,536.\n\nThe factory packages 1,536 boxes in one day.",
@@ -309,10 +309,10 @@
     "type": "mcq",
     "question_text": "Priya's mother wants to grow a rectangular vegetable garden beside their HDB block. The garden will be 8 metres long and 5 metres wide. They need to put a wire fence all the way around the garden.\n\nHow many metres of wire fence do they need?",
     "options": [
-      "They need 26 metres of wire fence, because the perimeter of a rectangle is 2 × (length + width) = 2 × (8 + 5) = 2 × 13 = 26 metres.",
-      "They need 13 metres of wire fence, because you only need to measure one length and one width and add them: 8 + 5 = 13 metres.",
-      "They need 40 metres of wire fence, because the area of the garden is length × width = 8 × 5 = 40 square metres, and fencing is the same as area.",
-      "They need 20 metres of wire fence, because the garden has 4 equal sides, so you multiply the width by 4 to get 5 × 4 = 20 metres."
+      "26 m",
+      "13 m",
+      "40 m",
+      "20 m"
     ],
     "correct_answer": "A",
     "worked_solution": "Step 1: Perimeter = total distance around the outside of the shape.\nStep 2: A rectangle has 2 lengths and 2 widths.\n  Perimeter = length + width + length + width\n           = 2 × (length + width)\n           = 2 × (8 + 5)\n           = 2 × 13\n           = 26 metres\n\nPriya's mother needs 26 metres of wire fence.",
@@ -334,10 +334,10 @@
     "type": "mcq",
     "question_text": "Ahmad's classroom at Queenstown Primary School has a rectangular floor that is 9 metres long and 7 metres wide. His teacher asked the class to calculate the floor area so they could order the right amount of carpet.\n\nWhat is the area of the classroom floor?",
     "options": [
-      "The area of the classroom floor is 63 square metres, because area = length × width = 9 × 7 = 63 square metres.",
-      "The area of the classroom floor is 32 square metres, because area is calculated by adding all four sides: 9 + 7 + 9 + 7 = 32 square metres.",
-      "The area of the classroom floor is 16 square metres, because area = length + width = 9 + 7 = 16 square metres.",
-      "The area of the classroom floor is 81 square metres, because the classroom must be square-shaped, so you multiply the longer side by itself: 9 × 9 = 81 square metres."
+      "63 m²",
+      "32 m²",
+      "16 m²",
+      "81 m²"
     ],
     "correct_answer": "A",
     "worked_solution": "Step 1: Area of a rectangle = length × width.\nStep 2: Area = 9 × 7 = 63 square metres.\n\nAhmad's classroom floor has an area of 63 square metres.\n\nNote: Area is measured in square units (cm², m², etc.) because it covers a 2D surface.",
@@ -359,10 +359,10 @@
     "type": "mcq",
     "question_text": "During a Geometry lesson, MeiLing drew a straight line and then drew a ray from a point on the line, creating two angles. She measured the smaller angle as 48°.\n\nWithout using a protractor, what is the size of the larger angle?",
     "options": [
-      "The larger angle is 132°, because angles on a straight line always add up to 180°, and 180° − 48° = 132°.",
-      "The larger angle is 42°, because angles on a straight line add up to 90° just like the angles in a right angle, and 90° − 48° = 42°.",
-      "The larger angle is 312°, because angles around a full point add up to 360°, and 360° − 48° = 312°.",
-      "The larger angle is 48°, because when a ray divides a straight line into two angles, the two angles are always equal to each other."
+      "132°",
+      "42°",
+      "312°",
+      "48°"
     ],
     "correct_answer": "A",
     "worked_solution": "Step 1: Recall the angle property: angles on a straight line add up to 180°.\nStep 2: The two angles together make a straight line (180°).\n  Smaller angle + Larger angle = 180°\n  48° + Larger angle = 180°\n  Larger angle = 180° − 48° = 132°\n\nThe larger angle is 132°.",
