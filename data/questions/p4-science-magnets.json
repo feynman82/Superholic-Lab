@@ -1,0 +1,52 @@
+[
+  {
+    "id": "p4s-mg-mat01",
+    "subject": "Science",
+    "level": "Primary 4",
+    "topic": "Magnets",
+    "sub_topic": "Magnetic and Non-magnetic Materials",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "question_text": "Ahmad brought five objects to Science class and tested each one with a bar magnet: a steel paper clip, a wooden pencil, a copper coin, an iron nail, and a rubber eraser.\n\nWhich two objects would be attracted to the magnet?",
+    "options": [
+      "The steel paper clip and the copper coin would be attracted because both are made of shiny metals, and all shiny metals are magnetic.",
+      "The wooden pencil and the rubber eraser would be attracted because they are very lightweight, and magnets pull light objects more easily than heavy ones.",
+      "The steel paper clip and the iron nail would be attracted because steel contains iron, and iron and steel are both magnetic materials.",
+      "All five objects would be attracted to some degree, because every material in the world responds to a strong enough magnet."
+    ],
+    "correct_answer": "C",
+    "worked_solution": "Step 1: Recall which materials are magnetic.\n  Magnetic materials: iron, steel (contains iron), nickel, cobalt.\n  Non-magnetic: wood, rubber, plastic, glass, copper, aluminium.\nStep 2: Test each object:\n  Steel paper clip → steel contains iron → MAGNETIC ✓\n  Wooden pencil → wood → NOT magnetic\n  Copper coin → copper → NOT magnetic (even though it is a metal)\n  Iron nail → iron → MAGNETIC ✓\n  Rubber eraser → rubber → NOT magnetic\n\nThe answer is C.",
+    "wrong_explanations": {
+      "A": "Not all metals are magnetic. Copper is a metal but it is NOT attracted to a magnet. Only IRON-CONTAINING metals (iron, steel, nickel, cobalt) are magnetic. Shininess has nothing to do with magnetism — a shiny copper coin is not magnetic, while a dull grey iron nail is.",
+      "B": "Magnetism has nothing to do with weight. A heavy iron block is strongly attracted to a magnet, while a light copper coin (similar weight to a paper clip) is not attracted at all. Magnetic attraction depends on the MATERIAL, not the weight.",
+      "D": "Not all materials are magnetic. Wood, rubber, plastic, copper, aluminium, and glass are non-magnetic — no magnet, no matter how strong, will attract them. Magnetic force only acts on iron, steel, nickel, and cobalt."
+    },
+    "examiner_note": "Magnetic materials: iron, steel, nickel, cobalt. All others are non-magnetic. A common PSLE trap is to say 'all metals are magnetic' — this is WRONG. Copper and aluminium are metals but are non-magnetic. Always check: does it contain iron?",
+    "marks": 2
+  },
+  {
+    "id": "p4s-mg-poles01",
+    "subject": "Science",
+    "level": "Primary 4",
+    "topic": "Magnets",
+    "sub_topic": "Magnetic Poles",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "question_text": "During a Science experiment, Siti had two bar magnets labelled X and Y. When she pushed the North pole of magnet X towards the North pole of magnet Y, the magnets pushed each other apart.\n\nShe then turned magnet Y around and pushed the North pole of magnet X towards the South pole of magnet Y. What would she observe this time?",
+    "options": [
+      "The magnets would push each other apart again, because bar magnets always repel any other bar magnet regardless of which ends are facing each other.",
+      "The magnets would pull towards each other and attract, because unlike poles (North facing South) attract each other.",
+      "The magnets would attract each other weakly, because turning a magnet around reduces its magnetic strength by half.",
+      "The magnets would have no effect on each other, because once two magnets have repelled each other in the first test, they permanently lose their magnetic properties."
+    ],
+    "correct_answer": "B",
+    "worked_solution": "Step 1: Recall the rules for magnetic poles.\n  LIKE poles (N-N or S-S) → REPEL each other.\n  UNLIKE poles (N-S or S-N) → ATTRACT each other.\nStep 2: First test — N pole of X facing N pole of Y → LIKE poles → REPEL (pushed apart). ✓\nStep 3: Second test — N pole of X facing S pole of Y → UNLIKE poles → ATTRACT.\n\nThe magnets would attract and pull towards each other.\n\nThe answer is B.",
+    "wrong_explanations": {
+      "A": "Magnets do NOT always repel each other. The behaviour depends on which poles are facing each other. Like poles (N-N or S-S) repel. Unlike poles (N-S) attract. Turning magnet Y around changes which pole faces magnet X, changing the interaction from repulsion to attraction.",
+      "C": "Turning a magnet around does not change its strength — it simply presents a different pole to the other magnet. The magnetic force is the same strength as before; only the direction of the force changes (from repulsion to attraction) because the poles facing each other are now unlike.",
+      "D": "Repelling another magnet does not damage or demagnetise a magnet. Magnets retain their magnetic properties after any number of interactions with other magnets. Demagnetisation happens through heating, dropping, or hammering — not through magnetic repulsion."
+    },
+    "examiner_note": "Always remember: Like poles repel, Unlike poles attract. In PSLE diagrams, N and S poles are clearly labelled. Identify what poles are facing, then apply the rule. A useful memory trick: 'U attract' — Unlike poles Attract.",
+    "marks": 2
+  }
+]

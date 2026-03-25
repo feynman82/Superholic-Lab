@@ -1,0 +1,52 @@
+[
+  {
+    "id": "p2e-cp01",
+    "subject": "English",
+    "level": "Primary 2",
+    "topic": "Comprehension",
+    "sub_topic": "Reading for Information",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "question_text": "Read the passage below.\n\n'Lily woke up early on Sunday morning. She put on her running shoes and went to the park near her HDB block with her father. They jogged around the park twice before heading to a nearby hawker centre for breakfast.'\n\nWhat did Lily and her father do AFTER jogging?",
+    "options": [
+      "After jogging, they went to school, because Sunday mornings are usually when children prepare for the school week.",
+      "After jogging, they had breakfast at a nearby hawker centre, because the passage says they headed to the hawker centre after jogging.",
+      "After jogging, they went swimming at the community pool, because the park near HDB blocks usually has a swimming pool.",
+      "After jogging, they bought new running shoes, because Lily's running shoes were old and needed to be replaced after the exercise."
+    ],
+    "correct_answer": "B",
+    "worked_solution": "Step 1: Find what happened AFTER jogging in the passage.\n  'They jogged around the park twice BEFORE heading to a nearby hawker centre for breakfast.'\nStep 2: 'Before' tells us the order: jogging happened first, then the hawker centre.\nStep 3: After jogging = going to the hawker centre for breakfast.\n\nThe answer is B.",
+    "wrong_explanations": {
+      "A": "School is not mentioned in the passage. Also, the passage says it was a SUNDAY morning — children do not go to school on Sundays in Singapore. Always use information from the passage, not outside knowledge.",
+      "C": "Swimming is not mentioned anywhere in the passage. The passage only describes jogging in the park and having breakfast at the hawker centre. Do not add activities that are not in the text.",
+      "D": "Lily already had running shoes — she 'put on her running shoes' at the start of the passage. Buying new shoes is not mentioned and is not supported by any clue in the text."
+    },
+    "examiner_note": "For 'what happened after' questions, look for sequence words: BEFORE, AFTER, THEN, NEXT, FINALLY. Here, 'before heading to the hawker centre' means jogging came FIRST, then the hawker centre. Always find the answer IN the passage.",
+    "marks": 1
+  },
+  {
+    "id": "p2e-cp02",
+    "subject": "English",
+    "level": "Primary 2",
+    "topic": "Comprehension",
+    "sub_topic": "Inference",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "question_text": "Read the passage below.\n\n'Amir looked up at the dark sky and frowned. He quickly packed up his toys from the garden and ran inside the house. He shut the back door behind him.'\n\nWhy did Amir pack up his toys and run inside?",
+    "options": [
+      "Amir packed up his toys because it was his bedtime and his mother had called him in for the night.",
+      "Amir packed up his toys because he was bored of playing and had decided to watch television instead.",
+      "Amir packed up his toys because he thought it was going to rain, and the dark sky was a sign of coming rain.",
+      "Amir packed up his toys because his friend had arrived at the door and he wanted to play indoors instead."
+    ],
+    "correct_answer": "C",
+    "worked_solution": "Step 1: Identify the clues in the passage.\n  Clue 1: 'dark sky' → a sign that rain is coming.\n  Clue 2: 'frowned' → he is worried or concerned.\n  Clue 3: 'quickly packed up his toys' → urgent action to protect things from rain.\n  Clue 4: 'ran inside the house' → taking shelter quickly.\nStep 2: Connect: dark sky → concern about rain → urgent action to go inside.\nStep 3: Inference: Amir was worried about rain and wanted to protect his toys and himself.\n\nThe answer is C.",
+    "wrong_explanations": {
+      "A": "Bedtime is not suggested in the passage. If it were bedtime, the passage would mention Amir's mother calling him or a specific time. The clue is the DARK SKY, not any person calling him or it being late at night.",
+      "B": "Nothing in the passage suggests boredom. Amir 'quickly packed' and 'ran' — these are urgent actions, not the actions of someone who is casually deciding to do something else. The frowned expression and dark sky suggest worry, not boredom.",
+      "D": "A friend arriving is not mentioned at all in the passage. The clue that explains all of Amir's actions is the 'dark sky', which signals incoming rain. Always base your answer on clues that are actually in the text."
+    },
+    "examiner_note": "Inference questions ask you to read between the lines. Find the CLUE words in the passage (dark sky, quickly, frowned) and ask: what do these clues together suggest? Always point to specific clues when explaining your inference.",
+    "marks": 1
+  }
+]

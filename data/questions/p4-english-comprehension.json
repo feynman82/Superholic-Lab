@@ -1,0 +1,77 @@
+[
+  {
+    "id": "p4e-cp-inf01",
+    "subject": "English",
+    "level": "Primary 4",
+    "topic": "Comprehension",
+    "sub_topic": "Inference",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "question_text": "Read the passage below.\n\n'Ravi looked up at the dark grey clouds gathering overhead. Without a word, he quickly folded the clothes that were hanging on the bamboo poles in the corridor of his HDB flat and carried them inside. Then he rushed around the flat, shutting every window.'\n\nWhat can we infer from Ravi's actions?",
+    "options": [
+      "Ravi was preparing for visitors to arrive at his flat and wanted everything to be clean and tidy before they came.",
+      "Ravi expected it to rain very soon and was taking quick action to prevent his laundry and flat from getting wet.",
+      "Ravi was angry with his family members and was shutting windows and collecting clothes to show his frustration.",
+      "Ravi had just come home from school and was completing his household chores as part of his daily routine."
+    ],
+    "correct_answer": "B",
+    "worked_solution": "Step 1: Identify the clues in the passage.\n  Clue 1: 'dark grey clouds gathering overhead' → sign of incoming rain.\n  Clue 2: 'quickly folded the clothes' → urgency, protecting laundry from rain.\n  Clue 3: 'shutting every window' → keeping rain out.\nStep 2: Connect the clues. All three actions are responses to the threat of rain.\nStep 3: Infer: Ravi saw signs of rain and was acting quickly to protect his home and laundry.\n\nThe answer is B.",
+    "wrong_explanations": {
+      "A": "Preparing for visitors does not explain why Ravi quickly brought in the clothes or shut the windows. Visitors would not cause the same urgency. The passage does not mention anyone coming over — the clue is the 'dark grey clouds', which points to rain.",
+      "C": "There is no evidence of anger in the passage. Ravi acts 'quickly' but 'without a word' — he is focused and purposeful, not angry. The dark grey clouds provide the context that explains all his actions: he is responding to the threat of rain, not expressing frustration.",
+      "D": "Daily household chores would not explain the urgency ('quickly') or the dark clouds. If this were a routine, Ravi would not be rushing. The word 'quickly' and the detail about the dark clouds both signal an unexpected, urgent situation — not a daily routine."
+    },
+    "examiner_note": "For inference questions in PSLE, use this method: (1) identify the key clue words in the passage, (2) explain what each clue suggests, (3) state your inference. Always link your inference to specific textual evidence. Avoid guessing without supporting clues.",
+    "marks": 1
+  },
+  {
+    "id": "p4e-cp-main01",
+    "subject": "English",
+    "level": "Primary 4",
+    "topic": "Comprehension",
+    "sub_topic": "Main Idea",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "question_text": "Read the passage below.\n\n'Singapore's hawker centres are more than just places to eat. They are important social spaces where families bond over shared meals, old friends catch up over kopi, and neighbours exchange greetings. The government has even applied to UNESCO to recognise hawker culture as an Intangible Cultural Heritage of Humanity.'\n\nWhat is the MAIN IDEA of this passage?",
+    "options": [
+      "The main idea is that hawker food in Singapore is cheap and good value for money compared to restaurants.",
+      "The main idea is that hawker centres play an important cultural and social role in Singapore, beyond just serving food.",
+      "The main idea is that UNESCO is an organisation that recognises food cultures around the world.",
+      "The main idea is that Singapore has many different types of eating places, including hawker centres, restaurants, and cafes."
+    ],
+    "correct_answer": "B",
+    "worked_solution": "Step 1: Read the first sentence — 'hawker centres are more than just places to eat.' This signals the main idea.\nStep 2: The rest of the passage gives supporting details:\n  - Families bond there.\n  - Friends catch up.\n  - Neighbours greet each other.\n  - Government applied for UNESCO recognition.\nStep 3: All details support the idea that hawker centres are CULTURALLY and SOCIALLY important, not merely a place for food.\n\nThe answer is B.",
+    "wrong_explanations": {
+      "A": "The price or value of hawker food is never mentioned in the passage. The passage focuses on the CULTURAL and SOCIAL importance of hawker centres — bonding, friendships, community, and heritage — not on cost or value for money.",
+      "C": "UNESCO is mentioned only as one supporting detail to show how the government values hawker culture. The passage is not about UNESCO as an organisation — it is about hawker centres and their importance to Singapore's culture and community.",
+      "D": "The passage does not compare different types of eating places or mention restaurants and cafes. The focus is entirely on hawker centres and why they are culturally significant. Choosing this option shows missing the specific focus of the passage."
+    },
+    "examiner_note": "To find the main idea: (1) look at the first and last sentences of the passage, (2) ask 'what is the passage mostly about?', (3) check that the main idea covers ALL the details, not just one. The main idea is the umbrella under which all other points fit.",
+    "marks": 1
+  },
+  {
+    "id": "p4e-cp-cae01",
+    "subject": "English",
+    "level": "Primary 4",
+    "topic": "Comprehension",
+    "sub_topic": "Cause and Effect",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "question_text": "Read the sentence below.\n\n'Because MeiLing had revised her work carefully for three weeks, she scored the highest marks in her class for the end-of-year English examination.'\n\nWhat was the CAUSE of MeiLing scoring the highest marks?",
+    "options": [
+      "The cause was that MeiLing scored the highest marks, because this is the most important event mentioned in the sentence.",
+      "The cause was that MeiLing had revised her work carefully for three weeks, because the word 'because' directly introduces the reason for her high score.",
+      "The cause was that MeiLing was the smartest student in the class, because students who score highest are naturally more intelligent than others.",
+      "The cause was the English examination itself, because without the examination being held, MeiLing would not have had a chance to score highest."
+    ],
+    "correct_answer": "B",
+    "worked_solution": "Step 1: Identify the cause and effect.\n  Signal word: 'because' → introduces the CAUSE.\n  Cause (BECAUSE): MeiLing revised carefully for three weeks.\n  Effect (RESULT): She scored the highest marks.\nStep 2: The cause is always introduced by 'because', 'since', 'as', or 'due to'.\n\nThe answer is B.",
+    "wrong_explanations": {
+      "A": "Scoring the highest marks is the EFFECT (result), not the cause. Cause and effect have a clear direction: the cause LEADS TO the effect. The highest marks came AFTER and BECAUSE OF the revision — it is the outcome, not the starting point.",
+      "C": "The sentence does not mention anything about intelligence or natural ability. The passage specifically states that MeiLing's HIGH SCORE was the result of her CAREFUL REVISION — not any innate quality. Do not add information that is not in the passage.",
+      "D": "The examination is the setting or context, not the cause of the high score. Many students sat the same examination, but not all scored the highest. The cause must explain WHY MeiLing specifically scored highest — and the passage clearly states it was her three weeks of careful revision."
+    },
+    "examiner_note": "Cause-and-effect signal words: BECAUSE, SINCE, AS, DUE TO (introduce the cause). SO, THEREFORE, AS A RESULT, CONSEQUENTLY (introduce the effect). In PSLE comprehension, always identify which clause is the cause and which is the effect before answering.",
+    "marks": 1
+  }
+]

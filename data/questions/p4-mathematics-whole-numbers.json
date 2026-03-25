@@ -1,0 +1,77 @@
+[
+  {
+    "id": "p4m-cf01",
+    "subject": "Mathematics",
+    "level": "Primary 4",
+    "topic": "Whole Numbers",
+    "sub_topic": "Common Factors",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "question_text": "During a Mathematics lesson at Ahmad's school, the teacher wrote the numbers 12 and 18 on the board. She asked the class to find a common factor of both numbers that is greater than 3.\n\nWhich number is a common factor of both 12 and 18?",
+    "options": [
+      "4 is a common factor of 12 and 18, because 12 ÷ 4 = 3 and 18 ÷ 4 also divides evenly.",
+      "5 is a common factor of 12 and 18, because 5 is between 4 and 6 and so it divides into any number between 12 and 18.",
+      "6 is a common factor of 12 and 18, because 12 ÷ 6 = 2 and 18 ÷ 6 = 3, both of which are whole numbers.",
+      "8 is a common factor of 12 and 18, because 8 is larger than 6 and larger numbers make better common factors for larger values."
+    ],
+    "correct_answer": "C",
+    "worked_solution": "Step 1: List the factors of 12 and 18.\n  Factors of 12: 1, 2, 3, 4, 6, 12\n  Factors of 18: 1, 2, 3, 6, 9, 18\nStep 2: Identify the common factors (appear in both lists).\n  Common factors: 1, 2, 3, 6\nStep 3: From the options, 6 is a common factor greater than 3.\n  12 ÷ 6 = 2 ✓\n  18 ÷ 6 = 3 ✓\n\n6 is a common factor of both 12 and 18.",
+    "wrong_explanations": {
+      "A": "4 is a factor of 12 (12 ÷ 4 = 3) but it is NOT a factor of 18. Check: 18 ÷ 4 = 4.5, which is not a whole number. For a number to be a common factor, it must divide BOTH numbers evenly.",
+      "B": "5 is not a factor of either 12 or 18. 12 ÷ 5 = 2.4 (not a whole number) and 18 ÷ 5 = 3.6 (not a whole number). Being 'between' two other factors does not make a number a factor — you must check by dividing.",
+      "D": "8 is not a factor of either 12 or 18. 12 ÷ 8 = 1.5 (not a whole number) and 18 ÷ 8 = 2.25 (not a whole number). The size of a number has nothing to do with whether it is a factor — only exact divisibility counts."
+    },
+    "examiner_note": "A factor must divide into a number with NO remainder. Always verify by doing the division: if the result is a whole number, it is a factor. If there is a remainder or decimal, it is not.",
+    "marks": 2
+  },
+  {
+    "id": "p4m-oo01",
+    "subject": "Mathematics",
+    "level": "Primary 4",
+    "topic": "Whole Numbers",
+    "sub_topic": "Order of Operations",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "question_text": "During a class activity at Priya's school, the teacher wrote the expression '5 + 3 × 4' on the board and asked two students for the answer. Ahmad said the answer is 32. Siti said the answer is 17.\n\nWhose answer is correct, and why?",
+    "options": [
+      "Ahmad's answer of 32 is correct because in mathematics, all calculations must be solved from left to right in the order the operations appear.",
+      "Siti's answer of 17 is correct because multiplication must always be performed before addition, so 3 × 4 = 12 is calculated first, giving 5 + 12 = 17.",
+      "Ahmad's answer of 32 is correct because when there are no brackets, you always do the operation with the larger result first, and 5 + 3 = 8 gives a larger product.",
+      "Both answers are wrong because the correct answer is 23, found by adding the outer numbers (5 + 4 = 9) and then multiplying by the middle number (9 × 3 = 27) and adjusting."
+    ],
+    "correct_answer": "B",
+    "worked_solution": "Step 1: Apply the order of operations (BODMAS/BIDMAS).\n  Brackets → Orders → Division/Multiplication → Addition/Subtraction\nStep 2: Multiplication comes before addition, so calculate 3 × 4 first.\n  3 × 4 = 12\nStep 3: Now add.\n  5 + 12 = 17\n\nSiti's answer of 17 is correct.",
+    "wrong_explanations": {
+      "A": "Solving strictly left to right gives (5 + 3) × 4 = 8 × 4 = 32, which is Ahmad's incorrect answer. The rule 'left to right' only applies when two operations have the SAME priority (e.g., two additions, or a division and a multiplication). Multiplication and addition have DIFFERENT priorities — multiplication always comes first.",
+      "C": "The choice of operation is determined by the ORDER OF OPERATIONS (multiplication before addition), not by which calculation gives a larger number. 5 + 3 = 8 giving a 'larger product' is not a mathematical rule. BODMAS/BIDMAS is the only correct guide.",
+      "D": "The expression 5 + 3 × 4 means: add 5 to the result of 3 × 4. There is no rule for 'adding outer numbers' or 'multiplying the middle'. The only correct approach is BODMAS: multiplication first, then addition, giving 5 + 12 = 17."
+    },
+    "examiner_note": "Remember BODMAS: Brackets, Orders (powers), Division and Multiplication (left to right), Addition and Subtraction (left to right). The most common error is ignoring priority and working left to right. Always check: are there any × or ÷ that need to be done before + or −?",
+    "marks": 2
+  },
+  {
+    "id": "p4m-wp01",
+    "subject": "Mathematics",
+    "level": "Primary 4",
+    "topic": "Whole Numbers",
+    "sub_topic": "Multiplication Word Problem",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "question_text": "A biscuit factory in Jurong Industrial Estate packages 256 boxes of biscuits every hour. The factory runs for 6 hours each day.\n\nHow many boxes of biscuits does the factory package in one day?",
+    "options": [
+      "The factory packages 1,536 boxes per day, because 256 × 6 = 1,536, which is found by multiplying each digit of 256 by 6 with correct carrying.",
+      "The factory packages 262 boxes per day, because to find the daily total, you add the number of hours (6) to the hourly rate (256), giving 256 + 6 = 262.",
+      "The factory packages 1,256 boxes per day, because you write the 6 in front of the three-digit number 256 to show 6 hours of production.",
+      "The factory packages 1,500 boxes per day, because you round 256 to 250 for a clean calculation, giving 250 × 6 = 1,500 as the exact answer."
+    ],
+    "correct_answer": "A",
+    "worked_solution": "Step 1: The factory makes 256 boxes per hour for 6 hours.\n  Operation: 256 × 6\nStep 2: Multiply column by column.\n  Ones: 6 × 6 = 36, write 6, carry 3\n  Tens: 5 × 6 = 30, + 3 = 33, write 3, carry 3\n  Hundreds: 2 × 6 = 12, + 3 = 15, write 15\nStep 3: 256 × 6 = 1,536.\n\nThe factory packages 1,536 boxes in one day.",
+    "wrong_explanations": {
+      "B": "Adding 6 to 256 finds the total if you INCREASED the hourly rate by 6 boxes — it does not find the total for 6 hours. The problem asks for repeated addition of 256 six times, which is multiplication: 256 × 6.",
+      "C": "Placing the 6 in front of 256 to make 6,256 (or 1,256 after some other error) is not a mathematical operation. Writing a digit in front of a number just makes a larger number — it has no connection to the 6 hours being multiplied.",
+      "D": "Rounding 256 to 250 before multiplying gives an ESTIMATE (1,500), not the exact answer. The question asks for the actual number of boxes. 256 × 6 = 1,536. The estimate of 1,500 is 36 boxes short of the correct answer."
+    },
+    "examiner_note": "Always identify the operation needed before calculating. Here: 'every hour' × 'number of hours' = total, which is multiplication. A useful check: 256 × 6 should give a number close to 250 × 6 = 1,500, and 1,536 is close to 1,500, so the answer is reasonable.",
+    "marks": 2
+  }
+]

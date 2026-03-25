@@ -1,0 +1,77 @@
+[
+  {
+    "id": "p4s-lt-source01",
+    "subject": "Science",
+    "level": "Primary 4",
+    "topic": "Light",
+    "sub_topic": "Sources of Light",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "question_text": "MeiLing's class was classifying objects as either sources of light or reflectors of light. A source of light produces its own light. A reflector only bounces light from another source.\n\nWhich object is correctly identified as a SOURCE of light?",
+    "options": [
+      "A mirror in sunlight is a source of light because it brightens up a dark room by spreading sunlight in many directions.",
+      "The Moon at night is a source of light because it appears bright in the sky and can illuminate the ground below.",
+      "A glowing firefly is a source of light because it produces its own bioluminescent light without needing another light source to shine on it.",
+      "A polished silver trophy is a source of light because it reflects light so strongly that it appears to glow brightly under the school lights."
+    ],
+    "correct_answer": "C",
+    "worked_solution": "Step 1: A source of light PRODUCES its own light energy.\nStep 2: Check each object:\n  Mirror: reflects sunlight → does not produce its own light → NOT a source\n  Moon: reflects sunlight → does not produce its own light → NOT a source\n  Firefly: produces its own bioluminescent light through a chemical reaction → IS a source ✓\n  Trophy: reflects light from the school lights → does not produce its own light → NOT a source\n\nThe answer is C.",
+    "wrong_explanations": {
+      "A": "A mirror does NOT produce light — it only reflects light that falls on it from another source. If you remove the Sun or other light source, the mirror becomes dark. Since it cannot produce light on its own, it is not a light source.",
+      "B": "The Moon does NOT produce its own light. The Moon reflects sunlight from the Sun. This is why the Moon appears bright at night (when sunlight falls on its surface) and has phases (the lit portion we see changes as the Moon orbits Earth). The Moon is a reflector, not a source.",
+      "D": "A polished trophy only reflects the light from the school lights shining on it. Remove the school lights, and the trophy becomes dark. It cannot produce light on its own, so it is a reflector, not a source."
+    },
+    "examiner_note": "A light source PRODUCES its own light. Examples: Sun, stars, firefly, glow worm, fire, electric bulb, glowing phone screen. Reflectors just bounce light from a source. The Moon, mirrors, and shiny surfaces are NOT light sources — they are reflectors.",
+    "marks": 2
+  },
+  {
+    "id": "p4s-lt-transpar01",
+    "subject": "Science",
+    "level": "Primary 4",
+    "topic": "Light",
+    "sub_topic": "Transparent, Translucent and Opaque",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "question_text": "Priya's teacher held up four different materials and shone a bright torch through each one. She found that one material allowed her to see the torch light glowing through it, but she could not see the shape or outline of the torch clearly.\n\nWhich property describes this material?",
+    "options": [
+      "This material is transparent, because transparent materials allow all light to pass through and you can see clearly through them, including the shape of the torch.",
+      "This material is translucent, because translucent materials allow some light to pass through but scatter it, so you can see a glow but not a clear image.",
+      "This material is opaque, because opaque materials block most light but allow a faint glow to pass through when the light source is very bright.",
+      "This material is reflective, because reflective materials bounce light back towards the viewer, which makes the material appear to glow when a torch is held behind it."
+    ],
+    "correct_answer": "B",
+    "worked_solution": "Step 1: Recall the three categories.\n  Transparent: allows ALL light to pass through — you can see clearly (e.g., clear glass, clean water).\n  Translucent: allows SOME light to pass through, but scatters it — you see a glow but not clear images (e.g., frosted glass, tissue paper).\n  Opaque: blocks ALL light — no glow, no image (e.g., wood, metal, cardboard).\nStep 2: The teacher could see a glow (some light passes) but NOT a clear image (light is scattered).\nStep 3: This matches TRANSLUCENT.\n\nThe answer is B.",
+    "wrong_explanations": {
+      "A": "If the material were transparent, Priya's teacher would be able to see the shape and outline of the torch clearly through it. She could not see the torch's shape — only a diffuse glow. This means the light is being scattered, which is the behaviour of a translucent material, not a transparent one.",
+      "C": "Opaque materials block ALL light. If the material were opaque, no glow would be visible at all. The teacher DID see a glow, which means some light passed through. This rules out opaque and confirms the material is translucent.",
+      "D": "Reflection involves light bouncing back from a surface towards the viewer. In this case, the torch is BEHIND the material and the teacher is in FRONT — the light is passing through, not bouncing back. Reflection is not the process being described here."
+    },
+    "examiner_note": "Three categories to memorise: Transparent = see through clearly (clear glass). Translucent = glow but no clear image (frosted glass, butter paper). Opaque = no light passes (wood, metal). PSLE may give everyday examples and ask you to classify them.",
+    "marks": 2
+  },
+  {
+    "id": "p4s-lt-shadow01",
+    "subject": "Science",
+    "level": "Primary 4",
+    "topic": "Light",
+    "sub_topic": "Shadows",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "question_text": "Siti noticed that when she stood in the school field during morning assembly, her shadow was very long. By noon, when the Sun was directly overhead, her shadow had become very short.\n\nWhich explanation correctly describes why Siti's shadow changed length throughout the day?",
+    "options": [
+      "Siti's shadow was longer in the morning because she was taller in the morning, and a person's shadow length always matches their actual height.",
+      "Siti's shadow was longer in the morning because the Sun was lower in the sky, casting light at a low angle and projecting a long shadow across the ground.",
+      "Siti's shadow was longer in the morning because the Sun was further from Earth in the morning than at noon, making the sunlight weaker and less able to reduce shadow size.",
+      "Siti's shadow was shorter at noon because the noontime Sun is hotter, and hotter light produces shorter, more concentrated shadows."
+    ],
+    "correct_answer": "B",
+    "worked_solution": "Step 1: Recall that shadows are formed when an opaque object blocks light.\nStep 2: The length of a shadow depends on the ANGLE of the light source.\n  Morning: Sun is LOW in the sky → light comes in at a LOW ANGLE → shadow is LONG\n  Noon: Sun is HIGH in the sky (nearly overhead) → light comes almost straight DOWN → shadow is SHORT\nStep 3: Siti's height has not changed. The Sun's distance from Earth does not change significantly during a day. The only factor is the angle of the sunlight.\n\nThe answer is B.",
+    "wrong_explanations": {
+      "A": "People do not change height throughout the day. Shadow length depends on the ANGLE of the light source relative to the object, not the object's height. Two people of different heights standing at the same time will have different shadow lengths, but each person's shadow changes throughout the day due to the Sun's angle.",
+      "C": "The Sun's distance from Earth does not change meaningfully between morning and noon (the Earth is roughly the same distance from the Sun all day). Shadow length changes because the Sun's ANGLE changes as it moves across the sky, not because of any change in distance.",
+      "D": "The temperature of light does not affect shadow length. Shadows are formed by the BLOCKING of light, and their length is determined by the geometry of the angle between the light source, the object, and the ground — not by how hot the light source is."
+    },
+    "examiner_note": "Shadow length rule: higher light source = shorter shadow. Lower light source = longer shadow. At noon, the Sun is highest → shortest shadows. At sunrise/sunset, the Sun is lowest → longest shadows. Draw a diagram in your exam to show the angle and shadow clearly.",
+    "marks": 2
+  }
+]

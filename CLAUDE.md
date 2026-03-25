@@ -169,14 +169,16 @@ COMPLETED:
 [x] Repo structure scaffolded
 [x] CSS design system
 [x] Marketing homepage
-[x] Subject selection page
-[x] Quiz engine (static questions)
+[x] Subject selection page (with topic selection step)
+[x] Quiz engine — 6 question types (mcq, short_ans, word_problem, open_ended, cloze, editing)
 [x] AI tutor chat interface
 [x] Anthropic API integration (api/chat.js)
 [x] Auth pages (login/signup)
 [x] Supabase client setup
 [x] Question bank JSON files (P2/P4 Maths, English, Science)
+[x] Topic-split JSON files (p4-mathematics-fractions.json etc.)
 [x] ECC framework implemented
+[x] Master Question Template implemented (6 types, MOE/PSLE aligned)
 
 IN PROGRESS:
 [ ] Auth logic (session management, paywall)

@@ -431,17 +431,103 @@
         });
       });
 
-      /* Level button navigation */
+      /* Topic map — subject:level → available topics (label : slug) */
+      const TOPICS = {
+        'mathematics:primary-2': [
+          { label: 'Whole Numbers',            slug: 'whole-numbers' },
+          { label: 'Addition & Subtraction',   slug: 'addition-and-subtraction' },
+          { label: 'Multiplication & Division', slug: 'multiplication-and-division' },
+          { label: 'Fractions',                slug: 'fractions' },
+          { label: 'Money',                    slug: 'money' },
+        ],
+        'mathematics:primary-4': [
+          { label: 'Fractions',                slug: 'fractions' },
+          { label: 'Decimals',                 slug: 'decimals' },
+          { label: 'Whole Numbers',            slug: 'whole-numbers' },
+          { label: 'Geometry',                 slug: 'geometry' },
+        ],
+        'science:primary-4': [
+          { label: 'Heat',                     slug: 'heat' },
+          { label: 'Light',                    slug: 'light' },
+          { label: 'Matter',                   slug: 'matter' },
+          { label: 'Magnets',                  slug: 'magnets' },
+        ],
+        'english:primary-2': [
+          { label: 'Grammar',                  slug: 'grammar' },
+          { label: 'Vocabulary',               slug: 'vocabulary' },
+          { label: 'Comprehension',            slug: 'comprehension' },
+        ],
+        'english:primary-4': [
+          { label: 'Grammar',                  slug: 'grammar' },
+          { label: 'Vocabulary',               slug: 'vocabulary' },
+          { label: 'Comprehension',            slug: 'comprehension' },
+        ],
+      };
+
+      /* Level button — shows topic picker if topics exist, else navigates directly */
       document.querySelectorAll('.level-btn').forEach(function (btn) {
         btn.addEventListener('click', function (e) {
           e.stopPropagation();
           const subject = btn.getAttribute('data-subject');
           const level   = btn.getAttribute('data-level');
-          btn.closest('.subject-levels').querySelectorAll('.level-btn')
-             .forEach(function (b) { b.classList.remove('is-selected'); });
+          const levelsDiv = btn.closest('.subject-levels');
+
+          levelsDiv.querySelectorAll('.level-btn')
+            .forEach(function (b) { b.classList.remove('is-selected'); });
           btn.classList.add('is-selected');
-          window.location.href = 'quiz.html?subject=' +
-            encodeURIComponent(subject) + '&level=' + encodeURIComponent(level);
+
+          // Check if we have topics for this combination
+          const key    = subject + ':' + level;
+          const topics = TOPICS[key];
+
+          // Remove any existing topic picker
+          const existing = levelsDiv.querySelector('.topic-picker');
+          if (existing) existing.remove();
+
+          if (topics && topics.length > 0) {
+            // Show topic picker inline
+            const picker = document.createElement('div');
+            picker.className = 'topic-picker';
+
+            const pickerLabel = document.createElement('p');
+            pickerLabel.className   = 'topic-section-label';
+            pickerLabel.textContent = 'Choose a topic';
+            picker.appendChild(pickerLabel);
+
+            const topicList = document.createElement('div');
+            topicList.className = 'topic-list';
+
+            // "All Topics" option (loads broad file)
+            const allBtn = document.createElement('button');
+            allBtn.className   = 'topic-btn';
+            allBtn.textContent = 'All Topics';
+            allBtn.addEventListener('click', function (ev) {
+              ev.stopPropagation();
+              window.location.href = 'quiz.html?subject=' +
+                encodeURIComponent(subject) + '&level=' + encodeURIComponent(level);
+            });
+            topicList.appendChild(allBtn);
+
+            topics.forEach(function (t) {
+              const tBtn = document.createElement('button');
+              tBtn.className   = 'topic-btn';
+              tBtn.textContent = t.label;
+              tBtn.addEventListener('click', function (ev) {
+                ev.stopPropagation();
+                window.location.href = 'quiz.html?subject=' +
+                  encodeURIComponent(subject) + '&level=' + encodeURIComponent(level) +
+                  '&topic=' + encodeURIComponent(t.slug);
+              });
+              topicList.appendChild(tBtn);
+            });
+
+            picker.appendChild(topicList);
+            levelsDiv.appendChild(picker);
+          } else {
+            // No topics defined — navigate directly (fallback)
+            window.location.href = 'quiz.html?subject=' +
+              encodeURIComponent(subject) + '&level=' + encodeURIComponent(level);
+          }
         });
       });
 
@@ -454,8 +540,11 @@
        3. Cards have coloured top borders: indigo / teal / amber
        4. Topic badges use subject-matching colours
        5. Expanding a card highlights it with matching colour ring
-       6. Level buttons navigate to quiz.html?subject=X&level=Y
-       7. Mobile bottom nav shows Practise tab as active -->
+       6. Clicking P4 level for Mathematics shows topic list (Fractions, Decimals, etc.)
+       7. Clicking a topic navigates to quiz.html?subject=X&level=Y&topic=Z
+       8. Clicking "All Topics" navigates to quiz.html?subject=X&level=Y (no topic)
+       9. Clicking a level with no topics (P3, P5, etc.) navigates directly
+      10. Mobile bottom nav shows Practise tab as active -->
 
 </body>
 </html>

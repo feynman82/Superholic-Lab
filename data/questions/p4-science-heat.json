@@ -1,0 +1,102 @@
+[
+  {
+    "id": "p4-sci-heat-sample-01",
+    "subject": "Science",
+    "level": "Primary 4",
+    "topic": "Heat",
+    "sub_topic": "Heat flow and conductors",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "question_text": "Siti placed a metal spoon and a plastic spoon into a cup of hot Milo. After 2 minutes, she touched both spoon handles.\n\nWhich of the following correctly describes what Siti would observe?",
+    "options": [
+      "Both spoon handles would feel equally hot because they are in the same cup.",
+      "The metal spoon handle would feel hotter because metal is a good conductor of heat.",
+      "The plastic spoon handle would feel hotter because plastic absorbs more heat.",
+      "Neither spoon handle would feel hot because the handles are not in the Milo."
+    ],
+    "correct_answer": "B",
+    "worked_solution": "Step 1: Identify what is happening. Both spoons are placed in hot Milo. Heat flows from the hot Milo into the parts of the spoons that are submerged.\n\nStep 2: Recall: Heat flows from a hotter object to a cooler object. The hot Milo is hotter than the spoons, so heat flows from the Milo into both spoons.\n\nStep 3: Compare the materials. Metal is a good conductor of heat — it allows heat to travel through it quickly. Plastic is a poor conductor of heat (insulator) — it slows down heat transfer.\n\nStep 4: Because metal conducts heat well, heat travels quickly from the hot Milo through the metal spoon all the way up to the handle. The plastic spoon does not conduct heat well, so the handle stays cool.\n\nThe answer is B: The metal spoon handle would feel hotter because metal is a good conductor of heat.",
+    "wrong_explanations": {
+      "A": "This answer assumes both materials conduct heat equally, but they do not. Metal is a good conductor of heat while plastic is a poor conductor. Even though both spoons are in the same cup, the material of the spoon determines how quickly heat reaches the handle.",
+      "C": "Plastic does NOT absorb more heat than metal. In fact, plastic is a poor conductor — it resists heat transfer. The plastic handle stays cool precisely because plastic does not allow heat to travel through it easily.",
+      "D": "Although the handles are above the Milo, heat still travels through the spoon material from the submerged end to the handle. This is called conduction. The metal spoon conducts heat to the handle even though the handle itself is not in the liquid."
+    },
+    "examiner_note": "In PSLE, the keyword the examiner is looking for is: 'Metal is a good conductor of heat.' You must name the material AND state whether it is a good or poor conductor. Simply saying 'heat travels faster' without naming conductors will lose marks.",
+    "marks": 2
+  },
+  {
+    "id": "p4s-ht-source01",
+    "subject": "Science",
+    "level": "Primary 4",
+    "topic": "Heat",
+    "sub_topic": "Sources of Heat",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "question_text": "During recess, Ahmad bought a cup of hot Milo from the school tuck shop. Curious about heat, he looked around and identified four things near him. Which of the following is NOT a source of heat?",
+    "options": [
+      "The gas stove in the tuck shop is a source of heat because burning gas releases chemical energy in the form of heat and light.",
+      "The Sun shining through the window is a source of heat because the Sun produces its own radiant energy that can warm objects.",
+      "The metal spoon stirring the hot Milo is a source of heat because metal is a good conductor that generates heat as electricity passes through it.",
+      "The electric kettle used to boil water is a source of heat because it converts electrical energy into heat energy to raise the water temperature."
+    ],
+    "correct_answer": "C",
+    "worked_solution": "Step 1: A SOURCE of heat is something that PRODUCES its own heat energy.\nStep 2: Check each option:\n  - Gas stove: burning gas releases heat → is a source ✓\n  - Sun: produces radiant energy (its own nuclear energy) → is a source ✓\n  - Metal spoon: metal conducts heat but does NOT produce heat on its own → NOT a source ✗\n  - Electric kettle: converts electrical energy to heat → is a source ✓\nStep 3: The metal spoon is a conductor, not a source. It transfers heat from the hot Milo to the surroundings, but it does not generate heat by itself.\n\nThe answer is C.",
+    "wrong_explanations": {
+      "A": "A gas stove IS a source of heat. When gas burns, it releases chemical energy in the form of heat and light. This is heat being produced, not just transferred.",
+      "B": "The Sun IS a source of heat. The Sun generates energy through nuclear fusion in its core and radiates heat and light outward. It is the primary natural heat source for Earth.",
+      "D": "An electric kettle IS a source of heat. It converts electrical energy into heat energy, which raises the temperature of the water. The electrical energy is transformed (produced as heat), making it a source."
+    },
+    "examiner_note": "A source of heat PRODUCES its own heat. A conductor merely TRANSFERS heat from one place to another. In PSLE, you must distinguish between a heat source (e.g., Sun, candle, stove) and a heat conductor (e.g., metal spoon, copper wire).",
+    "marks": 2
+  },
+  {
+    "id": "p4s-ht-expand01",
+    "subject": "Science",
+    "level": "Primary 4",
+    "topic": "Heat",
+    "sub_topic": "Thermal Expansion",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "question_text": "Siti noticed that the metal lid of a glass jar of peanut butter was stuck tightly and impossible to open. Her mother suggested holding the lid under warm running tap water for about 30 seconds. After doing this, Siti could open the jar easily.\n\nWhich explanation correctly describes why the lid became easier to open?",
+    "options": [
+      "The warm water caused the glass jar to shrink slightly inwards, creating a small gap between the jar and the metal lid so it could be turned.",
+      "The warm water caused the metal lid to expand slightly outwards, loosening the tight seal between the lid and the top of the glass jar.",
+      "The warm water dissolved the sticky air-tight seal bonding the metal lid to the glass jar, breaking the grip that held it in place.",
+      "The warm water cooled the metal lid by drawing heat away from it, causing the lid to contract and become loose enough to turn."
+    ],
+    "correct_answer": "B",
+    "worked_solution": "Step 1: When a material is heated, its particles gain energy and move further apart, causing the material to EXPAND.\nStep 2: The metal lid was heated by the warm water. Metal expands more than glass when heated by the same amount.\nStep 3: As the metal lid expanded outwards, the tight seal between the lid and the jar top loosened.\nStep 4: This made it easier to turn and open.\n\nThe answer is B: the metal lid expanded when heated.",
+    "wrong_explanations": {
+      "A": "Heat causes materials to EXPAND, not shrink. The glass jar would also expand slightly, but metal expands more than glass. The correct explanation involves the lid expanding outward, not the jar shrinking inward.",
+      "C": "Warm water does not dissolve a metal-glass mechanical seal. The jar is sealed by a tight physical fit, not a chemical bond. Warm water works because of thermal expansion — the physics of materials changing size when heated — not any chemical reaction.",
+      "D": "Warm water is HOTTER than the metal lid, so it transfers heat INTO the lid, causing the lid to heat up and expand. It does not cool the lid. Contraction (shrinking) happens when objects LOSE heat — the opposite of what is happening here."
+    },
+    "examiner_note": "Use this sentence structure for thermal expansion answers: '[Material] is heated → its particles gain energy and move further apart → [material] expands.' Always name the material and state expansion as the result. This structure earns full marks in structured questions.",
+    "marks": 2
+  },
+  {
+    "id": "p4s-ht-insul01",
+    "subject": "Science",
+    "level": "Primary 4",
+    "topic": "Heat",
+    "sub_topic": "Heat Insulators",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "question_text": "At the hawker centre near Ahmad's home, he noticed that the handles of metal cooking pots were all made of black plastic or wood, even though the pot body was made of stainless steel.\n\nWhy are the handles made of plastic or wood instead of stainless steel?",
+    "options": [
+      "The handles are made of plastic because plastic is more expensive than stainless steel, and a higher material cost signals better quality to customers.",
+      "The handles are made of plastic because plastic is harder and stronger than stainless steel, and stronger handles make the pots safer to use.",
+      "The handles are made of plastic because plastic is a poor conductor of heat, so heat from the hot pot does not travel through the handle to the cook's hand.",
+      "The handles are made of plastic because plastic is a good conductor of heat, which allows heat to travel quickly away from the pot and into the surrounding air."
+    ],
+    "correct_answer": "C",
+    "worked_solution": "Step 1: Stainless steel is a good conductor of heat. If handles were made of steel, heat from the hot pot would quickly travel to the handles, burning the cook's hands.\nStep 2: Plastic and wood are POOR conductors of heat (they are insulators). Poor conductors slow down or prevent heat transfer.\nStep 3: By using plastic or wood handles, heat does not travel easily from the hot pot to the handles, keeping them safe and cool to touch.\n\nThe answer is C.",
+    "wrong_explanations": {
+      "A": "Cost is not the scientific reason for choosing plastic handles. Stainless steel is more expensive than plastic, not the other way around. The reason is about heat conductivity and safety, not material cost.",
+      "B": "Plastic is NOT harder or stronger than stainless steel. Stainless steel is significantly harder and more durable. The reason for using plastic handles is its low thermal conductivity — it keeps the handle cool, not its strength.",
+      "D": "Plastic is a POOR conductor of heat, not a good one. A good conductor would transfer heat away quickly, potentially making the handle hot. Plastic is chosen precisely because it is a poor conductor — it slows heat transfer from the pot to the handle, protecting the cook's hands."
+    },
+    "examiner_note": "When explaining why insulators are used in everyday objects, always state: (1) the material is a poor conductor of heat, and (2) this prevents heat from travelling to the part that must stay cool. Both parts are needed for full marks.",
+    "marks": 2
+  }
+]

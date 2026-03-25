@@ -221,6 +221,10 @@
 /* ─────────────────────────────────────────────────────────────
    RESET & BASE
    ───────────────────────────────────────────────────────────── */
+/* Enforce [hidden] attribute — author display classes (e.g. .flex) would otherwise
+   override the UA stylesheet's display:none, causing hidden elements to stay visible. */
+[hidden] { display: none !important; }
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -1849,6 +1853,274 @@ small, .text-sm  { font-size: 0.875rem; }
   .reveal, .animate-in { opacity: 1 !important; transform: none !important; }
 }
 
+/* ── Question type UI components ────────────────────────────── */
+
+/* Marks badge — small pill showing "2 marks" */
+.badge-marks {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  border: 1px solid var(--primary);
+}
+
+/* Short answer input */
+.quiz-short-ans-input {
+  font-size: 1.0625rem;
+  padding: var(--space-3) var(--space-4);
+  width: 100%;
+}
+
+/* ── Word problem ────────────────────────────────────────────── */
+.quiz-wp-part {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  margin-bottom: var(--space-3);
+}
+
+.quiz-wp-part-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.quiz-wp-part-label {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--primary);
+}
+
+.quiz-wp-part-question {
+  color: var(--text-primary);
+  margin: 0 0 var(--space-2);
+  line-height: 1.6;
+}
+
+.quiz-wp-part-textarea {
+  width: 100%;
+  min-height: 80px;
+  resize: vertical;
+}
+
+.quiz-wp-model-heading {
+  font-weight: 700;
+  color: var(--success);
+  margin: 0 0 var(--space-2);
+}
+
+.quiz-wp-model-answer {
+  display: flex;
+  gap: var(--space-2);
+  align-items: baseline;
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+
+.quiz-wp-model-answer:last-child {
+  border-bottom: none;
+}
+
+#quiz-wp-model,
+#quiz-oe-model {
+  margin-top: var(--space-4);
+  padding: var(--space-4);
+  background: color-mix(in srgb, var(--success) 8%, var(--white));
+  border: 1px solid color-mix(in srgb, var(--success) 40%, transparent);
+  border-radius: var(--radius-lg);
+}
+
+/* ── Open-ended ──────────────────────────────────────────────── */
+.quiz-oe-answer {
+  color: var(--text-primary);
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* Keywords highlighted in accent colour */
+.quiz-oe-keyword {
+  color: var(--primary-dark);
+  background: var(--primary-light);
+  border-radius: 3px;
+  padding: 0 2px;
+  font-weight: 700;
+}
+
+/* ── Cloze passage ───────────────────────────────────────────── */
+.quiz-cloze-passage {
+  font-size: 1rem;
+  line-height: 2;
+  color: var(--text-primary);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  margin-bottom: var(--space-2);
+}
+
+.quiz-cloze-select {
+  display: inline-block;
+  font-family: inherit;
+  font-size: 0.9375rem;
+  padding: 0.125rem var(--space-2);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--white);
+  color: var(--text-primary);
+  cursor: pointer;
+  margin: 0 2px;
+  vertical-align: middle;
+  transition: border-color var(--transition);
+}
+
+.quiz-cloze-select:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.quiz-cloze-select.quiz-cloze-correct {
+  border-color: var(--success);
+  background: color-mix(in srgb, var(--success) 10%, var(--white));
+}
+
+.quiz-cloze-select.quiz-cloze-wrong {
+  border-color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 8%, var(--white));
+}
+
+.quiz-cloze-hint {
+  color: var(--success);
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+/* ── Editing exercise ────────────────────────────────────────── */
+.quiz-editing-line {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.quiz-editing-line:last-child {
+  border-bottom: none;
+}
+
+.quiz-editing-line-num {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+  min-width: 1.5rem;
+  flex-shrink: 0;
+}
+
+.quiz-editing-text {
+  flex: 1;
+  color: var(--text-primary);
+  line-height: 1.6;
+  min-width: 0;
+}
+
+/* The erroneous underlined word in the passage */
+.quiz-editing-underline {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--danger);
+  font-style: italic;
+  color: var(--danger);
+}
+
+.quiz-editing-input {
+  width: 120px;
+  flex-shrink: 0;
+  font-size: 0.9375rem;
+  padding: var(--space-1) var(--space-2);
+}
+
+.quiz-editing-correct {
+  color: var(--success);
+  font-weight: 700;
+  font-size: 0.9375rem;
+}
+
+.quiz-editing-wrong {
+  color: var(--danger);
+  font-weight: 700;
+  font-size: 0.9375rem;
+}
+
+.quiz-editing-explanation {
+  color: var(--text-secondary);
+  font-size: 0.8125rem;
+  font-style: italic;
+}
+
+/* Mobile adjustments for editing exercise */
+@media (max-width: 480px) {
+  .quiz-editing-line {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-1);
+  }
+  .quiz-editing-input {
+    width: 100%;
+  }
+  .quiz-cloze-passage {
+    line-height: 2.4;
+  }
+}
+
+/* ── Topic selection in subjects.html ────────────────────────── */
+.topic-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.topic-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  border: 2px solid var(--border);
+  background: var(--white);
+  color: var(--text-primary);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color var(--transition), background var(--transition), color var(--transition);
+  font-family: inherit;
+}
+
+.topic-btn:hover,
+.topic-btn:focus-visible {
+  border-color: var(--primary);
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  outline: none;
+}
+
+.topic-section-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: var(--space-3) 0 var(--space-1);
+}
+
 /* TEST:
    1. Open any page — Nunito font on h1/h2, Jakarta Sans on body
    2. Scroll down on index.html — navbar gains glass blur effect
@@ -1859,4 +2131,10 @@ small, .text-sm  { font-size: 0.875rem; }
    7. .quiz-option.is-correct plays green pulse animation
    8. .quiz-option.is-wrong plays red shake animation
    9. Pricing card with .pricing-ribbon shows diagonal amber strip
-  10. Wave divider renders without gap between hero and next section */
+  10. Wave divider renders without gap between hero and next section
+  11. short_ans input renders larger, shows green/red border on check
+  12. word_problem renders (a)(b) parts with textareas, reveals model answers
+  13. open_ended shows textarea + See Model Answer with keywords bolded
+  14. cloze renders passage with inline dropdowns, grades per blank
+  15. editing shows underlined words in red italic, input per line
+  16. .badge-marks renders as small indigo pill beside question */

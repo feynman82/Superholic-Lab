@@ -1,0 +1,52 @@
+[
+  {
+    "id": "p2m-mn01",
+    "subject": "Mathematics",
+    "level": "Primary 2",
+    "topic": "Money",
+    "sub_topic": "Subtracting Money",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "question_text": "Siti had $4.50 in her wallet. At the school canteen, she bought a bowl of chicken rice for $1.20.\n\nHow much money does Siti have left?",
+    "options": [
+      "Siti has $2.30 left, because $4.50 − $1.20 = $3.30 but the student subtracted an extra dollar in error.",
+      "Siti has $3.20 left, because $4.50 − $1.20 gives $3.20 when the cents are subtracted as 50 − 20 = 20.",
+      "Siti has $3.30 left, because $4.50 − $1.20: cents are 50 − 20 = 30 cents, and dollars are 4 − 1 = 3 dollars, giving $3.30.",
+      "Siti has $5.70 left, because Siti spent $1.20 at the canteen but went home and her mother topped up her wallet."
+    ],
+    "correct_answer": "C",
+    "worked_solution": "Step 1: Subtract the cents: 50 cents − 20 cents = 30 cents.\nStep 2: Subtract the dollars: $4 − $1 = $3.\nStep 3: Combine: $3 + 30 cents = $3.30.\n\nSiti has $3.30 left.",
+    "wrong_explanations": {
+      "A": "$2.30 would be correct if Siti spent $2.20, not $1.20. The student may have made an arithmetic error in the dollars column. $4 − $1 = $3 (not $2).",
+      "B": "$3.20 comes from an error in the cents: 50 − 20 = 30, not 20. Subtracting 20 cents from 50 cents gives 30 cents. The full answer is $3.30.",
+      "D": "$5.70 is the result of adding $4.50 + $1.20 = $5.70. The question says Siti SPENT (used) money, so the total must DECREASE. 'Bought' and 'how much left' are key words for subtraction."
+    },
+    "examiner_note": "For money subtraction: subtract cents first, then dollars. If cents cannot be subtracted, regroup (borrow $1 = 100 cents). Here, 50 − 20 = 30 cents. No regrouping needed. $4 − $1 = $3. Final: $3.30.",
+    "marks": 2
+  },
+  {
+    "id": "p2m-mn02",
+    "subject": "Mathematics",
+    "level": "Primary 2",
+    "topic": "Money",
+    "sub_topic": "Calculating Change",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "question_text": "Ahmad bought a pencil case at the school bookshop for $3.75. He paid with a $5 note.\n\nHow much change should Ahmad receive?",
+    "options": [
+      "Ahmad should receive $1.35 change, because $5.00 − $3.75 = $1.35 after making an error in the dollars column.",
+      "Ahmad should receive $1.25 change, because $5.00 − $3.75: cents are 100 − 75 = 25 cents, dollars are 4 − 3 = 1 dollar, giving $1.25.",
+      "Ahmad should receive $2.25 change, because $5.00 − $3.75 gives $2.25 when the regrouping is done incorrectly.",
+      "Ahmad should receive $8.75 change, because the total amount of money Ahmad has after paying is $5.00 + $3.75."
+    ],
+    "correct_answer": "B",
+    "worked_solution": "Step 1: $5.00 − $3.75.\nStep 2: Cents: 0 − 75. Need to regroup. Borrow $1 from the dollars.\n  100 cents − 75 cents = 25 cents.\nStep 3: Dollars: 5 − 1 (borrowed) = 4, then 4 − 3 = 1 dollar.\nStep 4: Answer: $1.25.\n\nAhmad should receive $1.25 change.",
+    "wrong_explanations": {
+      "A": "$1.35 contains an error in the cents column. 100 − 75 = 25, not 35. When you regroup $1 as 100 cents and subtract 75 cents, the result is 25 cents, giving $1.25.",
+      "C": "$2.25 comes from an error in the dollars column. After borrowing 1 from $5 (leaving $4) and subtracting $3, you get $1, not $2. The change is $1.25.",
+      "D": "$8.75 is the result of ADDING $5.00 + $3.75 instead of subtracting. Change is always calculated by SUBTRACTING the cost from the amount paid. Ahmad paid $5 and the item cost $3.75, so change = $5.00 − $3.75 = $1.25."
+    },
+    "examiner_note": "Change = amount paid − cost. $5.00 − $3.75: work in cents. 500 cents − 375 cents = 125 cents = $1.25. Always double-check: $3.75 + $1.25 = $5.00 ✓. This 'add-back' check confirms the change is correct.",
+    "marks": 2
+  }
+]

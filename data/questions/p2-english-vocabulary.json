@@ -1,0 +1,77 @@
+[
+  {
+    "id": "p2e-vc01",
+    "subject": "English",
+    "level": "Primary 2",
+    "topic": "Vocabulary",
+    "sub_topic": "Synonyms",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "question_text": "Ahmad felt very happy when he received a red packet from his grandparents on Chinese New Year morning. Which word means the SAME as 'happy'?",
+    "options": [
+      "'Sad' means the same as 'happy', because both are feelings and feeling words often mean similar things.",
+      "'Angry' means the same as 'happy', because 'angry' is a strong feeling, just like 'happy' is a strong feeling.",
+      "'Glad' means the same as 'happy', because 'glad' means pleased or joyful, which is the same meaning as 'happy'.",
+      "'Tired' means the same as 'happy', because after a long day of celebrations, you feel both happy and tired."
+    ],
+    "correct_answer": "C",
+    "worked_solution": "Step 1: Find the meaning of 'happy' — feeling joy or pleasure, being pleased.\nStep 2: Check which option has the same meaning.\n  Sad = feeling unhappy or sorrowful (OPPOSITE of happy).\n  Angry = feeling strong displeasure (NOT the same as happy).\n  Glad = feeling pleased or joyful (SAME as happy) ✓.\n  Tired = feeling the need for rest (UNRELATED to happy).\nStep 3: 'Glad' is the synonym.\n\nThe answer is 'glad'.",
+    "wrong_explanations": {
+      "A": "'Sad' is the ANTONYM (opposite) of 'happy', not a synonym. When Ahmad received a red packet, he felt pleased and joyful — not sad. Synonyms must have the SAME meaning, not the opposite meaning.",
+      "B": "'Angry' is a negative emotion involving displeasure and frustration. It is completely different from 'happy', which is a positive emotion. Both are strong feelings, but having the same strength does not make them synonyms.",
+      "D": "'Tired' means needing rest or feeling sleepy. It describes a physical state, not an emotional state of joy. Ahmad being 'tired' from celebrations does not make 'tired' a synonym for 'happy' — they describe entirely different experiences."
+    },
+    "examiner_note": "A synonym must have the SAME meaning as the original word. Common synonyms to know: happy = glad/joyful/pleased. sad = unhappy/sorrowful/gloomy. big = large/huge/enormous. small = little/tiny/miniature.",
+    "marks": 1
+  },
+  {
+    "id": "p2e-vc02",
+    "subject": "English",
+    "level": "Primary 2",
+    "topic": "Vocabulary",
+    "sub_topic": "Homophones",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "question_text": "Priya was sitting on the steps outside her flat when she heard something beautiful. Choose the correct word to complete the sentence.\n\nPriya could ______ the birds singing in the tree outside her window.",
+    "options": [
+      "Priya could hear the birds singing, because 'hear' means to perceive sound using your ears.",
+      "Priya could here the birds singing, because 'here' describes the place where Priya was sitting when she listened.",
+      "Priya could hare the birds singing, because 'hare' is an animal that is known for its sharp hearing abilities.",
+      "Priya could hair the birds singing, because 'hair' and 'hear' sound similar when spoken quickly."
+    ],
+    "correct_answer": "A",
+    "worked_solution": "Step 1: Understand the meaning needed — perceiving the birds' song with your ears.\nStep 2: Check the homophones (words that sound the same but have different meanings).\n  hear = to perceive sound (using your ears) ✓\n  here = in this place ('Come here!')\n  hare = a rabbit-like animal\n  hair = what grows on your head\nStep 3: 'Priya could HEAR the birds singing.' ✓\n\nThe answer is 'hear'.",
+    "wrong_explanations": {
+      "B": "'Here' is an adverb of place meaning 'at this location' (e.g., 'Please stand here'). It has nothing to do with listening. Although 'here' and 'hear' sound similar (they are homophones), they have completely different meanings.",
+      "C": "'Hare' is a noun — an animal related to the rabbit. It sounds like 'hair' but is not the same word as 'hear'. 'Hare' cannot be used as a verb meaning to listen. The fact that hares may have sharp hearing is not relevant to the sentence.",
+      "D": "'Hair' is what grows on your head. It is not a verb and has nothing to do with listening. 'Hair' sounds similar to 'here' and 'hare', but all four words (hear, here, hare, hair) have entirely different meanings and spellings."
+    },
+    "examiner_note": "Homophones are words that SOUND the same but have DIFFERENT spellings and meanings. Common pairs: hear/here, there/their/they're, to/too/two, write/right, see/sea, bare/bear, meet/meat. Always check the MEANING in context.",
+    "marks": 1
+  },
+  {
+    "id": "p2e-vc03",
+    "subject": "English",
+    "level": "Primary 2",
+    "topic": "Vocabulary",
+    "sub_topic": "Describing Words",
+    "difficulty": "Foundation",
+    "type": "mcq",
+    "question_text": "MeiLing's grandmother showed her a kitten she found near their block. Choose the best describing word.\n\nThe ______ kitten purred softly as MeiLing held it in her arms.",
+    "options": [
+      "The fierce kitten purred softly as MeiLing held it, because 'fierce' means the kitten was energetic and active while purring.",
+      "The tiny kitten purred softly as MeiLing held it, because 'tiny' means very small, which matches the image of a kitten being held in someone's arms.",
+      "The enormous kitten purred softly as MeiLing held it, because 'enormous' means it was big enough to be comfortable in her arms.",
+      "The scary kitten purred softly as MeiLing held it, because the kitten's sound was new and unfamiliar to MeiLing."
+    ],
+    "correct_answer": "B",
+    "worked_solution": "Step 1: Think about what makes sense in the context.\n  The kitten is purring softly — this is a gentle, calm action.\n  MeiLing is holding it in her arms — it must be small enough to hold.\nStep 2: Choose the describing word that fits.\n  Tiny = very small ✓ (kittens are small and can be held in your arms)\n  Fierce = aggressive (contradicts 'purring softly' — a fierce animal would not purr gently)\n  Enormous = very big (would not fit in her arms)\n  Scary = frightening (purring softly is not scary)\n\nThe answer is 'tiny'.",
+    "wrong_explanations": {
+      "A": "'Fierce' means aggressive, wild, or dangerous. An animal that purrs SOFTLY is calm and gentle — the exact opposite of fierce. The clue words 'purred softly' tell you the kitten is peaceful, not fierce.",
+      "C": "'Enormous' means extremely large. If the kitten were enormous, MeiLing would not be able to hold it comfortably in her arms. Kittens are small animals, and 'enormous' completely contradicts both the image of a kitten and the detail about holding it.",
+      "D": "'Scary' means frightening. The sentence creates a warm, peaceful image — MeiLing is happily holding the kitten while it purrs softly. A scary kitten would make MeiLing afraid, not comfortable holding it. 'Tiny' fits the cosy, gentle scene."
+    },
+    "examiner_note": "When choosing a describing word, check that it matches ALL the clues in the sentence. Here: (1) the animal purrs softly → it is calm and gentle. (2) MeiLing holds it in her arms → it must be small. Both clues point to 'tiny'.",
+    "marks": 1
+  }
+]
