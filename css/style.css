@@ -58,6 +58,8 @@
   --text-primary:   var(--cream);
   --text-secondary: var(--sage-light);
   --text-on-dark:   var(--cream);
+  --text:           var(--cream);        /* alias used by auth/setup pages */
+  --text-muted:     var(--sage-light);   /* alias used by auth/setup pages */
 
   /* Surfaces */
   --bg:             var(--sage-dark);

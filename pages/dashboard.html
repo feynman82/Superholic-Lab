@@ -4,190 +4,196 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard — Superholic Lab</title>
-  <meta name="robots" content="noindex, nofollow" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="../css/style.css" />
-  <link rel="icon" href="../assets/favicon.ico" />
-  <!-- Analytics: ⚠️ CONFIGURE — sign up at plausible.io and add superholiclab.com -->
-  <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js"></script>
-</head>
-<body class="has-bottom-nav">
-  <header class="navbar is-scrolled" id="navbar">
-    <div class="container">
-      <nav class="navbar-inner">
-        <a href="../index.html" class="navbar-logo">
-          <img src="../assets/logo.svg" width="32" height="32" alt="" aria-hidden="true" style="border-radius:8px;flex-shrink:0;">
-          Superholic Lab
-        </a>
-        <div class="navbar-actions">
-          <a href="subjects.html" class="btn btn-primary btn-sm">Start Practising</a>
-        </div>
-      </nav>
-    </div>
-  </header>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    body { background: var(--bg); min-height: 100vh; font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text); }
 
-  <div style="background: var(--hero-gradient); padding: var(--space-8) 0 var(--space-14); position:relative; overflow:hidden;">
-    <div class="container" style="position:relative;z-index:1;">
-      <h1 class="animate-in delay-1" style="color:white; margin-top:var(--space-2);" id="dash-greeting">Welcome back!</h1>
-      <p class="animate-in delay-2" style="color:rgba(255,255,255,0.82);" id="dash-subline">Ready to practise today?</p>
+    /* Nav */
+    .nav { display: flex; align-items: center; justify-content: space-between; padding: 1rem 2rem; background: var(--surface); border-bottom: 1px solid var(--border); }
+    .nav-logo { font-size: 1.2rem; font-weight: 800; color: var(--primary); text-decoration: none; }
+    .nav-right { display: flex; align-items: center; gap: 1rem; }
+    .plan-badge { font-size: .75rem; font-weight: 700; padding: .25rem .75rem; border-radius: 99px; background: #e0f2fe; color: #0369a1; }
+    .plan-badge.trial { background: #fef3c7; color: #b45309; }
+    .plan-badge.admin { background: #fce7f3; color: #9d174d; }
+    .btn-signout { font-size: .875rem; color: var(--text-muted); background: none; border: none; cursor: pointer; padding: .25rem .5rem; }
+    .btn-signout:hover { color: var(--text); }
+
+    /* Banner */
+    .trial-banner { background: #fef3c7; border-bottom: 1px solid #fde68a; padding: .75rem 2rem; display: flex; align-items: center; justify-content: space-between; font-size: .9rem; }
+    .trial-banner strong { color: #92400e; }
+    .btn-upgrade { background: #f59e0b; color: #fff; border: none; border-radius: .5rem; padding: .375rem 1rem; font-size: .8rem; font-weight: 700; cursor: pointer; text-decoration: none; }
+
+    /* Main */
+    .main { max-width: 900px; margin: 0 auto; padding: 2.5rem 1.5rem; }
+    .welcome { font-size: 1.75rem; font-weight: 800; margin-bottom: .25rem; }
+    .welcome-sub { color: var(--text-muted); margin-bottom: 2rem; font-size: .95rem; }
+
+    /* Student cards */
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+    .section-title { font-size: 1rem; font-weight: 700; color: var(--text); }
+    .btn-add { background: var(--primary); color: #fff; border: none; border-radius: .5rem; padding: .5rem 1rem; font-size: .85rem; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: .35rem; }
+    .btn-add:hover { opacity: .9; }
+    .btn-add.hidden { visibility: hidden; }
+
+    .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.25rem; }
+    .student-card { background: var(--surface); border: 1.5px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: box-shadow .2s, border-color .2s; }
+    .student-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); border-color: var(--primary); }
+    .card-avatar { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), #818cf8); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.25rem; font-weight: 800; margin-bottom: 1rem; }
+    .card-name { font-weight: 700; font-size: 1.05rem; margin-bottom: .2rem; }
+    .card-meta { font-size: .8rem; color: var(--text-muted); margin-bottom: 1rem; }
+    .card-tag { display: inline-block; background: var(--bg); border: 1px solid var(--border); border-radius: 99px; padding: .15rem .6rem; font-size: .75rem; color: var(--text-muted); }
+    .btn-practice { width: 100%; background: var(--primary); color: #fff; border: none; border-radius: .5rem; padding: .625rem; font-size: .875rem; font-weight: 700; cursor: pointer; margin-top: .75rem; text-decoration: none; display: block; text-align: center; }
+    .btn-practice:hover { opacity: .9; }
+
+    /* Empty state */
+    .empty-state { text-align: center; padding: 3rem 1rem; color: var(--text-muted); }
+    .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+
+    /* Admin section */
+    .admin-panel { background: #fdf4ff; border: 1.5px solid #e9d5ff; border-radius: 1rem; padding: 1.5rem; margin-top: 2rem; }
+    .admin-panel h3 { font-size: 1rem; font-weight: 700; color: #7c3aed; margin-bottom: .75rem; }
+    .admin-stat { display: inline-block; background: #fff; border: 1px solid #e9d5ff; border-radius: .5rem; padding: .5rem 1rem; font-size: .875rem; margin-right: .75rem; margin-bottom: .5rem; }
+    .admin-stat strong { color: #7c3aed; }
+
+    /* Loading skeleton */
+    .skeleton { background: linear-gradient(90deg, var(--border) 25%, var(--surface) 50%, var(--border) 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: .5rem; height: 1rem; }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+  </style>
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav class="nav">
+    <a href="/pages/dashboard.html" class="nav-logo">⚡ Superholic Lab</a>
+    <div class="nav-right">
+      <span class="plan-badge" id="planBadge"></span>
+      <button class="btn-signout" onclick="handleSignOut()">Sign out</button>
     </div>
-    <div class="wave-divider" aria-hidden="true">
-      <svg viewBox="0 0 1440 70" preserveAspectRatio="none">
-        <path d="M0,40 C360,70 720,10 1080,40 C1260,55 1380,30 1440,40 L1440,70 L0,70 Z" fill="#4A5C58"/>
-      </svg>
-    </div>
+  </nav>
+
+  <!-- Trial banner (shown conditionally) -->
+  <div class="trial-banner" id="trialBanner" style="display:none">
+    <span>🎁 <strong id="trialDaysLeft"></strong> left in your free trial</span>
+    <a href="/pages/pricing.html" class="btn-upgrade">Upgrade now →</a>
   </div>
 
-  <main style="padding: var(--space-8) 0 var(--space-16);">
-    <div class="container">
+  <!-- Main -->
+  <main class="main">
+    <h1 class="welcome" id="welcomeMsg">Welcome back 👋</h1>
+    <p class="welcome-sub" id="welcomeSub">Here's what's happening for your learner today.</p>
 
-      <!-- Checkout success banner -->
-      <div id="checkout-success-banner" class="alert alert-success mb-6" hidden role="status">
-        Subscription activated — welcome to Superholic Lab! Your child now has unlimited access.
-      </div>
+    <div class="section-header">
+      <div class="section-title">Your learners</div>
+      <a href="/pages/setup.html" class="btn-add" id="addChildBtn">＋ Add child</a>
+    </div>
 
-      <!-- Trial status banner (populated by JS) -->
-      <div id="trial-banner" class="alert alert-info mb-6" hidden>
-        <span id="trial-banner-text"></span>
-        <a href="pricing.html" style="font-weight:600; margin-left:var(--space-3);">Upgrade now</a>
-      </div>
+    <div class="cards-grid" id="cardsGrid">
+      <!-- Populated by JS -->
+      <div class="skeleton" style="height:180px; border-radius:1rem;"></div>
+    </div>
 
-      <!-- Quick action cards -->
-      <div class="grid grid-3 reveal-group" style="margin-bottom:var(--space-8);">
-
-        <a href="subjects.html" class="card" style="text-decoration:none; display:block;">
-          <div class="card-body text-center" style="padding:var(--space-6);">
-            <div style="width:52px;height:52px;border-radius:var(--radius-lg);background:rgba(126,184,255,0.15);display:flex;align-items:center;justify-content:center;margin:0 auto var(--space-4);">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#7EB8FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-              </svg>
-            </div>
-            <div style="font-weight:700; margin-bottom:var(--space-1);">Start a Quiz</div>
-            <div class="text-secondary text-sm">Pick a subject and level</div>
-          </div>
-        </a>
-
-        <a href="tutor.html" class="card" style="text-decoration:none; display:block;">
-          <div class="card-body text-center" style="padding:var(--space-6);">
-            <div style="width:52px;height:52px;border-radius:var(--radius-lg);background:rgba(57,255,179,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto var(--space-4);">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#39FFB3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
-              </svg>
-            </div>
-            <div style="font-weight:700; margin-bottom:var(--space-1);">Ask AI Tutor</div>
-            <div class="text-secondary text-sm">Get guided explanations</div>
-          </div>
-        </a>
-
-        <a href="progress.html" class="card" style="text-decoration:none; display:block;">
-          <div class="card-body text-center" style="padding:var(--space-6);">
-            <div style="width:52px;height:52px;border-radius:var(--radius-lg);background:rgba(255,184,48,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto var(--space-4);">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#FFB830" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-              </svg>
-            </div>
-            <div style="font-weight:700; margin-bottom:var(--space-1);">My Progress</div>
-            <div class="text-secondary text-sm">Accuracy, streaks, weak topics</div>
-          </div>
-        </a>
-
-      </div>
-
-      <!-- Subject quick-launch -->
-      <div class="card no-hover reveal" style="margin-bottom:var(--space-6);">
-        <div class="card-header">
-          <h2 style="font-size:1rem; font-weight:600;">Quick Start</h2>
-          <p class="text-secondary text-sm mt-1">Jump straight into a topic</p>
-        </div>
-        <div class="card-body">
-          <div class="flex gap-3" style="flex-wrap:wrap;">
-            <a href="quiz.html?subject=mathematics&level=primary-4" class="btn btn-secondary btn-sm" style="border-left:3px solid var(--maths-colour);">P4 Mathematics</a>
-            <a href="quiz.html?subject=mathematics&level=primary-2" class="btn btn-secondary btn-sm" style="border-left:3px solid var(--maths-colour);">P2 Mathematics</a>
-            <a href="quiz.html?subject=science&level=primary-4"     class="btn btn-secondary btn-sm" style="border-left:3px solid var(--science-colour);">P4 Science</a>
-            <a href="quiz.html?subject=english&level=primary-4"     class="btn btn-secondary btn-sm" style="border-left:3px solid var(--english-colour);">P4 English</a>
-            <a href="quiz.html?subject=english&level=primary-2"     class="btn btn-secondary btn-sm" style="border-left:3px solid var(--english-colour);">P2 English</a>
-            <a href="subjects.html" class="btn btn-secondary btn-sm">All subjects →</a>
-          </div>
-        </div>
-      </div>
-
+    <!-- Admin panel -->
+    <div class="admin-panel" id="adminPanel" style="display:none">
+      <h3>🔐 Admin Panel</h3>
+      <div id="adminStats"></div>
+      <a href="/pages/admin.html" style="font-size:.875rem; color:#7c3aed; font-weight:600;">Open admin panel →</a>
     </div>
   </main>
 
-  <footer class="footer">
-    <div class="container">
-      <div class="footer-bottom">
-        <p>&copy; 2026 Superholic Lab. All rights reserved. 🇸🇬 Made in Singapore</p>
-        <div class="flex gap-4"><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a></div>
-      </div>
-    </div>
-  </footer>
+  <script type="module">
+    import { guardPage, signOut, isTrialActive } from '/js/auth.js';
+    import { supabase } from '/js/supabase-client.js';
 
-  <nav class="bottom-nav" aria-label="Mobile navigation">
-    <a href="../index.html" class="bottom-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>Home</a>
-    <a href="subjects.html" class="bottom-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>Practise</a>
-    <a href="tutor.html" class="bottom-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>AI Tutor</a>
-    <a href="progress.html" class="bottom-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Progress</a>
-  </nav>
+    async function init() {
+      const profile = await guardPage(true);
+      if (!profile) return;
 
-  <script src="../js/supabase-client.js"></script>
-  <script src="../js/auth.js"></script>
-  <script>
-    (function () {
-      // Greeting based on time of day
-      const hour = new Date().getHours();
-      const greet = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
-      const greetEl = document.getElementById('dash-greeting');
+      const firstName = profile.full_name?.split(' ')[0] || 'there';
+      document.getElementById('welcomeMsg').textContent = `Welcome back, ${firstName} 👋`;
 
-      // Checkout success detection
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('checkout') === 'success') {
-        document.getElementById('checkout-success-banner').hidden = false;
-        history.replaceState({}, '', window.location.pathname);
+      // Plan badge
+      const badge = document.getElementById('planBadge');
+      const planLabels = {
+        trial: '🎁 Trial',
+        single_subject: 'Single Subject',
+        all_subjects: 'All Subjects',
+        family: 'Family',
+      };
+      badge.textContent = profile.role === 'admin' ? '👑 Admin' : (planLabels[profile.subscription_tier] || profile.subscription_tier);
+      if (profile.role === 'admin') badge.className = 'plan-badge admin';
+      else if (profile.subscription_tier === 'trial') badge.className = 'plan-badge trial';
+
+      // Trial banner
+      if (profile.subscription_tier === 'trial' && profile.trial_ends_at) {
+        const daysLeft = Math.ceil((new Date(profile.trial_ends_at) - new Date()) / 86400000);
+        if (daysLeft > 0) {
+          const banner = document.getElementById('trialBanner');
+          banner.style.display = 'flex';
+          document.getElementById('trialDaysLeft').textContent = `${daysLeft} day${daysLeft !== 1 ? 's' : ''}`;
+        }
       }
 
-      // Personalise greeting with user's name
-      document.addEventListener('DOMContentLoaded', async () => {
-        try {
-          const user = await getCurrentUser();
-          if (user) {
-            const profile = await getProfile(user.id);
-            const name = profile?.full_name?.split(' ')[0] || '';
-            if (greetEl) greetEl.textContent = name ? `${greet}, ${name}!` : `${greet}!`;
+      // Load students
+      const query = profile.role === 'admin'
+        ? supabase.from('students').select('*')
+        : supabase.from('students').select('*').eq('parent_id', profile.id);
 
-            // Show trial banner if trial is active and <3 days left
-            if (profile && isTrialActive(profile)) {
-              const msLeft   = new Date(profile.trial_ends_at) - new Date();
-              const daysLeft = Math.ceil(msLeft / (1000 * 60 * 60 * 24));
-              if (daysLeft <= 3) {
-                const banner  = document.getElementById('trial-banner');
-                const textEl  = document.getElementById('trial-banner-text');
-                if (textEl) textEl.textContent = `Your free trial ends in ${daysLeft} ${daysLeft === 1 ? 'day' : 'days'}.`;
-                if (banner)  banner.hidden = false;
-              }
-            } else if (profile && !isTrialActive(profile) &&
-                       profile.subscription_tier === 'trial') {
-              const banner  = document.getElementById('trial-banner');
-              const textEl  = document.getElementById('trial-banner-text');
-              if (textEl) textEl.textContent = 'Your free trial has ended.';
-              if (banner)  banner.hidden = false;
-            }
-          }
-        } catch { /* non-blocking */ }
-      });
+      const { data: students, error } = await query;
 
-      // Scroll reveals
-      const r = document.querySelectorAll('.reveal,.reveal-group');
-      if ('IntersectionObserver' in window) {
-        const io = new IntersectionObserver(function (e) {
-          e.forEach(function (x) { if (x.isIntersecting) { x.target.classList.add('revealed'); io.unobserve(x.target); } });
-        }, { threshold: 0.1 });
-        r.forEach(function (el) { io.observe(el); });
+      const grid = document.getElementById('cardsGrid');
+      grid.innerHTML = '';
+
+      if (error || !students?.length) {
+        grid.innerHTML = `<div class="empty-state">
+          <div class="empty-icon">🎒</div>
+          <p>No learners added yet.<br>Click "+ Add child" to get started.</p>
+        </div>`;
       } else {
-        r.forEach(function (el) { el.classList.add('revealed'); });
+        students.forEach(student => {
+          const initials = student.name?.charAt(0).toUpperCase() || '?';
+          const card = document.createElement('div');
+          card.className = 'student-card';
+          card.innerHTML = `
+            <div class="card-avatar">${initials}</div>
+            <div class="card-name">${escapeHtml(student.name)}</div>
+            <div class="card-meta">${escapeHtml(student.level)}</div>
+            ${student.selected_subject ? `<span class="card-tag">${escapeHtml(student.selected_subject)}</span>` : ''}
+            <a href="/pages/subjects.html?student=${student.id}" class="btn-practice">Practice Now →</a>
+          `;
+          grid.appendChild(card);
+        });
       }
-    })();
+
+      // Add child button visibility
+      const addBtn = document.getElementById('addChildBtn');
+      if (profile.role === 'admin') {
+        addBtn.style.visibility = 'visible';
+      } else if (students && students.length >= profile.max_children) {
+        addBtn.classList.add('hidden');
+      }
+
+      // Admin panel
+      if (profile.role === 'admin') {
+        document.getElementById('adminPanel').style.display = 'block';
+        document.getElementById('adminStats').innerHTML = `
+          <span class="admin-stat">Total students: <strong>${students?.length ?? 0}</strong></span>
+        `;
+      }
+    }
+
+    window.handleSignOut = async function () {
+      const { signOut: so } = await import('/js/auth.js');
+      await so();
+    };
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    init();
   </script>
 </body>
 </html>

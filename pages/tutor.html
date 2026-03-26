@@ -11,6 +11,11 @@
   <meta name="robots" content="noindex, nofollow" />
   <!-- Analytics: ⚠️ CONFIGURE — sign up at plausible.io and add superholiclab.com -->
   <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js"></script>
+  <!-- Auth guard: redirects to login if no session -->
+  <script type="module">
+    import { guardPage } from '/js/auth.js';
+    await guardPage(true);
+  </script>
 </head>
 <body class="has-bottom-nav">
   <header class="navbar is-scrolled">
