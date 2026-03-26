@@ -13,8 +13,6 @@
     .auth-logo { font-size: 1.4rem; font-weight: 800; color: var(--primary); margin-bottom: 1.75rem; text-decoration: none; display: block; }
     .auth-title { font-size: 1.5rem; font-weight: 800; color: var(--text); margin-bottom: .375rem; }
     .auth-sub { color: var(--text-muted); font-size: .9rem; margin-bottom: 1.75rem; }
-
-    /* Plan selector */
     .plan-group { margin-bottom: 1.5rem; }
     .plan-group-label { font-size: .875rem; font-weight: 700; color: var(--text); margin-bottom: .75rem; display: block; }
     .plan-options { display: grid; gap: .625rem; }
@@ -26,7 +24,6 @@
     .plan-name { font-weight: 700; color: var(--text); }
     .plan-price { font-weight: 800; color: var(--primary); }
     .plan-tag { font-size: .7rem; background: var(--primary); color: #2A3A36; border-radius: 99px; padding: .15rem .5rem; margin-left: .4rem; font-weight: 700; }
-
     .form-group { margin-bottom: 1.1rem; }
     label { display: block; font-size: .875rem; font-weight: 600; color: var(--text); margin-bottom: .4rem; }
     input[type="text"], input[type="email"], input[type="password"] { width: 100%; padding: .75rem 1rem; border: 1.5px solid var(--border); border-radius: .625rem; font-family: inherit; font-size: 1rem; background: rgba(245,242,232,0.06); color: var(--text); outline: none; transition: border-color .2s, box-shadow .2s; box-sizing: border-box; }
@@ -37,8 +34,11 @@
     .btn-primary:disabled { opacity: .5; cursor: not-allowed; transform: none; }
     .divider { display: flex; align-items: center; gap: 1rem; margin: 1.25rem 0; color: var(--text-muted); font-size: .8rem; }
     .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-    .btn-google { width: 100%; padding: .75rem; background: rgba(245,242,232,0.06); border: 1.5px solid var(--border); border-radius: .625rem; font-family: inherit; font-size: .95rem; font-weight: 600; color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: .75rem; transition: border-color .2s; }
-    .btn-google:hover { border-color: var(--mint); }
+    .oauth-buttons { display: flex; flex-direction: column; gap: .625rem; }
+    .btn-oauth { width: 100%; padding: .75rem; background: rgba(245,242,232,0.06); border: 1.5px solid var(--border); border-radius: .625rem; font-family: inherit; font-size: .95rem; font-weight: 600; color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: .75rem; transition: border-color .2s; }
+    .btn-oauth:hover { border-color: var(--mint); }
+    .btn-oauth.apple { background: #000; color: #fff; border-color: #000; }
+    .btn-oauth.apple:hover { border-color: #333; }
     .error-msg { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; border-radius: .5rem; padding: .75rem 1rem; font-size: .875rem; margin-bottom: 1rem; display: none; }
     .terms-note { font-size: .75rem; color: var(--text-muted); text-align: center; margin-top: 1rem; }
     .terms-note a { color: var(--mint); text-decoration: none; }
@@ -55,7 +55,6 @@
 
     <div class="trial-note">7-day free trial &middot; Cancel any time &middot; MOE-aligned</div>
 
-    <!-- Plan selector -->
     <div class="plan-group">
       <span class="plan-group-label">Choose your plan</span>
       <div class="plan-options">
@@ -100,14 +99,20 @@
       <input type="password" id="password" placeholder="At least 8 characters" autocomplete="new-password" />
     </div>
 
-    <button class="btn-primary" id="signupBtn" onclick="handleSignup()">Create account →</button>
+    <button class="btn-primary" id="signupBtn" onclick="handleSignup()">Create account \u2192</button>
 
-    <div class="divider">or</div>
+    <div class="divider">or sign up with</div>
 
-    <button class="btn-google" onclick="handleGoogle()">
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
-      Continue with Google
-    </button>
+    <div class="oauth-buttons">
+      <button class="btn-oauth" id="googleBtn" onclick="handleGoogle()">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
+        Sign up with Google
+      </button>
+      <button class="btn-oauth apple" id="appleBtn" onclick="handleApple()">
+        <svg width="17" height="20" viewBox="0 0 17 20" fill="none"><path d="M14.0965 10.6145C14.0786 8.46 15.8788 7.41698 15.9609 7.36558C14.9399 5.87986 13.3538 5.67768 12.8046 5.65938C11.4611 5.52166 10.1615 6.46594 9.47722 6.46594C8.77926 6.46594 7.72498 5.67286 6.58636 5.6957C5.11836 5.71854 3.74798 6.57114 2.99784 7.89834C1.45224 10.5979 2.60296 14.5826 4.08578 16.7785C4.82784 17.8573 5.69574 19.0655 6.8435 19.0197C7.96298 18.9697 8.3785 18.289 9.72358 18.289C11.0573 18.289 11.4454 19.0197 12.6159 18.9925C13.8226 18.9697 14.5694 17.9053 15.2932 16.8174C16.1565 15.5788 16.5034 14.3654 16.5171 14.3012C16.4898 14.2927 14.1176 13.4161 14.0965 10.6145Z" fill="white"/><path d="M12.0084 4.26234C12.6136 3.51566 13.0291 2.48976 12.913 1.45C12.0268 1.48842 10.9202 2.05614 10.2921 2.78568C9.73506 3.42714 9.23752 4.49342 9.36856 5.49476C10.3587 5.56986 11.3898 4.99788 12.0084 4.26234Z" fill="white"/></svg>
+        Sign up with Apple
+      </button>
+    </div>
 
     <div class="terms-note">
       By signing up you agree to our <a href="/pages/terms.html">Terms</a> and <a href="/pages/privacy.html">Privacy Policy</a>.
@@ -119,7 +124,7 @@
   </div>
 
   <script type="module">
-    import { signUp, signInWithGoogle } from '/js/auth.js';
+    import { signUp, signInWithGoogle, signInWithApple } from '/js/auth.js';
 
     function showError(msg) {
       const el = document.getElementById('errorMsg');
@@ -141,27 +146,42 @@
       if (!password || password.length < 8) { showError('Password must be at least 8 characters.'); return; }
 
       btn.disabled = true;
-      btn.textContent = 'Creating account…';
+      btn.textContent = 'Creating account\u2026';
 
       try {
         await signUp(email, password, name, plan);
       } catch (err) {
         showError(err.message || 'Sign-up failed. Please try again.');
         btn.disabled = false;
-        btn.textContent = 'Create account →';
+        btn.textContent = 'Create account \u2192';
       }
     };
 
     window.handleGoogle = async function () {
-      // Store plan choice before OAuth redirect
       const plan = document.querySelector('input[name="plan"]:checked')?.value || 'all_subjects';
       localStorage.setItem('pendingPlan', plan);
+      document.getElementById('googleBtn').disabled = true;
+      document.getElementById('errorMsg').style.display = 'none';
       try {
         await signInWithGoogle();
       } catch (err) {
         showError('Google sign-in failed. Please try again.');
+        document.getElementById('googleBtn').disabled = false;
       }
     };
-  </script>
+
+    window.handleApple = async function () {
+      const plan = document.querySelector('input[name="plan"]:checked')?.value || 'all_subjects';
+      localStorage.setItem('pendingPlan', plan);
+      document.getElementById('appleBtn').disabled = true;
+      document.getElementById('errorMsg').style.display = 'none';
+      try {
+        await signInWithApple();
+      } catch (err) {
+        showError('Apple sign-in failed. Please try again.');
+        document.getElementById('appleBtn').disabled = false;
+      }
+    };
+  <\/script>
 </body>
 </html>

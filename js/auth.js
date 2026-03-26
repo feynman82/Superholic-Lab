@@ -1,11 +1,19 @@
-// js/auth.js
-// Superholic Lab — Auth + paywall logic
-// All functions are async. Import supabase from js/supabase-client.js
+/**
+ * auth.js — Superholic Lab
+ * Auth + paywall logic. All functions are async.
+ * Uses getSupabase() from supabase-client.js (CDN-loaded, not ES module export).
+ *
+ * TEST: import('/js/auth.js').then(m => m.getProfile().then(console.log))
+ */
 
-import { supabase } from './supabase-client.js';
+// ─── Helper: get the supabase client ─────────────────────────
+async function db() {
+  return await getSupabase();
+}
 
-// ── Sign Up ───────────────────────────────────────────────────
+// ─── Sign Up ─────────────────────────────────────────────────
 export async function signUp(email, password, fullName, planChoice) {
+  const supabase = await db();
   const { data, error } = await supabase.auth.signUp({ email, password });
   if (error) throw error;
 
@@ -13,6 +21,9 @@ export async function signUp(email, password, fullName, planChoice) {
   const maxChildren = planChoice === 'family' ? 3 : 1;
   const now = new Date();
   const trialEnd = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+  // Wait briefly for the DB trigger to create the profile row
+  await new Promise(r => setTimeout(r, 800));
 
   const { error: profileError } = await supabase
     .from('profiles')
@@ -30,15 +41,17 @@ export async function signUp(email, password, fullName, planChoice) {
   window.location.href = '/pages/setup.html';
 }
 
-// ── Sign In ───────────────────────────────────────────────────
+// ─── Sign In ─────────────────────────────────────────────────
 export async function signIn(email, password) {
+  const supabase = await db();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) throw error;
   window.location.href = '/pages/dashboard.html';
 }
 
-// ── Google OAuth ──────────────────────────────────────────────
+// ─── Google OAuth ────────────────────────────────────────────
 export async function signInWithGoogle() {
+  const supabase = await db();
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
@@ -48,22 +61,37 @@ export async function signInWithGoogle() {
   if (error) throw error;
 }
 
-// ── Sign Out ──────────────────────────────────────────────────
+// ─── Apple OAuth ─────────────────────────────────────────────
+export async function signInWithApple() {
+  const supabase = await db();
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: 'apple',
+    options: {
+      redirectTo: window.location.origin + '/pages/dashboard.html',
+    },
+  });
+  if (error) throw error;
+}
+
+// ─── Sign Out ────────────────────────────────────────────────
 export async function signOut() {
+  const supabase = await db();
   const { error } = await supabase.auth.signOut();
   if (error) throw error;
   window.location.href = '/index.html';
 }
 
-// ── Current User ──────────────────────────────────────────────
+// ─── Current User ────────────────────────────────────────────
 export async function getCurrentUser() {
+  const supabase = await db();
   const { data, error } = await supabase.auth.getUser();
   if (error) throw error;
   return data.user;
 }
 
-// ── Get Profile ───────────────────────────────────────────────
+// ─── Get Profile ─────────────────────────────────────────────
 export async function getProfile() {
+  const supabase = await db();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 
@@ -77,14 +105,15 @@ export async function getProfile() {
   return data;
 }
 
-// ── Is Admin ──────────────────────────────────────────────────
+// ─── Is Admin ────────────────────────────────────────────────
 export async function isAdmin() {
   const profile = await getProfile();
   return profile?.role === 'admin';
 }
 
-// ── Can Access Subject ────────────────────────────────────────
+// ─── Can Access Subject ──────────────────────────────────────
 export async function canAccessSubject(subject) {
+  const supabase = await db();
   const profile = await getProfile();
   if (!profile) return false;
 
@@ -94,30 +123,25 @@ export async function canAccessSubject(subject) {
   if (subscription_tier === 'family' || subscription_tier === 'all_subjects') return true;
 
   if (subscription_tier === 'trial') {
-    const active = trial_ends_at && new Date(trial_ends_at) > new Date();
-    return active;
+    return trial_ends_at && new Date(trial_ends_at) > new Date();
   }
 
   if (subscription_tier === 'single_subject') {
-    // Fetch the student's selected_subject — requires student context
-    // Caller must pass matching subject for access
     const { data: students } = await supabase
       .from('students')
       .select('selected_subject')
       .eq('parent_id', profile.id);
-
     return students?.some(s => s.selected_subject === subject) ?? false;
   }
 
   return false;
 }
 
-// ── Is Trial Active ───────────────────────────────────────────
+// ─── Is Trial Active ─────────────────────────────────────────
 export async function isTrialActive() {
   const profile = await getProfile();
   if (!profile) return false;
   if (profile.role === 'admin') return false;
-
   return (
     profile.subscription_tier === 'trial' &&
     profile.trial_ends_at &&
@@ -125,8 +149,9 @@ export async function isTrialActive() {
   );
 }
 
-// ── Check Daily Usage ─────────────────────────────────────────
+// ─── Check Daily Usage ───────────────────────────────────────
 export async function checkDailyUsage(studentId) {
+  const supabase = await db();
   const today = new Date().toISOString().split('T')[0];
 
   const { data, error } = await supabase
@@ -140,34 +165,33 @@ export async function checkDailyUsage(studentId) {
   return data;
 }
 
-// ── Increment Daily Usage ─────────────────────────────────────
+// ─── Increment Daily Usage ───────────────────────────────────
 export async function incrementDailyUsage(studentId, field) {
+  const supabase = await db();
   const today = new Date().toISOString().split('T')[0];
 
+  // Try RPC first; fall back to manual upsert
   const { error } = await supabase.rpc('increment_daily_usage', {
     p_student_id: studentId,
     p_date: today,
     p_field: field,
   });
 
-  // Fallback: raw upsert if RPC not available
   if (error) {
     const current = await checkDailyUsage(studentId);
-    const update = {
-      student_id: studentId,
-      date: today,
-      questions_attempted: current.questions_attempted,
-      ai_tutor_messages: current.ai_tutor_messages,
-      [field]: current[field] + 1,
-    };
-
     await supabase
       .from('daily_usage')
-      .upsert(update, { onConflict: 'student_id,date' });
+      .upsert({
+        student_id: studentId,
+        date: today,
+        questions_attempted: current.questions_attempted,
+        ai_tutor_messages: current.ai_tutor_messages,
+        [field]: current[field] + 1,
+      }, { onConflict: 'student_id,date' });
   }
 }
 
-// ── Enforce Paywall ───────────────────────────────────────────
+// ─── Enforce Paywall ─────────────────────────────────────────
 export async function enforcePaywall(studentId) {
   const profile = await getProfile();
   if (!profile) return { allowed: false, reason: 'unauthenticated' };
@@ -176,21 +200,16 @@ export async function enforcePaywall(studentId) {
 
   const tier = profile.subscription_tier;
 
-  // Active paid subscription (not trial)
   if (['single_subject', 'all_subjects', 'family'].includes(tier)) {
     return { allowed: true, reason: 'paid' };
   }
 
-  // Trial path
   if (tier === 'trial') {
     const trialActive = profile.trial_ends_at && new Date(profile.trial_ends_at) > new Date();
-
     if (!trialActive) return { allowed: false, reason: 'expired' };
 
     const usage = await checkDailyUsage(studentId);
-    if (usage.questions_attempted >= 5) {
-      return { allowed: false, reason: 'trial_limit' };
-    }
+    if (usage.questions_attempted >= 5) return { allowed: false, reason: 'trial_limit' };
 
     return { allowed: true, reason: 'trial' };
   }
@@ -198,8 +217,9 @@ export async function enforcePaywall(studentId) {
   return { allowed: false, reason: 'expired' };
 }
 
-// ── Guard Page ────────────────────────────────────────────────
+// ─── Guard Page ──────────────────────────────────────────────
 export async function guardPage(requireAuth = true) {
+  const supabase = await db();
   const { data: { session } } = await supabase.auth.getSession();
 
   if (requireAuth && !session) {
@@ -210,11 +230,8 @@ export async function guardPage(requireAuth = true) {
   if (!session) return null;
 
   const profile = await getProfile();
-
   window.__CURRENT_USER__ = session.user;
   window.__PROFILE__ = profile;
 
   return profile;
 }
-
-// TEST: Import in browser console: import('/js/auth.js').then(m => m.getProfile().then(console.log))
