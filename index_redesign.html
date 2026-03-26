@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Superholic Lab — Learn Like a Champion. Think Like a Winner.</title>
+<meta name="description" content="Singapore's AI-powered learning platform for P1–S4 students. MOE-aligned questions with full worked solutions and wrong-answer explanations. 7-day free trial.">
+
+<!-- Open Graph -->
+<meta property="og:title" content="Superholic Lab — Your Child's Personal AI Tutor">
+<meta property="og:description" content="MOE-aligned. Wrong-answer explanations. Available 24/7.">
+<meta property="og:url" content="https://www.superholiclab.com">
+<meta property="og:type" content="website">
+
+<!-- Fonts: Plus Jakarta Sans for body; Bebas Neue as Ace Sans Black fallback for hero display -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Bebas+Neue&display=swap" rel="stylesheet">
+
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   SUPERHOLIC LAB — DESIGN SYSTEM v2.0
+   ECC Framework: Engagement · Clarity · Consistency
+   Brand: Muted Sage + Antique Cream + Rose/Peach accents
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Brand Palette ── */
+  --sage:         #60726f;   /* Primary background */
+  --sage-dark:    #4a5a57;   /* Darker panels, nav */
+  --sage-light:   #7a8f8c;   /* Muted text on sage */
+  --sage-surface: #526663;   /* Card surfaces on sage bg */
+
+  --cream:        #e3d9ca;   /* Logo, headings on sage */
+  --cream-dim:    #c8bfb2;   /* Secondary text on sage */
+
+  --white:        #ffffff;
+  --off-white:    #f9f7f4;   /* Light section bg */
+
+  --rose:         #B76E79;   /* Antique Rose — primary CTA */
+  --rose-dark:    #9d5a64;   /* Rose hover */
+  --rose-light:   #f2e6e8;   /* Rose tint on white */
+
+  --peach:        #B88078;   /* Terracotta Peach — secondary accent, progress */
+  --peach-light:  #f2e9e8;
+
+  /* ── Text ── */
+  --text-dark:    #2a2a2a;   /* Headings on white bg */
+  --text-body:    #4a4a4a;   /* Body on white bg */
+  --text-muted:   #7a7a7a;   /* Captions on white bg */
+
+  /* ── Difficulty badges (unchanged — MOE alignment) ── */
+  --foundation:   #f0fdf4;  --foundation-text: #15803d;
+  --standard:     #f0fdfa;  --standard-text:   #0f766e;
+  --advanced:     #fffbeb;  --advanced-text:   #b45309;
+  --hots:         #fff1f2;  --hots-text:       #be123c;
+
+  /* ── Spacing & Shape ── */
+  --radius:       14px;
+  --radius-sm:    8px;
+  --radius-pill:  100px;
+  --shadow-card:  0 4px 24px rgba(0,0,0,0.12);
+  --shadow-neo:   4px 4px 0px rgba(42, 42, 42, 0.18);
+
+  /* ── Fonts ── */
+  --font-display: 'Ace Sans Black', 'Bebas Neue', 'Plus Jakarta Sans', sans-serif;
+  --font-body:    'Plus Jakarta Sans', sans-serif;
+}
+
+/* ── Reset ─────────────────────────────────────── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  background: var(--sage);
+  color: var(--cream);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+img { max-width: 100%; display: block; }
+a { text-decoration: none; color: inherit; }
+
+/* ── Typography helpers ─────────────────────────── */
+.on-sage  { color: var(--cream); }
+.on-white { color: var(--text-dark); }
+.mono { font-family: 'Courier New', monospace; }
+
+/* ── Buttons ────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 26px; border-radius: var(--radius-pill);
+  font-family: var(--font-body); font-weight: 700; font-size: 0.92rem;
+  letter-spacing: 0.02em; border: none; cursor: pointer;
+  transition: all 0.22s ease; text-decoration: none;
+}
+.btn-rose {
+  background: var(--rose); color: var(--white);
+}
+.btn-rose:hover { background: var(--rose-dark); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(183,110,121,0.35); }
+
+.btn-outline-cream {
+  background: transparent; color: var(--cream);
+  border: 2px solid rgba(227,217,202,0.5);
+}
+.btn-outline-cream:hover { background: rgba(227,217,202,0.1); border-color: var(--cream); }
+
+.btn-outline-dark {
+  background: transparent; color: var(--text-dark);
+  border: 2px solid rgba(42,42,42,0.2);
+}
+.btn-outline-dark:hover { border-color: var(--rose); color: var(--rose); }
+
+.btn-sm { padding: 8px 18px; font-size: 0.82rem; }
+
+/* ── Navbar ─────────────────────────────────────── */
+.navbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+  background: rgba(74, 90, 87, 0.92);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(227,217,202,0.12);
+  padding: 0 6%;
+  height: 68px;
+  display: flex; align-items: center; gap: 0;
+}
+.navbar-logo {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--font-display); font-size: 1.25rem;
+  letter-spacing: 0.12em; color: var(--cream); text-transform: uppercase;
+  text-decoration: none; flex-shrink: 0;
+}
+.navbar-logo svg { width: 32px; height: 32px; }
+.navbar-links {
+  display: flex; gap: 4px; align-items: center; margin: 0 auto;
+}
+.navbar-links a {
+  padding: 6px 16px; border-radius: var(--radius-sm);
+  font-size: 0.85rem; font-weight: 500; color: rgba(227,217,202,0.7);
+  transition: all 0.2s;
+}
+.navbar-links a:hover, .navbar-links a.active {
+  color: var(--cream); background: rgba(227,217,202,0.08);
+}
+.navbar-links a.active { border-bottom: 2px solid var(--rose); }
+.navbar-actions { display: flex; gap: 10px; align-items: center; }
+.navbar-login { font-size: 0.85rem; font-weight: 500; color: var(--cream-dim); transition: color 0.2s; }
+.navbar-login:hover { color: var(--cream); }
+
+/* ── Hero ───────────────────────────────────────── */
+.hero {
+  min-height: 100vh; padding: 0 6%;
+  display: grid; grid-template-columns: 1fr 1fr;
+  align-items: center; gap: 60px;
+  padding-top: 68px;
+  background: var(--sage);
+  position: relative; overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 60% 60% at 80% 50%, rgba(183,110,121,0.08) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 40% at 10% 80%, rgba(184,128,120,0.06) 0%, transparent 60%);
+  pointer-events: none;
+}
+.hero-left { position: relative; z-index: 1; }
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(183,110,121,0.15);
+  border: 1.5px solid rgba(183,110,121,0.3);
+  border-radius: var(--radius-pill);
+  padding: 5px 14px; margin-bottom: 24px;
+  font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em;
+  text-transform: uppercase; color: #e8a0a8;
+}
+.eyebrow-dot { width: 6px; height: 6px; border-radius: 50%; background: #e8a0a8; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(232,160,168,0.4);} 50%{box-shadow:0 0 0 6px rgba(232,160,168,0);} }
+
+.hero-h1 {
+  font-family: var(--font-display); font-size: clamp(2.8rem, 5vw, 4.2rem);
+  line-height: 1.0; letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--cream); margin-bottom: 20px;
+}
+.hero-h1 .accent { color: var(--rose); display: block; }
+.hero-p {
+  font-size: 1rem; color: var(--cream-dim); line-height: 1.75;
+  max-width: 440px; margin-bottom: 36px;
+}
+.hero-cta { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-bottom: 48px; }
+.trial-note { font-size: 0.75rem; color: var(--sage-light); }
+.trial-note span { color: var(--cream-dim); }
+
+.hero-stats {
+  display: flex; gap: 36px; padding-top: 32px;
+  border-top: 1px solid rgba(227,217,202,0.15);
+}
+.stat-num {
+  font-family: var(--font-display); font-size: 2rem;
+  letter-spacing: 0.04em; color: var(--cream);
+  line-height: 1;
+}
+.stat-num sup { font-size: 0.9rem; vertical-align: super; }
+.stat-label { font-size: 0.72rem; color: var(--sage-light); margin-top: 4px; letter-spacing: 0.04em; }
+
+/* Hero right — student photo with floating card */
+.hero-right { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; }
+.hero-photo-wrap {
+  position: relative; width: 100%; max-width: 500px;
+}
+.hero-photo {
+  width: 100%; border-radius: 20px;
+  object-fit: cover; aspect-ratio: 4/5;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.25);
+  filter: brightness(0.92) contrast(1.05);
+}
+/* Floating Mission Card over photo */
+.hero-float-card {
+  position: absolute; bottom: -20px; left: -28px;
+  background: rgba(82, 102, 99, 0.72);
+  backdrop-filter: blur(20px);
+  border: 1.5px solid rgba(227,217,202,0.2);
+  border-radius: 16px; padding: 18px 22px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  min-width: 220px;
+}
+.float-card-label {
+  font-size: 0.62rem; font-weight: 600; letter-spacing: 0.12em;
+  text-transform: uppercase; color: rgba(227,217,202,0.55);
+  margin-bottom: 6px;
+}
+.float-card-subject { font-weight: 700; font-size: 0.95rem; color: var(--cream); margin-bottom: 10px; }
+.float-progress-bar {
+  height: 5px; background: rgba(227,217,202,0.15);
+  border-radius: 100px; overflow: hidden; margin-bottom: 6px;
+}
+.float-progress-fill {
+  height: 100%; border-radius: 100px;
+  background: linear-gradient(90deg, var(--rose), var(--peach));
+  box-shadow: 0 0 8px rgba(183,110,121,0.4);
+}
+.float-pct { font-size: 0.72rem; color: var(--cream-dim); }
+.float-pct strong { color: var(--rose); }
+
+/* ── Section: How It Works (white) ──────────────── */
+.section-white {
+  background: var(--white);
+  padding: 96px 6%;
+}
+.section-sage {
+  background: var(--sage);
+  padding: 96px 6%;
+}
+.section-sage-dark {
+  background: var(--sage-dark);
+  padding: 96px 6%;
+}
+.section-off-white {
+  background: var(--off-white);
+  padding: 96px 6%;
+}
+
+.section-tag {
+  display: inline-block;
+  background: var(--rose-light); color: var(--rose);
+  border-radius: var(--radius-pill); padding: 4px 14px;
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; margin-bottom: 12px;
+}
+.section-tag-sage {
+  display: inline-block;
+  background: rgba(183,110,121,0.15); color: #e8a0a8;
+  border-radius: var(--radius-pill); padding: 4px 14px;
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; margin-bottom: 12px;
+}
+.section-h2-white {
+  font-family: var(--font-display); font-size: clamp(1.8rem, 3.5vw, 3rem);
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--text-dark); margin-bottom: 12px;
+}
+.section-h2-sage {
+  font-family: var(--font-display); font-size: clamp(1.8rem, 3.5vw, 3rem);
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--cream); margin-bottom: 12px;
+}
+.section-sub-white { font-size: 1rem; color: var(--text-body); max-width: 520px; line-height: 1.7; }
+.section-sub-sage  { font-size: 1rem; color: var(--cream-dim); max-width: 520px; line-height: 1.7; }
+
+/* ── How It Works ────────────────────────────────── */
+.how-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 72px;
+  align-items: center; margin-top: 56px;
+}
+.how-photo {
+  border-radius: 18px; object-fit: cover;
+  aspect-ratio: 4/3; width: 100%;
+  box-shadow: var(--shadow-card);
+}
+.how-steps { display: flex; flex-direction: column; gap: 28px; }
+.step-card {
+  display: flex; gap: 18px; align-items: flex-start;
+  background: var(--off-white); border-radius: var(--radius);
+  padding: 22px; border-left: 4px solid var(--rose);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.step-card:hover { transform: translateX(4px); box-shadow: var(--shadow-card); }
+.step-num {
+  font-family: var(--font-display); font-size: 1.8rem;
+  letter-spacing: 0.04em; color: var(--rose); flex-shrink: 0;
+  line-height: 1;
+}
+.step-title { font-weight: 700; font-size: 1rem; color: var(--text-dark); margin-bottom: 4px; }
+.step-desc { font-size: 0.88rem; color: var(--text-body); line-height: 1.6; }
+
+/* ── Feature cards (3 up) ────────────────────────── */
+.features-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; margin-top: 52px; }
+.feature-card {
+  background: rgba(255,255,255,0.06);
+  border: 1.5px solid rgba(227,217,202,0.14);
+  border-radius: var(--radius); padding: 32px 28px;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.feature-card:hover { border-color: rgba(183,110,121,0.4); transform: translateY(-4px); }
+.feature-icon {
+  width: 52px; height: 52px; border-radius: 14px;
+  background: rgba(183,110,121,0.15); border: 1.5px solid rgba(183,110,121,0.25);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem; margin-bottom: 18px;
+}
+.feature-title { font-weight: 700; font-size: 1.05rem; color: var(--cream); margin-bottom: 8px; }
+.feature-desc { font-size: 0.85rem; color: var(--cream-dim); line-height: 1.65; }
+
+/* ── ECC Framework strip ─────────────────────────── */
+.ecc-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px;
+  background: rgba(227,217,202,0.1);
+  border-radius: var(--radius); overflow: hidden;
+  margin-top: 52px;
+}
+.ecc-card {
+  background: var(--sage-dark); padding: 36px 28px;
+  text-align: center;
+  border-right: 1px solid rgba(227,217,202,0.1);
+}
+.ecc-card:last-child { border-right: none; }
+.ecc-letter {
+  font-family: var(--font-display); font-size: 3.5rem;
+  letter-spacing: 0.04em; line-height: 1;
+  color: var(--rose); margin-bottom: 8px;
+}
+.ecc-word { font-weight: 700; font-size: 1rem; color: var(--cream); margin-bottom: 8px; }
+.ecc-desc { font-size: 0.82rem; color: var(--cream-dim); line-height: 1.6; }
+
+/* ── Social proof / photo rows ───────────────────── */
+.social-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 72px;
+  align-items: center; margin-top: 56px;
+}
+.social-photo {
+  border-radius: 18px; object-fit: cover;
+  aspect-ratio: 4/3; width: 100%;
+  box-shadow: var(--shadow-card);
+}
+.quote-block {
+  background: var(--off-white);
+  border-left: 4px solid var(--peach);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 24px 28px; margin-bottom: 24px;
+  font-style: italic; font-size: 1rem; color: var(--text-body); line-height: 1.7;
+}
+.quote-attr { font-weight: 700; font-size: 0.85rem; color: var(--text-dark); }
+.quote-attr-sub { font-size: 0.78rem; color: var(--text-muted); }
+
+/* ── Pricing ─────────────────────────────────────── */
+.pricing-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 24px; margin-top: 52px; align-items: start;
+}
+.pricing-card {
+  background: var(--white); border-radius: var(--radius);
+  border: 2px solid rgba(42,42,42,0.08);
+  padding: 36px 28px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+}
+.pricing-card:hover { transform: translateY(-4px); box-shadow: 0 16px 48px rgba(0,0,0,0.1); }
+.pricing-card.featured {
+  border-color: var(--rose);
+  box-shadow: 0 0 0 1px var(--rose), 0 12px 40px rgba(183,110,121,0.15);
+  transform: scale(1.03);
+}
+.pricing-card.featured:hover { transform: scale(1.03) translateY(-4px); }
+.featured-badge {
+  position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+  background: var(--rose); color: var(--white);
+  border-radius: var(--radius-pill); padding: 4px 16px;
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  white-space: nowrap;
+}
+.plan-name { font-weight: 800; font-size: 1rem; color: var(--text-dark); margin-bottom: 6px; }
+.plan-price {
+  font-family: var(--font-display); font-size: 2.6rem;
+  letter-spacing: 0.04em; color: var(--text-dark); line-height: 1;
+}
+.plan-price sup { font-size: 1rem; vertical-align: super; }
+.plan-price span { font-size: 0.9rem; color: var(--text-muted); font-family: var(--font-body); font-weight: 400; }
+.plan-desc { font-size: 0.82rem; color: var(--text-muted); margin: 10px 0 20px; line-height: 1.5; }
+.plan-features { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+.plan-features li {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: 0.85rem; color: var(--text-body);
+}
+.check { width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 0.65rem; margin-top: 1px; }
+.check-rose { background: var(--rose-light); color: var(--rose); }
+.plan-cta { width: 100%; justify-content: center; }
+.plan-trial { text-align: center; font-size: 0.72rem; color: var(--text-muted); margin-top: 10px; }
+
+/* ── Trust bar ───────────────────────────────────── */
+.trust-bar {
+  background: var(--sage-dark);
+  padding: 24px 6%; display: flex;
+  justify-content: center; align-items: center; gap: 48px; flex-wrap: wrap;
+  border-top: 1px solid rgba(227,217,202,0.1);
+  border-bottom: 1px solid rgba(227,217,202,0.1);
+}
+.trust-item { display: flex; align-items: center; gap: 10px; font-size: 0.82rem; color: var(--cream-dim); }
+.trust-item strong { color: var(--cream); }
+
+/* ── CTA Banner ──────────────────────────────────── */
+.cta-banner {
+  background: linear-gradient(135deg, var(--rose) 0%, var(--peach) 100%);
+  padding: 80px 6%; text-align: center; position: relative; overflow: hidden;
+}
+.cta-banner::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+.cta-h2 {
+  font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3.2rem);
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--white); margin-bottom: 12px; position: relative;
+}
+.cta-sub { font-size: 1rem; color: rgba(255,255,255,0.85); margin-bottom: 32px; position: relative; }
+.cta-btns { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; position: relative; }
+.btn-white { background: var(--white); color: var(--rose); font-weight: 700; }
+.btn-white:hover { background: var(--off-white); }
+.btn-outline-white { background: transparent; color: var(--white); border: 2px solid rgba(255,255,255,0.6); }
+.btn-outline-white:hover { background: rgba(255,255,255,0.1); }
+
+/* ── Footer ──────────────────────────────────────── */
+footer {
+  background: var(--sage-dark); padding: 56px 6% 28px;
+  border-top: 1px solid rgba(227,217,202,0.1);
+}
+.footer-top {
+  display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 48px; margin-bottom: 48px;
+}
+.footer-logo {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+  font-family: var(--font-display); font-size: 1.1rem; letter-spacing: 0.12em;
+  color: var(--cream); text-transform: uppercase;
+}
+.footer-tagline { font-size: 0.85rem; color: var(--cream-dim); line-height: 1.65; max-width: 240px; }
+.footer-col-title {
+  font-weight: 700; font-size: 0.78rem; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--cream); margin-bottom: 16px;
+}
+.footer-col-links { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.footer-col-links a {
+  font-size: 0.85rem; color: var(--cream-dim); transition: color 0.2s;
+}
+.footer-col-links a:hover { color: var(--cream); }
+.footer-bottom {
+  border-top: 1px solid rgba(227,217,202,0.1); padding-top: 24px;
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+}
+.footer-copy { font-size: 0.78rem; color: var(--sage-light); }
+.pdpa-note { font-size: 0.72rem; color: var(--sage-light); }
+
+/* ── Mission Control Section (dashboard preview) ─── */
+.mc-section {
+  background: var(--sage-dark); padding: 96px 6%;
+}
+.mc-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 48px;
+  align-items: start; margin-top: 52px;
+}
+.mc-cards-col { display: flex; flex-direction: column; gap: 16px; }
+.mc-card {
+  background: rgba(255,255,255,0.07);
+  border: 1.5px solid rgba(227,217,202,0.12);
+  border-radius: var(--radius); padding: 22px;
+  cursor: pointer; transition: all 0.2s;
+}
+.mc-card:hover { border-color: rgba(183,110,121,0.4); transform: translateX(4px); }
+.mc-card-header {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;
+}
+.mc-card-title { font-weight: 700; font-size: 1rem; color: var(--cream); }
+.mc-card-pct { font-size: 0.75rem; color: var(--rose); font-weight: 600; }
+.mc-bar { height: 6px; background: rgba(227,217,202,0.1); border-radius: 100px; overflow: hidden; }
+.mc-fill {
+  height: 100%; border-radius: 100px;
+  background: linear-gradient(90deg, var(--rose), var(--peach));
+  box-shadow: 0 0 8px rgba(183,110,121,0.35);
+}
+.mc-card-desc { font-size: 0.8rem; color: var(--cream-dim); margin-top: 10px; }
+.mc-img-col { position: relative; }
+.mc-photo {
+  border-radius: 18px; width: 100%; object-fit: cover;
+  aspect-ratio: 1; box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+}
+.mc-badge-overlay {
+  position: absolute; top: 20px; right: -16px;
+  background: var(--rose); color: var(--white);
+  border-radius: 14px; padding: 14px 18px;
+  box-shadow: 0 8px 24px rgba(183,110,121,0.4);
+  text-align: center;
+}
+.mc-badge-num { font-family: var(--font-display); font-size: 1.8rem; letter-spacing: 0.04em; line-height: 1; }
+.mc-badge-label { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.06em; opacity: 0.9; }
+
+/* ── Responsive ─────────────────────────────────── */
+@media (max-width: 1024px) {
+  .hero { grid-template-columns: 1fr; padding: 120px 6% 64px; gap: 48px; min-height: auto; }
+  .hero-right { display: none; }
+  .features-grid { grid-template-columns: 1fr 1fr; }
+  .how-grid, .social-grid, .mc-grid { grid-template-columns: 1fr; gap: 40px; }
+  .how-photo, .social-photo, .mc-photo { max-height: 300px; }
+  .mc-badge-overlay { display: none; }
+  .footer-top { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 768px) {
+  .navbar-links { display: none; }
+  .features-grid { grid-template-columns: 1fr; }
+  .pricing-grid { grid-template-columns: 1fr; }
+  .ecc-grid { grid-template-columns: 1fr; }
+  .hero-stats { gap: 24px; }
+  .trust-bar { gap: 24px; }
+  .footer-top { grid-template-columns: 1fr; }
+  .pricing-card.featured { transform: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ NAVBAR ═══════════════════ -->
+<nav class="navbar">
+  <a href="/" class="navbar-logo">
+    <!-- Apple + Book SVG icon from brand -->
+    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <g stroke="#e3d9ca" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 9 C17 9 13.5 11.5 13.5 15.5 C13.5 21.5 17.5 26 20 27 C22.5 26 26.5 21.5 26.5 15.5 C26.5 11.5 23 9 20 9Z"/>
+        <path d="M20 9 C20 7 22 5.5 24 6.5"/>
+        <path d="M16 15 Q14 17 15 18.5"/>
+        <rect x="9.5" y="29" width="21" height="8" rx="2.5"/>
+        <line x1="13.5" y1="32.5" x2="27" y2="32.5"/>
+        <line x1="13.5" y1="35" x2="23" y2="35"/>
+        <line x1="13.5" y1="32" x2="14.5" y2="32"/>
+      </g>
+    </svg>
+    Superholic Lab
+  </a>
+  <nav class="navbar-links">
+    <a href="/" class="active">Dashboard</a>
+    <a href="/pages/about.html">About</a>
+    <a href="/pages/pricing.html">Pricing</a>
+    <a href="/pages/contact.html">Contact</a>
+  </nav>
+  <div class="navbar-actions">
+    <a href="/pages/login.html" class="navbar-login">Log in</a>
+    <a href="/pages/signup.html" class="btn btn-rose btn-sm">Get Started</a>
+  </div>
+</nav>
+
+<!-- ═══════════════════ HERO ═══════════════════ -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-eyebrow">
+      <div class="eyebrow-dot"></div>
+      Singapore's MOE-Aligned AI Tutor
+    </div>
+    <h1 class="hero-h1">
+      Learn Like a Champion.
+      <span class="accent">Think Like a Winner.</span>
+    </h1>
+    <p class="hero-p">
+      Superholic Lab is Singapore's first AI-powered learning platform with wrong-answer explanations for every option. Built for P1–S4 students. Available 24/7.
+    </p>
+    <div class="hero-cta">
+      <a href="/pages/signup.html" class="btn btn-rose">Start Free Trial →</a>
+      <a href="/pages/pricing.html" class="btn btn-outline-cream">See Plans</a>
+    </div>
+    <p class="trial-note"><span>7-day free trial</span> · No credit card · Cancel anytime</p>
+    <div class="hero-stats">
+      <div>
+        <div class="stat-num">4,200<sup>+</sup></div>
+        <div class="stat-label">Active Students</div>
+      </div>
+      <div>
+        <div class="stat-num">98%</div>
+        <div class="stat-label">MOE-Aligned</div>
+      </div>
+      <div>
+        <div class="stat-num">3×</div>
+        <div class="stat-label">Faster Mastery</div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-right">
+    <!-- ⚠️ CONFIGURE: Place student_with_glowing_apple.png in assets/images/ -->
+    <div class="hero-photo-wrap">
+      <img
+        src="assets/images/student_with_glowing_apple.png"
+        alt="Singapore student using Superholic Lab with glowing AI hologram"
+        class="hero-photo"
+      >
+      <div class="hero-float-card">
+        <div class="float-card-label">Current Mission</div>
+        <div class="float-card-subject">P4 Mathematics · Fractions</div>
+        <div class="float-progress-bar">
+          <div class="float-progress-fill" style="width:68%"></div>
+        </div>
+        <div class="float-pct">Chapter 3 of 5 · <strong>68% complete</strong></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ HOW IT WORKS ═══════════════════ -->
+<section class="section-white">
+  <div style="max-width:1100px; margin: 0 auto;">
+    <div class="section-tag">How It Works</div>
+    <h2 class="section-h2-white">Three Steps to Better Results</h2>
+    <p class="section-sub-white">Your child builds real exam confidence — not just correct answers, but a deep understanding of why every wrong option is wrong.</p>
+    <div class="how-grid">
+      <!-- ⚠️ CONFIGURE: Place sibling_studying.png in assets/images/ -->
+      <img src="assets/images/sibling_studying.png" alt="Singapore siblings studying together on laptops at home" class="how-photo">
+      <div class="how-steps">
+        <div class="step-card">
+          <div class="step-num">01</div>
+          <div>
+            <div class="step-title">Choose Subject &amp; Level</div>
+            <div class="step-desc">Pick from Mathematics, Science, or English for Primary 1 through Secondary 4. Every question bank is strictly MOE-syllabus-aligned.</div>
+          </div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">02</div>
+          <div>
+            <div class="step-title">Practice with Full Explanations</div>
+            <div class="step-desc">Answer questions and instantly see full worked solutions — plus a clear explanation for each wrong option, so mistakes become lessons.</div>
+          </div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">03</div>
+          <div>
+            <div class="step-title">Ask the AI Tutor Anything</div>
+            <div class="step-desc">Stuck? The AI tutor guides with questions first — never giving the answer away — using Singapore exam keywords and MOE marking scheme language.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ ECC FRAMEWORK ═══════════════════ -->
+<section class="section-sage">
+  <div style="max-width:1100px; margin: 0 auto; text-align: center;">
+    <div class="section-tag-sage">Our Teaching Framework</div>
+    <h2 class="section-h2-sage" style="margin:0 auto 10px;">Every Feature Built on ECC</h2>
+    <p class="section-sub-sage" style="margin: 0 auto;">
+      The ECC Framework — Engagement, Clarity, Consistency — guides every design decision at Superholic Lab.
+    </p>
+    <div class="ecc-grid">
+      <div class="ecc-card">
+        <div class="ecc-letter">E</div>
+        <div class="ecc-word">Engagement</div>
+        <div class="ecc-desc">Learning that holds attention. Streaks, progress missions, and immediate feedback keep students coming back every day — not just before exams.</div>
+      </div>
+      <div class="ecc-card">
+        <div class="ecc-letter">C</div>
+        <div class="ecc-word">Clarity</div>
+        <div class="ecc-desc">No ambiguity in explanations. Every worked solution uses MOE marking-scheme language. What the examiner expects is always front and centre.</div>
+      </div>
+      <div class="ecc-card">
+        <div class="ecc-letter">C</div>
+        <div class="ecc-word">Consistency</div>
+        <div class="ecc-desc">The same high-quality explanation approach across every subject, every level. Parents can trust the platform, not just hope it works.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ FEATURES ═══════════════════ -->
+<section class="section-sage-dark">
+  <div style="max-width:1100px; margin: 0 auto;">
+    <div class="section-tag-sage">What Makes Us Different</div>
+    <h2 class="section-h2-sage">Built for Singapore Exam Culture</h2>
+    <p class="section-sub-sage">No other platform explains every wrong answer — systematically, for every question, across all subjects.</p>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🎯</div>
+        <div class="feature-title">Wrong-Answer Explanations</div>
+        <div class="feature-desc">For every MCQ, we explain exactly why each wrong option is wrong. Not just "B is correct" — but why A, C, and D are traps.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🤖</div>
+        <div class="feature-title">AI Tutor, Available 24/7</div>
+        <div class="feature-desc">The AI guides students with questions, never handing out answers. It uses Singapore exam language and marking-scheme keywords.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📚</div>
+        <div class="feature-title">100% MOE-Aligned</div>
+        <div class="feature-desc">Every question, every solution, and every explanation is built against the official MOE Primary and Secondary syllabuses.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <div class="feature-title">Progress Parents Can See</div>
+        <div class="feature-desc">The Family Plan shows every child's accuracy by topic. No more asking "how was school?" — see exactly where help is needed.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <div class="feature-title">Instant Worked Solutions</div>
+        <div class="feature-desc">Full step-by-step working shown immediately after every answer — labelled clearly, in the format examiners expect to see.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📱</div>
+        <div class="feature-title">Mobile-First Design</div>
+        <div class="feature-desc">Designed for tablets and phones. Practise on the bus, on lunch break, or at home — on any device, any time.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ MISSION CONTROL (Dashboard Preview) ═══════════════════ -->
+<section class="mc-section">
+  <div style="max-width:1100px; margin: 0 auto;">
+    <div class="section-tag-sage">Mission Control</div>
+    <h2 class="section-h2-sage">Your Personal Learning Dashboard</h2>
+    <p class="section-sub-sage">Track progress across all subjects. See where to focus next. Built for students who want to perform, not just participate.</p>
+    <div class="mc-grid">
+      <div class="mc-cards-col">
+        <div class="mc-card">
+          <div class="mc-card-header">
+            <div class="mc-card-title">🧮 Mathematics</div>
+            <div class="mc-card-pct">72%</div>
+          </div>
+          <div class="mc-bar"><div class="mc-fill" style="width:72%"></div></div>
+          <div class="mc-card-desc">Fractions &amp; Decimals · Chapter 3 of 5 · 240 questions done</div>
+        </div>
+        <div class="mc-card">
+          <div class="mc-card-header">
+            <div class="mc-card-title">🔬 Science</div>
+            <div class="mc-card-pct">45%</div>
+          </div>
+          <div class="mc-bar"><div class="mc-fill" style="width:45%"></div></div>
+          <div class="mc-card-desc">Living Systems · Chapter 2 of 6 · 88 questions done</div>
+        </div>
+        <div class="mc-card">
+          <div class="mc-card-header">
+            <div class="mc-card-title">📖 English Language</div>
+            <div class="mc-card-pct">88%</div>
+          </div>
+          <div class="mc-bar"><div class="mc-fill" style="width:88%"></div></div>
+          <div class="mc-card-desc">Comprehension Inference · Chapter 5 of 6 · 312 questions done</div>
+        </div>
+        <a href="/pages/signup.html" class="btn btn-rose" style="width:100%; justify-content:center; margin-top:8px;">
+          Access Your Dashboard →
+        </a>
+      </div>
+      <div class="mc-img-col">
+        <!-- ⚠️ CONFIGURE: Place kid_studying.png in assets/images/ -->
+        <img src="assets/images/kid_studying.png" alt="Singapore student focused on studying with laptop" class="mc-photo">
+        <div class="mc-badge-overlay">
+          <div class="mc-badge-num">88%</div>
+          <div class="mc-badge-label">Accuracy</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ SOCIAL PROOF / PARENTS ═══════════════════ -->
+<section class="section-white">
+  <div style="max-width:1100px; margin: 0 auto;">
+    <div class="section-tag">Parents Love It</div>
+    <h2 class="section-h2-white">Trusted by Singapore Families</h2>
+    <p class="section-sub-white on-white">Join thousands of parents who finally have visibility into exactly where their child needs help — and the tools to fix it.</p>
+    <div class="social-grid" style="margin-top:52px;">
+      <div>
+        <div class="quote-block">
+          "My daughter went from 60% to 82% in Science in just 6 weeks. The wrong-answer explanations are brilliant — she understands her mistakes now instead of repeating them."
+        </div>
+        <div class="quote-attr">Mrs Lim, Bukit Timah</div>
+        <div class="quote-attr-sub">Mother of P5 student</div>
+        <div style="margin-top:28px;">
+          <div class="quote-block">
+            "My two kids can share one Family Plan. I log in every Sunday to check their progress dashboards. It's the only tutor platform that shows me actual data."
+          </div>
+          <div class="quote-attr">Mr Rahman, Punggol</div>
+          <div class="quote-attr-sub">Father of P3 and P6 students</div>
+        </div>
+      </div>
+      <!-- ⚠️ CONFIGURE: Place mum_daughter_ipad.png in assets/images/ -->
+      <img src="assets/images/mum_daughter_ipad.png" alt="Singapore mother and daughter using Superholic Lab on iPad" class="social-photo">
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ TRUST BAR ═══════════════════ -->
+<div class="trust-bar">
+  <div class="trust-item"><strong>✓</strong> 100% MOE-Aligned</div>
+  <div class="trust-item"><strong>✓</strong> PDPA Compliant</div>
+  <div class="trust-item"><strong>✓</strong> Cancel Anytime</div>
+  <div class="trust-item"><strong>✓</strong> No Credit Card for Trial</div>
+  <div class="trust-item"><strong>✓</strong> Singapore Servers (Supabase SG)</div>
+</div>
+
+<!-- ═══════════════════ PRICING ═══════════════════ -->
+<section class="section-off-white" id="pricing">
+  <div style="max-width:1000px; margin: 0 auto; text-align:center;">
+    <div class="section-tag">Simple Pricing</div>
+    <h2 class="section-h2-white">No Surprises. No Lock-in.</h2>
+    <p class="section-sub-white" style="margin:0 auto 0;">7-day free trial on all plans. Cancel any time. Annual plans save 17% — about two months free.</p>
+    <div class="pricing-grid">
+
+      <!-- Plan 1: Single Subject -->
+      <div class="pricing-card">
+        <div class="plan-name">Single Subject</div>
+        <div class="plan-price"><sup>S$</sup>9.99<span>/month</span></div>
+        <div class="plan-desc">Perfect for focused PSLE prep in one subject.</div>
+        <ul class="plan-features">
+          <li><span class="check check-rose">✓</span> 1 subject of your choice</li>
+          <li><span class="check check-rose">✓</span> Unlimited questions</li>
+          <li><span class="check check-rose">✓</span> Full worked solutions</li>
+          <li><span class="check check-rose">✓</span> Wrong-answer explanations</li>
+          <li><span class="check check-rose">✓</span> AI Tutor access</li>
+          <li><span class="check check-rose">✓</span> 1 child profile</li>
+        </ul>
+        <!-- ⚠️ CONFIGURE: Replace href with js/stripe.js checkout call -->
+        <a href="/pages/signup.html?plan=single" class="btn btn-outline-dark plan-cta">Start Free Trial</a>
+        <div class="plan-trial">7 days free · No credit card</div>
+      </div>
+
+      <!-- Plan 2: All Subjects (FEATURED) -->
+      <div class="pricing-card featured">
+        <div class="featured-badge">Most Popular</div>
+        <div class="plan-name">All Subjects</div>
+        <div class="plan-price"><sup>S$</sup>19.99<span>/month</span></div>
+        <div class="plan-desc">The complete PSLE toolkit — Maths, Science &amp; English.</div>
+        <ul class="plan-features">
+          <li><span class="check check-rose">✓</span> All 3 subjects (Maths, Science, English)</li>
+          <li><span class="check check-rose">✓</span> Unlimited questions</li>
+          <li><span class="check check-rose">✓</span> Full worked solutions</li>
+          <li><span class="check check-rose">✓</span> Wrong-answer explanations</li>
+          <li><span class="check check-rose">✓</span> AI Tutor access</li>
+          <li><span class="check check-rose">✓</span> Mock exam generator</li>
+          <li><span class="check check-rose">✓</span> 1 child profile</li>
+        </ul>
+        <a href="/pages/signup.html?plan=all_subjects" class="btn btn-rose plan-cta">Start Free Trial</a>
+        <div class="plan-trial">7 days free · No credit card</div>
+      </div>
+
+      <!-- Plan 3: Family -->
+      <div class="pricing-card">
+        <div class="plan-name">Family</div>
+        <div class="plan-price"><sup>S$</sup>29.99<span>/month</span></div>
+        <div class="plan-desc">For families with multiple children preparing for exams.</div>
+        <ul class="plan-features">
+          <li><span class="check check-rose">✓</span> All 3 subjects</li>
+          <li><span class="check check-rose">✓</span> Unlimited questions</li>
+          <li><span class="check check-rose">✓</span> Full worked solutions</li>
+          <li><span class="check check-rose">✓</span> Wrong-answer explanations</li>
+          <li><span class="check check-rose">✓</span> AI Tutor access</li>
+          <li><span class="check check-rose">✓</span> Mock exam generator</li>
+          <li><span class="check check-rose">✓</span> Up to 3 child profiles</li>
+          <li><span class="check check-rose">✓</span> Parent dashboard (all children)</li>
+          <li><span class="check check-rose">✓</span> Priority support</li>
+        </ul>
+        <a href="/pages/signup.html?plan=family" class="btn btn-outline-dark plan-cta">Start Free Trial</a>
+        <div class="plan-trial">7 days free · No credit card</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ CTA BANNER ═══════════════════ -->
+<section class="cta-banner">
+  <h2 class="cta-h2">Your Child's Best Exam Season Starts Today</h2>
+  <p class="cta-sub">Join 4,200+ Singapore students already using Superholic Lab. First 7 days completely free.</p>
+  <div class="cta-btns">
+    <a href="/pages/signup.html" class="btn btn-white">Start Free Trial →</a>
+    <a href="/pages/pricing.html" class="btn btn-outline-white">See All Plans</a>
+  </div>
+</section>
+
+<!-- ═══════════════════ FOOTER ═══════════════════ -->
+<footer>
+  <div style="max-width:1100px; margin: 0 auto;">
+    <div class="footer-top">
+      <div>
+        <div class="footer-logo">
+          <svg viewBox="0 0 40 40" fill="none" width="28" height="28">
+            <g stroke="#e3d9ca" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 9 C17 9 13.5 11.5 13.5 15.5 C13.5 21.5 17.5 26 20 27 C22.5 26 26.5 21.5 26.5 15.5 C26.5 11.5 23 9 20 9Z"/>
+              <path d="M20 9 C20 7 22 5.5 24 6.5"/>
+              <rect x="9.5" y="29" width="21" height="8" rx="2.5"/>
+              <line x1="13.5" y1="32.5" x2="27" y2="32.5"/>
+              <line x1="13.5" y1="35" x2="23" y2="35"/>
+            </g>
+          </svg>
+          Superholic Lab
+        </div>
+        <p class="footer-tagline">Singapore's AI-powered learning platform for P1–S4 students. MOE-aligned. Available 24/7.</p>
+      </div>
+      <div>
+        <div class="footer-col-title">Platform</div>
+        <ul class="footer-col-links">
+          <li><a href="/pages/subjects.html">Subjects</a></li>
+          <li><a href="/pages/pricing.html">Pricing</a></li>
+          <li><a href="/pages/dashboard.html">Dashboard</a></li>
+          <li><a href="/pages/tutor.html">AI Tutor</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Company</div>
+        <ul class="footer-col-links">
+          <li><a href="/pages/about.html">About Us</a></li>
+          <li><a href="/pages/contact.html">Contact</a></li>
+          <li><a href="/pages/terms.html">Terms of Use</a></li>
+          <li><a href="/pages/privacy.html">Privacy Policy</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Support</div>
+        <ul class="footer-col-links">
+          <li><a href="/pages/contact.html">Help Centre</a></li>
+          <li><a href="/pages/login.html">Log In</a></li>
+          <li><a href="/pages/signup.html">Sign Up</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-copy">© 2025 Superholic Lab. All rights reserved.</div>
+      <div class="pdpa-note">Compliant with Singapore PDPA. Student data stored in Singapore (Supabase SE-Asia region).</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ── ECC: Engagement — animate progress bars on scroll ── */
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.style.transition = 'width 1.1s cubic-bezier(0.4, 0, 0.2, 1)';
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.3 });
+
+document.querySelectorAll('.mc-fill, .float-progress-fill').forEach(bar => {
+  const targetWidth = bar.style.width;
+  bar.style.width = '0';
+  observer.observe(bar);
+  setTimeout(() => { bar.style.width = targetWidth; }, 200);
+});
+
+/* ── ECC: Engagement — navbar active state on scroll ── */
+window.addEventListener('scroll', () => {
+  const navbar = document.querySelector('.navbar');
+  if (window.scrollY > 20) {
+    navbar.style.boxShadow = '0 4px 24px rgba(0,0,0,0.15)';
+  } else {
+    navbar.style.boxShadow = 'none';
+  }
+});
+</script>
+
+</body>
+</html>

@@ -71,6 +71,8 @@
     </div>
   </div>
 
+  <!-- supabase-client.js must load before auth.js module so getSupabase() is defined -->
+  <script src="/js/supabase-client.js"></script>
   <script type="module">
     import { signIn, signInWithGoogle, signInWithApple } from '/js/auth.js';
 
@@ -89,7 +91,7 @@
       if (!email || !password) { showError('Please fill in both fields.'); return; }
 
       btn.disabled = true;
-      btn.textContent = 'Logging in\u2026';
+      btn.textContent = 'Logging in…';
 
       try {
         await signIn(email, password);
@@ -125,6 +127,6 @@
     document.getElementById('password').addEventListener('keydown', e => {
       if (e.key === 'Enter') window.handleLogin();
     });
-  <\/script>
+  </script>
 </body>
 </html>

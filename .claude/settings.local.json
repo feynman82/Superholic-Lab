@@ -22,7 +22,13 @@
       "mcp__supabase__list_tables",
       "mcp__supabase__apply_migration",
       "mcp__supabase__list_migrations",
-      "mcp__supabase__get_project"
+      "mcp__supabase__get_project",
+      "Bash(node scripts/fix-maths-options.js)",
+      "Bash(node scripts/rebuild-topic-splits.js)",
+      "Bash(mv \"assets/images/student with glowing apple.png\" \"assets/images/student_with_glowing_apple.png\")",
+      "Bash(mv \"assets/images/sibling studying.png\" \"assets/images/sibling_studying.png\")",
+      "Bash(mv \"assets/images/kid studying.png\" \"assets/images/kid_studying.png\")",
+      "Bash(mv \"assets/images/mum daughter ipad.png\" \"assets/images/mum_daughter_ipad.png\")"
     ]
   },
   "enabledMcpjsonServers": [

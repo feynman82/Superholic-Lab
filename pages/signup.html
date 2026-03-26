@@ -49,11 +49,10 @@
 </head>
 <body>
   <div class="auth-card">
-    <a href="/index.html" class="auth-logo">Superholic Lab</a>
+    <a href="/index.html" class="auth-logo">SUPERHOLIC LAB</a>
     <div class="auth-title">Start your free trial</div>
-    <div class="auth-sub">7 days free. No credit card required.</div>
 
-    <div class="trial-note">7-day free trial &middot; Cancel any time &middot; MOE-aligned</div>
+    <div class="trial-note">7-day free trial &middot; Cancel any time </div>
 
     <div class="plan-group">
       <span class="plan-group-label">Choose your plan</span>
@@ -99,7 +98,7 @@
       <input type="password" id="password" placeholder="At least 8 characters" autocomplete="new-password" />
     </div>
 
-    <button class="btn-primary" id="signupBtn" onclick="handleSignup()">Create account \u2192</button>
+    <button class="btn-primary" id="signupBtn" onclick="handleSignup()">Create account →</button>
 
     <div class="divider">or sign up with</div>
 
@@ -123,6 +122,8 @@
     </div>
   </div>
 
+  <!-- supabase-client.js must load before auth.js module so getSupabase() is defined -->
+  <script src="/js/supabase-client.js"></script>
   <script type="module">
     import { signUp, signInWithGoogle, signInWithApple } from '/js/auth.js';
 
@@ -146,14 +147,14 @@
       if (!password || password.length < 8) { showError('Password must be at least 8 characters.'); return; }
 
       btn.disabled = true;
-      btn.textContent = 'Creating account\u2026';
+      btn.textContent = 'Creating account…';
 
       try {
         await signUp(email, password, name, plan);
       } catch (err) {
         showError(err.message || 'Sign-up failed. Please try again.');
         btn.disabled = false;
-        btn.textContent = 'Create account \u2192';
+        btn.textContent = 'Create account →';
       }
     };
 
@@ -182,6 +183,6 @@
         document.getElementById('appleBtn').disabled = false;
       }
     };
-  <\/script>
+  </script>
 </body>
 </html>

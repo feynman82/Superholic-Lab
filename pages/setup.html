@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="/css/style.css" />
   <style>
     body { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--bg); padding: 2rem 1rem; }
-    .setup-card { background: var(--surface); border-radius: 1.25rem; padding: 2.5rem 2rem; max-width: 480px; width: 100%; box-shadow: 0 4px 24px rgba(0,0,0,.08); }
+    .setup-card { background: var(--surface); border-radius: 1.25rem; padding: 2.5rem 2rem; max-width: 480px; width: 100%; box-shadow: var(--shadow-neo); border: 1.5px solid var(--glass-border); }
     .step-indicator { display: flex; gap: .75rem; margin-bottom: 2rem; }
     .step-dot { height: 6px; border-radius: 3px; flex: 1; background: var(--border); transition: background .3s; }
     .step-dot.active { background: var(--primary); }
@@ -17,19 +17,19 @@
     .setup-sub { color: var(--text-muted); margin-bottom: 2rem; font-size: .95rem; }
     .form-group { margin-bottom: 1.25rem; }
     label { display: block; font-size: .875rem; font-weight: 600; color: var(--text); margin-bottom: .4rem; }
-    input, select { width: 100%; padding: .75rem 1rem; border: 1.5px solid var(--border); border-radius: .625rem; font-family: inherit; font-size: 1rem; background: var(--bg); color: var(--text); outline: none; transition: border-color .2s; box-sizing: border-box; }
-    input:focus, select:focus { border-color: var(--primary); }
-    select option { background: #3A4E4A; color: var(--text); }
-    .btn-primary { width: 100%; padding: .875rem; background: var(--primary); color: #2A3A36; font-weight: 700; font-size: 1rem; border: none; border-radius: .625rem; cursor: pointer; margin-top: .5rem; transition: opacity .2s; }
-    .btn-primary:hover { opacity: .9; }
-    .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
-    .summary-card { background: var(--bg); border-radius: .875rem; padding: 1.5rem; margin-bottom: 1.5rem; border: 1.5px solid var(--border); }
+    input, select { width: 100%; padding: .75rem 1rem; border: 1.5px solid var(--border); border-radius: .625rem; font-family: inherit; font-size: 1rem; background: rgba(245,242,232,0.06); color: var(--text); outline: none; transition: border-color .2s; box-sizing: border-box; }
+    input:focus, select:focus { border-color: var(--mint); }
+    select option { background: #2A3A36; color: var(--text); }
+    .btn-primary { width: 100%; padding: .875rem; background: var(--primary); color: #2A3A36; font-weight: 700; font-size: 1rem; border: none; border-radius: .625rem; cursor: pointer; margin-top: .5rem; transition: opacity .2s, transform .15s; box-shadow: var(--shadow-neo); font-family: inherit; }
+    .btn-primary:hover { opacity: .9; transform: translate(-1px,-1px); }
+    .btn-primary:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+    .summary-card { background: rgba(245,242,232,0.04); border-radius: .875rem; padding: 1.5rem; margin-bottom: 1.5rem; border: 1.5px solid var(--border); }
     .summary-row { display: flex; justify-content: space-between; padding: .5rem 0; border-bottom: 1px solid var(--border); font-size: .9rem; }
     .summary-row:last-child { border-bottom: none; }
     .summary-label { color: var(--text-muted); }
     .summary-value { font-weight: 600; color: var(--text); }
     .trial-badge { display: inline-block; background: rgba(255,184,48,0.15); color: var(--amber); border: 1px solid rgba(255,184,48,0.3); border-radius: 99px; padding: .25rem .875rem; font-size: .8rem; font-weight: 700; margin-bottom: 1rem; }
-    .error-msg { color: #ef4444; font-size: .875rem; margin-top: .5rem; display: none; }
+    .error-msg { color: #fca5a5; font-size: .875rem; margin-top: .5rem; display: none; }
   </style>
 </head>
 <body>
@@ -41,7 +41,7 @@
 
     <!-- STEP 1 -->
     <div id="step1">
-      <div class="setup-title">Add your child</div>
+      <div class="setup-title">Add your child 👦</div>
       <div class="setup-sub">Tell us about the learner — we'll personalise the experience.</div>
 
       <div class="form-group">
@@ -79,7 +79,7 @@
 
     <!-- STEP 2 -->
     <div id="step2" style="display:none">
-      <div class="setup-title">You're all set!</div>
+      <div class="setup-title">You're all set! 🎉</div>
       <div class="setup-sub">Here's a summary of your account.</div>
 
       <div id="trialBadge" class="trial-badge"></div>
@@ -92,9 +92,10 @@
     </div>
   </div>
 
+  <!-- supabase-client.js must load before auth.js module so getSupabase() is defined -->
+  <script src="/js/supabase-client.js"></script>
   <script type="module">
-    import { guardPage, getProfile } from '/js/auth.js';
-    import { supabase } from '/js/supabase-client.js';
+    import { guardPage } from '/js/auth.js';
 
     let profile = null;
 
@@ -102,7 +103,6 @@
       profile = await guardPage(true);
       if (!profile) return;
 
-      // Show subject selector only for single_subject plan
       if (profile.subscription_tier === 'single_subject') {
         document.getElementById('subjectGroup').style.display = 'block';
       }
@@ -117,7 +117,7 @@
 
       errEl.style.display = 'none';
 
-      if (!name) { showErr('Please enter your child\'s name.'); return; }
+      if (!name) { showErr("Please enter your child's name."); return; }
       if (!level) { showErr('Please select a level.'); return; }
       if (profile.subscription_tier === 'single_subject' && !subject) {
         showErr('Please select a subject.'); return;
@@ -127,6 +127,9 @@
       btn.textContent = 'Saving…';
 
       try {
+        // Use getSupabase() global (supabase-client.js loaded above)
+        const supabase = await getSupabase();
+
         const insert = {
           parent_id: profile.id,
           name,
@@ -142,7 +145,7 @@
 
         if (error) throw error;
 
-        // Mark setup complete
+        // Mark setup complete (setup_complete column — migration adds it if missing)
         await supabase
           .from('profiles')
           .update({ setup_complete: true })
@@ -151,6 +154,7 @@
         showStep2(name, level, subject);
       } catch (err) {
         showErr('Something went wrong. Please try again.');
+        console.error(err);
         btn.disabled = false;
         btn.textContent = 'Continue →';
       }
@@ -167,16 +171,14 @@
       document.getElementById('dot1').classList.remove('active');
       document.getElementById('dot2').classList.add('active');
 
-      // Trial badge
       const badge = document.getElementById('trialBadge');
       if (profile.trial_ends_at) {
         const days = Math.ceil((new Date(profile.trial_ends_at) - new Date()) / 86400000);
-        badge.textContent = `${days}-day free trial active`;
+        badge.textContent = `🎁 ${days}-day free trial active`;
       } else {
         badge.style.display = 'none';
       }
 
-      // Summary
       const planNames = {
         single_subject: 'Single Subject — S$9.99/mo',
         all_subjects: 'All Subjects — S$19.99/mo',
