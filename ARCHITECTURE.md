@@ -235,21 +235,47 @@ All in .env (gitignored) + Vercel dashboard:
 SECURITY: Never hardcode. Server-only keys never in frontend JS.
 
 ═══════════════════════════════════════════════════════════════
-DESIGN SYSTEM
+DESIGN SYSTEM v2.0 — "Rose & Sage" (ECC Framework)
 ═══════════════════════════════════════════════════════════════
 
-Font: Plus Jakarta Sans (400, 500, 600)
-CSS Variables:
-  --primary: #4338ca  --primary-light: #eef2ff  --primary-dark: #3730a3
-  --accent: #f59e0b   --success: #10b981       --danger: #ef4444
-  --text-primary: #111827  --text-secondary: #6b7280
-  --bg: #f9fafb  --white: #ffffff  --border: #e5e7eb
+Fonts:
+  Display H1/H2: Bebas Neue (fallback for Ace Sans Black), uppercase
+  Body:          Plus Jakarta Sans (400, 500, 600, 700, 800)
+  Mono/Labels:   Courier New (fallback — minimal use)
 
-Difficulty badges:
+CSS Variables (core brand palette):
+  --sage:        #60726f   Muted sage — primary background
+  --sage-dark:   #4a5a57   Deeper sage — nav, cards, dark sections
+  --sage-light:  #7a8f8c   Secondary text on sage
+  --cream:       #e3d9ca   Primary text + headings on sage bg
+  --cream-dim:   #c8bfb2   Secondary text on sage bg
+  --white:       #ffffff   Pure white (light section bg)
+  --off-white:   #f9f7f4   Warm off-white sections
+  --rose:        #B76E79   Antique Rose — primary CTA
+  --rose-dark:   #9d5a64   Rose hover state
+  --rose-light:  #f2e6e8   Rose tint on white
+  --peach:       #B88078   Terracotta Peach — secondary accent, progress
+  --peach-light: #f2e9e8   Peach tint on white
+  --text-dark:   #2a2a2a   Headings on white sections
+  --text-body:   #4a4a4a   Body text on white sections
+  --text-muted:  #7a7a7a   Captions on white sections
+
+Legacy mappings (ensure inner app pages still work):
+  --primary:     var(--rose)    CTAs, active states
+  --success:     #10b981        Correct answers
+  --danger:      #ef4444        Errors
+  --bg:          var(--sage-dark)
+  --border:      rgba(227,217,202,0.16)
+
+Difficulty badges (MOE-aligned, unchanged):
   Foundation: bg #f0fdf4 text #15803d
   Standard:   bg #f0fdfa text #0f766e
   Advanced:   bg #fffbeb text #b45309
   HOTS:       bg #fff1f2 text #be123c
+
+Shadow system:
+  --shadow-card: 0 4px 24px rgba(0,0,0,0.12)   Light card shadow
+  --shadow-neo:  4px 4px 0px rgba(42,42,42,0.18)  Neo-brutalist offset
 
 ═══════════════════════════════════════════════════════════════
 AI TUTOR SYSTEM PROMPTS

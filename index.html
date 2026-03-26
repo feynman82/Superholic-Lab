@@ -1,921 +1,454 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Superholic Lab — AI-Powered Learning for Singapore Students</title>
-  <meta name="description" content="Unlimited, MOE-aligned practice questions for Primary 1 to Secondary 4. Full worked solutions and wrong-answer explanations. From S$9.99/month. 7-day free trial." />
-  <meta property="og:title"       content="Superholic Lab — AI-Powered Learning for Singapore Students" />
-  <meta property="og:description" content="Unlimited MOE-aligned practice. Wrong-answer explanations. AI tutor. From S$9.99/month." />
-  <meta property="og:type"        content="website" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="css/style.css" />
-  <link rel="icon" href="assets/favicon.ico" />
-  <link rel="canonical" href="https://www.superholiclab.com/" />
-  <meta property="og:url"          content="https://www.superholiclab.com/" />
-  <meta property="og:site_name"    content="Superholic Lab" />
-  <meta property="og:image"        content="https://www.superholiclab.com/assets/og-image.png" />
-  <meta name="twitter:card"        content="summary_large_image" />
-  <meta name="twitter:title"       content="Superholic Lab — AI-Powered Learning for Singapore Students" />
-  <meta name="twitter:description" content="Unlimited MOE-aligned practice. Wrong-answer explanations. AI tutor. From S$9.99/month." />
-  <meta name="twitter:image"       content="https://www.superholiclab.com/assets/og-image.png" />
-  <!-- Analytics: ⚠️ CONFIGURE — sign up at plausible.io and add superholiclab.com -->
-  <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Superholic Lab — Learn Like a Champion. Think Like a Winner.</title>
+<meta name="description" content="Singapore's AI-powered learning platform for P1–S4 students. MOE-aligned questions with full worked solutions and wrong-answer explanations. 7-day free trial.">
+
+<!-- Open Graph -->
+<meta property="og:title" content="Superholic Lab — Your Child's Personal AI Tutor">
+<meta property="og:description" content="MOE-aligned. Wrong-answer explanations. Available 24/7.">
+<meta property="og:url" content="https://www.superholiclab.com">
+<meta property="og:type" content="website">
+
+<!-- Canonical -->
+<link rel="canonical" href="https://www.superholiclab.com/">
+
+<!-- Fonts & Styles -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="css/style.css">
+<link rel="icon" href="assets/favicon.ico">
+
+<!-- Analytics: ⚠️ CONFIGURE — sign up at plausible.io and add superholiclab.com -->
+<script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js"></script>
+
+<!-- JSON-LD structured data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "EducationalOrganization",
+  "name": "Superholic Lab",
+  "url": "https://www.superholiclab.com",
+  "description": "AI-powered MOE-aligned learning platform for Singapore P1–S4 students",
+  "address": { "@type": "PostalAddress", "addressCountry": "SG" }
+}
+</script>
 </head>
-<body class="has-bottom-nav">
+<body>
 
-  <!-- ═══════════════════════════════════════════
-       NAVBAR — transparent over hero
-       ═══════════════════════════════════════════ -->
-  <header class="navbar is-transparent" id="navbar">
-    <div class="container">
-      <nav class="navbar-inner">
-        <a href="/" class="navbar-logo">
-          <img src="assets/logo.svg" width="32" height="32" alt="" aria-hidden="true" style="border-radius:8px;flex-shrink:0;">
-          Superholic Lab
-        </a>
-        <ul class="navbar-nav" role="list">
-          <li><a href="/">Home</a></li>
-          <li><a href="#how-it-works">How It Works</a></li>
-          <li><a href="#pricing">Pricing</a></li>
-        </ul>
-        <div class="navbar-actions">
-          <a href="pages/login.html"  class="btn btn-secondary btn-sm">Log In</a>
-          <a href="pages/signup.html" class="btn btn-primary   btn-sm">Start Free Trial</a>
-        </div>
-        <button class="navbar-toggle" id="navToggle"
-                aria-label="Open menu" aria-expanded="false">
-          <span></span><span></span><span></span>
-        </button>
-      </nav>
-      <div class="navbar-mobile" id="navMobile" role="navigation">
-        <a href="/">Home</a>
-        <a href="#how-it-works">How It Works</a>
-        <a href="#pricing">Pricing</a>
-        <a href="pages/login.html"  class="btn btn-secondary btn-sm mt-4">Log In</a>
-        <a href="pages/signup.html" class="btn btn-primary   btn-sm">Start Free Trial</a>
+<!-- ═══════════════════ NAVBAR ═══════════════════ -->
+<nav class="navbar navbar-homepage">
+  <a href="/" class="navbar-logo">
+    <img src="assets/logo.svg" width="32" height="32" alt="" aria-hidden="true" style="border-radius:8px;flex-shrink:0;">
+    Superholic Lab
+  </a>
+  <nav class="navbar-links" aria-label="Main navigation">
+    <a href="/" class="active">Home</a>
+    <a href="/pages/about.html">About</a>
+    <a href="/pages/pricing.html">Pricing</a>
+    <a href="/pages/contact.html">Contact</a>
+  </nav>
+  <div class="navbar-actions">
+    <a href="/pages/login.html" class="navbar-login">Log in</a>
+    <a href="/pages/signup.html" class="btn btn-rose btn-sm">Get Started</a>
+  </div>
+</nav>
+
+<!-- ═══════════════════ HERO ═══════════════════ -->
+<section class="hero-homepage">
+  <div class="hero-left">
+    <div class="hero-eyebrow-hp">
+      <div class="eyebrow-dot"></div>
+      Singapore's MOE-Aligned AI Tutor
+    </div>
+    <h1 class="hero-h1">
+      Learn Like a Champion.
+      <span class="accent">Think Like a Winner.</span>
+    </h1>
+    <p class="hero-p">
+      Superholic Lab is Singapore's first AI-powered learning platform with wrong-answer explanations for every option. Built for P1–S4 students. Available 24/7.
+    </p>
+    <div class="hero-cta-hp">
+      <a href="/pages/signup.html" class="btn btn-rose">Start Free Trial →</a>
+      <a href="/pages/pricing.html" class="btn btn-outline-cream">See Plans</a>
+    </div>
+    <p class="trial-note"><span>7-day free trial</span> · No credit card · Cancel anytime</p>
+    <div class="hero-stats-hp">
+      <div>
+        <div class="stat-num">4,200<sup>+</sup></div>
+        <div class="stat-label">Active Students</div>
+      </div>
+      <div>
+        <div class="stat-num">98%</div>
+        <div class="stat-label">MOE-Aligned</div>
+      </div>
+      <div>
+        <div class="stat-num">3×</div>
+        <div class="stat-label">Faster Mastery</div>
       </div>
     </div>
-  </header>
-
-
-  <!-- ═══════════════════════════════════════════
-       HERO — gradient background + floating symbols
-       ═══════════════════════════════════════════ -->
-  <section class="hero" aria-labelledby="hero-heading">
-
-    <!-- Floating math / science / English symbols -->
-    <div class="hero-bg-shapes" aria-hidden="true">
-      <span class="hero-symbol float"       style="top:12%; left:7%;  animation-duration:5s;">+</span>
-      <span class="hero-symbol float-slow"  style="top:20%; left:88%; animation-duration:7s;">÷</span>
-      <span class="hero-symbol float"       style="top:55%; left:4%;  animation-duration:6s; font-size:1.2rem;">∑</span>
-      <span class="hero-symbol float-slow"  style="top:70%; left:93%; animation-duration:8s;">π</span>
-      <span class="hero-symbol float float-delay" style="top:35%; left:92%; font-size:1.1rem;">×</span>
-      <span class="hero-symbol float"       style="top:78%; left:12%; animation-duration:5.5s; font-size:1rem;">√</span>
-      <span class="hero-symbol float-slow"  style="top:8%;  left:50%; animation-duration:9s;">🔬</span>
-      <span class="hero-symbol float float-delay" style="top:82%; left:55%; font-size:1.1rem;">📚</span>
-      <span class="hero-symbol float"       style="top:45%; left:96%; animation-duration:6.5s;">✏️</span>
-      <span class="hero-symbol float-slow"  style="top:65%; left:2%;  animation-duration:7.5s;">💡</span>
-      <!-- Decorative blobs -->
-      <svg style="position:absolute;top:-10%;right:-5%;width:45%;opacity:0.07;" viewBox="0 0 400 400">
-        <circle cx="200" cy="200" r="200" fill="white"/>
-      </svg>
-      <svg style="position:absolute;bottom:-15%;left:-8%;width:40%;opacity:0.06;" viewBox="0 0 400 400">
-        <circle cx="200" cy="200" r="200" fill="white"/>
-      </svg>
+  </div>
+  <div class="hero-right-hp">
+    <div class="hero-photo-wrap">
+      <img
+        src="assets/images/student_with_glowing_apple.png"
+        alt="Singapore student using Superholic Lab with glowing AI hologram"
+        class="hero-photo"
+      >
+      <div class="hero-float-card">
+        <div class="float-card-label">Current Mission</div>
+        <div class="float-card-subject">P4 Mathematics · Fractions</div>
+        <div class="float-progress-bar">
+          <div class="float-progress-fill" style="width:0%" data-target="68"></div>
+        </div>
+        <div class="float-pct">Chapter 3 of 5 · <strong>68% complete</strong></div>
+      </div>
     </div>
+  </div>
+</section>
 
-    <div class="container hero-content">
-
-      <!-- Badge -->
-      <div class="animate-in delay-1">
-        <span class="hero-eyebrow">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-            <path d="M7 1L8.8 5.2L13.5 5.6L10 8.8L11 13.5L7 11L3 13.5L4 8.8L0.5 5.6L5.2 5.2Z"
-                  fill="currentColor"/>
-          </svg>
-          Singapore's AI-Powered Learning Platform
-        </span>
-      </div>
-
-      <!-- Headline -->
-      <h1 id="hero-heading" class="animate-in delay-2">
-        Practise any topic.<br>
-        <span class="accent-word">Wherever the day takes you.</span>
-      </h1>
-
-      <!-- Subtitle -->
-      <p class="hero-subtitle animate-in delay-3">
-        Unlimited MOE-aligned practice questions with full worked solutions
-        and wrong-answer explanations — for less than one tuition session a month.
-      </p>
-
-      <!-- CTAs -->
-      <div class="hero-cta animate-in delay-4">
-        <a href="pages/signup.html" class="btn btn-gradient btn-lg">
-          Start Free Trial — 7 Days Free
-        </a>
-        <a href="pages/subjects.html" class="btn btn-white btn-lg">
-          Try a Practice Quiz
-        </a>
-      </div>
-
-      <!-- Trust line -->
-      <div class="hero-trust animate-in delay-5">
-        <span class="hero-trust-item">
-          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <path d="M8 1L10 6H15L11 9.5L12.5 14.5L8 11.5L3.5 14.5L5 9.5L1 6H6Z"
-                  fill="currentColor"/>
-          </svg>
-          7-day free trial
-        </span>
-        <span class="hero-trust-item">
-          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-            <rect x="3" y="7" width="10" height="8" rx="1"/>
-            <path d="M5 7V5a3 3 0 016 0v2"/>
-          </svg>
-          No credit card required
-        </span>
-        <span class="hero-trust-item">
-          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-            <path d="M2 8l4 4 8-8"/>
-          </svg>
-          Cancel any time
-        </span>
-      </div>
-
-      <!-- Hero illustration — SVG student with lightbulb -->
-      <div class="animate-in delay-4" style="margin-top: 3rem;">
-        <svg viewBox="0 0 480 220" fill="none" xmlns="http://www.w3.org/2000/svg"
-             style="max-width:480px; margin:0 auto; width:100%;"
-             aria-label="Illustration of a student having a lightbulb moment">
-
-          <!-- Desk surface -->
-          <rect x="60" y="170" width="360" height="12" rx="6" fill="rgba(255,255,255,0.2)"/>
-
-          <!-- Student body (left) -->
-          <ellipse cx="170" cy="200" rx="38" ry="14" fill="rgba(255,255,255,0.12)"/>
-          <!-- Torso -->
-          <rect x="148" y="145" width="44" height="60" rx="14" fill="#818cf8"/>
-          <!-- Collar -->
-          <rect x="163" y="145" width="14" height="20" rx="4" fill="#6366f1"/>
-          <!-- Head -->
-          <circle cx="170" cy="128" r="26" fill="#fde68a"/>
-          <!-- Hair -->
-          <path d="M144 118 Q145 100 170 98 Q195 100 196 118 Q190 105 170 103 Q150 105 144 118Z"
-                fill="#1e1b4b"/>
-          <!-- Eye left -->
-          <circle cx="162" cy="126" r="3.5" fill="#1e1b4b"/>
-          <circle cx="163.2" cy="124.8" r="1" fill="white"/>
-          <!-- Eye right -->
-          <circle cx="178" cy="126" r="3.5" fill="#1e1b4b"/>
-          <circle cx="179.2" cy="124.8" r="1" fill="white"/>
-          <!-- Smile -->
-          <path d="M163 133 Q170 139 177 133" stroke="#1e1b4b" stroke-width="2"
-                stroke-linecap="round" fill="none"/>
-          <!-- Left arm on desk -->
-          <rect x="130" y="162" width="40" height="14" rx="7" fill="#818cf8"/>
-          <!-- Right arm raised -->
-          <path d="M192 155 Q210 140 215 120" stroke="#818cf8" stroke-width="14"
-                stroke-linecap="round" fill="none"/>
-
-          <!-- iPad / tablet on desk (right of student) -->
-          <rect x="210" y="140" width="100" height="70" rx="8" fill="white" opacity="0.92"/>
-          <rect x="216" y="147" width="88" height="56" rx="4" fill="#eef2ff"/>
-          <!-- Screen content lines -->
-          <rect x="222" y="154" width="50" height="5" rx="2" fill="#818cf8"/>
-          <rect x="222" y="163" width="76" height="4" rx="2" fill="#c7d2fe"/>
-          <rect x="222" y="171" width="60" height="4" rx="2" fill="#c7d2fe"/>
-          <rect x="222" y="179" width="70" height="4" rx="2" fill="#c7d2fe"/>
-          <!-- MCQ options -->
-          <circle cx="224" cy="188" r="3" fill="#10b981"/>
-          <rect x="230" y="185" width="40" height="4" rx="2" fill="#10b981" opacity="0.7"/>
-          <!-- Check mark -->
-          <path d="M220 188 L223 191 L228 184" stroke="white" stroke-width="1.5"
-                stroke-linecap="round" stroke-linejoin="round"/>
-
-          <!-- Second student (right side) -->
-          <ellipse cx="380" cy="200" rx="38" ry="14" fill="rgba(255,255,255,0.12)"/>
-          <rect x="358" y="145" width="44" height="60" rx="14" fill="#a78bfa"/>
-          <rect x="373" y="145" width="14" height="20" rx="4" fill="#8b5cf6"/>
-          <circle cx="380" cy="128" r="26" fill="#fed7aa"/>
-          <!-- Hair -->
-          <path d="M354 122 Q356 98 380 96 Q404 98 406 115"
-                fill="#7c2d12" opacity="0.9"/>
-          <path d="M354 122 Q352 130 354 135 Q358 115 380 112 Q402 115 406 135 Q408 130 406 115"
-                fill="#7c2d12" opacity="0.9"/>
-          <!-- Eyes -->
-          <circle cx="372" cy="126" r="3.5" fill="#1e1b4b"/>
-          <circle cx="373.2" cy="124.8" r="1" fill="white"/>
-          <circle cx="388" cy="126" r="3.5" fill="#1e1b4b"/>
-          <circle cx="389.2" cy="124.8" r="1" fill="white"/>
-          <!-- Smile -->
-          <path d="M373 133 Q380 139 387 133" stroke="#1e1b4b" stroke-width="2"
-                stroke-linecap="round" fill="none"/>
-          <rect x="340" y="162" width="40" height="14" rx="7" fill="#a78bfa"/>
-          <path d="M368 155 Q350 140 345 120" stroke="#a78bfa" stroke-width="14"
-                stroke-linecap="round" fill="none"/>
-
-          <!-- Lightbulb floating between them -->
-          <g style="transform-origin:295px 75px; animation:float 3.5s ease-in-out infinite;">
-            <!-- Glow -->
-            <circle cx="295" cy="75" r="36" fill="rgba(252,211,77,0.18)"/>
-            <!-- Bulb glass -->
-            <path d="M285 82 Q280 72 284 62 Q288 52 295 50 Q302 52 306 62 Q310 72 305 82Z"
-                  fill="#fcd34d"/>
-            <!-- Filament -->
-            <path d="M289 82 L289 90 Q295 92 301 90 L301 82" fill="#f59e0b"/>
-            <rect x="289" y="90" width="12" height="4" rx="2" fill="#d97706"/>
-            <rect x="291" y="94" width="8" height="3" rx="1.5" fill="#92400e"/>
-            <!-- Shine -->
-            <path d="M288 64 Q290 58 294 56" stroke="white" stroke-width="2"
-                  stroke-linecap="round" opacity="0.7"/>
-            <!-- Sparkles -->
-            <path d="M312 52 L314 48 L316 52 L320 54 L316 56 L314 60 L312 56 L308 54Z"
-                  fill="#fcd34d" opacity="0.9"/>
-            <path d="M272 58 L273.5 55 L275 58 L278 59.5 L275 61 L273.5 64 L272 61 L269 59.5Z"
-                  fill="#fcd34d" opacity="0.8"/>
-            <path d="M295 35 L296.5 30 L298 35" stroke="#fcd34d" stroke-width="2"
-                  stroke-linecap="round" opacity="0.7"/>
-          </g>
-        </svg>
-      </div>
-
-      <!-- Stats -->
-      <div class="hero-stats animate-in delay-5">
-        <div>
-          <div class="hero-stat-value" id="statQuestions">1,000+</div>
-          <div class="hero-stat-label">Practice Questions</div>
+<!-- ═══════════════════ HOW IT WORKS ═══════════════════ -->
+<section class="section-white">
+  <div style="max-width:1100px; margin: 0 auto;">
+    <div class="section-tag">How It Works</div>
+    <h2 class="section-h2-white">Three Steps to Better Results</h2>
+    <p class="section-sub-white">Your child builds real exam confidence — not just correct answers, but a deep understanding of why every wrong option is wrong.</p>
+    <div class="how-grid">
+      <img src="assets/images/sibling_studying.png" alt="Singapore siblings studying together on laptops at home" class="how-photo">
+      <div class="how-steps">
+        <div class="step-card">
+          <div class="step-num">01</div>
+          <div>
+            <div class="step-title">Choose Subject &amp; Level</div>
+            <div class="step-desc">Pick from Mathematics, Science, or English for Primary 1 through Secondary 4. Every question bank is strictly MOE-syllabus-aligned.</div>
+          </div>
         </div>
-        <div>
-          <div class="hero-stat-value">3</div>
-          <div class="hero-stat-label">Core Subjects</div>
+        <div class="step-card">
+          <div class="step-num">02</div>
+          <div>
+            <div class="step-title">Practice with Full Explanations</div>
+            <div class="step-desc">Answer questions and instantly see full worked solutions — plus a clear explanation for each wrong option, so mistakes become lessons.</div>
+          </div>
         </div>
-        <div>
-          <div class="hero-stat-value">P1–S4</div>
-          <div class="hero-stat-label">All Levels</div>
-        </div>
-        <div>
-          <div class="hero-stat-value">24/7</div>
-          <div class="hero-stat-label">Available</div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- Wave divider -->
-    <div class="wave-divider" aria-hidden="true">
-      <svg viewBox="0 0 1440 90" preserveAspectRatio="none">
-        <path d="M0,50 C240,90 480,10 720,50 C960,90 1200,10 1440,50 L1440,90 L0,90 Z"
-              fill="#4A5C58"/>
-      </svg>
-    </div>
-  </section>
-
-
-  <!-- ═══════════════════════════════════════════
-       TRUST STRIP
-       ═══════════════════════════════════════════ -->
-  <div class="trust-strip reveal">
-    <div class="container">
-      <div class="trust-strip-inner">
-        <div class="trust-item is-moe">
-          <svg viewBox="0 0 18 18" fill="none" aria-hidden="true">
-            <path d="M9 1L11 7H17L12.5 10.5L14 16.5L9 13L4 16.5L5.5 10.5L1 7H7Z"
-                  fill="currentColor"/>
-          </svg>
-          MOE Syllabus Aligned
-        </div>
-        <div class="trust-item">
-          <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-            <rect x="3" y="8" width="12" height="9" rx="1.5"/>
-            <path d="M6 8V5.5a3 3 0 016 0V8"/>
-          </svg>
-          Your child's data is safe
-        </div>
-        <div class="trust-item">
-          <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-            <circle cx="9" cy="9" r="7.5"/>
-            <path d="M6 9l2.5 2.5L12 6"/>
-          </svg>
-          Wrong-answer explanations for every MCQ
-        </div>
-        <div class="trust-item">
-          <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-            <path d="M9 1.5v3M9 13.5v3M1.5 9h3M13.5 9h3M4.1 4.1l2.1 2.1M11.8 11.8l2.1 2.1"/>
-          </svg>
-          Available 24/7 on any device
-        </div>
-        <div class="trust-item" style="color: var(--primary);">
-          🇸🇬 Made in Singapore
+        <div class="step-card">
+          <div class="step-num">03</div>
+          <div>
+            <div class="step-title">Ask the AI Tutor Anything</div>
+            <div class="step-desc">Stuck? The AI tutor guides with questions first — never giving the answer away — using Singapore exam keywords and MOE marking scheme language.</div>
+          </div>
         </div>
       </div>
     </div>
   </div>
+</section>
 
-
-  <main>
-
-    <!-- ═══════════════════════════════════════════
-         VALUE PROPS
-         ═══════════════════════════════════════════ -->
-    <section class="section" aria-labelledby="value-heading">
-      <div class="container">
-
-        <div class="text-center reveal" style="max-width:560px; margin:0 auto var(--space-10);">
-          <span class="section-label-tag">Why Superholic Lab</span>
-          <h2 id="value-heading">Everything your child needs. Nothing they don't.</h2>
-          <p class="text-secondary mt-4">
-            Built specifically for the Singapore syllabus — every question, every answer,
-            and every explanation is exactly what your child will face in the exam hall.
-          </p>
-        </div>
-
-        <div class="grid grid-3 reveal-group">
-
-          <!-- Card 1: MOE Aligned -->
-          <div class="value-card card-maths">
-            <div class="value-card-icon value-card-icon-purple">
-              <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-                <rect width="28" height="28" rx="8" fill="rgba(67,56,202,0.12)"/>
-                <path d="M8 14h12M14 8v12" stroke="#4338ca" stroke-width="2.5" stroke-linecap="round"/>
-                <circle cx="14" cy="14" r="5" stroke="#4338ca" stroke-width="1.5"/>
-              </svg>
-            </div>
-            <h3>MOE Syllabus Aligned</h3>
-            <p class="text-secondary mt-4">
-              Every question maps to a named MOE topic for your child's exact level.
-              Primary 1 through Secondary 4 — no off-syllabus surprises before exam day.
-            </p>
-            <div class="flex gap-2 mt-4 flex-wrap">
-              <span class="badge badge-info">Maths</span>
-              <span class="badge badge-info">Science</span>
-              <span class="badge badge-info">English</span>
-            </div>
-          </div>
-
-          <!-- Card 2: Wrong Answer Explanations (featured) -->
-          <div class="value-card card-featured" style="border-top:4px solid var(--accent);">
-            <div class="value-card-icon value-card-icon-amber">
-              <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-                <circle cx="14" cy="11" r="7" stroke="#b45309" stroke-width="2"/>
-                <path d="M14 18v4M11 22h6" stroke="#b45309" stroke-width="2" stroke-linecap="round"/>
-                <path d="M12 9l1.5 2L16 8" stroke="#b45309" stroke-width="1.5"
-                      stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-            <h3>Wrong-Answer Explanations</h3>
-            <p class="text-secondary mt-4">
-              Every MCQ option — right and wrong — comes with a full explanation.
-              Your child learns exactly which misconception leads to each wrong answer.
-              No other platform in Singapore does this systematically.
-            </p>
-            <span class="badge badge-amber mt-4" style="display:inline-flex;">
-              Unique to Superholic Lab
-            </span>
-          </div>
-
-          <!-- Card 3: Available Any Time -->
-          <div class="value-card card-science">
-            <div class="value-card-icon value-card-icon-green">
-              <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-                <rect x="6" y="4" width="16" height="20" rx="3" stroke="#0f766e" stroke-width="2"/>
-                <path d="M10 8h8M10 12h8M10 16h5" stroke="#0f766e" stroke-width="1.5"
-                      stroke-linecap="round"/>
-                <circle cx="21" cy="21" r="5" fill="#0f766e"/>
-                <path d="M19 21l1.5 1.5L23 19" stroke="white" stroke-width="1.5"
-                      stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-            <h3>Available Any Time</h3>
-            <p class="text-secondary mt-4">
-              MRT ride to school. Hawker centre break. Late-night revision.
-              Superholic Lab works on any device — so practice never waits
-              for the next tutor slot.
-            </p>
-            <p class="text-sm mt-4" style="color:var(--success); font-weight:600;">
-              ✓ Mobile-friendly &nbsp;·&nbsp; Works on any browser
-            </p>
-          </div>
-
-        </div>
+<!-- ═══════════════════ ECC FRAMEWORK ═══════════════════ -->
+<section class="section-sage">
+  <div style="max-width:1100px; margin: 0 auto; text-align: center;">
+    <div class="section-tag-sage">Our Teaching Framework</div>
+    <h2 class="section-h2-sage" style="margin:0 auto 10px;">Every Feature Built on ECC</h2>
+    <p class="section-sub-sage" style="margin: 0 auto;">
+      The ECC Framework — Engagement, Clarity, Consistency — guides every design decision at Superholic Lab.
+    </p>
+    <div class="ecc-grid">
+      <div class="ecc-card">
+        <div class="ecc-letter">E</div>
+        <div class="ecc-word">Engagement</div>
+        <div class="ecc-desc">Learning that holds attention. Streaks, progress missions, and immediate feedback keep students coming back every day — not just before exams.</div>
       </div>
-    </section>
-
-
-    <!-- ═══════════════════════════════════════════
-         HOW IT WORKS
-         ═══════════════════════════════════════════ -->
-    <section class="section" id="how-it-works"
-             aria-labelledby="how-heading"
-             style="background: linear-gradient(180deg, var(--primary-light) 0%, var(--surface) 100%);">
-      <div class="container">
-
-        <div class="text-center reveal" style="max-width:520px; margin:0 auto var(--space-10);">
-          <span class="section-label-tag">Simple by design</span>
-          <h2 id="how-heading">Up and practising in under a minute</h2>
-          <p class="text-secondary mt-4">No setup. No scheduling. No waiting.</p>
-        </div>
-
-        <div class="grid grid-3 steps-grid reveal-group">
-
-          <div class="step-card">
-            <div class="step-number">1</div>
-            <!-- SVG: subject selector illustration -->
-            <svg viewBox="0 0 80 60" fill="none" style="width:80px;margin:0 auto var(--space-4);"
-                 aria-hidden="true">
-              <rect x="5" y="8" width="70" height="44" rx="8" fill="#eef2ff"/>
-              <rect x="12" y="16" width="20" height="28" rx="6" fill="#818cf8"/>
-              <text x="22" y="34" font-size="10" fill="white" text-anchor="middle"
-                    font-family="sans-serif" font-weight="bold">M</text>
-              <rect x="36" y="16" width="20" height="28" rx="6" fill="#5eead4" opacity="0.9"/>
-              <text x="46" y="34" font-size="10" fill="white" text-anchor="middle"
-                    font-family="sans-serif" font-weight="bold">S</text>
-              <rect x="60" y="16" width="12" height="28" rx="6" fill="#fcd34d" opacity="0.9"/>
-              <text x="66" y="34" font-size="10" fill="white" text-anchor="middle"
-                    font-family="sans-serif" font-weight="bold">E</text>
-            </svg>
-            <h3>Choose a subject and level</h3>
-            <p class="text-secondary mt-4">
-              Pick Maths, Science, or English. Select your child's level —
-              from Primary 1 to Secondary 4. Questions load instantly.
-            </p>
-          </div>
-
-          <div class="step-card">
-            <div class="step-number">2</div>
-            <!-- SVG: answer feedback illustration -->
-            <svg viewBox="0 0 80 60" fill="none" style="width:80px;margin:0 auto var(--space-4);"
-                 aria-hidden="true">
-              <rect x="5" y="4" width="70" height="52" rx="8" fill="#f0fdf4"/>
-              <rect x="12" y="12" width="56" height="10" rx="5"
-                    fill="#10b981" opacity="0.9"/>
-              <path d="M18 17l3 3 5-5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
-              <rect x="12" y="26" width="56" height="8" rx="4" fill="#fee2e2" opacity="0.8"/>
-              <rect x="12" y="38" width="56" height="8" rx="4" fill="#e5e7eb"/>
-              <rect x="12" y="48" width="56" height="8" rx="4" fill="#e5e7eb"/>
-            </svg>
-            <h3>Answer, then see the full breakdown</h3>
-            <p class="text-secondary mt-4">
-              After each answer, see the worked solution step-by-step and
-              an explanation of every wrong option — not just a tick or a cross.
-            </p>
-          </div>
-
-          <div class="step-card">
-            <div class="step-number">3</div>
-            <!-- SVG: progress chart illustration -->
-            <svg viewBox="0 0 80 60" fill="none" style="width:80px;margin:0 auto var(--space-4);"
-                 aria-hidden="true">
-              <rect x="5" y="4" width="70" height="52" rx="8" fill="#f0f4ff"/>
-              <rect x="14" y="30" width="10" height="22" rx="3" fill="#818cf8"/>
-              <rect x="28" y="22" width="10" height="30" rx="3" fill="#4338ca"/>
-              <rect x="42" y="16" width="10" height="36" rx="3" fill="#7c3aed"/>
-              <rect x="56" y="10" width="10" height="42" rx="3" fill="#a855f7"/>
-              <path d="M14 30 Q24 22 38 16 Q52 10 66 10" stroke="#fcd34d"
-                    stroke-width="2" stroke-linecap="round" fill="none" stroke-dasharray="3 2"/>
-            </svg>
-            <h3>Track progress over time</h3>
-            <p class="text-secondary mt-4">
-              Every quiz is saved. See accuracy by subject, topic gaps, and
-              improvement streaks — so you always know where to focus next.
-            </p>
-          </div>
-
-        </div>
-
-        <div class="text-center mt-8 reveal">
-          <a href="pages/signup.html" class="btn btn-primary btn-lg">
-            Try It Free for 7 Days
-          </a>
-        </div>
-
+      <div class="ecc-card">
+        <div class="ecc-letter">C</div>
+        <div class="ecc-word">Clarity</div>
+        <div class="ecc-desc">No ambiguity in explanations. Every worked solution uses MOE marking-scheme language. What the examiner expects is always front and centre.</div>
       </div>
-    </section>
-
-
-    <!-- ═══════════════════════════════════════════
-         PRICING PREVIEW
-         ═══════════════════════════════════════════ -->
-    <section class="section" id="pricing" aria-labelledby="pricing-heading">
-      <div class="container">
-
-        <div class="text-center reveal" style="max-width:560px; margin:0 auto var(--space-10);">
-          <span class="section-label-tag">Simple pricing</span>
-          <h2 id="pricing-heading">Less than one tuition session. Every month.</h2>
-          <p class="text-secondary mt-4">
-            All plans include a 7-day free trial. No credit card required. Cancel any time.
-          </p>
-        </div>
-
-        <div class="grid grid-3 reveal-group" style="align-items:start;">
-
-          <!-- Tier 1: Single Subject -->
-          <div class="pricing-card no-hover" style="cursor:default;">
-            <div class="card-header">
-              <h3 style="font-size:1.125rem;">Single Subject</h3>
-              <p class="text-secondary text-sm mt-4">
-                One subject, fully covered. Perfect for focused PSLE prep.
-              </p>
-            </div>
-            <div class="card-body" style="flex:1;">
-              <div class="pricing-price">S$9.99 <span>/ month</span></div>
-              <p class="text-sm mt-4" style="color:var(--success);font-weight:600;">
-                Save 17% billed annually
-              </p>
-              <ul class="pricing-features mt-4">
-                <li class="pricing-feature">Unlimited questions for 1 subject</li>
-                <li class="pricing-feature">Full worked solutions</li>
-                <li class="pricing-feature">Wrong-answer explanations</li>
-                <li class="pricing-feature">MOE aligned, P1–P6</li>
-                <li class="pricing-feature">Mobile-friendly</li>
-              </ul>
-            </div>
-            <div class="card-footer">
-              <a href="pages/signup.html" class="btn btn-secondary btn-full">
-                Start Free Trial
-              </a>
-            </div>
-          </div>
-
-          <!-- Tier 2: All Subjects (FEATURED) -->
-          <div class="pricing-card card-featured no-hover" style="cursor:default;">
-            <div class="pricing-ribbon" aria-label="Most Popular">POPULAR</div>
-            <div class="card-header" style="background:var(--primary);">
-              <h3 style="color:var(--white);font-size:1.125rem;">All Subjects</h3>
-              <p class="text-sm mt-4" style="color:rgba(255,255,255,0.82);">
-                Every subject, one child. The full Superholic Lab experience.
-              </p>
-            </div>
-            <div class="card-body" style="flex:1;">
-              <div class="pricing-price" style="color:var(--primary);">
-                S$19.99 <span>/ month</span>
-              </div>
-              <p class="text-sm mt-4" style="color:var(--success);font-weight:600;">
-                Save 17% billed annually
-              </p>
-              <ul class="pricing-features mt-4">
-                <li class="pricing-feature">Unlimited questions across <strong>all subjects</strong></li>
-                <li class="pricing-feature">Full worked solutions</li>
-                <li class="pricing-feature">Wrong-answer explanations</li>
-                <li class="pricing-feature">MOE aligned, P1–P6</li>
-                <li class="pricing-feature">Mobile-friendly</li>
-                <li class="pricing-feature">Mock exam paper generator</li>
-              </ul>
-            </div>
-            <div class="card-footer">
-              <a href="pages/signup.html" class="btn btn-primary btn-full">
-                Start Free Trial
-              </a>
-            </div>
-          </div>
-
-          <!-- Tier 3: Family -->
-          <div class="pricing-card no-hover" style="cursor:default;">
-            <div class="card-header">
-              <span class="badge badge-success" style="margin-bottom:var(--space-3);">Best Value</span>
-              <h3 style="font-size:1.125rem;">Family</h3>
-              <p class="text-secondary text-sm mt-4">
-                All subjects, up to 3 children. One plan for the whole family.
-              </p>
-            </div>
-            <div class="card-body" style="flex:1;">
-              <div class="pricing-price">S$29.99 <span>/ month</span></div>
-              <span class="pricing-per-child">~S$10 per child</span>
-              <p class="text-sm mt-4" style="color:var(--success);font-weight:600;">
-                Save 17% billed annually
-              </p>
-              <ul class="pricing-features mt-4">
-                <li class="pricing-feature">Everything in All Subjects</li>
-                <li class="pricing-feature"><strong>Up to 3 child profiles</strong></li>
-                <li class="pricing-feature">Each child tracks progress independently</li>
-                <li class="pricing-feature">Parent dashboard for all 3 children</li>
-                <li class="pricing-feature">Priority support</li>
-              </ul>
-            </div>
-            <div class="card-footer">
-              <a href="pages/signup.html" class="btn btn-secondary btn-full">
-                Start Free Trial
-              </a>
-            </div>
-          </div>
-
-        </div>
-
-        <p class="text-center text-secondary text-sm mt-6 reveal">
-          7-day free trial on all plans &nbsp;·&nbsp; No credit card required &nbsp;·&nbsp; Cancel any time
-        </p>
-        <p class="text-center mt-4 reveal">
-          <a href="pages/pricing.html" class="btn btn-ghost">See full pricing details →</a>
-        </p>
-
+      <div class="ecc-card">
+        <div class="ecc-letter">C</div>
+        <div class="ecc-word">Consistency</div>
+        <div class="ecc-desc">The same high-quality explanation approach across every subject, every level. Parents can trust the platform, not just hope it works.</div>
       </div>
-    </section>
-
-
-    <!-- ═══════════════════════════════════════════
-         SOCIAL PROOF
-         ═══════════════════════════════════════════ -->
-    <section class="section" aria-labelledby="social-heading"
-             style="background: linear-gradient(180deg, var(--surface) 0%, var(--primary-light) 100%);">
-      <div class="container">
-
-        <div class="text-center reveal" style="max-width:520px; margin:0 auto var(--space-10);">
-          <span class="section-label-tag">Parent stories</span>
-          <h2 id="social-heading">Singapore parents are already practising</h2>
-          <p class="text-secondary mt-4">Early access families from Primary 3 to Primary 6.</p>
-        </div>
-
-        <div class="grid grid-3 reveal-group">
-
-          <!-- Testimonial 1 -->
-          <div class="testimonial-card">
-            <div class="testimonial-quote-mark" aria-hidden="true">"</div>
-            <div class="testimonial-stars" aria-label="5 stars">★★★★★</div>
-            <p class="testimonial-text">
-              The wrong-answer explanations are what I've always wanted.
-              My daughter finally understands why she keeps making the same
-              fractions mistake — not just that she got it wrong.
-            </p>
-            <div class="testimonial-author">
-              <!-- Illustrated SVG avatar -->
-              <div class="testimonial-avatar">
-                <svg viewBox="0 0 42 42" fill="none">
-                  <circle cx="21" cy="21" r="21" fill="#eef2ff"/>
-                  <circle cx="21" cy="17" r="8" fill="#fde68a"/>
-                  <path d="M9 38 Q9 28 21 28 Q33 28 33 38Z" fill="#818cf8"/>
-                  <path d="M13 17 Q13 9 21 9 Q29 9 29 17" fill="#1e1b4b"/>
-                </svg>
-              </div>
-              <div>
-                <div class="testimonial-name">Sarah T.</div>
-                <div class="testimonial-detail">Mum of Primary 4 student</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Testimonial 2 -->
-          <div class="testimonial-card">
-            <div class="testimonial-quote-mark" aria-hidden="true">"</div>
-            <div class="testimonial-stars" aria-label="5 stars">★★★★★</div>
-            <p class="testimonial-text">
-              We cancelled one of his three tuition slots and put it here instead.
-              He practises every night on his iPad without being told.
-              That alone is worth the subscription.
-            </p>
-            <div class="testimonial-author">
-              <div class="testimonial-avatar">
-                <svg viewBox="0 0 42 42" fill="none">
-                  <circle cx="21" cy="21" r="21" fill="#f0fdfa"/>
-                  <circle cx="21" cy="17" r="8" fill="#fed7aa"/>
-                  <path d="M9 38 Q9 28 21 28 Q33 28 33 38Z" fill="#0f766e"/>
-                  <path d="M13 14 Q13 9 21 9 Q29 9 29 14 Q29 9 21 8 Q13 9 13 14Z"
-                        fill="#7c2d12" opacity="0.85"/>
-                </svg>
-              </div>
-              <div>
-                <div class="testimonial-name">Marcus L.</div>
-                <div class="testimonial-detail">Dad of Primary 6 student</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Testimonial 3 -->
-          <div class="testimonial-card">
-            <div class="testimonial-quote-mark" aria-hidden="true">"</div>
-            <div class="testimonial-stars" aria-label="5 stars">★★★★★</div>
-            <p class="testimonial-text">
-              The Family plan for our three kids costs less than one Science
-              tuition session. I wish this existed three years ago when our
-              eldest was doing PSLE.
-            </p>
-            <div class="testimonial-author">
-              <div class="testimonial-avatar">
-                <svg viewBox="0 0 42 42" fill="none">
-                  <circle cx="21" cy="21" r="21" fill="#fef3c7"/>
-                  <circle cx="21" cy="17" r="8" fill="#fde68a"/>
-                  <path d="M9 38 Q9 28 21 28 Q33 28 33 38Z" fill="#b45309"/>
-                  <path d="M13 17 Q12 9 21 9 Q30 9 29 17 Q32 12 21 11 Q10 12 13 17Z"
-                        fill="#1e1b4b"/>
-                </svg>
-              </div>
-              <div>
-                <div class="testimonial-name">Priya R.</div>
-                <div class="testimonial-detail">Mum of P3, P4 and P6 students</div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- Final CTA -->
-        <div class="text-center mt-8 reveal">
-          <h2 style="margin-bottom:var(--space-5);">
-            Ready to give your child an edge?
-          </h2>
-          <div class="flex gap-4 justify-center flex-wrap">
-            <a href="pages/signup.html" class="btn btn-primary btn-lg">
-              Start Your Free Trial Today
-            </a>
-            <a href="pages/subjects.html" class="btn btn-secondary btn-lg">
-              Try a Quiz First
-            </a>
-          </div>
-          <p class="hero-trust mt-6" style="color:var(--text-secondary);">
-            <span class="hero-trust-item">7-day free trial</span>
-            <span class="hero-trust-item">No credit card required</span>
-            <span class="hero-trust-item">Cancel any time</span>
-          </p>
-        </div>
-
-      </div>
-    </section>
-
-  </main>
-
-
-  <!-- ═══════════════════════════════════════════
-       FOOTER
-       ═══════════════════════════════════════════ -->
-  <footer class="footer">
-    <div class="container">
-
-      <div class="footer-grid">
-        <div>
-          <div class="footer-brand">
-            <svg width="32" height="32" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-              <rect width="28" height="28" rx="8" fill="rgba(255,255,255,0.15)"/>
-              <path d="M8 14.5L12.5 19L20 10" stroke="white" stroke-width="2.5"
-                    stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            Superholic Lab
-          </div>
-          <p class="footer-tagline">
-            Learn like a champion. Think like a winner.<br><br>
-            Singapore's AI-powered learning platform for
-            Primary 1 to Secondary 4 — MOE-aligned, mobile-friendly,
-            and available any time your child needs to practise.
-          </p>
-          <div class="footer-made-in-sg mt-6">
-            🇸🇬 &nbsp;Made in Singapore
-          </div>
-        </div>
-
-        <div>
-          <div class="footer-heading">Platform</div>
-          <ul class="footer-links">
-            <li><a href="pages/subjects.html">Choose a Subject</a></li>
-            <li><a href="pages/quiz.html">Take a Quiz</a></li>
-            <li><a href="pages/tutor.html">AI Tutor</a></li>
-            <li><a href="pages/progress.html">My Progress</a></li>
-            <li><a href="pages/pricing.html">Pricing</a></li>
-          </ul>
-        </div>
-
-        <div>
-          <div class="footer-heading">Company</div>
-          <ul class="footer-links">
-            <li><a href="pages/about.html">About</a></li>
-            <li><a href="pages/contact.html">Contact</a></li>
-            <li><a href="pages/privacy.html">Privacy Policy</a></li>
-            <li><a href="pages/terms.html">Terms of Service</a></li>
-          </ul>
-        </div>
-      </div>
-
-      <hr class="footer-divider" />
-
-      <div class="footer-bottom">
-        <p>&copy; 2026 Superholic Lab. All rights reserved.</p>
-        <div class="flex gap-4">
-          <a href="pages/privacy.html">Privacy</a>
-          <a href="pages/terms.html">Terms</a>
-          <a href="pages/contact.html">Contact</a>
-        </div>
-      </div>
-
     </div>
-  </footer>
+  </div>
+</section>
 
+<!-- ═══════════════════ FEATURES ═══════════════════ -->
+<section class="section-sage-dark">
+  <div style="max-width:1100px; margin: 0 auto;">
+    <div class="section-tag-sage">What Makes Us Different</div>
+    <h2 class="section-h2-sage">Built for Singapore Exam Culture</h2>
+    <p class="section-sub-sage">No other platform explains every wrong answer — systematically, for every question, across all subjects.</p>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🎯</div>
+        <div class="feature-title">Wrong-Answer Explanations</div>
+        <div class="feature-desc">For every MCQ, we explain exactly why each wrong option is wrong. Not just "B is correct" — but why A, C, and D are traps.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🤖</div>
+        <div class="feature-title">AI Tutor, Available 24/7</div>
+        <div class="feature-desc">The AI guides students with questions, never handing out answers. It uses Singapore exam language and marking-scheme keywords.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📚</div>
+        <div class="feature-title">100% MOE-Aligned</div>
+        <div class="feature-desc">Every question, every solution, and every explanation is built against the official MOE Primary and Secondary syllabuses.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <div class="feature-title">Progress Parents Can See</div>
+        <div class="feature-desc">The Family Plan shows every child's accuracy by topic. No more asking "how was school?" — see exactly where help is needed.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <div class="feature-title">Instant Worked Solutions</div>
+        <div class="feature-desc">Full step-by-step working shown immediately after every answer — labelled clearly, in the format examiners expect to see.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📱</div>
+        <div class="feature-title">Mobile-First Design</div>
+        <div class="feature-desc">Designed for tablets and phones. Practise on the bus, on lunch break, or at home — on any device, any time.</div>
+      </div>
+    </div>
+  </div>
+</section>
 
-  <!-- ═══════════════════════════════════════════
-       MOBILE BOTTOM NAV
-       ═══════════════════════════════════════════ -->
-  <nav class="bottom-nav" aria-label="Mobile navigation">
-    <a href="/" class="bottom-nav-item is-active" aria-current="page">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
-        <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/>
-        <path d="M9 21V12h6v9"/>
-      </svg>
-      Home
-    </a>
-    <a href="pages/subjects.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
-        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-      </svg>
-      Practise
-    </a>
-    <a href="pages/tutor.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
-        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
-      </svg>
-      AI Tutor
-    </a>
-    <a href="pages/progress.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
-        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-      </svg>
-      Progress
-    </a>
-  </nav>
+<!-- ═══════════════════ MISSION CONTROL ═══════════════════ -->
+<section class="mc-section">
+  <div style="max-width:1100px; margin: 0 auto;">
+    <div class="section-tag-sage">Mission Control</div>
+    <h2 class="section-h2-sage">Your Personal Learning Dashboard</h2>
+    <p class="section-sub-sage">Track progress across all subjects. See where to focus next. Built for students who want to perform, not just participate.</p>
+    <div class="mc-grid">
+      <div class="mc-cards-col">
+        <div class="mc-card">
+          <div class="mc-card-header">
+            <div class="mc-card-title">🧮 Mathematics</div>
+            <div class="mc-card-pct">72%</div>
+          </div>
+          <div class="mc-bar"><div class="mc-fill" style="width:0%" data-target="72"></div></div>
+          <div class="mc-card-desc">Fractions &amp; Decimals · Chapter 3 of 5 · 240 questions done</div>
+        </div>
+        <div class="mc-card">
+          <div class="mc-card-header">
+            <div class="mc-card-title">🔬 Science</div>
+            <div class="mc-card-pct">45%</div>
+          </div>
+          <div class="mc-bar"><div class="mc-fill" style="width:0%" data-target="45"></div></div>
+          <div class="mc-card-desc">Living Systems · Chapter 2 of 6 · 88 questions done</div>
+        </div>
+        <div class="mc-card">
+          <div class="mc-card-header">
+            <div class="mc-card-title">📖 English Language</div>
+            <div class="mc-card-pct">88%</div>
+          </div>
+          <div class="mc-bar"><div class="mc-fill" style="width:0%" data-target="88"></div></div>
+          <div class="mc-card-desc">Comprehension Inference · Chapter 5 of 6 · 312 questions done</div>
+        </div>
+        <a href="/pages/signup.html" class="btn btn-rose" style="width:100%; justify-content:center; margin-top:8px;">
+          Access Your Dashboard →
+        </a>
+      </div>
+      <div class="mc-img-col">
+        <img src="assets/images/kid_studying.png" alt="Singapore student focused on studying with laptop" class="mc-photo">
+        <div class="mc-badge-overlay">
+          <div class="mc-badge-num">88%</div>
+          <div class="mc-badge-label">Accuracy</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
+<!-- ═══════════════════ SOCIAL PROOF ═══════════════════ -->
+<section class="section-white">
+  <div style="max-width:1100px; margin: 0 auto;">
+    <div class="section-tag">Parents Love It</div>
+    <h2 class="section-h2-white">Trusted by Singapore Families</h2>
+    <p class="section-sub-white">Join thousands of parents who finally have visibility into exactly where their child needs help — and the tools to fix it.</p>
+    <div class="social-grid" style="margin-top:52px;">
+      <div>
+        <div class="quote-block">
+          "My daughter went from 60% to 82% in Science in just 6 weeks. The wrong-answer explanations are brilliant — she understands her mistakes now instead of repeating them."
+        </div>
+        <div class="quote-attr">Mrs Lim, Bukit Timah</div>
+        <div class="quote-attr-sub">Mother of P5 student</div>
+        <div style="margin-top:28px;">
+          <div class="quote-block">
+            "My two kids can share one Family Plan. I log in every Sunday to check their progress dashboards. It's the only tutor platform that shows me actual data."
+          </div>
+          <div class="quote-attr">Mr Rahman, Punggol</div>
+          <div class="quote-attr-sub">Father of P3 and P6 students</div>
+        </div>
+      </div>
+      <img src="assets/images/mum_daughter_ipad.png" alt="Singapore mother and daughter using Superholic Lab on iPad" class="social-photo">
+    </div>
+  </div>
+</section>
 
-  <!-- ═══════════════════════════════════════════
-       SCRIPTS
-       ═══════════════════════════════════════════ -->
-  <script>
-    (function () {
-      'use strict';
+<!-- ═══════════════════ TRUST BAR ═══════════════════ -->
+<div class="trust-bar" role="list" aria-label="Trust indicators">
+  <div class="trust-item" role="listitem"><strong>✓</strong> 100% MOE-Aligned</div>
+  <div class="trust-item" role="listitem"><strong>✓</strong> PDPA Compliant</div>
+  <div class="trust-item" role="listitem"><strong>✓</strong> Cancel Anytime</div>
+  <div class="trust-item" role="listitem"><strong>✓</strong> No Credit Card for Trial</div>
+  <div class="trust-item" role="listitem"><strong>✓</strong> Singapore Servers (Supabase SG)</div>
+</div>
 
-      /* ── Navbar: glass effect on scroll + transparent/solid toggle ── */
-      const navbar = document.getElementById('navbar');
-      function onScroll() {
-        if (window.scrollY > 10) {
-          navbar.classList.remove('is-transparent');
-          navbar.classList.add('is-scrolled');
-        } else {
-          navbar.classList.add('is-transparent');
-          navbar.classList.remove('is-scrolled');
-        }
+<!-- ═══════════════════ PRICING ═══════════════════ -->
+<section class="section-off-white" id="pricing">
+  <div style="max-width:1000px; margin: 0 auto; text-align:center;">
+    <div class="section-tag">Simple Pricing</div>
+    <h2 class="section-h2-white">No Surprises. No Lock-in.</h2>
+    <p class="section-sub-white" style="margin:0 auto 0;">7-day free trial on all plans. Cancel any time. Annual plans save 17%.</p>
+    <div class="pricing-grid">
+
+      <!-- Single Subject -->
+      <div class="pricing-card-hp">
+        <div class="plan-name">Single Subject</div>
+        <div class="plan-price"><sup>S$</sup>9.99<span>/month</span></div>
+        <div class="plan-desc">Perfect for focused PSLE prep in one subject.</div>
+        <ul class="plan-features">
+          <li><span class="check check-rose">✓</span> 1 subject of your choice</li>
+          <li><span class="check check-rose">✓</span> Unlimited questions</li>
+          <li><span class="check check-rose">✓</span> Full worked solutions</li>
+          <li><span class="check check-rose">✓</span> Wrong-answer explanations</li>
+          <li><span class="check check-rose">✓</span> AI Tutor access</li>
+          <li><span class="check check-rose">✓</span> 1 child profile</li>
+        </ul>
+        <a href="/pages/signup.html?plan=single" class="btn btn-outline-dark plan-cta">Start Free Trial</a>
+        <div class="plan-trial">7 days free · No credit card</div>
+      </div>
+
+      <!-- All Subjects (featured) -->
+      <div class="pricing-card-hp featured">
+        <div class="featured-badge">Most Popular</div>
+        <div class="plan-name">All Subjects</div>
+        <div class="plan-price"><sup>S$</sup>19.99<span>/month</span></div>
+        <div class="plan-desc">The complete PSLE toolkit — Maths, Science &amp; English.</div>
+        <ul class="plan-features">
+          <li><span class="check check-rose">✓</span> All 3 subjects (Maths, Science, English)</li>
+          <li><span class="check check-rose">✓</span> Unlimited questions</li>
+          <li><span class="check check-rose">✓</span> Full worked solutions</li>
+          <li><span class="check check-rose">✓</span> Wrong-answer explanations</li>
+          <li><span class="check check-rose">✓</span> AI Tutor access</li>
+          <li><span class="check check-rose">✓</span> Mock exam generator</li>
+          <li><span class="check check-rose">✓</span> 1 child profile</li>
+        </ul>
+        <a href="/pages/signup.html?plan=all_subjects" class="btn btn-rose plan-cta">Start Free Trial</a>
+        <div class="plan-trial">7 days free · No credit card</div>
+      </div>
+
+      <!-- Family -->
+      <div class="pricing-card-hp">
+        <div class="plan-name">Family</div>
+        <div class="plan-price"><sup>S$</sup>29.99<span>/month</span></div>
+        <div class="plan-desc">For families with multiple children preparing for exams.</div>
+        <ul class="plan-features">
+          <li><span class="check check-rose">✓</span> All 3 subjects</li>
+          <li><span class="check check-rose">✓</span> Unlimited questions</li>
+          <li><span class="check check-rose">✓</span> Full worked solutions</li>
+          <li><span class="check check-rose">✓</span> Wrong-answer explanations</li>
+          <li><span class="check check-rose">✓</span> AI Tutor access</li>
+          <li><span class="check check-rose">✓</span> Mock exam generator</li>
+          <li><span class="check check-rose">✓</span> Up to 3 child profiles</li>
+          <li><span class="check check-rose">✓</span> Parent dashboard (all children)</li>
+          <li><span class="check check-rose">✓</span> Priority support</li>
+        </ul>
+        <a href="/pages/signup.html?plan=family" class="btn btn-outline-dark plan-cta">Start Free Trial</a>
+        <div class="plan-trial">7 days free · No credit card</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ CTA BANNER ═══════════════════ -->
+<section class="cta-banner">
+  <h2 class="cta-h2">Your Child's Best Exam Season Starts Today</h2>
+  <p class="cta-sub">Join 4,200+ Singapore students already using Superholic Lab. First 7 days completely free.</p>
+  <div class="cta-btns">
+    <a href="/pages/signup.html" class="btn btn-white-solid">Start Free Trial →</a>
+    <a href="/pages/pricing.html" class="btn btn-outline-white">See All Plans</a>
+  </div>
+</section>
+
+<!-- ═══════════════════ FOOTER ═══════════════════ -->
+<footer class="footer-homepage">
+  <div style="max-width:1100px; margin: 0 auto;">
+    <div class="footer-top">
+      <div>
+        <div class="footer-logo-hp">
+          <img src="assets/logo.svg" width="28" height="28" alt="" aria-hidden="true" style="border-radius:6px;">
+          Superholic Lab
+        </div>
+        <p class="footer-tagline">Singapore's AI-powered learning platform for P1–S4 students. MOE-aligned. Available 24/7.</p>
+      </div>
+      <div>
+        <div class="footer-col-title">Platform</div>
+        <ul class="footer-col-links">
+          <li><a href="/pages/subjects.html">Subjects</a></li>
+          <li><a href="/pages/pricing.html">Pricing</a></li>
+          <li><a href="/pages/dashboard.html">Dashboard</a></li>
+          <li><a href="/pages/tutor.html">AI Tutor</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Company</div>
+        <ul class="footer-col-links">
+          <li><a href="/pages/about.html">About Us</a></li>
+          <li><a href="/pages/contact.html">Contact</a></li>
+          <li><a href="/pages/terms.html">Terms of Use</a></li>
+          <li><a href="/pages/privacy.html">Privacy Policy</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Support</div>
+        <ul class="footer-col-links">
+          <li><a href="/pages/contact.html">Help Centre</a></li>
+          <li><a href="/pages/login.html">Log In</a></li>
+          <li><a href="/pages/signup.html">Sign Up</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom-hp">
+      <div class="footer-copy">© 2026 Superholic Lab. All rights reserved. 🇸🇬 Made in Singapore</div>
+      <div class="pdpa-note">Compliant with Singapore PDPA. Student data stored in Singapore (Supabase SG region).</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ── ECC: Engagement — animate progress bars on scroll into view ── */
+const progressObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const bar = entry.target;
+      const target = bar.dataset.target;
+      if (target) {
+        setTimeout(() => {
+          bar.style.transition = 'width 1.1s cubic-bezier(0.4, 0, 0.2, 1)';
+          bar.style.width = target + '%';
+        }, 200);
       }
-      window.addEventListener('scroll', onScroll, { passive: true });
-      onScroll();
-
-      /* ── Navbar: mobile toggle ── */
-      const navToggle = document.getElementById('navToggle');
-      const navMobile = document.getElementById('navMobile');
-      if (navToggle && navMobile) {
-        navToggle.addEventListener('click', function () {
-          const isOpen = navMobile.classList.toggle('is-open');
-          navToggle.setAttribute('aria-expanded', String(isOpen));
-        });
-        navMobile.querySelectorAll('a').forEach(function (link) {
-          link.addEventListener('click', function () {
-            navMobile.classList.remove('is-open');
-            navToggle.setAttribute('aria-expanded', 'false');
-          });
-        });
-      }
-
-      /* ── Scroll reveal via IntersectionObserver ── */
-      const revealEls = document.querySelectorAll('.reveal, .reveal-group');
-      if ('IntersectionObserver' in window) {
-        const io = new IntersectionObserver(function (entries) {
-          entries.forEach(function (entry) {
-            if (entry.isIntersecting) {
-              entry.target.classList.add('revealed');
-              io.unobserve(entry.target);
-            }
-          });
-        }, { threshold: 0.12 });
-        revealEls.forEach(function (el) { io.observe(el); });
-      } else {
-        /* Fallback: show everything immediately */
-        revealEls.forEach(function (el) { el.classList.add('revealed'); });
-      }
-
-    })();
-  </script>
-
-  <!-- TEST:
-       1. Page loads → hero elements stagger in (badge → h1 → subtitle → buttons)
-       2. Navbar starts transparent; scrolling down triggers glass blur effect
-       3. Floating math symbols (÷ π + √) animate in the hero background
-       4. SVG student illustration and lightbulb render correctly
-       5. Wave divider creates smooth transition between hero and trust strip
-       6. Scrolling reveals value-prop cards with staggered entrance
-       7. Pricing card middle column shows diagonal amber "POPULAR" ribbon
-       8. Testimonials show illustrated SVG avatars
-       9. At 375px mobile: bottom nav bar appears with Home/Practise/AI Tutor/Progress
-      10. All links navigate to correct pages -->
-
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "EducationalOrganization",
-    "name": "Superholic Lab",
-    "url": "https://www.superholiclab.com",
-    "description": "AI-powered MOE-aligned practice platform for Singapore students from Primary 1 to Secondary 4.",
-    "areaServed": "SG",
-    "knowsAbout": ["Mathematics", "Science", "English", "MOE curriculum", "PSLE preparation"],
-    "offers": {
-      "@type": "Offer",
-      "price": "9.99",
-      "priceCurrency": "SGD",
-      "description": "Monthly subscription with 7-day free trial"
+      progressObserver.unobserve(bar);
     }
+  });
+}, { threshold: 0.3 });
+
+document.querySelectorAll('.mc-fill, .float-progress-fill').forEach(bar => {
+  progressObserver.observe(bar);
+});
+
+/* ── ECC: Engagement — navbar shadow on scroll ── */
+window.addEventListener('scroll', () => {
+  const navbar = document.querySelector('.navbar');
+  if (navbar) {
+    navbar.style.boxShadow = window.scrollY > 20
+      ? '0 4px 24px rgba(0,0,0,0.15)'
+      : 'none';
   }
-  </script>
+}, { passive: true });
+</script>
+
 </body>
 </html>
