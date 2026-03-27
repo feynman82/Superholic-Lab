@@ -25,13 +25,11 @@
     .main { max-width: 900px; margin: 0 auto; padding: 2.5rem 1.5rem; }
     .welcome { font-size: 1.75rem; font-weight: 800; margin-bottom: .25rem; color: var(--text); }
     .welcome-sub { color: var(--text-muted); margin-bottom: 2rem; font-size: .95rem; }
-
     .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
     .section-title { font-size: 1rem; font-weight: 700; color: var(--text); }
     .btn-add { background: var(--primary); color: #2A3A36; border: none; border-radius: .5rem; padding: .5rem 1rem; font-size: .85rem; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: .35rem; font-family: inherit; }
     .btn-add:hover { opacity: .9; }
     .btn-add.hidden { visibility: hidden; }
-
     .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.25rem; }
     .student-card { background: var(--surface); border: 1.5px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: box-shadow .2s, border-color .2s; }
     .student-card:hover { box-shadow: 0 4px 24px rgba(0,0,0,.2); border-color: var(--primary); }
@@ -44,7 +42,6 @@
 
     .empty-state { text-align: center; padding: 3rem 1rem; color: var(--text-muted); }
     .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
-
     .admin-panel { background: rgba(167,139,250,0.08); border: 1.5px solid rgba(167,139,250,0.25); border-radius: 1rem; padding: 1.5rem; margin-top: 2rem; }
     .admin-panel h3 { font-size: 1rem; font-weight: 700; color: #a78bfa; margin-bottom: .75rem; }
     .admin-stat { display: inline-block; background: var(--surface); border: 1px solid var(--border); border-radius: .5rem; padding: .5rem 1rem; font-size: .875rem; margin-right: .75rem; margin-bottom: .5rem; color: var(--text); }
@@ -92,23 +89,21 @@
   <!-- supabase-client.js must load before auth.js module so getSupabase() is defined -->
   <script src="/js/supabase-client.js"></script>
   <script type="module">
-    import { guardPage, signOut } from '/js/auth.js';
+    import { guardPage } from '/js/auth.js';
 
     async function init() {
       const profile = await guardPage(true);
       if (!profile) return;
 
       const firstName = profile.full_name?.split(' ')[0] || 'there';
-      document.getElementById('welcomeMsg').textContent = `Welcome back, ${firstName} 👋`;
+      document.getElementById('welcomeMsg').textContent = `Welcome back, ${firstName} \ud83d\udc4b`;
 
-      // Plan badge
       const badge = document.getElementById('planBadge');
       const planLabels = { trial: '🎁 Trial', single_subject: 'Single Subject', all_subjects: 'All Subjects', family: 'Family' };
       badge.textContent = profile.role === 'admin' ? '👑 Admin' : (planLabels[profile.subscription_tier] || profile.subscription_tier);
       if (profile.role === 'admin') badge.className = 'plan-badge admin';
       else if (profile.subscription_tier === 'trial') badge.className = 'plan-badge trial';
 
-      // Trial banner
       if (profile.subscription_tier === 'trial' && profile.trial_ends_at) {
         const daysLeft = Math.ceil((new Date(profile.trial_ends_at) - new Date()) / 86400000);
         if (daysLeft > 0) {
@@ -124,15 +119,11 @@
         : supabase.from('students').select('*').eq('parent_id', profile.id);
 
       const { data: students, error } = await query;
-
       const grid = document.getElementById('cardsGrid');
       grid.innerHTML = '';
 
       if (error || !students?.length) {
-        grid.innerHTML = `<div class="empty-state">
-          <div class="empty-icon">🎒</div>
-          <p>No learners added yet.<br>Click "+ Add child" to get started.</p>
-        </div>`;
+        grid.innerHTML = `<div class="empty-state"><div class="empty-icon">\ud83c\udfa2</div><p>No learners added yet.<br>Click "+ Add child" to get started.</p></div>`;
       } else {
         students.forEach(student => {
           const initials = student.name?.charAt(0).toUpperCase() || '?';
@@ -143,7 +134,7 @@
             <div class="card-name">${escapeHtml(student.name)}</div>
             <div class="card-meta">${escapeHtml(student.level)}</div>
             ${student.selected_subject ? `<span class="card-tag">${escapeHtml(student.selected_subject)}</span>` : ''}
-            <a href="/pages/subjects.html?student=${student.id}" class="btn-practice">Practice Now →</a>
+            <a href="/pages/subjects.html?student=${student.id}" class="btn-practice">Practice Now \u2192</a>
           `;
           grid.appendChild(card);
         });
@@ -155,7 +146,6 @@
         addBtn.classList.add('hidden');
       }
 
-      // Admin panel
       if (profile.role === 'admin') {
         document.getElementById('adminPanel').style.display = 'block';
         document.getElementById('adminStats').innerHTML =
@@ -164,8 +154,8 @@
     }
 
     window.handleSignOut = async function () {
-      const { signOut: so } = await import('/js/auth.js');
-      await so();
+      const { signOut } = await import('/js/auth.js');
+      await signOut();
     };
 
     function escapeHtml(str) {

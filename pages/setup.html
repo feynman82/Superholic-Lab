@@ -39,16 +39,13 @@
       <div class="step-dot" id="dot2"></div>
     </div>
 
-    <!-- STEP 1 -->
     <div id="step1">
       <div class="setup-title">Add your child 👦</div>
       <div class="setup-sub">Tell us about the learner — we'll personalise the experience.</div>
-
       <div class="form-group">
         <label for="childName">Child's name</label>
         <input type="text" id="childName" placeholder="e.g. Kai" autocomplete="off" />
       </div>
-
       <div class="form-group">
         <label for="childLevel">Primary level</label>
         <select id="childLevel">
@@ -61,8 +58,6 @@
           <option value="Primary 6">Primary 6</option>
         </select>
       </div>
-
-      <!-- Only shown for single_subject plan -->
       <div class="form-group" id="subjectGroup" style="display:none">
         <label for="childSubject">Subject</label>
         <select id="childSubject">
@@ -72,23 +67,16 @@
           <option value="English">English</option>
         </select>
       </div>
-
       <p class="error-msg" id="step1Error"></p>
       <button class="btn-primary" id="step1Btn" onclick="submitStep1()">Continue →</button>
     </div>
 
-    <!-- STEP 2 -->
     <div id="step2" style="display:none">
       <div class="setup-title">You're all set! 🎉</div>
       <div class="setup-sub">Here's a summary of your account.</div>
-
       <div id="trialBadge" class="trial-badge"></div>
-
       <div class="summary-card" id="summaryCard"></div>
-
-      <button class="btn-primary" onclick="window.location.href='/pages/subjects.html'">
-        Start Practising →
-      </button>
+      <button class="btn-primary" onclick="window.location.href='/pages/subjects.html'">Start Practising →</button>
     </div>
   </div>
 
@@ -124,7 +112,7 @@
       }
 
       btn.disabled = true;
-      btn.textContent = 'Saving…';
+      btn.textContent = 'Saving\u2026';
 
       try {
         // Use getSupabase() global (supabase-client.js loaded above)
@@ -156,13 +144,10 @@
         showErr('Something went wrong. Please try again.');
         console.error(err);
         btn.disabled = false;
-        btn.textContent = 'Continue →';
+        btn.textContent = 'Continue \u2192';
       }
 
-      function showErr(msg) {
-        errEl.textContent = msg;
-        errEl.style.display = 'block';
-      }
+      function showErr(msg) { errEl.textContent = msg; errEl.style.display = 'block'; }
     };
 
     function showStep2(name, level, subject) {
@@ -185,15 +170,12 @@
         family: 'Family — S$29.99/mo',
         trial: '7-Day Free Trial',
       };
-
       const rows = [
-        ['Child', name],
-        ['Level', level],
+        ['Child', name], ['Level', level],
         ...(subject ? [['Subject', subject]] : []),
         ['Plan', planNames[profile.subscription_tier] || profile.subscription_tier],
         ...(profile.trial_ends_at ? [['Trial ends', new Date(profile.trial_ends_at).toLocaleDateString('en-SG')]] : []),
       ];
-
       document.getElementById('summaryCard').innerHTML = rows.map(([l, v]) =>
         `<div class="summary-row"><span class="summary-label">${l}</span><span class="summary-value">${escapeHtml(String(v))}</span></div>`
       ).join('');
