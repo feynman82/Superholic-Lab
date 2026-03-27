@@ -27,6 +27,8 @@ let _client = null;
 /**
  * Returns the Supabase client, loading the CDN SDK if not already present.
  * All callers must await this before using the client.
+ * Explicitly assigned to window so it is accessible from ES module scripts
+ * that import auth.js after this plain script tag loads.
  * @returns {Promise<object>} Supabase SupabaseClient instance
  */
 async function getSupabase() {
@@ -53,3 +55,7 @@ async function getSupabase() {
 
   return _client;
 }
+
+// Explicitly expose on window so ES module scripts (auth.js) can call it
+// after this plain <script> tag has executed.
+window.getSupabase = getSupabase;
