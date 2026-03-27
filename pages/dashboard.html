@@ -80,21 +80,21 @@
     </div>
   </main>
 
-  <!-- supabase-client.js must load before auth.js module so getSupabase() is defined -->
-  <script src="/js/supabase-client.js"></script>
+  <!-- supabase-client.js must load before auth.js module so getSupabase() is defined globally -->
+  <script src="/js/supabase-client.js"><\/script>
   <script type="module">
-    import { guardPage, signOut } from '/js/auth.js';
+    import { guardPage } from '/js/auth.js';
 
     async function init() {
       const profile = await guardPage(true);
       if (!profile) return;
 
       const firstName = profile.full_name?.split(' ')[0] || 'there';
-      document.getElementById('welcomeMsg').textContent = `Welcome back, ${firstName} 👋`;
+      document.getElementById('welcomeMsg').textContent = `Welcome back, ${firstName} \ud83d\udc4b`;
 
       const badge = document.getElementById('planBadge');
-      const planLabels = { trial: '🎁 Trial', single_subject: 'Single Subject', all_subjects: 'All Subjects', family: 'Family' };
-      badge.textContent = profile.role === 'admin' ? '👑 Admin' : (planLabels[profile.subscription_tier] || profile.subscription_tier);
+      const planLabels = { trial: '\ud83c\udf81 Trial', single_subject: 'Single Subject', all_subjects: 'All Subjects', family: 'Family' };
+      badge.textContent = profile.role === 'admin' ? '\ud83d\udc51 Admin' : (planLabels[profile.subscription_tier] || profile.subscription_tier);
       if (profile.role === 'admin') badge.className = 'plan-badge admin';
       else if (profile.subscription_tier === 'trial') badge.className = 'plan-badge trial';
 
@@ -116,7 +116,7 @@
       grid.innerHTML = '';
 
       if (error || !students?.length) {
-        grid.innerHTML = `<div class="empty-state"><div class="empty-icon">🎒</div><p>No learners added yet.<br>Click "+ Add child" to get started.</p></div>`;
+        grid.innerHTML = `<div class="empty-state"><div class="empty-icon">\ud83c\udfa2</div><p>No learners added yet.<br>Click "+ Add child" to get started.</p></div>`;
       } else {
         students.forEach(student => {
           const initials = student.name?.charAt(0).toUpperCase() || '?';
@@ -127,7 +127,7 @@
             <div class="card-name">${escapeHtml(student.name)}</div>
             <div class="card-meta">${escapeHtml(student.level)}</div>
             ${student.selected_subject ? `<span class="card-tag">${escapeHtml(student.selected_subject)}</span>` : ''}
-            <a href="/pages/subjects.html?student=${student.id}" class="btn-practice">Practice Now →</a>
+            <a href="/pages/subjects.html?student=${student.id}" class="btn-practice">Practice Now \u2192</a>
           `;
           grid.appendChild(card);
         });
@@ -146,8 +146,8 @@
     }
 
     window.handleSignOut = async function () {
-      const { signOut: so } = await import('/js/auth.js');
-      await so();
+      const { signOut } = await import('/js/auth.js');
+      await signOut();
     };
 
     function escapeHtml(str) {

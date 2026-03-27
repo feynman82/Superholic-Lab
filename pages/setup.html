@@ -80,8 +80,8 @@
     </div>
   </div>
 
-  <!-- supabase-client.js must load before auth.js module so getSupabase() is defined -->
-  <script src="/js/supabase-client.js"></script>
+  <!-- supabase-client.js must load before auth.js module so getSupabase() is defined globally -->
+  <script src="/js/supabase-client.js"><\/script>
   <script type="module">
     import { guardPage } from '/js/auth.js';
 
@@ -103,6 +103,7 @@
       const btn = document.getElementById('step1Btn');
 
       errEl.style.display = 'none';
+
       if (!name) { showErr("Please enter your child's name."); return; }
       if (!level) { showErr('Please select a level.'); return; }
       if (profile.subscription_tier === 'single_subject' && !subject) {
@@ -110,7 +111,7 @@
       }
 
       btn.disabled = true;
-      btn.textContent = 'Saving…';
+      btn.textContent = 'Saving\u2026';
 
       try {
         const supabase = await getSupabase();
@@ -123,7 +124,7 @@
         showErr('Something went wrong. Please try again.');
         console.error(err);
         btn.disabled = false;
-        btn.textContent = 'Continue →';
+        btn.textContent = 'Continue \u2192';
       }
 
       function showErr(msg) { errEl.textContent = msg; errEl.style.display = 'block'; }
@@ -138,10 +139,10 @@
       const badge = document.getElementById('trialBadge');
       if (profile.trial_ends_at) {
         const days = Math.ceil((new Date(profile.trial_ends_at) - new Date()) / 86400000);
-        badge.textContent = `🎁 ${days}-day free trial active`;
+        badge.textContent = `\ud83c\udf81 ${days}-day free trial active`;
       } else { badge.style.display = 'none'; }
 
-      const planNames = { single_subject: 'Single Subject — S$9.99/mo', all_subjects: 'All Subjects — S$19.99/mo', family: 'Family — S$29.99/mo', trial: '7-Day Free Trial' };
+      const planNames = { single_subject: 'Single Subject \u2014 S$9.99/mo', all_subjects: 'All Subjects \u2014 S$19.99/mo', family: 'Family \u2014 S$29.99/mo', trial: '7-Day Free Trial' };
       const rows = [
         ['Child', name], ['Level', level],
         ...(subject ? [['Subject', subject]] : []),
