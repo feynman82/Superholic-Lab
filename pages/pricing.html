@@ -383,6 +383,33 @@
   <script src="../js/auth.js"></script>
   <script src="../js/stripe.js"></script>
   <script>
+    /* Auth-aware navbar */
+    getSupabase().then(async function(sb) {
+      try {
+        const { data: { session } } = await sb.auth.getSession();
+        if (!session) return;
+        const actionsEl = document.querySelector('.navbar-actions');
+        if (actionsEl) {
+          actionsEl.innerHTML = '<a href="dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a><button class="btn btn-primary btn-sm" id="navSignOut">Sign Out</button>';
+          document.getElementById('navSignOut').addEventListener('click', async function() {
+            await sb.auth.signOut();
+            window.location.href = '../index.html';
+          });
+        }
+        const mobileNav = document.getElementById('navMobile');
+        if (mobileNav) {
+          mobileNav.querySelectorAll('a[href*="login"], a[href*="signup"]').forEach(function(l) { l.remove(); });
+          const dashLink = document.createElement('a');
+          dashLink.href = 'dashboard.html';
+          dashLink.textContent = 'Dashboard';
+          mobileNav.appendChild(dashLink);
+        }
+      } catch (e) {
+        console.error('Nav auth check failed:', e);
+      }
+    });
+  </script>
+  <script>
     (function () {
       'use strict';
 

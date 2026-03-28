@@ -86,12 +86,17 @@
     import { guardPage } from '/js/auth.js';
 
     let profile = null;
+    let planToShow = null;
 
     async function init() {
       profile = await guardPage(true);
       if (!profile) return;
 
-      if (profile.subscription_tier === 'single_subject') {
+      // URL param is source of truth — guards against DB race condition on new signups
+      const urlPlan = new URLSearchParams(window.location.search).get('plan');
+      planToShow = urlPlan || profile.subscription_tier;
+
+      if (planToShow === 'single_subject') {
         document.getElementById('subjectGroup').style.display = 'block';
       }
     }
@@ -107,7 +112,7 @@
 
       if (!name) { showErr("Please enter your child's name."); return; }
       if (!level) { showErr('Please select a level.'); return; }
-      if (profile.subscription_tier === 'single_subject' && !subject) {
+      if (planToShow === 'single_subject' && !subject) {
         showErr('Please select a subject.'); return;
       }
 
@@ -173,7 +178,7 @@
       const rows = [
         ['Child', name], ['Level', level],
         ...(subject ? [['Subject', subject]] : []),
-        ['Plan', planNames[profile.subscription_tier] || profile.subscription_tier],
+        ['Plan', planNames[planToShow] || planToShow],
         ...(profile.trial_ends_at ? [['Trial ends', new Date(profile.trial_ends_at).toLocaleDateString('en-SG')]] : []),
       ];
       document.getElementById('summaryCard').innerHTML = rows.map(([l, v]) =>

@@ -123,6 +123,34 @@
     <a href="progress.html" class="bottom-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Progress</a>
   </nav>
 
+  <script src="../js/supabase-client.js"></script>
+  <script>
+    /* Auth-aware navbar */
+    getSupabase().then(async function(sb) {
+      try {
+        const { data: { session } } = await sb.auth.getSession();
+        if (!session) return;
+        const actionsEl = document.querySelector('.navbar-actions');
+        if (actionsEl) {
+          actionsEl.innerHTML = '<a href="dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a><button class="btn btn-primary btn-sm" id="navSignOut">Sign Out</button>';
+          document.getElementById('navSignOut').addEventListener('click', async function() {
+            await sb.auth.signOut();
+            window.location.href = '../index.html';
+          });
+        }
+        const mobileNav = document.getElementById('navMobile');
+        if (mobileNav) {
+          mobileNav.querySelectorAll('a[href*="login"], a[href*="signup"]').forEach(function(l) { l.remove(); });
+          const dashLink = document.createElement('a');
+          dashLink.href = 'dashboard.html';
+          dashLink.textContent = 'Dashboard';
+          mobileNav.appendChild(dashLink);
+        }
+      } catch (e) {
+        console.error('Nav auth check failed:', e);
+      }
+    });
+  </script>
   <script>
     (function(){
       const t=document.getElementById('navToggle'),m=document.getElementById('navMobile');

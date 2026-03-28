@@ -22,8 +22,8 @@ export async function signUp(email, password, fullName, planChoice) {
   const now = new Date();
   const trialEnd = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-  // Wait briefly for the DB trigger to create the profile row
-  await new Promise(r => setTimeout(r, 800));
+  // Wait for DB trigger to create the profile row (1500ms prevents race condition)
+  await new Promise(r => setTimeout(r, 1500));
 
   const { error: profileError } = await supabase
     .from('profiles')
@@ -36,9 +36,12 @@ export async function signUp(email, password, fullName, planChoice) {
     })
     .eq('id', userId);
 
-  if (profileError) throw profileError;
+  if (profileError) {
+    // Log but don't block — setup.html uses URL param as plan source of truth
+    console.error('Profile update error (non-blocking):', profileError.message);
+  }
 
-  window.location.href = '/pages/setup.html';
+  window.location.href = '/pages/setup.html?plan=' + encodeURIComponent(planChoice);
 }
 
 // ─── Sign In ─────────────────────────────────────────────────

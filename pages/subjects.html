@@ -22,6 +22,15 @@
   <meta name="twitter:image"       content="https://www.superholiclab.com/assets/og-image.png" />
   <!-- Analytics: ⚠️ CONFIGURE — sign up at plausible.io and add superholiclab.com -->
   <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js"></script>
+  <style>
+    /* Recommended level highlight — shown for logged-in users with a registered student */
+    .level-btn.is-recommended {
+      background: var(--primary);
+      color: #2A3A36;
+      font-weight: 800;
+      box-shadow: 0 0 0 2px var(--primary);
+    }
+  </style>
 </head>
 <body class="has-bottom-nav">
 
@@ -528,6 +537,110 @@
       });
 
     })();
+  </script>
+
+  <script src="../js/supabase-client.js"></script>
+  <script>
+    /* Auth-aware navbar + level-aware subject personalisation */
+    getSupabase().then(async function(sb) {
+      try {
+        const { data: { session } } = await sb.auth.getSession();
+
+        // ── Auth-aware navbar ──
+        if (session) {
+          const actionsEl = document.querySelector('.navbar-actions');
+          if (actionsEl) {
+            actionsEl.innerHTML = '<a href="dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a><button class="btn btn-primary btn-sm" id="navSignOut">Sign Out</button>';
+            document.getElementById('navSignOut').addEventListener('click', async function() {
+              await sb.auth.signOut();
+              window.location.href = '../index.html';
+            });
+          }
+          const mobileNav = document.getElementById('navMobile');
+          if (mobileNav) {
+            mobileNav.querySelectorAll('a[href*="login"], a[href*="signup"]').forEach(function(l) { l.remove(); });
+            const dashLink = document.createElement('a');
+            dashLink.href = 'dashboard.html';
+            dashLink.textContent = 'Dashboard';
+            mobileNav.appendChild(dashLink);
+          }
+        }
+
+        if (!session) return; // unauthenticated — no personalisation needed
+
+        // ── Level-aware personalisation ──
+        const studentId = new URLSearchParams(window.location.search).get('student');
+        let query = sb.from('students').select('name, level, selected_subject').eq('parent_id', session.user.id);
+        if (studentId) query = query.eq('id', studentId);
+        const { data: students } = await query.limit(1);
+        if (!students || !students.length) return;
+
+        const student = students[0];
+        const level = student.level; // e.g. "Primary 4"
+
+        // Personalised heading
+        const heading = document.querySelector('h1');
+        if (heading) heading.textContent = 'What would ' + student.name + ' like to practise?';
+
+        // Level subtitle
+        const subEl = document.querySelector('[style*="rgba(255,255,255,0.82)"]');
+        if (subEl) subEl.textContent = 'Showing content for ' + level;
+
+        // Map level string to data-level slug: "Primary 4" → "primary-4"
+        const levelSlug = level.toLowerCase().replace(' ', '-');
+
+        // Highlight the child's level button across all subject cards
+        document.querySelectorAll('.level-btn').forEach(function(btn) {
+          if (btn.getAttribute('data-level') === levelSlug) {
+            btn.classList.add('is-recommended');
+            btn.title = student.name + '\'s level';
+          }
+        });
+
+        // Enforce Science P1/P2 restriction (MOE: Science starts P3)
+        if (level === 'Primary 1' || level === 'Primary 2') {
+          const scienceCard = document.getElementById('card-science');
+          if (scienceCard) {
+            scienceCard.style.opacity = '0.45';
+            scienceCard.style.pointerEvents = 'none';
+            scienceCard.style.cursor = 'default';
+            scienceCard.style.position = 'relative';
+            const overlay = document.createElement('div');
+            overlay.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;border-radius:inherit;';
+            const label = document.createElement('span');
+            label.style.cssText = 'background:rgba(0,0,0,0.7);color:#fff;padding:.5rem 1rem;border-radius:.5rem;font-size:.85rem;font-weight:600;';
+            label.textContent = 'Available from Primary 3';
+            overlay.appendChild(label);
+            scienceCard.appendChild(overlay);
+          }
+        }
+
+        // Single subject plan: grey out non-subscribed subjects
+        const { data: profile } = await sb.from('profiles').select('subscription_tier').eq('id', session.user.id).single();
+        if (profile && profile.subscription_tier === 'single_subject' && student.selected_subject) {
+          const allowed = student.selected_subject.toLowerCase();
+          ['mathematics', 'science', 'english'].forEach(function(subj) {
+            if (subj !== allowed) {
+              const card = document.getElementById('card-' + subj);
+              if (card) {
+                card.style.opacity = '0.4';
+                card.style.pointerEvents = 'none';
+                card.style.position = 'relative';
+                const lock = document.createElement('div');
+                lock.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;border-radius:inherit;';
+                const label = document.createElement('span');
+                label.style.cssText = 'background:rgba(0,0,0,0.7);color:#fff;padding:.5rem 1rem;border-radius:.5rem;font-size:.85rem;font-weight:600;';
+                label.textContent = 'Upgrade to unlock';
+                lock.appendChild(label);
+                card.appendChild(lock);
+              }
+            }
+          });
+        }
+      } catch (e) {
+        console.error('Subjects personalisation failed:', e);
+      }
+    });
   </script>
 
   <!-- TEST:
