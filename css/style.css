@@ -1503,7 +1503,7 @@ small, .text-sm  { font-size: 0.875rem; }
   justify-content: space-between;
   gap: var(--space-4);
   padding: var(--space-5) var(--space-6);
-  background: var(--white);
+  background: var(--glass);
   border: none;
   cursor: pointer;
   text-align: left;
