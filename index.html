@@ -245,7 +245,7 @@
           <div class="mc-bar"><div class="mc-fill" style="width:0%" data-target="88"></div></div>
           <div class="mc-card-desc">Comprehension Inference · Chapter 5 of 6 · 312 questions done</div>
         </div>
-        <a href="/pages/signup.html" class="btn btn-rose" style="width:100%; justify-content:center; margin-top:8px;">
+        <a href="/pages/signup.html" class="btn btn-rose" id="dashboard-cta-btn" style="width:100%; justify-content:center; margin-top:8px;">
           Access Your Dashboard →
         </a>
       </div>
@@ -431,6 +431,12 @@ getSupabase().then(async function(sb) {
         await sb.auth.signOut();
         window.location.href = '/index.html';
       });
+    }
+    // Auth-aware dashboard CTA button in Mission Control section
+    const ctaBtn = document.getElementById('dashboard-cta-btn');
+    if (ctaBtn) {
+      ctaBtn.href        = '/pages/dashboard.html';
+      ctaBtn.textContent = 'Go to Dashboard →';
     }
   } catch (e) {
     console.error('Nav auth check failed:', e);

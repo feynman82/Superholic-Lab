@@ -5,7 +5,7 @@
  * returns the hosted checkout URL for the frontend to redirect to.
  *
  * Request body:
- *   { plan: 'single_subject'|'all_subjects'|'family', userId: string, email: string }
+ *   { plan: 'single_subject'|'all_subjects'|'family', userId: string, email: string, billing: 'monthly'|'annual' }
  *
  * Response:
  *   200 → { url: string }
@@ -17,16 +17,31 @@
  *   STRIPE_SINGLE_SUBJECT_PRICE_ID
  *   STRIPE_ALL_SUBJECTS_PRICE_ID
  *   STRIPE_FAMILY_PRICE_ID
+ *   STRIPE_SINGLE_SUBJECT_ANNUAL_PRICE_ID
+ *   STRIPE_ALL_SUBJECTS_ANNUAL_PRICE_ID
+ *   STRIPE_FAMILY_ANNUAL_PRICE_ID
  *   NEXT_PUBLIC_APP_URL  (e.g. https://www.superholiclab.com)
  *
- * TEST: POST { plan: 'all_subjects', userId: 'uuid', email: 'test@test.com' }
+ * TEST: POST { plan: 'all_subjects', billing: 'monthly', userId: 'uuid', email: 'test@test.com' }
  *   to /api/checkout and verify a Stripe Checkout URL is returned.
  */
 
 const Stripe = require('stripe');
 
-/** Maps plan names to their Stripe Price ID env var. */
-function getPriceId(plan) {
+/**
+ * Maps plan + billing cycle to the correct Stripe Price ID.
+ * Annual price IDs must be created in the Stripe dashboard and added to env vars.
+ */
+function getPriceId(plan, billing) {
+  if (billing === 'annual') {
+    const annualMap = {
+      single_subject: process.env.STRIPE_SINGLE_SUBJECT_ANNUAL_PRICE_ID,
+      all_subjects:   process.env.STRIPE_ALL_SUBJECTS_ANNUAL_PRICE_ID,
+      family:         process.env.STRIPE_FAMILY_ANNUAL_PRICE_ID,
+    };
+    return annualMap[plan] || null;
+  }
+  // monthly (default)
   const map = {
     single_subject: process.env.STRIPE_SINGLE_SUBJECT_PRICE_ID,
     all_subjects:   process.env.STRIPE_ALL_SUBJECTS_PRICE_ID,
@@ -45,15 +60,16 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ error: 'Checkout is not configured. Please contact support.' });
   }
 
-  const { plan, userId, email } = req.body || {};
+  const { plan, userId, email, billing } = req.body || {};
 
   if (!plan || !userId) {
     return res.status(400).json({ error: 'plan and userId are required' });
   }
 
-  const priceId = getPriceId(plan);
+  const billingCycle = billing === 'annual' ? 'annual' : 'monthly';
+  const priceId = getPriceId(plan, billingCycle);
   if (!priceId) {
-    return res.status(400).json({ error: `Unknown plan: ${plan}` });
+    return res.status(400).json({ error: `Unknown plan or missing price ID: ${plan} (${billingCycle})` });
   }
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.superholiclab.com';

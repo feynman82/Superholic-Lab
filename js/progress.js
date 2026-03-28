@@ -125,11 +125,14 @@ async function init() {
     statsEl.hidden   = false;
 
   } catch (err) {
-    console.error('[progress]', err);
+    console.error('[progress] Full error:', err);
+    console.error('[progress] Error message:', err?.message);
+    console.error('[progress] Error code:', err?.code);
+    console.error('[progress] Error details:', err?.details);
     if (loadingEl) loadingEl.hidden = true;
     if (errorEl) {
       errorEl.hidden      = false;
-      errorEl.textContent = 'Could not load progress data. Please try again.';
+      errorEl.textContent = `Could not load progress data: ${err?.message || err}. Check console for details.`;
     }
   }
 }

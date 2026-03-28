@@ -100,6 +100,14 @@
         Choose a plan below to keep your child's progress going.
       </div>
 
+      <!-- Billing toggle -->
+      <div style="display:flex;align-items:center;justify-content:center;gap:1rem;margin-bottom:2rem;" class="reveal">
+        <button id="toggle-monthly" class="btn btn-primary btn-sm is-active">Monthly</button>
+        <button id="toggle-annual" class="btn btn-secondary btn-sm">
+          Annual <span style="background:var(--success);color:#fff;border-radius:99px;padding:2px 8px;font-size:0.7rem;margin-left:4px;">Save 20%</span>
+        </button>
+      </div>
+
       <!-- Pricing cards -->
       <div id="pricing-cards" class="grid grid-3 reveal-group" style="align-items:start; max-width:980px; margin:0 auto;">
 
@@ -112,10 +120,14 @@
             </p>
           </div>
           <div class="card-body" style="flex:1;">
-            <div class="pricing-price">S$9.99 <span>/ month</span></div>
-            <p class="text-sm mt-4" style="color:var(--success);font-weight:600;">
-              ~S$8.29/month billed annually · Save 17%
-            </p>
+            <div class="price-monthly">
+              <div class="pricing-price">S$9.99 <span>/ month</span></div>
+              <p class="text-sm mt-2" style="color:var(--text-secondary);">Billed monthly</p>
+            </div>
+            <div class="price-annual" hidden>
+              <div class="pricing-price">S$7.99 <span>/ month</span></div>
+              <p class="text-sm mt-2" style="color:var(--success);font-weight:600;">S$95.88 billed annually · Save 20%</p>
+            </div>
             <ul class="pricing-features mt-6">
               <li class="pricing-feature">Unlimited questions for 1 subject</li>
               <li class="pricing-feature">Full worked solutions every question</li>
@@ -140,10 +152,14 @@
             </p>
           </div>
           <div class="card-body" style="flex:1;">
-            <div class="pricing-price" style="color:var(--primary);">S$19.99 <span>/ month</span></div>
-            <p class="text-sm mt-4" style="color:var(--success);font-weight:600;">
-              ~S$16.59/month billed annually · Save 17%
-            </p>
+            <div class="price-monthly">
+              <div class="pricing-price" style="color:var(--primary);">S$19.99 <span>/ month</span></div>
+              <p class="text-sm mt-2" style="color:var(--text-secondary);">Billed monthly</p>
+            </div>
+            <div class="price-annual" hidden>
+              <div class="pricing-price" style="color:var(--primary);">S$15.99 <span>/ month</span></div>
+              <p class="text-sm mt-2" style="color:var(--success);font-weight:600;">S$191.88 billed annually · Save 20%</p>
+            </div>
             <ul class="pricing-features mt-6">
               <li class="pricing-feature">Unlimited questions across <strong>all subjects</strong></li>
               <li class="pricing-feature">Full worked solutions every question</li>
@@ -170,11 +186,15 @@
             </p>
           </div>
           <div class="card-body" style="flex:1;">
-            <div class="pricing-price">S$29.99 <span>/ month</span></div>
-            <span class="pricing-per-child">~S$10 per child per month</span>
-            <p class="text-sm mt-4" style="color:var(--success);font-weight:600;">
-              ~S$24.89/month billed annually · Save 17%
-            </p>
+            <div class="price-monthly">
+              <div class="pricing-price">S$29.99 <span>/ month</span></div>
+              <span class="pricing-per-child">~S$10 per child per month</span>
+              <p class="text-sm mt-2" style="color:var(--text-secondary);">Billed monthly</p>
+            </div>
+            <div class="price-annual" hidden>
+              <div class="pricing-price">S$23.99 <span>/ month</span></div>
+              <p class="text-sm mt-2" style="color:var(--success);font-weight:600;">S$287.88 billed annually · Save 20%</p>
+            </div>
             <ul class="pricing-features mt-6">
               <li class="pricing-feature">Everything in All Subjects</li>
               <li class="pricing-feature"><strong>Up to 3 child profiles</strong></li>
@@ -451,6 +471,113 @@
       });
 
     })();
+  </script>
+
+  <!-- Billing toggle + auth-aware checkout -->
+  <script>
+  (async function() {
+    'use strict';
+    let currentBilling = 'monthly';
+    let session = null;
+    let userProfile = null;
+
+    // Check auth state
+    try {
+      const sb = await getSupabase();
+      const { data } = await sb.auth.getSession();
+      session = data.session;
+      if (session) {
+        const { data: p } = await sb
+          .from('profiles')
+          .select('subscription_tier, id')
+          .eq('id', session.user.id)
+          .single();
+        userProfile = p;
+      }
+    } catch (e) {
+      console.warn('[pricing] auth check failed:', e);
+    }
+
+    // Toggle billing period
+    const toggleMonthly  = document.getElementById('toggle-monthly');
+    const toggleAnnual   = document.getElementById('toggle-annual');
+    const monthlyPrices  = document.querySelectorAll('.price-monthly');
+    const annualPrices   = document.querySelectorAll('.price-annual');
+
+    function setToggle(billing) {
+      currentBilling = billing;
+      const isAnnual = billing === 'annual';
+      toggleMonthly.classList.toggle('is-active', !isAnnual);
+      toggleMonthly.classList.toggle('btn-primary',   !isAnnual);
+      toggleMonthly.classList.toggle('btn-secondary',  isAnnual);
+      toggleAnnual.classList.toggle('is-active',  isAnnual);
+      toggleAnnual.classList.toggle('btn-primary',   isAnnual);
+      toggleAnnual.classList.toggle('btn-secondary', !isAnnual);
+      monthlyPrices.forEach(function(el) { el.hidden =  isAnnual; });
+      annualPrices.forEach(function(el)  { el.hidden = !isAnnual; });
+    }
+
+    if (toggleMonthly) toggleMonthly.addEventListener('click', function() { setToggle('monthly'); });
+    if (toggleAnnual)  toggleAnnual.addEventListener('click',  function() { setToggle('annual'); });
+    setToggle('monthly');
+
+    // Update CTAs for logged-in users
+    if (session && userProfile) {
+      const tier   = userProfile.subscription_tier;
+      const isTrial = tier === 'trial';
+      const paidTiers = ['single_subject', 'all_subjects', 'family'];
+      const isPaid = paidTiers.includes(tier);
+
+      document.querySelectorAll('[data-checkout-plan]').forEach(function(btn) {
+        const plan = btn.dataset.checkoutPlan;
+
+        if (isTrial) {
+          btn.textContent = 'Subscribe Now';
+          btn.classList.remove('btn-secondary');
+          btn.classList.add('btn-primary');
+          btn.removeAttribute('href');
+          btn.setAttribute('role', 'button');
+          btn.style.cursor = 'pointer';
+
+          btn.addEventListener('click', async function(e) {
+            e.preventDefault();
+            btn.textContent = 'Loading…';
+            btn.disabled    = true;
+            try {
+              const res = await fetch('/api/checkout', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  plan:    plan,
+                  billing: currentBilling,
+                  userId:  session.user.id,
+                  email:   session.user.email,
+                }),
+              });
+              const data = await res.json();
+              if (data.url) {
+                window.location.href = data.url;
+              } else {
+                throw new Error(data.error || 'No checkout URL returned');
+              }
+            } catch (err) {
+              alert('Could not start checkout: ' + err.message);
+              btn.textContent = 'Subscribe Now';
+              btn.disabled    = false;
+            }
+          });
+
+        } else if (isPaid) {
+          if (plan === tier) {
+            btn.textContent = '✓ Current Plan';
+            btn.disabled    = true;
+            btn.classList.add('btn-secondary');
+            btn.classList.remove('btn-primary');
+          }
+        }
+      });
+    }
+  })();
   </script>
 
   <!-- TEST:
