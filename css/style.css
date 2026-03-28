@@ -17,8 +17,8 @@
    ───────────────────────────────────────────────────────────── */
 :root {
   /* ── Brand Palette: Rose & Sage ──────────────────────────── */
-  --sage:           #4a5a57;   /* base background surface */
-  --sage-dark:      #60726f;   /* deeper panels / page bg */
+  --sage:           #51615e;   /* base background surface */
+  --sage-dark:      #4a5a57;   /* deeper panels / page bg */
   --sage-darker:    #3A4E4A;   /* deepest panels */
   --sage-light:     #7a8f8c;   /* secondary text, muted labels */
   --sage-surface:   #526663;   /* card surfaces on sage bg */
