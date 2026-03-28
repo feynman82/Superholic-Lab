@@ -30,25 +30,15 @@
       font-weight: 800;
       box-shadow: 0 0 0 2px var(--primary);
     }
-    /* Question type picker chips */
+    /* Question type picker — reuses topic-btn styles from style.css */
     .type-picker { margin-top: var(--space-5); animation: fadeInUp 0.18s ease; }
     .type-picker-label {
       font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em;
       text-transform: uppercase; color: var(--text-secondary); margin-bottom: var(--space-3);
     }
     .type-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
-    .type-chip {
-      display: inline-flex; align-items: center; gap: 0.35rem;
-      padding: 0.35rem 0.85rem; border-radius: 2rem; border: 1.5px solid var(--border);
-      background: var(--white); font-size: 0.8125rem; font-weight: 500;
-      color: var(--text-primary); cursor: pointer; transition: all 0.15s ease;
-    }
-    .type-chip:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
-    .type-chip.is-selected { border-color: var(--primary); background: var(--primary); color: white; }
-    .type-chip.is-unavailable {
-      opacity: 0.38; cursor: default; pointer-events: none;
-    }
-    .type-chip-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    /* Colour dot inside the topic-btn for type context */
+    .type-chip-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; display: inline-block; margin-right: 0.3rem; vertical-align: middle; }
   </style>
 </head>
 <body class="has-bottom-nav">
@@ -128,9 +118,8 @@
         <span class="badge badge-amber">Wrong-answer explanations on every MCQ</span>
       </div>
       <!-- Subject cards -->
-       
       <div class="grid grid-3 reveal-group" id="subjectGrid"
-           style="max-width:880px; margin:0 auto;">
+           style="max-width:880px; margin: var(--space-8) auto 0;">
 
         <!-- ── MATHEMATICS ── -->
         <div class="subject-card card-maths" id="card-mathematics"
@@ -630,9 +619,9 @@
             const chips = document.createElement('div');
             chips.className = 'type-chips';
 
-            // "All Types" chip (no type filter)
+            // "All Types" button (no type filter)
             const allChip = document.createElement('button');
-            allChip.className = 'type-chip';
+            allChip.className = 'topic-btn';
             const allDot = document.createElement('span');
             allDot.className = 'type-chip-dot';
             allDot.style.background = '#6b7280';
@@ -640,7 +629,7 @@
             allChip.appendChild(document.createTextNode('All Types'));
             allChip.addEventListener('click', function (ev) {
               ev.stopPropagation();
-              chips.querySelectorAll('.type-chip').forEach(function(c) { c.classList.remove('is-selected'); });
+              chips.querySelectorAll('.topic-btn').forEach(function(c) { c.classList.remove('is-selected'); });
               allChip.classList.add('is-selected');
               showTopicPicker(levelsDiv, subject, level, '');
             });
@@ -648,7 +637,7 @@
 
             types.forEach(function (t) {
               const chip = document.createElement('button');
-              chip.className = 'type-chip';
+              chip.className = 'topic-btn';
 
               const dot = document.createElement('span');
               dot.className = 'type-chip-dot';
@@ -658,7 +647,7 @@
 
               chip.addEventListener('click', function (ev) {
                 ev.stopPropagation();
-                chips.querySelectorAll('.type-chip').forEach(function(c) { c.classList.remove('is-selected'); });
+                chips.querySelectorAll('.topic-btn').forEach(function(c) { c.classList.remove('is-selected'); });
                 chip.classList.add('is-selected');
                 showTopicPicker(levelsDiv, subject, level, t);
               });

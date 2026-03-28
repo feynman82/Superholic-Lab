@@ -22,10 +22,12 @@ async function init() {
   const errorEl   = document.getElementById('progress-error');
 
   try {
-    const user = await getCurrentUser();
-    if (!user) return; // auth.js will redirect
-
-    const db = await getSupabase();
+    // Use getSupabase() directly — getCurrentUser() is an ES module export
+    // and is not available as a global in a regular script tag context.
+    const db   = await getSupabase();
+    const { data: { user }, error: userErr } = await db.auth.getUser();
+    if (userErr) throw userErr;
+    if (!user) return; // guardPage in the module tag will redirect
 
     // Get all student profiles for this parent (supports multi-child families)
     const { data: students, error: stuErr } = await db
