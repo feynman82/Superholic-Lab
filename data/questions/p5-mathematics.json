@@ -1,0 +1,358 @@
+[
+  {
+    "id": "p5m-ratio-mcq-001",
+    "subject": "Mathematics",
+    "level": "Primary 5",
+    "topic": "Ratio",
+    "sub_topic": "Sharing in a given ratio",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "question_text": "Ali and Bala shared $240 in the ratio 3 : 5.\n\nHow much money did Ali receive?",
+    "options": ["$72", "$90", "$150", "$120"],
+    "correct_answer": "B",
+    "worked_solution": "Step 1: Find the total number of parts.\n  3 + 5 = 8 parts\nStep 2: Find the value of 1 part.\n  $240 ÷ 8 = $30\nStep 3: Find Ali's share (3 parts).\n  3 × $30 = $90\n\nAli received $90.",
+    "wrong_explanations": {
+      "A": "$72 comes from dividing $240 by 3 and then by the ratio incorrectly. Remember: add the ratio parts first (3+5=8), then divide the total by 8 to find 1 part.",
+      "C": "$150 is Bala's share (5 parts × $30), not Ali's. Ali has the smaller ratio (3 parts), so he receives less.",
+      "D": "$120 is half of $240. You cannot simply halve the amount — you must use the ratio 3:5 to divide it unequally."
+    },
+    "examiner_note": "In PSLE, always write out the total number of parts and the value of 1 part before finding the answer. This earns method marks even if you make a calculation error.",
+    "marks": 2
+  },
+  {
+    "id": "p5m-ratio-mcq-002",
+    "subject": "Mathematics",
+    "level": "Primary 5",
+    "topic": "Ratio",
+    "sub_topic": "Ratio and model method",
+    "difficulty": "Advanced",
+    "type": "mcq",
+    "question_text": "Ravi had 3 times as many stamps as Kumar. After Ravi gave Kumar 24 stamps, they had the same number of stamps.\n\nHow many stamps did Ravi have at first?",
+    "options": ["72", "48", "36", "96"],
+    "correct_answer": "A",
+    "worked_solution": "Step 1: Let Kumar have x stamps at first. Then Ravi has 3x stamps.\nStep 2: After the transfer:\n  Ravi has 3x - 24 stamps.\n  Kumar has x + 24 stamps.\nStep 3: They are equal, so:\n  3x - 24 = x + 24\n  2x = 48\n  x = 24\nStep 4: Ravi at first = 3 × 24 = 72 stamps.",
+    "wrong_explanations": {
+      "B": "48 is the total stamps transferred plus the value of x (24+24=48), but this is not Ravi's original count. You must multiply Kumar's original count by 3.",
+      "C": "36 confuses the setup. x = 24 gives Kumar's original amount, not Ravi's. Ravi had 3x = 3 × 24 = 72.",
+      "D": "96 doubles Ravi's amount incorrectly. 3 × 24 = 72, not 96."
+    },
+    "examiner_note": "For ratio problems involving transfers, use the model method or algebra. Always define what 1 unit represents before solving.",
+    "marks": 2
+  },
+  {
+    "id": "p5m-pct-mcq-001",
+    "subject": "Mathematics",
+    "level": "Primary 5",
+    "topic": "Percentage",
+    "sub_topic": "Finding percentage of a quantity",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "question_text": "Siti scored 72 marks out of a possible 90 marks in her Mathematics test.\n\nWhat percentage did Siti score?",
+    "options": ["72%", "80%", "75%", "18%"],
+    "correct_answer": "B",
+    "worked_solution": "Step 1: Write the fraction of marks scored.\n  72/90\nStep 2: Convert to percentage.\n  72/90 × 100% = 7200/90 % = 80%\n\nSiti scored 80%.",
+    "wrong_explanations": {
+      "A": "72% comes from writing the score as a percentage directly. You cannot do this — 72 out of 90 is NOT 72%. You must divide by the total (90) and multiply by 100.",
+      "C": "75% is 3/4 of 100. Here, 3/4 of 90 = 67.5, which is not equal to 72. Always divide the actual score by the actual total.",
+      "D": "18% comes from 90 − 72 = 18, the number of marks lost — not the score. The question asks for the percentage scored, not the percentage missed."
+    },
+    "examiner_note": "In PSLE, show the fraction and conversion: 72/90 × 100% = 80%. Writing only '80%' without working will not earn method marks.",
+    "marks": 2
+  },
+  {
+    "id": "p5m-pct-mcq-002",
+    "subject": "Mathematics",
+    "level": "Primary 5",
+    "topic": "Percentage",
+    "sub_topic": "Finding original value from percentage",
+    "difficulty": "Advanced",
+    "type": "mcq",
+    "question_text": "A bag was sold at a 20% discount. The sale price was $64.\n\nWhat was the original price of the bag?",
+    "options": ["$76.80", "$80", "$51.20", "$84"],
+    "correct_answer": "B",
+    "worked_solution": "Step 1: A 20% discount means the sale price is 80% of the original price.\n  100% - 20% = 80%\nStep 2: Let the original price be $P.\n  80% of P = $64\n  P = $64 ÷ 80%\n  P = $64 ÷ 0.80\n  P = $80\n\nThe original price was $80.",
+    "wrong_explanations": {
+      "A": "$76.80 comes from adding 20% of $64 to $64 (i.e., $64 × 1.20 = $76.80). But $64 is already the discounted price — you cannot add 20% of the sale price. You must divide by 80%.",
+      "C": "$51.20 comes from multiplying $64 by 80% ($64 × 0.80), but this double-discounts the price. $64 is already at 80% of original.",
+      "D": "$84 comes from adding $64 + $20 = $84, treating $20 as if it is the discount amount. But the discount is 20% of the original price (unknown), not $20."
+    },
+    "examiner_note": "In PSLE, reverse percentage problems require identifying 'what percentage = what amount'. Here 80% = $64, so 1% = $0.80 and 100% = $80.",
+    "marks": 2
+  },
+  {
+    "id": "p5m-area-mcq-001",
+    "subject": "Mathematics",
+    "level": "Primary 5",
+    "topic": "Area",
+    "sub_topic": "Area of triangle",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "question_text": "A triangular piece of card has a base of 14 cm and a height of 9 cm.\n\nWhat is the area of the card?",
+    "options": ["126 cm²", "63 cm²", "252 cm²", "46 cm²"],
+    "correct_answer": "B",
+    "worked_solution": "Step 1: Use the formula for area of a triangle.\n  Area = 1/2 × base × height\nStep 2: Substitute the values.\n  Area = 1/2 × 14 × 9\n       = 1/2 × 126\n       = 63 cm²\n\nThe area of the card is 63 cm².",
+    "wrong_explanations": {
+      "A": "126 cm² is the area of a rectangle with the same base and height (14 × 9 = 126). A triangle is half of the enclosing rectangle, so you must divide by 2.",
+      "C": "252 cm² doubles the rectangle area (126 × 2). You should be halving, not doubling, the product of base and height.",
+      "D": "46 cm² comes from adding 14 + 9 + something. Area is not found by adding — you must multiply base × height and then halve the result."
+    },
+    "examiner_note": "Always write the formula first: Area of triangle = 1/2 × base × height. Many students forget to halve the answer.",
+    "marks": 1
+  },
+  {
+    "id": "p5m-speed-mcq-001",
+    "subject": "Mathematics",
+    "level": "Primary 5",
+    "topic": "Speed",
+    "sub_topic": "Distance, speed, time",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "question_text": "A school bus travels from Tampines to the Central Business District at a speed of 60 km/h. The journey takes 1.5 hours.\n\nHow far is the journey?",
+    "options": ["40 km", "150 km", "90 km", "61.5 km"],
+    "correct_answer": "C",
+    "worked_solution": "Step 1: Use the formula Distance = Speed × Time.\n  D = S × T\nStep 2: Substitute the values.\n  D = 60 km/h × 1.5 h\n  D = 90 km\n\nThe journey is 90 km.",
+    "wrong_explanations": {
+      "A": "40 km is found by dividing 60 by 1.5, which gives Speed ÷ Time — not the correct formula. For distance, multiply speed by time.",
+      "B": "150 km comes from 60 × 2.5 — this uses the wrong time value. The time is 1.5 hours, not 2.5.",
+      "D": "61.5 km comes from adding 60 + 1.5. You cannot add speed and time to get distance. Always use Distance = Speed × Time."
+    },
+    "examiner_note": "Write the formula 'D = S × T' before substituting. This earns 1 method mark in Paper 2 even if the calculation is wrong.",
+    "marks": 1
+  },
+  {
+    "id": "p5m-frac-mcq-001",
+    "subject": "Mathematics",
+    "level": "Primary 5",
+    "topic": "Fractions",
+    "sub_topic": "Multiplying fractions",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "question_text": "Mei Ling had 3/4 of a pizza. She ate 2/3 of her share.\n\nWhat fraction of the whole pizza did Mei Ling eat?",
+    "options": ["5/7", "1/2", "9/8", "5/12"],
+    "correct_answer": "B",
+    "worked_solution": "Step 1: Mei Ling ate 2/3 of her share (3/4 of the pizza).\n  Amount eaten = 2/3 × 3/4\nStep 2: Multiply the numerators and the denominators.\n  = (2 × 3) / (3 × 4)\n  = 6/12\nStep 3: Simplify.\n  = 1/2\n\nMei Ling ate 1/2 of the whole pizza.",
+    "wrong_explanations": {
+      "A": "5/7 comes from adding the numerators (2+3=5) and the denominators (3+4=7). You cannot add fractions when a problem says 'of' — 'of' means multiply.",
+      "C": "9/8 is greater than 1, which is impossible — Mei Ling cannot eat more than the whole pizza. Check your working: 2/3 × 3/4 = 6/12 = 1/2.",
+      "D": "5/12 may come from a partial cancellation error. Correctly: 2/3 × 3/4 = 6/12 = 1/2. Always simplify fully."
+    },
+    "examiner_note": "In PSLE, 'of' always means multiply. Write the multiplication clearly before simplifying.",
+    "marks": 2
+  },
+  {
+    "id": "p5m-dec-mcq-001",
+    "subject": "Mathematics",
+    "level": "Primary 5",
+    "topic": "Decimals",
+    "sub_topic": "Multiplying decimals by 10, 100, 1000",
+    "difficulty": "Foundation",
+    "type": "mcq",
+    "question_text": "What is 4.75 × 100?",
+    "options": ["47.5", "0.0475", "475", "4750"],
+    "correct_answer": "C",
+    "worked_solution": "Step 1: Multiplying by 100 moves the decimal point 2 places to the right.\n  4.75 × 100 = 475\n\nThe answer is 475.",
+    "wrong_explanations": {
+      "A": "47.5 is the result of multiplying by 10, not 100. Multiplying by 100 moves the decimal point 2 places to the right, not 1.",
+      "B": "0.0475 is the result of dividing by 100. Multiplying always makes the number larger.",
+      "D": "4750 is the result of multiplying by 1000. Multiplying by 100 only moves the decimal point 2 places to the right."
+    },
+    "marks": 1
+  },
+  {
+    "id": "p5m-rate-mcq-001",
+    "subject": "Mathematics",
+    "level": "Primary 5",
+    "topic": "Rate",
+    "sub_topic": "Calculating rate problems",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "question_text": "A printing machine at a school office prints 8 pages per minute. Mdm Lim needs to print a 52-page document.\n\nHow long will it take the machine to print the document?",
+    "options": ["6 min 0 s", "6 min 30 s", "5 min 52 s", "7 min"],
+    "correct_answer": "B",
+    "worked_solution": "Step 1: Find how long it takes to print 52 pages.\n  Time = Number of pages ÷ Rate\n  Time = 52 ÷ 8 = 6.5 minutes\nStep 2: Convert 0.5 minutes to seconds.\n  0.5 × 60 = 30 seconds\n\nIt will take 6 minutes 30 seconds.",
+    "wrong_explanations": {
+      "A": "6 min 0 s assumes 48 pages (6 × 8 = 48). The document has 52 pages, so the machine needs 0.5 minutes more.",
+      "C": "5 min 52 s confuses the number of pages with the time. 52 pages at 8 pages/min takes 52 ÷ 8 = 6.5 minutes.",
+      "D": "7 minutes would print 56 pages (7 × 8), but only 52 pages are needed. The correct time is 6.5 minutes = 6 min 30 s."
+    },
+    "examiner_note": "Convert the decimal answer to minutes and seconds: multiply the decimal part by 60 to get seconds.",
+    "marks": 2
+  },
+  {
+    "id": "p5m-ratio-mcq-003",
+    "subject": "Mathematics",
+    "level": "Primary 5",
+    "topic": "Ratio",
+    "sub_topic": "Sharing in three-part ratio",
+    "difficulty": "HOTS",
+    "type": "mcq",
+    "question_text": "Three children — Ahmad, Bala, and Priya — shared 60 stickers in the ratio 2 : 3 : 5.\n\nHow many more stickers did Priya receive than Ahmad?",
+    "options": ["18", "15", "24", "12"],
+    "correct_answer": "A",
+    "worked_solution": "Step 1: Find the total number of parts.\n  2 + 3 + 5 = 10 parts\nStep 2: Find the value of 1 part.\n  60 ÷ 10 = 6 stickers\nStep 3: Find Ahmad's and Priya's shares.\n  Ahmad = 2 × 6 = 12 stickers\n  Priya  = 5 × 6 = 30 stickers\nStep 4: Find the difference.\n  30 - 12 = 18 stickers\n\nPriya received 18 more stickers than Ahmad.",
+    "wrong_explanations": {
+      "B": "15 is 5 - 2 = 3 parts, then 3 × 5 = 15. You cannot multiply the ratio difference by the ratio number directly — find the value of 1 part first (60 ÷ 10 = 6), then compute 3 × 6 = 18.",
+      "C": "24 may come from finding Priya's share (30) minus Bala's share (18) instead of Ahmad's (12). Re-read the question carefully.",
+      "D": "12 is Ahmad's own share, not the difference between Priya and Ahmad."
+    },
+    "examiner_note": "For three-part ratio problems, add ALL three parts before dividing. Students often forget to include Bala's 3 parts.",
+    "marks": 2
+  },
+  {
+    "id": "p5m-pct-short-001",
+    "subject": "Mathematics",
+    "level": "Primary 5",
+    "topic": "Percentage",
+    "sub_topic": "Finding percentage of a quantity",
+    "difficulty": "Standard",
+    "type": "short_ans",
+    "question_text": "Find 45% of 180.",
+    "correct_answer": "81",
+    "accept_also": ["81.0"],
+    "worked_solution": "Step 1: Write 45% as a fraction.\n  45% = 45/100\nStep 2: Multiply.\n  45/100 × 180 = 8100/100 = 81\n\nThe answer is 81.",
+    "marks": 1
+  },
+  {
+    "id": "p5m-ratio-short-001",
+    "subject": "Mathematics",
+    "level": "Primary 5",
+    "topic": "Ratio",
+    "sub_topic": "Simplifying ratio",
+    "difficulty": "Foundation",
+    "type": "short_ans",
+    "question_text": "Express the ratio 36 : 24 in its simplest form.",
+    "correct_answer": "3 : 2",
+    "accept_also": ["3:2", "3 to 2"],
+    "worked_solution": "Step 1: Find the Highest Common Factor (HCF) of 36 and 24.\n  Factors of 36: 1, 2, 3, 4, 6, 9, 12, 18, 36\n  Factors of 24: 1, 2, 3, 4, 6, 8, 12, 24\n  HCF = 12\nStep 2: Divide both numbers by 12.\n  36 ÷ 12 = 3\n  24 ÷ 12 = 2\n\nSimplest form: 3 : 2",
+    "marks": 1
+  },
+  {
+    "id": "p5m-area-short-001",
+    "subject": "Mathematics",
+    "level": "Primary 5",
+    "topic": "Area",
+    "sub_topic": "Finding height of triangle given area",
+    "difficulty": "Standard",
+    "type": "short_ans",
+    "question_text": "A triangle has a base of 12 cm and an area of 54 cm². Find its height.",
+    "correct_answer": "9 cm",
+    "accept_also": ["9"],
+    "worked_solution": "Step 1: Use the formula for area of a triangle.\n  Area = 1/2 × base × height\nStep 2: Substitute the known values.\n  54 = 1/2 × 12 × height\n  54 = 6 × height\nStep 3: Solve for height.\n  height = 54 ÷ 6 = 9 cm\n\nThe height is 9 cm.",
+    "marks": 2
+  },
+  {
+    "id": "p5m-speed-short-001",
+    "subject": "Mathematics",
+    "level": "Primary 5",
+    "topic": "Speed",
+    "sub_topic": "Calculating speed",
+    "difficulty": "Standard",
+    "type": "short_ans",
+    "question_text": "Ahmad cycles 1.5 km in 10 minutes. What is his speed in km/h?",
+    "correct_answer": "9 km/h",
+    "accept_also": ["9"],
+    "worked_solution": "Step 1: Convert time to hours.\n  10 minutes = 10/60 hours = 1/6 hour\nStep 2: Use Speed = Distance ÷ Time.\n  Speed = 1.5 ÷ (1/6)\n        = 1.5 × 6\n        = 9 km/h\n\nAhmad's speed is 9 km/h.",
+    "marks": 2
+  },
+  {
+    "id": "p5m-frac-short-001",
+    "subject": "Mathematics",
+    "level": "Primary 5",
+    "topic": "Fractions",
+    "sub_topic": "Dividing fractions",
+    "difficulty": "Standard",
+    "type": "short_ans",
+    "question_text": "Find the value of 3/4 ÷ 3/8.",
+    "correct_answer": "2",
+    "accept_also": ["2/1"],
+    "worked_solution": "Step 1: To divide by a fraction, multiply by its reciprocal.\n  3/4 ÷ 3/8 = 3/4 × 8/3\nStep 2: Multiply and simplify.\n  = (3 × 8) / (4 × 3)\n  = 24/12\n  = 2\n\nThe answer is 2.",
+    "marks": 1
+  },
+  {
+    "id": "p5m-ratio-wp-001",
+    "subject": "Mathematics",
+    "level": "Primary 5",
+    "topic": "Ratio",
+    "sub_topic": "Three-part ratio word problem",
+    "difficulty": "Advanced",
+    "type": "word_problem",
+    "question_text": "Ali and his two sisters shared $720 in the ratio 2 : 3 : 4.",
+    "parts": [
+      {
+        "label": "(a)",
+        "question_text": "How much money did Ali receive?",
+        "marks": 2,
+        "model_answer": "$160",
+        "marking_scheme": "M1: Total parts = 2+3+4 = 9; 1 unit = $720 ÷ 9 = $80\nA1: Ali = 2 × $80 = $160"
+      },
+      {
+        "label": "(b)",
+        "question_text": "How much more did the eldest sister receive than Ali?",
+        "marks": 2,
+        "model_answer": "$160",
+        "marking_scheme": "M1: Eldest = 4 × $80 = $320\nA1: Difference = $320 − $160 = $160"
+      }
+    ],
+    "total_marks": 4,
+    "worked_solution": "Total units = 2 + 3 + 4 = 9\n1 unit = $720 ÷ 9 = $80\n\n(a) Ali = 2 units = 2 × $80 = $160\n(b) Eldest sister = 4 units = 4 × $80 = $320\n    Difference = $320 − $160 = $160",
+    "marks": 4
+  },
+  {
+    "id": "p5m-pct-wp-001",
+    "subject": "Mathematics",
+    "level": "Primary 5",
+    "topic": "Percentage",
+    "sub_topic": "Percentage word problem",
+    "difficulty": "Standard",
+    "type": "word_problem",
+    "question_text": "A shopkeeper bought 200 mangoes. He found that 15% of the mangoes were rotten. He sold each good mango at $0.80.",
+    "parts": [
+      {
+        "label": "(a)",
+        "question_text": "How many mangoes were not rotten?",
+        "marks": 2,
+        "model_answer": "170 mangoes",
+        "marking_scheme": "M1: % good = 100% − 15% = 85%\nA1: Number good = 85% × 200 = 170"
+      },
+      {
+        "label": "(b)",
+        "question_text": "How much money did the shopkeeper collect from selling the good mangoes?",
+        "marks": 1,
+        "model_answer": "$136",
+        "marking_scheme": "A1: 170 × $0.80 = $136"
+      }
+    ],
+    "total_marks": 3,
+    "worked_solution": "(a) Good mangoes: 100% − 15% = 85%\n    85% × 200 = 170 mangoes\n\n(b) 170 × $0.80 = $136",
+    "marks": 3
+  },
+  {
+    "id": "p5m-speed-wp-001",
+    "subject": "Mathematics",
+    "level": "Primary 5",
+    "topic": "Speed",
+    "sub_topic": "Multi-part speed word problem",
+    "difficulty": "Advanced",
+    "type": "word_problem",
+    "question_text": "Priya drove from Singapore to a town up north, a total distance of 300 km. She drove the first 120 km at 80 km/h and the remaining distance at 60 km/h.",
+    "parts": [
+      {
+        "label": "(a)",
+        "question_text": "How long did Priya take to drive the first 120 km? Give your answer in hours.",
+        "marks": 1,
+        "model_answer": "1.5 h",
+        "marking_scheme": "A1: Time = 120 ÷ 80 = 1.5 h"
+      },
+      {
+        "label": "(b)",
+        "question_text": "What was the total time Priya took for the whole journey? Give your answer in hours.",
+        "marks": 2,
+        "model_answer": "4.5 h",
+        "marking_scheme": "M1: Remaining distance = 300 − 120 = 180 km; Time = 180 ÷ 60 = 3 h\nA1: Total time = 1.5 + 3 = 4.5 h"
+      }
+    ],
+    "total_marks": 3,
+    "worked_solution": "(a) Time for first part = 120 ÷ 80 = 1.5 hours\n\n(b) Remaining distance = 300 − 120 = 180 km\n    Time for second part = 180 ÷ 60 = 3 hours\n    Total time = 1.5 + 3 = 4.5 hours",
+    "marks": 3
+  }
+]

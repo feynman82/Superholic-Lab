@@ -73,6 +73,7 @@
   let currentSubject   = '';
   let currentLevel     = '';
   let currentTopic     = '';
+  let currentType      = ''; // optional ?type= param to filter question type
   let quizStartTime    = null; // set when questions load, used for time_taken_seconds
 
   // ── Boot ──────────────────────────────────────────────────────
@@ -83,6 +84,7 @@
     currentSubject = (params.get('subject') || '').toLowerCase().trim();
     currentLevel   = (params.get('level')   || '').toLowerCase().trim();
     currentTopic   = (params.get('topic')   || '').toLowerCase().trim();
+    currentType    = (params.get('type')    || '').toLowerCase().trim();
 
     const filePath = resolveFile(currentSubject, currentLevel, currentTopic);
     if (!filePath) {
@@ -128,8 +130,10 @@
       const res = await fetch(filePath);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const all = await res.json();
-      questions = shuffle(all).slice(0, QUIZ_SIZE);
-      if (questions.length === 0) throw new Error('No questions found in file.');
+      // If a type filter is set, restrict to that question type before sampling
+      const pool = currentType ? all.filter(q => q.type === currentType) : all;
+      questions = shuffle(pool).slice(0, QUIZ_SIZE);
+      if (pool.length === 0) throw new Error(`No questions found${currentType ? ` of type '${currentType}'` : ''} in file.`);
       quizStartTime    = Date.now(); // start the clock when quiz begins
       answers          = [];
       loadingEl.hidden = true;
@@ -151,10 +155,26 @@
     const broadMap = {
       'primary-2:mathematics': '../data/questions/p2-mathematics.json',
       'primary-2:english':     '../data/questions/p2-english.json',
+      'primary-2:science':     null, // not yet available
+      'primary-3:mathematics': null,
+      'primary-3:english':     null,
+      'primary-3:science':     null,
       'primary-4:mathematics': '../data/questions/p4-mathematics.json',
       'primary-4:science':     '../data/questions/p4-science.json',
       'primary-4:english':     '../data/questions/p4-english.json',
+      'primary-5:mathematics': '../data/questions/p5-mathematics.json',
+      'primary-5:science':     '../data/questions/p5-science.json',
+      'primary-5:english':     null, // not yet available
+      'primary-6:mathematics': null,
+      'primary-6:science':     null,
+      'primary-6:english':     null,
     };
+
+    // English cloze/editing type has dedicated files rather than topic slugs
+    if (subject === 'english' && currentType && ['cloze', 'editing'].includes(currentType)) {
+      const levelShort = level.replace('primary-', 'p');
+      return `../data/questions/${levelShort}-english-${currentType}.json`;
+    }
 
     const key = `${level}:${subject}`;
     const broadPath = broadMap[key];

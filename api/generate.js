@@ -1,139 +1,132 @@
 /**
  * api/generate.js — Vercel Serverless Function
- * Generates MOE-aligned MCQ questions on demand using the Anthropic API.
- * Questions are produced at the Superholic Lab quality standard:
- *   - Real-world Singapore scenario in the question stem
- *   - Full-sentence options (not 2-word fragments)
- *   - Specific wrong-answer explanations naming the exact misconception
- *   - Examiner's note for Standard difficulty and above
+ * Generates MOE-aligned questions on demand using the Anthropic API.
+ * Supports all 6 question types: mcq, short_ans, word_problem, open_ended, cloze, editing.
+ *
+ * Each type uses a dedicated system prompt from api/prompts/ to enforce the
+ * Superholic Lab quality standard (Singapore context, PSLE format, full explanations).
  *
  * POST /api/generate
- * Body: { subject, level, topic, difficulty, count }
+ * Body: { subject, level, topic, difficulty, count, type }
+ *   type     — question type (default: 'mcq')
+ *   count    — number of questions to generate (max 10 for most types; max 3 for cloze/editing)
  *
  * ⚠️ CONFIGURE: Set ANTHROPIC_API_KEY in .env (local) and Vercel dashboard (production).
  *
  * TEST: POST { subject: "Mathematics", level: "Primary 4",
- *              topic: "Fractions", difficulty: "Standard", count: 3 }
- *       → verify 3 JSON question objects are returned, each with full-sentence options.
+ *              topic: "Fractions", difficulty: "Standard", count: 3, type: "mcq" }
+ *       → verify 3 JSON question objects are returned with correct structure.
+ * TEST: POST { subject: "English", level: "Primary 4",
+ *              topic: "Grammar Cloze", difficulty: "Standard", count: 2, type: "cloze" }
+ *       → verify 2 cloze passage objects with blanks array and correct_answer as word strings.
  */
 
 const Anthropic = require('@anthropic-ai/sdk');
 
-// ── System prompt ──────────────────────────────────────────────────────────────
-// This prompt enforces the Superholic Lab question quality standard.
-// Every generated question must match the structure of the sample below.
-const SYSTEM_PROMPT = `You are an expert Singapore MOE curriculum question writer for Superholic Lab, an AI-powered learning platform for Primary 1 to Secondary 4 students.
+// Type-specific system prompts
+const { MCQ_SYSTEM_PROMPT }         = require('./prompts/mcq');
+const { SHORT_ANS_SYSTEM_PROMPT }   = require('./prompts/short-ans');
+const { WORD_PROBLEM_SYSTEM_PROMPT } = require('./prompts/word-problem');
+const { OPEN_ENDED_SYSTEM_PROMPT }  = require('./prompts/open-ended');
+const { CLOZE_SYSTEM_PROMPT }       = require('./prompts/cloze');
+const { EDITING_SYSTEM_PROMPT }     = require('./prompts/editing');
 
-Your job is to generate high-quality multiple-choice questions (MCQs) that strictly follow the Superholic Lab quality standard described below.
+/** Map of question type → system prompt */
+const SYSTEM_PROMPTS = {
+  mcq:          MCQ_SYSTEM_PROMPT,
+  short_ans:    SHORT_ANS_SYSTEM_PROMPT,
+  word_problem: WORD_PROBLEM_SYSTEM_PROMPT,
+  open_ended:   OPEN_ENDED_SYSTEM_PROMPT,
+  cloze:        CLOZE_SYSTEM_PROMPT,
+  editing:      EDITING_SYSTEM_PROMPT,
+};
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-QUALITY STANDARD — MANDATORY RULES
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+/** Valid question types */
+const VALID_TYPES = new Set(Object.keys(SYSTEM_PROMPTS));
 
-1. SINGAPORE CONTEXT IN QUESTION STEM
-   Every question must include a real-world Singapore scenario. Use:
-   - Singapore names: Ahmad, Siti, MeiLing, Priya, Ravi, Wei Lin, Amir, Nadia
-   - Singapore settings: HDB flat, hawker centre, MRT station, NTUC FairPrice, school canteen,
-     kopitiam, void deck, Tampines, Queenstown, Jurong, Toa Payoh, Sentosa, East Coast Park
-   - Singapore foods and items: Milo, curry puff, chicken rice, pandan cake, red packet, kaya toast
-   - MOE-specific context: PSLE, school tuck shop, school bookshop, Sports Day, National Day concert
+/**
+ * Per-type max count caps to prevent excessive token usage.
+ * Cloze and editing passages are long — limit to 3 at a time.
+ */
+const MAX_COUNT = {
+  mcq:          10,
+  short_ans:    10,
+  word_problem:  5,
+  open_ended:   10,
+  cloze:         3,
+  editing:       3,
+};
 
-2. MCQ OPTIONS — SUBJECT-SPECIFIC FORMAT (NON-NEGOTIABLE)
+/**
+ * Builds the user-facing generation prompt for a given type and parameters.
+ *
+ * @param {string} type
+ * @param {number} count
+ * @param {string} subject
+ * @param {string} level
+ * @param {string} topic
+ * @param {string} difficulty
+ * @returns {string}
+ */
+function buildUserPrompt(type, count, subject, level, topic, difficulty) {
+  const base = `Generate ${count} ${type.replace('_', '-')} question${count > 1 ? 's' : ''} for the following specification:
 
-   MATHEMATICS questions:
-   - Options must be SHORT ANSWER VALUES ONLY — the number, fraction, measurement, or brief label.
-   - Do NOT include explanations or working in the option text.
-   - The explanation belongs in wrong_explanations and worked_solution, NOT in options.
-   ✗ WRONG: "The answer is 8/5, because converting 1 and 3/5 gives (1×5+3)/5 = 8/5."
-   ✗ WRONG: "20 students attended the session because dividing 36 by 9 gives 4 per ninth..."
-   ✓ CORRECT: "8/5"
-   ✓ CORRECT: "20"
-   ✓ CORRECT: "$3.30"
-   ✓ CORRECT: "2 and 1/4"
-   ✓ CORRECT: "132°"
-   For conceptual Maths questions (e.g. "who is correct?"), use a short label:
-   ✓ CORRECT: "Ahmad — 32 (left to right)"
-   ✓ CORRECT: "Siti — 17 (multiply first)"
+Subject: ${subject}
+Level: ${level}
+Topic: ${topic}
+Difficulty: ${difficulty}
 
-   SCIENCE questions:
-   - Options must be full sentences explaining what happens AND why.
-   - PSLE Science tests reasoning, not just recall, so explanations belong in the options.
-   ✓ CORRECT: "The metal ball contracts and becomes smaller, because cooling causes particles to lose energy and move closer together."
+Requirements:
+- All content must be strictly aligned to the MOE Singapore ${level} ${subject} syllabus.
+- Use Singapore names, settings, and culturally relevant scenarios throughout.
+- Ensure varied sub-topics within this topic — do not repeat the same scenario type.`;
 
-   ENGLISH questions:
-   - Options are single words or short phrases (e.g. grammar choices, vocabulary alternatives).
-   ✓ CORRECT: "ran"
-   ✓ CORRECT: "however"
-   ✓ CORRECT: "furious"
+  const typeExtras = {
+    mcq:
+      `\n- Each question must have exactly 4 options (A, B, C, D).
+- Wrong-answer explanations must name the specific misconception by name.
+- Worked solution must show full step-by-step working.
+- Include an examiner_note for each question.`,
 
-3. SPECIFIC WRONG-ANSWER EXPLANATIONS
-   Each wrong-answer explanation must:
-   - Name the SPECIFIC misconception (e.g., "the student added numerators AND denominators separately")
-   - Explain WHY it is wrong
-   - Give the correct reasoning
-   ✗ WRONG: "Incorrect. The right answer is B."
-   ✓ CORRECT: "2/7 comes from adding the numerators (1+1=2) and the denominators (3+4=7) separately. You CANNOT add fractions this way — you must first find a common denominator."
+    short_ans:
+      `\n- Answers must be concise (a number, expression, or short phrase).
+- Include accept_also for equivalent correct forms.
+- Worked solution must show full step-by-step working.`,
 
-4. WORKED SOLUTION
-   Show full step-by-step working labelled Step 1, Step 2, etc.
-   Every step must be explicit — do not skip intermediate steps.
+    word_problem:
+      `\n- Each word problem must have 2–3 parts with a coherent narrative.
+- Show full step-by-step working and marking scheme per part.
+- Include an examiner_note about PSLE method marks.`,
 
-5. EXAMINER'S NOTE (required for Standard, Advanced, and HOTS difficulty)
-   Include a practical tip about what the PSLE/O-Level examiner specifically looks for.
-   Format: "In PSLE, the examiner expects you to [specific action]. [Common mistake to avoid]."
+    open_ended:
+      `\n- Write the model answer in complete paragraph form as a student would.
+- List all essential keywords the student must include.
+- Provide a clear 2/1/0 marking rubric.`,
 
-6. DIFFICULTY LEVELS
-   - Foundation: basic recall, single-step, younger students
-   - Standard: typical PSLE Paper 1 application question
-   - Advanced: multi-step problem requiring synthesis
-   - HOTS: Higher Order Thinking, requires analysis or evaluation
+    cloze:
+      `\n- Each passage must be 5–8 sentences with 7–10 blanks.
+- Each blank tests a different grammar point.
+- "correct_answer" must be the exact word as a string, NOT a letter (e.g., "went" not "A").
+- Provide 4 MCQ options per blank including the correct answer.`,
 
-7. FRACTIONS AND MATHEMATICS
-   Write fractions as plain text: "7/12" not any special Unicode or HTML character.
-   All mathematical notation must be plain ASCII.
+    editing:
+      `\n- Each passage must have exactly 5 underlined words (one per line).
+- The errors must cover at least 4 different grammar categories.
+- Each line object needs: line_number, text, underlined_word, has_error, correct_word, explanation.`,
+  };
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-OUTPUT FORMAT
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Return a valid JSON array. Each object must have exactly these fields:
-
-{
-  "id": "auto-[subject_abbr]-[topic_abbr]-[random_4_digit_number]",
-  "subject": "Mathematics" | "Science" | "English",
-  "level": "Primary 2" | "Primary 3" | "Primary 4" | "Primary 5" | "Primary 6" | "Secondary 1" | "Secondary 2" | "Secondary 3" | "Secondary 4",
-  "topic": "[exact topic name]",
-  "sub_topic": "[specific sub-topic]",
-  "difficulty": "Foundation" | "Standard" | "Advanced" | "HOTS",
-  "type": "mcq",
-  "exam_type": "PSLE Paper 1 style" | "PSLE Paper 2 style" | "O-Level style" | "Primary Assessment style",
-  "question_text": "[scenario + question, with \\n\\n before the actual question]",
-  "options": [
-    "[Full sentence option A with reasoning]",
-    "[Full sentence option B with reasoning]",
-    "[Full sentence option C with reasoning]",
-    "[Full sentence option D with reasoning]"
-  ],
-  "correct_answer": "A" | "B" | "C" | "D",
-  "worked_solution": "Step 1: ...\\nStep 2: ...\\n...\\nFinal answer: ...",
-  "wrong_explanations": {
-    "[wrong option letter]": "[specific misconception + why it is wrong]",
-    "[wrong option letter]": "[specific misconception + why it is wrong]",
-    "[wrong option letter]": "[specific misconception + why it is wrong]"
-  },
-  "examiner_note": "[Required for Standard/Advanced/HOTS. Specific PSLE/exam tip.]"
+  return base + (typeExtras[type] || '') + `\n\nReturn a valid JSON array of ${count} question object${count > 1 ? 's' : ''}.`;
 }
 
-Do not include any text outside the JSON array. Do not add markdown fences. Return only the raw JSON array.`;
+// ── Handler ──────────────────────────────────────────────────────────────────
 
-// ── Handler ────────────────────────────────────────────────────────────────────
 module.exports = async (req, res) => {
   // Only accept POST requests
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed. Use POST.' });
   }
 
-  const { subject, level, topic, difficulty, count } = req.body;
+  const { subject, level, topic, difficulty, count, type } = req.body;
 
   // Validate required fields
   if (!subject || !level || !topic) {
@@ -142,50 +135,43 @@ module.exports = async (req, res) => {
     });
   }
 
-  const questionCount = Math.min(parseInt(count, 10) || 5, 10); // cap at 10
-  const questionDifficulty = difficulty || 'Standard';
+  // Resolve and validate type (default to 'mcq' for backward compatibility)
+  const questionType = (type || 'mcq').toLowerCase().trim();
+  if (!VALID_TYPES.has(questionType)) {
+    return res.status(400).json({
+      error: `Invalid type '${questionType}'. Valid types: ${[...VALID_TYPES].join(', ')}.`
+    });
+  }
+
+  // Cap count per type
+  const maxCount       = MAX_COUNT[questionType] || 10;
+  const questionCount  = Math.min(parseInt(count, 10) || 3, maxCount);
+  const questionDiff   = difficulty || 'Standard';
+
+  const systemPrompt = SYSTEM_PROMPTS[questionType];
+  const userPrompt   = buildUserPrompt(questionType, questionCount, subject, level, topic, questionDiff);
 
   // ⚠️ CONFIGURE: API key must be set as ANTHROPIC_API_KEY in .env / Vercel dashboard
   const client = new Anthropic({
-    apiKey: process.env.ANTHROPIC_API_KEY
+    apiKey: process.env.ANTHROPIC_API_KEY,
   });
 
   try {
-    const userPrompt = `Generate ${questionCount} multiple-choice questions for the following specification:
-
-Subject: ${subject}
-Level: ${level}
-Topic: ${topic}
-Difficulty: ${questionDifficulty}
-
-Requirements:
-- Each question must include a real Singapore scenario with local names and settings.
-- All 4 options must be full sentences explaining the answer and the reason.
-- Wrong explanations must name the specific misconception by name.
-- The worked solution must show full step-by-step working.
-- Include an examiner_note for each question (this difficulty level is ${questionDifficulty}).
-- Ensure all content is strictly aligned to the MOE Singapore ${level} syllabus for ${subject}.
-
-Return a valid JSON array of ${questionCount} question objects.`;
-
     const message = await client.messages.create({
-      model: 'claude-sonnet-4-6',
+      model:      'claude-sonnet-4-6',
       max_tokens: 8192,
-      system: SYSTEM_PROMPT,
-      messages: [
-        { role: 'user', content: userPrompt }
-      ]
+      system:     systemPrompt,
+      messages:   [{ role: 'user', content: userPrompt }],
     });
 
-    // Extract the text content from the response
+    // Extract text response
     const rawContent = message.content[0].text.trim();
 
-    // Parse to validate it is valid JSON before returning
+    // Parse JSON — strip markdown fences if Claude included them
     let questions;
     try {
       questions = JSON.parse(rawContent);
-    } catch (parseError) {
-      // If Claude returned markdown fences, strip them and try again
+    } catch {
       const stripped = rawContent
         .replace(/^```json\s*/i, '')
         .replace(/^```\s*/i, '')
@@ -194,7 +180,7 @@ Return a valid JSON array of ${questionCount} question objects.`;
       questions = JSON.parse(stripped);
     }
 
-    // Ensure the result is an array
+    // Validate response is an array
     if (!Array.isArray(questions)) {
       throw new Error('API returned a non-array response.');
     }
@@ -202,12 +188,10 @@ Return a valid JSON array of ${questionCount} question objects.`;
     return res.status(200).json(questions);
 
   } catch (error) {
-    console.error('Question generation error:', error);
-
-    // Return a user-facing error message
+    console.error('[generate] Question generation error:', error.message);
     return res.status(500).json({
-      error: 'Failed to generate questions. Please try again.',
-      detail: process.env.NODE_ENV === 'development' ? error.message : undefined
+      error:  'Failed to generate questions. Please try again.',
+      detail: process.env.NODE_ENV === 'development' ? error.message : undefined,
     });
   }
 };

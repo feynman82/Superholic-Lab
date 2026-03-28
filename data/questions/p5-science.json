@@ -1,0 +1,346 @@
+[
+  {
+    "id": "p5s-photo-mcq-001",
+    "subject": "Science",
+    "level": "Primary 5",
+    "topic": "Photosynthesis",
+    "sub_topic": "Conditions for photosynthesis",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "question_text": "Ravi placed a healthy potted plant in a dark cupboard for three days. He then brought it out and observed its leaves.\n\nWhich of the following best explains what would happen to the leaves?",
+    "options": [
+      "The leaves would remain green, because plants store chlorophyll in the soil and absorb it through the roots when needed.",
+      "The leaves would turn yellow or pale, because without light, the plant cannot carry out photosynthesis and the chlorophyll in the leaves breaks down and is not replaced.",
+      "The leaves would turn dark green, because the plant produces more chlorophyll in the dark to absorb light more efficiently.",
+      "The leaves would stay green, because leaves do not need sunlight to maintain their colour — only their growth requires light."
+    ],
+    "correct_answer": "B",
+    "worked_solution": "Chlorophyll is the green pigment in leaves that absorbs light energy for photosynthesis. Without light, the plant cannot carry out photosynthesis. Chlorophyll gradually breaks down and is not replenished, causing the leaves to turn yellow or pale (a process called etiolation).",
+    "wrong_explanations": {
+      "A": "Plants manufacture chlorophyll inside their own cells — they do not absorb it from the soil through the roots. Chlorophyll is produced in the leaves when light is available.",
+      "C": "Plants do not produce more chlorophyll in the dark. The absence of light prevents chlorophyll production and causes existing chlorophyll to break down.",
+      "D": "Leaves need sunlight to maintain their green colour because sunlight is needed for the plant to produce and maintain chlorophyll. Without light, the green pigment degrades."
+    },
+    "examiner_note": "In PSLE, use the keyword 'chlorophyll breaks down' (not just 'no sunlight') when explaining why leaves turn yellow. Examiners look for the link between sunlight, chlorophyll, and colour change.",
+    "marks": 2
+  },
+  {
+    "id": "p5s-resp-mcq-001",
+    "subject": "Science",
+    "level": "Primary 5",
+    "topic": "Respiratory System",
+    "sub_topic": "Exhaled breath composition",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "question_text": "Mei Ling breathed gently into a test tube of limewater for 30 seconds. She noticed the limewater turned milky white.\n\nWhat does this observation show?",
+    "options": [
+      "Mei Ling's exhaled breath contains less oxygen than normal air, and the missing oxygen caused the limewater to change colour.",
+      "Mei Ling's exhaled breath contains carbon dioxide, which reacted with the limewater to form a white precipitate, turning it milky.",
+      "The limewater absorbed water vapour from Mei Ling's breath, and the water dissolved into the limewater, making it cloudy.",
+      "Mei Ling's saliva entered the test tube along with her breath and mixed with the limewater, causing the colour change."
+    ],
+    "correct_answer": "B",
+    "worked_solution": "Limewater (calcium hydroxide solution) turns milky white when carbon dioxide is bubbled through it. This is because carbon dioxide reacts with limewater to form calcium carbonate, which is a white, insoluble precipitate. This test confirms that exhaled air contains carbon dioxide — produced as a waste product of respiration in body cells.",
+    "wrong_explanations": {
+      "A": "The milky colour is caused by a chemical reaction with carbon dioxide — not by the absence of oxygen. Oxygen does not react with limewater.",
+      "C": "Water vapour does not turn limewater milky. Only carbon dioxide produces this reaction. Water may make the limewater slightly more dilute but does not cause the milky precipitate.",
+      "D": "The amount of saliva in a gentle breath is negligible and does not turn limewater milky. The milky colour is specifically caused by the presence of carbon dioxide."
+    },
+    "examiner_note": "In PSLE, limewater is the standard test for carbon dioxide. Always state the result ('turns milky') AND the reason (CO2 reacts with limewater to form a white precipitate).",
+    "marks": 2
+  },
+  {
+    "id": "p5s-water-mcq-001",
+    "subject": "Science",
+    "level": "Primary 5",
+    "topic": "Water Cycle",
+    "sub_topic": "Condensation",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "question_text": "On a warm afternoon, Ahmad took a cold can of drink out of the refrigerator. Within a few minutes, water droplets appeared on the outside surface of the can.\n\nWhich process best explains why water droplets formed on the outside of the can?",
+    "options": [
+      "The liquid inside the can seeped through tiny invisible holes in the metal and appeared on the outer surface as droplets.",
+      "Oxygen in the surrounding air reacted with the cold metal surface to form water molecules on the outside of the can.",
+      "Water vapour in the warm surrounding air came into contact with the cold surface of the can, lost heat energy, and condensed into liquid water droplets.",
+      "The cold temperature inside the can caused the metal to contract and squeeze moisture out from between the metal layers."
+    ],
+    "correct_answer": "C",
+    "worked_solution": "The air around the can contains water vapour (water in its gaseous form). When this water vapour contacts the cold surface of the can, it loses heat energy. As water vapour loses energy, it changes state from gas to liquid — this process is called condensation. The liquid water forms as droplets on the outer surface of the can.",
+    "wrong_explanations": {
+      "A": "Drinks cans are made of solid aluminium with no holes. The liquid stays inside and cannot pass through the metal. The droplets come from water vapour in the surrounding air.",
+      "B": "Oxygen does not react with cold metal at room temperature to produce water. Water is formed here through the process of condensation, not a chemical reaction.",
+      "D": "Metal does expand and contract slightly with temperature changes, but this does not produce moisture or squeeze water out of the metal. The droplets are liquid water formed from condensed water vapour."
+    },
+    "examiner_note": "In PSLE, name the process: 'condensation'. State that water vapour in the air loses heat energy and changes state to liquid water on the cold surface.",
+    "marks": 2
+  },
+  {
+    "id": "p5s-elec-mcq-001",
+    "subject": "Science",
+    "level": "Primary 5",
+    "topic": "Electrical System",
+    "sub_topic": "Series circuit",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "question_text": "A student set up a circuit with one battery and two identical light bulbs connected in series. Both bulbs lit up. The student then disconnected one of the bulbs.\n\nWhat happened to the remaining connected bulb?",
+    "options": [
+      "The remaining bulb continued to glow at the same brightness, because each bulb in a series circuit receives its own fixed share of energy from the battery.",
+      "The remaining bulb went out completely, because removing a bulb in a series circuit creates a gap in the circuit, stopping the current from flowing.",
+      "The remaining bulb glowed brighter, because all the electrical energy from the battery now flowed through only one bulb instead of two.",
+      "The remaining bulb flickered and then went out slowly, because the battery gradually lost energy after the other bulb was disconnected."
+    ],
+    "correct_answer": "C",
+    "worked_solution": "In a series circuit, there is only one path for current to flow. When one bulb is disconnected (removed), it is no longer creating resistance in the circuit. This means the remaining bulb now receives more voltage (electrical energy) from the battery, so it glows brighter. This is different from a bulb 'burning out' — here the bulb is physically disconnected, not broken.",
+    "wrong_explanations": {
+      "A": "In a series circuit, the battery's voltage is shared among all components. When one bulb is removed, the remaining bulb receives the full voltage — so its brightness increases, not stays the same.",
+      "B": "If the bulb were to burn out (creating an open gap) it would stop current flow. But here the bulb is disconnected/removed, and the circuit is still closed — so current continues to flow and the remaining bulb glows brighter.",
+      "D": "The battery does not lose energy because a bulb is disconnected. The remaining bulb glows brighter immediately — not gradually — because it now has access to the full voltage of the battery."
+    },
+    "examiner_note": "Distinguish between a bulb that 'burns out' (breaks the circuit — other bulbs go out in series) and a bulb that is 'removed' or 'switched off' (circuit may still be complete through another path).",
+    "marks": 2
+  },
+  {
+    "id": "p5s-energy-mcq-001",
+    "subject": "Science",
+    "level": "Primary 5",
+    "topic": "Energy",
+    "sub_topic": "Energy conversions",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "question_text": "A girl pushes a toy car to the top of a ramp and releases it. The car rolls down the ramp and hits a wooden block, pushing the block across the floor.\n\nWhich sequence of energy conversions is correct for the entire event?",
+    "options": [
+      "Chemical energy → Kinetic energy → Potential energy → Kinetic energy",
+      "Potential energy → Chemical energy → Sound energy → Kinetic energy",
+      "Chemical energy → Potential energy → Kinetic energy → Kinetic energy",
+      "Kinetic energy → Potential energy → Chemical energy → Kinetic energy"
+    ],
+    "correct_answer": "C",
+    "worked_solution": "Step 1: The girl uses her muscles (chemical energy) to push the car up.\n  Chemical energy → Kinetic energy (pushing) → Potential energy (stored at top)\nStep 2: The car rolls down, converting potential energy to kinetic energy.\n  Potential energy → Kinetic energy (moving down)\nStep 3: The car hits the block, transferring kinetic energy to move the block.\n  Kinetic energy → Kinetic energy (block moves)\n\nFull sequence: Chemical → Potential → Kinetic → Kinetic.",
+    "wrong_explanations": {
+      "A": "This sequence misses the chemical energy at the start (the girl's muscles). The girl must use chemical energy from food to push the car up the ramp before any kinetic or potential energy is involved.",
+      "B": "Chemical energy does not appear after the car is released — it was already used at the start. The sequence after release is: potential energy → kinetic energy (down the ramp) → kinetic energy (block moves).",
+      "D": "The first energy form is chemical (from the girl's muscles), not kinetic. Kinetic energy only appears after the girl starts pushing — not at the very beginning of the sequence."
+    },
+    "examiner_note": "Always start the sequence from the original energy source (usually chemical energy from food for humans). Trace each energy change step by step.",
+    "marks": 2
+  },
+  {
+    "id": "p5s-repro-mcq-001",
+    "subject": "Science",
+    "level": "Primary 5",
+    "topic": "Reproduction",
+    "sub_topic": "Seed dispersal",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "question_text": "A student observed that a certain plant's seeds are small, light, and have feathery, hair-like structures attached to them. When the seed head dried out, the seeds drifted away slowly in the breeze.\n\nWhich method of seed dispersal does this plant use?",
+    "options": [
+      "Dispersal by water, because the feathery structures help the seeds to float on the surface of streams and rivers.",
+      "Dispersal by wind, because the feathery structures increase surface area and reduce the seed's weight, allowing air currents to carry them far from the parent plant.",
+      "Dispersal by animals, because the feathery structures are sticky and attach to the fur or feathers of passing animals.",
+      "Dispersal by self-explosion, because the feathery structures build up tension in the pod until it bursts, flinging the seeds outward."
+    ],
+    "correct_answer": "B",
+    "worked_solution": "Seeds dispersed by wind have adaptations that help them travel through the air. Feathery, hair-like structures (like those of dandelion seeds) increase the seed's surface area relative to its weight. This allows even a gentle breeze to carry the seed far from the parent plant, reducing competition for water, light, and nutrients.",
+    "wrong_explanations": {
+      "A": "Seeds dispersed by water typically have waterproof, buoyant coats (like coconuts) — not feathery structures. Feathery structures would become waterlogged and sink, not float.",
+      "C": "Seeds that are dispersed by animals usually have hooks, barbs, or are contained in fleshy fruits. Feathery structures do not grip animal fur effectively — they are adapted for air, not contact.",
+      "D": "Plants that disperse seeds by explosion have pods that split open suddenly. The feathery structure is an adaptation for wind — not for building up and releasing tension in a pod."
+    },
+    "examiner_note": "Link the structural feature to the dispersal method: 'feathery structures increase surface area, allowing wind to carry seeds'. This earns full marks in open-ended questions.",
+    "marks": 2
+  },
+  {
+    "id": "p5s-food-mcq-001",
+    "subject": "Science",
+    "level": "Primary 5",
+    "topic": "Interactions",
+    "sub_topic": "Food chains and food webs",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "question_text": "In a garden ecosystem, grass is eaten by caterpillars, and caterpillars are eaten by birds. A farmer sprayed pesticide and killed all the caterpillars in the garden.\n\nWhat would most likely happen to the bird population in the garden?",
+    "options": [
+      "The bird population would increase, because the birds no longer need to compete with caterpillars for the grass.",
+      "The bird population would decrease, because the birds have lost their main food source and would have less food to eat.",
+      "The bird population would stay the same, because birds can switch to eating grass directly and maintain their food supply.",
+      "The bird population would increase, because without caterpillars eating the grass, there would be more plants available for the birds to eat."
+    ],
+    "correct_answer": "B",
+    "worked_solution": "In the food chain: Grass → Caterpillars → Birds\nCaterpillars are the birds' food source. If all caterpillars are killed, the birds lose their main source of food and energy. With less food available, the bird population would decrease over time as birds struggle to find enough energy to survive and reproduce.",
+    "wrong_explanations": {
+      "A": "Birds do not eat grass in this food chain — they eat caterpillars. Removing caterpillars removes the birds' food, not a competitor. The bird population decreases.",
+      "C": "Birds in this food chain are consumers that eat caterpillars (animals), not producers. They cannot simply switch to eating grass — their digestive systems and feeding behaviours are not adapted for eating plants.",
+      "D": "More grass does not directly benefit the birds, who eat caterpillars (not grass). Without caterpillars, the birds have no food and their population declines."
+    },
+    "examiner_note": "In PSLE, trace the effect through the food chain step by step. If an organism is removed, the population that feeds on it is directly affected (decrease if food is removed).",
+    "marks": 2
+  },
+  {
+    "id": "p5s-matter-mcq-001",
+    "subject": "Science",
+    "level": "Primary 5",
+    "topic": "Water Cycle",
+    "sub_topic": "Changes of state",
+    "difficulty": "Foundation",
+    "type": "mcq",
+    "question_text": "Ahmad put an ice cube in a pan on the stove. The ice melted. He left the pan for a few more minutes and all the water disappeared.\n\nWhich pair of changes of state occurred?",
+    "options": [
+      "Freezing, then condensation",
+      "Evaporation, then melting",
+      "Melting, then condensation",
+      "Melting, then evaporation"
+    ],
+    "correct_answer": "D",
+    "worked_solution": "Step 1: Ice (solid) → water (liquid): This is melting. Heat energy is added, causing the solid to change into a liquid.\n\nStep 2: Water (liquid) → water vapour (gas): This is evaporation. Continued heating causes the liquid to change into a gas.\n\nCorrect pair: Melting, then evaporation.",
+    "wrong_explanations": {
+      "A": "Freezing is the change from liquid to solid (water → ice), and condensation is gas to liquid. Neither of these occurs here — the ice gains heat energy throughout, so the changes go in the opposite direction.",
+      "B": "The order is reversed. The ice first melts (solid → liquid), then the water evaporates (liquid → gas). Evaporation cannot happen before melting while the substance is still solid.",
+      "C": "Condensation is the change from gas to liquid (e.g., water vapour → water droplets). The water in the pan changed from liquid to gas (evaporation), not from gas to liquid."
+    },
+    "marks": 1
+  },
+  {
+    "id": "p5s-plant-mcq-001",
+    "subject": "Science",
+    "level": "Primary 5",
+    "topic": "Plant System",
+    "sub_topic": "Transport of water in plants",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "question_text": "Which part of the plant is most directly responsible for transporting water absorbed by the roots up to the leaves?",
+    "options": [
+      "The stem, because it contains xylem vessels — tube-like structures that carry water and minerals upward from the roots to the leaves.",
+      "The roots, because the root hairs absorb water and push it directly through the plant body up to the leaves using pressure.",
+      "The leaves, because leaves produce extra water during photosynthesis and redistribute it to all other parts of the plant.",
+      "The flowers, because flowers control where water is sent inside the plant, directing it to the leaves when needed."
+    ],
+    "correct_answer": "A",
+    "worked_solution": "Water absorbed by the roots travels upward through the plant via the stem. The stem contains xylem vessels — bundles of hollow, tube-like cells that form a continuous pipeline from the roots to the leaves. Water moves upward through the xylem by a combination of root pressure, capillary action, and the pulling force created when water evaporates from the leaves (transpiration).",
+    "wrong_explanations": {
+      "B": "The roots absorb water but do not push it directly to the leaves on their own. Water travels upward through the xylem vessels in the stem, not directly from the roots to the leaves.",
+      "C": "Leaves do not produce water for other parts of the plant. During photosynthesis, leaves produce glucose and oxygen — not water for redistribution. Water travels from the roots upward through the stem.",
+      "D": "Flowers do not control water distribution in the plant. Flowers are reproductive organs. The transport of water is handled by the vascular system (xylem) in the stem."
+    },
+    "examiner_note": "Use the keyword 'xylem' in PSLE answers about water transport. The full answer: water is transported from the roots, through the xylem in the stem, to the leaves.",
+    "marks": 2
+  },
+  {
+    "id": "p5s-resp-mcq-002",
+    "subject": "Science",
+    "level": "Primary 5",
+    "topic": "Respiratory System",
+    "sub_topic": "Why breathing rate increases during exercise",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "question_text": "Siti notices she breathes much faster when she runs than when she sits quietly.\n\nWhat is the best scientific explanation for this?",
+    "options": [
+      "Running makes Siti's lungs physically larger, so she needs more breaths to fill the extra space created by the expansion.",
+      "Exercise increases the demand for oxygen in the muscles and increases the production of carbon dioxide, so the breathing rate increases to take in more oxygen and remove carbon dioxide more quickly.",
+      "Running makes Siti's heart slow down so the lungs must work harder and breathe faster to compensate for the reduced blood circulation.",
+      "The movement of Siti's arms and legs during running physically pumps air in and out of her lungs, causing the automatic increase in breathing rate."
+    ],
+    "correct_answer": "B",
+    "worked_solution": "During exercise, muscles work harder and require more oxygen for respiration. They also produce more carbon dioxide as a waste product. The brain detects the rise in carbon dioxide levels in the blood and signals the respiratory system to breathe faster. This increases the supply of oxygen to the muscles and speeds up the removal of carbon dioxide from the body.",
+    "wrong_explanations": {
+      "A": "The lungs do not permanently enlarge during exercise. Faster breathing means more breaths per minute — not a change in lung size. The lungs are elastic and expand with each breath.",
+      "C": "Exercise causes the heart to beat faster, not slower. The increased heart rate and breathing rate work together to deliver more oxygen to the muscles.",
+      "D": "Breathing is not caused by the movement of the limbs. Breathing is controlled by the diaphragm and intercostal muscles, and the rate is regulated by the brain in response to blood carbon dioxide levels."
+    },
+    "examiner_note": "In PSLE, state both: (1) muscles need MORE OXYGEN for respiration, and (2) MORE CARBON DIOXIDE is produced, which the body needs to remove. Both reasons together earn full marks.",
+    "marks": 2
+  },
+  {
+    "id": "p5s-photo-oe-001",
+    "subject": "Science",
+    "level": "Primary 5",
+    "topic": "Photosynthesis",
+    "sub_topic": "Conditions needed for photosynthesis",
+    "difficulty": "Standard",
+    "type": "open_ended",
+    "question_text": "A student placed a healthy potted plant in a sealed, dark room for five days with no access to light. Predict and explain what would happen to the leaves of the plant.",
+    "keywords": ["chlorophyll", "photosynthesis", "sunlight", "light", "yellow", "pale", "break down"],
+    "model_answer": "Without light, the plant cannot carry out photosynthesis. The chlorophyll in the leaves will gradually break down and will not be replaced, causing the leaves to turn yellow or pale. The plant will also be unable to produce food (glucose) and will weaken over time.",
+    "marking_rubric": {
+      "2": "States that leaves turn yellow/pale AND links it to the breakdown of chlorophyll due to the absence of light/inability to carry out photosynthesis.",
+      "1": "States that leaves turn yellow/pale OR mentions chlorophyll breaking down, but does not link both ideas clearly.",
+      "0": "Gives a vague or incorrect response (e.g., 'the plant will die' without explanation)."
+    },
+    "examiner_keywords": ["chlorophyll", "photosynthesis", "break down"],
+    "marks": 2
+  },
+  {
+    "id": "p5s-elec-oe-001",
+    "subject": "Science",
+    "level": "Primary 5",
+    "topic": "Electrical System",
+    "sub_topic": "Parallel circuit",
+    "difficulty": "Standard",
+    "type": "open_ended",
+    "question_text": "A student sets up a circuit with a battery, a switch, and two light bulbs connected in parallel. When the switch is closed, one of the bulbs is found to be faulty and does not light up. Will the other bulb light up? Explain your answer.",
+    "keywords": ["parallel", "complete circuit", "separate", "independent", "branch", "current"],
+    "model_answer": "Yes, the other bulb will light up. In a parallel circuit, each bulb is connected on its own separate branch with its own complete path back to the battery. A faulty bulb only breaks the path in its own branch. The other branch remains a complete circuit, so current continues to flow through it and the second bulb lights up.",
+    "marking_rubric": {
+      "2": "States YES and explains that in a parallel circuit each branch forms an independent/separate complete circuit, so current still flows through the working bulb.",
+      "1": "States YES with an incomplete explanation (e.g., 'because it is parallel' without explaining independent paths).",
+      "0": "States NO or gives no explanation."
+    },
+    "examiner_keywords": ["parallel", "separate", "complete circuit"],
+    "marks": 2
+  },
+  {
+    "id": "p5s-resp-oe-001",
+    "subject": "Science",
+    "level": "Primary 5",
+    "topic": "Respiratory System",
+    "sub_topic": "Removal of carbon dioxide",
+    "difficulty": "Advanced",
+    "type": "open_ended",
+    "question_text": "During a 100 m sprint, an athlete's muscles produce a large amount of carbon dioxide. Explain how this carbon dioxide is removed from the athlete's body.",
+    "keywords": ["blood", "lungs", "exhaled", "transported", "alveoli", "diffusion"],
+    "model_answer": "Carbon dioxide produced in the muscles enters the bloodstream and is transported by the blood to the lungs. In the lungs, carbon dioxide moves from the blood into the air sacs (alveoli) by diffusion. It is then removed from the body when the athlete exhales.",
+    "marking_rubric": {
+      "2": "Mentions that blood transports CO2 to the lungs AND that CO2 is then exhaled/removed through the lungs.",
+      "1": "Mentions only one of the two steps (transport by blood OR removal through lungs).",
+      "0": "Gives an incorrect or irrelevant answer."
+    },
+    "examiner_keywords": ["blood", "transported", "lungs", "exhaled"],
+    "marks": 2
+  },
+  {
+    "id": "p5s-water-oe-001",
+    "subject": "Science",
+    "level": "Primary 5",
+    "topic": "Water Cycle",
+    "sub_topic": "Rate of evaporation",
+    "difficulty": "Standard",
+    "type": "open_ended",
+    "question_text": "A student notices that puddles of rainwater disappear much faster on a hot, windy day than on a cool, still day. Explain why the puddles dry up faster on a hot, windy day.",
+    "keywords": ["evaporation", "heat", "wind", "water vapour", "rate", "energy"],
+    "model_answer": "On a hot, windy day, the rate of evaporation is higher. Heat provides water molecules with the energy needed to escape from the liquid and become water vapour. Wind removes this water vapour from above the puddle, preventing the surrounding air from becoming saturated. This allows more water to continue evaporating. The combination of heat and wind makes the puddles dry up much faster.",
+    "marking_rubric": {
+      "2": "Mentions heat (provides energy for evaporation) AND wind (removes water vapour, preventing saturation) and links both to faster evaporation.",
+      "1": "Mentions only heat OR only wind with a correct explanation of its effect.",
+      "0": "States only 'it is hotter' or 'it is windy' without explaining the mechanism."
+    },
+    "examiner_keywords": ["evaporation", "heat", "energy", "wind", "water vapour"],
+    "marks": 2
+  },
+  {
+    "id": "p5s-photo-oe-002",
+    "subject": "Science",
+    "level": "Primary 5",
+    "topic": "Photosynthesis",
+    "sub_topic": "Role of carbon dioxide in photosynthesis",
+    "difficulty": "Advanced",
+    "type": "open_ended",
+    "question_text": "A student grew two identical plants in two separate rooms. Room A had open windows, while Room B was completely sealed with no fresh air supply. After two weeks, the plant in Room A was healthier and had grown more than the plant in Room B. Suggest why the plant in Room A grew better.",
+    "keywords": ["carbon dioxide", "photosynthesis", "food", "glucose", "air", "supply"],
+    "model_answer": "Room A has open windows, which allows fresh air containing carbon dioxide to continuously enter the room. Plants use carbon dioxide along with water and light energy to carry out photosynthesis and produce glucose (food) for growth. In Room B, the plant would use up the carbon dioxide in the sealed room. Once the carbon dioxide was depleted, the plant could no longer carry out photosynthesis effectively, producing less food for growth. This is why the plant in Room A grew better.",
+    "marking_rubric": {
+      "2": "Explains that Room A has a continuous supply of CO2 AND that CO2 is needed for photosynthesis to produce food/glucose for growth. Implies that Room B ran out of CO2.",
+      "1": "Mentions CO2 is needed for photosynthesis but does not explain why Room B was disadvantaged, or mentions CO2 runs out but does not link to photosynthesis.",
+      "0": "Does not mention carbon dioxide or photosynthesis."
+    },
+    "examiner_keywords": ["carbon dioxide", "photosynthesis", "food", "glucose"],
+    "marks": 2
+  }
+]

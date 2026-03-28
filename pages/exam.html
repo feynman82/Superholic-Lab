@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Practice Paper — Superholic Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="icon" href="../assets/favicon.ico" />
+  <meta name="robots" content="noindex, nofollow" />
+  <!-- Analytics -->
+  <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js"></script>
+  <!-- Auth guard -->
+  <script type="module">
+    import { guardPage } from '/js/auth.js';
+    await guardPage(true);
+  </script>
+  <style>
+    /* Exam paper print/display layout */
+    .exam-section { margin-bottom: var(--space-12); }
+    .exam-section-header {
+      border-top: 2px solid var(--border);
+      padding-top: var(--space-5);
+      margin-bottom: var(--space-5);
+    }
+    .exam-section-title {
+      font-size: 1rem; font-weight: 700; color: var(--text-primary);
+      margin-bottom: var(--space-1);
+    }
+    .exam-instructions {
+      font-size: 0.875rem; color: var(--text-secondary); font-style: italic;
+      margin-bottom: var(--space-4);
+    }
+    .exam-question {
+      margin-bottom: var(--space-6); page-break-inside: avoid;
+    }
+    .exam-question-num {
+      font-weight: 700; color: var(--primary); margin-right: var(--space-2);
+      min-width: 1.5rem; display: inline-block;
+    }
+    .exam-question-text { margin-bottom: var(--space-3); line-height: 1.65; }
+    .exam-options { list-style: none; margin: 0; padding: 0; }
+    .exam-options li {
+      padding: var(--space-2) var(--space-3); border-radius: var(--radius);
+      border: 1.5px solid var(--border); margin-bottom: var(--space-2);
+      cursor: pointer; display: flex; align-items: flex-start; gap: var(--space-3);
+      transition: border-color 0.12s, background 0.12s;
+    }
+    .exam-options li:hover { border-color: var(--primary); background: var(--primary-light); }
+    .exam-options li.is-selected { border-color: var(--primary); background: var(--primary-light); }
+    .exam-options li.is-correct { border-color: var(--success); background: #ecfdf5; }
+    .exam-options li.is-wrong  { border-color: var(--danger);  background: #fef2f2; }
+    .exam-opt-key {
+      font-weight: 700; color: var(--primary); width: 1.25rem; flex-shrink: 0;
+    }
+    /* Short answer input within exam */
+    .exam-short-input {
+      width: 100%; max-width: 280px; padding: var(--space-2) var(--space-3);
+      border: 1.5px solid var(--border); border-radius: var(--radius);
+      font-size: 1rem; margin-top: var(--space-2);
+    }
+    .exam-short-input.is-correct { border-color: var(--success); background: #ecfdf5; }
+    .exam-short-input.is-wrong   { border-color: var(--danger);  background: #fef2f2; }
+    /* Answer line for print */
+    .exam-answer-line {
+      border-bottom: 1px solid var(--border); min-height: 2.5rem;
+      margin-top: var(--space-2); display: block;
+    }
+    /* Cloze passage blanks */
+    .exam-cloze-passage {
+      line-height: 2.2; font-size: 1rem;
+      background: var(--bg); padding: var(--space-4); border-radius: var(--radius);
+      border: 1px solid var(--border); margin-bottom: var(--space-4);
+    }
+    .exam-cloze-select {
+      border: 1.5px solid var(--primary); border-radius: var(--radius-sm);
+      padding: 0.2rem 0.5rem; font-size: 0.9rem; background: var(--white);
+      cursor: pointer; vertical-align: middle;
+    }
+    /* Editing passage */
+    .exam-editing-line {
+      padding: var(--space-2) 0; border-bottom: 1px solid var(--bg);
+      display: flex; align-items: baseline; gap: var(--space-3); flex-wrap: wrap;
+    }
+    .exam-editing-line-num { color: var(--text-secondary); font-size: 0.8rem; min-width: 1.5rem; }
+    .exam-editing-underline {
+      text-decoration: underline; text-decoration-style: solid;
+      font-weight: 600; color: var(--primary);
+    }
+    .exam-editing-input {
+      border: none; border-bottom: 1.5px solid var(--border);
+      width: 6rem; padding: 0.15rem 0.3rem; font-size: 0.9rem;
+      background: transparent; outline: none;
+    }
+    .exam-editing-input.is-correct { border-color: var(--success); background: #ecfdf5; }
+    .exam-editing-input.is-wrong   { border-color: var(--danger);  background: #fef2f2; }
+    /* Score panel */
+    .exam-score-band {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: var(--space-4); border-radius: var(--radius);
+      background: var(--primary-light); margin-bottom: var(--space-6);
+    }
+    .exam-score-big { font-size: 2.5rem; font-weight: 800; color: var(--primary); }
+    /* Timer */
+    #exam-timer {
+      font-variant-numeric: tabular-nums; font-weight: 700;
+      color: var(--text-primary); font-size: 1.125rem;
+    }
+    #exam-timer.is-urgent { color: var(--danger); }
+    /* Selector step */
+    .exam-select-card {
+      border: 1.5px solid var(--border); border-radius: var(--radius-lg);
+      padding: var(--space-5); cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .exam-select-card:hover, .exam-select-card.is-selected {
+      border-color: var(--primary); box-shadow: 0 0 0 3px rgba(67,56,202,0.12);
+    }
+  </style>
+</head>
+<body class="has-bottom-nav">
+
+  <!-- ─── NAVBAR ─── -->
+  <header class="navbar is-scrolled">
+    <div class="container">
+      <nav class="navbar-inner">
+        <a href="../index.html" class="navbar-logo">
+          <img src="../assets/logo.svg" width="32" height="32" alt="" aria-hidden="true" style="border-radius:8px;flex-shrink:0;">
+          Superholic Lab
+        </a>
+        <div class="navbar-actions" style="gap:var(--space-3);">
+          <span id="exam-timer" aria-live="polite" aria-label="Time remaining"></span>
+          <a href="subjects.html" class="btn btn-secondary btn-sm">← Back</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main style="padding: var(--space-8) 0 var(--space-20);">
+    <div class="container" style="max-width:760px;">
+
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="../index.html">Home</a>
+        <span class="breadcrumb-sep">›</span>
+        <a href="subjects.html">Subjects</a>
+        <span class="breadcrumb-sep">›</span>
+        <span class="breadcrumb-current">Practice Paper</span>
+      </nav>
+
+      <!-- ── STEP 1: Paper selector ── -->
+      <section id="exam-selector" aria-label="Choose a practice paper">
+        <h1 style="margin: var(--space-6) 0 var(--space-2);">Practice Paper</h1>
+        <p class="text-secondary" style="margin-bottom:var(--space-6);">
+          Choose a subject and level to generate a full timed practice paper.
+        </p>
+
+        <div id="exam-selector-loading" class="text-center mt-8" style="color:var(--text-secondary);">
+          <svg width="32" height="32" viewBox="0 0 40 40" fill="none" aria-hidden="true" style="display:block;margin:0 auto var(--space-3);">
+            <circle cx="20" cy="20" r="16" stroke="var(--border)" stroke-width="4"/>
+            <path d="M20 4a16 16 0 0 1 16 16" stroke="var(--primary)" stroke-width="4" stroke-linecap="round">
+              <animateTransform attributeName="transform" type="rotate" from="0 20 20" to="360 20 20" dur="0.9s" repeatCount="indefinite"/>
+            </path>
+          </svg>
+          Loading available papers…
+        </div>
+
+        <div id="exam-selector-grid" class="grid grid-2" style="gap:var(--space-4); display:none;"></div>
+
+        <div style="margin-top:var(--space-6); display:flex; gap:var(--space-3); flex-wrap:wrap;" id="exam-start-row" hidden>
+          <div style="flex:1; min-width:200px;">
+            <label class="text-xs font-semibold" style="display:block;margin-bottom:.4rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;">
+              Timer mode
+            </label>
+            <select id="exam-timer-mode" style="width:100%;padding:.55rem .75rem;border:1.5px solid var(--border);border-radius:var(--radius);font-size:.9375rem;background:var(--white);">
+              <option value="timed">Timed (full duration)</option>
+              <option value="untimed">Practice (no timer)</option>
+            </select>
+          </div>
+          <div style="display:flex; align-items:flex-end;">
+            <button id="exam-start-btn" class="btn btn-primary" style="padding:.6rem 2rem;">
+              Generate Paper →
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── STEP 2: Exam paper ── -->
+      <section id="exam-paper" hidden aria-label="Practice paper">
+
+        <!-- Paper header (printed + on-screen) -->
+        <div class="exam-paper-header" style="border-bottom:2px solid var(--border); padding-bottom:var(--space-5); margin-bottom:var(--space-8);">
+          <div style="display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:var(--space-3);">
+            <div>
+              <h1 id="exam-paper-title" style="font-size:1.375rem; margin-bottom:.25rem;"></h1>
+              <p class="text-secondary text-sm" id="exam-paper-meta"></p>
+            </div>
+            <div style="text-align:right;" class="no-print">
+              <button id="exam-print-btn" class="btn btn-secondary btn-sm">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="margin-right:.35rem;vertical-align:middle;">
+                  <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/>
+                  <rect x="6" y="14" width="12" height="8"/>
+                </svg>
+                Print / Save PDF
+              </button>
+              <button id="exam-submit-btn" class="btn btn-primary btn-sm" style="margin-left:.5rem;">
+                Submit &amp; Mark
+              </button>
+            </div>
+          </div>
+          <div style="display:flex; gap:var(--space-4); margin-top:var(--space-3); flex-wrap:wrap;">
+            <span class="text-sm"><strong>Name:</strong> _____________________________</span>
+            <span class="text-sm"><strong>Class:</strong> ____________</span>
+            <span class="text-sm"><strong>Date:</strong> ____________</span>
+          </div>
+        </div>
+
+        <!-- Sections rendered here -->
+        <div id="exam-sections"></div>
+
+      </section>
+
+      <!-- ── STEP 3: Results ── -->
+      <section id="exam-results" hidden aria-label="Exam results">
+        <h2 style="margin-bottom:var(--space-5);">Your Results</h2>
+
+        <div class="exam-score-band">
+          <div>
+            <div class="exam-score-big" id="results-score">—</div>
+            <div class="text-secondary text-sm" id="results-label">marks</div>
+          </div>
+          <div style="flex:1;">
+            <div style="background:var(--border);border-radius:1rem;height:.625rem;overflow:hidden;">
+              <div id="results-bar" style="height:100%;background:var(--primary);border-radius:1rem;width:0%;transition:width 0.6s ease;"></div>
+            </div>
+            <div class="text-secondary text-sm mt-2" id="results-breakdown"></div>
+          </div>
+        </div>
+
+        <div id="results-sections" style="margin-bottom:var(--space-8);"></div>
+
+        <div style="display:flex; gap:var(--space-3); flex-wrap:wrap;">
+          <button id="results-retry-btn" class="btn btn-primary">Generate New Paper</button>
+          <a href="subjects.html" class="btn btn-secondary">Back to Subjects</a>
+          <button id="results-print-btn" class="btn btn-secondary">Print Results</button>
+        </div>
+      </section>
+
+    </div><!-- /container -->
+  </main>
+
+  <!-- ─── MOBILE BOTTOM NAV ─── -->
+  <nav class="bottom-nav" aria-label="Mobile navigation">
+    <a href="../index.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
+      Home
+    </a>
+    <a href="subjects.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      Practise
+    </a>
+    <a href="tutor.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      AI Tutor
+    </a>
+    <a href="progress.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Progress
+    </a>
+  </nav>
+
+  <!-- Dependencies: exam-templates.js must load before exam-generator.js -->
+  <script src="../js/exam-templates.js"></script>
+  <script src="../js/exam-generator.js"></script>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // ── DOM refs ──
+      const selectorSection  = document.getElementById('exam-selector');
+      const selectorLoading  = document.getElementById('exam-selector-loading');
+      const selectorGrid     = document.getElementById('exam-selector-grid');
+      const startRow         = document.getElementById('exam-start-row');
+      const timerModeSelect  = document.getElementById('exam-timer-mode');
+      const startBtn         = document.getElementById('exam-start-btn');
+      const paperSection     = document.getElementById('exam-paper');
+      const paperTitle       = document.getElementById('exam-paper-title');
+      const paperMeta        = document.getElementById('exam-paper-meta');
+      const sectionsEl       = document.getElementById('exam-sections');
+      const printBtn         = document.getElementById('exam-print-btn');
+      const submitBtn        = document.getElementById('exam-submit-btn');
+      const resultsSection   = document.getElementById('exam-results');
+      const resultsScore     = document.getElementById('results-score');
+      const resultsLabel     = document.getElementById('results-label');
+      const resultsBar       = document.getElementById('results-bar');
+      const resultsBreakdown = document.getElementById('results-breakdown');
+      const resultsSections  = document.getElementById('results-sections');
+      const retryBtn         = document.getElementById('results-retry-btn');
+      const resultsPrintBtn  = document.getElementById('results-print-btn');
+      const timerEl          = document.getElementById('exam-timer');
+
+      // ── State ──
+      let selectedSubject = '';
+      let selectedLevel   = '';
+      let currentExam     = null;
+      let timerInterval   = null;
+      let timerSeconds    = 0;
+
+      // ── Initialise selector ──
+      (function initSelector() {
+        const templates = listTemplates();
+        if (!templates.length) {
+          selectorLoading.textContent = 'No practice papers available yet. Check back soon!';
+          return;
+        }
+        selectorLoading.hidden = true;
+        selectorGrid.style.display = '';
+
+        templates.forEach(function(tpl) {
+          const card = document.createElement('div');
+          card.className = 'exam-select-card';
+
+          const title = document.createElement('p');
+          title.style.cssText = 'font-weight:700;font-size:1rem;margin-bottom:.25rem;';
+          title.textContent = tpl.label;
+
+          const meta = document.createElement('p');
+          meta.className = 'text-secondary text-sm';
+          meta.textContent = tpl.totalMarks + ' marks · ' + tpl.duration + ' min';
+
+          card.appendChild(title);
+          card.appendChild(meta);
+          card.setAttribute('role', 'button');
+          card.setAttribute('tabindex', '0');
+
+          card.addEventListener('click', function() {
+            selectorGrid.querySelectorAll('.exam-select-card')
+              .forEach(function(c) { c.classList.remove('is-selected'); });
+            card.classList.add('is-selected');
+            selectedSubject = tpl.subject;
+            selectedLevel   = tpl.level;
+            startRow.hidden = false;
+          });
+          card.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); card.click(); }
+          });
+
+          selectorGrid.appendChild(card);
+        });
+      })();
+
+      // ── Start exam ──
+      startBtn.addEventListener('click', async function() {
+        if (!selectedSubject || !selectedLevel) return;
+        startBtn.disabled = true;
+        startBtn.textContent = 'Generating…';
+
+        try {
+          const exam = await generateExam(selectedSubject, selectedLevel);
+          currentExam = exam;
+          renderExam(exam);
+        } catch (err) {
+          console.error('[exam] generateExam failed:', err);
+          startBtn.disabled = false;
+          startBtn.textContent = 'Generate Paper →';
+          alert('Could not generate paper. Please try again.');
+        }
+      });
+
+      // ── Render the exam paper ──
+      function renderExam(exam) {
+        selectorSection.hidden = true;
+        paperSection.hidden = false;
+
+        paperTitle.textContent = exam.template.label + ' — Practice Paper';
+        paperMeta.textContent  =
+          exam.actualMarks + ' marks · ' + exam.template.duration + ' minutes · ' +
+          new Date(exam.generatedAt).toLocaleDateString('en-SG', { day:'numeric', month:'short', year:'numeric' });
+
+        sectionsEl.innerHTML = '';
+        let globalQNum = 1;
+
+        exam.sections.forEach(function(sec) {
+          if (!sec.questions.length) return;
+
+          const secEl = document.createElement('div');
+          secEl.className = 'exam-section';
+          secEl.dataset.sectionId = sec.id;
+
+          const header = document.createElement('div');
+          header.className = 'exam-section-header';
+
+          const secTitle = document.createElement('p');
+          secTitle.className = 'exam-section-title';
+          secTitle.textContent = sec.label + ' (' + sec.sectionMarks + ' marks)';
+
+          const secInstr = document.createElement('p');
+          secInstr.className = 'exam-instructions';
+          secInstr.textContent = sec.instructions;
+
+          header.appendChild(secTitle);
+          header.appendChild(secInstr);
+          secEl.appendChild(header);
+
+          sec.questions.forEach(function(q) {
+            const qNum = globalQNum++;
+            const qEl = renderExamQuestion(q, sec.type, qNum);
+            secEl.appendChild(qEl);
+          });
+
+          sectionsEl.appendChild(secEl);
+        });
+
+        // Start timer if timed mode
+        if (timerModeSelect.value === 'timed') {
+          startTimer(exam.template.duration * 60);
+        }
+      }
+
+      // ── Render individual exam question ──
+      function renderExamQuestion(q, type, num) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'exam-question';
+        wrapper.dataset.qId = q.id;
+        wrapper.dataset.type = type;
+
+        switch (type) {
+          case 'mcq':        renderMCQQuestion(q, num, wrapper); break;
+          case 'short_ans':  renderShortAnsQuestion(q, num, wrapper); break;
+          case 'word_problem': renderWordProblemQuestion(q, num, wrapper); break;
+          case 'open_ended': renderOpenEndedQuestion(q, num, wrapper); break;
+          case 'cloze':      renderClozeQuestion(q, num, wrapper); break;
+          case 'editing':    renderEditingQuestion(q, num, wrapper); break;
+          default:
+            wrapper.textContent = 'Question type "' + type + '" not supported.';
+        }
+
+        return wrapper;
+      }
+
+      // ── MCQ renderer ──
+      function renderMCQQuestion(q, num, wrapper) {
+        const qText = document.createElement('p');
+        qText.className = 'exam-question-text';
+        const numSpan = document.createElement('span');
+        numSpan.className = 'exam-question-num';
+        numSpan.textContent = num + '.';
+        qText.appendChild(numSpan);
+        qText.appendChild(document.createTextNode(q.question_text));
+        wrapper.appendChild(qText);
+
+        const ul = document.createElement('ul');
+        ul.className = 'exam-options';
+        q.options.forEach(function(opt, idx) {
+          const key = String.fromCharCode(65 + idx);
+          const li  = document.createElement('li');
+          li.dataset.key = key;
+          const keySpan = document.createElement('span');
+          keySpan.className   = 'exam-opt-key';
+          keySpan.textContent = key;
+          const textSpan = document.createElement('span');
+          textSpan.textContent = opt;
+          li.appendChild(keySpan);
+          li.appendChild(textSpan);
+          li.addEventListener('click', function() {
+            ul.querySelectorAll('li').forEach(function(l) { l.classList.remove('is-selected'); });
+            li.classList.add('is-selected');
+          });
+          ul.appendChild(li);
+        });
+        wrapper.appendChild(ul);
+      }
+
+      // ── Short answer renderer ──
+      function renderShortAnsQuestion(q, num, wrapper) {
+        const qText = document.createElement('p');
+        qText.className = 'exam-question-text';
+        const numSpan = document.createElement('span');
+        numSpan.className = 'exam-question-num';
+        numSpan.textContent = num + '.';
+        qText.appendChild(numSpan);
+        qText.appendChild(document.createTextNode(q.question_text));
+        wrapper.appendChild(qText);
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'exam-short-input';
+        input.placeholder = 'Answer';
+        input.setAttribute('aria-label', 'Answer for question ' + num);
+        wrapper.appendChild(input);
+      }
+
+      // ── Word problem renderer ──
+      function renderWordProblemQuestion(q, num, wrapper) {
+        const qText = document.createElement('p');
+        qText.className = 'exam-question-text';
+        const numSpan = document.createElement('span');
+        numSpan.className = 'exam-question-num';
+        numSpan.textContent = num + '.';
+        qText.appendChild(numSpan);
+        qText.appendChild(document.createTextNode(q.question_text));
+        wrapper.appendChild(qText);
+
+        const parts = q.parts || [];
+        parts.forEach(function(part) {
+          const partEl = document.createElement('div');
+          partEl.style.marginTop = 'var(--space-3)';
+
+          const partQ = document.createElement('p');
+          partQ.style.fontWeight = '500';
+          partQ.textContent = part.label + '  ' + part.question;
+          partEl.appendChild(partQ);
+
+          const line = document.createElement('span');
+          line.className = 'exam-answer-line';
+          line.setAttribute('aria-label', 'Answer space for part ' + part.label);
+          partEl.appendChild(line);
+
+          const workingLine = document.createElement('span');
+          workingLine.className = 'exam-answer-line';
+          workingLine.style.marginTop = 'var(--space-2)';
+          partEl.appendChild(workingLine);
+
+          wrapper.appendChild(partEl);
+        });
+      }
+
+      // ── Open-ended renderer ──
+      function renderOpenEndedQuestion(q, num, wrapper) {
+        const qText = document.createElement('p');
+        qText.className = 'exam-question-text';
+        const numSpan = document.createElement('span');
+        numSpan.className = 'exam-question-num';
+        numSpan.textContent = num + '.';
+        qText.appendChild(numSpan);
+        qText.appendChild(document.createTextNode(q.question_text));
+        wrapper.appendChild(qText);
+
+        const textarea = document.createElement('textarea');
+        textarea.rows = 4;
+        textarea.style.cssText = 'width:100%;padding:var(--space-3);border:1.5px solid var(--border);border-radius:var(--radius);font-size:.9375rem;resize:vertical;font-family:inherit;';
+        textarea.placeholder = 'Write your answer here…';
+        textarea.setAttribute('aria-label', 'Answer for question ' + num);
+        wrapper.appendChild(textarea);
+      }
+
+      // ── Cloze renderer ──
+      function renderClozeQuestion(q, num, wrapper) {
+        const heading = document.createElement('p');
+        heading.className = 'exam-question-text';
+        const numSpan = document.createElement('span');
+        numSpan.className = 'exam-question-num';
+        numSpan.textContent = num + '.';
+        heading.appendChild(numSpan);
+        heading.appendChild(document.createTextNode(q.question_text));
+        wrapper.appendChild(heading);
+
+        const passage = document.createElement('div');
+        passage.className = 'exam-cloze-passage';
+
+        const blanks = q.blanks || [];
+        const blankMap = {};
+        blanks.forEach(function(b) { blankMap[b.id] = b; });
+
+        // Replace [1], [2] etc. with <select> dropdowns
+        let html = '';
+        const text = q.passage || '';
+        const parts = text.split(/(\[\d+\])/);
+        const frag = document.createDocumentFragment();
+
+        parts.forEach(function(part) {
+          const match = part.match(/^\[(\d+)\]$/);
+          if (match) {
+            const blankId = parseInt(match[1], 10);
+            const blank   = blankMap[blankId];
+            if (blank) {
+              const sel = document.createElement('select');
+              sel.className = 'exam-cloze-select';
+              sel.dataset.blankId = blankId;
+              sel.setAttribute('aria-label', 'Blank ' + blankId);
+
+              const defaultOpt = document.createElement('option');
+              defaultOpt.value = '';
+              defaultOpt.textContent = '___';
+              sel.appendChild(defaultOpt);
+
+              (blank.options || []).forEach(function(opt) {
+                const option = document.createElement('option');
+                option.value = opt;
+                option.textContent = opt;
+                sel.appendChild(option);
+              });
+
+              frag.appendChild(document.createTextNode(' '));
+              frag.appendChild(sel);
+              frag.appendChild(document.createTextNode(' '));
+            }
+          } else if (part) {
+            frag.appendChild(document.createTextNode(part));
+          }
+        });
+
+        passage.appendChild(frag);
+        wrapper.appendChild(passage);
+      }
+
+      // ── Editing renderer ──
+      function renderEditingQuestion(q, num, wrapper) {
+        const heading = document.createElement('p');
+        heading.className = 'exam-question-text';
+        const numSpan = document.createElement('span');
+        numSpan.className = 'exam-question-num';
+        numSpan.textContent = num + '.';
+        heading.appendChild(numSpan);
+        heading.appendChild(document.createTextNode(q.question_text));
+        wrapper.appendChild(heading);
+
+        const lines = q.passage_lines || [];
+        const passageEl = document.createElement('div');
+        passageEl.style.background = 'var(--bg)';
+        passageEl.style.borderRadius = 'var(--radius)';
+        passageEl.style.padding = 'var(--space-4)';
+        passageEl.style.border = '1px solid var(--border)';
+        passageEl.style.marginBottom = 'var(--space-4)';
+
+        lines.forEach(function(line) {
+          const lineEl = document.createElement('div');
+          lineEl.className = 'exam-editing-line';
+          lineEl.dataset.lineNum = line.line_number;
+
+          const numEl = document.createElement('span');
+          numEl.className = 'exam-editing-line-num';
+          numEl.textContent = line.line_number;
+
+          const textEl = document.createElement('span');
+          textEl.style.flex = '1';
+
+          // Build line text with underlined word highlighted
+          const parts = line.text.split(line.underlined_word);
+          if (parts.length === 2) {
+            textEl.appendChild(document.createTextNode(parts[0]));
+            const underline = document.createElement('span');
+            underline.className = 'exam-editing-underline';
+            underline.textContent = line.underlined_word;
+            textEl.appendChild(underline);
+            textEl.appendChild(document.createTextNode(parts[1]));
+          } else {
+            textEl.textContent = line.text;
+          }
+
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.className = 'exam-editing-input';
+          input.placeholder = 'Correction';
+          input.dataset.hasError = line.has_error ? 'true' : 'false';
+          input.dataset.correct  = line.has_error ? line.correct_word : line.underlined_word;
+          input.setAttribute('aria-label', 'Correction for line ' + line.line_number);
+
+          lineEl.appendChild(numEl);
+          lineEl.appendChild(textEl);
+          lineEl.appendChild(input);
+          passageEl.appendChild(lineEl);
+        });
+
+        wrapper.appendChild(passageEl);
+      }
+
+      // ── Timer ──
+      function startTimer(seconds) {
+        timerSeconds = seconds;
+        updateTimerDisplay();
+        timerInterval = setInterval(function() {
+          timerSeconds--;
+          updateTimerDisplay();
+          if (timerSeconds <= 0) {
+            clearInterval(timerInterval);
+            submitExam();
+          }
+        }, 1000);
+      }
+
+      function updateTimerDisplay() {
+        const m = Math.floor(timerSeconds / 60);
+        const s = timerSeconds % 60;
+        const label = m + ':' + String(s).padStart(2, '0');
+        timerEl.textContent = label;
+        timerEl.classList.toggle('is-urgent', timerSeconds <= 300);
+        timerEl.setAttribute('aria-label', 'Time remaining: ' + label);
+      }
+
+      function stopTimer() {
+        if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+        timerEl.textContent = '';
+      }
+
+      // ── Submit & mark ──
+      submitBtn.addEventListener('click', submitExam);
+
+      function submitExam() {
+        stopTimer();
+        if (!currentExam) return;
+
+        let totalEarned = 0;
+        const sectionResults = [];
+
+        currentExam.sections.forEach(function(sec) {
+          if (!sec.questions.length) return;
+
+          let secEarned = 0;
+          const secEl = sectionsEl.querySelector('[data-section-id="' + sec.id + '"]');
+
+          sec.questions.forEach(function(q) {
+            const qEl = secEl ? secEl.querySelector('[data-q-id="' + q.id + '"]') : null;
+            if (!qEl) return;
+            const earned = markQuestion(q, sec.type, sec.marksEach, qEl);
+            secEarned += earned;
+          });
+
+          sectionResults.push({ label: sec.label, earned: secEarned, possible: sec.sectionMarks });
+          totalEarned += secEarned;
+        });
+
+        showResults(totalEarned, sectionResults);
+      }
+
+      /** Marks a single question element in-place and returns marks earned. */
+      function markQuestion(q, type, marksEach, qEl) {
+        if (type === 'mcq') {
+          const selected = qEl.querySelector('li.is-selected');
+          if (!selected) return 0;
+          const key = selected.dataset.key;
+          qEl.querySelectorAll('li').forEach(function(li) {
+            if (li.dataset.key === q.correct_answer) li.classList.add('is-correct');
+          });
+          if (key !== q.correct_answer) {
+            selected.classList.add('is-wrong');
+            return 0;
+          }
+          return marksEach;
+        }
+
+        if (type === 'short_ans') {
+          const input = qEl.querySelector('.exam-short-input');
+          if (!input || !input.value.trim()) return 0;
+          const raw = input.value.trim().toLowerCase();
+          const accepted = [q.correct_answer, ...(q.accept_also || [])].map(function(a) { return a.toLowerCase(); });
+          const correct = accepted.includes(raw);
+          input.classList.add(correct ? 'is-correct' : 'is-wrong');
+          input.disabled = true;
+          return correct ? marksEach : 0;
+        }
+
+        if (type === 'cloze') {
+          const blanks   = q.blanks || [];
+          let blankScore = 0;
+          blanks.forEach(function(blank) {
+            const sel = qEl.querySelector('[data-blank-id="' + blank.id + '"]');
+            if (!sel) return;
+            const correct = sel.value.toLowerCase() === blank.correct_answer.toLowerCase();
+            sel.style.borderColor = correct ? 'var(--success)' : 'var(--danger)';
+            sel.disabled = true;
+            if (correct) blankScore++;
+          });
+          return blankScore; // 1 mark per blank
+        }
+
+        if (type === 'editing') {
+          const inputs = qEl.querySelectorAll('.exam-editing-input');
+          let editScore = 0;
+          inputs.forEach(function(input) {
+            const correct = input.dataset.correct;
+            const isError = input.dataset.hasError === 'true';
+            const val     = input.value.trim().toLowerCase();
+            if (!isError) { // No error — accept original word or blank
+              if (!val || val === correct.toLowerCase()) editScore++;
+              return;
+            }
+            const isCorrect = val === correct.toLowerCase();
+            input.classList.add(isCorrect ? 'is-correct' : 'is-wrong');
+            input.disabled = true;
+            if (isCorrect) editScore++;
+          });
+          return editScore; // 1 mark per line
+        }
+
+        // word_problem and open_ended: self-assessed — no auto-mark
+        return 0;
+      }
+
+      // ── Show results ──
+      function showResults(earned, sectionResults) {
+        paperSection.hidden  = true;
+        resultsSection.hidden = false;
+
+        const total = currentExam.actualMarks;
+        const pct   = total > 0 ? Math.round((earned / total) * 100) : 0;
+
+        resultsScore.textContent = earned + ' / ' + total;
+        resultsLabel.textContent = pct + '% · ' + getBand(pct);
+
+        setTimeout(function() {
+          resultsBar.style.width = pct + '%';
+          resultsBar.style.background = pct >= 75 ? 'var(--success)' : pct >= 50 ? 'var(--accent)' : 'var(--danger)';
+        }, 100);
+
+        const sectionNote = document.createElement('p');
+        sectionNote.className = 'text-secondary text-sm';
+        sectionNote.textContent = 'Note: Word problems and open-ended questions are self-assessed and are not included in the auto-marked score.';
+        resultsBreakdown.appendChild(sectionNote);
+
+        resultsSections.innerHTML = '';
+        sectionResults.forEach(function(sr) {
+          const row = document.createElement('div');
+          row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:var(--space-3) 0;border-bottom:1px solid var(--border);';
+          const name = document.createElement('span');
+          name.textContent = sr.label;
+          const score = document.createElement('span');
+          score.style.fontWeight = '700';
+          score.textContent = sr.earned + ' / ' + sr.possible;
+          row.appendChild(name);
+          row.appendChild(score);
+          resultsSections.appendChild(row);
+        });
+      }
+
+      function getBand(pct) {
+        if (pct >= 85) return 'AL 1';
+        if (pct >= 70) return 'AL 2–3';
+        if (pct >= 55) return 'AL 4–5';
+        if (pct >= 40) return 'AL 6';
+        return 'Needs practice';
+      }
+
+      // ── Print ──
+      printBtn.addEventListener('click', function() { window.print(); });
+      resultsPrintBtn.addEventListener('click', function() { window.print(); });
+
+      // ── Retry ──
+      retryBtn.addEventListener('click', function() {
+        clearExamCache();
+        resultsSection.hidden = true;
+        selectorSection.hidden = false;
+        currentExam = null;
+        startBtn.disabled = false;
+        startBtn.textContent = 'Generate Paper →';
+        timerEl.textContent = '';
+      });
+
+    })();
+  </script>
+
+  <!-- TEST:
+       1. Page loads selector step with all available templates listed as cards
+       2. Clicking a template card selects it (border highlight) and shows the start row
+       3. "Generate Paper →" fetches question bank JSON and builds the exam paper
+       4. MCQ options are clickable — only one can be selected at a time
+       5. Short answer inputs accept text
+       6. Cloze passages render with dropdown selects replacing [1], [2] etc.
+       7. Editing passages show underlined words + correction input fields
+       8. "Submit & Mark" auto-grades MCQ, short_ans, cloze, editing sections
+       9. Results section shows score/100 and per-section breakdown
+      10. "Print / Save PDF" triggers browser print dialog
+      11. Timer counts down correctly in timed mode; pausing at 0 auto-submits -->
+</body>
+</html>

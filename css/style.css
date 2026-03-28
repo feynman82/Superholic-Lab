@@ -2797,3 +2797,84 @@ small, .text-sm  { font-size: 0.875rem; }
   .section-white, .section-sage, .section-sage-dark, .section-off-white { padding: 64px 5%; }
   .mc-section { padding: 64px 5%; }
 }
+
+/* ── Print styles (exam.html, quiz.html) ──────────────────────────────────── */
+@media print {
+  /* Reset page */
+  *, *::before, *::after { box-shadow: none !important; text-shadow: none !important; }
+  body { background: #fff !important; color: #000 !important; font-size: 11pt; }
+
+  /* Hide interactive/nav chrome */
+  .navbar, .bottom-nav, .footer, .no-print,
+  #exam-timer, #exam-print-btn, #exam-submit-btn,
+  #exam-selector, #exam-results,
+  .quiz-option, #quiz-next, #quiz-score-screen,
+  button:not(.print-only) { display: none !important; }
+
+  /* Show the exam paper full-width */
+  main { padding: 0 !important; }
+  .container { max-width: 100% !important; padding: 0 !important; }
+  #exam-paper, #exam-paper * { display: block; }
+
+  /* Paper header */
+  .exam-paper-header {
+    border-bottom: 2px solid #000 !important;
+    margin-bottom: 1.5rem !important;
+  }
+
+  /* Sections */
+  .exam-section { margin-bottom: 1.5rem; }
+  .exam-section-header { border-top: 1.5px solid #000; padding-top: .75rem; }
+  .exam-section-title { font-size: 11pt; font-weight: 700; }
+  .exam-instructions { font-size: 9pt; color: #444; }
+
+  /* Questions */
+  .exam-question { page-break-inside: avoid; margin-bottom: 1rem; }
+  .exam-question-text { font-size: 10.5pt; }
+
+  /* MCQ options: list-style on paper */
+  .exam-options { margin-left: 1.5rem; }
+  .exam-options li {
+    border: none !important; padding: .25rem 0 !important;
+    display: flex; gap: .5rem; background: none !important;
+  }
+  .exam-opt-key { font-weight: 700; min-width: 1.25rem; }
+
+  /* Short answer — show write-on line */
+  .exam-short-input { display: none !important; }
+  .exam-short-input + .exam-answer-line,
+  .exam-answer-line {
+    display: block !important;
+    border-bottom: 1px solid #000;
+    min-height: 1.8rem;
+    margin-top: .4rem;
+  }
+
+  /* Cloze — replace select with underline blank */
+  .exam-cloze-select {
+    border: none !important;
+    border-bottom: 1px solid #000 !important;
+    background: none !important;
+    min-width: 4rem;
+  }
+
+  /* Editing — hide input, show underline */
+  .exam-editing-input {
+    border: none !important;
+    border-bottom: 1px solid #000 !important;
+    background: none !important;
+  }
+
+  /* Page break before each section (except first) */
+  .exam-section + .exam-section { page-break-before: auto; }
+
+  /* Ensure white background for all content boxes */
+  .exam-cloze-passage,
+  .exam-editing-line { background: #fff !important; border-color: #ccc !important; }
+
+  /* A4 page setup */
+  @page {
+    size: A4;
+    margin: 1.5cm 2cm;
+  }
+}

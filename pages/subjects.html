@@ -30,6 +30,25 @@
       font-weight: 800;
       box-shadow: 0 0 0 2px var(--primary);
     }
+    /* Question type picker chips */
+    .type-picker { margin-top: var(--space-5); animation: fadeInUp 0.18s ease; }
+    .type-picker-label {
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--text-secondary); margin-bottom: var(--space-3);
+    }
+    .type-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+    .type-chip {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      padding: 0.35rem 0.85rem; border-radius: 2rem; border: 1.5px solid var(--border);
+      background: var(--white); font-size: 0.8125rem; font-weight: 500;
+      color: var(--text-primary); cursor: pointer; transition: all 0.15s ease;
+    }
+    .type-chip:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+    .type-chip.is-selected { border-color: var(--primary); background: var(--primary); color: white; }
+    .type-chip.is-unavailable {
+      opacity: 0.38; cursor: default; pointer-events: none;
+    }
+    .type-chip-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
   </style>
 </head>
 <body class="has-bottom-nav">
@@ -324,7 +343,7 @@
           <path d="M9 8v5M9 6h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
         <span>
-          P4 Mathematics (Fractions · Angles · Word Problems) is live now.
+          P4 &amp; P5 Mathematics, P4 &amp; P5 Science, and P4 English (MCQ, Cloze, Editing) are live now.
           More topics and levels are added weekly — check back soon.
         </span>
       </div>
@@ -436,6 +455,48 @@
         });
       });
 
+      /* Human-readable labels for each question type */
+      const TYPE_LABELS = {
+        mcq:          'Multiple Choice',
+        short_ans:    'Short Answer',
+        word_problem: 'Word Problem',
+        open_ended:   'Open-Ended',
+        cloze:        'Grammar Cloze',
+        editing:      'Editing',
+      };
+
+      /* Dot colours per type */
+      const TYPE_COLOURS = {
+        mcq:          '#4338ca',
+        short_ans:    '#0891b2',
+        word_problem: '#059669',
+        open_ended:   '#7c3aed',
+        cloze:        '#d97706',
+        editing:      '#dc2626',
+      };
+
+      /* Available question types per subject:level (based on existing question bank files) */
+      const TYPES = {
+        'mathematics:primary-2': ['mcq'],
+        'mathematics:primary-3': ['mcq'],
+        'mathematics:primary-4': ['mcq', 'short_ans', 'word_problem'],
+        'mathematics:primary-5': ['mcq', 'short_ans', 'word_problem'],
+        'mathematics:primary-6': ['mcq', 'short_ans', 'word_problem'],
+        'science:primary-3':     ['mcq'],
+        'science:primary-4':     ['mcq', 'open_ended'],
+        'science:primary-5':     ['mcq', 'open_ended'],
+        'science:primary-6':     ['mcq', 'open_ended'],
+        'english:primary-1':     ['mcq'],
+        'english:primary-2':     ['mcq'],
+        'english:primary-3':     ['mcq'],
+        'english:primary-4':     ['mcq', 'cloze', 'editing'],
+        'english:primary-5':     ['mcq', 'cloze', 'editing'],
+        'english:primary-6':     ['mcq', 'cloze', 'editing'],
+      };
+
+      /* Types with no topic sub-files — navigate directly after type selection */
+      const NO_TOPIC_TYPES = new Set(['open_ended', 'cloze', 'editing']);
+
       /* Topic map — subject:level → available topics (label : slug) */
       const TOPICS = {
         'mathematics:primary-2': [
@@ -469,67 +530,149 @@
         ],
       };
 
-      /* Level button — shows topic picker if topics exist, else navigates directly */
+      /**
+       * Builds and appends the topic picker after a question type is chosen.
+       * For types with no topic sub-files, navigates directly.
+       */
+      function showTopicPicker(levelsDiv, subject, level, type) {
+        // Remove any existing topic picker
+        const existing = levelsDiv.querySelector('.topic-picker');
+        if (existing) existing.remove();
+
+        // Types with no topic breakdown → navigate directly
+        if (NO_TOPIC_TYPES.has(type)) {
+          window.location.href = 'quiz.html?subject=' +
+            encodeURIComponent(subject) + '&level=' + encodeURIComponent(level) +
+            '&type=' + encodeURIComponent(type);
+          return;
+        }
+
+        const key    = subject + ':' + level;
+        const topics = TOPICS[key];
+
+        // Build base URL with type param
+        const baseUrl = 'quiz.html?subject=' + encodeURIComponent(subject) +
+          '&level=' + encodeURIComponent(level) +
+          (type ? '&type=' + encodeURIComponent(type) : '');
+
+        if (topics && topics.length > 0) {
+          const picker = document.createElement('div');
+          picker.className = 'topic-picker';
+
+          const pickerLabel = document.createElement('p');
+          pickerLabel.className   = 'topic-section-label';
+          pickerLabel.textContent = 'Choose a topic';
+          picker.appendChild(pickerLabel);
+
+          const topicList = document.createElement('div');
+          topicList.className = 'topic-list';
+
+          // "All Topics" option (loads broad file, filtered by type)
+          const allBtn = document.createElement('button');
+          allBtn.className   = 'topic-btn';
+          allBtn.textContent = 'All Topics';
+          allBtn.addEventListener('click', function (ev) {
+            ev.stopPropagation();
+            window.location.href = baseUrl;
+          });
+          topicList.appendChild(allBtn);
+
+          topics.forEach(function (t) {
+            const tBtn = document.createElement('button');
+            tBtn.className   = 'topic-btn';
+            tBtn.textContent = t.label;
+            tBtn.addEventListener('click', function (ev) {
+              ev.stopPropagation();
+              window.location.href = baseUrl + '&topic=' + encodeURIComponent(t.slug);
+            });
+            topicList.appendChild(tBtn);
+          });
+
+          picker.appendChild(topicList);
+          levelsDiv.appendChild(picker);
+        } else {
+          // No topic sub-files — navigate directly
+          window.location.href = baseUrl;
+        }
+      }
+
+      /* Level button — shows type picker, then topic picker, then navigates */
       document.querySelectorAll('.level-btn').forEach(function (btn) {
         btn.addEventListener('click', function (e) {
           e.stopPropagation();
-          const subject = btn.getAttribute('data-subject');
-          const level   = btn.getAttribute('data-level');
+          const subject   = btn.getAttribute('data-subject');
+          const level     = btn.getAttribute('data-level');
           const levelsDiv = btn.closest('.subject-levels');
 
           levelsDiv.querySelectorAll('.level-btn')
             .forEach(function (b) { b.classList.remove('is-selected'); });
           btn.classList.add('is-selected');
 
-          // Check if we have topics for this combination
-          const key    = subject + ':' + level;
-          const topics = TOPICS[key];
+          // Clear existing pickers
+          const existingType  = levelsDiv.querySelector('.type-picker');
+          const existingTopic = levelsDiv.querySelector('.topic-picker');
+          if (existingType)  existingType.remove();
+          if (existingTopic) existingTopic.remove();
 
-          // Remove any existing topic picker
-          const existing = levelsDiv.querySelector('.topic-picker');
-          if (existing) existing.remove();
+          const key   = subject + ':' + level;
+          const types = TYPES[key];
 
-          if (topics && topics.length > 0) {
-            // Show topic picker inline
-            const picker = document.createElement('div');
-            picker.className = 'topic-picker';
+          if (types && types.length > 1) {
+            // Show type chip picker
+            const typePicker = document.createElement('div');
+            typePicker.className = 'type-picker';
 
-            const pickerLabel = document.createElement('p');
-            pickerLabel.className   = 'topic-section-label';
-            pickerLabel.textContent = 'Choose a topic';
-            picker.appendChild(pickerLabel);
+            const typeLabel = document.createElement('p');
+            typeLabel.className   = 'type-picker-label';
+            typeLabel.textContent = 'Question type';
+            typePicker.appendChild(typeLabel);
 
-            const topicList = document.createElement('div');
-            topicList.className = 'topic-list';
+            const chips = document.createElement('div');
+            chips.className = 'type-chips';
 
-            // "All Topics" option (loads broad file)
-            const allBtn = document.createElement('button');
-            allBtn.className   = 'topic-btn';
-            allBtn.textContent = 'All Topics';
-            allBtn.addEventListener('click', function (ev) {
+            // "All Types" chip (no type filter)
+            const allChip = document.createElement('button');
+            allChip.className = 'type-chip';
+            const allDot = document.createElement('span');
+            allDot.className = 'type-chip-dot';
+            allDot.style.background = '#6b7280';
+            allChip.appendChild(allDot);
+            allChip.appendChild(document.createTextNode('All Types'));
+            allChip.addEventListener('click', function (ev) {
               ev.stopPropagation();
-              window.location.href = 'quiz.html?subject=' +
-                encodeURIComponent(subject) + '&level=' + encodeURIComponent(level);
+              chips.querySelectorAll('.type-chip').forEach(function(c) { c.classList.remove('is-selected'); });
+              allChip.classList.add('is-selected');
+              showTopicPicker(levelsDiv, subject, level, '');
             });
-            topicList.appendChild(allBtn);
+            chips.appendChild(allChip);
 
-            topics.forEach(function (t) {
-              const tBtn = document.createElement('button');
-              tBtn.className   = 'topic-btn';
-              tBtn.textContent = t.label;
-              tBtn.addEventListener('click', function (ev) {
+            types.forEach(function (t) {
+              const chip = document.createElement('button');
+              chip.className = 'type-chip';
+
+              const dot = document.createElement('span');
+              dot.className = 'type-chip-dot';
+              dot.style.background = TYPE_COLOURS[t] || '#6b7280';
+              chip.appendChild(dot);
+              chip.appendChild(document.createTextNode(TYPE_LABELS[t] || t));
+
+              chip.addEventListener('click', function (ev) {
                 ev.stopPropagation();
-                window.location.href = 'quiz.html?subject=' +
-                  encodeURIComponent(subject) + '&level=' + encodeURIComponent(level) +
-                  '&topic=' + encodeURIComponent(t.slug);
+                chips.querySelectorAll('.type-chip').forEach(function(c) { c.classList.remove('is-selected'); });
+                chip.classList.add('is-selected');
+                showTopicPicker(levelsDiv, subject, level, t);
               });
-              topicList.appendChild(tBtn);
+              chips.appendChild(chip);
             });
 
-            picker.appendChild(topicList);
-            levelsDiv.appendChild(picker);
+            typePicker.appendChild(chips);
+            levelsDiv.appendChild(typePicker);
+
+          } else if (types && types.length === 1) {
+            // Only one type — skip type picker, go straight to topic picker
+            showTopicPicker(levelsDiv, subject, level, types[0]);
           } else {
-            // No topics defined — navigate directly (fallback)
+            // No type data — navigate directly (fallback for unlaunched levels)
             window.location.href = 'quiz.html?subject=' +
               encodeURIComponent(subject) + '&level=' + encodeURIComponent(level);
           }
@@ -647,13 +790,15 @@
        1. Mini gradient header renders with wave divider into surface background
        2. Breadcrumb shows Home › Choose a Subject
        3. Cards have coloured top borders: indigo / teal / amber
-       4. Topic badges use subject-matching colours
-       5. Expanding a card highlights it with matching colour ring
-       6. Clicking P4 level for Mathematics shows topic list (Fractions, Decimals, etc.)
-       7. Clicking a topic navigates to quiz.html?subject=X&level=Y&topic=Z
-       8. Clicking "All Topics" navigates to quiz.html?subject=X&level=Y (no topic)
-       9. Clicking a level with no topics (P3, P5, etc.) navigates directly
-      10. Mobile bottom nav shows Practise tab as active -->
+       4. Expanding a card highlights it with matching colour ring
+       5. P4 Mathematics: clicking P4 shows type chips (Multiple Choice, Short Answer, Word Problem)
+       6. P4 English: clicking P4 shows type chips (Multiple Choice, Grammar Cloze, Editing)
+       7. Selecting "Grammar Cloze" navigates to quiz.html?subject=english&level=primary-4&type=cloze
+       8. Selecting "Multiple Choice" for P4 Maths → topic list (Fractions, Decimals, etc.)
+       9. Clicking a topic navigates to quiz.html?subject=X&level=Y&type=mcq&topic=Z
+      10. P2 Mathematics (single type): clicking P2 skips type picker, shows topics directly
+      11. "All Types" chip navigates without type param (loads full question bank)
+      12. Mobile bottom nav shows Practise tab as active -->
 
 </body>
 </html>

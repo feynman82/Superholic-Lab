@@ -1,0 +1,191 @@
+[
+  {
+    "id": "p4e-cloze-001",
+    "subject": "English",
+    "level": "Primary 4",
+    "topic": "Grammar Cloze",
+    "sub_topic": "Mixed grammar — past tense, articles, prepositions",
+    "difficulty": "Standard",
+    "type": "cloze",
+    "question_text": "Read the passage carefully. Choose the best word from the options to fill in each blank.\n\nLast Saturday, Ahmad [1] to the Botanic Gardens with his family. They [2] a delicious picnic lunch [3] the shade of a large rain tree. His sister [4] photographs of the colourful flowers while Ahmad [5] the butterflies fluttering from bloom to bloom. In the afternoon, they [6] along the path near Swan Lake. Ahmad said it [7] the most enjoyable outing he had that year.",
+    "passage": "Last Saturday, Ahmad [1] to the Botanic Gardens with his family. They [2] a delicious picnic lunch [3] the shade of a large rain tree. His sister [4] photographs of the colourful flowers while Ahmad [5] the butterflies fluttering from bloom to bloom. In the afternoon, they [6] along the path near Swan Lake. Ahmad said it [7] the most enjoyable outing he had that year.",
+    "blanks": [
+      {
+        "id": 1,
+        "correct_answer": "went",
+        "options": ["go", "goes", "went", "going"],
+        "grammar_point": "Simple past tense of irregular verb 'go'. Clue: 'Last Saturday'.",
+        "explanation": "'Last Saturday' signals that the action happened in the past. The simple past tense of 'go' is 'went', not 'goed'. 'Goes' is present tense (third person singular), and 'going' is the present participle — neither is correct here."
+      },
+      {
+        "id": 2,
+        "correct_answer": "enjoyed",
+        "options": ["enjoy", "enjoyed", "enjoys", "enjoying"],
+        "grammar_point": "Simple past tense of regular verb 'enjoy'. Narrative is past tense throughout.",
+        "explanation": "The passage is written in the simple past tense throughout. 'Enjoyed' is the correct past tense form of 'enjoy'. 'Enjoys' is present tense, 'enjoy' is base form, and 'enjoying' is present participle — all incorrect in past-tense narrative."
+      },
+      {
+        "id": 3,
+        "correct_answer": "in",
+        "options": ["at", "in", "on", "under"],
+        "grammar_point": "Preposition: 'in the shade' is a fixed expression.",
+        "explanation": "'In the shade' is the correct fixed phrase in English. 'Under the shade' is a common error — we say 'under the tree' but 'in the shade'."
+      },
+      {
+        "id": 4,
+        "correct_answer": "took",
+        "options": ["took", "take", "takes", "taking"],
+        "grammar_point": "Simple past tense of irregular verb 'take'. Past narrative context.",
+        "explanation": "The past tense of the irregular verb 'take' is 'took'. 'Taked' is not a word. The narrative is in simple past tense, so 'take' (base form) and 'takes' (present) are incorrect."
+      },
+      {
+        "id": 5,
+        "correct_answer": "watched",
+        "options": ["watched", "watch", "watches", "was watching"],
+        "grammar_point": "Simple past tense of 'watch'. Parallel structure with 'took' in the same sentence.",
+        "explanation": "Both actions in the sentence — taking photos and watching butterflies — happened at the same past time. Using 'watched' maintains parallel structure with 'took'. 'Watch' is base form and 'watches' is present tense — neither fits."
+      },
+      {
+        "id": 6,
+        "correct_answer": "walked",
+        "options": ["walked", "walk", "were walking", "walking"],
+        "grammar_point": "Simple past tense of 'walk'. Describes a completed past action.",
+        "explanation": "'Walked' is the simple past tense of 'walk', matching the narrative tense. 'Walk' is base form, 'walking' is a participle that needs an auxiliary verb, and 'were walking' (past continuous) implies an action that was interrupted — not the intended meaning here."
+      },
+      {
+        "id": 7,
+        "correct_answer": "was",
+        "options": ["is", "was", "were", "had been"],
+        "grammar_point": "Past tense linking verb for a singular subject ('it').",
+        "explanation": "'It was' is correct — 'it' is singular and the sentence is in the past tense. 'Is' is present tense. 'Were' is used with plural subjects (they/you/we). 'Had been' (past perfect) is grammatically possible but not the standard choice for this direct statement."
+      }
+    ],
+    "marks": 7
+  },
+  {
+    "id": "p4e-cloze-002",
+    "subject": "English",
+    "level": "Primary 4",
+    "topic": "Grammar Cloze",
+    "sub_topic": "Mixed grammar — relative pronouns, comparatives, subject-verb agreement",
+    "difficulty": "Standard",
+    "type": "cloze",
+    "question_text": "Read the passage carefully. Choose the best word from the options to fill in each blank.\n\nMei Ling lives in an HDB flat [1] is close to her school. Every morning, she [2] up early and helps her mother prepare breakfast. Her mother [3] she is the most helpful child in the family. Mei Ling studies harder [4] her older brother because she wants to do well in her PSLE. She believes that practice [5] the key to success. Last week, she scored [6] marks than before in her Mathematics test. This made her feel very proud of [7].",
+    "passage": "Mei Ling lives in an HDB flat [1] is close to her school. Every morning, she [2] up early and helps her mother prepare breakfast. Her mother [3] she is the most helpful child in the family. Mei Ling studies harder [4] her older brother because she wants to do well in her PSLE. She believes that practice [5] the key to success. Last week, she scored [6] marks than before in her Mathematics test. This made her feel very proud of [7].",
+    "blanks": [
+      {
+        "id": 1,
+        "correct_answer": "that",
+        "options": ["who", "which", "that", "where"],
+        "grammar_point": "Relative pronoun for a thing (HDB flat). 'That' and 'which' are both correct for things, but 'that' is more common in restrictive clauses.",
+        "explanation": "'Who' refers to people, not things. 'Where' refers to a place (e.g., 'the school where she studies'). 'That' and 'which' both refer to things — 'that' is more natural in a restrictive clause identifying which flat."
+      },
+      {
+        "id": 2,
+        "correct_answer": "wakes",
+        "options": ["wake", "wakes", "woke", "waking"],
+        "grammar_point": "Present tense, third-person singular. 'Every morning' signals habitual present.",
+        "explanation": "'Every morning' signals a habitual action in the present. The subject 'she' is third-person singular, so the verb needs an -s ending: 'wakes'. 'Wake' (base form) is used with 'I/you/we/they', not 'she'."
+      },
+      {
+        "id": 3,
+        "correct_answer": "says",
+        "options": ["say", "says", "said", "telling"],
+        "grammar_point": "Present tense, third-person singular. Subject is 'Her mother' (she).",
+        "explanation": "'Her mother' is a third-person singular subject, so the verb in the present tense must end in -s: 'says'. 'Said' is past tense — but the passage describes a belief held in the present ('she is the most helpful'), suggesting a general present-tense statement."
+      },
+      {
+        "id": 4,
+        "correct_answer": "than",
+        "options": ["then", "than", "as", "to"],
+        "grammar_point": "Comparative conjunction 'harder than'. 'Than' is used after comparatives.",
+        "explanation": "'Harder than' is the correct comparative structure. 'Then' refers to time (e.g., 'first this, then that'). 'As' is used for equality comparisons (e.g., 'as hard as'). 'To' is not used in comparisons."
+      },
+      {
+        "id": 5,
+        "correct_answer": "is",
+        "options": ["are", "is", "was", "were"],
+        "grammar_point": "Subject-verb agreement: 'practice' is singular → 'is'.",
+        "explanation": "'Practice' is a singular noun (not countable as multiple items), so it takes the singular verb 'is'. 'Are' is used with plural subjects. 'Was' and 'were' are past tense — this is a general belief, so present tense is correct."
+      },
+      {
+        "id": 6,
+        "correct_answer": "more",
+        "options": ["much", "most", "more", "many"],
+        "grammar_point": "Comparative adjective 'more' (comparing a past and present quantity). 'Than before' is the signal.",
+        "explanation": "'More ... than' is the comparative structure for countable or uncountable nouns. 'Most' is superlative (not comparative). 'Much' is used in positive statements ('much better') but 'more ... than' is needed here for comparison. 'Many' cannot precede 'than' in this structure."
+      },
+      {
+        "id": 7,
+        "correct_answer": "herself",
+        "options": ["her", "herself", "she", "hers"],
+        "grammar_point": "Reflexive pronoun: subject and object are the same person (she felt proud of herself).",
+        "explanation": "When the subject and object of a verb refer to the same person, use a reflexive pronoun: 'herself'. 'Her' is an object pronoun used when referring to a different person (e.g., 'proud of her friend'). 'She' is a subject pronoun and cannot follow a preposition."
+      }
+    ],
+    "marks": 7
+  },
+  {
+    "id": "p4e-cloze-003",
+    "subject": "English",
+    "level": "Primary 4",
+    "topic": "Grammar Cloze",
+    "sub_topic": "Mixed grammar — articles, modal verbs, conjunctions",
+    "difficulty": "Advanced",
+    "type": "cloze",
+    "question_text": "Read the passage carefully. Choose the best word from the options to fill in each blank.\n\nRavi wanted to buy [1] new bicycle for his birthday. He had saved [2] of his pocket money for three months. However, he [3] not afford the one he liked because it was too expensive. His father suggested [4] he buy a second-hand bicycle instead. Ravi agreed, [5] he knew the bicycle would still work well. He found [6] excellent one at a neighbourhood sale and bought it happily. Now, he cycles to school every day [7] taking the bus.",
+    "passage": "Ravi wanted to buy [1] new bicycle for his birthday. He had saved [2] of his pocket money for three months. However, he [3] not afford the one he liked because it was too expensive. His father suggested [4] he buy a second-hand bicycle instead. Ravi agreed, [5] he knew the bicycle would still work well. He found [6] excellent one at a neighbourhood sale and bought it happily. Now, he cycles to school every day [7] taking the bus.",
+    "blanks": [
+      {
+        "id": 1,
+        "correct_answer": "a",
+        "options": ["a", "an", "the", "some"],
+        "grammar_point": "Indefinite article 'a' before a consonant sound ('new'). First mention of an unspecified item.",
+        "explanation": "'A' is used before consonant sounds when mentioning something for the first time. 'New' starts with a consonant sound /n/, so 'a new bicycle' is correct. 'An' is used before vowel sounds (e.g., 'an old bicycle'). 'The' is used for specific known items."
+      },
+      {
+        "id": 2,
+        "correct_answer": "most",
+        "options": ["much", "many", "most", "all"],
+        "grammar_point": "'Most of his pocket money' — superlative determiner used with uncountable nouns.",
+        "explanation": "'Most of his pocket money' means the majority of his money — the most natural expression. 'Much of' is also possible but less common. 'Many' is used with countable nouns (e.g., 'many coins'), not uncountable 'pocket money'. 'All of' is possible but changes the meaning to the entire amount."
+      },
+      {
+        "id": 3,
+        "correct_answer": "could",
+        "options": ["could", "can", "would", "should"],
+        "grammar_point": "Past modal 'could' (ability in the past). The passage is in past tense.",
+        "explanation": "The passage is in the past tense. 'Could not afford' is the correct past tense modal to express inability. 'Can' is present tense. 'Would not afford' expresses unwillingness, not inability. 'Should not afford' gives an unnecessary sense of moral obligation."
+      },
+      {
+        "id": 4,
+        "correct_answer": "that",
+        "options": ["what", "which", "that", "if"],
+        "grammar_point": "Conjunction 'that' after 'suggested': 'suggested that he buy...' (reporting clause).",
+        "explanation": "'Suggested that...' is the standard structure for reporting suggestions. 'Suggested what...' is used for indirect questions, not suggestions. 'Suggested if...' is incorrect — 'if' is used with 'asked' or 'wondered'. 'Which' introduces relative clauses, not reporting clauses."
+      },
+      {
+        "id": 5,
+        "correct_answer": "as",
+        "options": ["but", "so", "as", "although"],
+        "grammar_point": "Conjunction 'as' (meaning 'because'). Gives the reason Ravi agreed.",
+        "explanation": "'As he knew the bicycle would still work well' gives the reason for Ravi's agreement — 'as' here means 'because'. 'But' signals contrast. 'So' signals a result (not a reason). 'Although' signals a concession (contrast), which contradicts the idea of agreeing."
+      },
+      {
+        "id": 6,
+        "correct_answer": "an",
+        "options": ["a", "an", "the", "one"],
+        "grammar_point": "Indefinite article 'an' before a vowel sound ('excellent').",
+        "explanation": "'Excellent' begins with a vowel sound /e/, so 'an' is the correct article. 'A' is used before consonant sounds. 'The' would imply a specific, previously mentioned item — but this is a new bicycle Ravi just found. 'One' is a numeral, not an article."
+      },
+      {
+        "id": 7,
+        "correct_answer": "instead of",
+        "options": ["instead of", "because of", "in spite of", "as well as"],
+        "grammar_point": "Prepositional phrase 'instead of' showing substitution of one action for another.",
+        "explanation": "'Instead of taking the bus' means Ravi cycles as a replacement for taking the bus. 'Because of' gives a reason. 'In spite of' shows contrast/concession. 'As well as' adds another action — but cycling and busing would then both happen, contradicting the intended meaning."
+      }
+    ],
+    "marks": 7
+  }
+]
