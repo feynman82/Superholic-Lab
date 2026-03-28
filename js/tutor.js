@@ -18,10 +18,10 @@
   const TRIAL_AI_LIMIT = 10; // max AI messages per day on trial
 
   const WELCOME_MESSAGES = {
-    mathematics: "Hello! I'm your Maths tutor. What are you working on today? Ask me anything — fractions, word problems, geometry — I'm here to guide you step by step.",
-    science:     "Hi there! I'm your Science tutor. What topic would you like to explore? Whether it's plants, forces, or the water cycle, I'll help you understand it like a PSLE examiner would.",
-    english:     "Hello! I'm your English tutor. Need help with comprehension, composition, or grammar? Ask away — I'll help you think like a skilled reader and writer.",
-    general:     "Hello! I'm your AI tutor. Ask me any question about your schoolwork and I'll guide you through it step by step.",
+    mathematics: "Heyy! I'm Miss Wena, your Maths tutor. 😊 What are we working on today? Fractions, word problems, geometry — nothing is too hard once we break it down step by step. What's giving you trouble?",
+    science:     "Hello! Miss Wena here, your Science guide! 🔬 Science is all about asking WHY — and that's exactly what we'll do together. Which topic are you exploring today? Let's make sure you know the exact keywords the PSLE examiner is looking for.",
+    english:     "Hi there! It's Miss Wena. 📖 English is my favourite because it teaches you to think, not just remember. Are you working on comprehension, composition, or grammar? Tell me what's confusing you and we'll figure it out together, okay?",
+    general:     "Hello! I'm Miss Wena, your AI tutor here at Superholic Lab. 😊 I'm here to help you understand — not just give you answers. What subject are we tackling today? Ask me anything!",
   };
 
   // ── DOM refs ───────────────────────────────────────────────────

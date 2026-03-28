@@ -73,6 +73,7 @@
   let currentSubject   = '';
   let currentLevel     = '';
   let currentTopic     = '';
+  let quizStartTime    = null; // set when questions load, used for time_taken_seconds
 
   // ── Boot ──────────────────────────────────────────────────────
   init();
@@ -129,6 +130,7 @@
       const all = await res.json();
       questions = shuffle(all).slice(0, QUIZ_SIZE);
       if (questions.length === 0) throw new Error('No questions found in file.');
+      quizStartTime    = Date.now(); // start the clock when quiz begins
       answers          = [];
       loadingEl.hidden = true;
       quizArea.hidden  = false;
@@ -790,12 +792,13 @@
     retryBtn.className   = 'btn btn-primary';
     retryBtn.textContent = 'Try Again';
     retryBtn.addEventListener('click', () => {
-      current     = 0;
-      score       = 0;
-      gradedTotal = 0;
-      answered    = false;
-      answers     = [];
-      questions   = shuffle(questions);
+      current       = 0;
+      score         = 0;
+      gradedTotal   = 0;
+      answered      = false;
+      answers       = [];
+      quizStartTime = Date.now(); // reset timer on retry
+      questions     = shuffle(questions);
       scoreScreen.hidden = true;
       quizArea.hidden    = false;
       renderQuestion();
@@ -832,13 +835,15 @@
     const { data: attempt, error: attErr } = await db
       .from('quiz_attempts')
       .insert({
-        student_id:      currentStudentId,
-        subject:         currentSubject,
-        level:           currentLevel,
-        topic:           primaryTopic,
-        difficulty:      'Mixed',
-        score:           score,
-        total_questions: gradedTotal,
+        student_id:         currentStudentId,
+        subject:            currentSubject,
+        level:              currentLevel,
+        topic:              primaryTopic,
+        difficulty:         'Mixed',
+        score:              score,
+        total_questions:    gradedTotal,
+        time_taken_seconds: quizStartTime ? Math.round((Date.now() - quizStartTime) / 1000) : null,
+        completed_at:       new Date().toISOString(),
       })
       .select('id')
       .single();

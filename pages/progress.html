@@ -102,21 +102,55 @@
       <!-- Stats area (hidden until data loads) -->
       <div id="progress-stats" hidden>
 
-        <!-- Summary stat cards -->
-        <div class="grid grid-3" style="margin-bottom:var(--space-8);">
-          <div class="card no-hover text-center" style="padding:var(--space-6);">
-            <div id="stat-total" style="font-family:'Nunito',sans-serif;font-size:2.5rem;font-weight:900;color:var(--primary);line-height:1;">—</div>
-            <div class="text-secondary text-sm mt-2">Questions Answered</div>
-          </div>
-          <div class="card no-hover text-center" style="padding:var(--space-6);">
-            <div id="stat-accuracy" style="font-family:'Nunito',sans-serif;font-size:2.5rem;font-weight:900;line-height:1;">—</div>
-            <div class="text-secondary text-sm mt-2">Overall Accuracy</div>
-          </div>
-          <div class="card no-hover text-center" style="padding:var(--space-6);">
-            <div id="stat-streak" style="font-family:'Nunito',sans-serif;font-size:2.5rem;font-weight:900;color:var(--accent);line-height:1;">—</div>
-            <div class="text-secondary text-sm mt-2">Current Streak</div>
-          </div>
+        <!-- Student selector — only shown when parent has multiple children -->
+        <div id="student-selector" style="display:none;margin-bottom:var(--space-6);">
+          <label style="font-size:0.875rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:var(--space-2);">Viewing progress for:</label>
+          <select id="student-select" class="form-input" style="max-width:240px;"></select>
         </div>
+
+        <!-- Summary stat cards (mc-card style, 2-col on mobile, 4-col on desktop) -->
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:var(--space-4);margin-bottom:var(--space-8);" id="stat-cards-grid">
+
+          <div class="mc-card">
+            <div class="mc-card-header">
+              <div class="mc-card-title">Questions Answered</div>
+            </div>
+            <div id="stat-total" style="font-size:2rem;font-weight:900;color:var(--maths-colour);line-height:1;margin-bottom:var(--space-3);">—</div>
+            <div class="mc-bar"><div id="bar-total" class="mc-fill" style="width:0%;background:var(--maths-colour);" data-target="0"></div></div>
+            <div class="mc-card-desc">Lifetime total</div>
+          </div>
+
+          <div class="mc-card">
+            <div class="mc-card-header">
+              <div class="mc-card-title">Overall Accuracy</div>
+            </div>
+            <div id="stat-accuracy" style="font-size:2rem;font-weight:900;line-height:1;margin-bottom:var(--space-3);">—</div>
+            <div class="mc-bar"><div id="bar-accuracy" class="mc-fill" style="width:0%;" data-target="0"></div></div>
+            <div class="mc-card-desc">Across all subjects</div>
+          </div>
+
+          <div class="mc-card">
+            <div class="mc-card-header">
+              <div class="mc-card-title">Current Streak</div>
+            </div>
+            <div id="stat-streak" style="font-size:2rem;font-weight:900;color:var(--amber);line-height:1;margin-bottom:var(--space-3);">—</div>
+            <div class="mc-bar"><div id="bar-streak" class="mc-fill" style="width:0%;background:var(--amber);" data-target="0"></div></div>
+            <div class="mc-card-desc">Consecutive practice days</div>
+          </div>
+
+          <div class="mc-card">
+            <div class="mc-card-header">
+              <div class="mc-card-title">Questions Today</div>
+            </div>
+            <div id="stat-today" style="font-size:2rem;font-weight:900;color:var(--rose);line-height:1;margin-bottom:var(--space-3);">—</div>
+            <div class="mc-bar"><div id="bar-today" class="mc-fill" style="width:0%;background:var(--rose);" data-target="0"></div></div>
+            <div class="mc-card-desc">Practised today</div>
+          </div>
+
+        </div>
+        <style>
+          @media (min-width: 640px) { #stat-cards-grid { grid-template-columns: repeat(4, 1fr); } }
+        </style>
 
         <!-- Subject accuracy -->
         <div class="card no-hover" style="margin-bottom:var(--space-6);">

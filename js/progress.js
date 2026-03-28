@@ -27,13 +27,12 @@ async function init() {
 
     const db = await getSupabase();
 
-    // Get first student profile for this parent
+    // Get all student profiles for this parent (supports multi-child families)
     const { data: students, error: stuErr } = await db
       .from('students')
       .select('id, name, level')
       .eq('parent_id', user.id)
-      .order('created_at', { ascending: true })
-      .limit(1);
+      .order('created_at', { ascending: true });
 
     if (stuErr) throw stuErr;
 
@@ -44,7 +43,15 @@ async function init() {
       return;
     }
 
-    const student = students[0];
+    // URL param takes priority, else default to first student
+    const urlStudentId = new URLSearchParams(window.location.search).get('student');
+    const student = students.find(s => s.id === urlStudentId) || students[0];
+
+    // Show student selector dropdown if parent has multiple children
+    if (students.length > 1) {
+      populateStudentSelector(students, student.id);
+    }
+
     updateStudentLabel(student);
 
     // Fetch all quiz attempts for this student
@@ -61,6 +68,16 @@ async function init() {
       emptyEl.hidden   = false;
       return;
     }
+
+    // ── Fetch today's usage from daily_usage table ────────────────
+    const today = new Date().toISOString().slice(0, 10);
+    const { data: usageData } = await db
+      .from('daily_usage')
+      .select('questions_attempted')
+      .eq('student_id', student.id)
+      .eq('date', today)
+      .maybeSingle();
+    const questionsToday = usageData?.questions_attempted || 0;
 
     // ── Calculate stats ──────────────────────────────────────────
     const totalQuestions = attempts.reduce((s, a) => s + (a.total_questions || 0), 0);
@@ -99,7 +116,7 @@ async function init() {
       .slice(0, 5);
 
     // ── Render ────────────────────────────────────────────────────
-    renderSummaryStats(totalQuestions, overallPct, streak);
+    renderSummaryStats(totalQuestions, overallPct, streak, questionsToday);
     renderSubjectBars(subjectStats);
     if (weakTopics.length) renderWeakTopics(weakTopics);
     renderRecentHistory(attempts.slice(0, 8));
@@ -117,6 +134,35 @@ async function init() {
   }
 }
 
+// ── Student selector ───────────────────────────────────────────────────────────
+
+/**
+ * Populates the student selector dropdown when a parent has multiple children.
+ * Switching student reloads the page with ?student=ID so all data refreshes.
+ */
+function populateStudentSelector(students, activeId) {
+  const selectorDiv = document.getElementById('student-selector');
+  const selectEl    = document.getElementById('student-select');
+  if (!selectorDiv || !selectEl) return;
+
+  selectEl.innerHTML = '';
+  students.forEach(function(s) {
+    const opt = document.createElement('option');
+    opt.value       = s.id;
+    opt.textContent = s.name + ' (' + s.level + ')';
+    if (s.id === activeId) opt.selected = true;
+    selectEl.appendChild(opt);
+  });
+
+  selectEl.addEventListener('change', function() {
+    const params = new URLSearchParams(window.location.search);
+    params.set('student', selectEl.value);
+    window.location.search = params.toString();
+  });
+
+  selectorDiv.style.display = 'block';
+}
+
 // ── Stat renderers ─────────────────────────────────────────────────────────────
 
 function updateStudentLabel(student) {
@@ -124,16 +170,34 @@ function updateStudentLabel(student) {
   if (el) el.textContent = student.name || 'Student';
 }
 
-function renderSummaryStats(total, pct, streak) {
+function renderSummaryStats(total, pct, streak, questionsToday) {
   setText('stat-total',    total.toLocaleString());
   setText('stat-accuracy', pct + '%');
   setText('stat-streak',   streak + (streak === 1 ? ' day' : ' days'));
+  setText('stat-today',    questionsToday.toString());
 
   // Colour-code accuracy
   const accEl = document.getElementById('stat-accuracy');
   if (accEl) {
-    accEl.style.color = pct >= 80 ? 'var(--success)' : pct >= 60 ? 'var(--warning)' : 'var(--danger)';
+    accEl.style.color = pct >= 80 ? 'var(--success)' : pct >= 60 ? 'var(--amber)' : 'var(--danger)';
   }
+
+  // Animate mc-bar fills (width: 0 → target after short delay for CSS transition)
+  const bars = [
+    { id: 'bar-total',    target: Math.min(100, Math.round((total / 500) * 100)) },
+    { id: 'bar-accuracy', target: pct },
+    { id: 'bar-streak',   target: Math.min(100, Math.round((streak / 30) * 100)) },
+    { id: 'bar-today',    target: Math.min(100, Math.round((questionsToday / 20) * 100)) },
+  ];
+  setTimeout(function() {
+    bars.forEach(function(bar) {
+      const el = document.getElementById(bar.id);
+      if (el) {
+        el.style.transition = 'width 1.1s cubic-bezier(0.4, 0, 0.2, 1)';
+        el.style.width      = bar.target + '%';
+      }
+    });
+  }, 200);
 }
 
 function renderSubjectBars(stats) {
