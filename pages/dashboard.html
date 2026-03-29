@@ -10,14 +10,20 @@
 </head>
 <body>
 
-  <nav class="dashboard-nav">
-    <a href="/pages/dashboard.html" class="navbar-logo"><img src="../assets/logo.svg" width="32" height="32" alt="" aria-hidden="true" style="border-radius:8px;flex-shrink:0;">
-    Superholic Lab</a>
-    <div class="nav-right" style="display:flex;align-items:center;gap:var(--space-4)">
-      <span class="plan-badge" id="planBadge"></span>
-      <button class="btn-signout" onclick="handleSignOut()">Sign out</button>
+  <header class="navbar is-scrolled">
+    <div class="container">
+      <nav class="navbar-inner">
+        <a href="/pages/dashboard.html" class="navbar-logo">
+          <img src="../assets/logo.svg" width="32" height="32" alt="" aria-hidden="true" style="border-radius:8px;flex-shrink:0;">
+          Superholic Lab
+        </a>
+        <div class="navbar-actions">
+          <span class="plan-badge" id="planBadge"></span>
+          <button class="btn-signout" onclick="handleSignOut()">Sign out</button>
+        </div>
+      </nav>
     </div>
-  </nav>
+  </header>
 
   <div class="trial-banner" id="trialBanner" style="display:none">
     <span>🎁 <strong id="trialDaysLeft"></strong> left in your free trial</span>
