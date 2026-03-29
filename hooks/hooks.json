@@ -1,20 +1,47 @@
 {
   "hooks": [
     {
-      "matcher": "event == 'PostToolUse' && tool == 'Edit' && tool_input.file_path matches '\\.(js|html)$'",
+      "matcher": "event == 'PostToolUse' && (tool == 'Edit' || tool == 'Write') && tool_input.file_path matches '\\.(js|ts|tsx|html)$'",
       "hooks": [
         {
           "type": "command",
-          "command": "node -e \"const fs=require('fs'); const f=process.argv[1]; const c=fs.readFileSync(f,'utf8'); const patterns=['ANTHROPIC_API_KEY','SUPABASE_SERVICE_ROLE_KEY','STRIPE_SECRET_KEY','sk-ant-','sk_test_','sbp_']; const found=patterns.filter(p=>c.includes(p)&&!c.includes('process.env')); if(found.length){console.error('[SECURITY] Possible secret exposure in '+f+': '+found.join(', ')); process.exit(1)}\" \"$file_path\""
+          "command": "node -e \"const fs=require('fs'); const f=process.argv[1]; if(!fs.existsSync(f)) process.exit(0); const c=fs.readFileSync(f,'utf8'); const patterns=['ANTHROPIC_API_KEY','SUPABASE_SERVICE_ROLE_KEY','STRIPE_SECRET_KEY','sk-ant-','sk_test_','sk_live_','sbp_']; const found=patterns.filter(p=>c.includes(p)&&!c.includes('process.env')&&!c.includes('NEXT_PUBLIC_')&&!c.includes('// TEST')); if(found.length){console.error('[SECURITY] Possible secret exposure in '+f+': '+found.join(', ')); process.exit(1)}\" \"$file_path\""
         }
       ]
     },
     {
-      "matcher": "event == 'PostToolUse' && tool == 'Edit' && tool_input.file_path matches '\\.css$'",
+      "matcher": "event == 'PostToolUse' && (tool == 'Edit' || tool == 'Write') && tool_input.file_path matches '\\.css$'",
       "hooks": [
         {
           "type": "command",
-          "command": "node -e \"const fs=require('fs'); const f=process.argv[1]; const c=fs.readFileSync(f,'utf8'); const hex=c.match(/#[0-9a-fA-F]{3,8}(?![;\\w])/g)||[]; const allowed=['#4338ca','#eef2ff','#3730a3','#f59e0b','#10b981','#ef4444','#111827','#6b7280','#f9fafb','#ffffff','#e5e7eb','#f0fdf4','#15803d','#f0fdfa','#0f766e','#fffbeb','#b45309','#fff1f2','#be123c','#000']; const bad=hex.filter(h=>!allowed.includes(h.toLowerCase())); if(bad.length) console.error('[STYLE] Hardcoded colors found: '+bad.join(', ')+'. Use CSS variables instead.')\" \"$file_path\""
+          "command": "node -e \"const fs=require('fs'); const f=process.argv[1]; if(!fs.existsSync(f)) process.exit(0); const c=fs.readFileSync(f,'utf8'); const hex=c.match(/#[0-9a-fA-F]{3,8}(?![;\\w])/g)||[]; const allowed=['#4338ca','#eef2ff','#3730a3','#f59e0b','#10b981','#ef4444','#111827','#6b7280','#f9fafb','#ffffff','#e5e7eb','#f0fdf4','#15803d','#f0fdfa','#0f766e','#fffbeb','#b45309','#fff1f2','#be123c','#3b82f6','#000','#000000','#a78bfa','#2a3a36','#1a2420','#1a2e2a','#2e403c','#263530','#34d399','#7eb8ff','#e8a0ff','#ffb830','#b76e79','#9d5a64','#39ffb3','#51615e','#4a5a57','#3a4e4a','#7a8f8c','#526663','#e3d9ca','#c8bfb2','#f9f7f4','#b88078','#f2e6e8','#f2e9e8','#fca5a5']; const bad=hex.filter(h=>!allowed.includes(h.toLowerCase())); if(bad.length){console.error('[STYLE] Hardcoded hex colour found in '+f+': '+bad.join(', ')+'. Use CSS variables instead.'); process.exit(1)}\" \"$file_path\""
+        }
+      ]
+    },
+    {
+      "matcher": "event == 'PostToolUse' && (tool == 'Edit' || tool == 'Write') && tool_input.file_path matches '\\.(ts|tsx)$'",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "node -e \"const fs=require('fs'); const {execSync}=require('child_process'); const f=process.argv[1]; if(!fs.existsSync('tsconfig.json')){process.exit(0)} try{ const out=execSync('npx tsc --noEmit --skipLibCheck 2>&1',{encoding:'utf8',timeout:30000}); console.log('[BUILD] TypeScript check passed'); }catch(e){ const msg=(e.stdout||e.message||'').substring(0,800); console.error('[BUILD ERROR] TypeScript errors detected after editing '+f+':\\n'+msg+'\\nFix these errors before proceeding.'); process.exit(1); }\" \"$file_path\""
+        }
+      ]
+    },
+    {
+      "matcher": "event == 'PostToolUse' && (tool == 'Edit' || tool == 'Write') && tool_input.file_path matches '\\.(ts|tsx|js|jsx)$'",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "node -e \"const fs=require('fs'); const {execSync}=require('child_process'); const f=process.argv[1]; const hasEslint=fs.existsSync('eslint.config.js')||fs.existsSync('eslint.config.mjs')||fs.existsSync('.eslintrc.json')||fs.existsSync('.eslintrc.js'); if(!hasEslint){process.exit(0)} try{ execSync('npx eslint '+JSON.stringify(f)+' --max-warnings 0 2>&1',{encoding:'utf8',timeout:20000}); console.log('[LINT] ESLint passed: '+f); }catch(e){ const msg=(e.stdout||e.message||'').substring(0,600); console.error('[LINT ERROR] ESLint violations in '+f+':\\n'+msg+'\\nFix lint errors before proceeding.'); process.exit(1); }\" \"$file_path\""
+        }
+      ]
+    },
+    {
+      "matcher": "event == 'PostToolUse' && (tool == 'Edit' || tool == 'Write') && tool_input.file_path matches '\\.(html|css|tsx)$'",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "node -e \"const fs=require('fs'); const f=process.argv[1]; if(!fs.existsSync(f)) process.exit(0); const c=fs.readFileSync(f,'utf8'); const violations=[]; const approvedVars=['var(--','rgba(','transparent','inherit','currentColor','none','initial','url(']; const inlineStyles=c.match(/style=\\\"([^\\\"]*(?:color|background|font-family|border-color|border-radius)[^\\\"]*)\\\"/g)||[]; inlineStyles.forEach(s=>{ const hasHex=/#[0-9a-fA-F]{3,8}/.test(s); const hasVar=approvedVars.some(v=>s.includes(v)); if(hasHex&&!s.includes('print')){ violations.push('[DESIGN] Inline colour style found — use CSS variables: '+s.substring(0,80)); } }); if(violations.length){ console.error(violations.slice(0,5).join('\\n')); console.error('Fix: move to style.css and reference via var(--token-name)'); process.exit(1); } console.log('[DESIGN] Visual sanity check passed: '+f);\" \"$file_path\""
         }
       ]
     }

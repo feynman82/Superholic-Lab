@@ -7,32 +7,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/style.css" />
-  <style>
-    body { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--bg); padding: 2rem 1rem; }
-    .setup-card { background: var(--surface); border-radius: 1.25rem; padding: 2.5rem 2rem; max-width: 480px; width: 100%; box-shadow: var(--shadow-neo); border: 1.5px solid var(--glass-border); }
-    .step-indicator { display: flex; gap: .75rem; margin-bottom: 2rem; }
-    .step-dot { height: 6px; border-radius: 3px; flex: 1; background: var(--border); transition: background .3s; }
-    .step-dot.active { background: var(--primary); }
-    .setup-title { font-size: 1.5rem; font-weight: 800; color: var(--text); margin-bottom: .5rem; }
-    .setup-sub { color: var(--text-muted); margin-bottom: 2rem; font-size: .95rem; }
-    .form-group { margin-bottom: 1.25rem; }
-    label { display: block; font-size: .875rem; font-weight: 600; color: var(--text); margin-bottom: .4rem; }
-    input, select { width: 100%; padding: .75rem 1rem; border: 1.5px solid var(--border); border-radius: .625rem; font-family: inherit; font-size: 1rem; background: rgba(245,242,232,0.06); color: var(--text); outline: none; transition: border-color .2s; box-sizing: border-box; }
-    input:focus, select:focus { border-color: var(--mint); }
-    select option { background: #2A3A36; color: var(--text); }
-    .btn-primary { width: 100%; padding: .875rem; background: var(--primary); color: #2A3A36; font-weight: 700; font-size: 1rem; border: none; border-radius: .625rem; cursor: pointer; margin-top: .5rem; transition: opacity .2s, transform .15s; box-shadow: var(--shadow-neo); font-family: inherit; }
-    .btn-primary:hover { opacity: .9; transform: translate(-1px,-1px); }
-    .btn-primary:disabled { opacity: .5; cursor: not-allowed; transform: none; }
-    .summary-card { background: rgba(245,242,232,0.04); border-radius: .875rem; padding: 1.5rem; margin-bottom: 1.5rem; border: 1.5px solid var(--border); }
-    .summary-row { display: flex; justify-content: space-between; padding: .5rem 0; border-bottom: 1px solid var(--border); font-size: .9rem; }
-    .summary-row:last-child { border-bottom: none; }
-    .summary-label { color: var(--text-muted); }
-    .summary-value { font-weight: 600; color: var(--text); }
-    .trial-badge { display: inline-block; background: rgba(255,184,48,0.15); color: var(--amber); border: 1px solid rgba(255,184,48,0.3); border-radius: 99px; padding: .25rem .875rem; font-size: .8rem; font-weight: 700; margin-bottom: 1rem; }
-    .error-msg { color: #fca5a5; font-size: .875rem; margin-top: .5rem; display: none; }
-  </style>
 </head>
-<body>
+<body class="auth-page">
   <div class="setup-card">
     <div class="step-indicator">
       <div class="step-dot active" id="dot1"></div>
@@ -43,12 +19,12 @@
       <div class="setup-title">Add your child 👦</div>
       <div class="setup-sub">Tell us about the learner — we'll personalise the experience.</div>
       <div class="form-group">
-        <label for="childName">Child's name</label>
-        <input type="text" id="childName" placeholder="e.g. Kai" autocomplete="off" />
+        <label class="form-label" for="childName">Child's name</label>
+        <input class="form-input" type="text" id="childName" placeholder="e.g. Kai" autocomplete="off" />
       </div>
       <div class="form-group">
-        <label for="childLevel">Primary level</label>
-        <select id="childLevel">
+        <label class="form-label" for="childLevel">Primary level</label>
+        <select class="form-select" id="childLevel">
           <option value="">Select level…</option>
           <option value="Primary 1">Primary 1</option>
           <option value="Primary 2">Primary 2</option>
@@ -59,8 +35,8 @@
         </select>
       </div>
       <div class="form-group" id="subjectGroup" style="display:none">
-        <label for="childSubject">Subject</label>
-        <select id="childSubject">
+        <label class="form-label" for="childSubject">Subject</label>
+        <select class="form-select" id="childSubject">
           <option value="">Select subject…</option>
           <option value="Mathematics">Mathematics</option>
           <option value="Science">Science</option>
@@ -68,7 +44,7 @@
         </select>
       </div>
       <p class="error-msg" id="step1Error"></p>
-      <button class="btn-primary" id="step1Btn" onclick="submitStep1()">Continue →</button>
+      <button class="btn btn-primary btn-full" id="step1Btn" onclick="submitStep1()">Continue →</button>
     </div>
 
     <div id="step2" style="display:none">
@@ -76,7 +52,7 @@
       <div class="setup-sub">Here's a summary of your account.</div>
       <div id="trialBadge" class="trial-badge"></div>
       <div class="summary-card" id="summaryCard"></div>
-      <button class="btn-primary" onclick="window.location.href='/pages/subjects.html'">Start Practising →</button>
+      <button class="btn btn-primary btn-full" onclick="window.location.href='/pages/subjects.html'">Start Practising →</button>
     </div>
   </div>
 

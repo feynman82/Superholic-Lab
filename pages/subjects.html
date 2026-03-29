@@ -454,14 +454,14 @@
         editing:      'Editing',
       };
 
-      /* Dot colours per type */
+      /* Dot colours per type — reference CSS tokens, never hardcode hex */
       const TYPE_COLOURS = {
-        mcq:          '#4338ca',
-        short_ans:    '#0891b2',
-        word_problem: '#059669',
-        open_ended:   '#7c3aed',
-        cloze:        '#d97706',
-        editing:      '#dc2626',
+        mcq:          'var(--type-mcq)',
+        short_ans:    'var(--type-short-ans)',
+        word_problem: 'var(--type-word-prob)',
+        open_ended:   'var(--type-open)',
+        cloze:        'var(--type-cloze)',
+        editing:      'var(--type-editing)',
       };
 
       /* Available question types per subject:level (based on existing question bank files) */
@@ -624,7 +624,7 @@
             allChip.className = 'topic-btn';
             const allDot = document.createElement('span');
             allDot.className = 'type-chip-dot';
-            allDot.style.background = '#6b7280';
+            allDot.style.background = 'var(--text-secondary)';
             allChip.appendChild(allDot);
             allChip.appendChild(document.createTextNode('All Types'));
             allChip.addEventListener('click', function (ev) {
@@ -641,7 +641,7 @@
 
               const dot = document.createElement('span');
               dot.className = 'type-chip-dot';
-              dot.style.background = TYPE_COLOURS[t] || '#6b7280';
+              dot.style.background = TYPE_COLOURS[t] || 'var(--text-secondary)';
               chip.appendChild(dot);
               chip.appendChild(document.createTextNode(TYPE_LABELS[t] || t));
 
