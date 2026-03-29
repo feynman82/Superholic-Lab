@@ -1,6 +1,6 @@
 ---
 name: question-factory
-description: "Complete workflow for generating MOE-aligned question content across all 6 PSLE exam types. Read this skill before creating any question content."
+description: "Complete workflow for generating MOE-aligned question content across all 6 PSLE exam types. Includes deduplication against existing question bank. Read this skill before creating any question content."
 origin: Superholic Lab
 ---
 
@@ -16,13 +16,50 @@ Every question produced must pass through this skill's pipeline.
 - Any content is being added to `data/questions/` files
 - AI tutor needs to generate practice questions on the fly
 
+## CRITICAL: Deduplication Workflow
+
+Before generating ANY new questions:
+
+### Step 0: Read Existing Content
+1. Check if the target file exists: `data/questions/{level}-{subject}-{topic}.json`
+2. If it exists, READ THE ENTIRE FILE first
+3. Extract all existing question IDs into a set
+4. Extract all existing sub_topics to understand what's already covered
+5. Check `data/questions/MANIFEST.md` for the broader inventory
+
+### Step 0b: Check Aggregate Files
+Also check if questions exist in the aggregate file:
+- `data/questions/{level}-{subject}.json`
+These may contain questions not yet split into topic-specific files.
+Extract IDs from aggregates too.
+
+### Step 0c: ID Conflict Prevention
+- New IDs must NOT match any existing ID in the same level+subject
+- Use the format: `{level}-{subject}-{topic}-{number}`
+  e.g., `p4-math-frac-006` (if 001-005 exist)
+- Always start numbering AFTER the highest existing number
+- For aggregate files with old ID formats (e.g., `p4m-eq01`),
+  do NOT reuse those patterns — use the new format for new questions
+
+### Step 0d: Content Overlap Prevention
+- Read the question_text of existing questions
+- Do NOT generate questions that test the exact same concept
+  with the same numbers/scenario
+- DO generate questions testing the same sub_topic with
+  DIFFERENT scenarios, numbers, and difficulty levels
+- Example: if a fraction addition question uses 1/3 + 1/4,
+  generate one using 2/5 + 1/3 instead
+
 ## Pre-flight Checklist
 
 Before generating ANY question:
-1. Confirm: subject, level, topic, sub_topic, difficulty
-2. Read the Master Question Template: `C:\SLabDrive\01 - Platform Intelligence\Master_Question_Template.md`
-3. Verify the topic exists in MOE syllabus (check project knowledge PDFs)
-4. Determine the correct question type(s) for this subject
+1. ☐ Read existing questions in target file (Step 0)
+2. ☐ Read existing questions in aggregate file (Step 0b)
+3. ☐ Confirm: subject, level, topic, sub_topic, difficulty
+4. ☐ Read the Master Question Template
+5. ☐ Verify topic exists in MOE syllabus (project knowledge PDFs)
+6. ☐ Determine correct question type(s) for this subject
+7. ☐ Check MANIFEST.md for gaps that need filling
 
 ## Type Selection Matrix
 
@@ -34,7 +71,7 @@ Before generating ANY question:
 
 ## Universal Base Schema (ALL types)
 
-Every question object MUST have these fields — no exceptions:
+Every question object MUST have these fields:
 
 ```json
 {
@@ -54,14 +91,14 @@ Every question object MUST have these fields — no exceptions:
 ```
 
 ### Field Rules
-- **id**: format `{level_short}-{subject_short}-{topic_short}-{number}` e.g. `p4-math-frac-001`
+- **id**: `{level_short}-{subject_short}-{topic_short}-{number}` e.g. `p4-math-frac-006`
 - **subject**: exactly `Mathematics` | `Science` | `English`
-- **level**: exactly `Primary 2` | `Primary 3` | `Primary 4` | `Primary 5` | `Primary 6`
-- **difficulty**: exactly `Foundation` | `Standard` | `Advanced` | `HOTS` (capital H)
+- **level**: exactly `Primary 2` | `Primary 3` | `Primary 4` | etc.
+- **difficulty**: exactly `Foundation` | `Standard` | `Advanced` | `HOTS`
 - **type**: exactly `mcq` | `short_ans` | `word_problem` | `open_ended` | `cloze` | `editing`
-- **marks**: integer 1-5, based on MOE mark allocation for the exam paper
-- **worked_solution**: MUST have numbered steps (Step 1, Step 2, etc.)
-- **examiner_note**: string or null. Required for Advanced/HOTS. Optional for Foundation/Standard.
+- **marks**: integer 1-5
+- **worked_solution**: MUST have numbered steps
+- **examiner_note**: Required for Advanced/HOTS. Optional for Foundation/Standard.
 
 ## Type-Specific Schemas
 
@@ -70,192 +107,93 @@ Every question object MUST have these fields — no exceptions:
 {
   "options": ["text A", "text B", "text C", "text D"],
   "correct_answer": "A" | "B" | "C" | "D",
-  "wrong_explanations": {
-    "B": "specific misconception for option B",
-    "C": "specific misconception for option C",
-    "D": "specific misconception for option D"
-  }
+  "wrong_explanations": { "B": "...", "C": "...", "D": "..." }
 }
 ```
-CRITICAL RULES:
-- Options array has exactly 4 strings
-- correct_answer is the LETTER (A/B/C/D), NOT the text
-- wrong_explanations has exactly 3 keys (the 3 wrong letters)
-- Science/English options must be FULL SENTENCES
-- Maths options can be short numerical values
-- Each wrong explanation must name the SPECIFIC misconception
+Badge = array index (0→A). Science/English options = FULL SENTENCES.
 
 ### short_ans
 ```json
-{
-  "correct_answer": "282",
-  "accept_also": ["282.0"]
-}
+{ "correct_answer": "282", "accept_also": ["282.0"] }
 ```
-- accept_also: array of alternative correct forms (empty array if none)
-- For fractions: include both forms, e.g. correct_answer: "2/3", accept_also: ["0.667", "0.67"]
 
 ### word_problem
 ```json
 {
   "parts": [
-    {
-      "label": "(a)",
-      "question": "How many pineapple tarts did she give away?",
-      "marks": 2,
-      "correct_answer": "35",
-      "worked_solution": "1/3 of 60 = 20, 1/4 of 60 = 15, total = 35"
-    },
-    {
-      "label": "(b)",
-      "question": "How many does Auntie Mei have left?",
-      "marks": 2,
-      "correct_answer": "25",
-      "worked_solution": "60 - 35 = 25"
-    }
+    { "label": "(a)", "question": "...", "marks": 2, "correct_answer": "35", "worked_solution": "..." }
   ]
 }
 ```
-- Parts array with at least 2 sub-questions
-- Each part has its own marks, correct_answer, worked_solution
-- Total marks = sum of part marks
-- NOT auto-graded in quiz engine (show model answer)
 
 ### open_ended (Science)
 ```json
-{
-  "keywords": ["heat", "flows", "hotter", "cooler", "surrounding air"],
-  "model_answer": "The Milo was hotter than the surrounding air. Heat flows from a hotter object to a cooler object."
-}
+{ "keywords": ["heat", "flows", "hotter"], "model_answer": "..." }
 ```
-- keywords: array of strings the student MUST use for full marks
-- model_answer: the ideal full-marks answer
-- NOT auto-graded (show model answer with keywords highlighted)
 
 ### cloze (English)
 ```json
 {
-  "passage": "Last Saturday, Mei Ling [1] to the library with her mother. She [2] looking for a book.",
-  "blanks": [
-    {
-      "number": 1,
-      "options": ["go", "goes", "went", "going"],
-      "correct_answer": "C",
-      "explanation": "'Last Saturday' = past tense. Past tense of 'go' is 'went'."
-    },
-    {
-      "number": 2,
-      "options": ["is", "was", "were", "are"],
-      "correct_answer": "B",
-      "explanation": "Past continuous: 'She was looking' (singular + past)."
-    }
-  ]
+  "passage": "...text with [1] and [2]...",
+  "blanks": [ { "number": 1, "options": ["..."], "correct_answer": "C", "explanation": "..." } ]
 }
 ```
-- Passage uses [1], [2], [3] etc for blanks
-- Each blank has 4 options, correct_answer as letter, explanation
-- Total marks = number of blanks
 
 ### editing (English)
 ```json
 {
   "passage_lines": [
-    {
-      "line_number": 1,
-      "text": "Ahmad and his friends was playing football in the",
-      "underlined_word": "was",
-      "has_error": true,
-      "correct_word": "were",
-      "explanation": "Plural subject 'Ahmad and his friends' needs 'were'."
-    },
-    {
-      "line_number": 2,
-      "text": "school field yesterday. They was having so",
-      "underlined_word": "having",
-      "has_error": false,
-      "correct_word": "having",
-      "explanation": "'Having' is correct — past continuous form."
-    }
+    { "line_number": 1, "text": "...", "underlined_word": "was", "has_error": true, "correct_word": "were", "explanation": "..." }
   ]
 }
 ```
-- Mix of errors and correct words (not all errors)
-- correct_word = same word if has_error is false
-- Total marks = number of lines with errors
 
 ## Singapore Context Library
 
-ALWAYS use Singapore-specific context in questions:
+**Names**: Ahmad, Mei Ling, Siti, Ravi, Wei Ming, Priya, Hafiz, Xiao Ling, Deepa, Jun Wei, Nurul, Kavitha, Zhi Hao, Aisha, Raj
 
-**Student names** (rotate through): Ahmad, Mei Ling, Siti, Ravi, Wei Ming, Priya, Hafiz, Xiao Ling, Deepa, Jun Wei, Nurul, Kavitha, Zhi Hao, Aisha, Raj
+**Food**: Milo, pineapple tarts, chicken rice, laksa, nasi lemak, satay, roti prata, kaya toast, kueh, curry puff, fishball noodles, ice kachang
 
-**Food/drinks**: Milo, pineapple tarts, chicken rice, laksa, nasi lemak, satay, roti prata, kaya toast, kueh, curry puff, fishball noodles, ice kachang
+**Places**: HDB flat, void deck, school canteen, hawker centre, MRT station, Sentosa, East Coast Park, Botanic Gardens, National Library
 
-**Places**: HDB flat, void deck, school canteen/tuck shop, hawker centre, MRT station, Sentosa, East Coast Park, Botanic Gardens, National Library, Zoo
+**Events**: Chinese New Year, Hari Raya, Deepavali, National Day, sports day, recess, CCA
 
-**Events**: Chinese New Year, Hari Raya, Deepavali, National Day, school sports day, recess, assembly, CCA (co-curricular activities)
+## Difficulty Targets (per 20-question file)
 
-**Currency**: Always SGD, use $ symbol. Realistic prices.
-
-## Difficulty Calibration
-
-| Level | What it means | Student profile |
-|-------|--------------|------------------|
-| Foundation | Straightforward application | Bottom 30%, needs practice |
-| Standard | Typical SA/CA exam question | Average student, 50th percentile |
-| Advanced | Multi-step, top 20% level | Strong student, Paper 2 style |
-| HOTS | Non-routine, creative reasoning | Top 10%, PSLE challenging section |
-
-**Target mix per file (20 questions minimum)**:
 - Foundation: 4 questions (20%)
 - Standard: 10 questions (50%)
 - Advanced: 4 questions (20%)
 - HOTS: 2 questions (10%)
 
-## Maths-Specific Rules
-
-- All arithmetic must be independently verified before output
-- Correct answers must be clean whole numbers or simple fractions
-- MCQ wrong options must represent real student mistakes, not random numbers
-- Show ALL working in worked_solution — examiners award method marks
-- Fractions as plain text: "7/12" not rendered fraction
-
-## Science-Specific Rules
-
-- MCQ options must be FULL SENTENCES (not fragments)
-- Every wrong option must explain the specific scientific misconception
-- Keywords from MOE marking scheme must appear in model answers
-- Use the format: [Observation] because [Scientific reason]
-
-## English-Specific Rules
-
-- Use Singapore Standard English (not British/American)
-- Grammar cloze passages must be age-appropriate narratives
-- Editing passages should test: subject-verb agreement, tenses, spelling, articles
-- Mix of errors and correct words in editing (don't make every line an error)
-
-## File Naming & Storage
+## File Storage
 
 Save to: `data/questions/{level}-{subject}-{topic}.json`
 
-Examples:
-- `p4-mathematics-fractions.json`
-- `p4-science-heat.json`
-- `p4-english-grammar.json`
-- `p2-mathematics-whole-numbers.json`
+If the file exists:
+1. Read existing array
+2. Append new questions (with new IDs)
+3. Write updated array back
+4. Update MANIFEST.md
 
-Each file = JSON array of question objects. Minimum 20 per file.
+If new file:
+1. Create with generated array
+2. Update MANIFEST.md
 
-## Post-Generation Verification
+NEVER add questions directly to aggregate files.
+Aggregate files should be regenerated from topic files.
 
-After generating, verify EVERY question:
+## Post-Generation Checklist
+
+- [ ] All IDs are unique (no conflicts with existing)
 - [ ] JSON is valid (parse it)
 - [ ] All base fields present
 - [ ] Type-specific fields present
 - [ ] correct_answer matches an actual option
 - [ ] worked_solution has numbered steps
-- [ ] wrong_explanations reference the specific misconception
-- [ ] No spelling errors
 - [ ] Singapore context used
 - [ ] Difficulty label matches actual complexity
-- [ ] Maths answers are arithmetically correct
+- [ ] Maths answers arithmetically verified
+- [ ] No content overlap with existing questions in same file
+- [ ] MANIFEST.md updated
+
+Commit: `feat: add {count} questions for {level} {subject} {topic}`
