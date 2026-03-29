@@ -4,22 +4,36 @@
 
 ## Summary
 
-Total topic-specific files: 19
-Total estimated questions: ~98
+Total topic-specific files: 22
+Total questions (topic files): 92
 Aggregate files (compilations): 7
-Levels covered: P2, P4, P5
-Levels with NO coverage: P1, P3, P5 English, P6, S1-S4
+Levels covered: P1, P2, P4, P5
+Levels with NO coverage: P3, P5 English, P6, S1-S4
 
 ## Coverage Matrix
 
 | Level | Mathematics | Science | English |
 |-------|-----------|---------|----------|
-| P1 | ✗ none | n/a | ✗ none |
+| P1 | **10q (1 topic)** | n/a | ✗ none |
 | P2 | 12q (5 topics) | n/a | 11q (3 topics) |
 | P3 | ✗ none | ✗ none | ✗ none |
-| P4 | 15q (4 topics) | 17q (4 topics) | 23q (5 topics) |
-| P5 | 8q (aggregate) | 12q (aggregate) | ✗ none |
+| P4 | 15q (4 topics) | 17q (4 topics) | 19q (5 topics) |
+| P5 | 18q (aggregate) | 15q (aggregate) | ✗ none |
 | P6 | ✗ none | ✗ none | ✗ none |
+
+## P1 Mathematics (10 questions)
+
+### p1-mathematics-whole-numbers.json (10 questions)
+- p1m-wn-001 | Counting Groups of Objects | Foundation | mcq
+- p1m-wn-002 | Ordering Numbers to 100 | Foundation | mcq
+- p1m-wn-003 | Comparing Numbers — Greater Than and Less Than | Foundation | mcq
+- p1m-wn-004 | Place Value — Tens and Ones | Standard | mcq
+- p1m-wn-005 | Number Bonds to 20 | Standard | mcq
+- p1m-wn-006 | Addition Without Regrouping | Standard | mcq
+- p1m-wn-007 | Number Patterns — Counting in Fives | Advanced | mcq
+- p1m-wn-008 | 1-Step Addition Word Problem | Standard | word_problem
+- p1m-wn-009 | 1-Step Subtraction Word Problem | Standard | word_problem
+- p1m-wn-010 | 2-Step Word Problem — Before and After | Advanced | word_problem
 
 ## P2 Mathematics (12 questions)
 

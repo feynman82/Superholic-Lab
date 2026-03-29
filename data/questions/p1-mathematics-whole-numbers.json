@@ -1,0 +1,256 @@
+[
+  {
+    "id": "p1m-wn-001",
+    "subject": "Mathematics",
+    "level": "Primary 1",
+    "topic": "Whole Numbers",
+    "sub_topic": "Counting Groups of Objects",
+    "difficulty": "Foundation",
+    "type": "mcq",
+    "marks": 1,
+    "question_text": "Ahmad is helping his mother count the kueh lapis pieces on the tray. There are 10 pieces in the first row, 10 pieces in the second row, and 7 pieces in the third row. How many kueh lapis pieces are there altogether?",
+    "options": [
+      "There are 27 kueh lapis pieces altogether.",
+      "There are 17 kueh lapis pieces altogether.",
+      "There are 37 kueh lapis pieces altogether.",
+      "There are 57 kueh lapis pieces altogether."
+    ],
+    "correct_answer": "A",
+    "wrong_explanations": {
+      "B": "17 adds only the second and third rows (10 + 7 = 17) and forgets the first row of 10 pieces. When counting in groups, you must add ALL the groups together: 10 + 10 + 7 = 27.",
+      "C": "37 is too large. Check each row again: first row = 10, second row = 10, third row = 7. Adding correctly: 10 + 10 = 20, then 20 + 7 = 27, not 37.",
+      "D": "57 cannot be correct because there are fewer than 40 pieces visible on the tray. A common mistake is to count the same row twice. Add each row once: 10 + 10 + 7 = 27."
+    },
+    "worked_solution": "Step 1: Count the first row: 10 pieces.\nStep 2: Count the second row: 10 pieces.\nStep 3: Count the third row: 7 pieces.\nStep 4: Add all the groups together: 10 + 10 + 7 = 27 pieces altogether."
+  },
+  {
+    "id": "p1m-wn-002",
+    "subject": "Mathematics",
+    "level": "Primary 1",
+    "topic": "Whole Numbers",
+    "sub_topic": "Ordering Numbers to 100",
+    "difficulty": "Foundation",
+    "type": "mcq",
+    "marks": 1,
+    "question_text": "Mei Ling has four number cards: 45, 17, 89, and 63. She wants to arrange them from the smallest number to the greatest number. Which arrangement is correct?",
+    "options": [
+      "17, 45, 89, 63",
+      "89, 63, 45, 17",
+      "17, 45, 63, 89",
+      "45, 17, 63, 89"
+    ],
+    "correct_answer": "C",
+    "wrong_explanations": {
+      "A": "This arrangement (17, 45, 89, 63) is almost correct but 89 and 63 are swapped. Since 63 is smaller than 89, it must come before 89. The correct order from smallest to greatest is: 17, 45, 63, 89.",
+      "B": "This arrangement (89, 63, 45, 17) goes from greatest to smallest, which is the opposite of what is asked. 'Smallest to greatest' means each number must be bigger than the one before it.",
+      "D": "This arrangement starts with 45 before 17, which is wrong. 17 is smaller than 45 so 17 must come first. Always look for the smallest number first: 17 < 45 < 63 < 89."
+    },
+    "worked_solution": "Step 1: Look at the tens digit of each number: 17 has 1 ten, 45 has 4 tens, 63 has 6 tens, 89 has 8 tens.\nStep 2: A smaller tens digit means a smaller number. Arrange the tens from least to greatest: 1, 4, 6, 8.\nStep 3: The correct order from smallest to greatest is: 17, 45, 63, 89."
+  },
+  {
+    "id": "p1m-wn-003",
+    "subject": "Mathematics",
+    "level": "Primary 1",
+    "topic": "Whole Numbers",
+    "sub_topic": "Comparing Numbers — Greater Than and Less Than",
+    "difficulty": "Foundation",
+    "type": "mcq",
+    "marks": 1,
+    "question_text": "Siti has 58 colour pencils and Ravi has 52 colour pencils. Which statement is correct?",
+    "options": [
+      "Ravi has more colour pencils than Siti.",
+      "Siti has more colour pencils than Ravi.",
+      "Siti has fewer colour pencils than Ravi.",
+      "Ravi and Siti have the same number of colour pencils."
+    ],
+    "correct_answer": "B",
+    "wrong_explanations": {
+      "A": "Ravi has 52 pencils and Siti has 58 pencils. Since 58 is greater than 52, Siti has more pencils, not Ravi. To compare, check the ones digit when the tens digit is the same: 8 ones > 2 ones, so 58 > 52.",
+      "C": "If Siti had fewer pencils, her number would be smaller. But 58 is greater than 52, so Siti has more pencils than Ravi, not fewer.",
+      "D": "58 and 52 are different numbers — 58 ≠ 52. The ones digits are different (8 ≠ 2), so they cannot have the same number of colour pencils."
+    },
+    "worked_solution": "Step 1: Compare the tens digits: Siti has 5 tens, Ravi has 5 tens. They are the same.\nStep 2: Since the tens are equal, compare the ones digits: Siti has 8 ones, Ravi has 2 ones.\nStep 3: 8 ones > 2 ones, so 58 > 52. Siti has more colour pencils than Ravi."
+  },
+  {
+    "id": "p1m-wn-004",
+    "subject": "Mathematics",
+    "level": "Primary 1",
+    "topic": "Whole Numbers",
+    "sub_topic": "Place Value — Tens and Ones",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "marks": 1,
+    "question_text": "Priya thinks of a 2-digit number. The digit in the tens place is 6 and the digit in the ones place is 4. What is Priya's number?",
+    "options": [
+      "Priya's number is 46.",
+      "Priya's number is 10.",
+      "Priya's number is 64.",
+      "Priya's number is 604."
+    ],
+    "correct_answer": "C",
+    "wrong_explanations": {
+      "A": "46 has 4 in the tens place and 6 in the ones place — the digits are reversed. The tens digit is the one written on the left. The question says the tens digit is 6 and the ones digit is 4, so the number is 64, not 46.",
+      "B": "10 means 1 ten and 0 ones. This does not match the given digits (6 tens and 4 ones). The correct number with 6 in the tens place and 4 in the ones place is 64.",
+      "D": "604 is a 3-digit number (it has hundreds, tens, and ones). The question asks for a 2-digit number. 6 tens and 4 ones makes the 2-digit number 64."
+    },
+    "worked_solution": "Step 1: Identify the tens digit: 6. This represents 6 tens = 60.\nStep 2: Identify the ones digit: 4. This represents 4 ones = 4.\nStep 3: Write the number: 60 + 4 = 64."
+  },
+  {
+    "id": "p1m-wn-005",
+    "subject": "Mathematics",
+    "level": "Primary 1",
+    "topic": "Whole Numbers",
+    "sub_topic": "Number Bonds to 20",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "marks": 1,
+    "question_text": "Wei Hao wants to collect 20 trading cards altogether. He already has 13 trading cards in his collection. How many more trading cards does Wei Hao need?",
+    "options": [
+      "Wei Hao needs 33 more trading cards.",
+      "Wei Hao needs 8 more trading cards.",
+      "Wei Hao needs 5 more trading cards.",
+      "Wei Hao needs 7 more trading cards."
+    ],
+    "correct_answer": "D",
+    "wrong_explanations": {
+      "A": "33 is the result of adding 20 + 13 = 33. Wei Hao already has 13 cards and needs to reach 20 total, so he needs fewer cards than he already has. Use subtraction: 20 − 13 = 7.",
+      "B": "If Wei Hao gets 8 more cards, he would have 13 + 8 = 21 cards, which is 1 more than the 20 he needs. The correct number bond is 13 + ? = 20, and 20 − 13 = 7.",
+      "C": "If Wei Hao gets 5 more cards, he would have 13 + 5 = 18 cards, which is 2 short of his target. He needs 20 − 13 = 7 more cards, not 5."
+    },
+    "worked_solution": "Step 1: Use a number bond. The whole is 20. One known part is 13. Find the missing part.\nStep 2: Missing part = Whole − Known part = 20 − 13.\nStep 3: Count back from 20: 20 − 13 = 7. Wei Hao needs 7 more trading cards."
+  },
+  {
+    "id": "p1m-wn-006",
+    "subject": "Mathematics",
+    "level": "Primary 1",
+    "topic": "Whole Numbers",
+    "sub_topic": "Addition Without Regrouping",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "marks": 1,
+    "question_text": "Nurul's mother buys 34 curry puffs and 25 chicken wings from the school canteen tuck shop. How many snacks does she buy altogether?",
+    "options": [
+      "She buys 59 snacks altogether.",
+      "She buys 69 snacks altogether.",
+      "She buys 50 snacks altogether.",
+      "She buys 9 snacks altogether."
+    ],
+    "correct_answer": "A",
+    "wrong_explanations": {
+      "B": "69 results from an error in the tens column. The tens digits are 3 and 2, which add up to 5 (not 6). The correct calculation: tens = 3 + 2 = 5, ones = 4 + 5 = 9, total = 59.",
+      "C": "50 counts only the tens (30 + 20 = 50) and forgets to add the ones (4 + 5 = 9). Always add both the tens AND the ones: 30 + 20 + 4 + 5 = 59.",
+      "D": "9 counts only the ones digits (4 + 5 = 9) and ignores the tens digits (30 + 20 = 50). The complete answer must include both: 50 + 9 = 59 snacks altogether."
+    },
+    "worked_solution": "Step 1: Add the tens: 30 + 20 = 50.\nStep 2: Add the ones: 4 + 5 = 9.\nStep 3: Combine the results: 50 + 9 = 59 snacks altogether."
+  },
+  {
+    "id": "p1m-wn-007",
+    "subject": "Mathematics",
+    "level": "Primary 1",
+    "topic": "Whole Numbers",
+    "sub_topic": "Number Patterns — Counting in Fives",
+    "difficulty": "Advanced",
+    "type": "mcq",
+    "marks": 2,
+    "question_text": "Jun Jie is completing a number pattern on his worksheet. The numbers are: 5, 10, 15, 20, ___. What is the missing number that completes the pattern?",
+    "options": [
+      "The missing number is 24.",
+      "The missing number is 25.",
+      "The missing number is 26.",
+      "The missing number is 30."
+    ],
+    "correct_answer": "B",
+    "wrong_explanations": {
+      "A": "24 does not follow the pattern. Check the difference between each pair: 10 − 5 = 5, 15 − 10 = 5, 20 − 15 = 5. The rule is to add 5 each time. 20 + 5 = 25, not 24.",
+      "C": "26 is only 1 more than the correct answer of 25. The rule is to add 5 each time, not add 6. Verify: 5, 10, 15, 20 — each step increases by exactly 5. The next number is 20 + 5 = 25.",
+      "D": "30 would be the number AFTER 25 in this pattern (25 + 5 = 30). The question asks for the NEXT number after 20, which is 25. There is still one step between 20 and 30."
+    },
+    "worked_solution": "Step 1: Find the pattern rule. Check the difference: 10 − 5 = 5, 15 − 10 = 5, 20 − 15 = 5.\nStep 2: The rule is: add 5 each time (counting in fives).\nStep 3: Apply the rule to find the missing number: 20 + 5 = 25.",
+    "examiner_note": "Always check the rule using TWO consecutive pairs to confirm it is consistent. State the rule clearly before applying it: 'The pattern adds 5 each time.' Examiners award full marks when working shows the identified rule and the calculation."
+  },
+  {
+    "id": "p1m-wn-008",
+    "subject": "Mathematics",
+    "level": "Primary 1",
+    "topic": "Whole Numbers",
+    "sub_topic": "1-Step Addition Word Problem",
+    "difficulty": "Standard",
+    "type": "word_problem",
+    "marks": 3,
+    "question_text": "Mei Ling has 24 stickers. Her friend Siti gives her 15 more stickers.",
+    "worked_solution": "See worked solutions for each part below.",
+    "parts": [
+      {
+        "label": "(a)",
+        "question": "How many stickers does Mei Ling have now?",
+        "marks": 2,
+        "correct_answer": "39",
+        "worked_solution": "Step 1: Mei Ling starts with 24 stickers.\nStep 2: Siti gives her 15 more stickers.\nStep 3: Total stickers = 24 + 15 = 39 stickers."
+      },
+      {
+        "label": "(b)",
+        "question": "Mei Ling gives 10 stickers to her brother. How many stickers does she have left?",
+        "marks": 1,
+        "correct_answer": "29",
+        "worked_solution": "Step 1: Mei Ling now has 39 stickers.\nStep 2: She gives away 10 stickers: 39 − 10 = 29 stickers."
+      }
+    ]
+  },
+  {
+    "id": "p1m-wn-009",
+    "subject": "Mathematics",
+    "level": "Primary 1",
+    "topic": "Whole Numbers",
+    "sub_topic": "1-Step Subtraction Word Problem",
+    "difficulty": "Standard",
+    "type": "word_problem",
+    "marks": 3,
+    "question_text": "Ravi has 32 stamps in his collection. He gives 14 stamps to his classmate at the void deck.",
+    "worked_solution": "See worked solutions for each part below.",
+    "parts": [
+      {
+        "label": "(a)",
+        "question": "How many stamps does Ravi have left?",
+        "marks": 2,
+        "correct_answer": "18",
+        "worked_solution": "Step 1: Ravi starts with 32 stamps.\nStep 2: He gives away 14 stamps.\nStep 3: Stamps remaining = 32 − 14 = 18 stamps."
+      },
+      {
+        "label": "(b)",
+        "question": "His classmate already had 20 stamps before receiving Ravi's stamps. How many stamps does his classmate have now?",
+        "marks": 1,
+        "correct_answer": "34",
+        "worked_solution": "Step 1: The classmate had 20 stamps and received 14 more stamps from Ravi.\nStep 2: Total = 20 + 14 = 34 stamps."
+      }
+    ]
+  },
+  {
+    "id": "p1m-wn-010",
+    "subject": "Mathematics",
+    "level": "Primary 1",
+    "topic": "Whole Numbers",
+    "sub_topic": "2-Step Word Problem — Before and After",
+    "difficulty": "Advanced",
+    "type": "word_problem",
+    "marks": 4,
+    "question_text": "Priya has 45 beads. She buys 20 more beads at the school bookshop. Then she gives 18 beads to her sister Nurul to make a friendship bracelet.",
+    "worked_solution": "See worked solutions for each part below.",
+    "parts": [
+      {
+        "label": "(a)",
+        "question": "How many beads does Priya have after buying 20 more beads?",
+        "marks": 2,
+        "correct_answer": "65",
+        "worked_solution": "Step 1 (Before-After model): Before = 45 beads. Priya buys 20 more.\nStep 2: After buying = 45 + 20 = 65 beads.\nStep 3: Priya has 65 beads after her purchase."
+      },
+      {
+        "label": "(b)",
+        "question": "How many beads does Priya have at the end after giving some to Nurul?",
+        "marks": 2,
+        "correct_answer": "47",
+        "worked_solution": "Step 1: Priya now has 65 beads (from part a).\nStep 2: She gives 18 beads to Nurul.\nStep 3: Beads remaining = 65 − 18 = 47 beads."
+      }
+    ],
+    "examiner_note": "For 2-step word problems, always draw a Before-After model and show working for BOTH steps. Each step earns marks separately — a correct answer without working may not receive full credit."
+  }
+]
