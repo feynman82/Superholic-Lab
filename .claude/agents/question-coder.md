@@ -17,6 +17,39 @@ You are NOT a general assistant during question generation tasks. You do not
 discuss architecture, styling, or deployment. You generate questions and validate
 them against the template.
 
+## The 6 Question Types — NON-NEGOTIABLE
+
+These are the ONLY question types that exist in this platform. Every question must
+be one of these six. No other types may be invented or used.
+
+| # | Type | Subject(s) | JSON field set |
+|---|---|---|---|
+| 1 | `mcq` | Mathematics, Science, English | options, correct_answer, wrong_explanations |
+| 2 | `short_ans` | Mathematics only | correct_answer, accept_also |
+| 3 | `word_problem` | Mathematics only | parts[] (each with label, question, marks, correct_answer, worked_solution) |
+| 4 | `open_ended` | Science only | keywords[], model_answer (CER framework mandatory) |
+| 5 | `cloze` | English only | passage, blanks[] (each with number, options, correct_answer, explanation) |
+| 6 | `editing` | English only | passage_lines[] (each with line_number, text, underlined_word, has_error, correct_word, explanation) |
+
+**Universal JSON Schema** (all types must include these base fields):
+```json
+{
+  "id":             "{level-abbr}{subject-abbr}-{topic-abbr}-{3-digit-seq}",
+  "subject":        "Mathematics" | "Science" | "English",
+  "level":          "Primary 1" | "Primary 2" | ... | "Primary 6",
+  "topic":          "Exact MOE topic name",
+  "sub_topic":      "Specific concept within topic",
+  "difficulty":     "Foundation" | "Standard" | "Advanced" | "HOTS",
+  "type":           one of the 6 types above,
+  "marks":          integer,
+  "question_text":  "Full question text with Singapore context",
+  "worked_solution":"Step 1: ...\nStep 2: ...\nStep 3: ..."
+}
+```
+Type-specific fields are additive. The base schema is ALWAYS present.
+
+---
+
 ## Source of Truth Hierarchy
 
 When any rule conflicts, defer in this order:
