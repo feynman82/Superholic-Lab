@@ -1,0 +1,101 @@
+[
+  {
+    "id": "p3-sci-div-001",
+    "subject": "Science",
+    "level": "Primary 3",
+    "topic": "Diversity",
+    "sub_topic": "Identifying Living and Non-Living Things",
+    "difficulty": "Foundation",
+    "type": "mcq",
+    "marks": 1,
+    "question_text": "Wei Hao is on a class trip to the Botanic Gardens. He observes the following: a garden snail, a pebble, a mango tree, and a butterfly. Which of the following is NOT a living thing?",
+    "options": [
+      "The garden snail is not a living thing.",
+      "The pebble is not a living thing.",
+      "The mango tree is not a living thing.",
+      "The butterfly is not a living thing."
+    ],
+    "correct_answer": "B",
+    "wrong_explanations": {
+      "A": "The garden snail IS a living thing. Snails move, feed on plants, grow, reproduce by laying eggs, and respond to danger by retreating into their shell. These match the characteristics of living things.",
+      "C": "The mango tree IS a living thing. Trees grow taller over time, produce flowers and fruit to reproduce, make their own food through photosynthesis, and absorb water through their roots.",
+      "D": "The butterfly IS a living thing. Butterflies can fly (move), feed on nectar, grow through metamorphosis from a caterpillar, and lay eggs to reproduce — all characteristics of living things."
+    },
+    "worked_solution": "Step 1: Recall the characteristics of living things: they need food, water, and air; they grow; they reproduce; and they respond to changes in their environment.\nStep 2: Check each object against these characteristics.\n- Garden snail: feeds, grows, reproduces → living thing.\n- Pebble: does not eat, does not grow, does not reproduce → NOT a living thing.\n- Mango tree: makes food, grows, reproduces → living thing.\n- Butterfly: feeds, grows, reproduces → living thing.\nStep 3: The pebble is the only non-living thing."
+  },
+  {
+    "id": "p3-sci-div-002",
+    "subject": "Science",
+    "level": "Primary 3",
+    "topic": "Diversity",
+    "sub_topic": "Similarities Between Plants and Animals",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "marks": 2,
+    "question_text": "Mei Ling's science teacher asks the class which characteristic is shared by BOTH plants and animals. Which of the following statements is correct?",
+    "options": [
+      "Both plants and animals can move from one place to another.",
+      "Both plants and animals are able to reproduce.",
+      "Both plants and animals make their own food using sunlight.",
+      "Both plants and animals have roots to absorb water from the soil."
+    ],
+    "correct_answer": "B",
+    "wrong_explanations": {
+      "A": "Most plants cannot move from place to place. While plants may grow towards light (a slow response), they remain fixed in the ground. The ability to move from place to place is a characteristic of most animals, not plants.",
+      "C": "Only plants can make their own food through photosynthesis, using sunlight, water, and carbon dioxide. Animals do not have chlorophyll and cannot make their own food — they must eat other organisms.",
+      "D": "Only plants have roots to absorb water and minerals from the soil. Animals do not have roots — they obtain water by drinking or from the food they eat."
+    },
+    "worked_solution": "Step 1: List characteristics of plants: make own food (photosynthesis), have roots, reproduce, grow, respond slowly to light and water.\nStep 2: List characteristics of animals: cannot make own food, no roots, reproduce, grow, move from place to place.\nStep 3: Compare the two lists. The characteristic shared by BOTH plants and animals is the ability to reproduce — all living things produce offspring of the same kind."
+  },
+  {
+    "id": "p3-sci-div-003",
+    "subject": "Science",
+    "level": "Primary 3",
+    "topic": "Diversity",
+    "sub_topic": "Differences Between Plants and Animals",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "marks": 2,
+    "question_text": "Ahmad reads in his science textbook about how plants and animals are different. Which statement correctly describes a key difference between plants and animals?",
+    "options": [
+      "Plants can feel pain but animals cannot.",
+      "Animals need water to survive but plants do not.",
+      "Plants produce their own food using sunlight but animals cannot.",
+      "Animals can grow bigger over time but plants cannot."
+    ],
+    "correct_answer": "C",
+    "wrong_explanations": {
+      "A": "This is incorrect. Plants do not have a nervous system and are not able to feel pain. Animals have nerves and sensory organs that allow them to feel pain and respond rapidly to stimuli.",
+      "B": "Both plants and animals need water to survive. Water is essential for all living things — plants absorb water through their roots for photosynthesis, and animals drink water or absorb it from food.",
+      "D": "This is incorrect. Plants also grow bigger over time — trees, for example, can grow for hundreds of years and become very large. Growth over time is a characteristic shared by all living things."
+    },
+    "worked_solution": "Step 1: Think about what makes plants unique compared to animals.\nStep 2: Plants contain chlorophyll, which allows them to capture sunlight energy. They combine sunlight, water, and carbon dioxide to make their own food through photosynthesis. Animals lack chlorophyll and cannot do this.\nStep 3: The key difference is that plants make their own food using sunlight, but animals must consume other organisms to get energy."
+  },
+  {
+    "id": "p3-sci-div-004",
+    "subject": "Science",
+    "level": "Primary 3",
+    "topic": "Diversity",
+    "sub_topic": "Needs of Living Things",
+    "difficulty": "Standard",
+    "type": "open_ended",
+    "marks": 3,
+    "question_text": "Nurul placed two identical bean seeds in separate containers. She watered Seed A every day and placed it near a sunny window. She kept Seed B in a dark cupboard and did not water it. After two weeks, Seed A had grown into a healthy seedling but Seed B had not sprouted at all. Explain why Seed A was able to grow but Seed B was not able to grow.",
+    "keywords": ["water", "sunlight", "needs", "living things", "grow"],
+    "model_answer": "Seed A was able to grow because it received both water and sunlight, which are essential needs of living things. (CLAIM) Seed A was watered every day and placed near a sunny window, giving it access to water and light. Seed B was kept in a dark cupboard and was not watered, so it lacked both water and sunlight. (EVIDENCE) Living things need water and sunlight to carry out life processes such as making food and growing. Without water and sunlight, Seed B could not germinate or grow into a seedling. (REASONING)"
+  },
+  {
+    "id": "p3-sci-div-005",
+    "subject": "Science",
+    "level": "Primary 3",
+    "topic": "Diversity",
+    "sub_topic": "Characteristics of Living vs Non-Living Things",
+    "difficulty": "Advanced",
+    "type": "open_ended",
+    "marks": 3,
+    "question_text": "Ravi notices that a burning candle seems to share some features with living things. The flame grows larger when more wax is available, it flickers when wind blows, and it produces carbon dioxide gas. However, his teacher says a burning candle is NOT a living thing. Using what you know about the characteristics of living things, explain why a burning candle is NOT classified as a living thing.",
+    "keywords": ["reproduce", "grow", "food", "characteristics", "living", "non-living"],
+    "model_answer": "A burning candle is not a living thing because it cannot reproduce or grow by taking in food. (CLAIM) Although the flame flickers in the wind and grows larger with more wax, these are chemical reactions, not the responses and growth of a living organism. A candle does not eat, produce offspring, or increase in size by converting nutrients into body mass. Once the wax is used up, the flame goes out permanently. (EVIDENCE) Living things must be able to reproduce to create new living things, and they must grow by taking in food and water. A burning candle does not meet all the characteristics of living things, so it is classified as a non-living thing. (REASONING)",
+    "examiner_note": "Advanced questions often test whether students can apply the characteristics of living things to unexpected scenarios. A non-living object may appear to show one or two life characteristics (movement, producing waste) — the key is to check ALL characteristics: feed, grow, reproduce, respond, and move. If an object cannot reproduce and does not grow by taking in nutrients, it is not a living thing."
+  }
+]

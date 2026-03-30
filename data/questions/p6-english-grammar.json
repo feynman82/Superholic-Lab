@@ -1,0 +1,124 @@
+[
+  {
+    "id": "p6-eng-gr-001",
+    "subject": "English",
+    "level": "Primary 6",
+    "topic": "Grammar",
+    "sub_topic": "Passive Voice Construction",
+    "difficulty": "Foundation",
+    "type": "mcq",
+    "marks": 1,
+    "question_text": "Ahmad's teacher asks the class to identify which sentence is written in the CORRECT passive voice. Which sentence is correct?",
+    "options": [
+      "The science project were completed by Ahmad and his group.",
+      "The science project was completed by Ahmad and his group.",
+      "Ahmad and his group were completed the science project.",
+      "The science project had complete by Ahmad and his group."
+    ],
+    "correct_answer": "B",
+    "wrong_explanations": {
+      "A": "'The science project were completed' has a subject-verb agreement error. 'The science project' is singular, so it requires the singular verb 'was', not the plural 'were'. The correct passive form is: singular subject + was + past participle.",
+      "C": "This sentence places 'were completed' after the agent 'Ahmad and his group', which creates a grammatically incorrect structure. In passive voice, the correct word order is: Subject + was/were + past participle + by + agent.",
+      "D": "'Had complete' is grammatically incorrect. When using passive voice with past perfect tense, the structure must be: had + been + past participle (e.g., 'had been completed'). The word 'complete' must be in its past participle form 'completed', and 'been' is required."
+    },
+    "worked_solution": "Step 1: Recall the passive voice structure: Subject + was/were + past participle (+ by + agent).\nStep 2: Identify the subject: 'The science project' — this is singular.\nStep 3: A singular subject requires 'was', not 'were'.\nStep 4: The past participle of 'complete' is 'completed'.\nStep 5: Check option B: 'The science project was completed by Ahmad and his group.' — singular subject + was + past participle + by + agent. This is correct."
+  },
+  {
+    "id": "p6-eng-gr-002",
+    "subject": "English",
+    "level": "Primary 6",
+    "topic": "Grammar",
+    "sub_topic": "Subject-Verb Agreement — Neither...Nor",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "marks": 2,
+    "question_text": "Mei Ling's teacher writes this sentence on the whiteboard and asks the class to select the correct verb: 'Neither the teacher nor the pupils ___ ready for the school assembly.' Which option correctly completes the sentence?",
+    "options": [
+      "Neither the teacher nor the pupils was ready for the school assembly.",
+      "Neither the teacher nor the pupils is ready for the school assembly.",
+      "Neither the teacher nor the pupils were ready for the school assembly.",
+      "Neither the teacher nor the pupils are ready for the school assembly."
+    ],
+    "correct_answer": "D",
+    "wrong_explanations": {
+      "A": "'Was' is singular past tense. The sentence describes a general present situation with no past time marker. More importantly, in a 'neither...nor' sentence, the verb agrees with the subject nearer to it — 'the pupils' is plural, so the verb must also be plural.",
+      "B": "'Is' is singular present tense. In a 'neither...nor' sentence, the verb must agree with the subject closest to it. The subject closest to the verb is 'the pupils', which is plural. A plural subject requires the plural verb 'are', not the singular 'is'.",
+      "C": "'Were' is plural past tense. The sentence has no past time marker (such as 'yesterday' or 'last week'), so it describes a present general situation. The correct form should be present tense. 'Were' uses the right plural form but the wrong tense — 'are' is correct."
+    },
+    "worked_solution": "Step 1: Identify the grammatical rule for 'neither...nor': the verb agrees with the subject NEAREST to it (the one directly before the verb).\nStep 2: Identify the two subjects: 'the teacher' (singular) and 'the pupils' (plural).\nStep 3: The subject nearest to the verb is 'the pupils', which is plural.\nStep 4: The sentence describes a general present situation, so present tense is needed.\nStep 5: Plural subject in present tense → the verb 'are' is correct.\nStep 6: The correct sentence is: 'Neither the teacher nor the pupils are ready for the school assembly.'"
+  },
+  {
+    "id": "p6-eng-gr-003",
+    "subject": "English",
+    "level": "Primary 6",
+    "topic": "Grammar",
+    "sub_topic": "Past Perfect Tense",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "marks": 2,
+    "question_text": "Siti is writing a recount about her class outing to Sentosa. She wants to describe two events that both happened in the past, where one event was completed before the other. Which sentence uses the CORRECT tense?",
+    "options": [
+      "By the time the bus arrived, all the pupils already left the school gate.",
+      "By the time the bus arrived, all the pupils have already left the school gate.",
+      "By the time the bus arrived, all the pupils had already left the school gate.",
+      "By the time the bus arrived, all the pupils has already left the school gate."
+    ],
+    "correct_answer": "C",
+    "wrong_explanations": {
+      "A": "'Already left' uses simple past tense. When one past action is completed before another past action, the earlier action must use the past perfect tense (had + past participle), not the simple past. The correct form is 'had already left'.",
+      "B": "'Have already left' is present perfect tense, which is used for actions connected to the present moment. This sentence describes two past events (the bus arriving and the pupils leaving), so past perfect tense ('had already left') is required to show that the pupils left first.",
+      "D": "'Has already left' is present perfect tense with a singular third-person verb. 'All the pupils' is plural and the sentence is set entirely in the past. The correct past perfect form for a plural subject is 'had already left', not 'has already left'."
+    },
+    "worked_solution": "Step 1: Identify the two past events in the sentence.\n  - Event 1 (earlier): the pupils left the school gate.\n  - Event 2 (later): the bus arrived.\nStep 2: Apply the past perfect rule — the action that happened FIRST in the past uses past perfect tense: had + past participle.\nStep 3: 'Left' is the simple past of 'leave'. The past participle is also 'left'.\nStep 4: Past perfect form: 'had already left'.\nStep 5: The correct sentence is: 'By the time the bus arrived, all the pupils had already left the school gate.'"
+  },
+  {
+    "id": "p6-eng-gr-004",
+    "subject": "English",
+    "level": "Primary 6",
+    "topic": "Grammar",
+    "sub_topic": "Reported Speech — Converting Modal Verbs",
+    "difficulty": "Advanced",
+    "type": "mcq",
+    "marks": 2,
+    "question_text": "Ravi's teacher said to the class: 'You must submit your project by Friday.' Ravi wants to report what his teacher said. Which sentence correctly reports the teacher's words?",
+    "options": [
+      "The teacher said that they must submit their project by Friday.",
+      "The teacher told Ravi that he must submit his project by Friday.",
+      "The teacher told Ravi that he had to submit his project by Friday.",
+      "The teacher said Ravi that he has to submit his project by Friday."
+    ],
+    "correct_answer": "C",
+    "wrong_explanations": {
+      "A": "Two errors: (1) 'they' is incorrect — the teacher was speaking to the class including Ravi, so the pronoun reporting from Ravi's perspective should be 'he'. (2) In reported speech with a past reporting verb ('said'), the modal 'must' changes to 'had to'. 'Must' should not remain unchanged.",
+      "B": "The pronouns and structure are correct, but 'must' should change to 'had to' in reported speech when the reporting verb is in the past tense. In reported speech: 'must' → 'had to', 'will' → 'would', 'can' → 'could', 'may' → 'might'.",
+      "D": "Two errors: (1) 'said Ravi' is incorrect grammar — the verb 'say' cannot be directly followed by a person. Use 'told Ravi' instead. (2) 'Has to' uses present tense, but the reporting verb 'said' is past tense, so the modal must also shift back: 'must' → 'had to'."
+    },
+    "worked_solution": "Step 1: Identify the direct speech: 'You must submit your project by Friday.'\nStep 2: Change the reporting verb — 'said to the class' → 'told Ravi' (tell + person is correct).\nStep 3: Change the pronoun — 'you' → 'he' (reporting from Ravi's perspective).\nStep 4: Apply modal backshift — 'must' → 'had to' (in reported speech with past reporting verb).\nStep 5: Possessive pronoun — 'your' → 'his'.\nStep 6: Assembled reported speech: 'The teacher told Ravi that he had to submit his project by Friday.'",
+    "examiner_note": "Modal backshift rules for reported speech: must → had to | will → would | can → could | may → might. Also remember: 'say' takes a that-clause ('said that...') while 'tell' takes a person directly ('told Ravi that...'). Mixing these up is the most common error in P6 reported speech questions."
+  },
+  {
+    "id": "p6-eng-gr-005",
+    "subject": "English",
+    "level": "Primary 6",
+    "topic": "Grammar",
+    "sub_topic": "Error Identification in Complex Sentences — Tense Consistency",
+    "difficulty": "HOTS",
+    "type": "mcq",
+    "marks": 2,
+    "question_text": "Nurul's composition teacher asks her to identify the grammatical error in the underlined parts of this sentence: 'The bowl of chicken rice that [A] the two friends had ordered [B] looked delicious and [C] smelled wonderful when it [D] arrive at their table.' Which underlined part contains the error?",
+    "options": [
+      "Part A — 'had ordered' should be 'have ordered'.",
+      "Part B — 'looked delicious' should be 'look delicious'.",
+      "Part C — 'smelled wonderful' should be 'smell wonderful'.",
+      "Part D — 'arrive' should be 'arrived'."
+    ],
+    "correct_answer": "D",
+    "wrong_explanations": {
+      "A": "Part A is correct. 'Had ordered' uses past perfect tense, which is appropriate here because the ordering happened before the bowl arrived at the table — it was completed earlier in the past. Past perfect tense correctly shows this sequence of events.",
+      "B": "Part B is correct. 'Looked delicious' uses simple past tense, which is consistent with the past-tense narrative of the whole sentence. Since the scene happened in the past, 'looked' is the correct form — not the present tense 'look'.",
+      "C": "Part C is correct. 'Smelled wonderful' continues the simple past tense used in part B. Both 'looked' and 'smelled' are parallel descriptions of the bowl of chicken rice in the past, so 'smelled' is grammatically correct."
+    },
+    "worked_solution": "Step 1: Identify the overall tense of the sentence — the scene is set in the past (friends at a hawker centre).\nStep 2: Check Part A: 'had ordered' — past perfect, showing the ordering happened before arrival. Correct.\nStep 3: Check Part B: 'looked delicious' — simple past, consistent with the narrative. Correct.\nStep 4: Check Part C: 'smelled wonderful' — simple past, parallel with 'looked'. Correct.\nStep 5: Check Part D: 'arrive' — this is base form (present tense). The sentence is in the past, and 'arrive' must match the past tense of the rest of the sentence. It should be 'arrived'.\nStep 6: The error is in Part D — 'arrive' should be 'arrived'.",
+    "examiner_note": "For error-spotting questions, check all underlined parts systematically: (1) tense consistency throughout the sentence, (2) subject-verb agreement, (3) word form. The error here is tense — 'arrive' breaks the past-tense narrative. Reading the full sentence aloud often helps identify where the tense 'sounds wrong'."
+  }
+]

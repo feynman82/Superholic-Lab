@@ -35,7 +35,14 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git push:*)",
-      "Bash(vercel env:*)"
+      "Bash(vercel env:*)",
+      "Bash(find D:/Git/Superholic-Lab -type f \\\\\\(-name *.html -o -name *.tsx -o -name *.ts -o -name *.jsx -o -name *.js \\\\\\))",
+      "Bash(for f:*)",
+      "Bash(do echo:*)",
+      "Read(//d/Git/Superholic-Lab/**)",
+      "Bash(done)",
+      "Bash(grep -l \"bottom-nav\" pages/*.html)",
+      "Bash(python -c \":*)"
     ]
   },
   "enabledMcpjsonServers": [

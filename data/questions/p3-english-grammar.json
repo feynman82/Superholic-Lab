@@ -1,0 +1,155 @@
+[
+  {
+    "id": "p3-eng-gr-001",
+    "subject": "English",
+    "level": "Primary 3",
+    "topic": "Grammar",
+    "sub_topic": "Articles — a, an, the",
+    "difficulty": "Foundation",
+    "type": "mcq",
+    "marks": 1,
+    "question_text": "Ahmad is doing his English homework. His teacher asks the class to choose the sentence that uses the article 'an' correctly. Which sentence is correct?",
+    "options": [
+      "Ravi ate an bowl of kaya toast for breakfast before school.",
+      "Mei Ling found an umbrella left behind in the school canteen.",
+      "Ahmad spotted an cat sleeping at the void deck downstairs.",
+      "Siti wore an yellow dress to the Deepavali celebration."
+    ],
+    "correct_answer": "B",
+    "wrong_explanations": {
+      "A": "'An bowl' is incorrect. The article 'an' is used before words that begin with a vowel SOUND. 'Bowl' begins with the consonant sound /b/, so the correct article is 'a bowl', not 'an bowl'.",
+      "C": "'An cat' is incorrect. 'Cat' begins with the consonant sound /k/, so the correct article is 'a cat'. The article 'an' is only used before vowel sounds, such as 'an apple' or 'an umbrella'.",
+      "D": "'An yellow' is incorrect. Although the letter 'y' can sometimes act as a vowel, the word 'yellow' begins with the consonant sound /j/ (as in 'yes'). The correct article is 'a yellow dress'."
+    },
+    "worked_solution": "Step 1: Recall the rule — use 'an' before words that begin with a VOWEL SOUND (a, e, i, o, u sounds). Use 'a' before words that begin with a CONSONANT SOUND.\nStep 2: Check each option's key word:\n- bowl → begins with /b/ (consonant) → use 'a'\n- umbrella → begins with /ʌ/ (vowel sound) → use 'an' ✓\n- cat → begins with /k/ (consonant) → use 'a'\n- yellow → begins with /j/ (consonant sound) → use 'a'\nStep 3: Only option B uses 'an' correctly before a word beginning with a vowel sound."
+  },
+  {
+    "id": "p3-eng-gr-002",
+    "subject": "English",
+    "level": "Primary 3",
+    "topic": "Grammar",
+    "sub_topic": "Comparative Adjectives",
+    "difficulty": "Standard",
+    "type": "mcq",
+    "marks": 2,
+    "question_text": "Nurul's English teacher asks the class to complete this sentence with the correct form of the adjective: 'The chicken rice at the new hawker centre is ___ than the one near my school.' Which option correctly completes the sentence?",
+    "options": [
+      "The chicken rice at the new hawker centre is more delicious than the one near my school.",
+      "The chicken rice at the new hawker centre is deliciouser than the one near my school.",
+      "The chicken rice at the new hawker centre is most delicious than the one near my school.",
+      "The chicken rice at the new hawker centre is delicious than the one near my school."
+    ],
+    "correct_answer": "A",
+    "wrong_explanations": {
+      "B": "'Deliciouser' is not a real word. For adjectives with three or more syllables (like 'delicious'), we do not add '-er' to form the comparative. Instead, we place 'more' before the adjective: 'more delicious'.",
+      "C": "'Most delicious' is the superlative form, used when comparing three or more things (e.g., 'the most delicious of all the stalls'). When comparing two things using 'than', the comparative form 'more delicious' is required.",
+      "D": "The base form 'delicious' cannot be used directly before 'than' in a comparison. A comparison using 'than' always requires the comparative form, which for long adjectives like 'delicious' is 'more delicious than'."
+    },
+    "worked_solution": "Step 1: Identify the adjective — 'delicious'.\nStep 2: Count the syllables: de-li-cious = 3 syllables. This is a long adjective.\nStep 3: Apply the rule — for adjectives with 2 or more syllables, form the comparative by adding 'more' before the adjective: 'more delicious'.\nStep 4: The sentence compares two things (two chicken rice stalls) and uses 'than', confirming the comparative form is needed.\nStep 5: The correct sentence uses 'more delicious than'."
+  },
+  {
+    "id": "p3-eng-gr-003",
+    "subject": "English",
+    "level": "Primary 3",
+    "topic": "Grammar",
+    "sub_topic": "Simple Past Tense — Irregular Verbs",
+    "difficulty": "Standard",
+    "type": "cloze",
+    "marks": 3,
+    "question_text": "Read the passage. Choose the best word for each blank. Write the letter of your answer.",
+    "passage": "Last Saturday, Wei Hao and his family [1] to East Coast Park for a picnic. They [2] sandwiches and Milo to share under the trees. Wei Hao [3] very happy spending the afternoon outdoors with his family.",
+    "blanks": [
+      {
+        "number": 1,
+        "options": ["go", "goes", "went", "going"],
+        "correct_answer": "C",
+        "explanation": "Past tense is required because 'last Saturday' tells us the event happened in the past. 'Went' is the simple past tense of the irregular verb 'go'. 'Gone' is the past participle and cannot be used here without a helper verb."
+      },
+      {
+        "number": 2,
+        "options": ["bring", "brings", "brought", "bringing"],
+        "correct_answer": "C",
+        "explanation": "Past tense is required to match the past-tense narrative established by 'last Saturday'. 'Brought' is the simple past tense of the irregular verb 'bring'. The base form 'bring' and the present tense 'brings' cannot be used in a past-tense passage."
+      },
+      {
+        "number": 3,
+        "options": ["feel", "feels", "felt", "feeling"],
+        "correct_answer": "C",
+        "explanation": "Past tense is required because the passage describes something that happened last Saturday. 'Felt' is the simple past tense of the irregular verb 'feel'. All three main verbs in this passage (went, brought, felt) must be in the simple past tense for consistency."
+      }
+    ],
+    "worked_solution": "Step 1: Identify the time signal in the passage — 'Last Saturday' tells us all events are in the past.\nStep 2: Blank [1] — the verb needed for 'Wei Hao and his family'. Simple past of 'go' = 'went'.\nStep 3: Blank [2] — the verb needed for 'They'. Simple past of 'bring' = 'brought'.\nStep 4: Blank [3] — the verb needed for 'Wei Hao'. Simple past of 'feel' = 'felt'.\nStep 5: All three verbs are irregular — their past tense forms must be memorised, not formed by adding -ed."
+  },
+  {
+    "id": "p3-eng-gr-004",
+    "subject": "English",
+    "level": "Primary 3",
+    "topic": "Grammar",
+    "sub_topic": "Prepositions of Place and Movement",
+    "difficulty": "Standard",
+    "type": "cloze",
+    "marks": 3,
+    "question_text": "Read the passage. Choose the best word for each blank. Write the letter of your answer.",
+    "passage": "Siti lives [1] the fourth floor of an HDB flat near Tampines MRT station. Every morning, she walks [2] the school canteen to buy her breakfast before class begins. She usually arrives [3] school just before the bell rings.",
+    "blanks": [
+      {
+        "number": 1,
+        "options": ["in", "on", "at", "by"],
+        "correct_answer": "B",
+        "explanation": "Use 'on' when referring to a specific floor of a building. We say 'on the fourth floor', not 'in' or 'at' the fourth floor. 'In' is used for enclosed spaces (in a room), while 'at' is used for specific locations (at the MRT station)."
+      },
+      {
+        "number": 2,
+        "options": ["to", "in", "at", "into"],
+        "correct_answer": "A",
+        "explanation": "Use 'to' when showing movement towards a destination. 'Walks to the school canteen' shows Siti is heading towards the canteen. 'Into' would suggest she is entering an enclosed space, which could also work here, but 'to' is more natural for describing the act of going towards a place."
+      },
+      {
+        "number": 3,
+        "options": ["to", "in", "at", "on"],
+        "correct_answer": "C",
+        "explanation": "Use 'at' with institutions and named locations when describing arrival (arrives at school, arrives at the airport, arrives at the MRT station). 'At' is the correct preposition for the verb 'arrive' followed by a place."
+      }
+    ],
+    "worked_solution": "Step 1: Blank [1] — refers to a floor in a building. Rule: 'on' + floor number. Answer: 'on'.\nStep 2: Blank [2] — shows movement towards the canteen. Rule: 'to' for direction/destination. Answer: 'to'.\nStep 3: Blank [3] — describes arriving at a place. Rule: 'arrive at' + location. Answer: 'at'.\nStep 4: Preposition tip — on (floors, surfaces), to (movement towards), at (arrival, specific locations)."
+  },
+  {
+    "id": "p3-eng-gr-005",
+    "subject": "English",
+    "level": "Primary 3",
+    "topic": "Grammar",
+    "sub_topic": "Subject-Verb Agreement — Compound Subject",
+    "difficulty": "Advanced",
+    "type": "editing",
+    "marks": 2,
+    "question_text": "One of the underlined words in the passage contains a grammatical error. Identify the line with the error and write the correct word.",
+    "passage_lines": [
+      {
+        "line_number": 1,
+        "text": "Every morning, Priya and her brother walks to the MRT station together.",
+        "underlined_word": "walks",
+        "has_error": true,
+        "correct_word": "walk",
+        "explanation": "'Priya and her brother' is a compound subject — two people joined by 'and'. A compound subject joined by 'and' is plural and requires the plural verb 'walk' (without the -s ending). The singular form 'walks' is only correct for a single subject (e.g., 'Priya walks')."
+      },
+      {
+        "line_number": 2,
+        "text": "They usually arrive at the station by eight o'clock.",
+        "underlined_word": "arrive",
+        "has_error": false,
+        "correct_word": null,
+        "explanation": null
+      },
+      {
+        "line_number": 3,
+        "text": "Priya reads her book while waiting for the train.",
+        "underlined_word": "reads",
+        "has_error": false,
+        "correct_word": null,
+        "explanation": null
+      }
+    ],
+    "worked_solution": "Step 1: Check line 1. The underlined word is 'walks'. Identify the subject: 'Priya and her brother' — two people joined by 'and'. This is a plural compound subject.\nStep 2: Apply subject-verb agreement. A plural subject requires a plural verb. The plural present tense form of 'walk' is 'walk' (no -s). 'Walks' is singular and does not agree with the plural subject.\nStep 3: Line 1 has an error. 'Walks' should be 'walk'.\nStep 4: Check line 2. Subject: 'They' (plural). Verb: 'arrive' (plural) ✓ — no error.\nStep 5: Check line 3. Subject: 'Priya' (singular). Verb: 'reads' (singular) ✓ — no error.\nStep 6: The error is in line 1: 'walks' → 'walk'.",
+    "examiner_note": "When two subjects are joined by 'and', treat them as plural and use a plural verb (no -s). Common trap: 'Priya and her brother' looks singular because 'Priya' and 'brother' are each singular — but together with 'and', they form a plural subject. Rule: [Person A] and [Person B] + plural verb."
+  }
+]

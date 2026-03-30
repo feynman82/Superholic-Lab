@@ -1,0 +1,195 @@
+[
+  {
+    "id": "p6-eng-edit-001",
+    "subject": "English",
+    "level": "Primary 6",
+    "topic": "Editing",
+    "sub_topic": "Subject-Verb Agreement — Pronoun Subject",
+    "difficulty": "Foundation",
+    "type": "editing",
+    "marks": 2,
+    "question_text": "One of the underlined words in the passage contains a grammatical error. Identify the line with the error and write the correct word.",
+    "passage_lines": [
+      {
+        "line_number": 1,
+        "text": "Last weekend, Ahmad and his family went to the Singapore Zoo for a day trip.",
+        "underlined_word": "went",
+        "has_error": false,
+        "correct_word": null,
+        "explanation": null
+      },
+      {
+        "line_number": 2,
+        "text": "They was very excited to see the animals up close for the very first time.",
+        "underlined_word": "was",
+        "has_error": true,
+        "correct_word": "were",
+        "explanation": "'They' is a plural pronoun and requires the plural past tense verb 'were', not the singular 'was'. The rule: singular subjects (he, she, it, Ahmad) use 'was'; plural subjects (they, we, Ahmad and his family) use 'were'."
+      },
+      {
+        "line_number": 3,
+        "text": "Ahmad took many photographs of the giraffes and elephants to share with his classmates.",
+        "underlined_word": "took",
+        "has_error": false,
+        "correct_word": null,
+        "explanation": null
+      }
+    ],
+    "worked_solution": "Step 1: Check line 1. Subject: 'Ahmad and his family'. Verb: 'went' (simple past). Compound subject uses 'went' — correct ✓\nStep 2: Check line 2. Subject: 'They' (plural pronoun). Verb: 'was' (singular past tense). Plural subject needs 'were', not 'was'. ERROR found.\nStep 3: Check line 3. Subject: 'Ahmad'. Verb: 'took' (simple past of 'take'). Singular subject + simple past — correct ✓\nStep 4: The error is in line 2. 'Was' should be 'were'."
+  },
+  {
+    "id": "p6-eng-edit-002",
+    "subject": "English",
+    "level": "Primary 6",
+    "topic": "Editing",
+    "sub_topic": "Passive Voice — Past Participle Form",
+    "difficulty": "Standard",
+    "type": "editing",
+    "marks": 2,
+    "question_text": "One of the underlined words in the passage contains a grammatical error. Identify the line with the error and write the correct word.",
+    "passage_lines": [
+      {
+        "line_number": 1,
+        "text": "The new community garden near the void deck was officially opened last month.",
+        "underlined_word": "opened",
+        "has_error": false,
+        "correct_word": null,
+        "explanation": null
+      },
+      {
+        "line_number": 2,
+        "text": "Hundreds of residents were invited to attend the colourful opening ceremony.",
+        "underlined_word": "invited",
+        "has_error": false,
+        "correct_word": null,
+        "explanation": null
+      },
+      {
+        "line_number": 3,
+        "text": "The garden was design by students from a nearby primary school as a community project.",
+        "underlined_word": "design",
+        "has_error": true,
+        "correct_word": "designed",
+        "explanation": "In passive voice, the structure is: was/were + PAST PARTICIPLE. 'Design' is the base form of the verb, not the past participle. The past participle of 'design' is 'designed'. The correct form is 'was designed'."
+      }
+    ],
+    "worked_solution": "Step 1: Check line 1. 'Was opened' — passive voice: was + past participle 'opened' ✓\nStep 2: Check line 2. 'Were invited' — passive voice: were + past participle 'invited' ✓\nStep 3: Check line 3. 'Was design' — passive voice requires was + PAST PARTICIPLE. 'Design' is the base form, not the past participle. The past participle is 'designed'. ERROR found.\nStep 4: The error is in line 3. 'Design' should be 'designed'.\nStep 5: Rule — passive voice = was/were + past participle (-ed for regular verbs)."
+  },
+  {
+    "id": "p6-eng-edit-003",
+    "subject": "English",
+    "level": "Primary 6",
+    "topic": "Editing",
+    "sub_topic": "Word Form — Adjective vs Adverb",
+    "difficulty": "Standard",
+    "type": "editing",
+    "marks": 2,
+    "question_text": "One of the underlined words in the passage contains a grammatical error. Identify the line with the error and write the correct word.",
+    "passage_lines": [
+      {
+        "line_number": 1,
+        "text": "Mei Ling practises the piano diligently every evening after completing her homework.",
+        "underlined_word": "diligently",
+        "has_error": false,
+        "correct_word": null,
+        "explanation": null
+      },
+      {
+        "line_number": 2,
+        "text": "Her teacher says she has improved greatly over the past few months.",
+        "underlined_word": "greatly",
+        "has_error": false,
+        "correct_word": null,
+        "explanation": null
+      },
+      {
+        "line_number": 3,
+        "text": "At the recital, she performed so beautiful that the audience gave her a standing ovation.",
+        "underlined_word": "beautiful",
+        "has_error": true,
+        "correct_word": "beautifully",
+        "explanation": "'Beautiful' is an adjective, used to describe a noun (e.g., 'a beautiful song'). Here, the word describes HOW she performed — it modifies the verb 'performed'. A word that modifies a verb must be an adverb. The adverb form of 'beautiful' is 'beautifully'."
+      }
+    ],
+    "worked_solution": "Step 1: Check line 1. 'Diligently' modifies the verb 'practises' (how she practises). 'Diligently' is an adverb — correct ✓\nStep 2: Check line 2. 'Greatly' modifies the verb 'improved' (how much she improved). 'Greatly' is an adverb — correct ✓\nStep 3: Check line 3. 'Beautiful' modifies the verb 'performed' (how she performed). A word that modifies a verb must be an ADVERB, not an adjective. 'Beautiful' is an adjective; the adverb form is 'beautifully'. ERROR found.\nStep 4: The error is in line 3. 'Beautiful' should be 'beautifully'.\nStep 5: Rule — adjectives describe nouns; adverbs describe verbs, adjectives, or other adverbs. When in doubt, ask: 'what word is it describing?' If the answer is a verb, use an adverb (-ly form).",
+    "examiner_note": "Adjective/adverb errors are among the most common in P6 editing. Quick check: if the word describes HOW something was done (performed, spoke, ran), it must be an adverb ending in -ly. If it describes a THING or PERSON (a beautiful song, a quick runner), it is an adjective."
+  },
+  {
+    "id": "p6-eng-edit-004",
+    "subject": "English",
+    "level": "Primary 6",
+    "topic": "Editing",
+    "sub_topic": "Relative Pronoun — who vs which",
+    "difficulty": "Advanced",
+    "type": "editing",
+    "marks": 2,
+    "question_text": "One of the underlined words in the passage contains a grammatical error. Identify the line with the error and write the correct word.",
+    "passage_lines": [
+      {
+        "line_number": 1,
+        "text": "The prize-winning essay, which Ravi had worked on for three weeks, was published in the school magazine.",
+        "underlined_word": "which",
+        "has_error": false,
+        "correct_word": null,
+        "explanation": null
+      },
+      {
+        "line_number": 2,
+        "text": "His form teacher, who had encouraged him to enter the competition, was extremely proud of him.",
+        "underlined_word": "who",
+        "has_error": false,
+        "correct_word": null,
+        "explanation": null
+      },
+      {
+        "line_number": 3,
+        "text": "The judges, which had read over two hundred entries, said Ravi's essay stood out immediately.",
+        "underlined_word": "which",
+        "has_error": true,
+        "correct_word": "who",
+        "explanation": "'Which' is used to introduce a relative clause about a thing or animal. 'The judges' are people, so the relative pronoun must be 'who'. The rule: use 'who' for people and 'which' for things or animals."
+      }
+    ],
+    "worked_solution": "Step 1: Check line 1. 'Which Ravi had worked on' — the relative clause describes 'the essay' (a thing). 'Which' is correct for things ✓\nStep 2: Check line 2. 'Who had encouraged him' — the relative clause describes 'his form teacher' (a person). 'Who' is correct for people ✓\nStep 3: Check line 3. 'Which had read over two hundred entries' — the relative clause describes 'the judges' (people). 'Which' is used for things, not people. ERROR found.\nStep 4: The error is in line 3. 'Which' should be 'who'.\nStep 5: Rule — relative pronouns: 'who' = people | 'which' = things and animals | 'that' = people or things (in defining clauses).",
+    "examiner_note": "Who/which errors in relative clauses are tested regularly at P6. The trap: students may use 'which' out of habit for any relative clause. Always ask: is the noun being described a PERSON or a THING? Persons → who. Things/animals → which."
+  },
+  {
+    "id": "p6-eng-edit-005",
+    "subject": "English",
+    "level": "Primary 6",
+    "topic": "Editing",
+    "sub_topic": "Subject-Verb Agreement — Intervening Prepositional Phrase",
+    "difficulty": "HOTS",
+    "type": "editing",
+    "marks": 2,
+    "question_text": "One of the underlined words in the passage contains a grammatical error. Identify the line with the error and write the correct word.",
+    "passage_lines": [
+      {
+        "line_number": 1,
+        "text": "The collection of rare stamps that Priya's grandfather owned was considered priceless.",
+        "underlined_word": "was",
+        "has_error": false,
+        "correct_word": null,
+        "explanation": null
+      },
+      {
+        "line_number": 2,
+        "text": "Each of the stamps were carefully mounted on special acid-free paper to preserve them.",
+        "underlined_word": "were",
+        "has_error": true,
+        "correct_word": "was",
+        "explanation": "The subject of this sentence is 'Each', not 'stamps'. 'Each' is a singular pronoun and always takes a singular verb. The phrase 'of the stamps' is a prepositional phrase that modifies 'each' but does not change the subject. The rule: 'each of [plural noun]' is always singular — use 'was', not 'were'."
+      },
+      {
+        "line_number": 3,
+        "text": "Priya hoped to display the entire collection at the school heritage exhibition one day.",
+        "underlined_word": "hoped",
+        "has_error": false,
+        "correct_word": null,
+        "explanation": null
+      }
+    ],
+    "worked_solution": "Step 1: Check line 1. Subject: 'The collection' (singular). Verb: 'was' (singular past). 'Of rare stamps' is a prepositional phrase — ignore it when identifying the subject. 'The collection was' — correct ✓\nStep 2: Check line 2. Subject: 'Each' (singular — 'each' always takes a singular verb). Verb: 'were' (plural). 'Of the stamps' is a prepositional phrase — it modifies 'each' but does not change the subject. 'Each' requires 'was', not 'were'. ERROR found.\nStep 3: Check line 3. Subject: 'Priya' (singular). Verb: 'hoped' (simple past). Correct ✓\nStep 4: The error is in line 2. 'Were' should be 'was'.\nStep 5: Rule — 'each', 'every', 'either', 'neither', 'one' are always singular, even when followed by 'of [plural noun]'.",
+    "examiner_note": "This is the most sophisticated subject-verb agreement trap in PSLE. The brain reads 'stamps' (plural) just before the verb and instinctively uses 'were'. The fix: always identify the TRUE subject of the sentence before choosing the verb. 'Each of the [plural noun]' = singular. Same rule applies to: 'every one of', 'either of', 'neither of', 'one of'."
+  }
+]

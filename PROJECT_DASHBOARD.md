@@ -35,15 +35,16 @@ See ADR-0001 for migration rationale and strategy.
 
 | Level | Mathematics | Science | English | Status |
 |---|---|---|---|---|
-| P1 | 0q — ❌ Gap | n/a | 0q — ❌ Gap | Critical |
+| P1 | 10q (1 topic) | n/a | 0q — ❌ Gap | 🟡 Partial |
 | P2 | 12q (5 topics) | n/a | 11q (3 types) | 🟡 Low volume |
-| P3 | 0q — ❌ Gap | 0q — ❌ Gap | 0q — ❌ Gap | Critical |
+| P3 | 5q (1 topic) | 5q (1 topic) | 5q (1 topic) | 🟡 Partial |
 | P4 | 15q (4 topics) | 17q (4 topics) | 23q (5 types) | 🟡 Low volume |
-| P5 | 8q (aggregate only) | 12q (aggregate only) | 0q — ❌ Gap | 🟡 Partial |
-| P6 | 0q — ❌ Gap | 0q — ❌ Gap | 0q — ❌ Gap | Critical |
+| P5 | 8q (aggregate only) | 12q (aggregate only) | 5q (1 topic) | 🟡 Partial |
+| P6 | 5q (1 topic) | 5q (1 topic) | 15q (3 topics) | 🟡 Partial |
 
-**Total estimated:** ~98 questions across 19 topic files.
-**Priority gaps:** P1, P3, P6 (no content), P5 English (missing), all files below 20q target.
+**Total estimated:** ~137 questions across 31 topic files.
+**Priority gaps:** Volume expansion — all files need to reach 20q target. No P0 or type gaps remain.
+**Milestone:** All P0 Critical gaps cleared. All question types seeded at every level. P6 English complete (mcq + cloze + editing).
 
 ---
 

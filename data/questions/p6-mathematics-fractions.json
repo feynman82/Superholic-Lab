@@ -1,0 +1,102 @@
+[
+  {
+    "id": "p6-math-frac-001",
+    "subject": "Mathematics",
+    "level": "Primary 6",
+    "topic": "Fractions",
+    "sub_topic": "Fraction of a Set",
+    "difficulty": "Foundation",
+    "type": "short_ans",
+    "marks": 2,
+    "question_text": "Siti has 60 pineapple tarts in a container. She gives 2/5 of the tarts to her neighbours. How many pineapple tarts does Siti give away?",
+    "correct_answer": "24",
+    "accept_also": ["24 pineapple tarts"],
+    "worked_solution": "Step 1: Find the value of 1 unit (1/5 of 60).\n1/5 × 60 = 60 ÷ 5 = 12\nStep 2: Find the value of 2 units (2/5 of 60).\n2/5 × 60 = 12 × 2 = 24\nStep 3: Siti gives away 24 pineapple tarts."
+  },
+  {
+    "id": "p6-math-frac-002",
+    "subject": "Mathematics",
+    "level": "Primary 6",
+    "topic": "Fractions",
+    "sub_topic": "Percentage of a Quantity",
+    "difficulty": "Standard",
+    "type": "short_ans",
+    "marks": 2,
+    "question_text": "During a National Day sale, a bookshop offers 30% off all items. A set of assessment books originally costs $80. How much does Ahmad save?",
+    "correct_answer": "24",
+    "accept_also": ["$24", "$24.00", "24 dollars"],
+    "worked_solution": "Step 1: Convert the percentage to a fraction.\n30% = 30/100\nStep 2: Find 30% of $80.\n30/100 × $80 = $2400 ÷ 100 = $24\nStep 3: Ahmad saves $24."
+  },
+  {
+    "id": "p6-math-frac-003",
+    "subject": "Mathematics",
+    "level": "Primary 6",
+    "topic": "Fractions",
+    "sub_topic": "Expressing a Quantity as a Percentage",
+    "difficulty": "Advanced",
+    "type": "short_ans",
+    "marks": 2,
+    "question_text": "In a class of 40 pupils, 26 are girls. What percentage of the class are girls?",
+    "correct_answer": "65",
+    "accept_also": ["65%"],
+    "worked_solution": "Step 1: Write the fraction of girls in the class.\nFraction of girls = 26/40\nStep 2: Convert the fraction to a percentage by multiplying by 100%.\n26/40 × 100% = 2600 ÷ 40 = 65%\nStep 3: 65% of the class are girls.",
+    "examiner_note": "Always simplify the fraction first before multiplying by 100% to reduce calculation errors. 26/40 simplifies to 13/20. Then 13/20 × 100% = 1300 ÷ 20 = 65%."
+  },
+  {
+    "id": "p6-math-frac-004",
+    "subject": "Mathematics",
+    "level": "Primary 6",
+    "topic": "Fractions",
+    "sub_topic": "Fractions of a Whole — Part-Whole Model",
+    "difficulty": "Standard",
+    "type": "word_problem",
+    "marks": 5,
+    "question_text": "Priya baked 120 pineapple tarts for Chinese New Year. She gave 1/3 of the tarts to her neighbour and 2/5 of the tarts to her relatives.",
+    "worked_solution": "See worked solutions for each part below.",
+    "parts": [
+      {
+        "label": "(a)",
+        "question": "How many pineapple tarts did Priya give to her neighbour?",
+        "marks": 2,
+        "correct_answer": "40",
+        "worked_solution": "Step 1: Draw a Part-Whole bar model. Whole = 120 tarts, divided into 3 equal parts.\nStep 2: Find 1/3 of 120.\n1/3 × 120 = 120 ÷ 3 = 40\nStep 3: Priya gave 40 pineapple tarts to her neighbour."
+      },
+      {
+        "label": "(b)",
+        "question": "How many pineapple tarts did Priya have left?",
+        "marks": 3,
+        "correct_answer": "32",
+        "worked_solution": "Step 1: Find the number of tarts given to relatives.\n2/5 × 120 = 120 ÷ 5 × 2 = 24 × 2 = 48 tarts\nStep 2: Find the total number of tarts given away.\nTarts given to neighbour + tarts given to relatives = 40 + 48 = 88 tarts\nStep 3: Find the number of tarts remaining.\n120 − 88 = 32 pineapple tarts"
+      }
+    ]
+  },
+  {
+    "id": "p6-math-frac-005",
+    "subject": "Mathematics",
+    "level": "Primary 6",
+    "topic": "Fractions",
+    "sub_topic": "Percentage Increase and Money",
+    "difficulty": "Advanced",
+    "type": "word_problem",
+    "marks": 5,
+    "question_text": "A hawker at a hawker centre sold 180 plates of char kway teow on Saturday. On Sunday, the number of plates sold increased by 40%. Each plate was sold at $4.",
+    "worked_solution": "See worked solutions for each part below.",
+    "parts": [
+      {
+        "label": "(a)",
+        "question": "How many plates of char kway teow did the hawker sell on Sunday?",
+        "marks": 2,
+        "correct_answer": "252",
+        "worked_solution": "Step 1: Draw a Before-After model. Saturday (Before) = 180 plates. Increase = 40%.\nStep 2: Sunday (After) = 100% + 40% = 140% of Saturday's sales.\nStep 3: 140/100 × 180 = 1.4 × 180 = 252 plates"
+      },
+      {
+        "label": "(b)",
+        "question": "How much more money did the hawker collect on Sunday than on Saturday?",
+        "marks": 3,
+        "correct_answer": "288",
+        "worked_solution": "Step 1: Calculate money collected on Sunday.\n252 × $4 = $1,008\nStep 2: Calculate money collected on Saturday.\n180 × $4 = $720\nStep 3: Find the difference.\n$1,008 − $720 = $288\nThe hawker collected $288 more on Sunday than on Saturday."
+      }
+    ],
+    "examiner_note": "For percentage increase, always convert to a decimal multiplier: 40% increase means multiplying by 1.40 (or 140/100), NOT adding 40 directly to the original. Show the Before-After model in your working to earn method marks even if your final answer is wrong."
+  }
+]
