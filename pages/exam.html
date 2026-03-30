@@ -17,95 +17,146 @@
     await guardPage(true);
   </script>
   <style>
-    /* Exam paper print/display layout */
-    .exam-section { margin-bottom: var(--space-12); }
-    .exam-section-header {
-      border-top: 2px solid var(--border);
-      padding-top: var(--space-5);
-      margin-bottom: var(--space-5);
+    /* ── Wizard steps ───────────────────────────────────────────── */
+    .wizard-eyebrow {
+      display: inline-flex; align-items: center; gap: var(--space-2);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .7rem; font-weight: 700; letter-spacing: .14em;
+      text-transform: uppercase; color: var(--mint);
+      background: rgba(57,255,179,0.1); border: 1px solid rgba(57,255,179,0.2);
+      border-radius: var(--radius-pill); padding: .3rem .75rem;
+      margin-bottom: var(--space-3);
     }
-    .exam-section-title {
-      font-size: 1rem; font-weight: 700; color: var(--text-primary);
-      margin-bottom: var(--space-1);
+    .wizard-eyebrow::before {
+      content: ''; width: 6px; height: 6px; border-radius: var(--radius-full);
+      background: var(--mint); animation: mintPulse 1.8s ease-in-out infinite;
     }
-    .exam-instructions {
-      font-size: 0.875rem; color: var(--text-secondary); font-style: italic;
-      margin-bottom: var(--space-4);
+    .wizard-step-heading {
+      font-family: var(--font-display);
+      font-size: 2.25rem; font-weight: 700; color: var(--cream);
+      margin-bottom: var(--space-2);
     }
-    .exam-question {
-      margin-bottom: var(--space-6); page-break-inside: avoid;
+    @media (min-width: 640px)  { .wizard-step-heading { font-size: 2.75rem; } }
+    @media (min-width: 1024px) { .wizard-step-heading { font-size: 3.25rem; } }
+    .wizard-step-sub {
+      font-size: .9375rem; color: var(--sage-light);
+      margin-bottom: var(--space-6);
     }
-    .exam-question-num {
-      font-weight: 700; color: var(--primary); margin-right: var(--space-2);
-      min-width: 1.5rem; display: inline-block;
+
+    /* ── Level picker (fallback) ────────────────────────────────── */
+    .level-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-3);
+      margin-bottom: var(--space-6);
     }
-    .exam-question-text { margin-bottom: var(--space-3); line-height: 1.65; }
-    .exam-options { list-style: none; margin: 0; padding: 0; }
-    .exam-options li {
-      padding: var(--space-2) var(--space-3); border-radius: var(--radius);
-      border: 1.5px solid var(--border); margin-bottom: var(--space-2);
-      cursor: pointer; display: flex; align-items: flex-start; gap: var(--space-3);
-      transition: border-color 0.12s, background 0.12s;
-    }
-    .exam-options li:hover { border-color: var(--mint); background: rgba(57,255,179,0.07); }
-    .exam-options li.is-selected { border-color: var(--mint); background: rgba(57,255,179,0.1); }
-    .exam-options li.is-correct { border-color: var(--mint); background: rgba(57,255,179,0.1); }
-    .exam-options li.is-wrong  { border-color: var(--danger); background: rgba(239,68,68,0.1); }
-    .exam-opt-key {
-      font-weight: 700; color: var(--primary); width: 1.25rem; flex-shrink: 0;
-    }
-    /* Short answer input within exam */
-    .exam-short-input {
-      width: 100%; max-width: 280px; padding: var(--space-2) var(--space-3);
-      border: 1.5px solid var(--border); border-radius: var(--radius);
-      font-size: 1rem; margin-top: var(--space-2);
-    }
-    .exam-short-input.is-correct { border-color: var(--mint); background: rgba(57,255,179,0.1); }
-    .exam-short-input.is-wrong   { border-color: var(--danger); background: rgba(239,68,68,0.1); }
-    /* Answer line for print */
-    .exam-answer-line {
-      border-bottom: 1px solid var(--border); min-height: 2.5rem;
-      margin-top: var(--space-2); display: block;
-    }
-    /* Cloze passage blanks */
-    .exam-cloze-passage {
-      line-height: 2.2; font-size: 1rem;
-      background: var(--bg); padding: var(--space-4); border-radius: var(--radius);
-      border: 1px solid var(--border); margin-bottom: var(--space-4);
-    }
-    .exam-cloze-select {
-      border: 1.5px solid var(--glass-border); border-radius: var(--radius-sm);
-      padding: 0.2rem 0.5rem; font-size: 0.9rem; background: var(--glass);
-      color: var(--cream); cursor: pointer; vertical-align: middle;
+    @media (max-width: 480px) { .level-grid { grid-template-columns: repeat(2, 1fr); } }
+    .level-btn {
+      background: var(--glass); border: 1.5px solid var(--glass-border);
+      border-radius: var(--radius-md); padding: var(--space-4) var(--space-3);
+      color: var(--cream); font-weight: 700; font-size: .9375rem;
+      cursor: pointer; text-align: center; transition: border-color var(--transition), transform var(--transition);
       backdrop-filter: blur(8px);
     }
-    .exam-cloze-select:focus { border-color: var(--mint); box-shadow: 0 0 0 3px rgba(57,255,179,0.15); outline: none; }
-    /* Editing passage */
-    .exam-editing-line {
-      padding: var(--space-2) 0; border-bottom: 1px solid var(--bg);
-      display: flex; align-items: baseline; gap: var(--space-3); flex-wrap: wrap;
+    .level-btn:hover { border-color: var(--mint); transform: translate(-2px,-2px); }
+    .level-btn.is-selected { border-color: var(--mint); background: rgba(57,255,179,0.08); }
+    .level-btn span { display: block; font-size: .75rem; font-weight: 400; color: var(--sage-light); margin-top: .2rem; }
+
+    /* ── Subject cards ──────────────────────────────────────────── */
+    .wizard-subject-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4);
+      margin-bottom: var(--space-6);
     }
-    .exam-editing-line-num { color: var(--text-secondary); font-size: 0.8rem; min-width: 1.5rem; }
-    .exam-editing-underline {
-      text-decoration: underline; text-decoration-style: solid;
-      font-weight: 600; color: var(--primary);
+    @media (max-width: 600px) { .wizard-subject-grid { grid-template-columns: 1fr; } }
+    .wizard-subject-card {
+      background: var(--glass); border: 1.5px solid var(--glass-border);
+      border-radius: var(--radius-xl); padding: var(--space-6) var(--space-5);
+      cursor: pointer; text-align: center; transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition-md);
+      box-shadow: var(--shadow-neo); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      position: relative; overflow: hidden;
     }
-    .exam-editing-input {
-      border: none; border-bottom: 1.5px solid var(--border);
-      width: 6rem; padding: 0.15rem 0.3rem; font-size: 0.9rem;
-      background: transparent; outline: none;
+    .wizard-subject-card::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(57,255,179,0.03) 0%, transparent 60%);
+      pointer-events: none;
     }
-    .exam-editing-input.is-correct { border-color: var(--mint); background: rgba(57,255,179,0.1); }
-    .exam-editing-input.is-wrong   { border-color: var(--danger); background: rgba(239,68,68,0.1); }
-    /* Blueprint preview card */
+    .wizard-subject-card:hover {
+      transform: translate(-3px,-3px); box-shadow: var(--shadow-neo-lg); border-color: var(--mint);
+    }
+    .wizard-subject-card.is-selected { border-color: var(--mint); background: rgba(57,255,179,0.06); }
+    .wizard-subject-card.is-locked { opacity: .4; cursor: not-allowed; pointer-events: none; }
+    .wizard-subject-card .subject-icon { font-size: 2rem; margin-bottom: var(--space-2); }
+    .wizard-subject-card .subject-name { font-size: 1rem; font-weight: 700; color: var(--cream); }
+    .wizard-subject-card .subject-meta { font-size: .8125rem; color: var(--sage-light); margin-top: .25rem; }
+    .wizard-subject-card.card-maths   { border-top: 3px solid var(--maths-colour); }
+    .wizard-subject-card.card-science { border-top: 3px solid var(--science-colour); }
+    .wizard-subject-card.card-english { border-top: 3px solid var(--english-colour); }
+
+    /* ── Assessment type options ────────────────────────────────── */
+    .wizard-type-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-3);
+      margin-bottom: var(--space-6);
+    }
+    @media (max-width: 480px) { .wizard-type-grid { grid-template-columns: 1fr; } }
+    .wizard-type-option {
+      background: var(--glass); border: 1.5px solid var(--glass-border);
+      border-radius: var(--radius-lg); padding: var(--space-4);
+      cursor: pointer; display: flex; align-items: center; gap: var(--space-3);
+      transition: border-color var(--transition), transform var(--transition); backdrop-filter: blur(8px);
+      text-align: left;
+    }
+    .wizard-type-option:hover { border-color: var(--rose); transform: translate(-1px,-1px); }
+    .wizard-type-option.is-selected {
+      border-color: var(--rose); background: rgba(183,110,121,0.1);
+      transform: translate(-1px,-1px);
+    }
+    .wizard-type-icon { font-size: 1.25rem; flex-shrink: 0; }
+    .wizard-type-name { font-family: var(--font-body); font-size: .9375rem; font-weight: 700; color: var(--cream); }
+    .wizard-type-desc { font-size: .8125rem; color: var(--sage-light); margin-top: .15rem; }
+
+    /* ── Confirm banner ─────────────────────────────────────────── */
+    .wizard-confirm-banner {
+      background: rgba(57,255,179,0.06); border: 1.5px solid rgba(57,255,179,0.2);
+      border-radius: var(--radius-lg); padding: var(--space-4) var(--space-5);
+      margin-bottom: var(--space-5);
+      display: flex; align-items: center; gap: var(--space-3);
+    }
+    .wizard-confirm-icon { font-size: 1.25rem; flex-shrink: 0; }
+    .wizard-confirm-text {
+      font-size: .9375rem; font-weight: 600; color: var(--cream); line-height: 1.4;
+    }
+
+    /* ── Blueprint (Sample Format) card ────────────────────────── */
     .exam-blueprint-card {
-      background: rgba(57,255,179,0.04);
-      border: 1.5px dashed var(--mint);
+      background: var(--glass);
+      border: 1.5px solid var(--glass-border);
+      border-top: 2px dashed var(--mint);
       border-radius: var(--radius-lg);
       padding: var(--space-5);
       box-shadow: var(--shadow-neo);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
+      position: relative; overflow: hidden;
+      margin-bottom: var(--space-6);
+    }
+    .exam-blueprint-card::before {
+      content: ''; position: absolute; inset: 0; z-index: 0;
+      background: linear-gradient(135deg, rgba(57,255,179,0.03) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .blueprint-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: var(--space-4);
+    }
+    .blueprint-eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .7rem; font-weight: 700; letter-spacing: .14em;
+      text-transform: uppercase; color: var(--mint);
+    }
+    .blueprint-draft-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .65rem; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--amber);
+      background: rgba(255,184,48,0.1); border: 1px solid rgba(255,184,48,0.25);
+      border-radius: var(--radius-pill); padding: .2rem .6rem;
     }
     .exam-blueprint-row {
       display: flex; align-items: center; gap: var(--space-3);
@@ -114,6 +165,87 @@
     .exam-blueprint-row:last-child { border-bottom: none; }
     .exam-blueprint-label { flex: 1; font-size: .875rem; font-weight: 600; color: var(--cream); }
     .exam-blueprint-meta  { font-size: .8125rem; color: var(--sage-light); }
+
+    /* ── Back button ────────────────────────────────────────────── */
+    .wizard-back-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--sage-light); font-size: .875rem; font-weight: 500;
+      display: inline-flex; align-items: center; gap: var(--space-2);
+      padding: 0; margin-bottom: var(--space-5); transition: color var(--transition), transform var(--transition);
+    }
+    .wizard-back-btn:hover { color: var(--cream); transform: translate(-1px, -1px); }
+
+    /* ── Exam paper layout ──────────────────────────────────────── */
+    .exam-section { margin-bottom: var(--space-12); }
+    .exam-section-header {
+      border-top: 2px solid var(--glass-border);
+      padding-top: var(--space-5); margin-bottom: var(--space-5);
+    }
+    .exam-section-title {
+      font-size: 1rem; font-weight: 700; color: var(--cream);
+      margin-bottom: var(--space-1);
+    }
+    .exam-instructions {
+      font-size: .875rem; color: var(--sage-light); font-style: italic;
+      margin-bottom: var(--space-4);
+    }
+    .exam-question { margin-bottom: var(--space-6); page-break-inside: avoid; }
+    .exam-question-num {
+      font-weight: 700; color: var(--rose); margin-right: var(--space-2);
+      min-width: 1.5rem; display: inline-block;
+    }
+    .exam-question-text { margin-bottom: var(--space-3); line-height: 1.65; color: var(--cream); }
+    .exam-options { list-style: none; margin: 0; padding: 0; }
+    .exam-options li {
+      padding: var(--space-2) var(--space-3); border-radius: var(--radius-md);
+      border: 1.5px solid var(--glass-border); margin-bottom: var(--space-2);
+      cursor: pointer; display: flex; align-items: flex-start; gap: var(--space-3);
+      transition: border-color var(--transition), background var(--transition); color: var(--cream);
+      background: var(--glass); backdrop-filter: blur(8px);
+    }
+    .exam-options li:hover { border-color: var(--mint); background: rgba(57,255,179,0.07); }
+    .exam-options li.is-selected { border-color: var(--mint); background: rgba(57,255,179,0.1); }
+    .exam-options li.is-correct  { border-color: var(--mint); background: rgba(57,255,179,0.1); }
+    .exam-options li.is-wrong    { border-color: var(--danger); background: rgba(239,68,68,0.1); }
+    .exam-opt-key { font-weight: 700; color: var(--rose); width: 1.25rem; flex-shrink: 0; }
+    .exam-short-input {
+      width: 100%; max-width: 280px; padding: var(--space-2) var(--space-3);
+      border: 1.5px solid var(--glass-border); border-radius: var(--radius-md);
+      font-size: 1rem; margin-top: var(--space-2);
+      background: var(--glass); color: var(--cream); backdrop-filter: blur(8px);
+    }
+    .exam-short-input.is-correct { border-color: var(--mint); background: rgba(57,255,179,0.1); }
+    .exam-short-input.is-wrong   { border-color: var(--danger); background: rgba(239,68,68,0.1); }
+    .exam-cloze-passage {
+      line-height: 2.2; font-size: 1rem;
+      background: var(--glass); padding: var(--space-4); border-radius: var(--radius-md);
+      border: 1px solid var(--glass-border); margin-bottom: var(--space-4); color: var(--cream);
+      backdrop-filter: blur(8px);
+    }
+    .exam-cloze-select {
+      border: 1.5px solid var(--glass-border); border-radius: var(--radius-sm);
+      padding: .2rem .5rem; font-size: .9rem; background: var(--glass);
+      color: var(--cream); cursor: pointer; vertical-align: middle;
+      backdrop-filter: blur(8px);
+    }
+    .exam-editing-line {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: var(--space-2) 0; border-bottom: 1px solid var(--glass-border);
+    }
+    .exam-editing-line:last-child { border-bottom: none; }
+    .exam-editing-line-num {
+      font-family: 'JetBrains Mono', monospace; font-size: .75rem;
+      color: var(--sage-light); width: 1.25rem; flex-shrink: 0;
+    }
+    .exam-editing-underline { border-bottom: 2px solid var(--amber); padding-bottom: .1rem; }
+    .exam-editing-input {
+      width: 8rem; padding: .25rem var(--space-2);
+      border: 1.5px solid var(--glass-border); border-radius: var(--radius-sm);
+      font-size: .875rem; flex-shrink: 0;
+      background: var(--glass); color: var(--cream); backdrop-filter: blur(8px);
+    }
+    .exam-editing-input.is-correct { border-color: var(--mint); background: rgba(57,255,179,0.1); }
+    .exam-editing-input.is-wrong   { border-color: var(--danger); background: rgba(239,68,68,0.1); }
     /* AI grading overlay */
     #exam-grading-overlay {
       position: fixed; inset: 0; background: rgba(58,78,74,0.92);
@@ -137,12 +269,12 @@
       font-family: var(--font-body); margin-top: var(--space-2);
     }
     .exam-answer-textarea:focus {
-      border-color: var(--mint); box-shadow: 0 0 0 3px rgba(57,255,179,0.15); outline: none;
+      border-color: var(--rose); box-shadow: 0 0 0 3px rgba(183,110,121,0.2); outline: none;
     }
     .exam-answer-textarea.is-correct { border-color: var(--mint); background: rgba(57,255,179,0.08); }
     .exam-answer-textarea.is-partial { border-color: var(--amber); background: rgba(255,184,48,0.06); }
     .exam-answer-textarea.is-wrong   { border-color: var(--danger); background: rgba(239,68,68,0.08); }
-    /* AI feedback panel beneath graded textarea */
+    /* AI feedback panel */
     .exam-ai-feedback {
       margin-top: var(--space-3); padding: var(--space-3) var(--space-4);
       border-radius: var(--radius-md); font-size: .875rem; line-height: 1.55;
@@ -161,46 +293,20 @@
       box-shadow: var(--shadow-lg); pointer-events: none;
       animation: fadeUp 0.3s ease forwards;
     }
-    /* Locked card overlay */
-    .exam-select-card.is-locked {
-      opacity: 0.45; cursor: not-allowed; pointer-events: none;
-    }
-    /* Score panel */
+    /* Score band */
     .exam-score-band {
       display: flex; align-items: center; gap: var(--space-3);
-      padding: var(--space-4); border-radius: var(--radius);
+      padding: var(--space-4); border-radius: var(--radius-lg);
       background: var(--glass); border: 1.5px solid var(--glass-border);
-      margin-bottom: var(--space-6);
+      margin-bottom: var(--space-6); backdrop-filter: blur(8px);
     }
-    .exam-score-big { font-size: 2.5rem; font-weight: 800; color: var(--cream); }
-    /* Timer */
+    .exam-score-big { font-family: 'Lexend', sans-serif; font-size: 2.5rem; font-weight: 900; color: var(--cream); }
+    /* Timer in navbar */
     #exam-timer {
       font-variant-numeric: tabular-nums; font-weight: 700;
-      color: var(--text-primary); font-size: 1.125rem;
+      color: var(--cream); font-size: 1.125rem;
     }
     #exam-timer.is-urgent { color: var(--danger); }
-    /* Selector step */
-    .exam-select-card {
-      border: 1.5px solid var(--glass-border); border-radius: var(--radius-lg);
-      padding: var(--space-5); cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s;
-      background: var(--glass); backdrop-filter: blur(8px);
-    }
-    .exam-select-card:hover, .exam-select-card.is-selected {
-      border-color: var(--mint); box-shadow: 0 0 0 3px rgba(57,255,179,0.15);
-    }
-    /* Assessment type chips */
-    .exam-type-chip {
-      display: inline-flex; align-items: center; gap: var(--space-2);
-      padding: .45rem var(--space-4); border-radius: var(--radius-pill);
-      border: 1.5px solid var(--glass-border); cursor: pointer;
-      font-size: .875rem; font-weight: 600; color: var(--cream);
-      background: var(--glass); backdrop-filter: blur(8px);
-      transition: border-color .15s, background .15s;
-    }
-    .exam-type-chip:hover, .exam-type-chip.is-selected {
-      border-color: var(--rose); background: rgba(183,110,121,0.12); color: var(--rose);
-      transform: translate(-1px, -1px);
-    }
     /* Singapore loading overlay */
     #exam-generating-overlay {
       position: fixed; inset: 0; background: rgba(58,78,74,0.92);
@@ -209,11 +315,17 @@
       gap: var(--space-6);
     }
     #exam-generating-overlay p {
-      color: var(--cream); font-size: 1.125rem; font-weight: 600;
+      color: var(--cream); font-size: 1rem; font-weight: 600;
       text-align: center; max-width: 280px;
     }
     #exam-generating-overlay .gen-sub {
       font-size: .875rem; font-weight: 400; color: var(--sage-light); margin-top: var(--space-1);
+    }
+    /* Wizard error state */
+    .wizard-error {
+      background: rgba(239,68,68,0.08); border: 1.5px solid rgba(239,68,68,0.25);
+      border-radius: var(--radius-lg); padding: var(--space-5);
+      color: var(--cream); text-align: center;
     }
   </style>
 </head>
@@ -235,14 +347,13 @@
     </div>
   </header>
 
-  <!-- AI grading overlay (shown during semantic grading of WP/OE answers) -->
+  <!-- AI grading overlay -->
   <div id="exam-grading-overlay" hidden aria-live="polite" aria-label="Grading your answers">
     <svg width="72" height="72" viewBox="0 0 72 72" fill="none" aria-hidden="true">
       <circle cx="36" cy="36" r="32" stroke="rgba(255,184,48,0.15)" stroke-width="4"/>
       <path d="M36 4 A32 32 0 0 1 68 36" stroke="var(--amber)" stroke-width="4" stroke-linecap="round">
         <animateTransform attributeName="transform" type="rotate" from="0 36 36" to="360 36 36" dur="1s" repeatCount="indefinite"/>
       </path>
-      <!-- Pen/pencil icon -->
       <g transform="translate(36,36)" opacity="0.85">
         <rect x="-4" y="-14" width="8" height="20" rx="2" fill="var(--amber)"/>
         <polygon points="-4,6 4,6 0,14" fill="var(--amber)"/>
@@ -255,34 +366,24 @@
     </div>
   </div>
 
-  <!-- Singapore-themed generating overlay (hidden until paper generation starts) -->
+  <!-- Singapore-themed generating overlay -->
   <div id="exam-generating-overlay" hidden aria-live="polite" aria-label="Generating exam paper">
-    <!-- Animated Merlion-inspired SVG -->
     <svg width="96" height="96" viewBox="0 0 96 96" fill="none" aria-hidden="true">
-      <!-- Outer spinning ring (mint) -->
       <circle cx="48" cy="48" r="44" stroke="rgba(57,255,179,0.15)" stroke-width="4"/>
       <path d="M48 4 A44 44 0 0 1 92 48" stroke="var(--mint)" stroke-width="4" stroke-linecap="round">
         <animateTransform attributeName="transform" type="rotate" from="0 48 48" to="360 48 48" dur="1.2s" repeatCount="indefinite"/>
       </path>
-      <!-- Inner pulsing ring (rose) -->
       <circle cx="48" cy="48" r="30" stroke="rgba(183,110,121,0.2)" stroke-width="3"/>
       <path d="M48 18 A30 30 0 0 1 78 48" stroke="var(--rose)" stroke-width="3" stroke-linecap="round">
         <animateTransform attributeName="transform" type="rotate" from="360 48 48" to="0 48 48" dur="0.8s" repeatCount="indefinite"/>
       </path>
-      <!-- Merlion silhouette (stylised lion head + fish body) -->
       <g transform="translate(48,48)">
-        <!-- Fish tail (bottom) -->
         <path d="M-8 14 Q-14 22 -6 26 Q0 28 6 26 Q14 22 8 14 Z" fill="var(--sage-light)" opacity="0.6"/>
-        <!-- Body -->
         <ellipse cx="0" cy="6" rx="10" ry="12" fill="var(--sage-light)" opacity="0.7"/>
-        <!-- Mane -->
         <circle cx="0" cy="-6" r="12" fill="var(--sage)" opacity="0.8"/>
-        <!-- Face -->
         <circle cx="0" cy="-6" r="8" fill="var(--cream)" opacity="0.9"/>
-        <!-- Eyes -->
         <circle cx="-3" cy="-7" r="1.5" fill="var(--sage-darker)"/>
         <circle cx="3" cy="-7" r="1.5" fill="var(--sage-darker)"/>
-        <!-- Water spout (animated) -->
         <path d="M0 -14 Q3 -20 0 -26 Q-3 -20 0 -14" fill="var(--mint)" opacity="0.9">
           <animate attributeName="opacity" values="0.9;0.3;0.9" dur="1.4s" repeatCount="indefinite"/>
         </path>
@@ -295,7 +396,7 @@
   </div>
 
   <main style="padding: var(--space-8) 0 var(--space-16);">
-    <div class="container" style="max-width:760px;">
+    <div class="container" style="max-width:720px;">
 
       <nav class="breadcrumb" aria-label="Breadcrumb">
         <a href="../index.html">Home</a>
@@ -303,74 +404,115 @@
         <span class="breadcrumb-current">Practice Paper</span>
       </nav>
 
-      <!-- ── STEP 1: Paper selector ── -->
-      <section id="exam-selector" aria-label="Choose a practice paper">
-        <h1 style="margin: var(--space-6) 0 var(--space-2);">Practice Paper</h1>
-        <p class="text-secondary" style="margin-bottom:var(--space-6);">
-          Choose a subject, level and assessment type to generate a timed practice paper.
-        </p>
+      <!-- ══════════════════════════════════════════════════════════
+           WIZARD — steps 1-3 (selector flow)
+      ══════════════════════════════════════════════════════════ -->
+      <section id="exam-wizard" style="margin-top:var(--space-6);">
 
-        <div id="exam-selector-loading" class="text-center mt-8" style="color:var(--text-secondary);">
-          <svg width="32" height="32" viewBox="0 0 40 40" fill="none" aria-hidden="true" style="display:block;margin:0 auto var(--space-3);">
+        <!-- STEP 0: Loading skeleton -->
+        <div id="wizard-loading" style="text-align:center; padding: var(--space-12) 0;">
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true" style="display:block;margin:0 auto var(--space-3);">
             <circle cx="20" cy="20" r="16" stroke="var(--glass-border)" stroke-width="4"/>
             <path d="M20 4a16 16 0 0 1 16 16" stroke="var(--rose)" stroke-width="4" stroke-linecap="round">
               <animateTransform attributeName="transform" type="rotate" from="0 20 20" to="360 20 20" dur="0.9s" repeatCount="indefinite"/>
             </path>
           </svg>
-          Loading available papers…
+          <p class="text-secondary">Preparing your paper…</p>
         </div>
 
-        <div id="exam-selector-grid" class="grid grid-2" style="gap:var(--space-4); display:none;"></div>
-
-        <!-- Assessment type picker (shown after a paper is selected) -->
-        <div id="exam-type-row" hidden style="margin-top:var(--space-6);">
-          <p class="text-xs font-semibold" style="color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:var(--space-3);">Assessment Type</p>
-          <div style="display:flex; gap:var(--space-2); flex-wrap:wrap;" id="exam-type-chips">
-            <button class="exam-type-chip is-selected" data-type="PRACTICE">📚 Practice</button>
-            <button class="exam-type-chip" data-type="WA1">📝 WA1 (½ paper)</button>
-            <button class="exam-type-chip" data-type="WA2">📝 WA2 (½ paper)</button>
-            <button class="exam-type-chip" data-type="EOY">📋 End-of-Year</button>
-            <button class="exam-type-chip" data-type="PRELIM">🎓 Prelim (P6)</button>
+        <!-- STEP 0b: Error state -->
+        <div id="wizard-error" hidden>
+          <div class="wizard-error">
+            <p id="wizard-error-text">Something went wrong. Please refresh.</p>
+            <button onclick="window.location.reload()" class="btn btn-secondary btn-sm" style="margin-top:var(--space-4);">Refresh</button>
           </div>
         </div>
 
-        <!-- Blueprint Preview (shown after subject + type are chosen) -->
-        <div id="exam-blueprint-preview" hidden style="margin-top:var(--space-5);">
-          <div class="exam-blueprint-card">
-            <p style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--mint);margin-bottom:var(--space-3);">Paper Format Preview</p>
-            <div id="blueprint-sections-list"></div>
-            <p class="text-secondary" style="font-size:.8125rem;margin-top:var(--space-3);border-top:1px solid var(--glass-border);padding-top:var(--space-2);">
-              Questions are randomised from the bank when you click Generate.
-            </p>
+        <!-- STEP 0c: Level picker (fallback when level not in database) -->
+        <div id="wizard-level-picker" hidden>
+          <span class="wizard-eyebrow">Step 1 of 3</span>
+          <h1 class="wizard-step-heading">What year are you in?</h1>
+          <p class="wizard-step-sub">We couldn't detect your level automatically. Please select below.</p>
+          <div class="level-grid" id="level-picker-grid">
+            <button class="level-btn" data-level="primary-3">Primary 3<span>Age 9</span></button>
+            <button class="level-btn" data-level="primary-4">Primary 4<span>Age 10</span></button>
+            <button class="level-btn" data-level="primary-5">Primary 5<span>Age 11</span></button>
+            <button class="level-btn" data-level="primary-6">Primary 6<span>Age 12 · PSLE</span></button>
           </div>
         </div>
 
-        <div style="margin-top:var(--space-6); display:flex; gap:var(--space-3); flex-wrap:wrap;" id="exam-start-row" hidden>
-          <div style="flex:1; min-width:200px;">
-            <label class="text-xs font-semibold" style="display:block;margin-bottom:.4rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;">
-              Timer mode
-            </label>
-            <select id="exam-timer-mode" class="exam-cloze-select" style="width:100%;padding:.55rem .75rem;font-size:.9375rem;">
-              <option value="timed">Timed (full duration)</option>
-              <option value="untimed">Practice (no timer)</option>
-            </select>
-          </div>
-          <div style="display:flex; align-items:flex-end;">
-            <button id="exam-start-btn" class="btn btn-primary" style="padding:.6rem 2rem;">
-              Generate Paper →
+        <!-- STEP 1: Subject selection (shown for family / all_subjects / trial) -->
+        <div id="wizard-subject" hidden>
+          <span class="wizard-eyebrow" id="wizard-level-label-sub">Primary 4</span>
+          <h1 class="wizard-step-heading">Choose a subject</h1>
+          <p class="wizard-step-sub">Select the subject for your practice paper.</p>
+          <div class="wizard-subject-grid">
+            <button class="wizard-subject-card card-maths" data-subject="mathematics" aria-label="Mathematics">
+              <div class="subject-icon">🔢</div>
+              <div class="subject-name">Mathematics</div>
+              <div class="subject-meta">Arithmetic · Fractions · Word Problems</div>
+            </button>
+            <button class="wizard-subject-card card-science" data-subject="science" aria-label="Science">
+              <div class="subject-icon">🔬</div>
+              <div class="subject-name">Science</div>
+              <div class="subject-meta">MCQ · Open-Ended · CER</div>
+            </button>
+            <button class="wizard-subject-card card-english" data-subject="english" aria-label="English">
+              <div class="subject-icon">📖</div>
+              <div class="subject-name">English</div>
+              <div class="subject-meta">Grammar · Cloze · Editing</div>
             </button>
           </div>
         </div>
+
+        <!-- STEP 2: Assessment type + blueprint (combined) -->
+        <div id="wizard-type" hidden>
+          <button class="wizard-back-btn" id="wizard-back-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+            Back
+          </button>
+          <span class="wizard-eyebrow" id="wizard-level-label-type">Primary 4 · Mathematics</span>
+          <h1 class="wizard-step-heading">Select paper type</h1>
+          <p class="wizard-step-sub">All papers are timed. Choose the format that matches your exam schedule.</p>
+
+          <div class="wizard-type-grid" id="wizard-type-chips">
+            <!-- Built dynamically by buildTypeChips() -->
+          </div>
+
+          <!-- Confirm banner -->
+          <div class="wizard-confirm-banner" id="wizard-confirm-banner">
+            <span class="wizard-confirm-icon">📄</span>
+            <span class="wizard-confirm-text" id="wizard-confirm-text">Generating assessment paper…</span>
+          </div>
+
+          <!-- Sample Format card (blueprint) -->
+          <div class="exam-blueprint-card" id="wizard-blueprint-card">
+            <div class="blueprint-header">
+              <span class="blueprint-eyebrow">Sample Format</span>
+              <span class="blueprint-draft-badge">DRAFT PREVIEW</span>
+            </div>
+            <div id="blueprint-sections-list"></div>
+            <p class="text-secondary" style="font-size:.8125rem;margin-top:var(--space-3);border-top:1px solid var(--glass-border);padding-top:var(--space-2);">
+              Actual questions are randomised from the bank when you click Generate Paper.
+            </p>
+          </div>
+
+          <!-- Generate button -->
+          <button id="exam-start-btn" class="btn btn-primary btn-lg" style="width:100%;">
+            Generate Paper →
+          </button>
+        </div>
+
       </section>
 
-      <!-- ── STEP 2: Exam paper ── -->
+      <!-- ══════════════════════════════════════════════════════════
+           STEP 4: Exam paper
+      ══════════════════════════════════════════════════════════ -->
       <section id="exam-paper" hidden aria-label="Practice paper">
-
-        <!-- Paper header (printed + on-screen) -->
-        <div class="exam-paper-header" style="border-bottom:2px solid var(--border); padding-bottom:var(--space-5); margin-bottom:var(--space-8);">
+        <div style="border-bottom:2px solid var(--glass-border); padding-bottom:var(--space-5); margin-bottom:var(--space-8);">
           <div style="display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:var(--space-3);">
             <div>
-              <h1 id="exam-paper-title" style="font-size:1.375rem; margin-bottom:.25rem;"></h1>
+              <h1 id="exam-paper-title" style="font-family:var(--font-display);font-size:1.75rem;margin-bottom:var(--space-1);color:var(--cream);"></h1>
               <p class="text-secondary text-sm" id="exam-paper-meta"></p>
             </div>
             <div style="text-align:right;" class="no-print">
@@ -381,42 +523,38 @@
                 </svg>
                 Print / Save PDF
               </button>
-              <button id="exam-submit-btn" class="btn btn-primary btn-sm" style="margin-left:.5rem;">
+              <button id="exam-submit-btn" class="btn btn-primary btn-sm" style="margin-left:var(--space-2);">
                 Submit &amp; Mark
               </button>
             </div>
           </div>
           <div style="display:flex; gap:var(--space-4); margin-top:var(--space-3); flex-wrap:wrap;">
-            <span class="text-sm"><strong>Name:</strong> _____________________________</span>
-            <span class="text-sm"><strong>Class:</strong> ____________</span>
-            <span class="text-sm"><strong>Date:</strong> ____________</span>
+            <span class="text-sm" style="color:var(--sage-light);"><strong style="color:var(--cream);">Name:</strong> _____________________________</span>
+            <span class="text-sm" style="color:var(--sage-light);"><strong style="color:var(--cream);">Class:</strong> ____________</span>
+            <span class="text-sm" style="color:var(--sage-light);"><strong style="color:var(--cream);">Date:</strong> ____________</span>
           </div>
         </div>
-
-        <!-- Sections rendered here -->
         <div id="exam-sections"></div>
-
       </section>
 
-      <!-- ── STEP 3: Results ── -->
+      <!-- ══════════════════════════════════════════════════════════
+           STEP 5: Results
+      ══════════════════════════════════════════════════════════ -->
       <section id="exam-results" hidden aria-label="Exam results">
-        <h2 style="margin-bottom:var(--space-5);">Your Results</h2>
-
+        <h2 style="margin-bottom:var(--space-5);color:var(--cream);">Your Results</h2>
         <div class="exam-score-band">
           <div>
             <div class="exam-score-big" id="results-score">—</div>
             <div class="text-secondary text-sm" id="results-label">marks</div>
           </div>
           <div style="flex:1;">
-            <div style="background:var(--border);border-radius:1rem;height:.625rem;overflow:hidden;">
-              <div id="results-bar" style="height:100%;background:var(--primary);border-radius:1rem;width:0%;transition:width 0.6s ease;"></div>
+            <div style="background:var(--glass-border);border-radius:var(--radius-pill);height:.625rem;overflow:hidden;">
+              <div id="results-bar" style="height:100%;background:var(--mint);border-radius:var(--radius-pill);width:0%;transition:width 0.6s ease;"></div>
             </div>
             <div class="text-secondary text-sm mt-2" id="results-breakdown"></div>
           </div>
         </div>
-
         <div id="results-sections" style="margin-bottom:var(--space-8);"></div>
-
         <div style="display:flex; gap:var(--space-3); flex-wrap:wrap;">
           <button id="results-retry-btn" class="btn btn-primary">Generate New Paper</button>
           <a href="progress.html" class="btn btn-secondary">View Progress</a>
@@ -469,19 +607,37 @@
     (function () {
       'use strict';
 
-      // ── DOM refs ──
-      const selectorSection  = document.getElementById('exam-selector');
-      const selectorLoading  = document.getElementById('exam-selector-loading');
-      const selectorGrid     = document.getElementById('exam-selector-grid');
-      const startRow         = document.getElementById('exam-start-row');
-      const timerModeSelect  = document.getElementById('exam-timer-mode');
-      const startBtn         = document.getElementById('exam-start-btn');
-      const paperSection     = document.getElementById('exam-paper');
-      const paperTitle       = document.getElementById('exam-paper-title');
-      const paperMeta        = document.getElementById('exam-paper-meta');
-      const sectionsEl       = document.getElementById('exam-sections');
-      const printBtn         = document.getElementById('exam-print-btn');
-      const submitBtn        = document.getElementById('exam-submit-btn');
+      // ── DOM refs — wizard ──
+      const wizardEl          = document.getElementById('exam-wizard');
+      const wizardLoading     = document.getElementById('wizard-loading');
+      const wizardError       = document.getElementById('wizard-error');
+      const wizardErrorText   = document.getElementById('wizard-error-text');
+      const wizardLevelPicker = document.getElementById('wizard-level-picker');
+      const wizardSubject     = document.getElementById('wizard-subject');
+      const wizardType        = document.getElementById('wizard-type');
+      const wizardBackBtn     = document.getElementById('wizard-back-btn');
+      const levelLabelSub     = document.getElementById('wizard-level-label-sub');
+      const levelLabelType    = document.getElementById('wizard-level-label-type');
+      const typeChipsEl       = document.getElementById('wizard-type-chips');
+      const confirmBanner     = document.getElementById('wizard-confirm-banner');
+      const confirmText       = document.getElementById('wizard-confirm-text');
+      const blueprintList     = document.getElementById('blueprint-sections-list');
+
+      // ── DOM refs — paper ──
+      const paperSection   = document.getElementById('exam-paper');
+      const paperTitle     = document.getElementById('exam-paper-title');
+      const paperMeta      = document.getElementById('exam-paper-meta');
+      const sectionsEl     = document.getElementById('exam-sections');
+      const printBtn       = document.getElementById('exam-print-btn');
+      const submitBtn      = document.getElementById('exam-submit-btn');
+      const timerEl        = document.getElementById('exam-timer');
+      const genOverlay     = document.getElementById('exam-generating-overlay');
+      const genStatusText  = document.getElementById('gen-status-text');
+      const gradeOverlay   = document.getElementById('exam-grading-overlay');
+      const gradeStatusText = document.getElementById('grade-status-text');
+      const startBtn       = document.getElementById('exam-start-btn');
+
+      // ── DOM refs — results ──
       const resultsSection   = document.getElementById('exam-results');
       const resultsScore     = document.getElementById('results-score');
       const resultsLabel     = document.getElementById('results-label');
@@ -490,163 +646,242 @@
       const resultsSections  = document.getElementById('results-sections');
       const retryBtn         = document.getElementById('results-retry-btn');
       const resultsPrintBtn  = document.getElementById('results-print-btn');
-      const timerEl          = document.getElementById('exam-timer');
-
-      const typeRow           = document.getElementById('exam-type-row');
-      const typeChips         = document.getElementById('exam-type-chips');
-      const genOverlay        = document.getElementById('exam-generating-overlay');
-      const genStatusText     = document.getElementById('gen-status-text');
-      const gradeOverlay      = document.getElementById('exam-grading-overlay');
-      const gradeStatusText   = document.getElementById('grade-status-text');
-      const blueprintPreview  = document.getElementById('exam-blueprint-preview');
-      const blueprintList     = document.getElementById('blueprint-sections-list');
 
       // ── State ──
       let selectedSubject  = '';
-      let selectedLevel    = '';
+      let selectedLevel    = '';           // e.g. 'primary-4'
+      let selectedLevelDisplay = '';       // e.g. 'Primary 4'
       let selectedExamType = 'PRACTICE';
       let currentExam      = null;
       let timerInterval    = null;
       let timerSeconds     = 0;
-      let examStartTime    = null;   // ms timestamp when paper was rendered
-      let userProfile      = null;   // from profiles table
+      let examStartTime    = null;
+      let userProfile      = null;
 
-      // ── Access control: fetch profile then unlock/lock subject cards ──
-      (async function initAccessControl() {
+      /** Assessment type metadata — PRELIM only for P6 */
+      const TYPE_META = [
+        { type: 'PRACTICE', label: 'Practice',     icon: '📚', desc: 'Anytime revision, no pressure' },
+        { type: 'WA1',      label: 'WA1',           icon: '📝', desc: 'Weighted Assessment 1 (½ paper)' },
+        { type: 'WA2',      label: 'WA2',           icon: '📝', desc: 'Weighted Assessment 2 (½ paper)' },
+        { type: 'EOY',      label: 'End-of-Year',   icon: '📋', desc: 'Full year-end examination' },
+        { type: 'PRELIM',   label: 'Prelim',        icon: '🎓', desc: 'Preliminary exam · Primary 6 only' },
+      ];
+
+      const TYPE_LABELS = { PRACTICE:'Practice', WA1:'WA1', WA2:'WA2', EOY:'End-of-Year', PRELIM:'Prelim' };
+
+      // ──────────────────────────────────────────────────────────────
+      // WIZARD INIT — fetches credentials, auto-advances steps
+      // ──────────────────────────────────────────────────────────────
+      (async function initWizard() {
         try {
           const supabase = await getSupabase();
           const { data: { user } } = await supabase.auth.getUser();
-          if (!user) return;
+          if (!user) { showWizardError('Please log in to continue.'); return; }
 
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('subscription_tier, role')
-            .eq('id', user.id)
-            .single();
-          if (!profile) return;
-          userProfile = profile;
+          // Fetch profile + student in parallel
+          const [profileRes, studentsRes, sessionRes] = await Promise.all([
+            supabase.from('profiles').select('subscription_tier, role').eq('id', user.id).single(),
+            supabase.from('students').select('name, level, selected_subject').eq('parent_id', user.id).order('created_at', { ascending: true }).limit(1),
+            supabase.auth.getSession(),
+          ]);
 
-          // For single_subject subscribers, get their chosen subject
-          let lockedToSubject = null;
-          if (profile.subscription_tier === 'single_subject') {
-            const { data: students } = await supabase
-              .from('students')
-              .select('selected_subject')
-              .eq('parent_id', user.id);
-            const sub = students?.[0]?.selected_subject;
-            if (sub) lockedToSubject = sub.toLowerCase();
-          }
+          if (profileRes.error || !profileRes.data) { showWizardError('Could not load your profile.'); return; }
+          userProfile = profileRes.data;
 
-          // If locked, grey out cards for other subjects
-          if (lockedToSubject) {
-            selectorGrid.querySelectorAll('.exam-select-card').forEach(function(card) {
-              const subject = card.dataset.subject || '';
-              if (subject && subject.toLowerCase() !== lockedToSubject) {
-                card.classList.add('is-locked');
-                const lockNote = document.createElement('p');
-                lockNote.className = 'text-xs';
-                lockNote.style.cssText = 'color:var(--sage-light);margin-top:var(--space-1);';
-                lockNote.textContent = 'Upgrade to access';
-                card.appendChild(lockNote);
-              }
-            });
-          }
-
-          // Get the auth session token for save-exam-result API calls
-          const { data: { session } } = await supabase.auth.getSession();
+          // Stash auth token for save-exam-result
+          const session = sessionRes.data?.session;
           if (session) window._examAuthToken = session.access_token;
 
+          const student = studentsRes.data?.[0];
+
+          // ── Resolve level ──
+          const rawLevel  = student?.level || '';   // "Primary 4"
+          const levelSlug = rawLevel.toLowerCase().replace(/\s+/g, '-');  // "primary-4"
+          const levelValid = rawLevel && !!getTemplate('mathematics', levelSlug);
+
+          if (levelValid) {
+            selectedLevel        = levelSlug;
+            selectedLevelDisplay = rawLevel;
+          } else {
+            // Fallback: show manual level picker
+            wizardLoading.hidden = true;
+            wizardLevelPicker.hidden = false;
+            setupLevelPicker();
+            return;
+          }
+
+          // ── Resolve subject ──
+          const tier = userProfile.subscription_tier;
+          const isAdmin = userProfile.role === 'admin';
+
+          if (!isAdmin && tier === 'single_subject') {
+            const sub = student?.selected_subject?.toLowerCase();
+            if (sub && getTemplate(sub, levelSlug)) {
+              selectedSubject = sub;
+              // Level + subject both known — go straight to type step
+              wizardLoading.hidden = true;
+              showTypeStep();
+              return;
+            }
+          }
+
+          // Show subject selection step
+          wizardLoading.hidden = true;
+          showSubjectStep(tier, isAdmin, levelSlug);
+
         } catch (err) {
-          console.warn('[exam] Access control init failed (non-blocking):', err.message);
+          console.error('[wizard] init failed:', err);
+          showWizardError('Something went wrong. Please refresh the page.');
         }
       })();
 
-      // ── Initialise selector ──
-      (function initSelector() {
-        const templates = listTemplates();
-        if (!templates.length) {
-          selectorLoading.textContent = 'No practice papers available yet. Check back soon!';
-          return;
-        }
-        selectorLoading.hidden = true;
-        selectorGrid.style.display = '';
-
-        templates.forEach(function(tpl) {
-          const card = document.createElement('div');
-          card.className = 'exam-select-card';
-
-          const title = document.createElement('p');
-          title.style.cssText = 'font-weight:700;font-size:1rem;margin-bottom:.25rem;';
-          title.textContent = tpl.label;
-
-          const meta = document.createElement('p');
-          meta.className = 'text-secondary text-sm';
-          meta.textContent = tpl.totalMarks + ' marks · ' + tpl.duration + ' min';
-
-          card.appendChild(title);
-          card.appendChild(meta);
-          card.setAttribute('role', 'button');
-          card.setAttribute('tabindex', '0');
-
-          // Store subject slug on card for access control
-          card.dataset.subject = tpl.subject.toLowerCase();
-
-          card.addEventListener('click', function() {
-            selectorGrid.querySelectorAll('.exam-select-card')
-              .forEach(function(c) { c.classList.remove('is-selected'); });
-            card.classList.add('is-selected');
-            selectedSubject    = tpl.subject;
-            selectedLevel      = tpl.level;
-            typeRow.hidden     = false;
-            startRow.hidden    = false;
-            showBlueprint(tpl.subject, tpl.level, selectedExamType);
-          });
-          card.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); card.click(); }
-          });
-
-          selectorGrid.appendChild(card);
+      // ──────────────────────────────────────────────────────────────
+      // STEP 0c: Manual level picker (fallback)
+      // ──────────────────────────────────────────────────────────────
+      function setupLevelPicker() {
+        document.getElementById('level-picker-grid').addEventListener('click', function(e) {
+          const btn = e.target.closest('.level-btn');
+          if (!btn) return;
+          document.querySelectorAll('.level-btn').forEach(function(b) { b.classList.remove('is-selected'); });
+          btn.classList.add('is-selected');
+          selectedLevel        = btn.dataset.level;
+          selectedLevelDisplay = btn.dataset.level.replace('primary-', 'Primary ');
+          // Small delay so the user sees the selection before advancing
+          setTimeout(function() {
+            wizardLevelPicker.hidden = true;
+            // Still need subject (can't auto-detect without real DB level)
+            showSubjectStep(userProfile?.subscription_tier, userProfile?.role === 'admin', selectedLevel);
+          }, 200);
         });
-      })();
+      }
 
-      // ── Assessment type chip selection ──
-      typeChips.addEventListener('click', function(e) {
-        const chip = e.target.closest('.exam-type-chip');
-        if (!chip) return;
-        typeChips.querySelectorAll('.exam-type-chip').forEach(function(c) { c.classList.remove('is-selected'); });
-        chip.classList.add('is-selected');
-        selectedExamType = chip.dataset.type;
-        if (selectedSubject && selectedLevel) {
-          showBlueprint(selectedSubject, selectedLevel, selectedExamType);
+      // ──────────────────────────────────────────────────────────────
+      // STEP 1: Subject selection
+      // ──────────────────────────────────────────────────────────────
+      function showSubjectStep(tier, isAdmin, levelSlug) {
+        levelLabelSub.textContent = selectedLevelDisplay;
+        wizardSubject.hidden = false;
+
+        // Lock subjects for single_subject plan (shouldn't reach here but guard anyway)
+        if (!isAdmin && tier === 'single_subject') {
+          document.querySelectorAll('.wizard-subject-card').forEach(function(card) {
+            card.classList.add('is-locked');
+          });
         }
-      });
 
-      // ── Blueprint preview renderer ──
-      function showBlueprint(subject, level, examType) {
+        document.querySelectorAll('.wizard-subject-card').forEach(function(card) {
+          card.addEventListener('click', function() {
+            if (card.classList.contains('is-locked')) return;
+            selectedSubject = card.dataset.subject;
+            wizardSubject.hidden = true;
+            showTypeStep();
+          });
+        });
+      }
+
+      // ──────────────────────────────────────────────────────────────
+      // STEP 2: Assessment type + blueprint
+      // ──────────────────────────────────────────────────────────────
+      function showTypeStep() {
+        const subjectLabel = selectedSubject.charAt(0).toUpperCase() + selectedSubject.slice(1);
+        levelLabelType.textContent = selectedLevelDisplay + ' · ' + subjectLabel;
+
+        wizardType.hidden = false;
+        buildTypeChips(selectedLevel);
+        updateConfirmAndBlueprint();
+      }
+
+      /** Builds assessment type option buttons filtered by level. */
+      function buildTypeChips(levelSlug) {
+        typeChipsEl.innerHTML = '';
+        const isPSLE = levelSlug === 'primary-6';
+
+        TYPE_META.forEach(function(t, idx) {
+          if (t.type === 'PRELIM' && !isPSLE) return;  // PRELIM: P6 only
+
+          const btn = document.createElement('button');
+          btn.className = 'wizard-type-option' + (idx === 0 ? ' is-selected' : '');
+          btn.dataset.type = t.type;
+          btn.setAttribute('aria-pressed', idx === 0 ? 'true' : 'false');
+
+          const icon = document.createElement('span');
+          icon.className = 'wizard-type-icon';
+          icon.textContent = t.icon;
+          icon.setAttribute('aria-hidden', 'true');
+
+          const info = document.createElement('span');
+          const name = document.createElement('div');
+          name.className = 'wizard-type-name';
+          name.textContent = t.label;
+          const desc = document.createElement('div');
+          desc.className = 'wizard-type-desc';
+          desc.textContent = t.desc;
+          info.appendChild(name);
+          info.appendChild(desc);
+
+          btn.appendChild(icon);
+          btn.appendChild(info);
+
+          btn.addEventListener('click', function() {
+            typeChipsEl.querySelectorAll('.wizard-type-option').forEach(function(b) {
+              b.classList.remove('is-selected');
+              b.setAttribute('aria-pressed', 'false');
+            });
+            btn.classList.add('is-selected');
+            btn.setAttribute('aria-pressed', 'true');
+            selectedExamType = t.type;
+            updateConfirmAndBlueprint();
+          });
+
+          typeChipsEl.appendChild(btn);
+        });
+
+        selectedExamType = 'PRACTICE';
+      }
+
+      /** Updates the confirmation text and blueprint preview after any selection change. */
+      function updateConfirmAndBlueprint() {
+        const subjectLabel = selectedSubject.charAt(0).toUpperCase() + selectedSubject.slice(1);
+        const typeLabel    = TYPE_LABELS[selectedExamType] || selectedExamType;
+
+        // Confirmation banner
+        confirmText.textContent = 'Generating ' + selectedLevelDisplay + ' ' + subjectLabel +
+          ' assessment paper for ' + typeLabel;
+
+        // Blueprint
+        renderBlueprint(selectedSubject, selectedLevel, selectedExamType);
+      }
+
+      /** Renders the DRAFT PREVIEW blueprint into #blueprint-sections-list. */
+      function renderBlueprint(subject, level, examType) {
         const tpl = getTemplate(subject, level);
         if (!tpl) return;
 
-        const scaleFactor  = (examType === 'WA1' || examType === 'WA2') ? 0.5 : 1.0;
-        const typeNames    = { mcq:'Multiple Choice', short_ans:'Short Answer', word_problem:'Word Problem', open_ended:'Open-Ended', cloze:'Grammar Cloze', editing:'Editing' };
-        const typeColours  = { mcq:'var(--maths-colour)', short_ans:'var(--science-colour)', word_problem:'var(--success)', open_ended:'var(--english-colour)', cloze:'var(--amber)', editing:'var(--danger)' };
+        const scaleFactor = (examType === 'WA1' || examType === 'WA2') ? 0.5 : 1.0;
+        const typeNames   = {
+          mcq:'Multiple Choice', short_ans:'Short Answer', word_problem:'Word Problem',
+          open_ended:'Open-Ended', cloze:'Grammar Cloze', editing:'Editing',
+        };
+        const typeColours = {
+          mcq:'var(--maths-colour)', short_ans:'var(--science-colour)',
+          word_problem:'var(--success)', open_ended:'var(--english-colour)',
+          cloze:'var(--amber)', editing:'var(--danger)',
+        };
 
         blueprintList.innerHTML = '';
-
-        let totalQ = 0;
         let totalM = 0;
 
         tpl.sections.forEach(function(sec) {
-          const scaledCount = Math.max(1, Math.round(sec.count * scaleFactor));
+          const scaledCount  = Math.max(1, Math.round(sec.count * scaleFactor));
           const sectionMarks = scaledCount * sec.marksEach;
-          totalQ += scaledCount;
           totalM += sectionMarks;
 
           const row = document.createElement('div');
           row.className = 'exam-blueprint-row';
 
-          // Colour dot
           const dot = document.createElement('span');
-          dot.style.cssText = 'width:10px;height:10px;border-radius:50%;flex-shrink:0;background:' + (typeColours[sec.type] || 'var(--cream)') + ';';
+          dot.style.cssText = 'width:var(--space-3);height:var(--space-3);border-radius:var(--radius-full);flex-shrink:0;background:' +
+            (typeColours[sec.type] || 'var(--cream)') + ';';
 
           const labelEl = document.createElement('span');
           labelEl.className = 'exam-blueprint-label';
@@ -654,7 +889,8 @@
 
           const metaEl = document.createElement('span');
           metaEl.className = 'exam-blueprint-meta';
-          metaEl.textContent = scaledCount + ' × ' + (typeNames[sec.type] || sec.type) + ' · ' + sectionMarks + ' marks';
+          metaEl.textContent = scaledCount + ' × ' + (typeNames[sec.type] || sec.type) +
+            ' · ' + sectionMarks + ' marks';
 
           row.append(dot, labelEl, metaEl);
           blueprintList.appendChild(row);
@@ -665,25 +901,37 @@
         totalRow.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding-top:var(--space-2);margin-top:var(--space-1);';
         const durEl = document.createElement('span');
         durEl.className = 'text-secondary text-sm';
-        durEl.textContent = Math.round(tpl.duration * scaleFactor) + ' minutes';
+        durEl.textContent = '⏱ ' + Math.round(tpl.duration * scaleFactor) + ' minutes (timed)';
         const totEl = document.createElement('span');
         totEl.style.cssText = 'font-weight:700;font-size:.9375rem;color:var(--cream);';
         totEl.textContent = 'Total: ' + totalM + ' marks';
         totalRow.append(durEl, totEl);
         blueprintList.appendChild(totalRow);
-
-        blueprintPreview.hidden = false;
       }
 
-      // ── Start exam ──
+      // ── Back button on type step ──
+      wizardBackBtn.addEventListener('click', function() {
+        wizardType.hidden = true;
+        // If only one subject available (single_subject was auto-resolved), go back to loading fallback
+        if (!userProfile || userProfile.subscription_tier === 'single_subject') {
+          // Go back to level picker or reload — can't un-auto-select
+          window.location.reload();
+          return;
+        }
+        wizardSubject.hidden = false;
+        selectedSubject = '';
+      });
+
+      // ──────────────────────────────────────────────────────────────
+      // GENERATE PAPER
+      // ──────────────────────────────────────────────────────────────
       startBtn.addEventListener('click', async function() {
         if (!selectedSubject || !selectedLevel) return;
         startBtn.disabled = true;
         startBtn.textContent = 'Generating…';
 
-        // Show Singapore loading overlay
         genOverlay.hidden = false;
-        genStatusText.textContent = 'Assembling your ' + selectedExamType + ' paper…';
+        genStatusText.textContent = 'Assembling your ' + TYPE_LABELS[selectedExamType] + ' paper…';
 
         try {
           const exam = await generateExam(selectedSubject, selectedLevel, selectedExamType);
@@ -695,16 +943,21 @@
           genOverlay.hidden = true;
           startBtn.disabled = false;
           startBtn.textContent = 'Generate Paper →';
-          alert('Could not generate paper. Please try again.');
+          showWizardError('Could not generate paper. Please try again.');
         }
       });
 
-      // ── Render the exam paper ──
+      // ──────────────────────────────────────────────────────────────
+      // RENDER EXAM PAPER
+      // ──────────────────────────────────────────────────────────────
       function renderExam(exam) {
-        selectorSection.hidden = true;
+        wizardEl.hidden = true;
         paperSection.hidden = false;
 
-        const typeLabel = { WA1:'Weighted Assessment 1', WA2:'Weighted Assessment 2', EOY:'End-of-Year', PRELIM:'Preliminary', PRACTICE:'Practice Paper' };
+        const typeLabel = {
+          WA1:'Weighted Assessment 1', WA2:'Weighted Assessment 2',
+          EOY:'End-of-Year', PRELIM:'Preliminary', PRACTICE:'Practice Paper',
+        };
         paperTitle.textContent = exam.template.label + ' — ' + (typeLabel[exam.examType] || 'Practice Paper');
         paperMeta.textContent  =
           exam.actualMarks + ' marks · ' + exam.duration + ' minutes · ' +
@@ -736,45 +989,38 @@
           secEl.appendChild(header);
 
           sec.questions.forEach(function(q) {
-            const qNum = globalQNum++;
-            const qEl = renderExamQuestion(q, sec.type, qNum);
+            const qEl = renderExamQuestion(q, sec.type, globalQNum++);
             secEl.appendChild(qEl);
           });
 
           sectionsEl.appendChild(secEl);
         });
 
-        // Record start time for elapsed calculation
         examStartTime = Date.now();
-
-        // Start timer if timed mode
-        if (timerModeSelect.value === 'timed') {
-          startTimer(exam.duration * 60);
-        }
+        startTimer(exam.duration * 60);  // Timer always active
       }
 
-      // ── Render individual exam question ──
+      // ──────────────────────────────────────────────────────────────
+      // QUESTION RENDERERS
+      // ──────────────────────────────────────────────────────────────
       function renderExamQuestion(q, type, num) {
         const wrapper = document.createElement('div');
         wrapper.className = 'exam-question';
-        wrapper.dataset.qId = q.id;
+        wrapper.dataset.qId  = q.id;
         wrapper.dataset.type = type;
 
         switch (type) {
-          case 'mcq':        renderMCQQuestion(q, num, wrapper); break;
-          case 'short_ans':  renderShortAnsQuestion(q, num, wrapper); break;
+          case 'mcq':          renderMCQQuestion(q, num, wrapper);         break;
+          case 'short_ans':    renderShortAnsQuestion(q, num, wrapper);    break;
           case 'word_problem': renderWordProblemQuestion(q, num, wrapper); break;
-          case 'open_ended': renderOpenEndedQuestion(q, num, wrapper); break;
-          case 'cloze':      renderClozeQuestion(q, num, wrapper); break;
-          case 'editing':    renderEditingQuestion(q, num, wrapper); break;
-          default:
-            wrapper.textContent = 'Question type "' + type + '" not supported.';
+          case 'open_ended':   renderOpenEndedQuestion(q, num, wrapper);   break;
+          case 'cloze':        renderClozeQuestion(q, num, wrapper);       break;
+          case 'editing':      renderEditingQuestion(q, num, wrapper);     break;
+          default: wrapper.textContent = 'Question type "' + type + '" not yet supported.';
         }
-
         return wrapper;
       }
 
-      // ── MCQ renderer ──
       function renderMCQQuestion(q, num, wrapper) {
         const qText = document.createElement('p');
         qText.className = 'exam-question-text';
@@ -787,7 +1033,7 @@
 
         const ul = document.createElement('ul');
         ul.className = 'exam-options';
-        q.options.forEach(function(opt, idx) {
+        (q.options || []).forEach(function(opt, idx) {
           const key = String.fromCharCode(65 + idx);
           const li  = document.createElement('li');
           li.dataset.key = key;
@@ -807,7 +1053,6 @@
         wrapper.appendChild(ul);
       }
 
-      // ── Short answer renderer ──
       function renderShortAnsQuestion(q, num, wrapper) {
         const qText = document.createElement('p');
         qText.className = 'exam-question-text';
@@ -826,8 +1071,6 @@
         wrapper.appendChild(input);
       }
 
-      // ── Word problem renderer ──
-      // Uses textareas for free-format working — AI semantic grading on submit.
       function renderWordProblemQuestion(q, num, wrapper) {
         const qText = document.createElement('p');
         qText.className = 'exam-question-text';
@@ -840,7 +1083,6 @@
 
         const parts = q.parts || [];
         if (parts.length === 0) {
-          // No parts — single textarea for full working
           const ta = document.createElement('textarea');
           ta.className = 'exam-answer-textarea';
           ta.placeholder = 'Show your working here…';
@@ -853,25 +1095,20 @@
         parts.forEach(function(part) {
           const partEl = document.createElement('div');
           partEl.style.marginTop = 'var(--space-4)';
-
           const partQ = document.createElement('p');
-          partQ.style.cssText = 'font-weight:500;margin-bottom:var(--space-1);';
+          partQ.style.cssText = 'font-weight:500;margin-bottom:var(--space-1);color:var(--cream);';
           partQ.textContent = part.label + '  ' + part.question;
           partEl.appendChild(partQ);
-
           const ta = document.createElement('textarea');
           ta.className = 'exam-answer-textarea';
           ta.placeholder = 'Show your working for part ' + part.label + '…';
           ta.dataset.partLabel = part.label;
           ta.setAttribute('aria-label', 'Working space for part ' + part.label);
           partEl.appendChild(ta);
-
           wrapper.appendChild(partEl);
         });
       }
 
-      // ── Open-ended renderer ──
-      // Uses styled textarea with design-system tokens. AI grading on submit.
       function renderOpenEndedQuestion(q, num, wrapper) {
         const qText = document.createElement('p');
         qText.className = 'exam-question-text';
@@ -882,7 +1119,6 @@
         qText.appendChild(document.createTextNode(q.question_text));
         wrapper.appendChild(qText);
 
-        // CER scaffold hint for Science
         if (q.subject === 'Science') {
           const hint = document.createElement('p');
           hint.style.cssText = 'font-size:.8125rem;color:var(--sage-light);margin-bottom:var(--space-1);';
@@ -903,7 +1139,6 @@
         wrapper.appendChild(marksNote);
       }
 
-      // ── Cloze renderer ──
       function renderClozeQuestion(q, num, wrapper) {
         const heading = document.createElement('p');
         heading.className = 'exam-question-text';
@@ -911,32 +1146,30 @@
         numSpan.className = 'exam-question-num';
         numSpan.textContent = num + '.';
         heading.appendChild(numSpan);
-        heading.appendChild(document.createTextNode(q.question_text));
+        heading.appendChild(document.createTextNode(q.question_text || 'Fill in the blanks.'));
         wrapper.appendChild(heading);
+
+        const blanks   = q.blanks || [];
+        const blankMap = {};
+        blanks.forEach(function(b) { blankMap[b.number !== undefined ? b.number : b.id] = b; });
 
         const passage = document.createElement('div');
         passage.className = 'exam-cloze-passage';
 
-        const blanks = q.blanks || [];
-        const blankMap = {};
-        blanks.forEach(function(b) { blankMap[b.id] = b; });
-
-        // Replace [1], [2] etc. with <select> dropdowns
-        let html = '';
-        const text = q.passage || '';
+        const text  = q.passage || '';
         const parts = text.split(/(\[\d+\])/);
-        const frag = document.createDocumentFragment();
+        const frag  = document.createDocumentFragment();
 
         parts.forEach(function(part) {
           const match = part.match(/^\[(\d+)\]$/);
           if (match) {
-            const blankId = parseInt(match[1], 10);
-            const blank   = blankMap[blankId];
+            const blankNum = parseInt(match[1], 10);
+            const blank    = blankMap[blankNum];
             if (blank) {
               const sel = document.createElement('select');
               sel.className = 'exam-cloze-select';
-              sel.dataset.blankId = blankId;
-              sel.setAttribute('aria-label', 'Blank ' + blankId);
+              sel.dataset.blankId = blankNum;
+              sel.setAttribute('aria-label', 'Blank ' + blankNum);
 
               const defaultOpt = document.createElement('option');
               defaultOpt.value = '';
@@ -963,7 +1196,6 @@
         wrapper.appendChild(passage);
       }
 
-      // ── Editing renderer ──
       function renderEditingQuestion(q, num, wrapper) {
         const heading = document.createElement('p');
         heading.className = 'exam-question-text';
@@ -971,18 +1203,13 @@
         numSpan.className = 'exam-question-num';
         numSpan.textContent = num + '.';
         heading.appendChild(numSpan);
-        heading.appendChild(document.createTextNode(q.question_text));
+        heading.appendChild(document.createTextNode(q.question_text || 'Find and correct the error.'));
         wrapper.appendChild(heading);
 
-        const lines = q.passage_lines || [];
         const passageEl = document.createElement('div');
-        passageEl.style.background = 'var(--bg)';
-        passageEl.style.borderRadius = 'var(--radius)';
-        passageEl.style.padding = 'var(--space-4)';
-        passageEl.style.border = '1px solid var(--border)';
-        passageEl.style.marginBottom = 'var(--space-4)';
+        passageEl.style.cssText = 'background:var(--glass);border-radius:var(--radius-md);padding:var(--space-4);border:1px solid var(--glass-border);margin-bottom:var(--space-4);backdrop-filter:blur(8px);';
 
-        lines.forEach(function(line) {
+        (q.passage_lines || []).forEach(function(line) {
           const lineEl = document.createElement('div');
           lineEl.className = 'exam-editing-line';
           lineEl.dataset.lineNum = line.line_number;
@@ -993,16 +1220,14 @@
 
           const textEl = document.createElement('span');
           textEl.style.flex = '1';
-
-          // Build line text with underlined word highlighted
-          const parts = line.text.split(line.underlined_word);
-          if (parts.length === 2) {
-            textEl.appendChild(document.createTextNode(parts[0]));
-            const underline = document.createElement('span');
-            underline.className = 'exam-editing-underline';
-            underline.textContent = line.underlined_word;
-            textEl.appendChild(underline);
-            textEl.appendChild(document.createTextNode(parts[1]));
+          const splitParts = line.text.split(line.underlined_word);
+          if (splitParts.length === 2) {
+            textEl.appendChild(document.createTextNode(splitParts[0]));
+            const ul = document.createElement('span');
+            ul.className = 'exam-editing-underline';
+            ul.textContent = line.underlined_word;
+            textEl.appendChild(ul);
+            textEl.appendChild(document.createTextNode(splitParts[1]));
           } else {
             textEl.textContent = line.text;
           }
@@ -1024,7 +1249,9 @@
         wrapper.appendChild(passageEl);
       }
 
-      // ── Timer ──
+      // ──────────────────────────────────────────────────────────────
+      // TIMER (always active)
+      // ──────────────────────────────────────────────────────────────
       function startTimer(seconds) {
         timerSeconds = seconds;
         updateTimerDisplay();
@@ -1052,7 +1279,9 @@
         timerEl.textContent = '';
       }
 
-      // ── Submit & mark (async — AI grades WP/OE questions) ──
+      // ──────────────────────────────────────────────────────────────
+      // SUBMIT & MARK
+      // ──────────────────────────────────────────────────────────────
       submitBtn.addEventListener('click', function() { submitExam(); });
 
       async function submitExam() {
@@ -1062,29 +1291,27 @@
         submitBtn.disabled = true;
         const timeTaken = examStartTime ? Math.round((Date.now() - examStartTime) / 1000) : null;
 
-        // ── Phase 1: Synchronous marking (MCQ, short_ans, cloze, editing) ──
-        let totalEarned  = 0;
+        // Phase 1: sync marking (MCQ, short_ans, cloze, editing)
+        let totalEarned   = 0;
         const sectionResults = [];
-        const wpoeItems  = []; // collect WP/OE for AI grading
+        const wpoeItems   = [];
 
         currentExam.sections.forEach(function(sec) {
           if (!sec.questions.length) return;
 
           let secEarned = 0;
-          const secEl = sectionsEl.querySelector('[data-section-id="' + sec.id + '"]');
+          const secEl   = sectionsEl.querySelector('[data-section-id="' + sec.id + '"]');
 
           sec.questions.forEach(function(q) {
             const qEl = secEl ? secEl.querySelector('[data-q-id="' + q.id + '"]') : null;
             if (!qEl) return;
 
             if (sec.type === 'word_problem' || sec.type === 'open_ended') {
-              // Collect for AI phase
               const textareas = qEl.querySelectorAll('.exam-answer-textarea');
-              const answers = Array.from(textareas).map(function(ta) { return ta.value.trim(); }).join('\n');
-              wpoeItems.push({ q, sec, secEl, qEl, type: sec.type, marksEach: sec.marksEach, answer: answers });
+              const answers   = Array.from(textareas).map(function(ta) { return ta.value.trim(); }).join('\n');
+              wpoeItems.push({ q, sec, qEl, type: sec.type, marksEach: sec.marksEach, answer: answers });
             } else {
-              const earned = markQuestion(q, sec.type, sec.marksEach, qEl);
-              secEarned += earned;
+              secEarned += markQuestion(q, sec.type, sec.marksEach, qEl);
             }
           });
 
@@ -1092,27 +1319,24 @@
           totalEarned += secEarned;
         });
 
-        // ── Phase 2: AI grading for WP/OE ──
+        // Phase 2: AI grading for WP/OE
         if (wpoeItems.length > 0) {
           gradeOverlay.hidden = false;
           gradeStatusText.textContent = 'Grading ' + wpoeItems.length + ' question' + (wpoeItems.length > 1 ? 's' : '') + '…';
 
           const gradingResults = await gradeWithAI(wpoeItems);
-
           gradeOverlay.hidden = true;
 
           gradingResults.forEach(function(result, idx) {
-            const item = wpoeItems[idx];
-            const grade = result.status === 'fulfilled' ? result.value : { score: 0, maxScore: item.marksEach, feedback: 'Could not grade — please compare with the worked solution.', breakdown: [] };
+            const item  = wpoeItems[idx];
+            const grade = result.status === 'fulfilled'
+              ? result.value
+              : { score: 0, maxScore: item.marksEach, feedback: 'Could not grade — compare with the worked solution.', breakdown: [] };
 
-            // Find or create section result entry for this question's section
             const srEntry = sectionResults.find(function(sr) { return sr.secId === item.sec.id; });
-            if (srEntry) {
-              srEntry.earned += grade.score;
-            }
+            if (srEntry) srEntry.earned += grade.score;
             totalEarned += grade.score;
 
-            // Render AI feedback beneath the textarea
             const textareas = item.qEl.querySelectorAll('.exam-answer-textarea');
             const cls = grade.score >= grade.maxScore ? 'is-correct' : grade.score > 0 ? 'is-partial' : 'is-wrong';
             textareas.forEach(function(ta) { ta.classList.add(cls); ta.disabled = true; });
@@ -1130,91 +1354,78 @@
           });
         }
 
-        // ── Phase 3: Show results + save ──
+        // Phase 3: Show results + save
         const questionsAttempted = countAttempted();
         showResults(totalEarned, sectionResults);
         saveExamResult(totalEarned, currentExam.actualMarks, timeTaken, questionsAttempted);
       }
 
-      /** Count how many questions the student attempted (non-empty answer). */
       function countAttempted() {
         let count = 0;
         sectionsEl.querySelectorAll('.exam-question').forEach(function(qEl) {
           const type = qEl.dataset.type;
-          if (type === 'mcq'        && qEl.querySelector('li.is-selected'))             count++;
-          else if (type === 'short_ans' && qEl.querySelector('.exam-short-input')?.value?.trim()) count++;
-          else if (type === 'cloze')    count++;  // cloze always counts if rendered
-          else if (type === 'editing')  count++;
+          if      (type === 'mcq'         && qEl.querySelector('li.is-selected'))                                  count++;
+          else if (type === 'short_ans'   && qEl.querySelector('.exam-short-input')?.value?.trim())                count++;
+          else if (type === 'cloze')                                                                               count++;
+          else if (type === 'editing')                                                                             count++;
           else if ((type === 'word_problem' || type === 'open_ended') &&
-                   qEl.querySelector('.exam-answer-textarea')?.value?.trim())            count++;
+                   qEl.querySelector('.exam-answer-textarea')?.value?.trim())                                      count++;
         });
         return count;
       }
 
-      /** Sends WP/OE questions to /api/grade-answer. Returns Promise.allSettled results. */
       async function gradeWithAI(items) {
         const promises = items.map(async function(item) {
           const payload = {
-            questionId:    item.q.id,
-            questionType:  item.type,
-            questionText:  item.q.question_text,
-            subject:       item.q.subject,
-            level:         item.q.level,
-            studentAnswer: item.answer,
+            questionId:     item.q.id,
+            questionType:   item.type,
+            questionText:   item.q.question_text,
+            subject:        item.q.subject,
+            level:          item.q.level,
+            studentAnswer:  item.answer,
             workedSolution: item.q.worked_solution || '',
-            keywords:      item.q.keywords || [],
-            modelAnswer:   item.q.model_answer || '',
-            parts:         item.q.parts || [],
-            marks:         item.marksEach,
+            keywords:       item.q.keywords || [],
+            modelAnswer:    item.q.model_answer || '',
+            parts:          item.q.parts || [],
+            marks:          item.marksEach,
           };
-
           const res = await fetch('/api/grade-answer', {
-            method:  'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify(payload),
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
           });
           if (!res.ok) throw new Error('Grade API ' + res.status);
-          return await res.json();
+          return res.json();
         });
-
         return Promise.allSettled(promises);
       }
 
-      /** Persists the exam result to Supabase via /api/save-exam-result. */
       async function saveExamResult(score, totalMarks, timeTaken, questionsAttempted) {
         try {
           const authToken = window._examAuthToken || '';
-          if (!authToken) return; // Not logged in — skip silently
+          if (!authToken) return;
 
           const subject = selectedSubject.charAt(0).toUpperCase() + selectedSubject.slice(1);
+          const level   = selectedLevelDisplay || selectedLevel.replace(/-/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
 
           const res = await fetch('/api/save-exam-result', {
-            method:  'POST',
-            headers: {
-              'Content-Type':  'application/json',
-              'Authorization': 'Bearer ' + authToken,
-            },
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
             body: JSON.stringify({
-              subject:              subject,
-              level:                selectedLevel.charAt(0).toUpperCase() + selectedLevel.replace(/-/g, ' ').slice(1),
-              examType:             currentExam.examType || 'PRACTICE',
-              score:                Math.round(score * 10) / 10,
+              subject, level,
+              examType:            currentExam.examType || 'PRACTICE',
+              score:               Math.round(score * 10) / 10,
               totalMarks,
               timeTaken,
               questionsAttempted,
-              examId:               currentExam.generatedAt,
+              examId:              currentExam.generatedAt,
             }),
           });
-
-          if (res.ok) {
-            showToast('Results saved — view in Progress →');
-          }
+          if (res.ok) showToast('Results saved — view in Progress →');
         } catch (err) {
           console.warn('[exam] Could not save result (non-blocking):', err.message);
         }
       }
 
-      /** Shows a temporary success toast. */
       function showToast(message) {
         const toast = document.createElement('div');
         toast.className = 'exam-toast';
@@ -1223,16 +1434,17 @@
         setTimeout(function() { toast.remove(); }, 3500);
       }
 
-      /** Marks a single question element in-place and returns marks earned. */
+      // ──────────────────────────────────────────────────────────────
+      // MARKING
+      // ──────────────────────────────────────────────────────────────
       function markQuestion(q, type, marksEach, qEl) {
         if (type === 'mcq') {
           const selected = qEl.querySelector('li.is-selected');
           if (!selected) return 0;
-          const key = selected.dataset.key;
           qEl.querySelectorAll('li').forEach(function(li) {
             if (li.dataset.key === q.correct_answer) li.classList.add('is-correct');
           });
-          if (key !== q.correct_answer) {
+          if (selected.dataset.key !== q.correct_answer) {
             selected.classList.add('is-wrong');
             return 0;
           }
@@ -1242,36 +1454,35 @@
         if (type === 'short_ans') {
           const input = qEl.querySelector('.exam-short-input');
           if (!input || !input.value.trim()) return 0;
-          const raw = input.value.trim().toLowerCase();
+          const raw      = input.value.trim().toLowerCase();
           const accepted = [q.correct_answer, ...(q.accept_also || [])].map(function(a) { return a.toLowerCase(); });
-          const correct = accepted.includes(raw);
+          const correct  = accepted.includes(raw);
           input.classList.add(correct ? 'is-correct' : 'is-wrong');
           input.disabled = true;
           return correct ? marksEach : 0;
         }
 
         if (type === 'cloze') {
-          const blanks   = q.blanks || [];
           let blankScore = 0;
-          blanks.forEach(function(blank) {
-            const sel = qEl.querySelector('[data-blank-id="' + blank.id + '"]');
+          (q.blanks || []).forEach(function(blank) {
+            const blankKey = blank.number !== undefined ? blank.number : blank.id;
+            const sel = qEl.querySelector('[data-blank-id="' + blankKey + '"]');
             if (!sel) return;
-            const correct = sel.value.toLowerCase() === blank.correct_answer.toLowerCase();
-            sel.style.borderColor = correct ? 'var(--success)' : 'var(--danger)';
+            const correct = sel.value.toLowerCase() === (blank.correct_answer || '').toLowerCase();
+            sel.style.borderColor = correct ? 'var(--mint)' : 'var(--danger)';
             sel.disabled = true;
             if (correct) blankScore++;
           });
-          return blankScore; // 1 mark per blank
+          return blankScore;
         }
 
         if (type === 'editing') {
-          const inputs = qEl.querySelectorAll('.exam-editing-input');
           let editScore = 0;
-          inputs.forEach(function(input) {
-            const correct = input.dataset.correct;
-            const isError = input.dataset.hasError === 'true';
-            const val     = input.value.trim().toLowerCase();
-            if (!isError) { // No error — accept original word or blank
+          qEl.querySelectorAll('.exam-editing-input').forEach(function(input) {
+            const correct  = input.dataset.correct;
+            const isError  = input.dataset.hasError === 'true';
+            const val      = input.value.trim().toLowerCase();
+            if (!isError) {
               if (!val || val === correct.toLowerCase()) editScore++;
               return;
             }
@@ -1280,16 +1491,17 @@
             input.disabled = true;
             if (isCorrect) editScore++;
           });
-          return editScore; // 1 mark per line
+          return editScore;
         }
 
-        // word_problem and open_ended: self-assessed — no auto-mark
-        return 0;
+        return 0; // word_problem, open_ended: AI-graded
       }
 
-      // ── Show results ──
+      // ──────────────────────────────────────────────────────────────
+      // RESULTS
+      // ──────────────────────────────────────────────────────────────
       function showResults(earned, sectionResults) {
-        paperSection.hidden  = true;
+        paperSection.hidden   = true;
         resultsSection.hidden = false;
 
         const total = currentExam.actualMarks;
@@ -1299,16 +1511,17 @@
         resultsLabel.textContent = pct + '% · ' + getBand(pct);
 
         setTimeout(function() {
-          resultsBar.style.width = pct + '%';
-          resultsBar.style.background = pct >= 75 ? 'var(--success)' : pct >= 50 ? 'var(--amber)' : 'var(--danger)';
+          resultsBar.style.width      = pct + '%';
+          resultsBar.style.background = pct >= 75 ? 'var(--mint)' : pct >= 50 ? 'var(--amber)' : 'var(--danger)';
         }, 100);
-        resultsBreakdown.appendChild(sectionNote);
+
+        resultsBreakdown.textContent = '';
 
         resultsSections.innerHTML = '';
         sectionResults.forEach(function(sr) {
           const row = document.createElement('div');
-          row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:var(--space-3) 0;border-bottom:1px solid var(--border);';
-          const name = document.createElement('span');
+          row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:var(--space-3) 0;border-bottom:1px solid var(--glass-border);color:var(--cream);';
+          const name  = document.createElement('span');
           name.textContent = sr.label;
           const score = document.createElement('span');
           score.style.fontWeight = '700';
@@ -1327,47 +1540,60 @@
         return 'Needs practice';
       }
 
-      // ── Print ──
+      // ──────────────────────────────────────────────────────────────
+      // PRINT & RETRY
+      // ──────────────────────────────────────────────────────────────
       printBtn.addEventListener('click', function() { window.print(); });
       resultsPrintBtn.addEventListener('click', function() { window.print(); });
 
-      // ── Retry ──
       retryBtn.addEventListener('click', function() {
         clearExamCache();
-        resultsSection.hidden   = true;
-        selectorSection.hidden  = false;
-        currentExam             = null;
-        selectedExamType        = 'PRACTICE';
-        examStartTime           = null;
-        startBtn.disabled       = false;
-        startBtn.textContent    = 'Generate Paper →';
-        submitBtn.disabled      = false;
-        timerEl.textContent     = '';
-        typeRow.hidden          = true;
-        startRow.hidden         = true;
-        blueprintPreview.hidden = true;
-        // Reset type chip selection
-        typeChips.querySelectorAll('.exam-type-chip').forEach(function(c) {
-          c.classList.toggle('is-selected', c.dataset.type === 'PRACTICE');
-        });
-        selectorGrid.querySelectorAll('.exam-select-card').forEach(function(c) { c.classList.remove('is-selected'); });
+        resultsSection.hidden = true;
+        wizardEl.hidden       = false;
+        currentExam     = null;
+        selectedExamType = 'PRACTICE';
+        examStartTime    = null;
+        submitBtn.disabled = false;
+        timerEl.textContent = '';
+
+        // Reset wizard to type step (level + subject already known)
+        if (selectedSubject && selectedLevel) {
+          wizardLoading.hidden = true;
+          wizardSubject.hidden = true;
+          wizardType.hidden = false;
+          startBtn.disabled = false;
+          startBtn.textContent = 'Generate Paper →';
+          // Reset type chip to PRACTICE
+          if (typeChipsEl.firstElementChild) typeChipsEl.firstElementChild.click();
+        } else {
+          // Full reset — reload
+          window.location.reload();
+        }
       });
+
+      // ──────────────────────────────────────────────────────────────
+      // WIZARD ERROR HELPER
+      // ──────────────────────────────────────────────────────────────
+      function showWizardError(message) {
+        wizardLoading.hidden = true;
+        wizardErrorText.textContent = message;
+        wizardError.hidden = false;
+      }
 
     })();
   </script>
 
   <!-- TEST:
-       1. Selector shows all available paper cards; single_subject users see non-subscribed cards greyed out
-       2. Clicking a card shows assessment type chips AND blueprint preview card with section counts
-       3. Changing assessment type chip (WA1 etc.) updates blueprint to show scaled counts
-       4. "Generate Paper →" shows Merlion loading overlay then renders paper
-       5. Word problem questions show styled textareas (not answer-line spans)
-       6. Open-ended Science questions show "Claim · Evidence · Reasoning" hint
-       7. "Submit & Mark": MCQ/short_ans/cloze/editing graded immediately;
-          WP/OE triggers AI grading overlay then shows AI feedback + score beneath each textarea
-       8. Results shows per-section breakdown with AL band label
-       9. Success toast appears after result is saved to Supabase
-      10. "View Progress" link navigates to progress.html
-      11. "Generate New Paper" resets all state including blueprint and type chips -->
+       1. On load: spinner shows → profile + student fetched automatically
+       2. single_subject plan: level + subject auto-detected → lands on type step (no subject cards shown)
+       3. family/all_subjects plan: level auto-detected → subject cards shown → user picks one → advances to type step
+       4. No student.level in DB: manual level picker (P3/P4/P5/P6) shown first
+       5. Type step: P3/P4/P5 show 4 types (no PRELIM); P6 shows 5 types (with PRELIM)
+       6. Selecting any type updates confirm text: "Generating Primary X Subject for Type"
+       7. Blueprint shows SAMPLE FORMAT badge + correct section structure + scaled counts for WA1/WA2
+       8. Blueprint footer shows "X minutes (timed)" — no timer toggle anywhere
+       9. Generate Paper → Merlion overlay → paper renders with timer always running
+      10. Submit & Mark → AI overlay (WP/OE) → inline AI feedback → results → saved toast
+      11. "Generate New Paper" button resets to type step (subject/level preserved) -->
 </body>
 </html>
