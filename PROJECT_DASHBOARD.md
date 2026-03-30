@@ -1,5 +1,5 @@
 # PROJECT DASHBOARD — Superholic Lab
-> Last updated: 2026-03-29 | Auto-update on session end via /session-end
+> Last updated: 2026-03-30 | Auto-update on session end via /session-end
 
 ---
 
@@ -23,7 +23,7 @@
 | Language | JavaScript | TypeScript | 🔴 Not started |
 | Styling | CSS (style.css) | Tailwind CSS | 🔴 Not started |
 | Components | Flat JS modules | Atomic (ui/quiz/layout) | 🔴 Not started |
-| API routes | Vercel `api/*.js` | Next.js Route Handlers | 🔴 Not started |
+| API routes | Single `api/index.js` gateway | Next.js Route Handlers | 🟡 Consolidated (Vercel limit bypassed) |
 
 See ADR-0001 for migration rationale and strategy.
 
@@ -72,6 +72,8 @@ See ADR-0001 for migration rationale and strategy.
 - [x] Intelligence DNA — moe-templates.md + pedagogical-standards.md
 - [x] Infrastructure rules — tech-stack.md, design-system.md, safety.md, efficiency.md
 - [x] Question Coder agent — fully defined with pre-flight checklist + validation
+- [x] API Gateway consolidation — all 7 handlers in `lib/api/handlers.js`, single `api/index.js` dispatcher; Vercel 12-function limit bypassed. ESM throughout, Node 24.x, rewrites in vercel.json.
+- [x] Exam Architect — `pages/exam.html` credential-driven wizard UX, `exam-architect` agent, `system-exam-standards.json`, Gemini→Claude Haiku AI fallback for grading + on-demand generation, `api/save-exam-result` handler
 
 ### IN PROGRESS 🟡
 - [ ] 6 question types in quiz engine (quiz.js rewrite → Next.js component)
@@ -123,6 +125,7 @@ See ADR-0001 for migration rationale and strategy.
 | P3/P6 content gap | High — blocks full P1–P6 coverage | Content | Not started |
 | Next.js /src scaffold not created | High — migration cannot start | Platform | Not started |
 | Teaching Guide agent not defined | Medium — AI tutor lacks Socratic logic | Platform | Next session |
+| exam_results Supabase migration pending | Medium — save-exam-result inserts will fail until run | DB | Manual step: run supabase/003_exam_results.sql in Supabase Dashboard |
 
 ---
 
