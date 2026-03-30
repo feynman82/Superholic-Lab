@@ -5,102 +5,128 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Practice Paper — Superholic Lab</title>
   <link rel="stylesheet" href="../css/style.css" />
+  <link rel="icon" href="../assets/favicon.ico" />
+  
   <script type="module">
     import { guardPage } from '/js/auth.js';
     await guardPage(true);
   </script>
+  <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js"></script>
+
   <style>
-    /* ── DESIGN GUARDIAN: SKELETON BLUEPRINT ── */
-    .exam-blueprint-card {
-      background: var(--glass);
-      border: 1.5px solid var(--glass-border);
-      border-top: 2px dashed var(--mint);
-      border-radius: var(--radius-lg);
-      padding: var(--space-5);
-      backdrop-filter: blur(12px);
-      margin-bottom: var(--space-6);
+    /* ── MASTERCLASS DESIGN TOKENS ── */
+    :root {
+      --blueprint-border: 2px dashed var(--glass-border);
     }
-    .blueprint-eyebrow {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: .7rem; font-weight: 700; color: var(--mint);
-      text-transform: uppercase;
-    }
-    .blueprint-draft-badge {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: .65rem; color: var(--amber);
-      border: 1px solid rgba(255,184,48,0.25);
-      padding: .2rem .6rem; border-radius: var(--radius-pill);
-    }
-    .blueprint-skeleton-row {
-      display: flex; align-items: center; gap: var(--space-3);
-      padding: var(--space-2) 0; border-bottom: 1px solid var(--glass-border);
-    }
-    /* ── WIZARD LAYOUT ── */
+
+    /* ── WIZARD FLOW ── */
     .wizard-step { display: none; }
-    .wizard-step.is-active { display: block; animation: fadeIn 0.3s ease-in; }
+    .wizard-step.is-active { display: block; animation: fadeIn 0.4s ease-out; }
+
     .wizard-subject-grid {
       display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4);
+      margin-bottom: var(--space-8);
+    }
+
+    .subject-card {
+      background: var(--glass); border: 1.5px solid var(--glass-border);
+      border-radius: var(--radius-xl); padding: var(--space-6);
+      text-align: center; cursor: pointer; transition: all 0.2s ease;
+    }
+    .subject-card:hover { border-color: var(--mint); transform: translateY(-3px); }
+    .subject-card.is-selected { border-color: var(--mint); background: rgba(57,255,179,0.05); }
+
+    /* ── BLUEPRINT SKELETON ── */
+    .blueprint-card {
+      background: var(--glass); border: var(--blueprint-border);
+      border-top: 3px solid var(--mint); border-radius: var(--radius-lg);
+      padding: var(--space-6); margin-bottom: var(--space-8);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .blueprint-row {
+      display: flex; justify-content: space-between;
+      padding: var(--space-2) 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .blueprint-badge {
+      font-size: 0.65rem; color: var(--amber);
+      border: 1px solid rgba(255,184,48,0.3);
+      padding: 2px 8px; border-radius: var(--radius-pill);
+    }
+
+    /* ── OVERLAYS ── */
+    .full-overlay {
+      position: fixed; inset: 0; background: rgba(15,23,20,0.95);
+      backdrop-filter: blur(12px); z-index: 9999;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+
+    /* ── EXAM STYLES ── */
+    .exam-question { margin-bottom: var(--space-8); }
+    .exam-answer-area {
+      width: 100%; min-height: 120px; margin-top: var(--space-3);
+      background: var(--glass); border: 1.5px solid var(--glass-border);
+      border-radius: var(--radius-md); color: var(--cream); padding: var(--space-4);
     }
   </style>
 </head>
 <body class="has-bottom-nav">
 
   <header class="navbar is-scrolled">
-    <div class="container">
-      <nav class="navbar-inner">
-        <a href="../index.html" class="navbar-logo">Superholic Lab</a>
-        <div class="navbar-actions">
-          <span id="exam-timer" class="font-mono font-bold text-mint"></span>
-        </div>
-      </nav>
+    <div class="container flex-between">
+      <a href="../index.html" class="navbar-logo">Superholic Lab</a>
+      <div id="exam-timer" class="font-mono text-mint font-bold text-lg"></div>
     </div>
   </header>
 
-  <main style="padding: var(--space-8) 0;">
-    <div class="container" style="max-width:720px;">
+  <div id="gen-overlay" class="full-overlay" hidden>
+    <div class="merlion-spinner"></div> <p id="gen-text" class="mt-4 text-cream font-bold">Assembling Practice Paper...</p>
+    <p class="text-sage-light text-sm">Shuffling MOE-aligned questions</p>
+  </div>
+
+  <main class="container max-w-2xl py-12">
+    <section id="exam-wizard">
       
-      <section id="exam-wizard">
+      <div id="wizard-loading" class="text-center py-20">
+        <div class="spinner-sm mb-4"></div>
+        <p class="text-secondary">Detecting credentials...</p>
+      </div>
+
+      <div id="step-subject" class="wizard-step">
+        <h1 class="text-3xl font-bold mb-6">Choose a Subject</h1>
+        <div class="wizard-subject-grid">
+          <div class="subject-card" data-subject="Mathematics">🔢 <br>Math</div>
+          <div class="subject-card" data-subject="Science">🔬 <br>Science</div>
+          <div class="subject-card" data-subject="English">📖 <br>English</div>
+        </div>
+      </div>
+
+      <div id="step-type" class="wizard-step">
+        <div id="confirm-banner" class="p-4 bg-mint/5 border border-mint/20 rounded-lg mb-8 text-sm"></div>
         
-        <div id="wizard-loading" class="text-center py-12">
-          <p class="text-secondary">Detecting credentials...</p>
-        </div>
+        <h2 class="text-xl font-bold mb-4">Select Paper Type</h2>
+        <div id="type-grid" class="grid grid-cols-2 gap-3 mb-8"></div>
 
-        <div id="wizard-subject" class="wizard-step">
-          <h1 class="wizard-step-heading">Choose a subject</h1>
-          <div class="wizard-subject-grid" id="subject-options">
-            <button class="wizard-subject-card card-maths" data-subject="mathematics">🔢 Mathematics</button>
-            <button class="wizard-subject-card card-science" data-subject="science">🔬 Science</button>
-            <button class="wizard-subject-card card-english" data-subject="english">📖 English</button>
+        <div class="blueprint-card">
+          <div class="flex justify-between items-center mb-4">
+            <span class="text-xs uppercase tracking-widest opacity-50">Exam Blueprint</span>
+            <span class="blueprint-badge">DRAFT PREVIEW</span>
+          </div>
+          <div id="blueprint-rows"></div>
+          <div class="mt-4 pt-4 border-t border-white/5 flex justify-between text-sm">
+            <span class="text-sage-light">Duration: <span id="bp-duration">--</span> mins</span>
+            <span class="text-mint font-bold" id="bp-marks">-- marks</span>
           </div>
         </div>
 
-        <div id="wizard-type" class="wizard-step">
-          <h1 class="wizard-step-heading">Select Paper Type</h1>
-          <div class="wizard-confirm-banner mb-6">
-            <span id="wizard-confirm-text" class="wizard-confirm-text"></span>
-          </div>
+        <button id="generate-btn" class="btn btn-primary w-full py-4">Generate Paper →</button>
+      </div>
+    </section>
 
-          <div class="wizard-type-grid mb-8" id="type-options">
-            </div>
-
-          <div class="exam-blueprint-card">
-            <div class="blueprint-header flex justify-between mb-4">
-              <span class="blueprint-eyebrow">Sample Format</span>
-              <span class="blueprint-draft-badge">DRAFT PREVIEW</span>
-            </div>
-            <div id="blueprint-list"></div>
-          </div>
-
-          <button id="exam-start-btn" class="btn btn-primary w-full py-4">Generate Paper →</button>
-        </div>
-      </section>
-
-      <section id="exam-paper" hidden>
-        <div id="exam-header" class="border-b-2 border-glass-border pb-5 mb-8"></div>
-        <div id="exam-sections"></div>
-      </section>
-
-    </div>
+    <section id="exam-content" hidden>
+      <div id="exam-header" class="mb-10 pb-6 border-b border-white/10"></div>
+      <div id="exam-body"></div>
+      <button id="submit-btn" class="btn btn-primary w-full mt-10">Submit & Mark with AI</button>
+    </section>
   </main>
 
   <script src="../js/exam-templates.js"></script>
@@ -112,76 +138,80 @@
     const state = { level: '', subject: '', type: 'PRACTICE' };
 
     async function init() {
-      const sb = await getSupabase();
-      const { data: { user } } = await sb.auth.getUser();
-      
-      // 1. Automatic Credential Detection
-      const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
-      const { data: student } = await sb.from('students').select('*').eq('parent_id', user.id).single();
+      try {
+        const sb = await getSupabase();
+        const { data: { user } } = await sb.auth.getUser();
+        
+        const [profile, student] = await Promise.all([
+          sb.from('profiles').select('*').eq('id', user.id).single(),
+          sb.from('students').select('*').eq('parent_id', user.id).single()
+        ]);
 
-      state.level = student.level; // e.g., "Primary 4"
-      const levelSlug = state.level.toLowerCase().replace(' ', '-');
-
-      // 2. Linear Flow: Branch by Subscription Tier
-      if (profile.subscription_tier === 'single_subject') {
-        state.subject = student.selected_subject.toLowerCase();
-        showStep('wizard-type');
-      } else {
+        state.level = student.data.level;
         document.getElementById('wizard-loading').hidden = true;
-        showStep('wizard-subject');
+
+        if (profile.data.subscription_tier === 'single_subject') {
+          state.subject = student.data.selected_subject;
+          goToStep('step-type');
+        } else {
+          goToStep('step-subject');
+        }
+      } catch (err) {
+        console.error("Init failed:", err);
       }
     }
 
-    function showStep(id) {
+    function goToStep(id) {
       document.querySelectorAll('.wizard-step').forEach(s => s.classList.remove('is-active'));
       document.getElementById(id).classList.add('is-active');
-      if (id === 'wizard-type') renderTypeSelection();
+      if (id === 'step-type') renderTypeUI();
     }
 
-    function renderTypeSelection() {
+    function renderTypeUI() {
       const isP6 = state.level.includes('6');
       const types = [
-        { id: 'WA1', label: 'WA 1' }, { id: 'WA2', label: 'WA 2' }, 
+        { id: 'WA1', label: 'WA 1' }, 
+        { id: 'WA2', label: 'WA 2' }, 
         { id: 'EOY', label: 'End-of-Year' }
       ];
-      if (isP6) types.push({ id: 'PRELIM', label: 'PSLE Prelim' });
+      if (isP6) types.push({ id: 'PRELIM', label: 'Prelim (PSLE)' });
 
-      const container = document.getElementById('type-options');
-      container.innerHTML = types.map(t => `
-        <button class="wizard-type-option" onclick="selectType('${t.id}')">
-          <span class="wizard-type-name">${t.label}</span>
-        </button>
+      const grid = document.getElementById('type-grid');
+      grid.innerHTML = types.map(t => `
+        <button class="btn btn-secondary text-sm py-3" onclick="selectType('${t.id}')">${t.label}</button>
       `).join('');
       
-      updateUI();
+      updateBlueprint();
     }
 
     window.selectType = (type) => {
       state.type = type;
-      updateUI();
+      updateBlueprint();
     };
 
-    function updateUI() {
-      // Dynamic Confirmation String
-      document.getElementById('wizard-confirm-text').innerHTML = 
-        `Generating <strong>Primary ${state.level.split(' ')[1]} ${state.subject}</strong> assessment paper for <strong>${state.type}</strong>`;
-      
-      // Render Skeleton Blueprint
-      const tpl = getTemplate(state.subject, state.level.toLowerCase().replace(' ', '-'));
-      const list = document.getElementById('blueprint-list');
-      list.innerHTML = tpl.sections.map(sec => `
-        <div class="blueprint-skeleton-row">
-          <span class="text-secondary">${sec.label}</span>
-          <span class="ml-auto font-bold">${sec.count} Questions</span>
+    function updateBlueprint() {
+      const banner = document.getElementById('confirm-banner');
+      banner.innerHTML = `Generating <strong>${state.level} ${state.subject}</strong> paper for <strong>${state.type}</strong>.`;
+
+      const tpl = getTemplate(state.subject.toLowerCase(), state.level.toLowerCase().replace(' ', '-'));
+      const rows = document.getElementById('blueprint-rows');
+      rows.innerHTML = tpl.sections.map(sec => `
+        <div class="blueprint-row">
+          <span class="text-sage-light">${sec.label}</span>
+          <span class="text-white">${sec.count} Qs</span>
         </div>
       `).join('');
+
+      document.getElementById('bp-duration').textContent = tpl.duration;
+      document.getElementById('bp-marks').textContent = tpl.totalMarks;
     }
 
-    document.getElementById('subject-options').addEventListener('click', (e) => {
-      const btn = e.target.closest('[data-subject]');
-      if (!btn) return;
-      state.subject = btn.dataset.subject;
-      showStep('wizard-type');
+    // Event Listeners for Subject Selection
+    document.querySelectorAll('.subject-card').forEach(card => {
+      card.addEventListener('click', () => {
+        state.subject = card.dataset.subject;
+        goToStep('step-type');
+      });
     });
 
     init();
