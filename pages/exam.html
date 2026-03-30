@@ -97,6 +97,71 @@
     }
     .exam-editing-input.is-correct { border-color: var(--mint); background: rgba(57,255,179,0.1); }
     .exam-editing-input.is-wrong   { border-color: var(--danger); background: rgba(239,68,68,0.1); }
+    /* Blueprint preview card */
+    .exam-blueprint-card {
+      background: rgba(57,255,179,0.04);
+      border: 1.5px dashed var(--mint);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+    }
+    .exam-blueprint-row {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: var(--space-2) 0; border-bottom: 1px solid var(--glass-border);
+    }
+    .exam-blueprint-row:last-child { border-bottom: none; }
+    .exam-blueprint-label { flex: 1; font-size: .875rem; font-weight: 600; color: var(--cream); }
+    .exam-blueprint-meta  { font-size: .8125rem; color: var(--sage-light); }
+    /* AI grading overlay */
+    #exam-grading-overlay {
+      position: fixed; inset: 0; background: rgba(58,78,74,0.92);
+      backdrop-filter: blur(12px); z-index: 9000;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: var(--space-5);
+    }
+    #exam-grading-overlay p {
+      color: var(--cream); font-size: 1rem; font-weight: 600;
+      text-align: center; max-width: 280px;
+    }
+    #exam-grading-overlay .grade-sub {
+      font-size: .875rem; font-weight: 400; color: var(--sage-light); margin-top: var(--space-1);
+    }
+    /* Word problem / open-ended textarea */
+    .exam-answer-textarea {
+      width: 100%; min-height: 110px; padding: var(--space-3);
+      border: 1.5px solid var(--glass-border); border-radius: var(--radius);
+      background: var(--glass); color: var(--cream); font-size: .9375rem;
+      line-height: 1.6; resize: vertical; backdrop-filter: blur(8px);
+      font-family: var(--font-body); margin-top: var(--space-2);
+    }
+    .exam-answer-textarea:focus {
+      border-color: var(--mint); box-shadow: 0 0 0 3px rgba(57,255,179,0.15); outline: none;
+    }
+    .exam-answer-textarea.is-correct { border-color: var(--mint); background: rgba(57,255,179,0.08); }
+    .exam-answer-textarea.is-partial { border-color: var(--amber); background: rgba(255,184,48,0.06); }
+    .exam-answer-textarea.is-wrong   { border-color: var(--danger); background: rgba(239,68,68,0.08); }
+    /* AI feedback panel beneath graded textarea */
+    .exam-ai-feedback {
+      margin-top: var(--space-3); padding: var(--space-3) var(--space-4);
+      border-radius: var(--radius); font-size: .875rem; line-height: 1.55;
+      border-left: 3px solid var(--amber); background: rgba(255,184,48,0.07);
+      color: var(--cream);
+    }
+    .exam-ai-feedback-score {
+      font-weight: 700; color: var(--amber); font-size: .9375rem; margin-bottom: var(--space-1);
+    }
+    /* Success toast */
+    .exam-toast {
+      position: fixed; bottom: var(--space-10); left: 50%; transform: translateX(-50%);
+      background: rgba(16,185,129,0.95); color: #fff;
+      padding: .6rem var(--space-6); border-radius: var(--radius-pill);
+      font-weight: 600; font-size: .9375rem; z-index: 8000;
+      box-shadow: var(--shadow-lg); pointer-events: none;
+      animation: fadeUp 0.3s ease forwards;
+    }
+    /* Locked card overlay */
+    .exam-select-card.is-locked {
+      opacity: 0.45; cursor: not-allowed; pointer-events: none;
+    }
     /* Score panel */
     .exam-score-band {
       display: flex; align-items: center; gap: var(--space-3);
@@ -165,6 +230,26 @@
       </nav>
     </div>
   </header>
+
+  <!-- AI grading overlay (shown during semantic grading of WP/OE answers) -->
+  <div id="exam-grading-overlay" hidden aria-live="polite" aria-label="Grading your answers">
+    <svg width="72" height="72" viewBox="0 0 72 72" fill="none" aria-hidden="true">
+      <circle cx="36" cy="36" r="32" stroke="rgba(255,184,48,0.15)" stroke-width="4"/>
+      <path d="M36 4 A32 32 0 0 1 68 36" stroke="var(--amber)" stroke-width="4" stroke-linecap="round">
+        <animateTransform attributeName="transform" type="rotate" from="0 36 36" to="360 36 36" dur="1s" repeatCount="indefinite"/>
+      </path>
+      <!-- Pen/pencil icon -->
+      <g transform="translate(36,36)" opacity="0.85">
+        <rect x="-4" y="-14" width="8" height="20" rx="2" fill="var(--amber)"/>
+        <polygon points="-4,6 4,6 0,14" fill="var(--amber)"/>
+        <rect x="-4" y="-16" width="8" height="4" rx="1" fill="var(--sage-light)"/>
+      </g>
+    </svg>
+    <div style="text-align:center;">
+      <p id="grade-status-text">Grading your answers…</p>
+      <p class="grade-sub">AI examiner is reviewing your work</p>
+    </div>
+  </div>
 
   <!-- Singapore-themed generating overlay (hidden until paper generation starts) -->
   <div id="exam-generating-overlay" hidden aria-live="polite" aria-label="Generating exam paper">
@@ -245,6 +330,17 @@
           </div>
         </div>
 
+        <!-- Blueprint Preview (shown after subject + type are chosen) -->
+        <div id="exam-blueprint-preview" hidden style="margin-top:var(--space-5);">
+          <div class="exam-blueprint-card">
+            <p style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--mint);margin-bottom:var(--space-3);">Paper Format Preview</p>
+            <div id="blueprint-sections-list"></div>
+            <p class="text-secondary" style="font-size:.8125rem;margin-top:var(--space-3);border-top:1px solid var(--glass-border);padding-top:var(--space-2);">
+              Questions are randomised from the bank when you click Generate.
+            </p>
+          </div>
+        </div>
+
         <div style="margin-top:var(--space-6); display:flex; gap:var(--space-3); flex-wrap:wrap;" id="exam-start-row" hidden>
           <div style="flex:1; min-width:200px;">
             <label class="text-xs font-semibold" style="display:block;margin-bottom:.4rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;">
@@ -319,7 +415,7 @@
 
         <div style="display:flex; gap:var(--space-3); flex-wrap:wrap;">
           <button id="results-retry-btn" class="btn btn-primary">Generate New Paper</button>
-          <a href="subjects.html" class="btn btn-secondary">Back to Subjects</a>
+          <a href="progress.html" class="btn btn-secondary">View Progress</a>
           <button id="results-print-btn" class="btn btn-secondary">Print Results</button>
         </div>
       </section>
@@ -392,10 +488,14 @@
       const resultsPrintBtn  = document.getElementById('results-print-btn');
       const timerEl          = document.getElementById('exam-timer');
 
-      const typeRow         = document.getElementById('exam-type-row');
-      const typeChips       = document.getElementById('exam-type-chips');
-      const genOverlay      = document.getElementById('exam-generating-overlay');
-      const genStatusText   = document.getElementById('gen-status-text');
+      const typeRow           = document.getElementById('exam-type-row');
+      const typeChips         = document.getElementById('exam-type-chips');
+      const genOverlay        = document.getElementById('exam-generating-overlay');
+      const genStatusText     = document.getElementById('gen-status-text');
+      const gradeOverlay      = document.getElementById('exam-grading-overlay');
+      const gradeStatusText   = document.getElementById('grade-status-text');
+      const blueprintPreview  = document.getElementById('exam-blueprint-preview');
+      const blueprintList     = document.getElementById('blueprint-sections-list');
 
       // ── State ──
       let selectedSubject  = '';
@@ -404,6 +504,58 @@
       let currentExam      = null;
       let timerInterval    = null;
       let timerSeconds     = 0;
+      let examStartTime    = null;   // ms timestamp when paper was rendered
+      let userProfile      = null;   // from profiles table
+
+      // ── Access control: fetch profile then unlock/lock subject cards ──
+      (async function initAccessControl() {
+        try {
+          const supabase = await getSupabase();
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) return;
+
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('subscription_tier, role')
+            .eq('id', user.id)
+            .single();
+          if (!profile) return;
+          userProfile = profile;
+
+          // For single_subject subscribers, get their chosen subject
+          let lockedToSubject = null;
+          if (profile.subscription_tier === 'single_subject') {
+            const { data: students } = await supabase
+              .from('students')
+              .select('selected_subject')
+              .eq('parent_id', user.id);
+            const sub = students?.[0]?.selected_subject;
+            if (sub) lockedToSubject = sub.toLowerCase();
+          }
+
+          // If locked, grey out cards for other subjects
+          if (lockedToSubject) {
+            selectorGrid.querySelectorAll('.exam-select-card').forEach(function(card) {
+              const subject = card.dataset.subject || '';
+              if (subject && subject.toLowerCase() !== lockedToSubject) {
+                card.classList.add('is-locked');
+                const lockNote = document.createElement('p');
+                lockNote.className = 'text-xs';
+                lockNote.style.cssText = 'color:var(--sage-light);margin-top:var(--space-1);';
+                lockNote.textContent = 'Upgrade to access';
+                card.appendChild(lockNote);
+              }
+            });
+          }
+
+          // Get the auth session token for save-exam-result API calls
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session) window._examAuthToken = session.access_token;
+
+        } catch (err) {
+          console.warn('[exam] Access control init failed (non-blocking):', err.message);
+        }
+      })();
 
       // ── Initialise selector ──
       (function initSelector() {
@@ -432,6 +584,9 @@
           card.setAttribute('role', 'button');
           card.setAttribute('tabindex', '0');
 
+          // Store subject slug on card for access control
+          card.dataset.subject = tpl.subject.toLowerCase();
+
           card.addEventListener('click', function() {
             selectorGrid.querySelectorAll('.exam-select-card')
               .forEach(function(c) { c.classList.remove('is-selected'); });
@@ -440,6 +595,7 @@
             selectedLevel      = tpl.level;
             typeRow.hidden     = false;
             startRow.hidden    = false;
+            showBlueprint(tpl.subject, tpl.level, selectedExamType);
           });
           card.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); card.click(); }
@@ -456,7 +612,64 @@
         typeChips.querySelectorAll('.exam-type-chip').forEach(function(c) { c.classList.remove('is-selected'); });
         chip.classList.add('is-selected');
         selectedExamType = chip.dataset.type;
+        if (selectedSubject && selectedLevel) {
+          showBlueprint(selectedSubject, selectedLevel, selectedExamType);
+        }
       });
+
+      // ── Blueprint preview renderer ──
+      function showBlueprint(subject, level, examType) {
+        const tpl = getTemplate(subject, level);
+        if (!tpl) return;
+
+        const scaleFactor  = (examType === 'WA1' || examType === 'WA2') ? 0.5 : 1.0;
+        const typeNames    = { mcq:'Multiple Choice', short_ans:'Short Answer', word_problem:'Word Problem', open_ended:'Open-Ended', cloze:'Grammar Cloze', editing:'Editing' };
+        const typeColours  = { mcq:'var(--maths-colour)', short_ans:'var(--science-colour)', word_problem:'var(--success)', open_ended:'var(--english-colour)', cloze:'var(--amber)', editing:'var(--danger)' };
+
+        blueprintList.innerHTML = '';
+
+        let totalQ = 0;
+        let totalM = 0;
+
+        tpl.sections.forEach(function(sec) {
+          const scaledCount = Math.max(1, Math.round(sec.count * scaleFactor));
+          const sectionMarks = scaledCount * sec.marksEach;
+          totalQ += scaledCount;
+          totalM += sectionMarks;
+
+          const row = document.createElement('div');
+          row.className = 'exam-blueprint-row';
+
+          // Colour dot
+          const dot = document.createElement('span');
+          dot.style.cssText = 'width:10px;height:10px;border-radius:50%;flex-shrink:0;background:' + (typeColours[sec.type] || 'var(--cream)') + ';';
+
+          const labelEl = document.createElement('span');
+          labelEl.className = 'exam-blueprint-label';
+          labelEl.textContent = sec.label;
+
+          const metaEl = document.createElement('span');
+          metaEl.className = 'exam-blueprint-meta';
+          metaEl.textContent = scaledCount + ' × ' + (typeNames[sec.type] || sec.type) + ' · ' + sectionMarks + ' marks';
+
+          row.append(dot, labelEl, metaEl);
+          blueprintList.appendChild(row);
+        });
+
+        // Summary row
+        const totalRow = document.createElement('div');
+        totalRow.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding-top:var(--space-2);margin-top:var(--space-1);';
+        const durEl = document.createElement('span');
+        durEl.className = 'text-secondary text-sm';
+        durEl.textContent = Math.round(tpl.duration * scaleFactor) + ' minutes';
+        const totEl = document.createElement('span');
+        totEl.style.cssText = 'font-weight:700;font-size:.9375rem;color:var(--cream);';
+        totEl.textContent = 'Total: ' + totalM + ' marks';
+        totalRow.append(durEl, totEl);
+        blueprintList.appendChild(totalRow);
+
+        blueprintPreview.hidden = false;
+      }
 
       // ── Start exam ──
       startBtn.addEventListener('click', async function() {
@@ -527,9 +740,12 @@
           sectionsEl.appendChild(secEl);
         });
 
+        // Record start time for elapsed calculation
+        examStartTime = Date.now();
+
         // Start timer if timed mode
         if (timerModeSelect.value === 'timed') {
-          startTimer(exam.template.duration * 60);
+          startTimer(exam.duration * 60);
         }
       }
 
@@ -607,6 +823,7 @@
       }
 
       // ── Word problem renderer ──
+      // Uses textareas for free-format working — AI semantic grading on submit.
       function renderWordProblemQuestion(q, num, wrapper) {
         const qText = document.createElement('p');
         qText.className = 'exam-question-text';
@@ -618,30 +835,39 @@
         wrapper.appendChild(qText);
 
         const parts = q.parts || [];
+        if (parts.length === 0) {
+          // No parts — single textarea for full working
+          const ta = document.createElement('textarea');
+          ta.className = 'exam-answer-textarea';
+          ta.placeholder = 'Show your working here…';
+          ta.dataset.partLabel = '';
+          ta.setAttribute('aria-label', 'Working space for question ' + num);
+          wrapper.appendChild(ta);
+          return;
+        }
+
         parts.forEach(function(part) {
           const partEl = document.createElement('div');
-          partEl.style.marginTop = 'var(--space-3)';
+          partEl.style.marginTop = 'var(--space-4)';
 
           const partQ = document.createElement('p');
-          partQ.style.fontWeight = '500';
+          partQ.style.cssText = 'font-weight:500;margin-bottom:var(--space-1);';
           partQ.textContent = part.label + '  ' + part.question;
           partEl.appendChild(partQ);
 
-          const line = document.createElement('span');
-          line.className = 'exam-answer-line';
-          line.setAttribute('aria-label', 'Answer space for part ' + part.label);
-          partEl.appendChild(line);
-
-          const workingLine = document.createElement('span');
-          workingLine.className = 'exam-answer-line';
-          workingLine.style.marginTop = 'var(--space-2)';
-          partEl.appendChild(workingLine);
+          const ta = document.createElement('textarea');
+          ta.className = 'exam-answer-textarea';
+          ta.placeholder = 'Show your working for part ' + part.label + '…';
+          ta.dataset.partLabel = part.label;
+          ta.setAttribute('aria-label', 'Working space for part ' + part.label);
+          partEl.appendChild(ta);
 
           wrapper.appendChild(partEl);
         });
       }
 
       // ── Open-ended renderer ──
+      // Uses styled textarea with design-system tokens. AI grading on submit.
       function renderOpenEndedQuestion(q, num, wrapper) {
         const qText = document.createElement('p');
         qText.className = 'exam-question-text';
@@ -652,12 +878,25 @@
         qText.appendChild(document.createTextNode(q.question_text));
         wrapper.appendChild(qText);
 
-        const textarea = document.createElement('textarea');
-        textarea.rows = 4;
-        textarea.style.cssText = 'width:100%;padding:var(--space-3);border:1.5px solid var(--border);border-radius:var(--radius);font-size:.9375rem;resize:vertical;font-family:inherit;';
-        textarea.placeholder = 'Write your answer here…';
-        textarea.setAttribute('aria-label', 'Answer for question ' + num);
-        wrapper.appendChild(textarea);
+        // CER scaffold hint for Science
+        if (q.subject === 'Science') {
+          const hint = document.createElement('p');
+          hint.style.cssText = 'font-size:.8125rem;color:var(--sage-light);margin-bottom:var(--space-1);';
+          hint.textContent = 'Structure: Claim · Evidence · Reasoning';
+          wrapper.appendChild(hint);
+        }
+
+        const ta = document.createElement('textarea');
+        ta.className = 'exam-answer-textarea';
+        ta.placeholder = 'Write your full answer here…';
+        ta.setAttribute('aria-label', 'Answer for question ' + num);
+        wrapper.appendChild(ta);
+
+        const marksNote = document.createElement('p');
+        marksNote.className = 'text-secondary text-sm';
+        marksNote.style.marginTop = 'var(--space-1)';
+        marksNote.textContent = (q.marks || 4) + ' marks — graded by AI examiner on submit';
+        wrapper.appendChild(marksNote);
       }
 
       // ── Cloze renderer ──
@@ -809,15 +1048,20 @@
         timerEl.textContent = '';
       }
 
-      // ── Submit & mark ──
-      submitBtn.addEventListener('click', submitExam);
+      // ── Submit & mark (async — AI grades WP/OE questions) ──
+      submitBtn.addEventListener('click', function() { submitExam(); });
 
-      function submitExam() {
+      async function submitExam() {
         stopTimer();
         if (!currentExam) return;
 
-        let totalEarned = 0;
+        submitBtn.disabled = true;
+        const timeTaken = examStartTime ? Math.round((Date.now() - examStartTime) / 1000) : null;
+
+        // ── Phase 1: Synchronous marking (MCQ, short_ans, cloze, editing) ──
+        let totalEarned  = 0;
         const sectionResults = [];
+        const wpoeItems  = []; // collect WP/OE for AI grading
 
         currentExam.sections.forEach(function(sec) {
           if (!sec.questions.length) return;
@@ -828,15 +1072,151 @@
           sec.questions.forEach(function(q) {
             const qEl = secEl ? secEl.querySelector('[data-q-id="' + q.id + '"]') : null;
             if (!qEl) return;
-            const earned = markQuestion(q, sec.type, sec.marksEach, qEl);
-            secEarned += earned;
+
+            if (sec.type === 'word_problem' || sec.type === 'open_ended') {
+              // Collect for AI phase
+              const textareas = qEl.querySelectorAll('.exam-answer-textarea');
+              const answers = Array.from(textareas).map(function(ta) { return ta.value.trim(); }).join('\n');
+              wpoeItems.push({ q, sec, secEl, qEl, type: sec.type, marksEach: sec.marksEach, answer: answers });
+            } else {
+              const earned = markQuestion(q, sec.type, sec.marksEach, qEl);
+              secEarned += earned;
+            }
           });
 
-          sectionResults.push({ label: sec.label, earned: secEarned, possible: sec.sectionMarks });
+          sectionResults.push({ label: sec.label, earned: secEarned, possible: sec.sectionMarks, secId: sec.id });
           totalEarned += secEarned;
         });
 
+        // ── Phase 2: AI grading for WP/OE ──
+        if (wpoeItems.length > 0) {
+          gradeOverlay.hidden = false;
+          gradeStatusText.textContent = 'Grading ' + wpoeItems.length + ' question' + (wpoeItems.length > 1 ? 's' : '') + '…';
+
+          const gradingResults = await gradeWithAI(wpoeItems);
+
+          gradeOverlay.hidden = true;
+
+          gradingResults.forEach(function(result, idx) {
+            const item = wpoeItems[idx];
+            const grade = result.status === 'fulfilled' ? result.value : { score: 0, maxScore: item.marksEach, feedback: 'Could not grade — please compare with the worked solution.', breakdown: [] };
+
+            // Find or create section result entry for this question's section
+            const srEntry = sectionResults.find(function(sr) { return sr.secId === item.sec.id; });
+            if (srEntry) {
+              srEntry.earned += grade.score;
+            }
+            totalEarned += grade.score;
+
+            // Render AI feedback beneath the textarea
+            const textareas = item.qEl.querySelectorAll('.exam-answer-textarea');
+            const cls = grade.score >= grade.maxScore ? 'is-correct' : grade.score > 0 ? 'is-partial' : 'is-wrong';
+            textareas.forEach(function(ta) { ta.classList.add(cls); ta.disabled = true; });
+
+            const feedbackEl = document.createElement('div');
+            feedbackEl.className = 'exam-ai-feedback';
+            const scoreEl = document.createElement('p');
+            scoreEl.className = 'exam-ai-feedback-score';
+            scoreEl.textContent = grade.score + ' / ' + grade.maxScore + ' marks';
+            const textEl = document.createElement('p');
+            textEl.textContent = grade.feedback || '';
+            feedbackEl.appendChild(scoreEl);
+            feedbackEl.appendChild(textEl);
+            item.qEl.appendChild(feedbackEl);
+          });
+        }
+
+        // ── Phase 3: Show results + save ──
+        const questionsAttempted = countAttempted();
         showResults(totalEarned, sectionResults);
+        saveExamResult(totalEarned, currentExam.actualMarks, timeTaken, questionsAttempted);
+      }
+
+      /** Count how many questions the student attempted (non-empty answer). */
+      function countAttempted() {
+        let count = 0;
+        sectionsEl.querySelectorAll('.exam-question').forEach(function(qEl) {
+          const type = qEl.dataset.type;
+          if (type === 'mcq'        && qEl.querySelector('li.is-selected'))             count++;
+          else if (type === 'short_ans' && qEl.querySelector('.exam-short-input')?.value?.trim()) count++;
+          else if (type === 'cloze')    count++;  // cloze always counts if rendered
+          else if (type === 'editing')  count++;
+          else if ((type === 'word_problem' || type === 'open_ended') &&
+                   qEl.querySelector('.exam-answer-textarea')?.value?.trim())            count++;
+        });
+        return count;
+      }
+
+      /** Sends WP/OE questions to /api/grade-answer. Returns Promise.allSettled results. */
+      async function gradeWithAI(items) {
+        const promises = items.map(async function(item) {
+          const payload = {
+            questionId:    item.q.id,
+            questionType:  item.type,
+            questionText:  item.q.question_text,
+            subject:       item.q.subject,
+            level:         item.q.level,
+            studentAnswer: item.answer,
+            workedSolution: item.q.worked_solution || '',
+            keywords:      item.q.keywords || [],
+            modelAnswer:   item.q.model_answer || '',
+            parts:         item.q.parts || [],
+            marks:         item.marksEach,
+          };
+
+          const res = await fetch('/api/grade-answer', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify(payload),
+          });
+          if (!res.ok) throw new Error('Grade API ' + res.status);
+          return await res.json();
+        });
+
+        return Promise.allSettled(promises);
+      }
+
+      /** Persists the exam result to Supabase via /api/save-exam-result. */
+      async function saveExamResult(score, totalMarks, timeTaken, questionsAttempted) {
+        try {
+          const authToken = window._examAuthToken || '';
+          if (!authToken) return; // Not logged in — skip silently
+
+          const subject = selectedSubject.charAt(0).toUpperCase() + selectedSubject.slice(1);
+
+          const res = await fetch('/api/save-exam-result', {
+            method:  'POST',
+            headers: {
+              'Content-Type':  'application/json',
+              'Authorization': 'Bearer ' + authToken,
+            },
+            body: JSON.stringify({
+              subject:              subject,
+              level:                selectedLevel.charAt(0).toUpperCase() + selectedLevel.replace(/-/g, ' ').slice(1),
+              examType:             currentExam.examType || 'PRACTICE',
+              score:                Math.round(score * 10) / 10,
+              totalMarks,
+              timeTaken,
+              questionsAttempted,
+              examId:               currentExam.generatedAt,
+            }),
+          });
+
+          if (res.ok) {
+            showToast('Results saved — view in Progress →');
+          }
+        } catch (err) {
+          console.warn('[exam] Could not save result (non-blocking):', err.message);
+        }
+      }
+
+      /** Shows a temporary success toast. */
+      function showToast(message) {
+        const toast = document.createElement('div');
+        toast.className = 'exam-toast';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(function() { toast.remove(); }, 3500);
       }
 
       /** Marks a single question element in-place and returns marks earned. */
@@ -916,12 +1296,8 @@
 
         setTimeout(function() {
           resultsBar.style.width = pct + '%';
-          resultsBar.style.background = pct >= 75 ? 'var(--success)' : pct >= 50 ? 'var(--accent)' : 'var(--danger)';
+          resultsBar.style.background = pct >= 75 ? 'var(--success)' : pct >= 50 ? 'var(--amber)' : 'var(--danger)';
         }, 100);
-
-        const sectionNote = document.createElement('p');
-        sectionNote.className = 'text-secondary text-sm';
-        sectionNote.textContent = 'Note: Word problems and open-ended questions are self-assessed and are not included in the auto-marked score.';
         resultsBreakdown.appendChild(sectionNote);
 
         resultsSections.innerHTML = '';
@@ -958,11 +1334,14 @@
         selectorSection.hidden  = false;
         currentExam             = null;
         selectedExamType        = 'PRACTICE';
+        examStartTime           = null;
         startBtn.disabled       = false;
         startBtn.textContent    = 'Generate Paper →';
+        submitBtn.disabled      = false;
         timerEl.textContent     = '';
         typeRow.hidden          = true;
         startRow.hidden         = true;
+        blueprintPreview.hidden = true;
         // Reset type chip selection
         typeChips.querySelectorAll('.exam-type-chip').forEach(function(c) {
           c.classList.toggle('is-selected', c.dataset.type === 'PRACTICE');
@@ -974,16 +1353,17 @@
   </script>
 
   <!-- TEST:
-       1. Page loads selector step with all available templates listed as cards
-       2. Clicking a template card selects it (border highlight) and shows the start row
-       3. "Generate Paper →" fetches question bank JSON and builds the exam paper
-       4. MCQ options are clickable — only one can be selected at a time
-       5. Short answer inputs accept text
-       6. Cloze passages render with dropdown selects replacing [1], [2] etc.
-       7. Editing passages show underlined words + correction input fields
-       8. "Submit & Mark" auto-grades MCQ, short_ans, cloze, editing sections
-       9. Results section shows score/100 and per-section breakdown
-      10. "Print / Save PDF" triggers browser print dialog
-      11. Timer counts down correctly in timed mode; pausing at 0 auto-submits -->
+       1. Selector shows all available paper cards; single_subject users see non-subscribed cards greyed out
+       2. Clicking a card shows assessment type chips AND blueprint preview card with section counts
+       3. Changing assessment type chip (WA1 etc.) updates blueprint to show scaled counts
+       4. "Generate Paper →" shows Merlion loading overlay then renders paper
+       5. Word problem questions show styled textareas (not answer-line spans)
+       6. Open-ended Science questions show "Claim · Evidence · Reasoning" hint
+       7. "Submit & Mark": MCQ/short_ans/cloze/editing graded immediately;
+          WP/OE triggers AI grading overlay then shows AI feedback + score beneath each textarea
+       8. Results shows per-section breakdown with AL band label
+       9. Success toast appears after result is saved to Supabase
+      10. "View Progress" link navigates to progress.html
+      11. "Generate New Paper" resets all state including blueprint and type chips -->
 </body>
 </html>
