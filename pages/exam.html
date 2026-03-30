@@ -103,6 +103,9 @@
       border: 1.5px dashed var(--mint);
       border-radius: var(--radius-lg);
       padding: var(--space-5);
+      box-shadow: var(--shadow-neo);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
     }
     .exam-blueprint-row {
       display: flex; align-items: center; gap: var(--space-3);
@@ -128,7 +131,7 @@
     /* Word problem / open-ended textarea */
     .exam-answer-textarea {
       width: 100%; min-height: 110px; padding: var(--space-3);
-      border: 1.5px solid var(--glass-border); border-radius: var(--radius);
+      border: 1.5px solid var(--glass-border); border-radius: var(--radius-md);
       background: var(--glass); color: var(--cream); font-size: .9375rem;
       line-height: 1.6; resize: vertical; backdrop-filter: blur(8px);
       font-family: var(--font-body); margin-top: var(--space-2);
@@ -142,7 +145,7 @@
     /* AI feedback panel beneath graded textarea */
     .exam-ai-feedback {
       margin-top: var(--space-3); padding: var(--space-3) var(--space-4);
-      border-radius: var(--radius); font-size: .875rem; line-height: 1.55;
+      border-radius: var(--radius-md); font-size: .875rem; line-height: 1.55;
       border-left: 3px solid var(--amber); background: rgba(255,184,48,0.07);
       color: var(--cream);
     }
@@ -152,7 +155,7 @@
     /* Success toast */
     .exam-toast {
       position: fixed; bottom: var(--space-10); left: 50%; transform: translateX(-50%);
-      background: rgba(16,185,129,0.95); color: #fff;
+      background: rgba(16,185,129,0.95); color: var(--white);
       padding: .6rem var(--space-6); border-radius: var(--radius-pill);
       font-weight: 600; font-size: .9375rem; z-index: 8000;
       box-shadow: var(--shadow-lg); pointer-events: none;
@@ -196,6 +199,7 @@
     }
     .exam-type-chip:hover, .exam-type-chip.is-selected {
       border-color: var(--rose); background: rgba(183,110,121,0.12); color: var(--rose);
+      transform: translate(-1px, -1px);
     }
     /* Singapore loading overlay */
     #exam-generating-overlay {
