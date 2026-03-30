@@ -451,9 +451,9 @@ small, .text-sm  { font-size: 0.875rem; }
 
 /* JS adds .is-scrolled when window.scrollY > 10 */
 .navbar.is-scrolled {
-  background: rgba(58,78,74,0.92);
-  border-bottom-color: var(--glass-border);
-  box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+  background: rgba(74, 90, 87, 0.92);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(227,217,202,0.12);
 }
 
 /* Transparent variant — used over hero */
