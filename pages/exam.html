@@ -14,11 +14,11 @@
     await guardPage(true);
   </script>
   <style>
-    /* ── WIZARD & DESIGN TOKENS ─────────────────────────────────────────── */
+    /* ── WIZARD & BLUEPRINT STYLES ── */
     .wizard-step { display: none; }
     .wizard-step.is-active { display: block; animation: fadeUp 0.35s ease both; }
 
-    .subject-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: var(--space-4); }
+    .subject-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: var(--space-4); margin-top: var(--space-6); }
     @media (max-width:640px) { .subject-grid { grid-template-columns: 1fr; } }
     
     .subject-card {
@@ -29,25 +29,21 @@
     .subject-card:hover { border-color: var(--mint); transform: translateY(-3px); }
     .subject-card.is-sel { border-color: var(--mint); background: rgba(57,255,179,0.05); }
 
-    /* ── BLUEPRINT (SKELETON STYLE) ─────────────────────────────────────── */
     .blueprint-card {
-      background: var(--glass);
-      border: 2px dashed rgba(255,255,255,0.12);
-      border-top: 3px solid var(--mint);
-      border-radius: var(--radius-lg);
-      padding: var(--space-6); margin: var(--space-6) 0;
-      font-family: 'JetBrains Mono', monospace;
+      background: var(--glass); border: 2px dashed rgba(255,255,255,0.12);
+      border-top: 3px solid var(--mint); border-radius: var(--radius-lg);
+      padding: var(--space-6); margin: var(--space-6) 0; font-family: 'JetBrains Mono', monospace;
     }
     .blueprint-badge { font-size: 0.65rem; color: var(--amber); border: 1px solid rgba(255,184,48,0.3); padding: 2px 9px; border-radius: var(--radius-pill); }
     .blueprint-row { display: flex; justify-content: space-between; padding: var(--space-2) 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.85rem; }
 
-    /* ── TIMER ──────────────────────────────────────────────────────────── */
-    #exam-timer { font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; font-weight: 700; color: var(--mint); margin-right: var(--space-4); }
+    /* ── OVERLAYS ── */
+    .full-overlay { position: fixed; inset: 0; background: rgba(15,23,20,0.98); backdrop-filter: blur(16px); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-4); }
+
+    /* ── TIMER ── */
+    #exam-timer { font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; font-weight: 700; color: var(--mint); }
     #exam-timer.warn { color: var(--amber); }
     #exam-timer.danger { color: var(--danger); animation: pulse 1s infinite; }
-
-    /* ── OVERLAYS ───────────────────────────────────────────────────────── */
-    .full-overlay { position: fixed; inset: 0; background: rgba(15,23,20,0.98); backdrop-filter: blur(16px); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-4); }
   </style>
 </head>
 <body class="has-bottom-nav">
@@ -75,8 +71,6 @@
       <div class="navbar-mobile" id="navMobile">
         <a href="../index.html">Home</a>
         <a href="pricing.html">Pricing</a>
-        <a href="login.html"  class="btn btn-secondary btn-sm mt-4">Log In</a>
-        <a href="signup.html" class="btn btn-primary   btn-sm">Start Free Trial</a>
       </div>
     </div>
   </header>
@@ -108,6 +102,29 @@
     </div>
   </footer>
 
+  <nav class="bottom-nav" aria-label="Mobile navigation">
+    <a href="../index.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
+      Home
+    </a>
+    <a href="subjects.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      Practise
+    </a>
+    <a href="tutor.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      AI Tutor
+    </a>
+    <a href="exam.html" class="bottom-nav-item is-active" aria-current="page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="M9 12h6M9 16h4"/></svg>
+      Exam
+    </a>
+    <a href="progress.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Progress
+    </a>
+  </nav>
+
   <script src="../js/supabase-client.js"></script>
   <script src="../js/exam-templates.js"></script>
   <script src="../js/exam-generator.js"></script>
@@ -116,7 +133,7 @@
     (function () {
       'use strict';
 
-      // ── Navbar Toggle ──
+      // ── Navbar Toggle (subjects.html Logic) ──
       const navToggle = document.getElementById('navToggle');
       const navMobile = document.getElementById('navMobile');
       if (navToggle && navMobile) {
@@ -140,11 +157,12 @@
       function renderSubject() {
         app.innerHTML = `
           <div class="wizard-step is-active">
-            <h1 class="font-display text-3xl mb-8">Choose a Subject</h1>
+            <h1 class="font-display text-4xl mb-2">Choose a Subject</h1>
+            <p class="text-secondary mb-8">Personalised practice for ${state.level}</p>
             <div class="subject-grid">
-              <div class="subject-card" onclick="setSubject('Mathematics')">🔢<br>Mathematics</div>
-              <div class="subject-card" onclick="setSubject('Science')">🔬<br>Science</div>
-              <div class="subject-card" onclick="setSubject('English')">📖<br>English</div>
+              <div class="subject-card" onclick="setSubject('Mathematics')"><span class="text-3xl mb-2 block">🔢</span>Mathematics</div>
+              <div class="subject-card" onclick="setSubject('Science')"><span class="text-3xl mb-2 block">🔬</span>Science</div>
+              <div class="subject-card" onclick="setSubject('English')"><span class="text-3xl mb-2 block">📖</span>English</div>
             </div>
           </div>`;
       }
@@ -159,18 +177,18 @@
         app.innerHTML = `
           <div class="wizard-step is-active">
             <h1 class="font-display text-3xl mb-4">Select Paper Type</h1>
-            <div class="p-4 bg-mint/5 border border-mint/20 rounded-lg mb-6 text-sm">
-              Generating <strong>${state.level} ${state.subject}</strong> assessment paper for <strong>${state.type || '...'}</strong>
+            <div class="p-4 bg-mint/5 border border-mint/20 rounded-lg mb-8 text-sm">
+              Generating <strong>${state.level} ${state.subject}</strong> paper for <strong>${state.type || '...'}</strong>
             </div>
             <div class="grid grid-cols-2 gap-4 mb-8">
-              ${types.map(t => `<button class="btn btn-secondary" onclick="setType('${t.id}')">${t.l}</button>`).join('')}
+              ${types.map(t => `<button class="btn ${state.type === t.id ? 'btn-primary' : 'btn-secondary'}" onclick="setType('${t.id}')">${t.l}</button>`).join('')}
             </div>
             <div class="blueprint-card">
-              <div class="flex justify-between items-center mb-4"><span class="blueprint-eyebrow">Sample Format</span><span class="blueprint-badge">DRAFT PREVIEW</span></div>
+              <div class="flex justify-between items-center mb-4"><span class="blueprint-eyebrow">Exam Blueprint</span><span class="blueprint-badge">DRAFT PREVIEW</span></div>
               <div class="blueprint-row"><span>Section A (MCQ)</span><span>28 Qs</span></div>
               <div class="blueprint-row"><span>Section B (Open-Ended)</span><span>12 Qs</span></div>
             </div>
-            <button class="btn btn-primary w-full py-4" onclick="triggerGen()">Generate Paper →</button>
+            <button class="btn btn-primary w-full py-4" onclick="triggerGen()" ${!state.type ? 'disabled' : ''}>Generate Paper →</button>
           </div>`;
       }
 
@@ -178,11 +196,8 @@
 
       window.triggerGen = () => {
         document.getElementById('ov-gen').hidden = false;
-        // Mock generation delay
-        setTimeout(() => {
-          document.getElementById('ov-gen').hidden = true;
-          setState({ phase: 'EXAM' });
-        }, 1500);
+        document.getElementById('gen-msg').textContent = `Assembling ${state.subject} Paper...`;
+        setTimeout(() => { document.getElementById('ov-gen').hidden = true; setState({ phase: 'EXAM' }); }, 1500);
       };
 
       async function init() {
@@ -190,7 +205,7 @@
         const { data: { session } } = await sb.auth.getSession();
         if (!session) return window.location.href = 'login.html';
 
-        // ── Auth-aware navbar ──
+        // ── Auth-aware navbar (subjects.html Logic) ──
         const actionsEl = document.querySelector('.navbar-actions');
         if (actionsEl) {
           actionsEl.innerHTML = '<a href="dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a><button class="btn btn-primary btn-sm" id="navSignOut">Sign Out</button>';
@@ -201,8 +216,13 @@
         const { data: profile } = await sb.from('profiles').select('subscription_tier').eq('id', session.user.id).single();
 
         document.getElementById('ov-load').hidden = true;
-        const nextPhase = profile.subscription_tier === 'single_subject' ? 'TYPE' : 'SUBJECT';
-        setState({ level: student.level, subject: student.selected_subject, tier: profile.subscription_tier, phase: nextPhase });
+        const nextPhase = (profile && profile.subscription_tier === 'single_subject') ? 'TYPE' : 'SUBJECT';
+        setState({ 
+          level: (student && student.level) || 'Primary 4', 
+          subject: (student && student.selected_subject) || 'Mathematics', 
+          tier: (profile && profile.subscription_tier) || 'trial', 
+          phase: nextPhase 
+        });
       }
 
       init();
