@@ -42,7 +42,10 @@
       "Read(//d/Git/Superholic-Lab/**)",
       "Bash(done)",
       "Bash(grep -l \"bottom-nav\" pages/*.html)",
-      "Bash(python -c \":*)"
+      "Bash(python -c \":*)",
+      "Bash(wc:*)",
+      "Bash(rm api/chat.js api/checkout.js api/generate.js api/generate-question.js api/grade-answer.js api/save-exam-result.js api/webhook.js)",
+      "Bash(rm -rf api/prompts)"
     ]
   },
   "enabledMcpjsonServers": [
