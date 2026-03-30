@@ -113,11 +113,38 @@
     #exam-timer.is-urgent { color: var(--danger); }
     /* Selector step */
     .exam-select-card {
-      border: 1.5px solid var(--border); border-radius: var(--radius-lg);
+      border: 1.5px solid var(--glass-border); border-radius: var(--radius-lg);
       padding: var(--space-5); cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s;
+      background: var(--glass); backdrop-filter: blur(8px);
     }
     .exam-select-card:hover, .exam-select-card.is-selected {
       border-color: var(--mint); box-shadow: 0 0 0 3px rgba(57,255,179,0.15);
+    }
+    /* Assessment type chips */
+    .exam-type-chip {
+      display: inline-flex; align-items: center; gap: var(--space-2);
+      padding: .45rem var(--space-4); border-radius: var(--radius-pill);
+      border: 1.5px solid var(--glass-border); cursor: pointer;
+      font-size: .875rem; font-weight: 600; color: var(--cream);
+      background: var(--glass); backdrop-filter: blur(8px);
+      transition: border-color .15s, background .15s;
+    }
+    .exam-type-chip:hover, .exam-type-chip.is-selected {
+      border-color: var(--rose); background: rgba(183,110,121,0.12); color: var(--rose);
+    }
+    /* Singapore loading overlay */
+    #exam-generating-overlay {
+      position: fixed; inset: 0; background: rgba(58,78,74,0.92);
+      backdrop-filter: blur(12px); z-index: 9000;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: var(--space-6);
+    }
+    #exam-generating-overlay p {
+      color: var(--cream); font-size: 1.125rem; font-weight: 600;
+      text-align: center; max-width: 280px;
+    }
+    #exam-generating-overlay .gen-sub {
+      font-size: .875rem; font-weight: 400; color: var(--sage-light); margin-top: var(--space-1);
     }
   </style>
 </head>
@@ -139,6 +166,45 @@
     </div>
   </header>
 
+  <!-- Singapore-themed generating overlay (hidden until paper generation starts) -->
+  <div id="exam-generating-overlay" hidden aria-live="polite" aria-label="Generating exam paper">
+    <!-- Animated Merlion-inspired SVG -->
+    <svg width="96" height="96" viewBox="0 0 96 96" fill="none" aria-hidden="true">
+      <!-- Outer spinning ring (mint) -->
+      <circle cx="48" cy="48" r="44" stroke="rgba(57,255,179,0.15)" stroke-width="4"/>
+      <path d="M48 4 A44 44 0 0 1 92 48" stroke="var(--mint)" stroke-width="4" stroke-linecap="round">
+        <animateTransform attributeName="transform" type="rotate" from="0 48 48" to="360 48 48" dur="1.2s" repeatCount="indefinite"/>
+      </path>
+      <!-- Inner pulsing ring (rose) -->
+      <circle cx="48" cy="48" r="30" stroke="rgba(183,110,121,0.2)" stroke-width="3"/>
+      <path d="M48 18 A30 30 0 0 1 78 48" stroke="var(--rose)" stroke-width="3" stroke-linecap="round">
+        <animateTransform attributeName="transform" type="rotate" from="360 48 48" to="0 48 48" dur="0.8s" repeatCount="indefinite"/>
+      </path>
+      <!-- Merlion silhouette (stylised lion head + fish body) -->
+      <g transform="translate(48,48)">
+        <!-- Fish tail (bottom) -->
+        <path d="M-8 14 Q-14 22 -6 26 Q0 28 6 26 Q14 22 8 14 Z" fill="var(--sage-light)" opacity="0.6"/>
+        <!-- Body -->
+        <ellipse cx="0" cy="6" rx="10" ry="12" fill="var(--sage-light)" opacity="0.7"/>
+        <!-- Mane -->
+        <circle cx="0" cy="-6" r="12" fill="var(--sage)" opacity="0.8"/>
+        <!-- Face -->
+        <circle cx="0" cy="-6" r="8" fill="var(--cream)" opacity="0.9"/>
+        <!-- Eyes -->
+        <circle cx="-3" cy="-7" r="1.5" fill="var(--sage-darker)"/>
+        <circle cx="3" cy="-7" r="1.5" fill="var(--sage-darker)"/>
+        <!-- Water spout (animated) -->
+        <path d="M0 -14 Q3 -20 0 -26 Q-3 -20 0 -14" fill="var(--mint)" opacity="0.9">
+          <animate attributeName="opacity" values="0.9;0.3;0.9" dur="1.4s" repeatCount="indefinite"/>
+        </path>
+      </g>
+    </svg>
+    <div style="text-align:center;">
+      <p id="gen-status-text">Assembling your exam paper…</p>
+      <p class="gen-sub">Shuffling questions from the bank</p>
+    </div>
+  </div>
+
   <main style="padding: var(--space-8) 0 var(--space-16);">
     <div class="container" style="max-width:760px;">
 
@@ -152,13 +218,13 @@
       <section id="exam-selector" aria-label="Choose a practice paper">
         <h1 style="margin: var(--space-6) 0 var(--space-2);">Practice Paper</h1>
         <p class="text-secondary" style="margin-bottom:var(--space-6);">
-          Choose a subject and level to generate a full timed practice paper.
+          Choose a subject, level and assessment type to generate a timed practice paper.
         </p>
 
         <div id="exam-selector-loading" class="text-center mt-8" style="color:var(--text-secondary);">
           <svg width="32" height="32" viewBox="0 0 40 40" fill="none" aria-hidden="true" style="display:block;margin:0 auto var(--space-3);">
-            <circle cx="20" cy="20" r="16" stroke="var(--border)" stroke-width="4"/>
-            <path d="M20 4a16 16 0 0 1 16 16" stroke="var(--primary)" stroke-width="4" stroke-linecap="round">
+            <circle cx="20" cy="20" r="16" stroke="var(--glass-border)" stroke-width="4"/>
+            <path d="M20 4a16 16 0 0 1 16 16" stroke="var(--rose)" stroke-width="4" stroke-linecap="round">
               <animateTransform attributeName="transform" type="rotate" from="0 20 20" to="360 20 20" dur="0.9s" repeatCount="indefinite"/>
             </path>
           </svg>
@@ -167,12 +233,24 @@
 
         <div id="exam-selector-grid" class="grid grid-2" style="gap:var(--space-4); display:none;"></div>
 
+        <!-- Assessment type picker (shown after a paper is selected) -->
+        <div id="exam-type-row" hidden style="margin-top:var(--space-6);">
+          <p class="text-xs font-semibold" style="color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:var(--space-3);">Assessment Type</p>
+          <div style="display:flex; gap:var(--space-2); flex-wrap:wrap;" id="exam-type-chips">
+            <button class="exam-type-chip is-selected" data-type="PRACTICE">📚 Practice</button>
+            <button class="exam-type-chip" data-type="WA1">📝 WA1 (½ paper)</button>
+            <button class="exam-type-chip" data-type="WA2">📝 WA2 (½ paper)</button>
+            <button class="exam-type-chip" data-type="EOY">📋 End-of-Year</button>
+            <button class="exam-type-chip" data-type="PRELIM">🎓 Prelim (P6)</button>
+          </div>
+        </div>
+
         <div style="margin-top:var(--space-6); display:flex; gap:var(--space-3); flex-wrap:wrap;" id="exam-start-row" hidden>
           <div style="flex:1; min-width:200px;">
             <label class="text-xs font-semibold" style="display:block;margin-bottom:.4rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;">
               Timer mode
             </label>
-            <select id="exam-timer-mode" style="width:100%;padding:.55rem .75rem;border:1.5px solid var(--border);border-radius:var(--radius);font-size:.9375rem;background:var(--white);">
+            <select id="exam-timer-mode" class="exam-cloze-select" style="width:100%;padding:.55rem .75rem;font-size:.9375rem;">
               <option value="timed">Timed (full duration)</option>
               <option value="untimed">Practice (no timer)</option>
             </select>
@@ -314,12 +392,18 @@
       const resultsPrintBtn  = document.getElementById('results-print-btn');
       const timerEl          = document.getElementById('exam-timer');
 
+      const typeRow         = document.getElementById('exam-type-row');
+      const typeChips       = document.getElementById('exam-type-chips');
+      const genOverlay      = document.getElementById('exam-generating-overlay');
+      const genStatusText   = document.getElementById('gen-status-text');
+
       // ── State ──
-      let selectedSubject = '';
-      let selectedLevel   = '';
-      let currentExam     = null;
-      let timerInterval   = null;
-      let timerSeconds    = 0;
+      let selectedSubject  = '';
+      let selectedLevel    = '';
+      let selectedExamType = 'PRACTICE';
+      let currentExam      = null;
+      let timerInterval    = null;
+      let timerSeconds     = 0;
 
       // ── Initialise selector ──
       (function initSelector() {
@@ -352,9 +436,10 @@
             selectorGrid.querySelectorAll('.exam-select-card')
               .forEach(function(c) { c.classList.remove('is-selected'); });
             card.classList.add('is-selected');
-            selectedSubject = tpl.subject;
-            selectedLevel   = tpl.level;
-            startRow.hidden = false;
+            selectedSubject    = tpl.subject;
+            selectedLevel      = tpl.level;
+            typeRow.hidden     = false;
+            startRow.hidden    = false;
           });
           card.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); card.click(); }
@@ -364,18 +449,33 @@
         });
       })();
 
+      // ── Assessment type chip selection ──
+      typeChips.addEventListener('click', function(e) {
+        const chip = e.target.closest('.exam-type-chip');
+        if (!chip) return;
+        typeChips.querySelectorAll('.exam-type-chip').forEach(function(c) { c.classList.remove('is-selected'); });
+        chip.classList.add('is-selected');
+        selectedExamType = chip.dataset.type;
+      });
+
       // ── Start exam ──
       startBtn.addEventListener('click', async function() {
         if (!selectedSubject || !selectedLevel) return;
         startBtn.disabled = true;
         startBtn.textContent = 'Generating…';
 
+        // Show Singapore loading overlay
+        genOverlay.hidden = false;
+        genStatusText.textContent = 'Assembling your ' + selectedExamType + ' paper…';
+
         try {
-          const exam = await generateExam(selectedSubject, selectedLevel);
+          const exam = await generateExam(selectedSubject, selectedLevel, selectedExamType);
           currentExam = exam;
+          genOverlay.hidden = true;
           renderExam(exam);
         } catch (err) {
           console.error('[exam] generateExam failed:', err);
+          genOverlay.hidden = true;
           startBtn.disabled = false;
           startBtn.textContent = 'Generate Paper →';
           alert('Could not generate paper. Please try again.');
@@ -387,9 +487,10 @@
         selectorSection.hidden = true;
         paperSection.hidden = false;
 
-        paperTitle.textContent = exam.template.label + ' — Practice Paper';
+        const typeLabel = { WA1:'Weighted Assessment 1', WA2:'Weighted Assessment 2', EOY:'End-of-Year', PRELIM:'Preliminary', PRACTICE:'Practice Paper' };
+        paperTitle.textContent = exam.template.label + ' — ' + (typeLabel[exam.examType] || 'Practice Paper');
         paperMeta.textContent  =
-          exam.actualMarks + ' marks · ' + exam.template.duration + ' minutes · ' +
+          exam.actualMarks + ' marks · ' + exam.duration + ' minutes · ' +
           new Date(exam.generatedAt).toLocaleDateString('en-SG', { day:'numeric', month:'short', year:'numeric' });
 
         sectionsEl.innerHTML = '';
@@ -853,12 +954,20 @@
       // ── Retry ──
       retryBtn.addEventListener('click', function() {
         clearExamCache();
-        resultsSection.hidden = true;
-        selectorSection.hidden = false;
-        currentExam = null;
-        startBtn.disabled = false;
-        startBtn.textContent = 'Generate Paper →';
-        timerEl.textContent = '';
+        resultsSection.hidden   = true;
+        selectorSection.hidden  = false;
+        currentExam             = null;
+        selectedExamType        = 'PRACTICE';
+        startBtn.disabled       = false;
+        startBtn.textContent    = 'Generate Paper →';
+        timerEl.textContent     = '';
+        typeRow.hidden          = true;
+        startRow.hidden         = true;
+        // Reset type chip selection
+        typeChips.querySelectorAll('.exam-type-chip').forEach(function(c) {
+          c.classList.toggle('is-selected', c.dataset.type === 'PRACTICE');
+        });
+        selectorGrid.querySelectorAll('.exam-select-card').forEach(function(c) { c.classList.remove('is-selected'); });
       });
 
     })();

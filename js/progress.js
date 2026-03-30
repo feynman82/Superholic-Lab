@@ -117,11 +117,20 @@ async function init() {
       .sort((a, b) => a.pct - b.pct)
       .slice(0, 5);
 
+    // ── Fetch exam results ────────────────────────────────────────
+    const { data: examResults } = await db
+      .from('exam_results')
+      .select('id, subject, level, exam_type, score, total_marks, time_taken, completed_at')
+      .eq('student_id', student.id)
+      .order('completed_at', { ascending: false })
+      .limit(20);
+
     // ── Render ────────────────────────────────────────────────────
     renderSummaryStats(totalQuestions, overallPct, streak, questionsToday);
     renderSubjectBars(subjectStats);
     if (weakTopics.length) renderWeakTopics(weakTopics);
     renderRecentHistory(attempts.slice(0, 8));
+    renderExamHistory(examResults || []);
 
     loadingEl.hidden = true;
     statsEl.hidden   = false;
@@ -373,6 +382,95 @@ function formatDate(iso) {
   if (!iso) return '';
   const d = new Date(iso);
   return d.toLocaleDateString('en-SG', { day: 'numeric', month: 'short' });
+}
+
+/**
+ * Renders the exam performance trends panel.
+ * Shows a list of past exam papers with subject, type (WA1/EOY/etc),
+ * score, percentage, and date. Draws a simple inline bar chart per row.
+ *
+ * @param {Array} exams - rows from exam_results table
+ */
+function renderExamHistory(exams) {
+  const emptyEl = document.getElementById('exam-history-empty');
+  const listEl  = document.getElementById('exam-history-list');
+  if (!emptyEl || !listEl) return;
+
+  if (!exams || exams.length === 0) {
+    emptyEl.hidden = false;
+    listEl.hidden  = true;
+    return;
+  }
+
+  emptyEl.hidden = true;
+  listEl.hidden  = false;
+  listEl.innerHTML = '';
+
+  const typeLabels = { WA1:'WA1', WA2:'WA2', EOY:'EOY', PRELIM:'Prelim', PRACTICE:'Practice' };
+  const subColours = { mathematics:'var(--maths-colour)', science:'var(--science-colour)', english:'var(--english-colour)' };
+
+  // Group by subject to show per-subject trend rows
+  const grouped = {};
+  exams.forEach(function(e) {
+    const sub = (e.subject || 'other').toLowerCase();
+    if (!grouped[sub]) grouped[sub] = [];
+    grouped[sub].push(e);
+  });
+
+  Object.entries(grouped).forEach(function([sub, subExams]) {
+    const subLabel = sub.charAt(0).toUpperCase() + sub.slice(1);
+    const colour   = subColours[sub] || 'var(--cream)';
+
+    // Section heading
+    const heading = document.createElement('p');
+    heading.style.cssText = `font-weight:700; font-size:.875rem; color:${colour}; margin-bottom:var(--space-2); margin-top:var(--space-4);`;
+    heading.textContent = subLabel;
+    listEl.appendChild(heading);
+
+    subExams.forEach(function(e) {
+      const pct   = e.total_marks > 0 ? Math.round((e.score / e.total_marks) * 100) : 0;
+      const label = typeLabels[e.exam_type] || e.exam_type || 'Paper';
+      const mins  = e.time_taken ? Math.round(e.time_taken / 60) + ' min' : '';
+
+      const row = document.createElement('div');
+      row.style.cssText = 'padding:var(--space-3) 0; border-bottom:1px solid var(--glass-border); display:flex; align-items:center; gap:var(--space-3); flex-wrap:wrap;';
+
+      // Date
+      const dateEl = document.createElement('span');
+      dateEl.className = 'text-secondary text-sm';
+      dateEl.style.minWidth = '72px';
+      dateEl.textContent = formatDate(e.completed_at);
+
+      // Type chip
+      const typeEl = document.createElement('span');
+      typeEl.className = 'badge badge-info';
+      typeEl.textContent = label;
+
+      // Inline progress bar + score
+      const barWrap = document.createElement('div');
+      barWrap.style.cssText = 'flex:1; min-width:120px;';
+
+      const track = document.createElement('div');
+      track.style.cssText = 'height:6px; border-radius:999px; background:var(--glass-border); overflow:hidden; margin-bottom:var(--space-1);';
+      const fill = document.createElement('div');
+      fill.style.cssText = `height:100%; width:${pct}%; border-radius:999px; background:${colour}; transition:width .8s cubic-bezier(.16,1,.3,1);`;
+      track.appendChild(fill);
+
+      const scoreLabel = document.createElement('span');
+      scoreLabel.className = 'text-secondary text-sm';
+      scoreLabel.textContent = e.score + '/' + e.total_marks + ' (' + pct + '%)' + (mins ? ' · ' + mins : '');
+
+      barWrap.append(track, scoreLabel);
+
+      // AL band badge
+      const bandEl = document.createElement('span');
+      bandEl.className = pct >= 85 ? 'badge badge-success' : pct >= 55 ? 'badge badge-amber' : 'badge badge-danger';
+      bandEl.textContent = pct >= 85 ? 'AL1–2' : pct >= 70 ? 'AL3–4' : pct >= 55 ? 'AL5–6' : 'Needs Work';
+
+      row.append(dateEl, typeEl, barWrap, bandEl);
+      listEl.appendChild(row);
+    });
+  });
 }
 
 /** Safely sets textContent on an element by ID. */

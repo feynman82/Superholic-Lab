@@ -1,0 +1,164 @@
+{
+  "_version": "1.0",
+  "_updated": "2026-03-30",
+  "_source": "MOE Singapore Primary School Assessment Standards",
+  "_note": "Mark weights reflect typical school assessments. PSLE is set by SEAB separately.",
+
+  "assessmentTypes": {
+    "WA1": {
+      "description": "Weighted Assessment 1",
+      "term": "Term 1",
+      "typicalWeeks": "Week 9–10",
+      "scaleFactor": 0.5,
+      "levels": ["P3", "P4", "P5", "P6"]
+    },
+    "WA2": {
+      "description": "Weighted Assessment 2",
+      "term": "Term 3",
+      "typicalWeeks": "Week 3–4",
+      "scaleFactor": 0.5,
+      "levels": ["P3", "P4", "P5"]
+    },
+    "EOY": {
+      "description": "End-of-Year Examination",
+      "term": "Term 4",
+      "typicalWeeks": "Week 3–5",
+      "scaleFactor": 1.0,
+      "levels": ["P3", "P4", "P5"]
+    },
+    "PRELIM": {
+      "description": "Preliminary Examination",
+      "term": "Term 3",
+      "typicalWeeks": "Week 2–4",
+      "scaleFactor": 1.0,
+      "levels": ["P6"]
+    },
+    "PRACTICE": {
+      "description": "Practice Paper (ungraded)",
+      "term": "Any",
+      "typicalWeeks": "Any",
+      "scaleFactor": 1.0,
+      "levels": ["P3", "P4", "P5", "P6"]
+    }
+  },
+
+  "papers": {
+
+    "P3:mathematics": {
+      "fullMarks": 40,
+      "duration": 50,
+      "sections": [
+        { "id": "sec-a", "type": "mcq",         "count": 10, "marksEach": 1, "label": "Section A — Multiple Choice",  "instructions": "Choose the correct answer (A, B, C or D) for each question." },
+        { "id": "sec-b", "type": "short_ans",   "count": 10, "marksEach": 1, "label": "Section B — Short Answer",     "instructions": "Write your answer in the space provided. Show your working clearly." },
+        { "id": "sec-c", "type": "word_problem", "count":  5, "marksEach": 4, "label": "Section C — Word Problems",   "instructions": "Show all working clearly. Each question is worth 4 marks." }
+      ]
+    },
+
+    "P4:mathematics": {
+      "fullMarks": 40,
+      "duration": 50,
+      "sections": [
+        { "id": "sec-a", "type": "mcq",          "count": 10, "marksEach": 1, "label": "Section A — Multiple Choice",  "instructions": "Choose the correct answer (A, B, C or D) for each question." },
+        { "id": "sec-b", "type": "short_ans",    "count": 10, "marksEach": 1, "label": "Section B — Short Answer",     "instructions": "Write your answer in the space provided. Show your working." },
+        { "id": "sec-c", "type": "word_problem",  "count":  5, "marksEach": 4, "label": "Section C — Word Problems",   "instructions": "Show all working clearly. Each question is worth 4 marks." }
+      ]
+    },
+
+    "P5:mathematics": {
+      "fullMarks": 45,
+      "duration": 60,
+      "sections": [
+        { "id": "sec-a", "type": "mcq",          "count": 10, "marksEach": 1, "label": "Section A — Multiple Choice",  "instructions": "Choose the correct answer (A, B, C or D) for each question." },
+        { "id": "sec-b", "type": "short_ans",    "count": 10, "marksEach": 1, "label": "Section B — Short Answer",     "instructions": "Write your answer in the space provided." },
+        { "id": "sec-c", "type": "word_problem",  "count":  5, "marksEach": 5, "label": "Section C — Word Problems",   "instructions": "Show all working. Each question carries 5 marks." }
+      ]
+    },
+
+    "P6:mathematics": {
+      "fullMarks": 50,
+      "duration": 60,
+      "sections": [
+        { "id": "sec-a", "type": "mcq",          "count": 10, "marksEach": 2, "label": "Section A — Multiple Choice",  "instructions": "Choose the correct answer (A, B, C or D) for each question." },
+        { "id": "sec-b", "type": "short_ans",    "count": 10, "marksEach": 1, "label": "Section B — Short Answer",     "instructions": "Write your answer in the space provided. No marks for method in this section." },
+        { "id": "sec-c", "type": "word_problem",  "count":  5, "marksEach": 4, "label": "Section C — Word Problems",   "instructions": "Show all working clearly. Marks are awarded for correct method." }
+      ]
+    },
+
+    "P3:science": {
+      "fullMarks": 40,
+      "duration": 50,
+      "sections": [
+        { "id": "sec-a", "type": "mcq",        "count": 20, "marksEach": 1, "label": "Section A — Multiple Choice",        "instructions": "Choose the correct answer (A, B, C or D) for each question." },
+        { "id": "sec-b", "type": "open_ended", "count":  5, "marksEach": 4, "label": "Section B — Open-Ended Questions",   "instructions": "Answer all questions. Write in complete sentences." }
+      ]
+    },
+
+    "P4:science": {
+      "fullMarks": 40,
+      "duration": 50,
+      "sections": [
+        { "id": "sec-a", "type": "mcq",        "count": 20, "marksEach": 1, "label": "Section A — Multiple Choice",        "instructions": "Choose the correct answer (A, B, C or D) for each question." },
+        { "id": "sec-b", "type": "open_ended", "count":  5, "marksEach": 4, "label": "Section B — Open-Ended Questions",   "instructions": "Answer all questions. Write in complete sentences where required." }
+      ]
+    },
+
+    "P5:science": {
+      "fullMarks": 40,
+      "duration": 50,
+      "sections": [
+        { "id": "sec-a", "type": "mcq",        "count": 20, "marksEach": 1, "label": "Section A — Multiple Choice",        "instructions": "Choose the correct answer (A, B, C or D) for each question." },
+        { "id": "sec-b", "type": "open_ended", "count":  5, "marksEach": 4, "label": "Section B — Open-Ended Questions",   "instructions": "Answer all questions. Write in complete sentences." }
+      ]
+    },
+
+    "P6:science": {
+      "fullMarks": 40,
+      "duration": 50,
+      "sections": [
+        { "id": "sec-a", "type": "mcq",        "count": 20, "marksEach": 1, "label": "Section A — Multiple Choice",        "instructions": "Choose the correct answer (A, B, C or D) for each question." },
+        { "id": "sec-b", "type": "open_ended", "count":  5, "marksEach": 4, "label": "Section B — Open-Ended Questions",   "instructions": "Answer in complete sentences. Use scientific terms where appropriate." }
+      ]
+    },
+
+    "P3:english": {
+      "fullMarks": 35,
+      "duration": 45,
+      "sections": [
+        { "id": "sec-a", "type": "mcq",     "count": 10, "marksEach": 1, "label": "Section A — Grammar MCQ",   "instructions": "Choose the most appropriate answer (A, B, C or D) to complete each sentence." },
+        { "id": "sec-b", "type": "cloze",   "count":  2, "marksEach": 7, "label": "Section B — Grammar Cloze", "instructions": "Choose the best word to fill in each blank. Each passage has 7 blanks." },
+        { "id": "sec-c", "type": "editing", "count":  3, "marksEach": 5, "label": "Section C — Editing",       "instructions": "Each passage has one error. Identify and correct the underlined error." }
+      ]
+    },
+
+    "P4:english": {
+      "fullMarks": 35,
+      "duration": 45,
+      "sections": [
+        { "id": "sec-a", "type": "mcq",     "count": 10, "marksEach": 1, "label": "Section A — Grammar MCQ",   "instructions": "Choose the most appropriate answer (A, B, C or D) to complete each sentence." },
+        { "id": "sec-b", "type": "cloze",   "count":  2, "marksEach": 7, "label": "Section B — Grammar Cloze", "instructions": "Choose the best word to fill in each blank. Each passage has 7 blanks." },
+        { "id": "sec-c", "type": "editing", "count":  3, "marksEach": 5, "label": "Section C — Editing",       "instructions": "Each passage has 5 grammatical errors. Identify and correct each underlined error." }
+      ]
+    },
+
+    "P5:english": {
+      "fullMarks": 35,
+      "duration": 45,
+      "sections": [
+        { "id": "sec-a", "type": "mcq",     "count": 10, "marksEach": 1, "label": "Section A — Grammar MCQ",   "instructions": "Choose the most appropriate answer (A, B, C or D) to complete each sentence." },
+        { "id": "sec-b", "type": "cloze",   "count":  2, "marksEach": 7, "label": "Section B — Grammar Cloze", "instructions": "Choose the best word to fill in each blank." },
+        { "id": "sec-c", "type": "editing", "count":  3, "marksEach": 5, "label": "Section C — Editing",       "instructions": "Each passage has 5 grammatical errors. Identify and correct each underlined error." }
+      ]
+    },
+
+    "P6:english": {
+      "fullMarks": 60,
+      "duration": 75,
+      "_note": "Paper 2 only (Grammar + Cloze + Editing). Paper 1 (Composition) excluded.",
+      "sections": [
+        { "id": "sec-a", "type": "mcq",     "count": 15, "marksEach": 1, "label": "Section A — Grammar MCQ",   "instructions": "Choose the most appropriate answer (A, B, C or D) to complete each sentence." },
+        { "id": "sec-b", "type": "cloze",   "count":  2, "marksEach": 10,"label": "Section B — Grammar Cloze", "instructions": "Choose the best word to fill in each blank. Each passage has 10 blanks." },
+        { "id": "sec-c", "type": "editing", "count":  5, "marksEach":  2, "label": "Section C — Editing",      "instructions": "Each passage has one error. Identify the line and write the correct word." }
+      ]
+    }
+  }
+}

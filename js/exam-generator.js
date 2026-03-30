@@ -35,20 +35,39 @@ const EXAM_DATA_BASE = '../data/questions/';
  * File map: `subject:level:type` → JSON filename.
  * For types without dedicated files (mcq, short_ans, word_problem), the broad
  * file is used and questions are filtered by type in memory.
+ *
+ * Multiple filenames can be listed for a key (as an array) — all files
+ * are fetched and merged before filtering. This allows thin topic-specific
+ * files to be combined into a larger pool.
  */
 const EXAM_FILE_MAP = {
+  // ── P3 ──
+  'mathematics:primary-3:broad':   'p3-mathematics-whole-numbers.json',
+  'science:primary-3:broad':       'p3-science-diversity.json',
+  'english:primary-3:broad':       'p3-english-grammar.json',
+  'english:primary-3:cloze':       'p3-english-grammar.json',
+  'english:primary-3:editing':     'p3-english-grammar.json',
+
+  // ── P4 ──
   'mathematics:primary-4:broad':   'p4-mathematics.json',
-  'mathematics:primary-5:broad':   'p5-mathematics.json',
-  'mathematics:primary-6:broad':   'p6-mathematics.json',
   'science:primary-4:broad':       'p4-science.json',
-  'science:primary-5:broad':       'p5-science.json',
-  'science:primary-6:broad':       'p6-science.json',
   'english:primary-4:broad':       'p4-english.json',
   'english:primary-4:cloze':       'p4-english-cloze.json',
   'english:primary-4:editing':     'p4-english-editing.json',
-  'english:primary-5:broad':       'p5-english.json',
-  'english:primary-5:cloze':       'p5-english-cloze.json',
-  'english:primary-5:editing':     'p5-english-editing.json',
+
+  // ── P5 ──
+  'mathematics:primary-5:broad':   'p5-mathematics.json',
+  'science:primary-5:broad':       'p5-science.json',
+  'english:primary-5:broad':       'p5-english-grammar.json',
+  'english:primary-5:cloze':       'p5-english-grammar.json',
+  'english:primary-5:editing':     'p5-english-grammar.json',
+
+  // ── P6 ──
+  'mathematics:primary-6:broad':   'p6-mathematics-fractions.json',
+  'science:primary-6:broad':       'p6-science-cells.json',
+  'english:primary-6:broad':       'p6-english-grammar.json',
+  'english:primary-6:cloze':       'p6-english-cloze.json',
+  'english:primary-6:editing':     'p6-english-editing.json',
 };
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -159,21 +178,38 @@ async function pickQuestions(subject, level, type, count) {
  * Generates a complete exam paper for a given subject and level.
  * Uses the template from exam-templates.js to determine sections and counts.
  *
- * @param {string} subject - e.g. 'mathematics'
- * @param {string} level   - e.g. 'primary-4'
+ * @param {string} subject    - e.g. 'mathematics'
+ * @param {string} level      - e.g. 'primary-4'
+ * @param {string} [examType] - 'WA1'|'WA2'|'EOY'|'PRELIM'|'PRACTICE' (default: 'PRACTICE')
  * @returns {Promise<object>} ExamPaper
  */
-async function generateExam(subject, level) {
+async function generateExam(subject, level, examType) {
   const template = getTemplate(subject, level);
   if (!template) {
     throw new Error(`No exam template found for ${subject} ${level}.`);
   }
 
+  // WA papers use half the question count of full papers
+  const resolvedType = examType || 'PRACTICE';
+  const scaleFactor = (resolvedType === 'WA1' || resolvedType === 'WA2') ? 0.5 : 1.0;
+
   // Build each section by picking questions in parallel
   const sectionPromises = template.sections.map(async function(sec) {
-    const questions = await pickQuestions(subject, level, sec.type, sec.count);
+    const scaledCount = Math.max(1, Math.round(sec.count * scaleFactor));
+    const questions = await pickQuestions(subject, level, sec.type, scaledCount);
+
+    // Log a warning if bank cannot fill the section fully
+    if (questions.length < scaledCount) {
+      console.warn(
+        `[exam-generator] Thin bank: ${subject}:${level}:${sec.type} — ` +
+        `needed ${scaledCount}, got ${questions.length}. ` +
+        `Run @question-coder to expand this topic file.`
+      );
+    }
+
     return {
       ...sec,
+      count:       scaledCount,
       questions,
       sectionMarks: questions.length * sec.marksEach,
     };
@@ -186,10 +222,11 @@ async function generateExam(subject, level) {
 
   return {
     template,
+    examType:     resolvedType,
     sections,
-    totalMarks:   template.totalMarks,
+    totalMarks:   Math.round(template.totalMarks * scaleFactor),
     actualMarks:  actualTotal,
-    duration:     template.duration,
+    duration:     Math.round(template.duration * scaleFactor),
     generatedAt:  new Date().toISOString(),
   };
 }

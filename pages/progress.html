@@ -174,13 +174,37 @@
         </div>
 
         <!-- Recent quiz history -->
-        <div class="card no-hover">
+        <div class="card no-hover" style="margin-bottom:var(--space-6);">
           <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
             <h2 style="font-size:1rem; font-weight:600;">Recent Quizzes</h2>
             <a href="subjects.html" class="btn btn-secondary btn-sm">New Quiz</a>
           </div>
           <div class="card-body" style="padding-top:0;">
             <div id="recent-history"></div>
+          </div>
+        </div>
+
+        <!-- Exam performance trends -->
+        <div class="card no-hover" id="exam-history-card">
+          <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:var(--space-3);">
+            <div>
+              <h2 style="font-size:1rem; font-weight:600;">Exam Performance</h2>
+              <p class="text-secondary text-sm mt-1">WA · EOY · Prelim results over time</p>
+            </div>
+            <a href="exam.html" class="btn btn-secondary btn-sm">New Exam</a>
+          </div>
+          <div class="card-body" id="exam-history-body">
+            <div id="exam-history-empty" class="text-center" style="padding:var(--space-8) 0; color:var(--text-secondary);">
+              <svg width="40" height="40" viewBox="0 0 40 40" fill="none" style="display:block;margin:0 auto var(--space-3);" aria-hidden="true">
+                <rect x="4" y="8" width="32" height="26" rx="3" stroke="var(--glass-border)" stroke-width="2"/>
+                <path d="M10 28 L16 20 L22 24 L28 16" stroke="var(--mint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="28" cy="16" r="2.5" fill="var(--mint)"/>
+                <path d="M4 14 h32" stroke="var(--glass-border)" stroke-width="1.5"/>
+              </svg>
+              <p style="font-size:.875rem;">No exam results yet.</p>
+              <p style="font-size:.8125rem; margin-top:var(--space-1);">Complete a practice paper to track your exam performance here.</p>
+            </div>
+            <div id="exam-history-list" hidden></div>
           </div>
         </div>
 

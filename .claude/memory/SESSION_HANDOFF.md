@@ -1,11 +1,10 @@
 ---
 date: 2026-03-30
 session_summary: |
-  FULL STRUCTURAL COMPLETION: All P0 Critical gaps AND all question type gaps resolved.
-  10 batches completed, 50 new questions added across 8 new topic files.
-  P6 English now has all 3 types: mcq (grammar) + cloze + editing.
-  question-coder agent upgraded to v2.0 with AOS + Closed-Loop Protocol.
-  The question bank has a seeded foundation at every primary level for every subject.
+  EXAM ARCHITECT DEPLOYED. All 7 mission components implemented.
+  New agent, standards JSON, file map updates, exam type UI,
+  Singapore loading animation, progress exam trends, Supabase migration,
+  and AI fallback API endpoint all created or updated.
 
 manifest_state:
   total_topic_files: 31
@@ -14,34 +13,45 @@ manifest_state:
   p0_critical_gaps: NONE
   type_gaps: NONE
 
-coverage_matrix:
-  P1: Math 10q ✓ | Science n/a | English 0q (early years, lower priority)
-  P2: Math 12q ✓ | Science n/a | English 11q ✓
-  P3: Math 5q ✓  | Science 5q ✓ | English 5q ✓
-  P4: Math 15q ✓ | Science 17q ✓ | English 19q ✓
-  P5: Math 8q ✓  | Science 12q ✓ | English 5q ✓
-  P6: Math 5q ✓  | Science 5q ✓ | English 15q ✓
+new_files_this_session:
+  - .claude/agents/exam-architect.md           (new agent v1.0)
+  - data/system-exam-standards.json            (MOE mark weights P3-P6)
+  - api/generate-question.js                   (Gemini + Claude AI fallback)
+  - supabase/003_exam_results.sql              (exam_results table + RLS)
 
-type_coverage_by_level:
-  P3 English: mcq ✓ | cloze ✓ | editing ✓
-  P5 English: mcq ✓ | cloze ✓ | editing ✓
-  P6 English: mcq ✓ | cloze ✓ | editing ✓
+updated_files_this_session:
+  - js/exam-templates.js     (added P3 Math/Science/English + P6 English templates)
+  - js/exam-generator.js     (P3/P5/P6 file mappings + examType + WA scaling)
+  - pages/exam.html          (assessment type chips + Singapore loading animation)
+  - pages/progress.html      (exam performance trends panel)
+  - js/progress.js           (exam_results fetch + renderExamHistory function)
 
-next_phase: VOLUME EXPANSION
-  Every topic file needs to grow from ~5q toward the 20q target.
-  Priority order for volume expansion:
-  1. P6 files (PSLE year — highest student value)
-     → p6-mathematics-fractions.json (5q → 20q: need 15 more)
-     → p6-science-cells.json (5q → 20q: need 15 more)
-  2. P4 files (largest existing base — closest to 20q target)
-     → p4-mathematics-fractions.json (5q → 20q: need 15 more)
-  3. P3 files (all at 5q — need 15 more each)
-  4. P5 files (move from aggregate to topic-specific files)
+exam_architect_capabilities:
+  assessment_types: [WA1, WA2, EOY, PRELIM, PRACTICE]
+  wa_scale_factor: 0.5   # WA papers = half question count
+  ai_fallback: Gemini 1.5 Flash → Claude Haiku (via api/generate-question.js)
+  supabase_table: exam_results (pending migration: supabase/003_exam_results.sql)
+
+gemini_setup_instructions: |
+  1. Get API key from https://aistudio.google.com/apikey (free tier available)
+  2. Add GEMINI_API_KEY to .env file (already gitignored)
+  3. Add GEMINI_API_KEY to Vercel dashboard → Project Settings → Environment Variables
+  4. The /api/generate-question endpoint will auto-use Gemini first, Claude fallback
+
+pending_supabase_migration: |
+  Run supabase/003_exam_results.sql in Supabase Dashboard → SQL Editor
+  This creates the exam_results table used by progress.js renderExamHistory()
+  Until migration runs, exam history section will show "No exam results yet"
+
+next_phase: SAVE_EXAM_RESULTS
+  The exam.html submitExam() function currently only marks locally.
+  Next step: add api/save-exam-result.js + call it from exam.html on submit
+  to persist results to Supabase exam_results table.
+
+  Also needed: question bank volume expansion (all files still at 5-10q target 20q)
 
 recommended_next_batch:
-  target: P6 Mathematics — Fractions/Percentage (volume round 1)
-  file: data/questions/p6-mathematics-fractions.json (append)
-  current_count: 5 | batch_will_add: 5 | new_total: 10
-  type_mix: 2 mcq, 2 short_ans, 1 word_problem (filling type gaps in existing file)
-  next_ids: p6-math-frac-006 → p6-math-frac-010
+  option_a: "Create api/save-exam-result.js to persist exam scores to Supabase"
+  option_b: "Continue @question-coder volume expansion — P6 Math fractions to 10q"
+  option_c: "Run supabase/003_exam_results.sql migration (manual step for user)"
 ---
