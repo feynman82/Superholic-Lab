@@ -429,31 +429,6 @@
 </footer>
 
 <script src="/js/supabase-client.js"></script>
-<script>
-/* ── Auth-aware navbar — swap Log In / Get Started for Dashboard / Sign Out ── */
-getSupabase().then(async function(sb) {
-  try {
-    const { data: { session } } = await sb.auth.getSession();
-    if (!session) return;
-    const actionsEl = document.querySelector('.navbar-actions');
-    if (actionsEl) {
-      actionsEl.innerHTML = '<a href="/pages/dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a><button class="btn btn-rose btn-sm" id="navSignOut">Sign Out</button>';
-      document.getElementById('navSignOut').addEventListener('click', async function() {
-        await sb.auth.signOut();
-        window.location.href = '/index.html';
-      });
-    }
-    // Auth-aware dashboard CTA button in Mission Control section
-    const ctaBtn = document.getElementById('dashboard-cta-btn');
-    if (ctaBtn) {
-      ctaBtn.href        = '/pages/dashboard.html';
-      ctaBtn.textContent = 'Go to Dashboard →';
-    }
-  } catch (e) {
-    console.error('Nav auth check failed:', e);
-  }
-});
-</script>
 
 <script>
 /* ── ECC: Engagement — animate progress bars on scroll into view ── */
@@ -544,7 +519,17 @@ window.addEventListener('scroll', () => {
         
         // Remove the "Start Free Trial" link from the dropdown since they are already a user
         const signUpLink = document.getElementById('navSignUp');
+// Remove the "Start Free Trial" link from the dropdown since they are already a user
+        const signUpLink = document.getElementById('navSignUp');
         if (signUpLink) signUpLink.remove();
+      }
+
+      // ADD THIS NEW SECTION HERE:
+      // Update the Mission Control banner button for logged-in users
+      const ctaBtn = document.getElementById('dashboard-cta-btn');
+      if (ctaBtn) {
+        ctaBtn.href = 'pages/dashboard.html';
+        ctaBtn.textContent = 'Go to Dashboard →';
       }
 
     } catch (e) {
