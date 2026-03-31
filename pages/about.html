@@ -155,10 +155,7 @@
           const navLinks = document.getElementById('navLinks');
 
           if (session) {
-            // User is Logged In: Inject UI classes and reveal sidebar
-            body.classList.add('is-logged-in', 'has-bottom-nav');
-            if (bottomNav) bottomNav.hidden = false;
-            
+            // 1. Update Auth Buttons (Applies to ALL pages)
             if (authContainer) {
               authContainer.innerHTML = '<a href="dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a>';
             }
@@ -179,9 +176,16 @@
               const signUpLink = document.getElementById('navSignUp');
               if (signUpLink) signUpLink.remove();
             }
+
+            // 2. Layout Shift (ONLY apply padding if this page has a sidebar)
+            if (bottomNav) {
+              body.classList.add('is-logged-in', 'has-bottom-nav');
+              bottomNav.hidden = false;
+            }
+
           } else {
             // User is Guest: Ensure app-specific layout shifts are disabled
-            body.classList.remove('is-logged-in', 'has-bottom-nav');
+            if (body) body.classList.remove('is-logged-in', 'has-bottom-nav');
             if (bottomNav) bottomNav.hidden = true;
           }
         } catch (e) {
