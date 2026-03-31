@@ -1,259 +1,163 @@
 # QUESTION BANK MANIFEST
 # Auto-generated reference. Update with /inventory command.
-# Last updated: 2026-03-29
+# Last updated: 2026-03-31
 
 ## Summary
 
-Total topic-specific files: 31
-Total questions (topic files): 137
-Aggregate files (compilations): 7
-Levels covered: P1, P2, P3, P4, P5, P6
-Levels with NO coverage: S1-S4
-P0 Critical gaps: NONE
-Type gaps: NONE at P6 English (mcq + cloze + editing all seeded)
+| Metric | Value |
+|---|---|
+| Topic-specific files | 31 |
+| Aggregate files | 7 |
+| Questions in topic files | 125 |
+| Questions in P5 aggregates (no topic files yet) | 33 |
+| **Total unique questions** | **158** |
+| Levels covered | P1, P2, P3, P4, P5, P6 |
+| Levels with NO coverage | S1–S4 |
+| Files at 20q target | 0 of 31 — ALL under target |
 
 ## Coverage Matrix
 
 | Level | Mathematics | Science | English |
-|-------|-----------|---------|----------|
-| P1 | **10q (1 topic)** | n/a | ✗ none |
-| P2 | 12q (5 topics) | n/a | 11q (3 topics) |
-| P3 | **5q (1 topic)** | **5q (1 topic)** | **5q (1 topic)** |
-| P4 | 15q (4 topics) | 17q (4 topics) | 19q (5 topics) |
-| P5 | 18q (aggregate) | 15q (aggregate) | **5q (1 topic)** |
-| P6 | **5q (1 topic)** | **5q (1 topic)** | **15q (3 topics)** |
+|---|---|---|---|
+| P1 | 10q · 1 topic | n/a | ❌ 0q |
+| P2 | 12q · 5 topics | n/a | 11q · 3 topics |
+| P3 | 5q · 1 topic | 5q · 1 topic | 5q · 1 topic |
+| P4 | 15q · 4 topics | 13q · 4 topics | 19q · 5 topics |
+| P5 | 18q · aggregate only | 15q · aggregate only | 5q · 1 topic |
+| P6 | 5q · 1 topic | 5q · 1 topic | 15q · 3 topics |
 
-## P1 Mathematics (10 questions)
+## File Index — Topic-Specific Files
 
-### p1-mathematics-whole-numbers.json (10 questions)
-- p1m-wn-001 | Counting Groups of Objects | Foundation | mcq
-- p1m-wn-002 | Ordering Numbers to 100 | Foundation | mcq
-- p1m-wn-003 | Comparing Numbers — Greater Than and Less Than | Foundation | mcq
-- p1m-wn-004 | Place Value — Tens and Ones | Standard | mcq
-- p1m-wn-005 | Number Bonds to 20 | Standard | mcq
-- p1m-wn-006 | Addition Without Regrouping | Standard | mcq
-- p1m-wn-007 | Number Patterns — Counting in Fives | Advanced | mcq
-- p1m-wn-008 | 1-Step Addition Word Problem | Standard | word_problem
-- p1m-wn-009 | 1-Step Subtraction Word Problem | Standard | word_problem
-- p1m-wn-010 | 2-Step Word Problem — Before and After | Advanced | word_problem
+### P1 Mathematics
 
-## P3 Mathematics (5 questions)
+| File | Questions | Topics |
+|---|---|---|
+| p1-mathematics-whole-numbers.json | 10 | Counting, place value, addition, subtraction, patterns, word problems |
 
-### p3-mathematics-whole-numbers.json (5 questions)
-- p3-math-wn-001 | Comparing and Ordering 4-Digit Numbers | Foundation | mcq
-- p3-math-wn-002 | Multiplication in Context — Equal Groups | Standard | mcq
-- p3-math-wn-003 | Addition Within 10 000 | Standard | short_ans
-- p3-math-wn-004 | Two-Step Problem — Division Then Subtraction | Advanced | mcq
-- p3-math-wn-005 | Three-Step Problem — Saving, Spending and Planning | HOTS | word_problem
+### P2 Mathematics
 
-## P3 English (5 questions)
+| File | Questions | Topics |
+|---|---|---|
+| p2-mathematics-whole-numbers.json | 3 | Place value, number patterns, odd/even |
+| p2-mathematics-addition-and-subtraction.json | 3 | Addition/subtraction with regrouping, word problems |
+| p2-mathematics-fractions.json | 2 | Fraction of a whole, comparing unit fractions |
+| p2-mathematics-money.json | 2 | Subtracting money, calculating change |
+| p2-mathematics-multiplication-and-division.json | 2 | Multiplication as repeated addition, division as sharing |
+| **P2 Maths total** | **12** | |
 
-### p3-english-grammar.json (5 questions)
-- p3-eng-gr-001 | Articles — a, an, the | Foundation | mcq
-- p3-eng-gr-002 | Comparative Adjectives | Standard | mcq
-- p3-eng-gr-003 | Simple Past Tense — Irregular Verbs | Standard | cloze
-- p3-eng-gr-004 | Prepositions of Place and Movement | Standard | cloze
-- p3-eng-gr-005 | Subject-Verb Agreement — Compound Subject | Advanced | editing
+### P2 English
 
-## P3 Science (5 questions)
+| File | Questions | Topics |
+|---|---|---|
+| p2-english-grammar.json | 6 | Plurals, past tense, articles, SVA, pronouns, conjunctions |
+| p2-english-vocabulary.json | 3 | Synonyms, homophones, describing words |
+| p2-english-comprehension.json | 2 | Reading for information, inference |
+| **P2 English total** | **11** | |
 
-### p3-science-diversity.json (5 questions)
-- p3-sci-div-001 | Identifying Living and Non-Living Things | Foundation | mcq
-- p3-sci-div-002 | Similarities Between Plants and Animals | Standard | mcq
-- p3-sci-div-003 | Differences Between Plants and Animals | Standard | mcq
-- p3-sci-div-004 | Needs of Living Things (seed experiment) | Standard | open_ended
-- p3-sci-div-005 | Characteristics of Living vs Non-Living (candle) | Advanced | open_ended
+### P3 Mathematics
 
-## P2 Mathematics (12 questions)
+| File | Questions | Topics |
+|---|---|---|
+| p3-mathematics-whole-numbers.json | 5 | Comparing 4-digit numbers, multiplication, addition, division, word problems |
 
-### p2-mathematics-whole-numbers.json (3 questions)
-- p2m-pv01 | Place Value | Standard | mcq
-- p2m-np01 | Number Patterns | Standard | mcq
-- p2m-oe01 | Odd and Even Numbers | Foundation | mcq
+### P3 Science
 
-### p2-mathematics-addition-and-subtraction.json (3 questions)
-- p2m-add01 | Addition with Regrouping | Standard | mcq
-- p2m-sub01 | Subtraction with Regrouping | Standard | mcq
-- p2m-wp-sub01 | Subtraction Word Problem | Standard | mcq
+| File | Questions | Topics |
+|---|---|---|
+| p3-science-diversity.json | 5 | Living vs non-living, plants vs animals, needs of living things |
 
-### p2-mathematics-fractions.json (2 questions)
-- p2m-fr01 | Fraction of a Whole | Standard | mcq
-- p2m-fr02 | Comparing Unit Fractions | Standard | mcq
+### P3 English
 
-### p2-mathematics-money.json (2 questions)
-- p2m-mn01 | Subtracting Money | Standard | mcq
-- p2m-mn02 | Calculating Change | Standard | mcq
+| File | Questions | Topics |
+|---|---|---|
+| p3-english-grammar.json | 5 | Articles, comparative adjectives, past tense, prepositions, SVA (cloze + editing) |
 
-### p2-mathematics-multiplication-and-division.json (2 questions)
-- p2m-mul01 | Multiplication as Repeated Addition | Standard | mcq
-- p2m-div01 | Division as Sharing Equally | Standard | mcq
+### P4 Mathematics
 
-## P2 English (11 questions)
+| File | Questions | Topics |
+|---|---|---|
+| p4-mathematics-fractions.json | 5 | Equivalent fractions, improper/mixed, adding/subtracting unlike, fraction of a set |
+| p4-mathematics-decimals.json | 4 | Place value, rounding, adding, converting from fractions |
+| p4-mathematics-geometry.json | 3 | Perimeter, area, angles on a straight line |
+| p4-mathematics-whole-numbers.json | 3 | Common factors, order of operations, multiplication word problem |
+| **P4 Maths total** | **15** | |
 
-### p2-english-grammar.json (6 questions)
-- p2e-gr01 | Singular and Plural | Standard | mcq
-- p2e-gr02 | Simple Past Tense | Standard | mcq
-- p2e-gr03 | Articles | Standard | mcq
-- p2e-gr04 | Subject-Verb Agreement | Standard | mcq
-- p2e-gr05 | Possessive Pronouns | Standard | mcq
-- p2e-gr06 | Conjunctions | Standard | mcq
+### P4 Science
 
-### p2-english-vocabulary.json (3 questions)
-- p2e-vc01 | Synonyms | Standard | mcq
-- p2e-vc02 | Homophones | Standard | mcq
-- p2e-vc03 | Describing Words | Foundation | mcq
+| File | Questions | Topics |
+|---|---|---|
+| p4-science-heat.json | 4 | Conductors/insulators, sources of heat, thermal expansion |
+| p4-science-light.json | 3 | Sources of light, reflection, transparency |
+| p4-science-magnets.json | 2 | Magnetic materials, magnet properties |
+| p4-science-matter.json | 4 | States of matter, properties of materials |
+| **P4 Science total** | **13** | |
 
-### p2-english-comprehension.json (2 questions)
-- p2e-cp01 | Reading for Information | Standard | mcq
-- p2e-cp02 | Inference | Standard | mcq
+### P4 English
 
-## P4 Mathematics (15 questions)
+| File | Questions | Topics |
+|---|---|---|
+| p4-english-grammar.json | 7 | Prepositions, tenses, subject-verb agreement, pronouns |
+| p4-english-cloze.json | 3 | Grammar cloze passages (past tense, articles, prepositions) |
+| p4-english-editing.json | 3 | Spot-and-correct (SVA, tense, spelling) |
+| p4-english-vocabulary.json | 3 | Synonyms, antonyms, contextual vocabulary |
+| p4-english-comprehension.json | 3 | Inference, literal comprehension |
+| **P4 English total** | **19** | |
 
-### p4-mathematics-fractions.json (5 questions)
-- p4m-eq01 | Equivalent Fractions | Standard | mcq
-- p4m-im01 | Improper Fractions and Mixed Numbers | Standard | mcq
-- p4-math-frac-sample-01 | Adding Unlike Fractions | Standard | mcq
-- p4m-sf01 | Subtracting Unlike Fractions | Standard | mcq
-- p4m-fs01 | Fraction of a Set | Standard | mcq
+### P5 English
 
-### p4-mathematics-decimals.json (4 questions)
-- p4m-pv01 | Place Value (Decimals) | Standard | mcq
-- p4m-rd01 | Rounding Decimals | Standard | mcq
-- p4m-da01 | Adding Decimals | Standard | mcq
-- p4m-fd01 | Converting Fractions to Decimals | Standard | mcq
+| File | Questions | Topics |
+|---|---|---|
+| p5-english-grammar.json | 5 | Present vs continuous, passive voice, relative clauses, connectives, tense error |
 
-### p4-mathematics-geometry.json (3 questions)
-- p4m-pm01 | Perimeter of a Rectangle | Standard | mcq
-- p4m-ar01 | Area of a Rectangle | Standard | mcq
-- p4m-an01 | Angles on a Straight Line | Standard | mcq
+### P6 Mathematics
 
-### p4-mathematics-whole-numbers.json (3 questions)
-- p4m-cf01 | Common Factors | Standard | mcq
-- p4m-oo01 | Order of Operations | Standard | mcq
-- p4m-wp01 | Multiplication Word Problem | Standard | mcq
+| File | Questions | Topics |
+|---|---|---|
+| p6-mathematics-fractions.json | 5 | Fraction of a set, percentage of quantity, percentage increase, part-whole model |
 
-## P4 Science (~17 questions)
+### P6 Science
 
-### p4-science-heat.json
-- IDs: p4-sci-heat-sample-01, p4s-ht-source01, p4s-ht-expand01, ...
-- Topics: Conductors/insulators, Sources of heat, Thermal expansion
+| File | Questions | Topics |
+|---|---|---|
+| p6-science-cells.json | 5 | Plant vs animal cells, nucleus, cell membrane, chloroplasts, HOTS open-ended |
 
-### p4-science-light.json
-- IDs: p4s-lt-source01, ...
-- Topics: Sources of light, Properties of light
+### P6 English
 
-### p4-science-magnets.json
-- IDs: p4s-mg-mat01, ...
-- Topics: Magnetic materials, Magnet properties
+| File | Questions | Topics |
+|---|---|---|
+| p6-english-grammar.json | 5 | Passive voice, neither/nor SVA, past perfect, reported speech, tense consistency |
+| p6-english-cloze.json | 5 | Present perfect, active/passive, modal verbs, conjunctions, reported speech |
+| p6-english-editing.json | 5 | Pronoun SVA, passive past participle, word form, relative pronoun, SVA with phrase |
+| **P6 English total** | **15** | |
 
-### p4-science-matter.json
-- IDs: p4s-mt-states01, ...
-- Topics: States of matter, Properties of materials
-
-## P4 English (~23 questions)
-
-### p4-english-grammar.json
-- IDs: p4e-gr-pp01, ...
-- Topics: Prepositions, Tenses, Subject-verb agreement
-
-### p4-english-cloze.json
-- IDs: p4e-cloze-001, ...
-- Type: cloze (grammar cloze passages)
-
-### p4-english-editing.json
-- IDs: p4e-edit-001, ...
-- Type: editing (spot and correct errors)
-
-### p4-english-vocabulary.json
-- IDs: p4e-vc-syn01, ...
-- Topics: Synonyms, Antonyms, Contextual vocabulary
-
-### p4-english-comprehension.json
-- IDs: p4e-cp-inf01, ...
-- Topics: Inference, Literal comprehension
-
-## P6 Mathematics (5 questions)
-
-### p6-mathematics-fractions.json (5 questions)
-- p6-math-frac-001 | Fraction of a Set | Foundation | short_ans
-- p6-math-frac-002 | Percentage of a Quantity | Standard | short_ans
-- p6-math-frac-003 | Expressing a Quantity as a Percentage | Advanced | short_ans
-- p6-math-frac-004 | Fractions of a Whole — Part-Whole Model | Standard | word_problem
-- p6-math-frac-005 | Percentage Increase and Money | Advanced | word_problem
-
-## P6 Science (5 questions)
-
-### p6-science-cells.json (5 questions)
-- p6-sci-cell-001 | Plant Cell vs Animal Cell — Unique Structures | Foundation | mcq
-- p6-sci-cell-002 | Function of the Nucleus | Standard | mcq
-- p6-sci-cell-003 | Function of the Cell Membrane | Standard | mcq
-- p6-sci-cell-004 | Chloroplasts and Photosynthesis | Advanced | open_ended
-- p6-sci-cell-005 | Identifying Cell Type from Observable Features | HOTS | open_ended
-
-## P6 English (10 questions)
-
-### p6-english-grammar.json (5 questions)
-- p6-eng-gr-001 | Passive Voice Construction | Foundation | mcq
-- p6-eng-gr-002 | Subject-Verb Agreement — Neither...Nor | Standard | mcq
-- p6-eng-gr-003 | Past Perfect Tense | Standard | mcq
-- p6-eng-gr-004 | Reported Speech — Converting Modal Verbs | Advanced | mcq
-- p6-eng-gr-005 | Error Identification — Tense Consistency | HOTS | mcq
-
-### p6-english-cloze.json (5 questions)
-- p6-eng-cloze-001 | Present Perfect vs Simple Past — Time Signals | Foundation | cloze
-- p6-eng-cloze-002 | Active and Passive Voice in Context | Standard | cloze
-- p6-eng-cloze-003 | Modal Verbs — Obligation, Prohibition, Advice | Standard | cloze
-- p6-eng-cloze-004 | Conjunctions and Comparative Adjectives | Standard | cloze
-- p6-eng-cloze-005 | Reported Speech — Tense Backshift | Advanced | cloze
-
-### p6-english-editing.json (5 questions)
-- p6-eng-edit-001 | Subject-Verb Agreement — Pronoun Subject (they/was) | Foundation | editing
-- p6-eng-edit-002 | Passive Voice — Past Participle Form | Standard | editing
-- p6-eng-edit-003 | Word Form — Adjective vs Adverb | Standard | editing
-- p6-eng-edit-004 | Relative Pronoun — who vs which | Advanced | editing
-- p6-eng-edit-005 | SV Agreement — Intervening Prepositional Phrase | HOTS | editing
-
-## P5 English (5 questions)
-
-### p5-english-grammar.json (5 questions)
-- p5-eng-gr-001 | Tense — Simple Present vs Present Continuous | Foundation | mcq
-- p5-eng-gr-002 | Passive Voice — Identifying Correct Form | Standard | mcq
-- p5-eng-gr-003 | Relative Clauses — who, which | Standard | cloze
-- p5-eng-gr-004 | Connectives — Reason, Contrast, Time | Standard | cloze
-- p5-eng-gr-005 | Tense Error — Specific Past Time Marker | Advanced | editing
-
-## P5 Mathematics (~8 questions)
-
-### p5-mathematics.json (aggregate only, no topic-specific files yet)
-- IDs: p5m-ratio-mcq-001, ...
-- Topics: Ratio, Percentage, Rate/Speed
-
-## P5 Science (~12 questions)
-
-### p5-science.json (aggregate only, no topic-specific files yet)
-- IDs: p5s-photo-mcq-001, ...
-- Topics: Photosynthesis, Reproduction, Electricity
+---
 
 ## Aggregate Files (compilations — DO NOT add questions here)
 
-These files compile topic-specific files into one per level+subject.
-They exist for backward compatibility with old quiz engine URLs.
-New questions should ONLY go in topic-specific files.
+These files merge topic-specific files for backward compatibility with older quiz engine routes.
+New questions MUST go into topic-specific files only.
 
-- p2-english.json (compilation of p2-english-*.json)
-- p2-mathematics.json (compilation of p2-mathematics-*.json)
-- p4-english.json (compilation of p4-english-*.json)
-- p4-mathematics.json (compilation of p4-mathematics-*.json)
-- p4-science.json (compilation of p4-science-*.json)
-- p5-mathematics.json (no topic-specific files yet)
-- p5-science.json (no topic-specific files yet)
+| File | Questions | Status |
+|---|---|---|
+| p2-english.json | 11 | Mirrors p2-english-*.json |
+| p2-mathematics.json | 12 | Mirrors p2-mathematics-*.json |
+| p4-english.json | 13 | Partial mirror of p4-english-*.json |
+| p4-mathematics.json | 15 | Mirrors p4-mathematics-*.json |
+| p4-science.json | 13 | Mirrors p4-science-*.json |
+| p5-mathematics.json | 18 | **No topic files yet** — ratio, percentage, rate/speed |
+| p5-science.json | 15 | **No topic files yet** — photosynthesis, reproduction, electricity |
 
-## Priority Gaps (need content urgently)
+---
 
-1. **ALL files under minimum** — every file needs 20+ questions, most have 2-6
-2. **P3 entirely missing** — no files for any subject
-3. **P6 entirely missing** — critical for PSLE preparation
-4. **P5 English missing** — no coverage at all
-5. **P1 missing** — no coverage at all
-6. **Type diversity** — almost everything is MCQ only, need short_ans, word_problem, open_ended, cloze, editing
-7. **Difficulty diversity** — overwhelmingly Standard, need more Foundation, Advanced, HOTS
+## Priority Gaps (ranked by exam impact)
+
+| Priority | Gap | Impact | Target |
+|---|---|---|---|
+| 🔴 P0 | Every file under 20q minimum | Exam engine has thin banks; WA papers may not fill sections | All files → 20q |
+| 🔴 P0 | P6 Mathematics — only Fractions topic | PSLE has 5+ topics | Add algebra, ratio, geometry, data |
+| 🔴 P0 | P5 Maths/Science in aggregates only | Cannot split into WA-style sections without topic files | Create topic-specific P5 files |
+| 🟠 P1 | P1 English — zero coverage | P1 is a paid tier | Add 10q P1 English |
+| 🟠 P1 | P3–P5 thin banks (5–8q per subject) | WA papers need ≥10q per section type | Expand to 20q per file |
+| 🟡 P2 | Type diversity — mostly MCQ | short_ans, word_problem, cloze, editing underrepresented | Add non-MCQ types per level |
+| 🟡 P2 | Difficulty diversity — mostly Standard | Foundation/Advanced/HOTS target: 20%/20%/10% | Add difficulty variety |
+| ⚪ P3 | S1–S4 zero coverage | Future roadmap | Not started |
