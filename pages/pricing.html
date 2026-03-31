@@ -6,44 +6,44 @@
   <title>App Master — Superholic Lab</title>
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="icon" href="../assets/favicon.ico" />
+  
   <script type="module">
     import { guardPage } from '/js/auth.js';
     await guardPage(false); 
   </script>
 </head>
-<body id="mainBody" class="has-bottom-nav">
 
-  <header class="navbar is-scrolled" id="navbar">
-    <div class="container">
-      <nav class="navbar-inner">
-        <a href="../index.html" class="navbar-logo">
-          <img src="../assets/logo.svg" width="32" height="32" alt="Superholic Lab">
-          Superholic Lab
-        </a>
+<body id="mainBody">
 
-        <div class="navbar-actions">
-          <div id="auth-header-container">
-            <a href="login.html" class="btn btn-secondary btn-sm">Log In</a>
-          </div>
+<header class="navbar navbar-homepage" id="navbar" style="justify-content: space-between;">
+    
+    <a href="../index.html" class="navbar-logo">
+      <img src="../assets/logo.svg" width="32" height="32" alt="Superholic Lab">
+      Superholic Lab
+    </a>
 
-          <button class="navbar-toggle" id="navToggle" aria-label="Open menu">
-            <span></span><span></span><span></span>
-          </button>
-        </div>
-      </nav>
+    <div class="navbar-actions">
+      <div id="auth-header-container">
+        <a href="login.html" class="btn btn-secondary btn-sm">Log In</a>
+      </div>
 
-      <div class="navbar-mobile" id="navDropdown">
-        <div class="container" id="navLinks">
-          <a href="../index.html">Home</a>
-          <a href="about.html">About Us</a>
-          <a href="pricing.html">Pricing</a>
-          <a href="contact.html">Contact Support</a>
-          <a href="signup.html" id="navSignUp">Start Free Trial</a>
-        </div>
+      <button class="navbar-toggle" id="navToggle" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="navbar-mobile" id="navDropdown">
+      <div class="container" id="navLinks">
+        <a href="../index.html">Home</a>
+        <a href="../pages/about.html">About Us</a>
+        <a href="../pages/pricing.html">Pricing</a>
+        <a href="../pages/contact.html">Contact Support</a>
+        <a href="../pages/signup.html" id="navSignUp">Start Free Trial</a>
       </div>
     </div>
   </header>
 
+<main class="page-content" style="margin-top: 68px; min-height: 80vh;">
 <!-- ─── PAGE HEADER ─── -->
   <div style="background: var(--hero-gradient); padding: var(--space-10) 0 var(--space-16); position:relative; overflow:hidden;">
     <div class="container" style="position:relative;z-index:1;text-align:center;">
@@ -57,9 +57,8 @@
               fill="#4A5C58"/>
       </svg>
     </div>
-  </div>
-
-  <main style="padding-top: var(--space-20); min-height: 80vh;">
+  </div>      
+      </div>
     <div class="container">
 
       <!-- Guarantee strip -->
@@ -297,7 +296,8 @@
         </div><!-- /faqList -->
       </div>
 
-    </div><!-- /container --> 
+    </div><!-- /container -->
+      
   </main>
 
   <footer class="footer">
@@ -334,237 +334,69 @@
 
   <script src="../js/supabase-client.js"></script>
   <script>
-    (async function() {
-      // 1. Dropdown Toggle Logic
+    document.addEventListener('DOMContentLoaded', () => {
+      /* ── 1. Dropdown Toggle Logic ── */
       const toggle = document.getElementById('navToggle');
       const dropdown = document.getElementById('navDropdown');
-      toggle.addEventListener('click', (e) => {
-        e.stopPropagation();
-        dropdown.classList.toggle('is-open');
-      });
-      document.addEventListener('click', (e) => {
-        if (!dropdown.contains(e.target) && !toggle.contains(e.target)) dropdown.classList.remove('is-open');
-      });
-
-      // 2. Auth-Aware UI Adjustments [cite: 2026-03-31]
-      try {
-        const sb = await getSupabase();
-        const { data: { session } } = await sb.auth.getSession();
-        const body = document.getElementById('mainBody');
-        const bottomNav = document.getElementById('bottomNav');
-        const authContainer = document.getElementById('auth-header-container');
-        const navLinks = document.getElementById('navLinks');
-
-        if (session) {
-          body.classList.add('is-logged-in'); // Adjusts Header/Footer width via CSS [cite: 2026-03-31]
-          bottomNav.hidden = false;
-          authContainer.innerHTML = `<a href="dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a>`;
-
-          // Inject Sign Out to Dropdown [cite: 2026-03-31]
-          const signOut = document.createElement('a');
-          signOut.href = "#";
-          signOut.textContent = "Sign Out";
-          signOut.style.color = "var(--rose)";
-          signOut.onclick = async () => { await sb.auth.signOut(); window.location.href='login.html'; };
-          navLinks.appendChild(signOut);
-          
-          // Remove guest links
-          document.getElementById('navSignUp')?.remove();
-        } else {
-          body.classList.remove('is-logged-in'); // Reverts Header/Footer to full width [cite: 2026-03-31]
-          bottomNav.hidden = true;
-        }
-      } catch (err) { console.warn('Auth check failed', err); }
-    })();
-  </script>
-  <script src="../js/supabase-client.js"></script>
-  <script src="../js/auth.js"></script>
-  <script src="../js/stripe.js"></script>
-  <script>
-    /* Auth-aware navbar */
-    getSupabase().then(async function(sb) {
-      try {
-        const { data: { session } } = await sb.auth.getSession();
-        if (!session) return;
-        const actionsEl = document.querySelector('.navbar-actions');
-        if (actionsEl) {
-          actionsEl.innerHTML = '<a href="dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a><button class="btn btn-primary btn-sm" id="navSignOut">Sign Out</button>';
-          document.getElementById('navSignOut').addEventListener('click', async function() {
-            await sb.auth.signOut();
-            window.location.href = '../index.html';
-          });
-        }
-        const mobileNav = document.getElementById('navMobile');
-        if (mobileNav) {
-          mobileNav.querySelectorAll('a[href*="login"], a[href*="signup"]').forEach(function(l) { l.remove(); });
-          const dashLink = document.createElement('a');
-          dashLink.href = 'dashboard.html';
-          dashLink.textContent = 'Dashboard';
-          mobileNav.appendChild(dashLink);
-        }
-      } catch (e) {
-        console.error('Nav auth check failed:', e);
+      
+      if (toggle && dropdown) {
+        toggle.addEventListener('click', (e) => {
+          e.stopPropagation();
+          dropdown.classList.toggle('is-open');
+          toggle.classList.toggle('is-active'); 
+        });
+        document.addEventListener('click', (e) => {
+          if (!dropdown.contains(e.target) && !toggle.contains(e.target)) {
+            dropdown.classList.remove('is-open');
+            toggle.classList.remove('is-active');
+          }
+        });
       }
+
+      /* ── 2. Master Auth & Layout Logic ── */
+      getSupabase().then(async function(sb) {
+        try {
+          const { data: { session } } = await sb.auth.getSession();
+          const body = document.getElementById('mainBody');
+          const bottomNav = document.getElementById('bottomNav');
+          const authContainer = document.getElementById('auth-header-container');
+          const navLinks = document.getElementById('navLinks');
+
+          if (session) {
+            // User is Logged In: Inject UI classes and reveal sidebar
+            body.classList.add('is-logged-in', 'has-bottom-nav');
+            if (bottomNav) bottomNav.hidden = false;
+            
+            if (authContainer) {
+              authContainer.innerHTML = '<a href="dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a>';
+            }
+
+            if (navLinks && !document.getElementById('navSignOut')) {
+              const signOut = document.createElement('a');
+              signOut.id = "navSignOut";
+              signOut.href = "#";
+              signOut.textContent = "Sign Out";
+              signOut.style.color = "var(--rose)";
+              signOut.onclick = async (e) => { 
+                e.preventDefault();
+                await sb.auth.signOut(); 
+                window.location.href = '../index.html'; 
+              };
+              navLinks.appendChild(signOut);
+              
+              const signUpLink = document.getElementById('navSignUp');
+              if (signUpLink) signUpLink.remove();
+            }
+          } else {
+            // User is Guest: Ensure app-specific layout shifts are disabled
+            body.classList.remove('is-logged-in', 'has-bottom-nav');
+            if (bottomNav) bottomNav.hidden = true;
+          }
+        } catch (e) {
+          console.error('Master auth script failed:', e);
+        }
+      });
     });
   </script>
-  <script>
-    (function () {
-      'use strict';
-
-      /* Navbar mobile toggle */
-      const navToggle = document.getElementById('navToggle');
-      const navMobile = document.getElementById('navMobile');
-      if (navToggle && navMobile) {
-        navToggle.addEventListener('click', function () {
-          const isOpen = navMobile.classList.toggle('is-open');
-          navToggle.setAttribute('aria-expanded', String(isOpen));
-        });
-      }
-
-      /* Scroll reveal */
-      const revealEls = document.querySelectorAll('.reveal, .reveal-group');
-      if ('IntersectionObserver' in window) {
-        const io = new IntersectionObserver(function (entries) {
-          entries.forEach(function (e) {
-            if (e.isIntersecting) { e.target.classList.add('revealed'); io.unobserve(e.target); }
-          });
-        }, { threshold: 0.1 });
-        revealEls.forEach(function (el) { io.observe(el); });
-      } else {
-        revealEls.forEach(function (el) { el.classList.add('revealed'); });
-      }
-
-      /* FAQ accordion */
-      document.querySelectorAll('.faq-question').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-          const item = btn.closest('.faq-item');
-          const isOpen = item.classList.contains('is-open');
-          /* Close all */
-          document.querySelectorAll('.faq-item').forEach(function (i) {
-            i.classList.remove('is-open');
-          });
-          /* Open clicked (toggle) */
-          if (!isOpen) { item.classList.add('is-open'); }
-        });
-      });
-
-    })();
-  </script>
-
-  <!-- Billing toggle + auth-aware checkout -->
-  <script>
-  (async function() {
-    'use strict';
-    let currentBilling = 'monthly';
-    let session = null;
-    let userProfile = null;
-
-    // Check auth state
-    try {
-      const sb = await getSupabase();
-      const { data } = await sb.auth.getSession();
-      session = data.session;
-      if (session) {
-        const { data: p } = await sb
-          .from('profiles')
-          .select('subscription_tier, id')
-          .eq('id', session.user.id)
-          .single();
-        userProfile = p;
-      }
-    } catch (e) {
-      console.warn('[pricing] auth check failed:', e);
-    }
-
-    // Toggle billing period
-    const toggleMonthly  = document.getElementById('toggle-monthly');
-    const toggleAnnual   = document.getElementById('toggle-annual');
-    const monthlyPrices  = document.querySelectorAll('.price-monthly');
-    const annualPrices   = document.querySelectorAll('.price-annual');
-
-    function setToggle(billing) {
-      currentBilling = billing;
-      const isAnnual = billing === 'annual';
-      toggleMonthly.classList.toggle('is-active', !isAnnual);
-      toggleMonthly.classList.toggle('btn-primary',   !isAnnual);
-      toggleMonthly.classList.toggle('btn-secondary',  isAnnual);
-      toggleAnnual.classList.toggle('is-active',  isAnnual);
-      toggleAnnual.classList.toggle('btn-primary',   isAnnual);
-      toggleAnnual.classList.toggle('btn-secondary', !isAnnual);
-      monthlyPrices.forEach(function(el) { el.hidden =  isAnnual; });
-      annualPrices.forEach(function(el)  { el.hidden = !isAnnual; });
-    }
-
-    if (toggleMonthly) toggleMonthly.addEventListener('click', function() { setToggle('monthly'); });
-    if (toggleAnnual)  toggleAnnual.addEventListener('click',  function() { setToggle('annual'); });
-    setToggle('monthly');
-
-    // Update CTAs for logged-in users
-    if (session && userProfile) {
-      const tier   = userProfile.subscription_tier;
-      const isTrial = tier === 'trial';
-      const paidTiers = ['single_subject', 'all_subjects', 'family'];
-      const isPaid = paidTiers.includes(tier);
-
-      document.querySelectorAll('[data-checkout-plan]').forEach(function(btn) {
-        const plan = btn.dataset.checkoutPlan;
-
-        if (isTrial) {
-          btn.textContent = 'Subscribe Now';
-          btn.classList.remove('btn-secondary');
-          btn.classList.add('btn-primary');
-          btn.removeAttribute('href');
-          btn.setAttribute('role', 'button');
-          btn.style.cursor = 'pointer';
-
-          btn.addEventListener('click', async function(e) {
-            e.preventDefault();
-            btn.textContent = 'Loading…';
-            btn.disabled    = true;
-            try {
-              const res = await fetch('/api/checkout', {
-                method:  'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  plan:    plan,
-                  billing: currentBilling,
-                  userId:  session.user.id,
-                  email:   session.user.email,
-                }),
-              });
-              const data = await res.json();
-              if (data.url) {
-                window.location.href = data.url;
-              } else {
-                throw new Error(data.error || 'No checkout URL returned');
-              }
-            } catch (err) {
-              alert('Could not start checkout: ' + err.message);
-              btn.textContent = 'Subscribe Now';
-              btn.disabled    = false;
-            }
-          });
-
-        } else if (isPaid) {
-          if (plan === tier) {
-            btn.textContent = '✓ Current Plan';
-            btn.disabled    = true;
-            btn.classList.add('btn-secondary');
-            btn.classList.remove('btn-primary');
-          }
-        }
-      });
-    }
-  })();
-  </script>
-
-  <!-- TEST:
-       1. Gradient header + wave divider renders correctly
-       2. Pricing cards show S$9.99 / S$19.99 (featured, indigo header, ribbon) / S$29.99
-       3. All Subjects card has diagonal amber "POPULAR" ribbon in top-right corner
-       4. Family card shows ~S$10 per child green badge
-       5. FAQ accordion: clicking a question expands the answer; clicking again collapses
-       6. Only one FAQ item can be open at a time
-       7. Footer shows all links and 🇸🇬 Made in Singapore -->
 </body>
 </html>
