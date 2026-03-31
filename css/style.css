@@ -3480,15 +3480,13 @@ html, body {
    Optimised for right-side alignment & Hero-matching aesthetics.
    ───────────────────────────────────────────────────────────── */
 
-/* ─── SIDE-TRAY DROPDOWN (Content-Height) ─── */
+/* ─── SIDE-TRAY DROPDOWN ─── */
 #navDropdown, .navbar-mobile {
-  /* Change height from 100vh to auto so it hugs the links */
   height: auto !important; 
-  bottom: auto; /* Ensures it doesn't stretch downwards */
-  border-bottom-left-radius: var(--radius-xl); /* Rounds the bottom corner */
-  padding-bottom: var(--space-8) !important; /* Reduces empty space at the bottom */
+  bottom: auto; 
+  border-bottom-left-radius: var(--radius-xl); 
+  padding-bottom: var(--space-8) !important; 
   
-  /* Your existing rules remain */
   position: fixed !important;
   top: 0; right: 0; left: auto !important;
   width: 280px; max-width: 85vw;
@@ -3496,18 +3494,23 @@ html, body {
   background: rgba(38, 53, 48, 0.94); 
   backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
   border-left: 1px solid var(--glass-border);
-  border-bottom: 1px solid var(--glass-border); /* Adds a subtle bottom border */
+  border-bottom: 1px solid var(--glass-border); 
   padding: var(--space-20) var(--space-6) var(--space-10);
   display: flex !important;
   flex-direction: column; gap: var(--space-1);
+  
+  /* 1. Remove shadow from the hidden state */
+  box-shadow: none; 
+  
   transform: translateX(100%);
-  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: -15px 15px 40px rgba(0, 0, 0, 0.4);
+  /* 2. Add box-shadow to the transition list for a smooth fade-in */
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.45s ease;
 }
 
-/* 2. Entrance Animation */
-.navbar-mobile.is-open, #navDropdown.is-open {
+/* 3. Apply the shadow ONLY when the menu is open */
+#navDropdown.is-open, .navbar-mobile.is-open {
   transform: translateX(0) !important;
+  box-shadow: -15px 15px 40px rgba(0, 0, 0, 0.4); 
 }
 
 /* 3. Dropdown Links (Synchronised with Footer Typography) */
