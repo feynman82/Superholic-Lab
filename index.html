@@ -496,9 +496,13 @@ window.addEventListener('scroll', () => {
     if (toggle && dropdown) {
       toggle.addEventListener('click', (e) => {
         e.stopPropagation();
+        // Toggles the slide-in animation
         dropdown.classList.toggle('is-open');
-        toggle.classList.toggle('is-active'); // Triggers the glowing 'X'
+        // Toggles the 3-lines into an 'X'
+        toggle.classList.toggle('is-active'); 
       });
+
+      // Close menu if clicking outside of it
       document.addEventListener('click', (e) => {
         if (!dropdown.contains(e.target) && !toggle.contains(e.target)) {
           dropdown.classList.remove('is-open');
@@ -508,44 +512,41 @@ window.addEventListener('scroll', () => {
     }
   });
 
-  /* ── 2. Auth-aware Navbar & Dashboard CTA ── */
+  /* ── 2. Auth-aware Navbar Logic ── */
   getSupabase().then(async function(sb) {
     try {
+      // Check if user is logged in
       const { data: { session } } = await sb.auth.getSession();
-      if (!session) return;
+      
+      // If no session exists, leave the "Log In" button as is
+      if (!session) return; 
       
       const authContainer = document.getElementById('auth-header-container');
       const navLinks = document.getElementById('navLinks');
       
-      // Change Log In button to Dashboard
+      // Replace "Log In" button with "Dashboard"
       if (authContainer) {
         authContainer.innerHTML = '<a href="pages/dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a>';
       }
 
-      // Inject Sign Out to the Side-Tray
+      // Add "Sign Out" to the bottom of the dropdown tray
       if (navLinks) {
         const signOut = document.createElement('a');
         signOut.href = "#";
         signOut.textContent = "Sign Out";
-        signOut.style.color = "var(--rose)";
+        signOut.style.color = "var(--rose)"; // Optional: keeps sign out slightly highlighted
         signOut.onclick = async (e) => { 
           e.preventDefault();
           await sb.auth.signOut(); 
-          window.location.href = 'index.html'; 
+          window.location.href = 'index.html'; // Redirect to home after logout
         };
         navLinks.appendChild(signOut);
         
-        // Remove guest trial link
+        // Remove the "Start Free Trial" link from the dropdown since they are already a user
         const signUpLink = document.getElementById('navSignUp');
         if (signUpLink) signUpLink.remove();
       }
 
-      // Update Mission Control CTA for logged-in users
-      const ctaBtn = document.getElementById('dashboard-cta-btn');
-      if (ctaBtn) {
-        ctaBtn.href        = 'pages/dashboard.html';
-        ctaBtn.textContent = 'Go to Dashboard →';
-      }
     } catch (e) {
       console.error('Nav auth check failed:', e);
     }
