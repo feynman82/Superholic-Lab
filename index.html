@@ -44,16 +44,27 @@
     <img src="assets/logo.svg" width="32" height="32" alt="" aria-hidden="true" style="border-radius:8px;flex-shrink:0;">
     Superholic Lab
   </a>
-  <nav class="navbar-links" aria-label="Main navigation">
-    <a href="/" class="active">Home</a>
-    <a href="/pages/about.html">About</a>
-    <a href="/pages/pricing.html">Pricing</a>
-    <a href="/pages/contact.html">Contact</a>
-  </nav>
-  <div class="navbar-actions">
-    <a href="/pages/login.html" class="navbar-login">Log in</a>
-    <a href="/pages/signup.html" class="btn btn-rose btn-sm">Get Started</a>
-  </div>
+        <div class="navbar-actions">
+          <div id="auth-header-container">
+            <a href="login.html" class="btn btn-secondary btn-sm">Log In</a>
+          </div>
+
+          <button class="navbar-toggle" id="navToggle" aria-label="Open menu">
+            <span></span><span></span><span></span>
+          </button>
+        </div>
+      </nav>
+
+      <div class="navbar-mobile" id="navDropdown">
+        <div class="container" id="navLinks">
+          <a href="../index.html">Home</a>
+          <a href="about.html">About Us</a>
+          <a href="pricing.html">Pricing</a>
+          <a href="contact.html">Contact Support</a>
+          <a href="signup.html" id="navSignUp">Start Free Trial</a>
+        </div>
+      </div>
+    </div>
 </nav>
 
 <!-- ═══════════════════ HERO ═══════════════════ -->
