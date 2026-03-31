@@ -608,7 +608,7 @@ html, body {
     flex-direction: column;
     position: fixed;
     /* Transparent clearance at top (50px) and bottom (100px) [cite: 2026-03-31] */
-    top: 40px; 
+    top: 110px; 
     bottom: 100px;
     left: 0;
     right: auto;
