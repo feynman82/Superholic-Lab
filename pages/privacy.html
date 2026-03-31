@@ -3,28 +3,44 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Privacy Policy — Superholic Lab</title>
-  <meta name="description" content="How Superholic Lab collects, uses, and protects your personal data in compliance with Singapore's PDPA." />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <title>App Master — Superholic Lab</title>
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="icon" href="../assets/favicon.ico" />
-  <meta name="robots" content="noindex, nofollow" />
-  <!-- Analytics: ⚠️ CONFIGURE — sign up at plausible.io and add superholiclab.com -->
-  <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js"></script>
+  <script type="module">
+    import { guardPage } from '/js/auth.js';
+    await guardPage(false); 
+  </script>
 </head>
-<body>
-  <header class="navbar is-scrolled">
+<body id="mainBody" class="has-bottom-nav">
+
+  <header class="navbar is-scrolled" id="navbar">
     <div class="container">
       <nav class="navbar-inner">
         <a href="../index.html" class="navbar-logo">
-          <img src="../assets/logo.svg" width="32" height="32" alt="" aria-hidden="true" style="border-radius:8px;flex-shrink:0;">
+          <img src="../assets/logo.svg" width="32" height="32" alt="Superholic Lab">
           Superholic Lab
         </a>
+
         <div class="navbar-actions">
-          <a href="signup.html" class="btn btn-primary btn-sm">Start Free Trial</a>
+          <div id="auth-header-container">
+            <a href="login.html" class="btn btn-secondary btn-sm">Log In</a>
+          </div>
+
+          <button class="navbar-toggle" id="navToggle" aria-label="Open menu">
+            <span></span><span></span><span></span>
+          </button>
         </div>
       </nav>
+
+      <div class="navbar-mobile" id="navDropdown">
+        <div class="container" id="navLinks">
+          <a href="../index.html">Home</a>
+          <a href="about.html">About Us</a>
+          <a href="pricing.html">Pricing</a>
+          <a href="contact.html">Contact Support</a>
+          <a href="signup.html" id="navSignUp">Start Free Trial</a>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -40,8 +56,8 @@
     </div>
   </div>
 
-  <main style="padding: var(--space-10) 0 var(--space-16);">
-    <div class="container">
+  <main style="padding-top: var(--space-20); min-height: 80vh;">
+      <div class="container">
       <div class="card no-hover" style="max-width:720px; margin:0 auto;">
         <div class="card-body" style="line-height:1.75;">
 
@@ -121,13 +137,79 @@
   <footer class="footer">
     <div class="container">
       <div class="footer-bottom">
-        <p>&copy; 2026 Superholic Lab. All rights reserved. 🇸🇬 Made in Singapore</p>
+        <p>&copy; 2026 Superholic Lab. 🇸🇬 Made in Singapore</p>
         <div class="flex gap-4">
+          <a href="privacy.html">Privacy</a>
           <a href="terms.html">Terms</a>
           <a href="contact.html">Contact</a>
         </div>
       </div>
     </div>
   </footer>
+
+  <nav class="bottom-nav" id="bottomNav" hidden>
+    <a href="subjects.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      Practise
+    </a>
+    <a href="tutor.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      AI Tutor
+    </a>
+    <a href="exam.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="M9 12h6M9 16h4"/></svg>
+      Exam
+    </a>
+    <a href="progress.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Progress
+    </a>
+  </nav>
+
+  <script src="../js/supabase-client.js"></script>
+  <script>
+    (async function() {
+      // 1. Dropdown Toggle Logic
+      const toggle = document.getElementById('navToggle');
+      const dropdown = document.getElementById('navDropdown');
+      toggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdown.classList.toggle('is-open');
+      });
+      document.addEventListener('click', (e) => {
+        if (!dropdown.contains(e.target) && !toggle.contains(e.target)) dropdown.classList.remove('is-open');
+      });
+
+      // 2. Auth-Aware UI Adjustments [cite: 2026-03-31]
+      try {
+        const sb = await getSupabase();
+        const { data: { session } } = await sb.auth.getSession();
+        const body = document.getElementById('mainBody');
+        const bottomNav = document.getElementById('bottomNav');
+        const authContainer = document.getElementById('auth-header-container');
+        const navLinks = document.getElementById('navLinks');
+
+        if (session) {
+          body.classList.add('is-logged-in'); // Adjusts Header/Footer width via CSS [cite: 2026-03-31]
+          bottomNav.hidden = false;
+          authContainer.innerHTML = `<a href="dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a>`;
+
+          // Inject Sign Out to Dropdown [cite: 2026-03-31]
+          const signOut = document.createElement('a');
+          signOut.href = "#";
+          signOut.textContent = "Sign Out";
+          signOut.style.color = "var(--rose)";
+          signOut.onclick = async () => { await sb.auth.signOut(); window.location.href='login.html'; };
+          navLinks.appendChild(signOut);
+          
+          // Remove guest links
+          document.getElementById('navSignUp')?.remove();
+        } else {
+          body.classList.remove('is-logged-in'); // Reverts Header/Footer to full width [cite: 2026-03-31]
+          bottomNav.hidden = true;
+        }
+      } catch (err) { console.warn('Auth check failed', err); }
+    })();
+  </script>
 </body>
 </html>
