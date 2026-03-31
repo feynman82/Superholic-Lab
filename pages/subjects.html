@@ -3,9 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>App Master — Superholic Lab</title>
+  <title>Choose a Subject — Superholic Lab</title>
+  <meta name="description" content="Choose a subject and level to start practising MOE-aligned questions." />
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="icon" href="../assets/favicon.ico" />
+  
   <script type="module">
     import { guardPage } from '/js/auth.js';
     await guardPage(true); 
@@ -35,19 +37,22 @@
       <div class="navbar-mobile" id="navDropdown">
         <div class="container" id="navLinks">
           <a href="../index.html">Home</a>
+          <a href="dashboard.html">Dashboard</a>
+          <a href="tutor.html">AI Tutor</a>
+          <a href="exam.html">Exam Paper</a>
+          <a href="progress.html">My Progress</a>
+          <hr class="footer-divider" style="opacity: 0.1; margin: var(--space-4) 0;">
           <a href="about.html">About Us</a>
           <a href="pricing.html">Pricing</a>
           <a href="contact.html">Contact Support</a>
-          <a href="signup.html" id="navSignUp">Start Free Trial</a>
         </div>
       </div>
     </div>
   </header>
 
   <main style="padding-top: var(--space-20); min-height: 80vh;">
-      <div class="container">
+    <div class="container">
 
-      <!-- Trust badge row -->
       <div class="flex gap-4 justify-center flex-wrap mb-8 reveal">
         <span class="badge badge-moe">
           <svg viewBox="0 0 14 14" fill="currentColor" aria-hidden="true">
@@ -58,54 +63,36 @@
         <span class="badge badge-info">P1 – S4 · All Levels</span>
         <span class="badge badge-amber">Wrong-answer explanations on every MCQ</span>
       </div>
-      <!-- Subject cards -->
-      <div class="grid grid-3 reveal-group" id="subjectGrid"
-           style="max-width:880px; margin: var(--space-8) auto 0;">
 
-        <!-- ── MATHEMATICS ── -->
-        <div class="subject-card card-maths" id="card-mathematics"
-             role="button" tabindex="0"
-             aria-expanded="false"
-             aria-label="Mathematics — click to choose a level"
-             data-subject="mathematics">
+      <div class="grid grid-3 reveal-group" id="subjectGrid" style="max-width:880px; margin: var(--space-8) auto 0;">
+
+        <div class="subject-card card-maths" id="card-mathematics" data-subject="mathematics" role="button" tabindex="0" aria-expanded="false">
           <div style="padding: var(--space-6);">
-
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-4">
                 <div class="subject-icon icon-maths">
                   <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-                    <path d="M8 14h12M14 8v12" stroke="var(--maths-colour)"
-                          stroke-width="2.5" stroke-linecap="round"/>
+                    <path d="M8 14h12M14 8v12" stroke="var(--maths-colour)" stroke-width="2.5" stroke-linecap="round"/>
                     <circle cx="14" cy="14" r="6" stroke="var(--maths-colour)" stroke-width="1.5"/>
                   </svg>
                 </div>
                 <div>
-                  <h2 style="font-size:1.125rem; font-family:'Plus Jakarta Sans',sans-serif;
-                             font-weight:600; color:var(--maths-colour);">Mathematics</h2>
+                  <h2 style="font-size:1.125rem; font-family:var(--font-body); font-weight:600; color:var(--maths-colour);">Mathematics</h2>
                   <p class="text-xs text-secondary">Primary 1 – Secondary 4</p>
                 </div>
               </div>
-              <svg class="subject-chevron" width="20" height="20" viewBox="0 0 20 20"
-                   fill="none" aria-hidden="true">
-                <path d="M5 7.5L10 12.5L15 7.5" stroke="var(--text-secondary)"
-                      stroke-width="1.75" stroke-linecap="round"/>
+              <svg class="subject-chevron" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M5 7.5L10 12.5L15 7.5" stroke="var(--text-secondary)" stroke-width="1.75" stroke-linecap="round"/>
               </svg>
             </div>
-
-            <!-- Topic preview -->
             <div class="flex gap-2 mt-4 flex-wrap">
               <span class="badge badge-info">Fractions</span>
               <span class="badge badge-info">Algebra</span>
               <span class="badge badge-info">Geometry</span>
               <span class="badge badge-info">+12 more</span>
             </div>
-
-            <!-- Level selector -->
-            <div class="subject-levels" id="levels-mathematics">
-              <p class="text-xs font-semibold mb-4"
-                 style="color:var(--maths-colour); text-transform:uppercase; letter-spacing:0.08em;">
-                Primary
-              </p>
+            <div class="subject-levels">
+              <p class="text-xs font-semibold mb-4" style="color:var(--maths-colour); text-transform:uppercase; letter-spacing:0.08em;">Primary</p>
               <div class="level-grid mb-6">
                 <button class="level-btn" data-subject="mathematics" data-level="primary-1">P1</button>
                 <button class="level-btn" data-subject="mathematics" data-level="primary-2">P2</button>
@@ -114,133 +101,76 @@
                 <button class="level-btn" data-subject="mathematics" data-level="primary-5">P5</button>
                 <button class="level-btn" data-subject="mathematics" data-level="primary-6">P6</button>
               </div>
-              <p class="text-xs font-semibold mb-4"
-                 style="color:var(--maths-colour); text-transform:uppercase; letter-spacing:0.08em;">
-                Secondary
-              </p>
-              <div class="level-grid">
-                <button class="level-btn" data-subject="mathematics" data-level="secondary-1">S1</button>
-                <button class="level-btn" data-subject="mathematics" data-level="secondary-2">S2</button>
-                <button class="level-btn" data-subject="mathematics" data-level="secondary-3">S3</button>
-                <button class="level-btn" data-subject="mathematics" data-level="secondary-4">S4</button>
-              </div>
             </div>
           </div>
         </div>
 
-        <!-- ── SCIENCE ── -->
-        <div class="subject-card card-science" id="card-science"
-             role="button" tabindex="0"
-             aria-expanded="false"
-             aria-label="Science — click to choose a level"
-             data-subject="science">
+        <div class="subject-card card-science" id="card-science" data-subject="science" role="button" tabindex="0" aria-expanded="false">
           <div style="padding: var(--space-6);">
-
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-4">
                 <div class="subject-icon icon-science">
                   <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-                    <path d="M10 4v8l-4 8a2 2 0 001.8 2.9h12.4A2 2 0 0022 20l-4-8V4"
-                          stroke="var(--science-colour)" stroke-width="1.75"
-                          stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M9 4h10" stroke="var(--science-colour)" stroke-width="1.75"
-                          stroke-linecap="round"/>
+                    <path d="M10 4v8l-4 8a2 2 0 001.8 2.9h12.4A2 2 0 0022 20l-4-8V4" stroke="var(--science-colour)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M9 4h10" stroke="var(--science-colour)" stroke-width="1.75" stroke-linecap="round"/>
                     <circle cx="12" cy="18" r="1.5" fill="var(--science-colour)" opacity="0.6"/>
                     <circle cx="17" cy="20" r="1" fill="var(--science-colour)" opacity="0.5"/>
                   </svg>
                 </div>
                 <div>
-                  <h2 style="font-size:1.125rem; font-family:'Plus Jakarta Sans',sans-serif;
-                             font-weight:600; color:var(--science-colour);">Science</h2>
+                  <h2 style="font-size:1.125rem; font-family:var(--font-body); font-weight:600; color:var(--science-colour);">Science</h2>
                   <p class="text-xs text-secondary">Primary 3 – Secondary 4</p>
                 </div>
               </div>
-              <svg class="subject-chevron" width="20" height="20" viewBox="0 0 20 20"
-                   fill="none" aria-hidden="true">
-                <path d="M5 7.5L10 12.5L15 7.5" stroke="var(--text-secondary)"
-                      stroke-width="1.75" stroke-linecap="round"/>
+              <svg class="subject-chevron" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M5 7.5L10 12.5L15 7.5" stroke="var(--text-secondary)" stroke-width="1.75" stroke-linecap="round"/>
               </svg>
             </div>
-
             <div class="flex gap-2 mt-4 flex-wrap">
               <span class="badge badge-standard">Plants</span>
               <span class="badge badge-standard">Forces</span>
               <span class="badge badge-standard">Cycles</span>
               <span class="badge badge-standard">+10 more</span>
             </div>
-
-            <div class="subject-levels" id="levels-science">
-              <p class="text-xs font-semibold mb-4"
-                 style="color:var(--science-colour); text-transform:uppercase; letter-spacing:0.08em;">
-                Primary (starts P3)
-              </p>
+            <div class="subject-levels">
+              <p class="text-xs font-semibold mb-4" style="color:var(--science-colour); text-transform:uppercase; letter-spacing:0.08em;">Primary</p>
               <div class="level-grid mb-6">
                 <button class="level-btn" data-subject="science" data-level="primary-3">P3</button>
                 <button class="level-btn" data-subject="science" data-level="primary-4">P4</button>
                 <button class="level-btn" data-subject="science" data-level="primary-5">P5</button>
                 <button class="level-btn" data-subject="science" data-level="primary-6">P6</button>
               </div>
-              <p class="text-xs font-semibold mb-4"
-                 style="color:var(--science-colour); text-transform:uppercase; letter-spacing:0.08em;">
-                Secondary
-              </p>
-              <div class="level-grid">
-                <button class="level-btn" data-subject="science" data-level="secondary-1">S1</button>
-                <button class="level-btn" data-subject="science" data-level="secondary-2">S2</button>
-                <button class="level-btn" data-subject="science" data-level="secondary-3">S3</button>
-                <button class="level-btn" data-subject="science" data-level="secondary-4">S4</button>
-              </div>
             </div>
           </div>
         </div>
 
-        <!-- ── ENGLISH ── -->
-        <div class="subject-card card-english" id="card-english"
-             role="button" tabindex="0"
-             aria-expanded="false"
-             aria-label="English — click to choose a level"
-             data-subject="english">
+        <div class="subject-card card-english" id="card-english" data-subject="english" role="button" tabindex="0" aria-expanded="false">
           <div style="padding: var(--space-6);">
-
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-4">
                 <div class="subject-icon icon-english">
                   <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-                    <rect x="5" y="4" width="18" height="20" rx="3"
-                          stroke="var(--english-colour)" stroke-width="1.75"/>
-                    <path d="M9 9h10M9 13h10M9 17h6"
-                          stroke="var(--english-colour)" stroke-width="1.5"
-                          stroke-linecap="round"/>
-                    <circle cx="22" cy="22" r="5" fill="var(--english-colour)"/>
-                    <path d="M20 22l1.5 1.5L24 20" stroke="white" stroke-width="1.5"
-                          stroke-linecap="round" stroke-linejoin="round"/>
+                    <rect x="5" y="4" width="18" height="20" rx="3" stroke="var(--english-colour)" stroke-width="1.75"/>
+                    <path d="M9 9h10M9 13h10M9 17h6" stroke="var(--english-colour)" stroke-width="1.5" stroke-linecap="round"/>
                   </svg>
                 </div>
                 <div>
-                  <h2 style="font-size:1.125rem; font-family:'Plus Jakarta Sans',sans-serif;
-                             font-weight:600; color:var(--english-colour);">English</h2>
+                  <h2 style="font-size:1.125rem; font-family:var(--font-body); font-weight:600; color:var(--english-colour);">English</h2>
                   <p class="text-xs text-secondary">Primary 1 – Secondary 4</p>
                 </div>
               </div>
-              <svg class="subject-chevron" width="20" height="20" viewBox="0 0 20 20"
-                   fill="none" aria-hidden="true">
-                <path d="M5 7.5L10 12.5L15 7.5" stroke="var(--text-secondary)"
-                      stroke-width="1.75" stroke-linecap="round"/>
+              <svg class="subject-chevron" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M5 7.5L10 12.5L15 7.5" stroke="var(--text-secondary)" stroke-width="1.75" stroke-linecap="round"/>
               </svg>
             </div>
-
             <div class="flex gap-2 mt-4 flex-wrap">
               <span class="badge badge-standard">Comprehension</span>
               <span class="badge badge-standard">Grammar</span>
               <span class="badge badge-standard">Vocabulary</span>
               <span class="badge badge-standard">+8 more</span>
             </div>
-
-            <div class="subject-levels" id="levels-english">
-              <p class="text-xs font-semibold mb-4"
-                 style="color:var(--english-colour); text-transform:uppercase; letter-spacing:0.08em;">
-                Primary
-              </p>
+            <div class="subject-levels">
+              <p class="text-xs font-semibold mb-4" style="color:var(--english-colour); text-transform:uppercase; letter-spacing:0.08em;">Primary</p>
               <div class="level-grid mb-6">
                 <button class="level-btn" data-subject="english" data-level="primary-1">P1</button>
                 <button class="level-btn" data-subject="english" data-level="primary-2">P2</button>
@@ -249,36 +179,17 @@
                 <button class="level-btn" data-subject="english" data-level="primary-5">P5</button>
                 <button class="level-btn" data-subject="english" data-level="primary-6">P6</button>
               </div>
-              <p class="text-xs font-semibold mb-4"
-                 style="color:var(--english-colour); text-transform:uppercase; letter-spacing:0.08em;">
-                Secondary
-              </p>
-              <div class="level-grid">
-                <button class="level-btn" data-subject="english" data-level="secondary-1">S1</button>
-                <button class="level-btn" data-subject="english" data-level="secondary-2">S2</button>
-                <button class="level-btn" data-subject="english" data-level="secondary-3">S3</button>
-                <button class="level-btn" data-subject="english" data-level="secondary-4">S4</button>
-              </div>
             </div>
           </div>
         </div>
 
-      </div><!-- /grid -->
-
-      <!-- Availability notice -->
-      <div class="alert alert-info mt-8 reveal"
-           style="max-width:880px; margin: var(--space-6) auto 0;">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true" style="flex-shrink:0;margin-top:1px;">
-          <circle cx="9" cy="9" r="8" stroke="currentColor" stroke-width="1.5"/>
-          <path d="M9 8v5M9 6h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
-        <span>
-          P4 &amp; P5 Mathematics, P4 &amp; P5 Science, and P4 English (MCQ, Cloze, Editing) are live now.
-          More topics and levels are added weekly — check back soon.
-        </span>
       </div>
 
-    </div><!-- /container --> 
+      <div class="alert alert-info mt-8 reveal" style="max-width:880px; margin: var(--space-6) auto 0;">
+        <span>P4 &amp; P5 Mathematics, P4 &amp; P5 Science, and P4 English are live now. More topics added weekly.</span>
+      </div>
+
+    </div>
   </main>
 
   <footer class="footer">
@@ -295,7 +206,7 @@
   </footer>
 
   <nav class="bottom-nav" id="bottomNav" hidden>
-    <a href="subjects.html" class="bottom-nav-item">
+    <a href="subjects.html" class="bottom-nav-item is-active">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
       Practise
     </a>
@@ -316,47 +227,7 @@
   <script src="../js/supabase-client.js"></script>
   <script>
     (async function() {
-      // 1. Dropdown Toggle Logic
+      // 1. Navigation Shell Logic
       const toggle = document.getElementById('navToggle');
       const dropdown = document.getElementById('navDropdown');
-      toggle.addEventListener('click', (e) => {
-        e.stopPropagation();
-        dropdown.classList.toggle('is-open');
-      });
-      document.addEventListener('click', (e) => {
-        if (!dropdown.contains(e.target) && !toggle.contains(e.target)) dropdown.classList.remove('is-open');
-      });
-
-      // 2. Auth-Aware UI Adjustments [cite: 2026-03-31]
-      try {
-        const sb = await getSupabase();
-        const { data: { session } } = await sb.auth.getSession();
-        const body = document.getElementById('mainBody');
-        const bottomNav = document.getElementById('bottomNav');
-        const authContainer = document.getElementById('auth-header-container');
-        const navLinks = document.getElementById('navLinks');
-
-        if (session) {
-          body.classList.add('is-logged-in'); // Adjusts Header/Footer width via CSS [cite: 2026-03-31]
-          bottomNav.hidden = false;
-          authContainer.innerHTML = `<a href="dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a>`;
-
-          // Inject Sign Out to Dropdown [cite: 2026-03-31]
-          const signOut = document.createElement('a');
-          signOut.href = "#";
-          signOut.textContent = "Sign Out";
-          signOut.style.color = "var(--rose)";
-          signOut.onclick = async () => { await sb.auth.signOut(); window.location.href='login.html'; };
-          navLinks.appendChild(signOut);
-          
-          // Remove guest links
-          document.getElementById('navSignUp')?.remove();
-        } else {
-          body.classList.remove('is-logged-in'); // Reverts Header/Footer to full width [cite: 2026-03-31]
-          bottomNav.hidden = true;
-        }
-      } catch (err) { console.warn('Auth check failed', err); }
-    })();
-  </script>
-</body>
-</html>
+      toggle.addEventListener('click', (e) => { e
