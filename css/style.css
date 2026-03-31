@@ -310,12 +310,17 @@ body {
   padding-bottom: 0;
 }
 
+/* ─── DYNAMIC NAVIGATION CLEARANCE (Auth-Aware) ─── */
 @media (max-width: 767px) {
-  body.has-bottom-nav { padding-bottom: 64px; }
+  /* Only push content up on mobile if logged in AND nav is present */
+  body.has-bottom-nav.is-logged-in { padding-bottom: 64px; }
+  body.has-bottom-nav:not(.is-logged-in) { padding-bottom: 0; }
 }
 
 @media (min-width: 768px) {
-  body.has-bottom-nav { padding-left: 80px; }
+  /* Only push content right on desktop if logged in AND nav is present */
+  body.has-bottom-nav.is-logged-in { padding-left: 80px; }
+  body.has-bottom-nav:not(.is-logged-in) { padding-left: 0; }
 }
 
 img, svg { display: block; max-width: 100%; }
