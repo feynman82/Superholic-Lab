@@ -566,6 +566,39 @@ small, .text-sm  { font-size: 0.875rem; }
 /* ─────────────────────────────────────────────────────────────
    BOTTOM MOBILE NAV
    ───────────────────────────────────────────────────────────── */
+/* ─── VIEWPORT BOUNDARY LOCK [cite: 2026-03-31] ─── */
+
+html, body {
+  width: 100%;
+  /* Prevents horizontal scrolling (scrolling to the right) [cite: 2026-03-31] */
+  overflow-x: hidden; 
+  position: relative;
+  /* Ensures box calculations include padding/borders */
+  box-sizing: border-box; 
+}
+
+/* Ensure fixed headers and side-trays don't trigger layout shifts [cite: 2026-03-31] */
+#navbar, #navDropdown {
+  max-width: 100vw;
+}
+
+/* ─── REFINED SIDE-TRAY LOGIC [cite: 2026-03-31] ─── */
+#navDropdown {
+  position: fixed;
+  top: 0;
+  right: -280px; /* Fully off-screen [cite: 2026-03-31] */
+  width: 280px;
+  height: 100vh;
+  z-index: 1000;
+  /* Uses transform for better performance and to avoid document reflow [cite: 2026-03-31] */
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex !important;
+}
+
+#navDropdown.is-open {
+  transform: translateX(-280px); /* Slides in without expanding the body width [cite: 2026-03-31] */
+}
+
 .bottom-nav {
   display: flex;
   position: fixed;
