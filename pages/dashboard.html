@@ -3,71 +3,68 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard — Superholic Lab</title>
+  <title>App Master — Superholic Lab</title>
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="icon" href="../assets/favicon.ico" />
   
   <script type="module">
     import { guardPage } from '/js/auth.js';
-    await guardPage(true); 
+    await guardPage(false); 
   </script>
 </head>
-<body id="mainBody" class="has-bottom-nav">
 
-  <header class="navbar is-scrolled" id="navbar">
-    <div class="container">
-      <nav class="navbar-inner">
-        <a href="dashboard.html" class="navbar-logo">
-          <img src="../assets/logo.svg" width="32" height="32" alt="Superholic Lab">
-          Superholic Lab
-        </a>
+<body id="mainBody">
 
-        <div class="navbar-actions">
-          <span class="plan-badge" id="planBadge"></span>
-          
-          <div id="auth-header-container"></div>
+<header class="navbar navbar-homepage" id="navbar" style="justify-content: space-between;">
+    
+    <a href="../index.html" class="navbar-logo">
+      <img src="../assets/logo.svg" width="32" height="32" alt="Superholic Lab">
+      Superholic Lab
+    </a>
 
-          <button class="navbar-toggle" id="navToggle" aria-label="Open menu">
-            <span></span><span></span><span></span>
-          </button>
-        </div>
-      </nav>
+    <div class="navbar-actions">
+      <div id="auth-header-container">
+        <a href="login.html" class="btn btn-secondary btn-sm">Log In</a>
+      </div>
+      <span class="plan-badge" id="planBadge"></span>
+      <button class="navbar-toggle" id="navToggle" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
 
-      <div class="navbar-mobile" id="navDropdown">
-        <div class="container" id="navLinks">
-          <a href="../index.html">Home</a>
-          <a href="about.html">About Us</a>
-          <a href="pricing.html">Pricing</a>
-          <a href="contact.html">Contact Support</a>
-        </div>
+    <div class="navbar-mobile" id="navDropdown">
+      <div class="container" id="navLinks">
+        <a href="../index.html">Home</a>
+        <a href="../pages/about.html">About Us</a>
+        <a href="../pages/pricing.html">Pricing</a>
+        <a href="../pages/contact.html">Contact Support</a>
+        <a href="../pages/signup.html" id="navSignUp">Start Free Trial</a>
       </div>
     </div>
   </header>
 
+<main class="page-content" style="margin-top: 68px; min-height: 80vh;">
   <div class="trial-banner" id="trialBanner" style="display:none">
     <span>🎁 <strong id="trialDaysLeft"></strong> left in your free trial</span>
-    <a href="pricing.html" class="btn-upgrade">Upgrade now →</a>
+    <a href="/pages/pricing.html" class="btn-upgrade">Upgrade now →</a>
   </div>
 
-  <main class="dashboard-main">
-    <div class="container">
-      <h1 class="welcome" id="welcomeMsg">Welcome back 👋</h1>
-      <p class="welcome-sub">Here's what's happening for your learner today.</p>
+  <h1 class="welcome" id="welcomeMsg">Welcome back 👋</h1>
+    <p class="welcome-sub">Here's what's happening for your learner today.</p>
 
-      <div class="section-header">
-        <div class="section-title">Your learners</div>
-        <a href="setup.html" class="btn-add" id="addChildBtn">＋ Add child</a>
-      </div>
+    <div class="section-header">
+      <div class="section-title">Your learners</div>
+      <a href="/pages/setup.html" class="btn-add" id="addChildBtn">＋ Add child</a>
+    </div>
 
-      <div class="cards-grid" id="cardsGrid">
-        <div class="skeleton" style="height:180px"></div>
-      </div>
+    <div class="cards-grid" id="cardsGrid">
+      <div class="skeleton" style="height:180px"></div>
+    </div>
 
-      <div class="admin-panel" id="adminPanel" style="display:none">
-        <h3>🔐 Admin Panel</h3>
-        <div id="adminStats"></div>
-        <a href="admin.html" class="admin-link">Open admin panel →</a>
-      </div>
+    <div class="admin-panel" id="adminPanel" style="display:none">
+      <h3>🔐 Admin Panel</h3>
+      <div id="adminStats"></div>
+      <a href="/pages/admin.html" class="admin-link">Open admin panel →</a>
     </div>
   </main>
 
@@ -104,93 +101,148 @@
   </nav>
 
   <script src="../js/supabase-client.js"></script>
-  <script type="module">
-    (async function() {
-      // 1. Navigation Logic
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      /* ── 1. Dropdown Toggle Logic ── */
       const toggle = document.getElementById('navToggle');
       const dropdown = document.getElementById('navDropdown');
-      toggle.addEventListener('click', (e) => { e.stopPropagation(); dropdown.classList.toggle('is-open'); });
-      document.addEventListener('click', (e) => { if (!dropdown.contains(e.target)) dropdown.classList.remove('is-open'); });
-
-      // 2. Dashboard Logic
-      try {
-        const sb = await getSupabase();
-        const { data: { session } } = await sb.auth.getSession();
-        const body = document.getElementById('mainBody');
-        const bottomNav = document.getElementById('bottomNav');
-        const navLinks = document.getElementById('navLinks');
-
-        if (session) {
-          body.classList.add('is-logged-in'); // Adjusts layout for app view
-          bottomNav.hidden = false;
-
-          // Fetch Data
-          const { data: profile } = await sb.from('profiles').select('*').eq('id', session.user.id).single();
-          const { data: students } = await sb.from('students').select('*').eq('parent_id', session.user.id);
-
-          if (profile) {
-            // Update Welcome & Plan Badge
-            document.getElementById('welcomeMsg').textContent = `Welcome back, ${profile.full_name?.split(' ')[0] || 'there'} 👋`;
-            
-            const badge = document.getElementById('planBadge');
-            const planLabels = { trial: '🎁 Trial', single_subject: 'Single Subject', all_subjects: 'All Subjects', family: 'Family' };
-            badge.textContent = profile.role === 'admin' ? '👑 Admin' : (planLabels[profile.subscription_tier] || profile.subscription_tier);
-
-            // Trial Banner
-            if (profile.subscription_tier === 'trial' && profile.trial_ends_at) {
-              const days = Math.ceil((new Date(profile.trial_ends_at) - new Date()) / 86400000);
-              if (days > 0) {
-                document.getElementById('trialBanner').style.display = 'flex';
-                document.getElementById('trialDaysLeft').textContent = `${days} day${days !== 1 ? 's' : ''}`;
-              }
-            }
-
-            // Render Students
-            renderStudents(students, profile);
-
-            // Admin Setup
-            if (profile.role === 'admin') {
-              document.getElementById('adminPanel').style.display = 'block';
-              document.getElementById('adminStats').innerHTML = `Total students: <strong>${students?.length ?? 0}</strong>`;
-            }
-
-            // Sign Out Option
-            const signOut = document.createElement('a');
-            signOut.href = "#";
-            signOut.textContent = "Sign Out";
-            signOut.style.color = "var(--rose)";
-            signOut.onclick = async () => { await sb.auth.signOut(); window.location.href='login.html'; };
-            navLinks.appendChild(signOut);
+      
+      if (toggle && dropdown) {
+        toggle.addEventListener('click', (e) => {
+          e.stopPropagation();
+          dropdown.classList.toggle('is-open');
+          toggle.classList.toggle('is-active'); 
+        });
+        document.addEventListener('click', (e) => {
+          if (!dropdown.contains(e.target) && !toggle.contains(e.target)) {
+            dropdown.classList.remove('is-open');
+            toggle.classList.remove('is-active');
           }
-        }
-      } catch (err) { console.error('Dashboard init failed:', err); }
+        });
+      }
 
-      function renderStudents(students, profile) {
-        const grid = document.getElementById('cardsGrid');
-        grid.innerHTML = '';
-        if (!students?.length) {
-          grid.innerHTML = '<div class="empty-state">No learners added yet. Click "+ Add child" to start.</div>';
-          return;
+      /* ── 2. Master Auth & Layout Logic ── */
+      getSupabase().then(async function(sb) {
+        try {
+          const { data: { session } } = await sb.auth.getSession();
+          const body = document.getElementById('mainBody');
+          const bottomNav = document.getElementById('bottomNav');
+          const authContainer = document.getElementById('auth-header-container');
+          const navLinks = document.getElementById('navLinks');
+
+          if (session) {
+            // User is Logged In: Inject UI classes and reveal sidebar
+            body.classList.add('is-logged-in', 'has-bottom-nav');
+            if (bottomNav) bottomNav.hidden = false;
+            
+            if (authContainer) {
+              authContainer.innerHTML = '<a href="dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a>';
+            }
+
+            if (navLinks && !document.getElementById('navSignOut')) {
+              const signOut = document.createElement('a');
+              signOut.id = "navSignOut";
+              signOut.href = "#";
+              signOut.textContent = "Sign Out";
+              signOut.style.color = "var(--rose)";
+              signOut.onclick = async (e) => { 
+                e.preventDefault();
+                await sb.auth.signOut(); 
+                window.location.href = '../index.html'; 
+              };
+              navLinks.appendChild(signOut);
+              
+              const signUpLink = document.getElementById('navSignUp');
+              if (signUpLink) signUpLink.remove();
+            }
+          } else {
+            // User is Guest: Ensure app-specific layout shifts are disabled
+            body.classList.remove('is-logged-in', 'has-bottom-nav');
+            if (bottomNav) bottomNav.hidden = true;
+          }
+        } catch (e) {
+          console.error('Master auth script failed:', e);
         }
+      });
+    });
+  </script>
+  <script src="/js/supabase-client.js"></script>
+  <script type="module">
+    import { guardPage } from '/js/auth.js';
+
+    async function init() {
+      const profile = await guardPage(true);
+      if (!profile) return;
+
+      const firstName = profile.full_name?.split(' ')[0] || 'there';
+      document.getElementById('welcomeMsg').textContent = `Welcome back, ${firstName} \ud83d\udc4b`;
+
+      const badge = document.getElementById('planBadge');
+      const planLabels = { trial: '🎁 Trial', single_subject: 'Single Subject', all_subjects: 'All Subjects', family: 'Family' };
+      badge.textContent = profile.role === 'admin' ? '👑 Admin' : (planLabels[profile.subscription_tier] || profile.subscription_tier);
+      if (profile.role === 'admin') badge.className = 'plan-badge admin';
+      else if (profile.subscription_tier === 'trial') badge.className = 'plan-badge trial';
+
+      if (profile.subscription_tier === 'trial' && profile.trial_ends_at) {
+        const daysLeft = Math.ceil((new Date(profile.trial_ends_at) - new Date()) / 86400000);
+        if (daysLeft > 0) {
+          document.getElementById('trialBanner').style.display = 'flex';
+          document.getElementById('trialDaysLeft').textContent = `${daysLeft} day${daysLeft !== 1 ? 's' : ''}`;
+        }
+      }
+
+      // Load students using getSupabase() global
+      const supabase = await getSupabase();
+      const query = profile.role === 'admin'
+        ? supabase.from('students').select('*')
+        : supabase.from('students').select('*').eq('parent_id', profile.id);
+
+      const { data: students, error } = await query;
+      const grid = document.getElementById('cardsGrid');
+      grid.innerHTML = '';
+
+      if (error || !students?.length) {
+        grid.innerHTML = `<div class="empty-state"><div class="empty-icon">\ud83c\udfa2</div><p>No learners added yet.<br>Click "+ Add child" to get started.</p></div>`;
+      } else {
         students.forEach(student => {
+          const initials = student.name?.charAt(0).toUpperCase() || '?';
           const card = document.createElement('div');
           card.className = 'student-card';
           card.innerHTML = `
-            <div class="card-avatar">${student.name?.charAt(0).toUpperCase()}</div>
-            <div class="card-name">${student.name}</div>
-            <div class="card-meta">${student.level}</div>
-            ${student.selected_subject ? `<span class="card-tag">${student.selected_subject}</span>` : ''}
-            <a href="subjects.html?student=${student.id}" class="btn-practice">Practice Now →</a>
+            <div class="card-avatar">${initials}</div>
+            <div class="card-name">${escapeHtml(student.name)}</div>
+            <div class="card-meta">${escapeHtml(student.level)}</div>
+            ${student.selected_subject ? `<span class="card-tag">${escapeHtml(student.selected_subject)}</span>` : ''}
+            <a href="/pages/subjects.html?student=${student.id}" class="btn-practice">Practice Now \u2192</a>
           `;
           grid.appendChild(card);
         });
-
-        // Hide add button if at limit
-        if (profile.role !== 'admin' && students.length >= (profile.max_children || 1)) {
-          document.getElementById('addChildBtn').classList.add('hidden');
-        }
       }
-    })();
-  </script>
+
+      // Add child button: hide if at limit
+      const addBtn = document.getElementById('addChildBtn');
+      if (profile.role !== 'admin' && students && students.length >= profile.max_children) {
+        addBtn.classList.add('hidden');
+      }
+
+      if (profile.role === 'admin') {
+        document.getElementById('adminPanel').style.display = 'block';
+        document.getElementById('adminStats').innerHTML =
+          `<span class="admin-stat">Total students: <strong>${students?.length ?? 0}</strong></span>`;
+      }
+    }
+
+    window.handleSignOut = async function () {
+      const { signOut } = await import('/js/auth.js');
+      await signOut();
+    };
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    init();
+  </script>  
 </body>
 </html>
