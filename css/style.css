@@ -601,8 +601,8 @@ small, .text-sm  { font-size: 0.875rem; }
   .bottom-nav {
     flex-direction: column;
     position: fixed;
-    /* Transparent clearance at top (100px) and bottom (100px) [cite: 2026-03-31] */
-    top: 55px; 
+    /* Transparent clearance at top (50px) and bottom (100px) [cite: 2026-03-31] */
+    top: 40px; 
     bottom: 100px;
     left: 0;
     right: auto;
