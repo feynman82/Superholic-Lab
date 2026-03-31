@@ -39,33 +39,34 @@
 <body>
 
 <!-- ═══════════════════ NAVBAR ═══════════════════ -->
-<nav class="navbar navbar-homepage">
-  <a href="/" class="navbar-logo">
+<header class="navbar navbar-homepage" id="navbar" style="justify-content: space-between;">
+  
+  <a href="index.html" class="navbar-logo">
     <img src="assets/logo.svg" width="32" height="32" alt="" aria-hidden="true" style="border-radius:8px;flex-shrink:0;">
     Superholic Lab
   </a>
-        <div class="navbar-actions">
-          <div id="auth-header-container">
-            <a href="login.html" class="btn btn-secondary btn-sm">Log In</a>
-          </div>
 
-          <button class="navbar-toggle" id="navToggle" aria-label="Open menu">
-            <span></span><span></span><span></span>
-          </button>
-        </div>
-      </nav>
-
-      <div class="navbar-mobile" id="navDropdown">
-        <div class="container" id="navLinks">
-          <a href="../index.html">Home</a>
-          <a href="about.html">About Us</a>
-          <a href="pricing.html">Pricing</a>
-          <a href="contact.html">Contact Support</a>
-          <a href="signup.html" id="navSignUp">Start Free Trial</a>
-        </div>
-      </div>
+  <div class="navbar-actions">
+    <div id="auth-header-container">
+      <a href="pages/login.html" class="btn btn-secondary btn-sm">Log In</a>
     </div>
-</nav>
+
+    <button class="navbar-toggle" id="navToggle" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+
+  <div class="navbar-mobile" id="navDropdown">
+    <div class="container" id="navLinks">
+      <a href="index.html">Home</a>
+      <a href="pages/about.html">About Us</a>
+      <a href="pages/pricing.html">Pricing</a>
+      <a href="pages/contact.html">Contact Support</a>
+      <a href="pages/signup.html" id="navSignUp">Start Free Trial</a>
+    </div>
+  </div>
+
+</header>
 
 <!-- ═══════════════════ HERO ═══════════════════ -->
 <section class="hero-homepage">
@@ -486,6 +487,69 @@ window.addEventListener('scroll', () => {
   }
 }, { passive: true });
 </script>
+<script>
+  /* ── 1. Dropdown Toggle Logic ── */
+  document.addEventListener('DOMContentLoaded', () => {
+    const toggle = document.getElementById('navToggle');
+    const dropdown = document.getElementById('navDropdown');
+    
+    if (toggle && dropdown) {
+      toggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdown.classList.toggle('is-open');
+        toggle.classList.toggle('is-active'); // Triggers the glowing 'X'
+      });
+      document.addEventListener('click', (e) => {
+        if (!dropdown.contains(e.target) && !toggle.contains(e.target)) {
+          dropdown.classList.remove('is-open');
+          toggle.classList.remove('is-active');
+        }
+      });
+    }
+  });
 
+  /* ── 2. Auth-aware Navbar & Dashboard CTA ── */
+  getSupabase().then(async function(sb) {
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) return;
+      
+      const authContainer = document.getElementById('auth-header-container');
+      const navLinks = document.getElementById('navLinks');
+      
+      // Change Log In button to Dashboard
+      if (authContainer) {
+        authContainer.innerHTML = '<a href="pages/dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a>';
+      }
+
+      // Inject Sign Out to the Side-Tray
+      if (navLinks) {
+        const signOut = document.createElement('a');
+        signOut.href = "#";
+        signOut.textContent = "Sign Out";
+        signOut.style.color = "var(--rose)";
+        signOut.onclick = async (e) => { 
+          e.preventDefault();
+          await sb.auth.signOut(); 
+          window.location.href = 'index.html'; 
+        };
+        navLinks.appendChild(signOut);
+        
+        // Remove guest trial link
+        const signUpLink = document.getElementById('navSignUp');
+        if (signUpLink) signUpLink.remove();
+      }
+
+      // Update Mission Control CTA for logged-in users
+      const ctaBtn = document.getElementById('dashboard-cta-btn');
+      if (ctaBtn) {
+        ctaBtn.href        = 'pages/dashboard.html';
+        ctaBtn.textContent = 'Go to Dashboard →';
+      }
+    } catch (e) {
+      console.error('Nav auth check failed:', e);
+    }
+  });
+</script>
 </body>
 </html>
