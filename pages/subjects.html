@@ -230,4 +230,102 @@
       // 1. Navigation Shell Logic
       const toggle = document.getElementById('navToggle');
       const dropdown = document.getElementById('navDropdown');
-      toggle.addEventListener('click', (e) => { e
+      toggle.addEventListener('click', (e) => { e.stopPropagation(); dropdown.classList.toggle('is-open'); toggle.classList.toggle('is-active'); });
+      document.addEventListener('click', (e) => { if (!dropdown.contains(e.target) && !toggle.contains(e.target)) { dropdown.classList.remove('is-open'); toggle.classList.remove('is-active'); } });
+
+      // Intersection Observer for Reveal Animation
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('revealed'); }});
+      }, { threshold: 0.1 });
+      document.querySelectorAll('.reveal, .reveal-group').forEach(el => observer.observe(el));
+
+      // 2. Master Subject & Auth Logic
+      try {
+        const sb = await getSupabase();
+        const { data: { session } } = await sb.auth.getSession();
+        
+        if (!session) return; // GuardPage handles redirect
+
+        // Setup App UI
+        document.getElementById('mainBody').classList.add('is-logged-in');
+        document.getElementById('bottomNav').hidden = false;
+        document.getElementById('auth-header-container').innerHTML = `<a href="dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a>`;
+        
+        const signOut = document.createElement('a');
+        signOut.href = "#"; signOut.textContent = "Sign Out"; signOut.style.color = "var(--rose)";
+        signOut.onclick = async () => { await sb.auth.signOut(); window.location.href='login.html'; };
+        document.getElementById('navLinks').appendChild(signOut);
+
+        // Fetch Personalisation Data
+        const urlParams = new URLSearchParams(window.location.search);
+        const targetStudentId = urlParams.get('student');
+        
+        const [profileRes, studentRes] = await Promise.all([
+          sb.from('profiles').select('*').eq('id', session.user.id).single(),
+          sb.from('students').select('*').eq('parent_id', session.user.id)
+        ]);
+
+        const profile = profileRes.data;
+        const students = studentRes.data || [];
+        const currentStudent = targetStudentId 
+          ? students.find(s => s.id === targetStudentId) 
+          : students[0]; // Default to first child
+
+        // 3. Subscription Lock Logic
+        if (profile && profile.subscription_tier === 'single_subject' && currentStudent?.selected_subject) {
+          const allowedSubject = currentStudent.selected_subject.toLowerCase();
+          
+          document.querySelectorAll('.subject-card').forEach(card => {
+            if (card.dataset.subject !== allowedSubject) {
+              card.style.opacity = '0.5';
+              card.style.pointerEvents = 'none';
+              card.classList.add('no-hover');
+              
+              // Add visual lock
+              const lock = document.createElement('div');
+              lock.style.cssText = 'position:absolute; inset:0; display:flex; align-items:center; justify-content:center; z-index:10; background:rgba(0,0,0,0.2); border-radius:inherit;';
+              lock.innerHTML = `<a href="pricing.html" style="background:rgba(0,0,0,0.7);color:#fff;padding:.5rem 1rem;border-radius:.5rem;font-size:.85rem;font-weight:600;text-decoration:none;">Upgrade to unlock</a>`;
+              card.appendChild(lock);
+            }
+          });
+        }
+
+        // 4. Card Interaction Logic
+        document.querySelectorAll('.subject-card').forEach(card => {
+          card.addEventListener('click', function(e) {
+            if (this.style.pointerEvents === 'none' || e.target.classList.contains('level-btn')) return;
+            
+            // Toggle accordion
+            const isSelected = this.classList.contains('is-selected');
+            document.querySelectorAll('.subject-card').forEach(c => {
+              c.classList.remove('is-selected');
+              c.setAttribute('aria-expanded', 'false');
+            });
+            
+            if (!isSelected) {
+              this.classList.add('is-selected');
+              this.setAttribute('aria-expanded', 'true');
+            }
+          });
+        });
+
+        // 5. Level Selection Routing
+        document.querySelectorAll('.level-btn').forEach(btn => {
+          btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const subject = this.dataset.subject;
+            const level = this.dataset.level;
+            const studentParam = currentStudent ? `&student=${currentStudent.id}` : '';
+            
+            // Redirect to quiz page with correct parameters
+            window.location.href = `quiz.html?subject=${subject}&level=${level}${studentParam}`;
+          });
+        });
+
+      } catch (err) {
+        console.error('Subjects initialization failed:', err);
+      }
+    })();
+  </script>
+</body>
+</html>
