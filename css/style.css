@@ -523,23 +523,8 @@ small, .text-sm  { font-size: 0.875rem; }
   gap: var(--space-3);
 }
 
-.navbar-toggle {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: var(--space-2);
-}
-.navbar-toggle span {
-  display: block;
-  width: 22px;
-  height: 2px;
-  background: var(--cream);
-  border-radius: var(--radius-full);
-  transition: var(--transition);
-}
+
+
 
 .navbar-mobile {
   display: none;
@@ -568,12 +553,11 @@ small, .text-sm  { font-size: 0.875rem; }
    ───────────────────────────────────────────────────────────── */
 /* ─── VIEWPORT BOUNDARY LOCK [cite: 2026-03-31] ─── */
 
+/* 1. Viewport Boundary Lock */
 html, body {
   width: 100%;
-  /* Prevents horizontal scrolling (scrolling to the right) [cite: 2026-03-31] */
   overflow-x: hidden; 
   position: relative;
-  /* Ensures box calculations include padding/borders */
   box-sizing: border-box; 
 }
 
@@ -3542,18 +3526,20 @@ html, body {
   padding-left: var(--space-2);
 }
 
-/* 4. Special Action: Sign Out styling */
-#navLinks a[style*="color: var(--rose)"] {
-  color: var(--rose) !important;
-  font-weight: 700;
-  margin-top: var(--space-4);
-  border-bottom: none;
+/* ─────────────────────────────────────────────────────────────
+   MASTER NAVIGATION & LAYOUT LOGIC [cite: 2026-03-31]
+   Unified block to resolve all toggle, tray, and sidebar conflicts.
+   ───────────────────────────────────────────────────────────── */
+
+/* 1. Viewport Boundary Lock */
+html, body {
+  width: 100%;
+  overflow-x: hidden; 
+  position: relative;
+  box-sizing: border-box; 
 }
-/* ─── PERSISTENT NAVIGATION OVERRIDES ─── */
 
-/* Always show the 3 lines regardless of screen size [cite: 2026-03-31] */
-/* ─── ENHANCED TOGGLE: Glow & Transform ─── */
-
+/* 2. Persistent 3-Line Toggle (Glow & X-Transform) */
 .navbar-toggle {
   display: flex !important;
   flex-direction: column;
@@ -3562,7 +3548,7 @@ html, body {
   border: none;
   cursor: pointer;
   padding: var(--space-2);
-  z-index: 2100; /* Ensures it stays above the side-tray [cite: 2026-03-31] */
+  z-index: 2100;
   transition: transform var(--transition-md);
 }
 
@@ -3570,49 +3556,53 @@ html, body {
   display: block;
   width: 24px;
   height: 2px;
-  background: var(--cream); /* Default state */
+  background: var(--cream);
   border-radius: var(--radius-full);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ACTIVE STATE: The "Glow" & "X" Transformation [cite: 2026-03-31] */
 .navbar-toggle.is-active span {
-  background-color: var(--mint); /* Primary success color */
-  box-shadow: 0 0 12px var(--mint-glow); /* Soft neon glow */
+  background-color: var(--mint);
+  box-shadow: 0 0 12px var(--mint-glow);
 }
 
-/* Transform lines into an X */
-.navbar-toggle.is-active span:nth-child(1) {
-  transform: translateY(7px) rotate(45deg);
-}
-.navbar-toggle.is-active span:nth-child(2) {
-  opacity: 0;
-  transform: translateX(-10px);
-}
-.navbar-toggle.is-active span:nth-child(3) {
-  transform: translateY(-7px) rotate(-45deg);
-}
+.navbar-toggle.is-active span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.navbar-toggle.is-active span:nth-child(2) { opacity: 0; transform: translateX(-10px); }
+.navbar-toggle.is-active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
-/* Side-tray Dropdown: Controlled width & cascading [cite: 2026-03-31] */
+/* 3. Side-Tray Dropdown (Right-Aligned, Darker Transparency) */
 #navDropdown {
+  position: fixed !important;
+  top: 0;
+  right: 0;
+  left: auto !important;
   width: 280px;
-  right: -280px; /* Hidden by default */
-  left: auto;
-  transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex !important; /* Managed by .is-open class */
+  max-width: 85vw;
+  height: 100vh;
+  z-index: 2000;
+  background: rgba(38, 53, 48, 0.92); /* Darker & more transparent [cite: 2026-03-31] */
+  backdrop-filter: blur(24px);
+  border-left: 1px solid var(--glass-border);
+  padding: var(--space-20) var(--space-6) var(--space-10);
+  display: flex !important;
+  flex-direction: column;
+  gap: var(--space-1);
+  transform: translateX(100%);
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: -15px 0 40px rgba(0, 0, 0, 0.4);
 }
 
 #navDropdown.is-open {
-  right: 0;
+  transform: translateX(0) !important;
 }
 
-/* Dropdown link styling: Matches footer typography */
 #navDropdown a {
-  font-family: var(--font-body);
-  font-size: 0.875rem;
-  color: var(--sage-light);
+  display: block;
   padding: var(--space-3) 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  font-family: var(--font-body);
+  font-size: 0.875rem; 
+  color: var(--sage-light);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   transition: all var(--transition);
 }
 
@@ -3621,9 +3611,7 @@ html, body {
   padding-left: var(--space-2);
 }
 
-/* ─── DYNAMIC LAYOUT STATES [cite: 2026-03-31] ─── */
-
-/* LOGGED OUT: Fluid Header/Footer */
+/* 4. Dynamic Layout States */
 body:not(.is-logged-in) .navbar .container,
 body:not(.is-logged-in) .footer .container {
   max-width: 100%;
@@ -3631,12 +3619,27 @@ body:not(.is-logged-in) .footer .container {
   padding-right: var(--space-8);
 }
 
-/* LOGGED IN: Adjust for Bottom Nav & App Focus */
 body.is-logged-in {
-  padding-bottom: 80px; /* Prevent bottom-nav overlap */
+  padding-left: 80px; /* Aligned with Left Sidebar [cite: 2026-03-31] */
+  padding-right: 0;
 }
 
 body.is-logged-in .navbar .container,
 body.is-logged-in .footer .container {
-  max-width: 1200px; /* Standard app container width */
+  max-width: 1200px;
 }
+
+/* 5. Sign Out Styling */
+#navLinks a[style*="color: var(--rose)"] {
+  color: var(--rose) !important;
+  font-weight: 700;
+  margin-top: var(--space-4);
+  border-bottom: none;
+}
+
+
+
+
+
+
+
