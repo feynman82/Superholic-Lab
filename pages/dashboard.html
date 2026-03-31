@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>App Master — Superholic Lab</title>
+  <title>Dashboard — Superholic Lab</title>
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="icon" href="../assets/favicon.ico" />
+  
   <script type="module">
     import { guardPage } from '/js/auth.js';
     await guardPage(true); 
@@ -16,16 +17,16 @@
   <header class="navbar is-scrolled" id="navbar">
     <div class="container">
       <nav class="navbar-inner">
-        <a href="../index.html" class="navbar-logo">
+        <a href="dashboard.html" class="navbar-logo">
           <img src="../assets/logo.svg" width="32" height="32" alt="Superholic Lab">
           Superholic Lab
         </a>
 
         <div class="navbar-actions">
-          <div id="auth-header-container">
-            <a href="login.html" class="btn btn-secondary btn-sm">Log In</a>
-          </div>
           <span class="plan-badge" id="planBadge"></span>
+          
+          <div id="auth-header-container">
+            </div>
 
           <button class="navbar-toggle" id="navToggle" aria-label="Open menu">
             <span></span><span></span><span></span>
@@ -39,37 +40,32 @@
           <a href="about.html">About Us</a>
           <a href="pricing.html">Pricing</a>
           <a href="contact.html">Contact Support</a>
-          <a href="signup.html" id="navSignUp">Start Free Trial</a>
         </div>
       </div>
     </div>
   </header>
 
-    <div class="trial-banner" id="trialBanner" style="display:none">
-    <span>🎁 <strong id="trialDaysLeft"></strong> left in your free trial</span>
-    <a href="/pages/pricing.html" class="btn-upgrade">Upgrade now →</a>
-  </div>
-
-  <main style="padding-top: var(--space-20); min-height: 80vh;" class="dashboard-main">
-    <h1 class="welcome" id="welcomeMsg">Welcome back 👋</h1>
-    <p class="welcome-sub">Here's what's happening for your learner today.</p>
-
-    <div class="section-header">
-      <div class="section-title">Your learners</div>
-      <a href="/pages/setup.html" class="btn-add" id="addChildBtn">＋ Add child</a>
+  <div class="trial-banner" id="trialBanner" style="display:none">
     </div>
 
-    <div class="cards-grid" id="cardsGrid">
-      <div class="skeleton" style="height:180px"></div>
-    </div>
+  <main style="padding-top: var(--space-20); min-height: 80vh;">
+    <div class="container" style="padding-bottom: var(--space-16);">
+      <h1 class="welcome-heading" id="welcomeHeading">Loading dashboard…</h1>
+      
+      <div class="student-grid" id="studentGrid"></div>
 
-    <div class="admin-panel" id="adminPanel" style="display:none">
-      <h3>🔐 Admin Panel</h3>
-      <div id="adminStats"></div>
-      <a href="/pages/admin.html" class="admin-link">Open admin panel →</a>
+      <a href="setup.html" class="add-child-btn" id="addChildBtn">
+        <div class="add-child-plus">+</div>
+        <div class="add-child-label">Add another child</div>
+      </a>
+
+      <div class="admin-panel" id="adminPanel" style="display:none">
+        <h3>Admin Console</h3>
+        <div id="adminStats"></div>
+      </div>
     </div>
   </main>
-  
+
   <footer class="footer">
     <div class="container">
       <div class="footer-bottom">
@@ -112,43 +108,92 @@
       // 1. Dropdown Toggle Logic
       const toggle = document.getElementById('navToggle');
       const dropdown = document.getElementById('navDropdown');
-      toggle.addEventListener('click', (e) => {
-        e.stopPropagation();
-        dropdown.classList.toggle('is-open');
-      });
-      document.addEventListener('click', (e) => {
-        if (!dropdown.contains(e.target) && !toggle.contains(e.target)) dropdown.classList.remove('is-open');
-      });
+      toggle.addEventListener('click', (e) => { e.stopPropagation(); dropdown.classList.toggle('is-open'); });
+      document.addEventListener('click', (e) => { if (!dropdown.contains(e.target) && !toggle.contains(e.target)) dropdown.classList.remove('is-open'); });
 
-      // 2. Auth-Aware UI Adjustments [cite: 2026-03-31]
+      // 2. Dashboard Logic (Ported from dashboard - backup.html)
       try {
         const sb = await getSupabase();
         const { data: { session } } = await sb.auth.getSession();
         const body = document.getElementById('mainBody');
         const bottomNav = document.getElementById('bottomNav');
-        const authContainer = document.getElementById('auth-header-container');
         const navLinks = document.getElementById('navLinks');
 
         if (session) {
-          body.classList.add('is-logged-in'); // Adjusts Header/Footer width via CSS [cite: 2026-03-31]
+          body.classList.add('is-logged-in');
           bottomNav.hidden = false;
-          authContainer.innerHTML = `<a href="dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a>`;
 
-          // Inject Sign Out to Dropdown [cite: 2026-03-31]
+          // Fetch User & Student Data
+          const [profileRes, studentRes] = await Promise.all([
+            sb.from('profiles').select('*').eq('id', session.user.id).single(),
+            sb.from('students').select('*').eq('parent_id', session.user.id)
+          ]);
+
+          if (profileRes.data) {
+            const profile = profileRes.data;
+            
+            // Update Plan Badge
+            const planBadge = document.getElementById('planBadge');
+            const planNames = { single_subject: 'Single Subject', all_subjects: 'All Subjects', family: 'Family', trial: '7-Day Trial' };
+            planBadge.textContent = planNames[profile.subscription_tier] || profile.subscription_tier;
+
+            // Update Trial Banner
+            if (profile.subscription_tier === 'trial' && profile.trial_ends_at) {
+              const days = Math.ceil((new Date(profile.trial_ends_at) - new Date()) / 86400000);
+              const banner = document.getElementById('trialBanner');
+              banner.innerHTML = `<div class="container">🎁 Your free trial ends in <strong>${days} days</strong>. <a href="pricing.html">Upgrade now</a> to keep your progress!</div>`;
+              banner.style.display = 'block';
+            }
+
+            // Welcome Heading
+            document.getElementById('welcomeHeading').textContent = `Welcome back, ${profile.full_name.split(' ')[0]} 👋`;
+
+            // Render Student Grid
+            renderStudents(studentRes.data, profile);
+
+            // Admin Logic
+            if (profile.role === 'admin') {
+              document.getElementById('adminPanel').style.display = 'block';
+              document.getElementById('adminStats').innerHTML = `<span class="admin-stat">Total students: <strong>${studentRes.data?.length ?? 0}</strong></span>`;
+            }
+          }
+
+          // Inject Sign Out to Dropdown
           const signOut = document.createElement('a');
           signOut.href = "#";
           signOut.textContent = "Sign Out";
           signOut.style.color = "var(--rose)";
           signOut.onclick = async () => { await sb.auth.signOut(); window.location.href='login.html'; };
           navLinks.appendChild(signOut);
-          
-          // Remove guest links
-          document.getElementById('navSignUp')?.remove();
-        } else {
-          body.classList.remove('is-logged-in'); // Reverts Header/Footer to full width [cite: 2026-03-31]
-          bottomNav.hidden = true;
         }
-      } catch (err) { console.warn('Auth check failed', err); }
+      } catch (err) { console.warn('Dashboard initialization failed', err); }
+
+      function renderStudents(students, profile) {
+        const grid = document.getElementById('studentGrid');
+        grid.innerHTML = '';
+        if (!students || students.length === 0) {
+          grid.innerHTML = '<div class="empty-state">No student profiles found. Click below to add your child!</div>';
+          return;
+        }
+        students.forEach(student => {
+          const initials = student.name.split(' ').map(n => n[0]).join('').toUpperCase();
+          const card = document.createElement('div');
+          card.className = 'student-card';
+          card.innerHTML = `
+            <div class="card-avatar">${initials}</div>
+            <div class="card-name">${student.name}</div>
+            <div class="card-meta">${student.level}</div>
+            ${student.selected_subject ? `<span class="card-tag">${student.selected_subject}</span>` : ''}
+            <a href="subjects.html?student=${student.id}" class="btn-practice">Practice Now →</a>
+          `;
+          grid.appendChild(card);
+        });
+        
+        // Hide add button if at limit
+        if (profile.role !== 'admin' && students.length >= profile.max_children) {
+          document.getElementById('addChildBtn').style.display = 'none';
+        }
+      }
     })();
   </script>
 </body>
