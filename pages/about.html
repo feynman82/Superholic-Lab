@@ -6,77 +6,88 @@
   <title>App Master — Superholic Lab</title>
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="icon" href="../assets/favicon.ico" />
-  
   <script type="module">
     import { guardPage } from '/js/auth.js';
     await guardPage(false); 
   </script>
 </head>
-
-<body id="mainBody">
+<body id="mainBody" class="has-bottom-nav">
 
 <header class="navbar navbar-homepage" id="navbar" style="justify-content: space-between;">
-    
-    <a href="../index.html" class="navbar-logo">
-      <img src="../assets/logo.svg" width="32" height="32" alt="Superholic Lab">
-      Superholic Lab
-    </a>
+  
+  <a href="index.html" class="navbar-logo">
+    <img src="../assets/logo.svg" width="32" height="32" alt="" aria-hidden="true" style="border-radius:8px;flex-shrink:0;">
+    Superholic Lab
+  </a>
 
-    <div class="navbar-actions">
-      <div id="auth-header-container">
-        <a href="login.html" class="btn btn-secondary btn-sm">Log In</a>
-      </div>
-
-      <button class="navbar-toggle" id="navToggle" aria-label="Open menu">
-        <span></span><span></span><span></span>
-      </button>
+  <div class="navbar-actions">
+    <div id="auth-header-container">
+      <a href="pages/login.html" class="btn btn-secondary btn-sm">Log In</a>
     </div>
 
-    <div class="navbar-mobile" id="navDropdown">
-      <div class="container" id="navLinks">
-        <a href="../index.html">Home</a>
-        <a href="../pages/about.html">About Us</a>
-        <a href="../pages/pricing.html">Pricing</a>
-        <a href="../pages/contact.html">Contact Support</a>
-        <a href="../pages/signup.html" id="navSignUp">Start Free Trial</a>
-      </div>
-    </div>
-  </header>
+    <button class="navbar-toggle" id="navToggle" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
 
-  <main style="padding: var(--space-10) 0 var(--space-16);">
-    <div class="container">
-      <div class="card no-hover reveal" style="max-width:680px; margin:0 auto;">
-        <div class="card-body">
-          <h2>Why we built Superholic Lab</h2>
-          <p class="text-secondary mt-4" style="line-height:1.85; font-size:1.0625rem;">
-            The bill arrived every month like clockwork. Two kids, three subjects each,
-            six tuition slots a week — and still, the quiet anxiety of wondering whether
-            it was enough.
-          </p>
-          <p class="text-secondary" style="line-height:1.85; font-size:1.0625rem;">
-            Superholic Lab began with a simple frustration: why does exam-ready practice
-            cost a fortune, and why does it only happen twice a week in someone else's
-            living room? Singapore children sit high-stakes exams. They need to practise
-            constantly — on the bus, between activities, after dinner. Not just when
-            the tutor is available.
-          </p>
-          <p class="text-secondary" style="line-height:1.85; font-size:1.0625rem;">
-            So we built what we wished existed. A platform that generates unlimited,
-            MOE-aligned practice for any topic, any level, any time — for a fraction
-            of what a single tuition session costs. No scheduling. No travelling. No waiting.
-          </p>
-          <p class="text-secondary" style="line-height:1.85; font-size:1.0625rem;">
-            Every child deserves to walk into the exam hall having practised more than
-            the kid next to them. That is what Superholic Lab is for.
-          </p>
-          <div class="mt-6 pt-6" style="border-top:1px solid var(--border);">
-            <a href="signup.html" class="btn btn-primary">Start Free Trial</a>
-            <a href="contact.html" class="btn btn-ghost" style="margin-left:var(--space-3);">Contact Us</a>
-          </div>
+  <div class="navbar-mobile" id="navDropdown">
+    <div class="container" id="navLinks">
+      <a href="index.html">Home</a>
+      <a href="pages/about.html">About Us</a>
+      <a href="pages/pricing.html">Pricing</a>
+      <a href="pages/contact.html">Contact Support</a>
+      <a href="pages/signup.html" id="navSignUp">Start Free Trial</a>
+    </div>
+  </div>
+
+</header>
+
+  <main style="padding-top: var(--space-20); min-height: 80vh;">
+<div style="background: var(--hero-gradient); padding: var(--space-10) 0 var(--space-16); position:relative; overflow:hidden; margin-top: calc(-1 * var(--space-20));">
+    <div class="container" style="position:relative;z-index:1;text-align:center;">
+      <h1 class="animate-in delay-1" style="color:white; margin-top:var(--space-4);">Our Story</h1>
+    </div>
+    <div class="wave-divider" aria-hidden="true">
+      <svg viewBox="0 0 1440 70" preserveAspectRatio="none">
+        <path d="M0,40 C360,70 720,10 1080,40 C1260,55 1380,30 1440,40 L1440,70 L0,70 Z" fill="var(--surface)"/>
+      </svg>
+    </div>
+  </div>
+
+  <div class="container" style="margin-top: var(--space-12); padding-bottom: var(--space-16);">
+    <div class="card no-hover reveal" style="max-width:680px; margin:0 auto;">
+      <div class="card-body">
+        <h2>Why we built Superholic Lab</h2>
+        <p class="text-secondary mt-4" style="line-height:1.85; font-size:1.0625rem;">
+          The bill arrived every month like clockwork. Two kids, three subjects each,
+          six tuition slots a week — and still, the quiet anxiety of wondering whether
+          it was enough.
+        </p>
+        <p class="text-secondary" style="line-height:1.85; font-size:1.0625rem;">
+          Superholic Lab began with a simple frustration: why does exam-ready practice
+          cost a fortune, and why does it only happen twice a week in someone else's
+          living room? Singapore children sit high-stakes exams. They need to practise
+          constantly — on the bus, between activities, after dinner. Not just when
+          the tutor is available.
+        </p>
+        <p class="text-secondary" style="line-height:1.85; font-size:1.0625rem;">
+          So we built what we wished existed. A platform that generates unlimited,
+          MOE-aligned practice for any topic, any level, any time — for a fraction
+          of what a single tuition session costs. No scheduling. No travelling. No waiting.
+        </p>
+        <p class="text-secondary" style="line-height:1.85; font-size:1.0625rem;">
+          Every child deserves to walk into the exam hall having practised more than
+          the kid next to them. That is what Superholic Lab is for.
+        </p>
+        <div class="mt-6 pt-6" style="border-top:1px solid var(--border);">
+          <a href="signup.html" class="btn btn-primary">Start Free Trial</a>
+          <a href="contact.html" class="btn btn-ghost" style="margin-left:var(--space-3);">Contact Us</a>
         </div>
       </div>
     </div>
+  </div>
   </main>
+
 
   <footer class="footer">
     <div class="container">
@@ -111,70 +122,78 @@
   </nav>
 
   <script src="../js/supabase-client.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      /* ── 1. Dropdown Toggle Logic ── */
-      const toggle = document.getElementById('navToggle');
-      const dropdown = document.getElementById('navDropdown');
-      
-      if (toggle && dropdown) {
-        toggle.addEventListener('click', (e) => {
-          e.stopPropagation();
-          dropdown.classList.toggle('is-open');
-          toggle.classList.toggle('is-active'); 
-        });
-        document.addEventListener('click', (e) => {
-          if (!dropdown.contains(e.target) && !toggle.contains(e.target)) {
-            dropdown.classList.remove('is-open');
-            toggle.classList.remove('is-active');
-          }
-        });
-      }
+<script>
+  /* ── 1. Dropdown Toggle Logic ── */
+  document.addEventListener('DOMContentLoaded', () => {
+    const toggle = document.getElementById('navToggle');
+    const dropdown = document.getElementById('navDropdown');
+    
+    if (toggle && dropdown) {
+      toggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        // Toggles the slide-in animation
+        dropdown.classList.toggle('is-open');
+        // Toggles the 3-lines into an 'X'
+        toggle.classList.toggle('is-active'); 
+      });
 
-      /* ── 2. Master Auth & Layout Logic ── */
-      getSupabase().then(async function(sb) {
-        try {
-          const { data: { session } } = await sb.auth.getSession();
-          const body = document.getElementById('mainBody');
-          const bottomNav = document.getElementById('bottomNav');
-          const authContainer = document.getElementById('auth-header-container');
-          const navLinks = document.getElementById('navLinks');
-
-          if (session) {
-            // User is Logged In: Inject UI classes and reveal sidebar
-            body.classList.add('is-logged-in', 'has-bottom-nav');
-            if (bottomNav) bottomNav.hidden = false;
-            
-            if (authContainer) {
-              authContainer.innerHTML = '<a href="dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a>';
-            }
-
-            if (navLinks && !document.getElementById('navSignOut')) {
-              const signOut = document.createElement('a');
-              signOut.id = "navSignOut";
-              signOut.href = "#";
-              signOut.textContent = "Sign Out";
-              signOut.style.color = "var(--rose)";
-              signOut.onclick = async (e) => { 
-                e.preventDefault();
-                await sb.auth.signOut(); 
-                window.location.href = '../index.html'; 
-              };
-              navLinks.appendChild(signOut);
-              
-              const signUpLink = document.getElementById('navSignUp');
-              if (signUpLink) signUpLink.remove();
-            }
-          } else {
-            // User is Guest: Ensure app-specific layout shifts are disabled
-            body.classList.remove('is-logged-in', 'has-bottom-nav');
-            if (bottomNav) bottomNav.hidden = true;
-          }
-        } catch (e) {
-          console.error('Master auth script failed:', e);
+      // Close menu if clicking outside of it
+      document.addEventListener('click', (e) => {
+        if (!dropdown.contains(e.target) && !toggle.contains(e.target)) {
+          dropdown.classList.remove('is-open');
+          toggle.classList.remove('is-active');
         }
       });
-    });
+    }
+  });
+
+  /* ── 2. Auth-aware Navbar Logic ── */
+  getSupabase().then(async function(sb) {
+    try {
+      // Check if user is logged in
+      const { data: { session } } = await sb.auth.getSession();
+      
+      // If no session exists, leave the "Log In" button as is
+      if (!session) return; 
+      
+      const authContainer = document.getElementById('auth-header-container');
+      const navLinks = document.getElementById('navLinks');
+      
+      // Replace "Log In" button with "Dashboard"
+      if (authContainer) {
+        authContainer.innerHTML = '<a href="pages/dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a>';
+      }
+
+      // Add "Sign Out" to the bottom of the dropdown tray
+      if (navLinks) {
+        const signOut = document.createElement('a');
+        signOut.href = "#";
+        signOut.textContent = "Sign Out";
+        signOut.style.color = "var(--rose)"; // Optional: keeps sign out slightly highlighted
+        signOut.onclick = async (e) => { 
+          e.preventDefault();
+          await sb.auth.signOut(); 
+          window.location.href = 'index.html'; // Redirect to home after logout
+        };
+        navLinks.appendChild(signOut);
+        
+        // Remove the "Start Free Trial" link from the dropdown since they are already a user
+        const signUpLink = document.getElementById('navSignUp');
+        if (signUpLink) signUpLink.remove();
+      }
+
+    } catch (e) {
+      console.error('Nav auth check failed:', e);
+    }
+  });
+</script>
+  <script>
+    (function(){
+      const t=document.getElementById('navToggle'),m=document.getElementById('navMobile');
+      if(t&&m) t.addEventListener('click',function(){const o=m.classList.toggle('is-open');t.setAttribute('aria-expanded',String(o));});
+      const r=document.querySelectorAll('.reveal,.reveal-group');
+      if('IntersectionObserver' in window){const io=new IntersectionObserver(function(e){e.forEach(function(x){if(x.isIntersecting){x.target.classList.add('revealed');io.unobserve(x.target);}});},{threshold:0.1});r.forEach(function(el){io.observe(el);});}else{r.forEach(function(el){el.classList.add('revealed');});}
+    })();
   </script>
 </body>
 </html>
