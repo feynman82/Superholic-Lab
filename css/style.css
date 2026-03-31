@@ -3459,3 +3459,80 @@ small, .text-sm  { font-size: 0.875rem; }
   font-weight: 900;
   line-height: 1;
 }
+/* ─────────────────────────────────────────────────────────────
+   UPDATED NAVIGATION — Side-Tray & Persistent Toggle
+   Apply these changes to style.css to support Template 2 logic.
+   ───────────────────────────────────────────────────────────── */
+
+/* 1. PERSISTENT TOGGLE: Force visibility on all screen sizes */
+.navbar-toggle {
+  display: flex !important; /* Overrides desktop hidden state */
+  flex-direction: column;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--space-2);
+  z-index: 1001;
+}
+
+.navbar-toggle span {
+  width: 24px;
+  height: 2px;
+  background: var(--mint);
+  transition: all var(--transition-md);
+  border-radius: var(--radius-pill);
+}
+
+/* 2. SIDE-TRAY DROPDOWN: Cascading right-aligned tray */
+.navbar-mobile {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: auto; /* Aligns to the right instead of spanning 100% */
+  width: 280px; /* Controlled width for professional feel */
+  max-width: 85vw;
+  height: 100vh;
+  background: var(--sage-darker);
+  backdrop-filter: blur(20px);
+  border-left: 1px solid var(--glass-border);
+  padding: var(--space-20) var(--space-6) var(--space-10);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  transform: translateX(100%); /* Slides out of view to the right */
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1000;
+  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.3);
+}
+
+/* 3. ELEGANT ENTRANCE: Smooth horizontal slide */
+.navbar-mobile.is-open {
+  transform: translateX(0);
+  display: flex !important;
+}
+
+/* 4. CASCADING FONTS: Matches .footer-links typography */
+.navbar-mobile a {
+  display: block;
+  padding: var(--space-3) 0;
+  font-family: var(--font-body); /* Plus Jakarta Sans */
+  font-size: 0.875rem; /* Same as footer links */
+  font-weight: 500;
+  color: var(--sage-light); /* Muted secondary colour */
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  transition: color var(--transition);
+}
+
+.navbar-mobile a:hover,
+.navbar-mobile a:active {
+  color: var(--mint);
+  padding-left: var(--space-2); /* Subtle hover interaction */
+}
+
+/* Helper for the secondary section in your template */
+.navbar-mobile .secondary-nav a {
+  font-size: 0.8125rem;
+  opacity: 0.8;
+}

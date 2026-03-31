@@ -3,62 +3,50 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>About — Superholic Lab</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <title>App Master — Superholic Lab</title>
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="icon" href="../assets/favicon.ico" />
-  <meta name="description" content="Superholic Lab is built by Singapore parents for Singapore students. MOE-aligned practice with AI-powered explanations and a friendly AI tutor." />
-  <link rel="canonical" href="https://www.superholiclab.com/pages/about.html" />
-  <meta property="og:type"         content="website" />
-  <meta property="og:url"          content="https://www.superholiclab.com/pages/about.html" />
-  <meta property="og:site_name"    content="Superholic Lab" />
-  <meta property="og:title"        content="About — Superholic Lab" />
-  <meta property="og:description"  content="Superholic Lab is built by Singapore parents for Singapore students. MOE-aligned practice with AI-powered explanations." />
-  <meta property="og:image"        content="https://www.superholiclab.com/assets/og-image.png" />
-  <meta name="twitter:card"        content="summary_large_image" />
-  <meta name="twitter:title"       content="About — Superholic Lab" />
-  <meta name="twitter:description" content="Superholic Lab is built by Singapore parents for Singapore students. MOE-aligned practice with AI-powered explanations." />
-  <meta name="twitter:image"       content="https://www.superholiclab.com/assets/og-image.png" />
-  <!-- Analytics: ⚠️ CONFIGURE — sign up at plausible.io and add superholiclab.com -->
-  <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js"></script>
+  <script type="module">
+    import { guardPage } from '/js/auth.js';
+    await guardPage(true); 
+  </script>
 </head>
-<body class="has-bottom-nav">
+<body id="mainBody">
+
   <header class="navbar is-scrolled" id="navbar">
     <div class="container">
       <nav class="navbar-inner">
         <a href="../index.html" class="navbar-logo">
-          <img src="../assets/logo.svg" width="32" height="32" alt="" aria-hidden="true" style="border-radius:8px;flex-shrink:0;">
+          <img src="../assets/logo.svg" width="32" height="32" alt="Superholic Lab">
           Superholic Lab
         </a>
-        <ul class="navbar-nav" role="list">
-          <li><a href="../index.html">Home</a></li>
-          <li><a href="pricing.html">Pricing</a></li>
-        </ul>
+
         <div class="navbar-actions">
-          <a href="login.html"  class="btn btn-secondary btn-sm">Log In</a>
-          <a href="signup.html" class="btn btn-primary   btn-sm">Start Free Trial</a>
+          <div id="auth-header-container">
+            <a href="login.html" class="btn btn-secondary btn-sm">Log In</a>
+          </div>
+
+          <button class="navbar-toggle" id="navToggle" aria-label="Open menu">
+            <span></span><span></span><span></span>
+          </button>
         </div>
-        <button class="navbar-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false">
-          <span></span><span></span><span></span>
-        </button>
       </nav>
-      <div class="navbar-mobile" id="navMobile">
-        <a href="../index.html">Home</a>
-        <a href="pricing.html">Pricing</a>
-        <a href="login.html"  class="btn btn-secondary btn-sm mt-4">Log In</a>
-        <a href="signup.html" class="btn btn-primary   btn-sm">Start Free Trial</a>
+
+      <div class="navbar-mobile" id="navDropdown">
+        <div class="container" id="navLinks">
+          <a href="../index.html">Home</a>
+          <a href="about.html">About Us</a>
+          <a href="pricing.html">Pricing</a>
+          <a href="contact.html">Contact Support</a>
+          <a href="signup.html" id="navSignUp">Start Free Trial</a>
+        </div>
       </div>
     </div>
   </header>
 
-  <div style="background: var(--hero-gradient); padding: var(--space-10) 0 var(--space-16); position:relative; overflow:hidden;">
+  <main style="padding-top: var(--space-20); min-height: 80vh;">
+<div style="background: var(--hero-gradient); padding: var(--space-10) 0 var(--space-16); position:relative; overflow:hidden; margin-top: calc(-1 * var(--space-20));">
     <div class="container" style="position:relative;z-index:1;text-align:center;">
-      <nav class="breadcrumb justify-center" aria-label="Breadcrumb">
-        <a href="../index.html" style="color:rgba(255,255,255,0.7);">Home</a>
-        <span class="breadcrumb-sep" style="color:rgba(255,255,255,0.4);">›</span>
-        <span style="color:white;">About</span>
-      </nav>
       <h1 class="animate-in delay-1" style="color:white; margin-top:var(--space-4);">Our Story</h1>
     </div>
     <div class="wave-divider" aria-hidden="true">
@@ -68,45 +56,45 @@
     </div>
   </div>
 
-  <main style="padding: var(--space-10) 0 var(--space-16);">
-    <div class="container">
-      <div class="card no-hover reveal" style="max-width:680px; margin:0 auto;">
-        <div class="card-body">
-          <h2>Why we built Superholic Lab</h2>
-          <p class="text-secondary mt-4" style="line-height:1.85; font-size:1.0625rem;">
-            The bill arrived every month like clockwork. Two kids, three subjects each,
-            six tuition slots a week — and still, the quiet anxiety of wondering whether
-            it was enough.
-          </p>
-          <p class="text-secondary" style="line-height:1.85; font-size:1.0625rem;">
-            Superholic Lab began with a simple frustration: why does exam-ready practice
-            cost a fortune, and why does it only happen twice a week in someone else's
-            living room? Singapore children sit high-stakes exams. They need to practise
-            constantly — on the bus, between activities, after dinner. Not just when
-            the tutor is available.
-          </p>
-          <p class="text-secondary" style="line-height:1.85; font-size:1.0625rem;">
-            So we built what we wished existed. A platform that generates unlimited,
-            MOE-aligned practice for any topic, any level, any time — for a fraction
-            of what a single tuition session costs. No scheduling. No travelling. No waiting.
-          </p>
-          <p class="text-secondary" style="line-height:1.85; font-size:1.0625rem;">
-            Every child deserves to walk into the exam hall having practised more than
-            the kid next to them. That is what Superholic Lab is for.
-          </p>
-          <div class="mt-6 pt-6" style="border-top:1px solid var(--border);">
-            <a href="signup.html" class="btn btn-primary">Start Free Trial</a>
-            <a href="contact.html" class="btn btn-ghost" style="margin-left:var(--space-3);">Contact Us</a>
-          </div>
+  <div class="container" style="margin-top: var(--space-12); padding-bottom: var(--space-16);">
+    <div class="card no-hover reveal" style="max-width:680px; margin:0 auto;">
+      <div class="card-body">
+        <h2>Why we built Superholic Lab</h2>
+        <p class="text-secondary mt-4" style="line-height:1.85; font-size:1.0625rem;">
+          The bill arrived every month like clockwork. Two kids, three subjects each,
+          six tuition slots a week — and still, the quiet anxiety of wondering whether
+          it was enough.
+        </p>
+        <p class="text-secondary" style="line-height:1.85; font-size:1.0625rem;">
+          Superholic Lab began with a simple frustration: why does exam-ready practice
+          cost a fortune, and why does it only happen twice a week in someone else's
+          living room? Singapore children sit high-stakes exams. They need to practise
+          constantly — on the bus, between activities, after dinner. Not just when
+          the tutor is available.
+        </p>
+        <p class="text-secondary" style="line-height:1.85; font-size:1.0625rem;">
+          So we built what we wished existed. A platform that generates unlimited,
+          MOE-aligned practice for any topic, any level, any time — for a fraction
+          of what a single tuition session costs. No scheduling. No travelling. No waiting.
+        </p>
+        <p class="text-secondary" style="line-height:1.85; font-size:1.0625rem;">
+          Every child deserves to walk into the exam hall having practised more than
+          the kid next to them. That is what Superholic Lab is for.
+        </p>
+        <div class="mt-6 pt-6" style="border-top:1px solid var(--border);">
+          <a href="signup.html" class="btn btn-primary">Start Free Trial</a>
+          <a href="contact.html" class="btn btn-ghost" style="margin-left:var(--space-3);">Contact Us</a>
         </div>
       </div>
     </div>
+  </div>
   </main>
+
 
   <footer class="footer">
     <div class="container">
       <div class="footer-bottom">
-        <p>&copy; 2026 Superholic Lab. All rights reserved. 🇸🇬 Made in Singapore</p>
+        <p>&copy; 2026 Superholic Lab. 🇸🇬 Made in Singapore</p>
         <div class="flex gap-4">
           <a href="privacy.html">Privacy</a>
           <a href="terms.html">Terms</a>
@@ -116,77 +104,94 @@
     </div>
   </footer>
 
-  <nav class="bottom-nav" aria-label="Mobile navigation">
+  <nav class="bottom-nav" id="bottomNav" hidden>
     <a href="../index.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
-        <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/>
-        <path d="M9 21V12h6v9"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
       Home
     </a>
     <a href="subjects.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
-        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
       Practise
     </a>
     <a href="tutor.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
-        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
       AI Tutor
     </a>
     <a href="exam.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
-        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
-        <rect x="9" y="3" width="6" height="4" rx="2"/>
-        <path d="M9 12h6M9 16h4"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="M9 12h6M9 16h4"/></svg>
       Exam
     </a>
     <a href="progress.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
-        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
       Progress
     </a>
   </nav>
 
   <script src="../js/supabase-client.js"></script>
   <script>
-    /* Auth-aware navbar */
-    getSupabase().then(async function(sb) {
+    (async function() {
+      // 1. Dropdown Toggle Logic
+      const toggle = document.getElementById('navToggle');
+      const dropdown = document.getElementById('navDropdown');
+      toggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdown.classList.toggle('is-open');
+      });
+      document.addEventListener('click', (e) => {
+        if (!dropdown.contains(e.target) && !toggle.contains(e.target)) dropdown.classList.remove('is-open');
+      });
+
+      // 2. Auth-Aware UI Adjustments [cite: 2026-03-31]
       try {
+        const sb = await getSupabase();
         const { data: { session } } = await sb.auth.getSession();
-        if (!session) return;
-        const actionsEl = document.querySelector('.navbar-actions');
-        if (actionsEl) {
-          actionsEl.innerHTML = '<a href="dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a><button class="btn btn-primary btn-sm" id="navSignOut">Sign Out</button>';
-          document.getElementById('navSignOut').addEventListener('click', async function() {
-            await sb.auth.signOut();
-            window.location.href = '../index.html';
-          });
+        const body = document.getElementById('mainBody');
+        const bottomNav = document.getElementById('bottomNav');
+        const authContainer = document.getElementById('auth-header-container');
+        const navLinks = document.getElementById('navLinks');
+
+        if (session) {
+          body.classList.add('is-logged-in'); // Adjusts Header/Footer width via CSS [cite: 2026-03-31]
+          bottomNav.hidden = false;
+          authContainer.innerHTML = `<a href="dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a>`;
+
+          // Inject Sign Out to Dropdown [cite: 2026-03-31]
+          const signOut = document.createElement('a');
+          signOut.href = "#";
+          signOut.textContent = "Sign Out";
+          signOut.style.color = "var(--rose)";
+          signOut.onclick = async () => { await sb.auth.signOut(); window.location.href='login.html'; };
+          navLinks.appendChild(signOut);
+          
+          // Remove guest links
+          document.getElementById('navSignUp')?.remove();
+        } else {
+          body.classList.remove('is-logged-in'); // Reverts Header/Footer to full width [cite: 2026-03-31]
+          bottomNav.hidden = true;
         }
-        const mobileNav = document.getElementById('navMobile');
-        if (mobileNav) {
-          mobileNav.querySelectorAll('a[href*="login"], a[href*="signup"]').forEach(function(l) { l.remove(); });
-          const dashLink = document.createElement('a');
-          dashLink.href = 'dashboard.html';
-          dashLink.textContent = 'Dashboard';
-          mobileNav.appendChild(dashLink);
-        }
-      } catch (e) {
-        console.error('Nav auth check failed:', e);
-      }
-    });
-  </script>
-  <script>
-    (function(){
-      const t=document.getElementById('navToggle'),m=document.getElementById('navMobile');
-      if(t&&m) t.addEventListener('click',function(){const o=m.classList.toggle('is-open');t.setAttribute('aria-expanded',String(o));});
-      const r=document.querySelectorAll('.reveal,.reveal-group');
-      if('IntersectionObserver' in window){const io=new IntersectionObserver(function(e){e.forEach(function(x){if(x.isIntersecting){x.target.classList.add('revealed');io.unobserve(x.target);}});},{threshold:0.1});r.forEach(function(el){io.observe(el);});}else{r.forEach(function(el){el.classList.add('revealed');});}
+      } catch (err) { console.warn('Auth check failed', err); }
     })();
   </script>
+
+<script>
+  (function() {
+    // ── SCROLL REVEAL LOGIC ──
+    const revealEls = document.querySelectorAll('.reveal, .reveal-group');
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver(function(entries) {
+        entries.forEach(function(e) {
+          if (e.isIntersecting) {
+            e.target.classList.add('revealed');
+            io.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.1 });
+      revealEls.forEach(function(el) { io.observe(el); });
+    } else {
+      // Fallback for older browsers
+      revealEls.forEach(function(el) { el.classList.add('revealed'); });
+    }
+  })();
+</script>
 </body>
 </html>
