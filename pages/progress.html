@@ -49,7 +49,7 @@
     <div style="background: var(--hero-gradient); padding: var(--space-10) 0 var(--space-14); position:relative; overflow:hidden;">
     <div class="container" style="position:relative;z-index:1;text-align:center;">
       <h1 class="animate-in delay-1">        
-        <span id="student-name" style="opacity:0.75; margin-left:var(--space-3);">'s </span>
+        <span id="student-name" style="opacity:0.75; margin-left:var(--space-3);"></span>
 Progress</h1>
       <p class="animate-in delay-2" style="color:rgba(255,255,255,0.82);">Track your accuracy, streaks, and topic gaps</p>
     </div>
@@ -239,21 +239,31 @@ Progress</h1>
     </div>
   </footer>
 
-  <nav class="bottom-nav" id="bottomNav">
+  <nav class="bottom-nav" aria-label="Mobile navigation">
     <a href="subjects.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+      </svg>
       Practise
     </a>
-    <a href="tutor.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+    <a href="tutor.html" class="bottom-nav-item" aria-current="page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+      </svg>
       AI Tutor
     </a>
     <a href="exam.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="M9 12h6M9 16h4"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+        <rect x="9" y="3" width="6" height="4" rx="2"/>
+        <path d="M9 12h6M9 16h4"/>
+      </svg>
       Exam
     </a>
-    <a href="progress.html" class="bottom-nav-item" is active>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    <a href="progress.html" class="bottom-nav-item is-active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+      </svg>
       Progress
     </a>
   </nav>
