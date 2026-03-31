@@ -202,6 +202,19 @@
 
 /* Spinner */
 @keyframes spin { to { transform: rotate(360deg); } }
+.spinner-sm {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 3px solid var(--glass-border);
+  border-top-color: var(--mint);
+  animation: spin 0.7s linear infinite;
+}
+
+/* Page-specific narrow container (subjects, exam wizard) */
+.subjects-main {
+  max-width: 720px;
+  padding-top: var(--space-12);
+  padding-bottom: var(--space-16);
+}
 
 /* Typing indicator dots */
 @keyframes typing {
@@ -380,6 +393,7 @@ small, .text-sm  { font-size: 0.875rem; }
 .text-xs         { font-size: 0.75rem; }
 .text-secondary  { color: var(--text-secondary); }
 .text-white      { color: var(--white); }
+.text-cream      { color: var(--cream); }
 .text-primary-color { color: var(--primary); }
 .text-success    { color: var(--success); }
 .text-danger     { color: var(--danger); }
@@ -432,8 +446,10 @@ small, .text-sm  { font-size: 0.875rem; }
 .mt-4  { margin-top: var(--space-4); }
 .mt-6  { margin-top: var(--space-6); }
 .mt-8  { margin-top: var(--space-8); }
+.mb-2  { margin-bottom: var(--space-2); }
 .mb-4  { margin-bottom: var(--space-4); }
 .mb-6  { margin-bottom: var(--space-6); }
+.mb-8  { margin-bottom: var(--space-8); }
 .py-8  { padding-top: var(--space-8);  padding-bottom: var(--space-8); }
 .py-16 { padding-top: var(--space-16); padding-bottom: var(--space-16); }
 .section { padding: var(--space-16) 0; }

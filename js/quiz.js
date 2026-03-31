@@ -153,6 +153,7 @@
    */
   function resolveFile(subject, level, topic) {
     const broadMap = {
+      'primary-1:mathematics': '../data/questions/p1-mathematics-whole-numbers.json',
       'primary-2:mathematics': '../data/questions/p2-mathematics.json',
       'primary-2:english':     '../data/questions/p2-english.json',
       'primary-2:science':     null, // not yet available
