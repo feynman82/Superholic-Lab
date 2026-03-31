@@ -602,7 +602,7 @@ small, .text-sm  { font-size: 0.875rem; }
     flex-direction: column;
     position: fixed;
     /* Transparent clearance at top (100px) and bottom (100px) [cite: 2026-03-31] */
-    top: 100px; 
+    top: 70px; 
     bottom: 100px;
     left: 0;
     right: auto;
