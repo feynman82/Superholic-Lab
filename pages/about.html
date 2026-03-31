@@ -13,36 +13,34 @@
 </head>
 <body id="mainBody" class="has-bottom-nav">
 
-  <header class="navbar is-scrolled" id="navbar">
-    <div class="container">
-      <nav class="navbar-inner">
-        <a href="../index.html" class="navbar-logo">
-          <img src="../assets/logo.svg" width="32" height="32" alt="Superholic Lab">
-          Superholic Lab
-        </a>
+<header class="navbar navbar-homepage" id="navbar" style="justify-content: space-between;">
+  
+  <a href="index.html" class="navbar-logo">
+    <img src="assets/logo.svg" width="32" height="32" alt="" aria-hidden="true" style="border-radius:8px;flex-shrink:0;">
+    Superholic Lab
+  </a>
 
-        <div class="navbar-actions">
-          <div id="auth-header-container">
-            <a href="login.html" class="btn btn-secondary btn-sm">Log In</a>
-          </div>
-
-          <button class="navbar-toggle" id="navToggle" aria-label="Open menu">
-            <span></span><span></span><span></span>
-          </button>
-        </div>
-      </nav>
-
-      <div class="navbar-mobile" id="navDropdown">
-        <div class="container" id="navLinks">
-          <a href="../index.html">Home</a>
-          <a href="about.html">About Us</a>
-          <a href="pricing.html">Pricing</a>
-          <a href="contact.html">Contact Support</a>
-          <a href="signup.html" id="navSignUp">Start Free Trial</a>
-        </div>
-      </div>
+  <div class="navbar-actions">
+    <div id="auth-header-container">
+      <a href="pages/login.html" class="btn btn-secondary btn-sm">Log In</a>
     </div>
-  </header>
+
+    <button class="navbar-toggle" id="navToggle" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+
+  <div class="navbar-mobile" id="navDropdown">
+    <div class="container" id="navLinks">
+      <a href="index.html">Home</a>
+      <a href="pages/about.html">About Us</a>
+      <a href="pages/pricing.html">Pricing</a>
+      <a href="pages/contact.html">Contact Support</a>
+      <a href="pages/signup.html" id="navSignUp">Start Free Trial</a>
+    </div>
+  </div>
+
+</header>
 
   <main style="padding-top: var(--space-20); min-height: 80vh;">
 <div style="background: var(--hero-gradient); padding: var(--space-10) 0 var(--space-16); position:relative; overflow:hidden; margin-top: calc(-1 * var(--space-20));">
