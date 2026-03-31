@@ -122,70 +122,70 @@
   </nav>
 
   <script src="../js/supabase-client.js"></script>
-  <script>
-    (async function() {
-      // 1. Dropdown Toggle Logic
-      const toggle = document.getElementById('navToggle');
-      const dropdown = document.getElementById('navDropdown');
+<script>
+  /* ── 1. Dropdown Toggle Logic ── */
+  document.addEventListener('DOMContentLoaded', () => {
+    const toggle = document.getElementById('navToggle');
+    const dropdown = document.getElementById('navDropdown');
+    
+    if (toggle && dropdown) {
       toggle.addEventListener('click', (e) => {
         e.stopPropagation();
+        // Toggles the slide-in animation
         dropdown.classList.toggle('is-open');
+        // Toggles the 3-lines into an 'X'
+        toggle.classList.toggle('is-active'); 
       });
+
+      // Close menu if clicking outside of it
       document.addEventListener('click', (e) => {
-        if (!dropdown.contains(e.target) && !toggle.contains(e.target)) dropdown.classList.remove('is-open');
-      });
-
-      // 2. Auth-Aware UI Adjustments [cite: 2026-03-31]
-      try {
-        const sb = await getSupabase();
-        const { data: { session } } = await sb.auth.getSession();
-        const body = document.getElementById('mainBody');
-        const bottomNav = document.getElementById('bottomNav');
-        const authContainer = document.getElementById('auth-header-container');
-        const navLinks = document.getElementById('navLinks');
-
-        if (session) {
-          body.classList.add('is-logged-in'); // Adjusts Header/Footer width via CSS [cite: 2026-03-31]
-          bottomNav.hidden = false;
-          authContainer.innerHTML = `<a href="dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a>`;
-
-          // Inject Sign Out to Dropdown [cite: 2026-03-31]
-          const signOut = document.createElement('a');
-          signOut.href = "#";
-          signOut.textContent = "Sign Out";
-          signOut.style.color = "var(--rose)";
-          signOut.onclick = async () => { await sb.auth.signOut(); window.location.href='login.html'; };
-          navLinks.appendChild(signOut);
-          
-          // Remove guest links
-          document.getElementById('navSignUp')?.remove();
-        } else {
-          body.classList.remove('is-logged-in'); // Reverts Header/Footer to full width [cite: 2026-03-31]
-          bottomNav.hidden = true;
+        if (!dropdown.contains(e.target) && !toggle.contains(e.target)) {
+          dropdown.classList.remove('is-open');
+          toggle.classList.remove('is-active');
         }
-      } catch (err) { console.warn('Auth check failed', err); }
-    })();
-  </script>
-
-<script>
-  (function() {
-    // ── SCROLL REVEAL LOGIC ──
-    const revealEls = document.querySelectorAll('.reveal, .reveal-group');
-    if ('IntersectionObserver' in window) {
-      const io = new IntersectionObserver(function(entries) {
-        entries.forEach(function(e) {
-          if (e.isIntersecting) {
-            e.target.classList.add('revealed');
-            io.unobserve(e.target);
-          }
-        });
-      }, { threshold: 0.1 });
-      revealEls.forEach(function(el) { io.observe(el); });
-    } else {
-      // Fallback for older browsers
-      revealEls.forEach(function(el) { el.classList.add('revealed'); });
+      });
     }
-  })();
+  });
+
+  /* ── 2. Auth-aware Navbar Logic ── */
+  getSupabase().then(async function(sb) {
+    try {
+      // Check if user is logged in
+      const { data: { session } } = await sb.auth.getSession();
+      
+      // If no session exists, leave the "Log In" button as is
+      if (!session) return; 
+      
+      const authContainer = document.getElementById('auth-header-container');
+      const navLinks = document.getElementById('navLinks');
+      
+      // Replace "Log In" button with "Dashboard"
+      if (authContainer) {
+        authContainer.innerHTML = '<a href="pages/dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a>';
+      }
+
+      // Add "Sign Out" to the bottom of the dropdown tray
+      if (navLinks) {
+        const signOut = document.createElement('a');
+        signOut.href = "#";
+        signOut.textContent = "Sign Out";
+        signOut.style.color = "var(--rose)"; // Optional: keeps sign out slightly highlighted
+        signOut.onclick = async (e) => { 
+          e.preventDefault();
+          await sb.auth.signOut(); 
+          window.location.href = 'index.html'; // Redirect to home after logout
+        };
+        navLinks.appendChild(signOut);
+        
+        // Remove the "Start Free Trial" link from the dropdown since they are already a user
+        const signUpLink = document.getElementById('navSignUp');
+        if (signUpLink) signUpLink.remove();
+      }
+
+    } catch (e) {
+      console.error('Nav auth check failed:', e);
+    }
+  });
 </script>
 </body>
 </html>

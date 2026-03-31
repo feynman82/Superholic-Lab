@@ -3480,32 +3480,29 @@ html, body {
    Optimised for right-side alignment & Hero-matching aesthetics.
    ───────────────────────────────────────────────────────────── */
 
-/* 1. Base Side-Tray Configuration */
-.navbar-mobile, #navDropdown {
+/* ─── SIDE-TRAY DROPDOWN (Content-Height) ─── */
+#navDropdown, .navbar-mobile {
+  /* Change height from 100vh to auto so it hugs the links */
+  height: auto !important; 
+  bottom: auto; /* Ensures it doesn't stretch downwards */
+  border-bottom-left-radius: var(--radius-xl); /* Rounds the bottom corner */
+  padding-bottom: var(--space-8) !important; /* Reduces empty space at the bottom */
+  
+  /* Your existing rules remain */
   position: fixed !important;
-  top: 0;
-  right: 0; /* Anchors the logic to the right edge */
-  left: auto !important; /* Forces the tray away from the left */
-  width: 280px;
-  max-width: 85vw;
-  height: 100vh;
+  top: 0; right: 0; left: auto !important;
+  width: 280px; max-width: 85vw;
   z-index: 2000;
-  
-  /* Matches deep hero gradient (#263530) with increased transparency */
-  background: rgba(38, 53, 48, 0.96); 
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  
+  background: rgba(38, 53, 48, 0.94); 
+  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
   border-left: 1px solid var(--glass-border);
+  border-bottom: 1px solid var(--glass-border); /* Adds a subtle bottom border */
   padding: var(--space-20) var(--space-6) var(--space-10);
   display: flex !important;
-  flex-direction: column;
-  gap: var(--space-1);
-  
-  /* Smooth transform-only transition for performance */
+  flex-direction: column; gap: var(--space-1);
   transform: translateX(100%);
   transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: -15px 0 40px rgba(0, 0, 0, 0.4);
+  box-shadow: -15px 15px 40px rgba(0, 0, 0, 0.4);
 }
 
 /* 2. Entrance Animation */
@@ -3566,11 +3563,14 @@ html, body {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* ─── TOGGLE: X-Transform without Color Change ─── */
 .navbar-toggle.is-active span {
-  background-color: var(--mint);
-  box-shadow: 0 0 12px var(--mint-glow);
+  /* Removed the mint background and glow so it stays cream */
+  background-color: var(--cream); 
+  box-shadow: none; 
 }
 
+/* Keep the physical X transformation */
 .navbar-toggle.is-active span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
 .navbar-toggle.is-active span:nth-child(2) { opacity: 0; transform: translateX(-10px); }
 .navbar-toggle.is-active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
