@@ -597,27 +597,27 @@ small, .text-sm  { font-size: 0.875rem; }
 .bottom-nav-item.is-active { color: var(--mint); }
 
 @media (min-width: 768px) {
-  /* Switch to a Right Sidebar within the Main section [cite: 2026-03-31] */
+  /* Floating Left Sidebar [cite: 2026-03-31] */
   .bottom-nav {
     flex-direction: column;
     position: fixed;
-    /* Avoid Header (80px) and Footer (approx 120px) [cite: 2026-03-31] */
+    /* Transparent clearance at top (100px) and bottom (100px) [cite: 2026-03-31] */
     top: 100px; 
-    bottom: 120px;
-    right: 0;
-    left: auto; /* Remove left positioning [cite: 2026-03-31] */
+    bottom: 100px;
+    left: 0;
+    right: auto;
     width: 80px;
-    height: auto; /* Shrinks to fit items [cite: 2026-03-31] */
+    height: auto; 
     
     border-top: none;
-    border-left: 1.5px solid var(--glass-border); /* Border now on the left */
-    border-right: none;
+    border-right: 1.5px solid var(--glass-border);
+    border-left: none;
     
-    background: rgba(58, 78, 74, 0.4); /* Subtle glass for sidebar */
-    box-shadow: -4px 0 20px rgba(0,0,0,0.2);
-    justify-content: center; /* Center items vertically in the bar [cite: 2026-03-31] */
+    background: rgba(58, 78, 74, 0.4); 
+    box-shadow: 4px 0 20px rgba(0,0,0,0.2);
+    justify-content: center;
     gap: var(--space-4);
-    border-radius: var(--radius-xl) 0 0 var(--radius-xl); /* Rounded inside edge [cite: 2026-03-31] */
+    border-radius: 0 var(--radius-xl) var(--radius-xl) 0; /* Rounded inside edge [cite: 2026-03-31] */
   }
 
   .bottom-nav-item {
@@ -626,10 +626,10 @@ small, .text-sm  { font-size: 0.875rem; }
     font-size: 0.65rem;
   }
 
-  /* Adjust Page Layout for Right Sidebar [cite: 2026-03-31] */
+  /* Adjust Page Layout for Left Sidebar [cite: 2026-03-31] */
   body.is-logged-in {
-    padding-left: 0;
-    padding-right: 80px; /* Buffer for the new right sidebar [cite: 2026-03-31] */
+    padding-right: 0;
+    padding-left: 80px; /* Buffer for the floating sidebar [cite: 2026-03-31] */
   }
 }
 
