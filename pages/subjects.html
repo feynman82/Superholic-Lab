@@ -37,11 +37,6 @@
       <div class="navbar-mobile" id="navDropdown">
         <div class="container" id="navLinks">
           <a href="../index.html">Home</a>
-          <a href="dashboard.html">Dashboard</a>
-          <a href="tutor.html">AI Tutor</a>
-          <a href="exam.html">Exam Paper</a>
-          <a href="progress.html">My Progress</a>
-          <hr class="footer-divider" style="opacity: 0.1; margin: var(--space-4) 0;">
           <a href="about.html">About Us</a>
           <a href="pricing.html">Pricing</a>
           <a href="contact.html">Contact Support</a>
@@ -224,108 +219,409 @@
     </a>
   </nav>
 
+  <script>
+    (function () {
+      'use strict';
+
+      /* Navbar mobile toggle */
+      const navToggle = document.getElementById('navToggle');
+      const navMobile = document.getElementById('navMobile');
+      if (navToggle && navMobile) {
+        navToggle.addEventListener('click', function () {
+          const isOpen = navMobile.classList.toggle('is-open');
+          navToggle.setAttribute('aria-expanded', String(isOpen));
+        });
+        navMobile.querySelectorAll('a').forEach(function (l) {
+          l.addEventListener('click', function () {
+            navMobile.classList.remove('is-open');
+            navToggle.setAttribute('aria-expanded', 'false');
+          });
+        });
+      }
+
+      /* Scroll reveal */
+      const revealEls = document.querySelectorAll('.reveal, .reveal-group');
+      if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) {
+            if (e.isIntersecting) { e.target.classList.add('revealed'); io.unobserve(e.target); }
+          });
+        }, { threshold: 0.1 });
+        revealEls.forEach(function (el) { io.observe(el); });
+      } else {
+        revealEls.forEach(function (el) { el.classList.add('revealed'); });
+      }
+
+      /* Subject card expand / collapse */
+      const subjectCards = document.querySelectorAll('.subject-card');
+
+      function collapseAll() {
+        subjectCards.forEach(function (c) {
+          c.classList.remove('is-selected');
+          c.setAttribute('aria-expanded', 'false');
+        });
+      }
+
+      subjectCards.forEach(function (card) {
+        card.addEventListener('click', function (e) {
+          if (e.target.classList.contains('level-btn')) return;
+          const wasOpen = card.classList.contains('is-selected');
+          collapseAll();
+          if (!wasOpen) {
+            card.classList.add('is-selected');
+            card.setAttribute('aria-expanded', 'true');
+            card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        });
+        card.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); card.click(); }
+        });
+      });
+
+      /* Human-readable labels for each question type */
+      const TYPE_LABELS = {
+        mcq:          'Multiple Choice',
+        short_ans:    'Short Answer',
+        word_problem: 'Word Problem',
+        open_ended:   'Open-Ended',
+        cloze:        'Grammar Cloze',
+        editing:      'Editing',
+      };
+
+      /* Dot colours per type — reference CSS tokens, never hardcode hex */
+      const TYPE_COLOURS = {
+        mcq:          'var(--type-mcq)',
+        short_ans:    'var(--type-short-ans)',
+        word_problem: 'var(--type-word-prob)',
+        open_ended:   'var(--type-open)',
+        cloze:        'var(--type-cloze)',
+        editing:      'var(--type-editing)',
+      };
+
+      /* Available question types per subject:level (based on existing question bank files) */
+      const TYPES = {
+        'mathematics:primary-2': ['mcq'],
+        'mathematics:primary-3': ['mcq'],
+        'mathematics:primary-4': ['mcq', 'short_ans', 'word_problem'],
+        'mathematics:primary-5': ['mcq', 'short_ans', 'word_problem'],
+        'mathematics:primary-6': ['mcq', 'short_ans', 'word_problem'],
+        'science:primary-3':     ['mcq'],
+        'science:primary-4':     ['mcq', 'open_ended'],
+        'science:primary-5':     ['mcq', 'open_ended'],
+        'science:primary-6':     ['mcq', 'open_ended'],
+        'english:primary-1':     ['mcq'],
+        'english:primary-2':     ['mcq'],
+        'english:primary-3':     ['mcq'],
+        'english:primary-4':     ['mcq', 'cloze', 'editing'],
+        'english:primary-5':     ['mcq', 'cloze', 'editing'],
+        'english:primary-6':     ['mcq', 'cloze', 'editing'],
+      };
+
+      /* Types with no topic sub-files — navigate directly after type selection */
+      const NO_TOPIC_TYPES = new Set(['open_ended', 'cloze', 'editing']);
+
+      /* Topic map — subject:level → available topics (label : slug) */
+      const TOPICS = {
+        'mathematics:primary-2': [
+          { label: 'Whole Numbers',            slug: 'whole-numbers' },
+          { label: 'Addition & Subtraction',   slug: 'addition-and-subtraction' },
+          { label: 'Multiplication & Division', slug: 'multiplication-and-division' },
+          { label: 'Fractions',                slug: 'fractions' },
+          { label: 'Money',                    slug: 'money' },
+        ],
+        'mathematics:primary-4': [
+          { label: 'Fractions',                slug: 'fractions' },
+          { label: 'Decimals',                 slug: 'decimals' },
+          { label: 'Whole Numbers',            slug: 'whole-numbers' },
+          { label: 'Geometry',                 slug: 'geometry' },
+        ],
+        'science:primary-4': [
+          { label: 'Heat',                     slug: 'heat' },
+          { label: 'Light',                    slug: 'light' },
+          { label: 'Matter',                   slug: 'matter' },
+          { label: 'Magnets',                  slug: 'magnets' },
+        ],
+        'english:primary-2': [
+          { label: 'Grammar',                  slug: 'grammar' },
+          { label: 'Vocabulary',               slug: 'vocabulary' },
+          { label: 'Comprehension',            slug: 'comprehension' },
+        ],
+        'english:primary-4': [
+          { label: 'Grammar',                  slug: 'grammar' },
+          { label: 'Vocabulary',               slug: 'vocabulary' },
+          { label: 'Comprehension',            slug: 'comprehension' },
+        ],
+      };
+
+      /**
+       * Builds and appends the topic picker after a question type is chosen.
+       * For types with no topic sub-files, navigates directly.
+       */
+      function showTopicPicker(levelsDiv, subject, level, type) {
+        // Remove any existing topic picker
+        const existing = levelsDiv.querySelector('.topic-picker');
+        if (existing) existing.remove();
+
+        // Types with no topic breakdown → navigate directly
+        if (NO_TOPIC_TYPES.has(type)) {
+          window.location.href = 'quiz.html?subject=' +
+            encodeURIComponent(subject) + '&level=' + encodeURIComponent(level) +
+            '&type=' + encodeURIComponent(type);
+          return;
+        }
+
+        const key    = subject + ':' + level;
+        const topics = TOPICS[key];
+
+        // Build base URL with type param
+        const baseUrl = 'quiz.html?subject=' + encodeURIComponent(subject) +
+          '&level=' + encodeURIComponent(level) +
+          (type ? '&type=' + encodeURIComponent(type) : '');
+
+        if (topics && topics.length > 0) {
+          const picker = document.createElement('div');
+          picker.className = 'topic-picker mt-6';
+
+          const pickerLabel = document.createElement('p');
+          pickerLabel.className   = 'type-picker-label';
+          pickerLabel.textContent = 'Choose a topic';
+          picker.appendChild(pickerLabel);
+
+          const topicList = document.createElement('div');
+          topicList.className = 'topic-list';
+
+          // "All Topics" option (loads broad file, filtered by type)
+          const allBtn = document.createElement('button');
+          allBtn.className   = 'topic-btn';
+          allBtn.textContent = 'All Topics';
+          allBtn.addEventListener('click', function (ev) {
+            ev.stopPropagation();
+            window.location.href = baseUrl;
+          });
+          topicList.appendChild(allBtn);
+
+          topics.forEach(function (t) {
+            const tBtn = document.createElement('button');
+            tBtn.className   = 'topic-btn';
+            tBtn.textContent = t.label;
+            tBtn.addEventListener('click', function (ev) {
+              ev.stopPropagation();
+              window.location.href = baseUrl + '&topic=' + encodeURIComponent(t.slug);
+            });
+            topicList.appendChild(tBtn);
+          });
+
+          picker.appendChild(topicList);
+          levelsDiv.appendChild(picker);
+        } else {
+          // No topic sub-files — navigate directly
+          window.location.href = baseUrl;
+        }
+      }
+
+      /* Level button — shows type picker, then topic picker, then navigates */
+      document.querySelectorAll('.level-btn').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          const subject   = btn.getAttribute('data-subject');
+          const level     = btn.getAttribute('data-level');
+          const levelsDiv = btn.closest('.subject-levels');
+
+          levelsDiv.querySelectorAll('.level-btn')
+            .forEach(function (b) { b.classList.remove('is-selected'); });
+          btn.classList.add('is-selected');
+
+          // Clear existing pickers
+          const existingType  = levelsDiv.querySelector('.type-picker');
+          const existingTopic = levelsDiv.querySelector('.topic-picker');
+          if (existingType)  existingType.remove();
+          if (existingTopic) existingTopic.remove();
+
+          const key   = subject + ':' + level;
+          const types = TYPES[key];
+
+          if (types && types.length > 1) {
+            // Show type chip picker
+            const typePicker = document.createElement('div');
+            typePicker.className = 'type-picker';
+
+            const typeLabel = document.createElement('p');
+            typeLabel.className   = 'type-picker-label';
+            typeLabel.textContent = 'Question type';
+            typePicker.appendChild(typeLabel);
+
+            const chips = document.createElement('div');
+            chips.className = 'type-chips';
+
+            // "All Types" button (no type filter)
+            const allChip = document.createElement('button');
+            allChip.className = 'topic-btn';
+            const allDot = document.createElement('span');
+            allDot.className = 'type-chip-dot';
+            allDot.style.background = 'var(--text-secondary)';
+            allChip.appendChild(allDot);
+            allChip.appendChild(document.createTextNode('All Types'));
+            allChip.addEventListener('click', function (ev) {
+              ev.stopPropagation();
+              chips.querySelectorAll('.topic-btn').forEach(function(c) { c.classList.remove('is-selected'); });
+              allChip.classList.add('is-selected');
+              showTopicPicker(levelsDiv, subject, level, '');
+            });
+            chips.appendChild(allChip);
+
+            types.forEach(function (t) {
+              const chip = document.createElement('button');
+              chip.className = 'topic-btn';
+
+              const dot = document.createElement('span');
+              dot.className = 'type-chip-dot';
+              dot.style.background = TYPE_COLOURS[t] || 'var(--text-secondary)';
+              chip.appendChild(dot);
+              chip.appendChild(document.createTextNode(TYPE_LABELS[t] || t));
+
+              chip.addEventListener('click', function (ev) {
+                ev.stopPropagation();
+                chips.querySelectorAll('.topic-btn').forEach(function(c) { c.classList.remove('is-selected'); });
+                chip.classList.add('is-selected');
+                showTopicPicker(levelsDiv, subject, level, t);
+              });
+              chips.appendChild(chip);
+            });
+
+            typePicker.appendChild(chips);
+            levelsDiv.appendChild(typePicker);
+
+          } else if (types && types.length === 1) {
+            // Only one type — skip type picker, go straight to topic picker
+            showTopicPicker(levelsDiv, subject, level, types[0]);
+          } else {
+            // No type data — navigate directly (fallback for unlaunched levels)
+            window.location.href = 'quiz.html?subject=' +
+              encodeURIComponent(subject) + '&level=' + encodeURIComponent(level);
+          }
+        });
+      });
+
+    })();
+  </script>
+
   <script src="../js/supabase-client.js"></script>
   <script>
-    (async function() {
-      // 1. Navigation Shell Logic
-      const toggle = document.getElementById('navToggle');
-      const dropdown = document.getElementById('navDropdown');
-      toggle.addEventListener('click', (e) => { e.stopPropagation(); dropdown.classList.toggle('is-open'); toggle.classList.toggle('is-active'); });
-      document.addEventListener('click', (e) => { if (!dropdown.contains(e.target) && !toggle.contains(e.target)) { dropdown.classList.remove('is-open'); toggle.classList.remove('is-active'); } });
-
-      // Intersection Observer for Reveal Animation
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('revealed'); }});
-      }, { threshold: 0.1 });
-      document.querySelectorAll('.reveal, .reveal-group').forEach(el => observer.observe(el));
-
-      // 2. Master Subject & Auth Logic
+    /* Auth-aware navbar + level-aware subject personalisation */
+    getSupabase().then(async function(sb) {
       try {
-        const sb = await getSupabase();
         const { data: { session } } = await sb.auth.getSession();
-        
-        if (!session) return; // GuardPage handles redirect
 
-        // Setup App UI
-        document.getElementById('mainBody').classList.add('is-logged-in');
-        document.getElementById('bottomNav').hidden = false;
-        document.getElementById('auth-header-container').innerHTML = `<a href="dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a>`;
-        
-        const signOut = document.createElement('a');
-        signOut.href = "#"; signOut.textContent = "Sign Out"; signOut.style.color = "var(--rose)";
-        signOut.onclick = async () => { await sb.auth.signOut(); window.location.href='login.html'; };
-        document.getElementById('navLinks').appendChild(signOut);
+        // ── Auth-aware navbar ──
+        if (session) {
+          const actionsEl = document.querySelector('.navbar-actions');
+          if (actionsEl) {
+            actionsEl.innerHTML = '<a href="dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a><button class="btn btn-primary btn-sm" id="navSignOut">Sign Out</button>';
+            document.getElementById('navSignOut').addEventListener('click', async function() {
+              await sb.auth.signOut();
+              window.location.href = '../index.html';
+            });
+          }
+          const mobileNav = document.getElementById('navMobile');
+          if (mobileNav) {
+            mobileNav.querySelectorAll('a[href*="login"], a[href*="signup"]').forEach(function(l) { l.remove(); });
+            const dashLink = document.createElement('a');
+            dashLink.href = 'dashboard.html';
+            dashLink.textContent = 'Dashboard';
+            mobileNav.appendChild(dashLink);
+          }
+        }
 
-        // Fetch Personalisation Data
-        const urlParams = new URLSearchParams(window.location.search);
-        const targetStudentId = urlParams.get('student');
-        
-        const [profileRes, studentRes] = await Promise.all([
-          sb.from('profiles').select('*').eq('id', session.user.id).single(),
-          sb.from('students').select('*').eq('parent_id', session.user.id)
-        ]);
+        if (!session) return; // unauthenticated — no personalisation needed
 
-        const profile = profileRes.data;
-        const students = studentRes.data || [];
-        const currentStudent = targetStudentId 
-          ? students.find(s => s.id === targetStudentId) 
-          : students[0]; // Default to first child
+        // ── Level-aware personalisation ──
+        const studentId = new URLSearchParams(window.location.search).get('student');
+        let query = sb.from('students').select('name, level, selected_subject').eq('parent_id', session.user.id);
+        if (studentId) query = query.eq('id', studentId);
+        const { data: students } = await query.limit(1);
+        if (!students || !students.length) return;
 
-        // 3. Subscription Lock Logic
-        if (profile && profile.subscription_tier === 'single_subject' && currentStudent?.selected_subject) {
-          const allowedSubject = currentStudent.selected_subject.toLowerCase();
-          
-          document.querySelectorAll('.subject-card').forEach(card => {
-            if (card.dataset.subject !== allowedSubject) {
-              card.style.opacity = '0.5';
-              card.style.pointerEvents = 'none';
-              card.classList.add('no-hover');
-              
-              // Add visual lock
-              const lock = document.createElement('div');
-              lock.style.cssText = 'position:absolute; inset:0; display:flex; align-items:center; justify-content:center; z-index:10; background:rgba(0,0,0,0.2); border-radius:inherit;';
-              lock.innerHTML = `<a href="pricing.html" style="background:rgba(0,0,0,0.7);color:#fff;padding:.5rem 1rem;border-radius:.5rem;font-size:.85rem;font-weight:600;text-decoration:none;">Upgrade to unlock</a>`;
-              card.appendChild(lock);
+        const student = students[0];
+        const level = student.level; // e.g. "Primary 4"
+
+        // Personalised heading
+        const heading = document.querySelector('h1');
+        if (heading) heading.textContent = 'What would ' + student.name + ' like to practise?';
+
+        // Level subtitle
+        const subEl = document.querySelector('[style*="rgba(255,255,255,0.82)"]');
+        if (subEl) subEl.textContent = 'Showing content for ' + level;
+
+        // Map level string to data-level slug: "Primary 4" → "primary-4"
+        const levelSlug = level.toLowerCase().replace(' ', '-');
+
+        // Highlight the child's level button across all subject cards
+        document.querySelectorAll('.level-btn').forEach(function(btn) {
+          if (btn.getAttribute('data-level') === levelSlug) {
+            btn.classList.add('is-recommended');
+            btn.title = student.name + '\'s level';
+          }
+        });
+
+        // Enforce Science P1/P2 restriction (MOE: Science starts P3)
+        if (level === 'Primary 1' || level === 'Primary 2') {
+          const scienceCard = document.getElementById('card-science');
+          if (scienceCard) {
+            scienceCard.style.opacity = '0.45';
+            scienceCard.style.pointerEvents = 'none';
+            scienceCard.style.cursor = 'default';
+            scienceCard.style.position = 'relative';
+            const overlay = document.createElement('div');
+            overlay.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;border-radius:inherit;';
+            const label = document.createElement('span');
+            label.style.cssText = 'background:rgba(0,0,0,0.7);color:#fff;padding:.5rem 1rem;border-radius:.5rem;font-size:.85rem;font-weight:600;';
+            label.textContent = 'Available from Primary 3';
+            overlay.appendChild(label);
+            scienceCard.appendChild(overlay);
+          }
+        }
+
+        // Single subject plan: grey out non-subscribed subjects
+        const { data: profile } = await sb.from('profiles').select('subscription_tier').eq('id', session.user.id).single();
+        if (profile && profile.subscription_tier === 'single_subject' && student.selected_subject) {
+          const allowed = student.selected_subject.toLowerCase();
+          ['mathematics', 'science', 'english'].forEach(function(subj) {
+            if (subj !== allowed) {
+              const card = document.getElementById('card-' + subj);
+              if (card) {
+                card.style.opacity = '0.4';
+                card.style.pointerEvents = 'none';
+                card.style.position = 'relative';
+                const lock = document.createElement('div');
+                lock.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;border-radius:inherit;';
+                const label = document.createElement('span');
+                label.style.cssText = 'background:rgba(0,0,0,0.7);color:#fff;padding:.5rem 1rem;border-radius:.5rem;font-size:.85rem;font-weight:600;';
+                label.textContent = 'Upgrade to unlock';
+                lock.appendChild(label);
+                card.appendChild(lock);
+              }
             }
           });
         }
-
-        // 4. Card Interaction Logic
-        document.querySelectorAll('.subject-card').forEach(card => {
-          card.addEventListener('click', function(e) {
-            if (this.style.pointerEvents === 'none' || e.target.classList.contains('level-btn')) return;
-            
-            // Toggle accordion
-            const isSelected = this.classList.contains('is-selected');
-            document.querySelectorAll('.subject-card').forEach(c => {
-              c.classList.remove('is-selected');
-              c.setAttribute('aria-expanded', 'false');
-            });
-            
-            if (!isSelected) {
-              this.classList.add('is-selected');
-              this.setAttribute('aria-expanded', 'true');
-            }
-          });
-        });
-
-        // 5. Level Selection Routing
-        document.querySelectorAll('.level-btn').forEach(btn => {
-          btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const subject = this.dataset.subject;
-            const level = this.dataset.level;
-            const studentParam = currentStudent ? `&student=${currentStudent.id}` : '';
-            
-            // Redirect to quiz page with correct parameters
-            window.location.href = `quiz.html?subject=${subject}&level=${level}${studentParam}`;
-          });
-        });
-
-      } catch (err) {
-        console.error('Subjects initialization failed:', err);
+      } catch (e) {
+        console.error('Subjects personalisation failed:', e);
       }
-    })();
+    });
   </script>
+
+  <!-- TEST:
+       1. Mini gradient header renders with wave divider into surface background
+       2. Breadcrumb shows Home › Choose a Subject
+       3. Cards have coloured top borders: indigo / teal / amber
+       4. Expanding a card highlights it with matching colour ring
+       5. P4 Mathematics: clicking P4 shows type chips (Multiple Choice, Short Answer, Word Problem)
+       6. P4 English: clicking P4 shows type chips (Multiple Choice, Grammar Cloze, Editing)
+       7. Selecting "Grammar Cloze" navigates to quiz.html?subject=english&level=primary-4&type=cloze
+       8. Selecting "Multiple Choice" for P4 Maths → topic list (Fractions, Decimals, etc.)
+       9. Clicking a topic navigates to quiz.html?subject=X&level=Y&type=mcq&topic=Z
+      10. P2 Mathematics (single type): clicking P2 skips type picker, shows topics directly
+      11. "All Types" chip navigates without type param (loads full question bank)
+      12. Mobile bottom nav shows Practise tab as active -->
+
 </body>
 </html>
