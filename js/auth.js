@@ -14,7 +14,19 @@ async function db() {
 // ─── Sign Up ─────────────────────────────────────────────────
 export async function signUp(email, password, fullName, planChoice) {
   const supabase = await db();
-  const { data, error } = await supabase.auth.signUp({ email, password });
+  
+  // Pass the extra data directly into the auth metadata
+  const { data, error } = await supabase.auth.signUp({ 
+    email, 
+    password,
+    options: {
+      data: {
+        full_name: fullName,
+        subscription_tier: planChoice
+      }
+    }
+  });
+  
   if (error) throw error;
 
   const userId = data.user.id;
