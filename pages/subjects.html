@@ -233,31 +233,42 @@
        * single_subject tier is auto-routed in init() — this phase
        * is only shown for all_subjects / family / trial tiers.
        */
-      function renderSubject() {
+function renderSubject() {
         const eligible  = eligibleSubjects(state.level);
         const allSubjs  = ['mathematics','science','english'];
-        const levelSlug = state.level.toLowerCase().replace(' ','-');
 
-        const subjectMeta = {
-          mathematics: {
-            label:      'Mathematics',
-            iconClass:  'subj-icon-maths',
-            icon:       `<svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true"><path d="M8 14h12M14 8v12" stroke="var(--maths-colour)" stroke-width="2.5" stroke-linecap="round"/><circle cx="14" cy="14" r="6" stroke="var(--maths-colour)" stroke-width="1.5"/></svg>`,
-            lockedMsg:  '',
-          },
-          science: {
-            label:      'Science',
-            iconClass:  'subj-icon-science',
-            icon:       `<svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true"><path d="M10 4v8l-4 8a2 2 0 001.8 2.9h12.4A2 2 0 0022 20l-4-8V4" stroke="var(--science-colour)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 4h10" stroke="var(--science-colour)" stroke-width="1.75" stroke-linecap="round"/><circle cx="12" cy="18" r="1.5" fill="var(--science-colour)" opacity="0.6"/></svg>`,
-            lockedMsg:  'Starts at Primary 3',
-          },
-          english: {
-            label:      'English',
-            iconClass:  'subj-icon-english',
-            icon:       `<svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true"><rect x="5" y="4" width="18" height="20" rx="3" stroke="var(--english-colour)" stroke-width="1.75"/><path d="M9 9h10M9 13h10M9 17h6" stroke="var(--english-colour)" stroke-width="1.5" stroke-linecap="round"/></svg>`,
-            lockedMsg:  '',
-          },
-        };
+        const cards = allSubjs.map(subj => {
+          const isLevelEligible = eligible.includes(subj);
+          const isTierLocked    = state.tier === 'single_subject' && subj !== state.subject;
+          const isDisabled      = !isLevelEligible || isTierLocked;
+
+          // Match exam.html graphics and tags exactly
+          const icons = { mathematics: '📐', science: '🔬', english: '📖' };
+          const tags  = { mathematics: 'Maths · P1–P6', science: 'Science · P3–P6', english: 'English · P1–P6' };
+
+          return `
+            <div class="subject-card${isDisabled ? ' is-disabled' : ''}" 
+                 data-subject="${subj}" 
+                 role="button" 
+                 tabindex="${isDisabled ? -1 : 0}"
+                 ${isDisabled ? '' : `onclick="pickSubject('${subj}')"`}
+                 style="${isDisabled ? 'opacity:0.5; cursor:not-allowed;' : ''}">
+              <span style="font-size:3rem; display:block; margin-bottom:1rem;">${icons[subj]}</span>
+              <h3 style="font-family:var(--font-display); font-size:1.5rem; letter-spacing:0.04em; margin-bottom:0.5rem; text-transform:uppercase; color:var(--cream);">${subj}</h3>
+              <span class="badge ${isDisabled ? 'badge-standard' : 'badge-info'}">${isDisabled ? '🔒 Locked' : tags[subj]}</span>
+            </div>`;
+        }).join('');
+
+        app.innerHTML = `
+          <div class="wizard-step is-active">
+            <div style="margin-bottom:var(--space-8); text-align:center;">
+              <span class="section-label-tag">Step 1 of 3</span>
+              <h1 style="font-family:var(--font-display);font-size:2.5rem;letter-spacing:.04em;color:var(--cream);margin-top:var(--space-3);text-transform:uppercase;">Choose a Subject</h1>
+              <p class="text-secondary text-sm" style="margin-top:var(--space-2);">${esc(state.level)} — select the subject to practise</p>
+            </div>
+            <div class="subject-grid">${cards}</div>
+          </div>`;
+      }
 
         const cards = allSubjs.map(subj => {
           const isLevelEligible = eligible.includes(subj);
@@ -321,53 +332,49 @@
        * TOPIC phase: show "All Topics" + per-topic buttons.
        * "All Topics" routes to the aggregate file (no topic URL param).
        */
-      function renderTopic() {
+function renderTopic() {
         const levelSlug = state.level.toLowerCase().replace(' ','-');
         const key       = levelSlug + ':' + state.subject;
         const topics    = TOPIC_MAP[key] || [];
         const hasFull   = FULL_COMBOS.has(key);
         const label     = state.subject.charAt(0).toUpperCase() + state.subject.slice(1);
-        const colour    = subjColour(state.subject);
 
-        const allSelClass  = state.topic === 'all' ? ' is-sel' : '';
+        const stepText     = state.tier === 'single_subject' ? 'Step 1 of 2' : 'Step 2 of 3';
+        const allSelClass  = state.topic === 'all' ? ' is-selected' : '';
         const limitedBadge = hasFull ? '' : `<span class="badge badge-amber" style="margin-left:var(--space-2);">Limited</span>`;
+        
         const allTopicBtn  = `
-          <button class="topic-btn is-all${allSelClass}"
-                  style="grid-column:1/-1;"
-                  onclick="pickTopic('all')">
-            <span class="font-bold">📚 All Topics</span>${limitedBadge}
-          </button>`;
+          <div class="type-chip${allSelClass}" style="grid-column:1/-1;" role="button" tabindex="0" onclick="pickTopic('all')">
+            📚 All Topics ${limitedBadge}
+            <div class="type-chip-sub">Practise everything from this subject</div>
+          </div>`;
 
         const topicBtns = topics.map(t => {
-          const selClass = state.topic === t ? ' is-sel' : '';
-          return `<button class="topic-btn${selClass}" onclick="pickTopic('${esc(t)}')">${esc(titleCase(t))}</button>`;
+          const selClass = state.topic === t ? ' is-selected' : '';
+          return `
+            <div class="type-chip${selClass}" role="button" tabindex="0" onclick="pickTopic('${esc(t)}')">
+              ${esc(titleCase(t))}
+              <div class="type-chip-sub">Focused topic practice</div>
+            </div>`;
         }).join('');
 
         const backBtn = state.tier !== 'single_subject'
-          ? `<button class="btn btn-ghost btn-sm" style="margin-top:var(--space-8);" onclick="goBack('SUBJECT')">← Back</button>`
+          ? `<button class="btn btn-ghost btn-full" style="margin-top:var(--space-3);" onclick="goBack('SUBJECT')">← Back to Subjects</button>`
           : '';
 
         app.innerHTML = `
           <div class="wizard-step is-active">
-            <div class="wiz-crumb">
-              <span>${esc(state.level)}</span>
-              <span class="wiz-crumb-sep">›</span>
-              <span class="wiz-crumb-active" style="color:${colour};">${esc(label)}</span>
-              <span class="wiz-crumb-sep">›</span>
-              <span>Topic</span>
+            <div style="margin-bottom:var(--space-8); text-align:center;">
+              <span class="section-label-tag">${stepText}</span>
+              <h1 style="font-family:var(--font-display);font-size:2.5rem;letter-spacing:.04em;color:var(--cream);margin-top:var(--space-3);text-transform:uppercase;">Choose a Topic</h1>
+              <p class="text-secondary text-sm" style="margin-top:var(--space-2);">${esc(state.level)} · ${esc(label)}</p>
             </div>
-            <h1 class="mb-2">${esc(label)}</h1>
-            <p class="text-secondary mb-6">Select a topic to practise</p>
-            <div class="topic-grid">
+            <div class="type-grid" style="display:grid; grid-template-columns: repeat(2, 1fr); gap:var(--space-4);">
               ${allTopicBtn}
               ${topicBtns}
             </div>
             <div class="mt-8">
-              <button class="btn btn-primary btn-lg w-full"
-                      ${!state.topic ? 'disabled' : ''}
-                      onclick="goToType()">
-                Choose Question Type →
-              </button>
+              <button class="btn btn-primary btn-lg w-full" ${!state.topic ? 'disabled' : ''} onclick="goToType()">Choose Question Type →</button>
             </div>
             ${backBtn}
           </div>`;
@@ -385,59 +392,43 @@
       /**
        * TYPE phase: show available question types for the chosen subject.
        */
-      function renderType() {
+function renderType() {
         const label     = state.subject.charAt(0).toUpperCase() + state.subject.slice(1);
         const topicLbl  = state.topic === 'all' ? 'All Topics' : titleCase(state.topic);
         const types     = TYPE_MAP[state.subject] || [];
-        const colour    = subjColour(state.subject);
+        const stepText  = state.tier === 'single_subject' ? 'Step 2 of 2' : 'Step 3 of 3';
 
-        const mixedSelClass = state.qtype === 'mixed' ? ' is-sel' : '';
+        const mixedSelClass = state.qtype === 'mixed' ? ' is-selected' : '';
         const mixedBtn = `
-          <button class="topic-btn is-all${mixedSelClass}"
-                  style="grid-column:1/-1;"
-                  onclick="pickType('mixed')">
-            <span class="font-bold">🎲 Mixed (All Types)</span>
-          </button>`;
+          <div class="type-chip${mixedSelClass}" style="grid-column:1/-1;" role="button" tabindex="0" onclick="pickType('mixed')">
+            🎲 Mixed (All Types)
+            <div class="type-chip-sub">A balanced mix of questions</div>
+          </div>`;
 
         const typeBtns = types.map(t => {
-          const selClass = state.qtype === t ? ' is-sel' : '';
-          const dot = `<span class="type-dot" style="background:${TYPE_COLOURS[t]};"></span>`;
+          const selClass = state.qtype === t ? ' is-selected' : '';
           return `
-            <button class="topic-btn${selClass}" onclick="pickType('${esc(t)}')">
-              <div class="flex items-center justify-center gap-2">
-                ${dot}<span>${esc(TYPE_LABELS[t] || t)}</span>
-              </div>
-            </button>`;
+            <div class="type-chip${selClass}" role="button" tabindex="0" onclick="pickType('${esc(t)}')">
+              ${esc(TYPE_LABELS[t] || t)}
+              <div class="type-chip-sub">Specific question format</div>
+            </div>`;
         }).join('');
 
         app.innerHTML = `
           <div class="wizard-step is-active">
-            <div class="wiz-crumb">
-              <span>${esc(state.level)}</span>
-              <span class="wiz-crumb-sep">›</span>
-              <span style="color:${colour};">${esc(label)}</span>
-              <span class="wiz-crumb-sep">›</span>
-              <span>${esc(topicLbl)}</span>
-              <span class="wiz-crumb-sep">›</span>
-              <span class="wiz-crumb-active">Type</span>
+            <div style="margin-bottom:var(--space-8); text-align:center;">
+              <span class="section-label-tag">${stepText}</span>
+              <h1 style="font-family:var(--font-display);font-size:2.5rem;letter-spacing:.04em;color:var(--cream);margin-top:var(--space-3);text-transform:uppercase;">Question Type</h1>
+              <p class="text-secondary text-sm" style="margin-top:var(--space-2);">${esc(state.level)} · ${esc(label)} · ${esc(topicLbl)}</p>
             </div>
-            <h1 class="mb-2">Question Type</h1>
-            <p class="text-secondary mb-6">
-              ${esc(state.level)} · ${esc(label)} · ${esc(topicLbl)}
-            </p>
-            <div class="type-grid">
+            <div class="type-grid" style="display:grid; grid-template-columns: repeat(2, 1fr); gap:var(--space-4);">
               ${mixedBtn}
               ${typeBtns}
             </div>
             <div class="mt-8">
-              <button class="btn btn-primary btn-lg w-full"
-                      ${!state.qtype ? 'disabled' : ''}
-                      onclick="launchQuiz()">
-                Start Quiz →
-              </button>
+              <button class="btn btn-primary btn-lg w-full" ${!state.qtype ? 'disabled' : ''} onclick="launchQuiz()">Start Quiz →</button>
             </div>
-            <button class="btn btn-ghost btn-sm" style="margin-top:var(--space-4);"
-                    onclick="goBack('TOPIC')">← Back</button>
+            <button class="btn btn-ghost btn-full" style="margin-top:var(--space-3);" onclick="goBack('TOPIC')">← Back to Topics</button>
           </div>`;
       }
 
