@@ -3,25 +3,31 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard — Superholic Lab</title>
+  <title>App Master — Superholic Lab</title>
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="icon" href="../assets/favicon.ico" />
-  
   <script src="/js/supabase-client.js"></script>
-  
+    <script type="module">
+    import { guardPage } from '/js/auth.js';
+    await guardPage(false); 
+  </script>
   <script type="module">
     import { guardPage } from '/js/auth.js';
     import { initAppShell } from '/js/app-shell.js';
-
-    // Guard page and initialize shell immediately
-    const profile = await guardPage(true);
-    if (profile) initAppShell(profile);
+    
+    // We fetch the profile/session exactly ONE time here.
+    const profile = await guardPage(true); 
+    
+    // Pass it to the shell to instantly set up the Navbar and CSS padding.
+    // (If profile exists, they are logged in. If null, they are guest).
+    initAppShell(profile); 
   </script>
-</head>
+  </head>
 
 <body id="mainBody">
 
-  <header class="navbar navbar-homepage" id="navbar" style="justify-content: space-between;">
+<header class="navbar navbar-homepage" id="navbar" style="justify-content: space-between;">
+    
     <a href="../index.html" class="navbar-logo">
       <img src="../assets/logo.svg" width="32" height="32" alt="Superholic Lab">
       Superholic Lab
@@ -40,42 +46,40 @@
     <div class="navbar-mobile" id="navDropdown">
       <div class="container" id="navLinks">
         <a href="../index.html">Home</a>
-        <a href="about.html">About Us</a>
-        <a href="pricing.html">Pricing</a>
-        <a href="contact.html">Contact Support</a>
+        <a href="../pages/about.html">About Us</a>
+        <a href="../pages/pricing.html">Pricing</a>
+        <a href="../pages/contact.html">Contact Support</a>
+        <a href="../pages/signup.html" id="navSignUp">Start Free Trial</a>
       </div>
     </div>
   </header>
 
-  <main class="page-content" style="margin-top: 68px; min-height: 80vh;">
-    
-    <div class="dashboard-main">
-
+<main class="page-content" style="margin-top: 68px; min-height: 80vh;">
       <div class="trial-banner" id="trialBanner" style="display:none">
-        <span>🎁 <strong id="trialDaysLeft"></strong> left in your free trial</span>
-        <a href="pricing.html" class="btn-upgrade">Upgrade now →</a>
-      </div>
+      <span>🎁 <strong id="trialDaysLeft"></strong> left in your free trial</span>
+      <a href="/pages/pricing.html" class="btn-upgrade">Upgrade now →</a>
+    </div>
+  <div class="dashboard-main">
 
-      <h1 class="welcome" id="welcomeMsg">Welcome back 👋</h1>
-      <p class="welcome-sub">Here's what's happening for your learner today.</p>
+    <h1 class="welcome" id="welcomeMsg">Welcome back 👋</h1>
+    <p class="welcome-sub">Here's what's happening for your learner today.</p>
 
-      <div class="section-header">
-        <div class="section-title">Your learners</div>
-        <a href="setup.html" class="btn-add" id="addChildBtn">＋ Add child</a>
-      </div>
+    <div class="section-header">
+      <div class="section-title">Your learners</div>
+      <a href="/pages/setup.html" class="btn-add" id="addChildBtn">＋ Add child</a>
+    </div>
 
-      <div class="cards-grid" id="cardsGrid">
-        <div class="skeleton" style="height:180px"></div>
-      </div>
+    <div class="cards-grid" id="cardsGrid">
+      <div class="skeleton" style="height:180px"></div>
+    </div>
 
-      <div class="admin-panel" id="adminPanel" style="display:none">
-        <h3>🔐 Admin Panel</h3>
-        <div id="adminStats"></div>
-        <a href="admin.html" class="admin-link">Open admin panel →</a>
-      </div>
+    <div class="admin-panel" id="adminPanel" style="display:none">
+      <h3>🔐 Admin Panel</h3>
+      <div id="adminStats"></div>
+      <a href="/pages/admin.html" class="admin-link">Open admin panel →</a>
+    </div>
 
-    </div> 
-  </main>
+  </div> </main>
 
   <footer class="footer">
     <div class="container">
@@ -90,7 +94,7 @@
     </div>
   </footer>
 
-  <nav class="bottom-nav" id="bottomNav" aria-label="Mobile navigation" hidden>
+<nav class="bottom-nav" id="bottomNav" aria-label="Mobile navigation" hidden>
     <a href="subjects.html" class="bottom-nav-item">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
       Practise
@@ -108,85 +112,84 @@
       Progress
     </a>
   </nav>
-
+  
+  <script src="../js/supabase-client.js"></script>
   <script type="module">
     import { guardPage } from '/js/auth.js';
-    
-    function escapeHtml(str) {
-      if (!str) return '';
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-    }
 
-    async function loadDashboardData() {
-      // Fetch profile data again silently for dashboard specifics
+    async function init() {
       const profile = await guardPage(true);
       if (!profile) return;
 
       const firstName = profile.full_name?.split(' ')[0] || 'there';
-      document.getElementById('welcomeMsg').textContent = `Welcome back, ${firstName} 👋`;
+      document.getElementById('welcomeMsg').textContent = `Welcome back, ${firstName} \ud83d\udc4b`;
 
-      try {
-        const sb = await getSupabase();
-        const { data: students, error } = await sb
-          .from('students')
-          .select('*')
-          .eq('parent_id', profile.id)
-          .order('created_at', { ascending: true });
+      const badge = document.getElementById('planBadge');
+      const planLabels = { trial: '🎁 Trial', single_subject: 'Single Subject', all_subjects: 'All Subjects', family: 'Family' };
+      badge.textContent = profile.role === 'admin' ? '👑 Admin' : (planLabels[profile.subscription_tier] || profile.subscription_tier);
+      if (profile.role === 'admin') badge.className = 'plan-badge admin';
+      else if (profile.subscription_tier === 'trial') badge.className = 'plan-badge trial';
 
-        if (error) throw error;
+      if (profile.subscription_tier === 'trial' && profile.trial_ends_at) {
+        const daysLeft = Math.ceil((new Date(profile.trial_ends_at) - new Date()) / 86400000);
+        if (daysLeft > 0) {
+          document.getElementById('trialBanner').style.display = 'flex';
+          document.getElementById('trialDaysLeft').textContent = `${daysLeft} day${daysLeft !== 1 ? 's' : ''}`;
+        }
+      }
 
-        const grid = document.getElementById('cardsGrid');
-        grid.innerHTML = '';
+      // Load students using getSupabase() global
+      const supabase = await getSupabase();
+      const query = profile.role === 'admin'
+        ? supabase.from('students').select('*')
+        : supabase.from('students').select('*').eq('parent_id', profile.id);
 
-        if (!students || students.length === 0) {
-          grid.innerHTML = `
-            <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1rem;">
-              <p style="color: var(--text-secondary); margin-bottom: 1rem;">No learners added yet.</p>
-              <a href="setup.html" class="btn btn-primary">Add a Learner</a>
-            </div>
+      const { data: students, error } = await query;
+      const grid = document.getElementById('cardsGrid');
+      grid.innerHTML = '';
+
+      if (error || !students?.length) {
+        grid.innerHTML = `<div class="empty-state"><div class="empty-icon">\ud83c\udfa2</div><p>No learners added yet.<br>Click "+ Add child" to get started.</p></div>`;
+      } else {
+        students.forEach(student => {
+          const initials = student.name?.charAt(0).toUpperCase() || '?';
+          const card = document.createElement('div');
+          card.className = 'student-card';
+          card.innerHTML = `
+            <div class="card-avatar">${initials}</div>
+            <div class="card-name">${escapeHtml(student.name)}</div>
+            <div class="card-meta">${escapeHtml(student.level)}</div>
+            ${student.selected_subject ? `<span class="card-tag">${escapeHtml(student.selected_subject)}</span>` : ''}
+            <a href="/pages/subjects.html?student=${student.id}" class="btn-practice">Practice Now \u2192</a>
           `;
-        } else {
-          students.forEach(student => {
-            const initials = student.name ? student.name.charAt(0).toUpperCase() : '?';
-            const card = document.createElement('div');
-            card.className = 'student-card';
-            card.innerHTML = `
-              <div class="card-avatar">${initials}</div>
-              <div class="card-name">${escapeHtml(student.name)}</div>
-              <div class="card-meta">${escapeHtml(student.level)}</div>
-              ${student.selected_subject ? `<span class="card-tag">${escapeHtml(student.selected_subject)}</span>` : ''}
-              <a href="subjects.html?student=${student.id}" class="btn-practice">Practice Now →</a>
-            `;
-            grid.appendChild(card);
-          });
-        }
+          grid.appendChild(card);
+        });
+      }
 
-        // Add child button limit logic
-        const addBtn = document.getElementById('addChildBtn');
-        const maxChildren = profile.subscription_tier === 'family' ? 3 : 1;
-        if (profile.role !== 'admin' && students && students.length >= maxChildren) {
-          addBtn.classList.add('hidden');
-        }
+      // Add child button: hide if at limit
+      const addBtn = document.getElementById('addChildBtn');
+      if (profile.role !== 'admin' && students && students.length >= profile.max_children) {
+        addBtn.classList.add('hidden');
+      }
 
-        // Admin Panel
-        if (profile.role === 'admin') {
-          document.getElementById('adminPanel').style.display = 'block';
-          document.getElementById('adminStats').innerHTML =
-            `<span class="admin-stat">Total students: <strong>${students?.length ?? 0}</strong></span>`;
-        }
-
-      } catch (err) {
-        console.error('Error loading dashboard:', err);
-        document.getElementById('cardsGrid').innerHTML = '<p style="color: var(--danger);">Failed to load learners.</p>';
+      if (profile.role === 'admin') {
+        document.getElementById('adminPanel').style.display = 'block';
+        document.getElementById('adminStats').innerHTML =
+          `<span class="admin-stat">Total students: <strong>${students?.length ?? 0}</strong></span>`;
       }
     }
 
-    loadDashboardData();
-  </script>
+    window.handleSignOut = async function () {
+      const { signOut } = await import('/js/auth.js');
+      await signOut();
+    };
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    init();
+  </script>  
 </body>
 </html>
