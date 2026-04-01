@@ -202,18 +202,32 @@ export async function enforcePaywall(studentId) {
 
   if (profile.role === 'admin') return { allowed: true, reason: 'admin' };
 
-  const tier = profile.subscription_tier;
+  // 1. Gracefully handle null tiers (defaults to trial if missing)
+  const tier = profile.subscription_tier || 'trial';
 
   if (['single_subject', 'all_subjects', 'family'].includes(tier)) {
     return { allowed: true, reason: 'paid' };
   }
 
   if (tier === 'trial') {
-    const trialActive = profile.trial_ends_at && new Date(profile.trial_ends_at) > new Date();
+    // 2. Gracefully handle missing trial_ends_at dates
+    let endsAt;
+    if (profile.trial_ends_at) {
+      endsAt = new Date(profile.trial_ends_at);
+    } else {
+      // Fallback: 7 days after the account was created
+      const start = profile.created_at ? new Date(profile.created_at) : new Date();
+      endsAt = new Date(start.getTime() + 7 * 24 * 60 * 60 * 1000);
+    }
+
+    // Check if the calculated end date is in the past
+    const trialActive = endsAt > new Date();
     if (!trialActive) return { allowed: false, reason: 'expired' };
 
+    // 3. Check daily question limits safely
     const usage = await checkDailyUsage(studentId);
-    if (usage.questions_attempted >= 5) return { allowed: false, reason: 'trial_limit' };
+    const attempts = usage?.questions_attempted || 0;
+    if (attempts >= 5) return { allowed: false, reason: 'trial_limit' };
 
     return { allowed: true, reason: 'trial' };
   }
