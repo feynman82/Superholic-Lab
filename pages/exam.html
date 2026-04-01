@@ -280,14 +280,15 @@
           + '</div>';
       }).join('');
 
-      app.innerHTML = '<div class="wizard-step is-active">'
-        + '<div style="margin-bottom:var(--space-8);">'
-        + '<span class="section-label-tag">Step 1 of 2</span>'
-        + '<h1 style="font-family:var(--font-display);font-size:2.5rem;letter-spacing:.04em;color:var(--cream);margin-top:var(--space-3);">Choose a Subject</h1>'
-        + '<p class="text-secondary text-sm" style="margin-top:var(--space-2);">Primary ' + esc(levelNum) + ' — select the subject to practise</p>'
-        + '</div>'
-        + '<div class="subject-grid">' + cards + '</div>'
-        + '</div>';
+      app.innerHTML = `
+        <div class="wizard-step is-active">
+          <div style="margin-bottom:var(--space-8); text-align:center;">
+            <span class="section-label-tag">Step 1 of 2</span>
+            <h1 style="font-family:var(--font-display);font-size:2.5rem;letter-spacing:.04em;color:var(--cream);margin-top:var(--space-3);text-transform:uppercase;">Choose a Subject</h1>
+            <p class="text-secondary text-sm" style="margin-top:var(--space-2);">Primary ${esc(levelNum)} — select the subject to practise</p>
+          </div>
+          <div class="subject-grid">${cards}</div>
+        </div>`;
 
       app.querySelectorAll('.subject-card').forEach(function (card) {
         card.addEventListener('click', function () {
@@ -318,17 +319,18 @@
         ? '<button id="back-btn" class="btn btn-ghost btn-full" style="margin-top:var(--space-3);">← Back to Subjects</button>'
         : '';
 
-      app.innerHTML = '<div class="wizard-step is-active">'
-        + '<div style="margin-bottom:var(--space-6);">'
-        + '<span class="section-label-tag">' + stepLabel + '</span>'
-        + '<h1 style="font-family:var(--font-display);font-size:2.5rem;letter-spacing:.04em;color:var(--cream);margin-top:var(--space-3);">Select Paper Type</h1>'
-        + '</div>'
-        + '<div id="confirm-banner" class="confirm-banner">' + confirmText() + '</div>'
-        + '<div class="type-grid" id="type-grid">' + chips + '</div>'
-        + '<div class="blueprint-card" id="bp-card">' + blueprintHTML(state.subjectKey, state.levelKey, state.examType) + '</div>'
-        + '<button id="gen-btn" class="btn btn-primary btn-full btn-lg">Generate Paper →</button>'
-        + backBtn
-        + '</div>';
+      app.innerHTML = `
+        <div class="wizard-step is-active">
+          <div style="margin-bottom:var(--space-8); text-align:center;">
+            <span class="section-label-tag">${stepLabel}</span>
+            <h1 style="font-family:var(--font-display);font-size:2.5rem;letter-spacing:.04em;color:var(--cream);margin-top:var(--space-3);text-transform:uppercase;">Select Paper Type</h1>
+          </div>
+          <div id="confirm-banner" class="confirm-banner">${confirmText()}</div>
+          <div class="type-grid" id="type-grid">${chips}</div>
+          <div class="blueprint-card" id="bp-card">${blueprintHTML(state.subjectKey, state.levelKey, state.examType)}</div>
+          <button id="gen-btn" class="btn btn-primary btn-full btn-lg mt-4">Generate Paper →</button>
+          ${backBtn}
+        </div>`;
 
       app.querySelectorAll('.type-chip').forEach(function (chip) {
         function activate() {
