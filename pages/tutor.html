@@ -13,9 +13,15 @@
   <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js"></script>
   <!-- Auth guard: redirects to login if no session -->
   <script type="module">
-    import { guardPage } from '/js/auth.js';
-    await guardPage(true);
+    import { guardPage }    from '/js/auth.js';
+    import { initAppShell } from '/js/app-shell.js';
+    const profile = await guardPage(true);
+    initAppShell(profile);
   </script>
+</head>
+
+<body id="mainBody">
+
 <header class="navbar navbar-homepage" id="navbar" style="justify-content: space-between;">
     
     <a href="../index.html" class="navbar-logo">
@@ -57,6 +63,28 @@
         You've used your 10 free AI tutor messages today.
         <a href="pricing.html" style="font-weight:600;">Upgrade to continue</a> with unlimited access.
       </div>
+
+      <!-- Remedial Quest context banner (shown when ?intent=remedial is in URL) -->
+      <div id="remedial-banner" style="display:none; margin-top:var(--space-4); padding: var(--space-3) var(--space-4); background:rgba(57,255,179,0.07); border:1.5px solid var(--glass-border); border-left:3px solid var(--mint); border-radius:var(--radius-md); align-items:center; justify-content:space-between; gap:var(--space-4); flex-wrap:wrap; backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);">
+        <p style="margin:0; font-size:0.875rem; color:var(--cream);">
+          🗺️ Remedial Quest active — ask Miss Wena about <strong id="quest-topic-name" style="color:var(--mint);"></strong>
+        </p>
+        <a id="back-to-quest-link" href="progress.html" class="btn btn-ghost btn-sm" style="white-space:nowrap; flex-shrink:0;">← Quest Map</a>
+      </div>
+      <script>
+        (function() {
+          const rp = new URLSearchParams(window.location.search);
+          if (rp.get('intent') === 'remedial' && rp.get('topic')) {
+            const banner = document.getElementById('remedial-banner');
+            const topicEl = document.getElementById('quest-topic-name');
+            if (banner && topicEl) {
+              // Use textContent — topic from URL, not user-submitted
+              topicEl.textContent = rp.get('topic').replace(/-/g, ' ');
+              banner.style.display = 'flex';
+            }
+          }
+        })();
+      </script>
 
       <!-- Chat card -->
       <div class="card no-hover mt-6" style="overflow:hidden;">
