@@ -39,9 +39,10 @@
         <select class="form-select" id="childSubject">
           <option value="">Select subject…</option>
           <option value="Mathematics">Mathematics</option>
-          <option value="Science">Science</option>
+          <option value="Science" id="scienceOption">Science</option>
           <option value="English">English</option>
         </select>
+        <p class="form-hint" id="scienceHint" style="display:none">Science is available from Primary 3 onwards.</p>
       </div>
       <p class="error-msg" id="step1Error"></p>
       <button class="btn btn-primary btn-full" id="step1Btn" onclick="submitStep1()">Continue →</button>
@@ -75,6 +76,28 @@
       if (planToShow === 'single_subject') {
         document.getElementById('subjectGroup').style.display = 'block';
       }
+
+      // Filter Science option based on level — Science is P3 and above only
+      document.getElementById('childLevel').addEventListener('change', handleLevelChange);
+    }
+
+    // Show/hide Science option depending on selected level
+    function handleLevelChange() {
+      const level = document.getElementById('childLevel').value;
+      const scienceOption = document.getElementById('scienceOption');
+      const scienceHint = document.getElementById('scienceHint');
+      const subjectSelect = document.getElementById('childSubject');
+      const juniorLevels = ['Primary 1', 'Primary 2'];
+      const isJunior = juniorLevels.includes(level);
+
+      scienceOption.disabled = isJunior;
+      scienceOption.style.display = isJunior ? 'none' : '';
+      scienceHint.style.display = isJunior ? 'block' : 'none';
+
+      // Reset subject selection if Science was chosen but level no longer supports it
+      if (isJunior && subjectSelect.value === 'Science') {
+        subjectSelect.value = '';
+      }
     }
 
     window.submitStep1 = async function () {
@@ -93,7 +116,7 @@
       }
 
       btn.disabled = true;
-      btn.textContent = 'Saving\u2026';
+      btn.classList.add('is-loading');
 
       try {
         // Use getSupabase() global (supabase-client.js loaded above)
@@ -125,7 +148,7 @@
         showErr('Something went wrong. Please try again.');
         console.error(err);
         btn.disabled = false;
-        btn.textContent = 'Continue \u2192';
+        btn.classList.remove('is-loading');
       }
 
       function showErr(msg) { errEl.textContent = msg; errEl.style.display = 'block'; }
