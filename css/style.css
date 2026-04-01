@@ -3624,9 +3624,12 @@ body:not(.is-logged-in) .footer .container {
   padding-right: var(--space-8);
 }
 
-body.is-logged-in {
-  padding-left: 80px; /* Aligned with Left Sidebar [cite: 2026-03-31] */
-  padding-right: 0;
+/* Only apply the 80px layout shift on desktop screens */
+@media (min-width: 768px) {
+  body.is-logged-in {
+    padding-left: 80px; 
+    padding-right: 0;
+  }
 }
 
 body.is-logged-in .navbar .container,
