@@ -28,6 +28,7 @@ export async function signUp(email, password, fullName, planChoice) {
   const { error: profileError } = await supabase
     .from('profiles')
     .update({
+      email,
       full_name: fullName,
       subscription_tier: planChoice,
       trial_started_at: now.toISOString(),

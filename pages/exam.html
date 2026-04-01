@@ -137,6 +137,7 @@
       subjectKey: '',      // 'mathematics'
       tier:       '',      // subscription_tier
       examType:   '',      // 'WA1' | 'WA2' | 'WA3' | 'EOY' | 'PRELIM'
+      studentId:  null,    // students.id — used for exam_results insert
       paper:      null,
       answers:    {},
       graded:     null,
@@ -624,8 +625,41 @@
       });
 
       Promise.all(queue).then(function () {
+        saveExamResult(graded);   // non-blocking — fire and forget
         setState({ phase: 'RESULTS', graded: graded });
       });
+    }
+
+    // ── SAVE EXAM RESULT ─────────────────────────────────────────────────────
+    /**
+     * Persists the completed exam to exam_results in Supabase.
+     * Non-blocking: called without await so grading screen moves on immediately.
+     * Silently logs on failure — never blocks the results UI.
+     */
+    async function saveExamResult(graded) {
+      if (!state.studentId) return;
+      try {
+        var sb       = await getSupabase();
+        var earned   = graded.reduce(function(s, r) { return s + (r.earned || 0); }, 0);
+        var possible = graded.reduce(function(s, r) { return s + r.max; }, 0);
+        // Time elapsed = full duration minus remaining seconds
+        var timeTaken = (state.paper && state.paper.duration)
+          ? (state.paper.duration * 60) - state.timeLeft
+          : null;
+
+        await sb.from('exam_results').insert({
+          student_id:          state.studentId,
+          subject:             state.subject,
+          level:               state.level,
+          exam_type:           state.examType || 'PRACTICE',
+          score:               earned,
+          total_marks:         possible,
+          questions_attempted: graded.length,
+          time_taken:          (timeTaken !== null && timeTaken >= 0) ? timeTaken : null,
+        });
+      } catch (err) {
+        console.error('[exam] saveExamResult failed:', err);
+      }
     }
 
     // ── PHASE: RESULTS ───────────────────────────────────────────────────────
@@ -711,18 +745,19 @@
 
         var results = await Promise.all([
           sb.from('profiles').select('subscription_tier').eq('id', user.id).single(),
-          sb.from('students').select('level,selected_subject').eq('parent_id', user.id).single(),
+          sb.from('students').select('id,level,selected_subject').eq('parent_id', user.id).single(),
         ]);
 
-        var tier     = (results[0].data && results[0].data.subscription_tier) || 'trial';
-        var level    = (results[1].data && results[1].data.level)             || 'Primary 4';
-        var levelKey = level.toLowerCase().replace(' ', '-');
+        var tier      = (results[0].data && results[0].data.subscription_tier) || 'trial';
+        var level     = (results[1].data && results[1].data.level)             || 'Primary 4';
+        var levelKey  = level.toLowerCase().replace(' ', '-');
+        var studentId = (results[1].data && results[1].data.id)               || null;
 
         if (tier === 'single_subject') {
-          var sub    = (results[1].data && results[1].data.selected_subject) || 'Mathematics';
-          setState({ phase: 'TYPE', tier: tier, level: level, levelKey: levelKey, subject: sub, subjectKey: sub.toLowerCase() });
+          var sub = (results[1].data && results[1].data.selected_subject) || 'Mathematics';
+          setState({ phase: 'TYPE', tier: tier, level: level, levelKey: levelKey, subject: sub, subjectKey: sub.toLowerCase(), studentId: studentId });
         } else {
-          setState({ phase: 'SUBJECT', tier: tier, level: level, levelKey: levelKey });
+          setState({ phase: 'SUBJECT', tier: tier, level: level, levelKey: levelKey, studentId: studentId });
         }
 
       } catch (err) {
