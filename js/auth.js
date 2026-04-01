@@ -15,14 +15,18 @@ async function db() {
 export async function signUp(email, password, fullName, planChoice) {
   const supabase = await db();
   
-  // Pass the extra data directly into the auth metadata
   const { data, error } = await supabase.auth.signUp({ 
     email, 
     password,
     options: {
       data: {
         full_name: fullName,
-        subscription_tier: planChoice
+        
+        // 1. FORCE the database to record them as a trial user
+        subscription_tier: 'trial', 
+        
+        // 2. Save what they clicked so we know what to charge them later
+        intended_plan: planChoice   
       }
     }
   });
