@@ -270,59 +270,6 @@ function renderSubject() {
           </div>`;
       }
 
-        const cards = allSubjs.map(subj => {
-          const isLevelEligible = eligible.includes(subj);
-          const isTierLocked    = state.tier === 'single_subject' && subj !== state.subject;
-          const isDisabled      = !isLevelEligible || isTierLocked;
-
-          const key        = levelSlug + ':' + subj;
-          const topicCount = (TOPIC_MAP[key] || []).length;
-          const hasFull    = FULL_COMBOS.has(key);
-          const m          = subjectMeta[subj];
-          const colour     = subjColour(subj);
-
-          const lockedReason = isTierLocked ? 'Not in your plan' : m.lockedMsg;
-
-          let badges = '';
-          if (isDisabled) {
-            badges = `<span class="badge badge-standard">🔒 ${esc(lockedReason || 'Not available')}</span>`;
-          } else {
-            badges  = topicCount > 0
-              ? `<span class="badge badge-info">${topicCount} topics</span>`
-              : `<span class="badge badge-info">Mixed</span>`;
-            badges += hasFull
-              ? ` <span class="badge badge-success">Ready</span>`
-              : ` <span class="badge badge-amber">Limited</span>`;
-          }
-
-          return `
-            <div class="sel-card${isDisabled ? ' is-disabled' : ''}"
-                 role="button" tabindex="${isDisabled ? -1 : 0}"
-                 aria-label="${esc(m.label)}"${isDisabled ? ' aria-disabled="true"' : ''}
-                 ${isDisabled ? '' : `onclick="pickSubject('${subj}')"`}>
-              <div class="flex items-center gap-4 mb-4">
-                <div class="subj-icon ${m.iconClass}">${m.icon}</div>
-                <div>
-                  <h3 class="font-bold" style="color:${colour}; margin:0;">${esc(m.label)}</h3>
-                  <p class="text-xs text-secondary" style="margin:0;">${esc(shortLevel(state.level))}</p>
-                </div>
-              </div>
-              <div class="flex gap-2 flex-wrap">${badges}</div>
-            </div>`;
-        }).join('');
-
-        app.innerHTML = `
-          <div class="wizard-step is-active">
-            <div class="wiz-crumb">
-              <span class="wiz-crumb-active">${esc(state.level)}</span>
-              <span class="wiz-crumb-sep">›</span>
-              <span>Subject</span>
-            </div>
-            <h1 class="mb-2">Choose a Subject</h1>
-            <p class="text-secondary mb-8">Personalised practice for ${esc(state.level)}</p>
-            <div class="subject-grid">${cards}</div>
-          </div>`;
-      }
 
       window.pickSubject = function (subj) {
         setState({ subject: subj, topic: '', qtype: '', phase: 'TOPIC' });
