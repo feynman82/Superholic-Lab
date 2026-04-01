@@ -1,4 +1,10 @@
+import { getCurrentUser, enforcePaywall, checkDailyUsage } from '/js/auth.js';
+
 /**
+ * quiz.js
+ * Quiz engine: reads ?subject=&level=&topic= URL params → loads JSON →
+ ...
+ /**
  * quiz.js
  * Quiz engine: reads ?subject=&level=&topic= URL params → loads JSON →
  * picks up to 10 random questions → renders one at a time →
@@ -116,13 +122,11 @@
     } catch { /* non-blocking — quiz can still run */ }
 
     // Paywall check before loading questions
-    if (typeof enforcePaywall === 'function') {
-      const wall = await enforcePaywall(currentSubject, currentStudentId);
-      if (!wall.allowed) {
-        loadingEl.hidden = true;
-        if (typeof showUpgradeModal === 'function') showUpgradeModal(wall.reason);
-        return;
-      }
+    const wall = await enforcePaywall(currentStudentId); 
+    if (!wall.allowed) {
+      loadingEl.hidden = true;
+      alert("Paywall limit reached: " + wall.reason); // Or trigger your custom modal
+      return;
     }
 
     // Load question bank
