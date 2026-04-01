@@ -3,36 +3,58 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Quiz — Superholic Lab</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <title>App Master — Superholic Lab</title>
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="icon" href="../assets/favicon.ico" />
-  <meta name="robots" content="noindex, nofollow" />
-  <!-- Analytics: ⚠️ CONFIGURE — sign up at plausible.io and add superholiclab.com -->
-  <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js"></script>
-  <!-- Auth guard: redirects to login if no session -->
+  <script type="module" src="../js/quiz.js"></script>
+   <script type="module">
+    import { guardPage } from '/js/auth.js';
+    await guardPage(false); 
+  </script>
   <script type="module">
     import { guardPage } from '/js/auth.js';
-    await guardPage(true);
+    import { initAppShell } from '/js/app-shell.js';
+    
+    // We fetch the profile/session exactly ONE time here.
+    const profile = await guardPage(true); 
+    
+    // Pass it to the shell to instantly set up the Navbar and CSS padding.
+    // (If profile exists, they are logged in. If null, they are guest).
+    initAppShell(profile); 
   </script>
 </head>
-<body class="has-bottom-nav">
-  <header class="navbar is-scrolled">
-    <div class="container">
-      <nav class="navbar-inner">
-        <a href="../index.html" class="navbar-logo">
-          <img src="../assets/logo.svg" width="32" height="32" alt="" aria-hidden="true" style="border-radius:8px;flex-shrink:0;">
-          Superholic Lab
-        </a>
-        <div class="navbar-actions">
-          <a href="subjects.html" class="btn btn-secondary btn-sm">← Change Subject</a>
-        </div>
-      </nav>
+
+<body id="mainBody">
+
+<header class="navbar navbar-homepage" id="navbar" style="justify-content: space-between;">
+    
+    <a href="../index.html" class="navbar-logo">
+      <img src="../assets/logo.svg" width="32" height="32" alt="Superholic Lab">
+      Superholic Lab
+    </a>
+
+    <div class="navbar-actions">
+      <div id="auth-header-container">
+        <a href="login.html" class="btn btn-secondary btn-sm">Log In</a>
+      </div>
+
+      <button class="navbar-toggle" id="navToggle" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="navbar-mobile" id="navDropdown">
+      <div class="container" id="navLinks">
+        <a href="../index.html">Home</a>
+        <a href="../pages/about.html">About Us</a>
+        <a href="../pages/pricing.html">Pricing</a>
+        <a href="../pages/contact.html">Contact Support</a>
+        <a href="../pages/signup.html" id="navSignUp">Start Free Trial</a>
+      </div>
     </div>
   </header>
 
-  <main style="padding: var(--space-8) 0 var(--space-16);">
+<main class="page-content" style="margin-top: 68px; min-height: 80vh;">
     <div class="container" style="max-width:680px;">
       <nav class="breadcrumb" aria-label="Breadcrumb">
         <a href="../index.html">Home</a>
@@ -122,48 +144,35 @@
   <footer class="footer">
     <div class="container">
       <div class="footer-bottom">
-        <p>&copy; 2026 Superholic Lab. All rights reserved. 🇸🇬 Made in Singapore</p>
+        <p>&copy; 2026 Superholic Lab. 🇸🇬 Made in Singapore</p>
+        <div class="flex gap-4">
+          <a href="privacy.html">Privacy</a>
+          <a href="terms.html">Terms</a>
+          <a href="contact.html">Contact</a>
+        </div>
       </div>
     </div>
   </footer>
 
-  <nav class="bottom-nav" aria-label="Mobile navigation">
-    <a href="../index.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
-        <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/>
-        <path d="M9 21V12h6v9"/>
-      </svg>
-      Home
-    </a>
+  <nav class="bottom-nav" id="bottomNav" hidden>
     <a href="subjects.html" class="bottom-nav-item is-active" aria-current="page">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
-        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
       Practise
     </a>
     <a href="tutor.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
-        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
       AI Tutor
     </a>
     <a href="exam.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
-        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
-        <rect x="9" y="3" width="6" height="4" rx="2"/>
-        <path d="M9 12h6M9 16h4"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="M9 12h6M9 16h4"/></svg>
       Exam
     </a>
     <a href="progress.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
-        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
       Progress
     </a>
   </nav>
 
   <script src="../js/supabase-client.js"></script>
-  <script type="module" src="../js/quiz.js"></script>
 </body>
 </html>
