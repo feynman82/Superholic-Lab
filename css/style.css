@@ -649,11 +649,9 @@ html, body {
   }
 
   /* Adjust Page Layout for Left Sidebar [cite: 2026-03-31] */
-  /* Only apply the 80px layout shift on desktop screens */
-@media (min-width: 768px) {
   body.is-logged-in {
-    padding-left: 80px; 
     padding-right: 0;
+    padding-left: 80px; /* Buffer for the floating sidebar [cite: 2026-03-31] */
   }
 }
 
@@ -3626,6 +3624,10 @@ body:not(.is-logged-in) .footer .container {
   padding-right: var(--space-8);
 }
 
+body.is-logged-in {
+  padding-left: 80px; /* Aligned with Left Sidebar [cite: 2026-03-31] */
+  padding-right: 0;
+}
 
 body.is-logged-in .navbar .container,
 body.is-logged-in .footer .container {
