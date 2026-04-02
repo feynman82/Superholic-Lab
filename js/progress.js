@@ -877,16 +877,58 @@ function setText(id, value) {
   const el = document.getElementById(id);
   if (el) el.textContent = value;
 }
+// ── Calculate Topics Improved (Last 7 Days vs Previous 7 Days) ──
+    const now = new Date();
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const topicStatsThisWeek = {};
+    const topicStatsLastWeek = {};
+
+    (quizzes || []).forEach(q => {
+      if (!q.topic || q.topic === 'all') return;
+      const key = `${q.subject}:${q.topic}`;
+      const qDate = new Date(q.completed_at || q.created_at);
+
+      if (qDate >= oneWeekAgo) {
+        if (!topicStatsThisWeek[key]) topicStatsThisWeek[key] = { earned: 0, total: 0, subject: q.subject, topic: q.topic };
+        topicStatsThisWeek[key].earned += q.score;
+        topicStatsThisWeek[key].total += q.total_questions;
+      } else {
+        if (!topicStatsLastWeek[key]) topicStatsLastWeek[key] = { earned: 0, total: 0, subject: q.subject, topic: q.topic };
+        topicStatsLastWeek[key].earned += q.score;
+        topicStatsLastWeek[key].total += q.total_questions;
+      }
+    });
+
+    let improvedText = "Keep practicing to track improvements!";
+    for (const key in topicStatsThisWeek) {
+      if (topicStatsLastWeek[key] && topicStatsLastWeek[key].total > 0 && topicStatsThisWeek[key].total > 0) {
+        const pctThis = Math.round((topicStatsThisWeek[key].earned / topicStatsThisWeek[key].total) * 100);
+        const pctLast = Math.round((topicStatsLastWeek[key].earned / topicStatsLastWeek[key].total) * 100);
+        const alThis = getALBand(pctThis);
+        const alLast = getALBand(pctLast);
+
+        // If AL string goes down (e.g., AL4 -> AL3), it's an improvement!
+        if (alThis < alLast) {
+          const t = topicStatsThisWeek[key];
+          improvedText = `<span style="text-transform:capitalize;">${t.subject}</span>: ${t.topic.replace(/-/g, ' ')} improved from ${alLast} to ${alThis}`;
+          break; // Just show the first major improvement found to fit the UI card
+        }
+      }
+    }
+
+    // ── FIRE RENDERER ──
+    renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subjectStats, weakTopics, student, session, activeQuest, allActivity, improvedText);
+
 // ── ACTION PLAN RENDERER (NEW) ────────────────────────────────────────────────
 
 /**
  * Safely populates the new Action Plan UI (Layer 1, 2, and 3).
  * If the new HTML elements don't exist, it safely does nothing.
  */
+
 // ── ACTION PLAN RENDERER (NEW UI/UX) ──────────────────────────────────────────
 
-function renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subjectStats, weakTopics, student, session, activeQuest, allActivity) {
-  
+function renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subjectStats, weakTopics, student, session, activeQuest, allActivity, improvedText) {  
   // 1. LAYER 1: Subject Proficiency
   const subjects = ['mathematics', 'science', 'english'];
   subjects.forEach(sub => {
@@ -968,8 +1010,7 @@ function renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subject
           <div style="height:6px; background:var(--glass-border); border-radius:3px; overflow:hidden; margin-bottom:var(--space-4);">
             <div style="height:100%; width:${pct}%; background:${colour};"></div>
           </div>
-          <button class="btn btn-ghost btn-sm btn-full" onclick="toggleDeepDive('${student.id}', '${sub}', this)">View More Details ↓</button>
-          
+          <button class="btn btn-ghost btn-sm btn-full" onclick="toggleDeepDive('${student.id}', '${sub}', this, ${stats.quizzes || 0})">View More Details ↓</button>
           <div id="deep-dive-${sub}" style="display:none; margin-top:var(--space-4); padding:var(--space-3); border-radius:var(--radius-md); background:rgba(0,0,0,0.15); border:1px solid var(--glass-border); font-size:0.9rem; color:var(--cream); line-height:1.5;">
              <div style="text-align:center; padding:var(--space-2); color:var(--sage-light);">
                <span class="spinner-sm" style="width:14px;height:14px;border-width:2px;display:inline-block;margin-right:8px;"></span> Analyzing performance...
@@ -987,13 +1028,15 @@ function renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subject
   const totalMins = Math.floor((totalSeconds % 3600) / 60);
   setText('stat-time-new', totalHours > 0 ? `${totalHours}h ${totalMins}m` : `${totalMins}m`);
   setText('stat-mastered-new', questionsMastered.toString());
-  
-  // Papers Attempted (Using length of allActivity)
   setText('stat-papers', allActivity ? allActivity.length.toString() : '0');
   
-  // Placeholder for Topics Improved (Visual UI hook)
-  // Requires historical weekly tracking to calculate dynamically. Set to static "1" for layout testing.
-  setText('stat-improved', '1');
+  // Inject the dynamic improved text and shrink the font slightly so it fits beautifully
+  const improvedEl = document.getElementById('stat-improved');
+  if (improvedEl) {
+    improvedEl.innerHTML = improvedText;
+    improvedEl.style.fontSize = '1.1rem'; 
+    improvedEl.style.lineHeight = '1.3';
+  }
 }
 
 /** Helper: MOE AL Banding */
