@@ -1050,9 +1050,9 @@ function getALBand(pct) {
   if (pct >= 20) return 'AL7';
   return 'AL8';
 }
-// ── AI ACCORDION TOGGLE ───────────────────────────────────────────────────────
+// ── AI ACCORDION TOGGLE (NO MOCK DATA) ────────────────────────────────────────
 
-window.toggleDeepDive = async function(studentId, subject, btnEl) {
+window.toggleDeepDive = async function(studentId, subject, btnEl, quizCount) {
   const container = document.getElementById(`deep-dive-${subject}`);
   
   // 1. Toggle Accordion Visibility
@@ -1065,33 +1065,18 @@ window.toggleDeepDive = async function(studentId, subject, btnEl) {
   container.style.display = 'block';
   btnEl.innerHTML = 'Hide Details ↑';
   
-  // 2. Prevent fetching again if we already have the analysis
+  // 2. Prevent refetching if already opened
   if (container.dataset.loaded) return;
 
-  try {
-    // 3. Call the backend AI endpoint (We will build this API in the next phase!)
-    /*
-    const res = await fetch('/api/analyze-weakness', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ student_id: studentId, subject: subject })
-    });
-    const data = await res.json();
-    */
-    
-    // Simulate API delay for now
-    await new Promise(r => setTimeout(r, 1200));
-    
-    // 4. Inject the AI result into the accordion
-    container.innerHTML = `
-      <strong style="color:var(--mint);display:block;margin-bottom:4px;">✨ Miss Wena's Analysis:</strong>
-      Kai is doing great with basic calculations, but is struggling specifically with <strong>Translating Word Problems into Fractions</strong>. I recommend focusing our next session on drawing Model Methods to visualize the questions.
-    `;
-    
-    // Mark as loaded so we don't spam the API if the parent opens/closes it
-    container.dataset.loaded = "true";
-    
-  } catch (err) {
-    container.innerHTML = `<span class="text-danger">Failed to load analysis. Please try again later.</span>`;
-  }
+  // Simulate a brief loading state so the UI feels responsive
+  await new Promise(r => setTimeout(r, 600));
+
+  // 3. Clean "Pending" State (No mock data)
+  container.innerHTML = `
+    <div style="text-align:center; padding:var(--space-2);">
+      <strong style="color:var(--sage-light);display:block;margin-bottom:4px;">⏳ AI Analysis Pending</strong>
+      <span class="text-secondary text-sm">Miss Wena's deep-dive analysis engine is currently being connected to the database. Check back soon for detailed insights!</span>
+    </div>
+  `;
+  container.dataset.loaded = "true";
 }
