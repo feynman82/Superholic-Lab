@@ -52,8 +52,14 @@
     <!-- Decorative glows -->
     <div aria-hidden="true" style="position:absolute; top:-60px; right:-80px; width:320px; height:320px; border-radius:50%; background: radial-gradient(circle, rgba(57,255,179,0.12) 0%, transparent 70%); pointer-events:none;"></div>
     <div aria-hidden="true" style="position:absolute; bottom:-40px; left:-60px; width:240px; height:240px; border-radius:50%; background: radial-gradient(circle, rgba(255,184,48,0.10) 0%, transparent 70%); pointer-events:none;"></div>
-
-    <div class="container" style="position:relative; z-index:1; text-align:center;">
+    
+    <!-- NEW: Student Switcher (Only visible for Family Plans) -->
+      <div id="student-selector" class="animate-in delay-2" style="display:none; margin: 0 auto var(--space-4); max-width: 240px;">
+        <select id="student-select" class="form-input" style="background: rgba(255,255,255,0.1); color: var(--cream); border-color: rgba(255,255,255,0.2); text-align: center; font-weight: 600; cursor: pointer;">
+        </select>
+      </div>
+    
+      <div class="container" style="position:relative; z-index:1; text-align:center;">
       <h1 class="animate-in delay-2" style="margin-bottom:var(--space-3);">
         <span id="student-name" style="color: var(--mint);"></span>'s Progress
       </h1>
