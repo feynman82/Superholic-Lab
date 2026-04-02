@@ -77,166 +77,51 @@
   </div>
 
   <!-- ── Main content ────────────────────────────────────────────────────── -->
-  <main class="page-content" style="padding: var(--space-8) 0 var(--space-16); min-height: 60vh;">
-    <div class="container">
+  <main id="app" class="container" style="max-width:800px; padding-top:var(--space-10); padding-bottom: 120px; margin-top: 68px;">
+    
+    <div id="progress-loading" style="text-align:center; padding: 4rem 0;">
+      <div class="spinner-sm" style="margin: 0 auto var(--space-4);"></div>
+      <p class="text-secondary">Crunching the latest data...</p>
+    </div>
 
-      <!-- Loading skeleton -->
-      <div id="progress-loading">
-        <div style="display:grid; grid-template-columns: repeat(2,1fr); gap:var(--space-4); margin-bottom:var(--space-6);">
-          <div class="card no-hover" style="padding:var(--space-6);">
-            <div class="skeleton skeleton-title" style="width:50%; margin-bottom:var(--space-3);"></div>
-            <div class="skeleton skeleton-text" style="width:70%;"></div>
-          </div>
-          <div class="card no-hover" style="padding:var(--space-6);">
-            <div class="skeleton skeleton-title" style="width:50%; margin-bottom:var(--space-3);"></div>
-            <div class="skeleton skeleton-text" style="width:70%;"></div>
-          </div>
+    <div id="progress-empty" class="card" style="text-align:center; padding:var(--space-10);" hidden>
+      <div style="font-size:3rem; margin-bottom:var(--space-4);">🚀</div>
+      <h2 style="color:var(--cream); margin-bottom:var(--space-2);">Ready for Liftoff!</h2>
+      <p class="text-secondary text-sm" style="margin-bottom:var(--space-6);">Complete your first practice paper or quiz to unlock your personalized Action Plan.</p>
+      <a href="subjects.html" class="btn btn-primary">Start Practising</a>
+    </div>
+
+    <div id="progress-content" hidden>
+      
+      <h2 style="font-family:var(--font-display); font-size:2rem; letter-spacing:.04em; color:var(--cream); margin-bottom:var(--space-4); text-transform:uppercase;">Executive Overview</h2>
+      
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:var(--space-4); margin-bottom:var(--space-8);">
+        <div class="card" style="padding:var(--space-4); text-align:center;">
+          <div class="text-secondary text-sm" style="margin-bottom:var(--space-2);">Total Practice Time</div>
+          <div id="stat-time" style="font-size:1.75rem; font-weight:700; color:var(--mint);">0h 0m</div>
+          <div class="text-secondary text-sm" style="opacity:0.7;">Past 14 days</div>
         </div>
-        <div class="card no-hover" style="padding:var(--space-8);">
-          <div class="skeleton skeleton-title" style="width:30%; margin-bottom:var(--space-6);"></div>
-          <div class="skeleton skeleton-text" style="margin-bottom:var(--space-4);"></div>
-          <div class="skeleton skeleton-text" style="margin-bottom:var(--space-4);"></div>
-          <div class="skeleton skeleton-text" style="width:80%;"></div>
+        <div class="card" style="padding:var(--space-4); text-align:center;">
+          <div class="text-secondary text-sm" style="margin-bottom:var(--space-2);">Questions Mastered</div>
+          <div id="stat-mastered" style="font-size:1.75rem; font-weight:700; color:var(--maths-colour);">0</div>
+          <div class="text-secondary text-sm" style="opacity:0.7;">Perfect scores</div>
+        </div>
+        <div class="card" style="padding:var(--space-4); text-align:center;">
+          <div class="text-secondary text-sm" style="margin-bottom:var(--space-2);">Projected AL</div>
+          <div id="stat-al" style="font-size:1.75rem; font-weight:700; color:var(--amber);">AL-</div>
+          <div class="text-secondary text-sm" style="opacity:0.7;">Based on recent avg</div>
         </div>
       </div>
 
-      <!-- Error state -->
-      <div id="progress-error" class="alert alert-danger mt-6" hidden role="alert"></div>
-
-      <!-- Empty state -->
-      <div id="progress-empty" class="text-center reveal" style="padding: var(--space-12) 0;" hidden>
-        <svg width="72" height="72" viewBox="0 0 72 72" fill="none" style="display:block; margin:0 auto var(--space-5);" aria-hidden="true">
-          <circle cx="36" cy="36" r="33" stroke="var(--glass-border)" stroke-width="2.5"/>
-          <path d="M22 50 C22 34 50 34 50 50" stroke="var(--rose)" stroke-width="2.5" stroke-linecap="round" fill="none"/>
-          <circle cx="27" cy="29" r="3.5" fill="var(--sage-light)"/>
-          <circle cx="45" cy="29" r="3.5" fill="var(--sage-light)"/>
-        </svg>
-        <h3 style="margin-bottom:var(--space-3);">No quiz history yet</h3>
-        <p class="text-secondary" style="max-width:380px; margin:0 auto var(--space-6); line-height:1.6;">
-          Complete your first quiz to start tracking accuracy, streaks, and weak topics.
-        </p>
-        <a href="subjects.html" class="btn btn-primary btn-lg">Start Your First Quiz</a>
-      </div>
-
-      <!-- ── Stats area (hidden until data loads) ──────────────────────── -->
-      <div id="progress-stats" hidden>
-
-        <!-- Student selector — only visible when parent has multiple children -->
-        <div id="student-selector" style="display:none; margin-bottom:var(--space-6);">
-          <label style="font-size:0.875rem; font-weight:600; color:var(--text-secondary); display:block; margin-bottom:var(--space-2);">Viewing progress for:</label>
-          <select id="student-select" class="form-input" style="max-width:260px;"></select>
+      <h2 style="font-family:var(--font-display); font-size:1.5rem; letter-spacing:.04em; color:var(--cream); margin-bottom:var(--space-4); text-transform:uppercase;">Recommended Focus Areas</h2>
+      <div id="needs-attention-list" style="display:flex; flex-direction:column; gap:var(--space-3); margin-bottom:var(--space-8);">
         </div>
 
-        <!-- ── Quest Map (injected by renderQuestMap() when active quest exists) ── -->
-        <div id="quest-map-section" style="display:none;" aria-live="polite"></div>
-
-        <!-- ── Summary stat cards (2-col mobile → 4-col desktop) ──────── -->
-        <div id="stat-cards-grid" style="display:grid; grid-template-columns:repeat(2,1fr); gap:var(--space-6); margin-bottom:var(--space-8);">
-
-          <div class="card no-hover reveal" style="text-align:center;">
-            <div class="card-body">
-              <div class="text-secondary text-sm" style="font-weight:600; margin-bottom:var(--space-2);">Questions Answered</div>
-              <div id="stat-total" style="font-size:2rem; font-weight:900; color:var(--maths-colour); line-height:1; margin-bottom:var(--space-3);">—</div>
-              <div class="quiz-progress-bar"><div id="bar-total" class="quiz-progress-fill" style="width:0%; background:var(--maths-colour);"></div></div>
-              <div class="text-secondary text-xs" style="margin-top:var(--space-2);">Lifetime total</div>
-            </div>
-          </div>
-
-          <div class="card no-hover reveal" style="text-align:center;">
-            <div class="card-body">
-              <div class="text-secondary text-sm" style="font-weight:600; margin-bottom:var(--space-2);">Overall Accuracy</div>
-              <div id="stat-accuracy" style="font-size:2rem; font-weight:900; line-height:1; margin-bottom:var(--space-3);">—</div>
-              <div class="quiz-progress-bar"><div id="bar-accuracy" class="quiz-progress-fill" style="width:0%;"></div></div>
-              <div class="text-secondary text-xs" style="margin-top:var(--space-2);">Across all subjects</div>
-            </div>
-          </div>
-
-          <div class="card no-hover reveal" style="text-align:center;">
-            <div class="card-body">
-              <div class="text-secondary text-sm" style="font-weight:600; margin-bottom:var(--space-2);">Current Streak</div>
-              <div id="stat-streak" style="font-size:2rem; font-weight:900; color:var(--amber); line-height:1; margin-bottom:var(--space-3);">—</div>
-              <div class="quiz-progress-bar"><div id="bar-streak" class="quiz-progress-fill" style="width:0%; background:var(--amber);"></div></div>
-              <div class="text-secondary text-xs" style="margin-top:var(--space-2);">Consecutive practice days</div>
-            </div>
-          </div>
-
-          <div class="card no-hover reveal" style="text-align:center;">
-            <div class="card-body">
-              <div class="text-secondary text-sm" style="font-weight:600; margin-bottom:var(--space-2);">Questions Today</div>
-              <div id="stat-today" style="font-size:2rem; font-weight:900; color:var(--rose); line-height:1; margin-bottom:var(--space-3);">—</div>
-              <div class="quiz-progress-bar"><div id="bar-today" class="quiz-progress-fill" style="width:0%; background:var(--rose);"></div></div>
-              <div class="text-secondary text-xs" style="margin-top:var(--space-2);">Practised today</div>
-            </div>
-          </div>
-
-        </div>
-        <style>
-          @media (min-width: 640px) { #stat-cards-grid { grid-template-columns: repeat(4, 1fr); } }
-        </style>
-
-        <!-- ── Accuracy by Subject ────────────────────────────────────── -->
-        <div class="card no-hover reveal" style="margin-bottom:var(--space-6);">
-          <div class="card-header">
-            <h3 style="margin:0;">Accuracy by Subject</h3>
-          </div>
-          <div class="card-body">
-            <div id="subject-bars"></div>
-          </div>
+      <h2 style="font-family:var(--font-display); font-size:1.5rem; letter-spacing:.04em; color:var(--cream); margin-bottom:var(--space-4); text-transform:uppercase;">Subject Breakdown</h2>
+      <div id="subject-breakdown-list" style="display:flex; flex-direction:column; gap:var(--space-4);">
         </div>
 
-        <!-- ── Topics to Work On ─────────────────────────────────────── -->
-        <div class="card no-hover reveal" id="weak-topics-card" style="margin-bottom:var(--space-6);">
-          <div class="card-header" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:var(--space-3);">
-            <div>
-              <h3 style="margin:0 0 var(--space-1);">Topics to Work On</h3>
-              <p class="text-secondary text-sm" style="margin:0;">Topics below average · minimum 5 questions · click "+ Quest" to get a personalised revision plan</p>
-            </div>
-          </div>
-          <div class="card-body">
-            <div id="weak-topics"></div>
-          </div>
-        </div>
-
-        <!-- ── Recent Quizzes ─────────────────────────────────────────── -->
-        <div class="card no-hover reveal" style="margin-bottom:var(--space-6);">
-          <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
-            <h3 style="margin:0;">Recent Quizzes</h3>
-            <a href="subjects.html" class="btn btn-secondary btn-sm">New Quiz</a>
-          </div>
-          <div class="card-body" style="padding-top:0;">
-            <div id="recent-history"></div>
-          </div>
-        </div>
-
-        <!-- ── Exam Performance ───────────────────────────────────────── -->
-        <div class="card no-hover reveal" id="exam-history-card">
-          <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:var(--space-3);">
-            <div>
-              <h3 style="margin:0 0 var(--space-1);">Exam Performance</h3>
-              <p class="text-secondary text-sm" style="margin:0;">WA · EOY · Prelim results over time</p>
-            </div>
-            <a href="exam.html" class="btn btn-secondary btn-sm">New Exam</a>
-          </div>
-          <div class="card-body" id="exam-history-body">
-            <!-- Empty state -->
-            <div id="exam-history-empty" class="text-center" style="padding:var(--space-8) 0; color:var(--text-secondary);">
-              <svg width="44" height="44" viewBox="0 0 44 44" fill="none" style="display:block; margin:0 auto var(--space-3);" aria-hidden="true">
-                <rect x="4" y="9" width="36" height="28" rx="3" stroke="var(--glass-border)" stroke-width="2"/>
-                <path d="M11 30 L18 22 L25 27 L32 17" stroke="var(--mint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <circle cx="32" cy="17" r="2.5" fill="var(--mint)"/>
-                <path d="M4 16 h36" stroke="var(--glass-border)" stroke-width="1.5"/>
-              </svg>
-              <p style="font-size:.875rem;">No exam results yet.</p>
-              <p style="font-size:.8125rem; margin-top:var(--space-1); color:var(--sage-light);">Complete a practice paper to see your performance tracked here.</p>
-            </div>
-            <!-- Exam history rows (injected by renderExamHistory) -->
-            <div id="exam-history-list" hidden></div>
-          </div>
-        </div>
-
-      </div><!-- /#progress-stats -->
-
-    </div><!-- /.container -->
+    </div>
   </main>
 
   <!-- ── Footer ─────────────────────────────────────────────────────────── -->

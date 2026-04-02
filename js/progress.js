@@ -75,7 +75,7 @@ async function init() {
     // ── Fetch quiz attempts ───────────────────────────────────────────────────
     const { data: attempts, error: attErr } = await db
       .from('quiz_attempts')
-      .select('id, subject, topic, score, total_questions, completed_at')
+      .select('id, subject, topic, score, total_questions, time_taken, completed_at')
       .eq('student_id', student.id)
       .order('completed_at', { ascending: false });
 
@@ -154,7 +154,20 @@ async function init() {
     if (activeQuest) {
       renderQuestMap(activeQuest, db);
     }
+// ── Action Plan Aggregations (NEW) ────────────────────────────────────────
+    const allActivity = [...(attempts || []), ...(examResults || [])];
+    const totalSeconds = allActivity.reduce((sum, a) => sum + (a.time_taken || a.time_taken_seconds || 0), 0);
+    
+    let questionsMastered = 0;
+    allActivity.forEach(a => {
+      // Check exams (uses total_marks)
+      if (a.total_marks && a.score === a.total_marks && a.score > 0) questionsMastered += (a.total_questions || 1);
+      // Check quizzes (uses total_questions)
+      else if (a.total_questions && a.score === a.total_questions && a.score > 0) questionsMastered += a.total_questions;
+    });
 
+    // Fire the new renderer (safely ignores missing HTML IDs)
+    renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subjectStats, weakTopics, student, session, activeQuest);
     loadingEl.hidden = true;
     statsEl.hidden   = false;
 
@@ -864,4 +877,130 @@ function renderExamHistory(exams) {
 function setText(id, value) {
   const el = document.getElementById(id);
   if (el) el.textContent = value;
+}
+// ── ACTION PLAN RENDERER (NEW) ────────────────────────────────────────────────
+
+/**
+ * Safely populates the new Action Plan UI (Layer 1, 2, and 3).
+ * If the new HTML elements don't exist, it safely does nothing.
+ */
+function renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subjectStats, weakTopics, student, session, activeQuest) {
+  // Layer 1: Overview
+  const totalHours = Math.floor(totalSeconds / 3600);
+  const totalMins = Math.floor((totalSeconds % 3600) / 60);
+  setText('stat-time', totalHours > 0 ? `${totalHours}h ${totalMins}m` : `${totalMins}m`);
+  setText('stat-mastered', questionsMastered.toString());
+  setText('stat-al', getALBand(overallPct));
+
+  // Layer 2: Needs Attention (Diagnosis)
+  const needsAttentionList = document.getElementById('needs-attention-list');
+  if (needsAttentionList) {
+    const weakHtml = weakTopics.length > 0 ? weakTopics.slice(0, 3).map(t => {
+      const topicLabel = t.topic.replace(/-/g, ' ');
+      return `
+        <div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:var(--space-3) var(--space-4); flex-wrap:wrap; gap:10px;">
+          <div>
+            <span style="font-size:1.2rem; margin-right:8px;">${t.pct < 45 ? '🔴' : '🟠'}</span>
+            <strong style="color:var(--cream); text-transform:capitalize;">${topicLabel}</strong> 
+            <span class="text-secondary text-sm">(${t.subject}) — ${t.pct}%</span>
+          </div>
+          <div style="display:flex; gap:10px;">
+             <a href="tutor.html?intent=remedial&subject=${t.subject}&topic=${t.topic}&score=${t.pct}" class="btn btn-secondary btn-sm" style="border-color:var(--rose); color:var(--rose);">Ask Miss Wena</a>
+             <button class="btn btn-primary btn-sm" onclick="generateQuest(getSupabase(), '${session?.access_token}', {id:'${student.id}', level:'${student.level}'}, '${t.topic}', '${t.subject}', ${t.pct}, '${t.lastAttemptId || ''}', this)" ${activeQuest ? 'disabled title="Complete active quest first"' : ''}>+ Plan Quest</button>
+          </div>
+        </div>`;
+    }).join('') : '<div class="card" style="padding:var(--space-4); text-align:center; color:var(--mint);">🎉 Great job! No critical weak areas detected this week.</div>';
+    
+    needsAttentionList.innerHTML = weakHtml;
+  }
+
+  // Layer 3: Subject Breakdown
+  const subjectBreakdownList = document.getElementById('subject-breakdown-list');
+  if (subjectBreakdownList) {
+    const subjectHtml = Object.entries(subjectStats).map(([sub, stats]) => {
+      const pct = stats.accuracy || 0;
+      if (pct === 0 && stats.quizzes === 0) return '';
+      const band = getALBand(pct);
+      const colour = pct >= 75 ? 'var(--mint)' : pct >= 50 ? 'var(--amber)' : 'var(--danger)';
+      
+      return `
+        <div class="card" style="padding:var(--space-4);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-2);">
+            <strong style="font-size:1.2rem; color:var(--cream); text-transform:capitalize;">${sub}</strong>
+            <span class="badge ${pct >= 75 ? 'badge-success' : pct >= 50 ? 'badge-amber' : 'badge-danger'}">${pct}% correct · ${band}</span>
+          </div>
+          <div style="height:6px; background:var(--glass-border); border-radius:3px; overflow:hidden; margin-bottom:var(--space-4);">
+            <div style="height:100%; width:${pct}%; background:${colour};"></div>
+          </div>
+          
+          <button class="btn btn-ghost btn-sm btn-full" onclick="toggleDeepDive('${student.id}', '${sub}', this)">View More Details ↓</button>
+          
+          <div id="deep-dive-${sub}" style="display:none; margin-top:var(--space-4); padding:var(--space-3); border-radius:var(--radius-md); background:rgba(0,0,0,0.15); border:1px solid var(--glass-border); font-size:0.9rem; color:var(--cream); line-height:1.5;">
+             <div style="text-align:center; padding:var(--space-2); color:var(--sage-light);">
+               <span class="spinner-sm" style="width:14px;height:14px;border-width:2px;display:inline-block;margin-right:8px;"></span> Analyzing performance...
+             </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+    
+    subjectBreakdownList.innerHTML = subjectHtml || '<p class="text-secondary">No subject data yet.</p>';
+  }
+}
+
+/** Helper: MOE AL Banding */
+function getALBand(pct) {
+  if (pct >= 90) return 'AL1';
+  if (pct >= 85) return 'AL2';
+  if (pct >= 80) return 'AL3';
+  if (pct >= 75) return 'AL4';
+  if (pct >= 65) return 'AL5';
+  if (pct >= 45) return 'AL6';
+  if (pct >= 20) return 'AL7';
+  return 'AL8';
+}
+// ── AI ACCORDION TOGGLE ───────────────────────────────────────────────────────
+
+window.toggleDeepDive = async function(studentId, subject, btnEl) {
+  const container = document.getElementById(`deep-dive-${subject}`);
+  
+  // 1. Toggle Accordion Visibility
+  if (container.style.display === 'block') {
+    container.style.display = 'none';
+    btnEl.innerHTML = 'View More Details ↓';
+    return;
+  }
+  
+  container.style.display = 'block';
+  btnEl.innerHTML = 'Hide Details ↑';
+  
+  // 2. Prevent fetching again if we already have the analysis
+  if (container.dataset.loaded) return;
+
+  try {
+    // 3. Call the backend AI endpoint (We will build this API in the next phase!)
+    /*
+    const res = await fetch('/api/analyze-weakness', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ student_id: studentId, subject: subject })
+    });
+    const data = await res.json();
+    */
+    
+    // Simulate API delay for now
+    await new Promise(r => setTimeout(r, 1200));
+    
+    // 4. Inject the AI result into the accordion
+    container.innerHTML = `
+      <strong style="color:var(--mint);display:block;margin-bottom:4px;">✨ Miss Wena's Analysis:</strong>
+      Kai is doing great with basic calculations, but is struggling specifically with <strong>Translating Word Problems into Fractions</strong>. I recommend focusing our next session on drawing Model Methods to visualize the questions.
+    `;
+    
+    // Mark as loaded so we don't spam the API if the parent opens/closes it
+    container.dataset.loaded = "true";
+    
+  } catch (err) {
+    container.innerHTML = `<span class="text-danger">Failed to load analysis. Please try again later.</span>`;
+  }
 }

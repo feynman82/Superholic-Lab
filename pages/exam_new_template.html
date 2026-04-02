@@ -3,36 +3,25 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Practice Paper — Superholic Lab</title>
+  <title>App Master — Superholic Lab</title>
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="icon" href="../assets/favicon.ico" />
-  <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js"></script>
+  
   <script type="module">
     import { guardPage } from '/js/auth.js';
-    await guardPage(True); 
-  </script>
-  <script type="module">
-    import { guardPage } from '/js/auth.js';
-    import { initAppShell } from '/js/app-shell.js';
-    
-    // We fetch the profile/session exactly ONE time here.
-    const profile = await guardPage(true); 
-    
-    // Pass it to the shell to instantly set up the Navbar and CSS padding.
-    // (If profile exists, they are logged in. If null, they are guest).
-    initAppShell(profile); 
+    await guardPage(false); 
   </script>
 </head>
-<body class="has-bottom-nav">
 
-  <!-- ── NAVBAR ── -->
+<body id="mainBody">
+
 <header class="navbar navbar-homepage" id="navbar" style="justify-content: space-between;">
     
     <a href="../index.html" class="navbar-logo">
       <img src="../assets/logo.svg" width="32" height="32" alt="Superholic Lab">
       Superholic Lab
     </a>
-    <div id="exam-timer" aria-live="polite" aria-label="Time remaining"></div>
+
     <div class="navbar-actions">
       <div id="auth-header-container">
         <a href="login.html" class="btn btn-secondary btn-sm">Log In</a>
@@ -53,7 +42,6 @@
       </div>
     </div>
   </header>
-
 
   <!-- ── OVERLAY: CREDENTIAL LOAD ── -->
   <div id="ov-load" class="full-overlay" hidden>
@@ -80,7 +68,6 @@
     <p class="text-secondary text-sm">AI-powered semantic grading in progress</p>
   </div>
 
-  <!-- ── MAIN APP ── -->
   <main id="app" class="container" style="max-width:680px;padding-top:var(--space-10);padding-bottom:var(--space-16);margin-top: 68px; min-height: 80vh;"></main>
 
   <footer class="footer">
@@ -96,29 +83,96 @@
     </div>
   </footer>
 
-  <!-- ── BOTTOM NAV ── -->
-  <nav class="bottom-nav" aria-label="Mobile navigation">
+  <nav class="bottom-nav" id="bottomNav" hidden>
     <a href="subjects.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
       Practise
     </a>
     <a href="tutor.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
       AI Tutor
     </a>
-    <a href="exam.html" class="bottom-nav-item is-active">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="M9 12h6M9 16h4"/></svg>
+    <a href="exam.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="M9 12h6M9 16h4"/></svg>
       Exam
     </a>
     <a href="progress.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
       Progress
     </a>
   </nav>
 
   <script src="../js/supabase-client.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      /* ── 1. Dropdown Toggle Logic ── */
+      const toggle = document.getElementById('navToggle');
+      const dropdown = document.getElementById('navDropdown');
+      
+      if (toggle && dropdown) {
+        toggle.addEventListener('click', (e) => {
+          e.stopPropagation();
+          dropdown.classList.toggle('is-open');
+          toggle.classList.toggle('is-active'); 
+        });
+        document.addEventListener('click', (e) => {
+          if (!dropdown.contains(e.target) && !toggle.contains(e.target)) {
+            dropdown.classList.remove('is-open');
+            toggle.classList.remove('is-active');
+          }
+        });
+      }
+
+      /* ── 2. Master Auth & Layout Logic ── */
+      getSupabase().then(async function(sb) {
+        try {
+          const { data: { session } } = await sb.auth.getSession();
+          const body = document.getElementById('mainBody');
+          const bottomNav = document.getElementById('bottomNav');
+          const authContainer = document.getElementById('auth-header-container');
+          const navLinks = document.getElementById('navLinks');
+
+          if (session) {
+            // User is Logged In: Inject UI classes and reveal sidebar
+            body.classList.add('is-logged-in', 'has-bottom-nav');
+            if (bottomNav) bottomNav.hidden = false;
+            
+            if (authContainer) {
+              authContainer.innerHTML = '<a href="dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a>';
+            }
+
+            if (navLinks && !document.getElementById('navSignOut')) {
+              const signOut = document.createElement('a');
+              signOut.id = "navSignOut";
+              signOut.href = "#";
+              signOut.textContent = "Sign Out";
+              signOut.style.color = "var(--rose)";
+              signOut.onclick = async (e) => { 
+                e.preventDefault();
+                await sb.auth.signOut(); 
+                window.location.href = '../index.html'; 
+              };
+              navLinks.appendChild(signOut);
+              
+              const signUpLink = document.getElementById('navSignUp');
+              if (signUpLink) signUpLink.remove();
+            }
+          } else {
+            // User is Guest: Ensure app-specific layout shifts are disabled
+            body.classList.remove('is-logged-in', 'has-bottom-nav');
+            if (bottomNav) bottomNav.hidden = true;
+          }
+        } catch (e) {
+          console.error('Master auth script failed:', e);
+        }
+      });
+    });
+  </script>
+
+  <script src="../js/supabase-client.js"></script>
   <script src="../js/exam-templates.js"></script>
   <script src="../js/exam-generator.js"></script>
+
   <script>
   /* ─────────────────────────────────────────────────────────────────────────
    * EXAM ENGINE — Linear State-Machine
@@ -137,7 +191,6 @@
       subjectKey: '',      // 'mathematics'
       tier:       '',      // subscription_tier
       examType:   '',      // 'WA1' | 'WA2' | 'WA3' | 'EOY' | 'PRELIM'
-      studentId:  null,    // students.id — used for exam_results insert
       paper:      null,
       answers:    {},
       graded:     null,
@@ -281,15 +334,14 @@
           + '</div>';
       }).join('');
 
-      app.innerHTML = `
-        <div class="wizard-step is-active">
-          <div style="margin-bottom:var(--space-8); text-align:center;">
-            <span class="section-label-tag">Step 1 of 2</span>
-            <h1 style="font-family:var(--font-display);font-size:2.5rem;letter-spacing:.04em;color:var(--cream);margin-top:var(--space-3);text-transform:uppercase;">Choose a Subject</h1>
-            <p class="text-secondary text-sm" style="margin-top:var(--space-2);">Primary ${esc(levelNum)} — select the subject to practise</p>
-          </div>
-          <div class="subject-grid">${cards}</div>
-        </div>`;
+      app.innerHTML = '<div class="wizard-step is-active">'
+        + '<div style="margin-bottom:var(--space-8);">'
+        + '<span class="section-label-tag">Step 1 of 2</span>'
+        + '<h1 style="font-family:var(--font-display);font-size:2.5rem;letter-spacing:.04em;color:var(--cream);margin-top:var(--space-3);">Choose a Subject</h1>'
+        + '<p class="text-secondary text-sm" style="margin-top:var(--space-2);">Primary ' + esc(levelNum) + ' — select the subject to practise</p>'
+        + '</div>'
+        + '<div class="subject-grid">' + cards + '</div>'
+        + '</div>';
 
       app.querySelectorAll('.subject-card').forEach(function (card) {
         card.addEventListener('click', function () {
@@ -320,18 +372,17 @@
         ? '<button id="back-btn" class="btn btn-ghost btn-full" style="margin-top:var(--space-3);">← Back to Subjects</button>'
         : '';
 
-      app.innerHTML = `
-        <div class="wizard-step is-active">
-          <div style="margin-bottom:var(--space-8); text-align:center;">
-            <span class="section-label-tag">${stepLabel}</span>
-            <h1 style="font-family:var(--font-display);font-size:2.5rem;letter-spacing:.04em;color:var(--cream);margin-top:var(--space-3);text-transform:uppercase;">Select Paper Type</h1>
-          </div>
-          <div id="confirm-banner" class="confirm-banner">${confirmText()}</div>
-          <div class="type-grid" id="type-grid">${chips}</div>
-          <div class="blueprint-card" id="bp-card">${blueprintHTML(state.subjectKey, state.levelKey, state.examType)}</div>
-          <button id="gen-btn" class="btn btn-primary btn-full btn-lg mt-4">Generate Paper →</button>
-          ${backBtn}
-        </div>`;
+      app.innerHTML = '<div class="wizard-step is-active">'
+        + '<div style="margin-bottom:var(--space-6);">'
+        + '<span class="section-label-tag">' + stepLabel + '</span>'
+        + '<h1 style="font-family:var(--font-display);font-size:2.5rem;letter-spacing:.04em;color:var(--cream);margin-top:var(--space-3);">Select Paper Type</h1>'
+        + '</div>'
+        + '<div id="confirm-banner" class="confirm-banner">' + confirmText() + '</div>'
+        + '<div class="type-grid" id="type-grid">' + chips + '</div>'
+        + '<div class="blueprint-card" id="bp-card">' + blueprintHTML(state.subjectKey, state.levelKey, state.examType) + '</div>'
+        + '<button id="gen-btn" class="btn btn-primary btn-full btn-lg">Generate Paper →</button>'
+        + backBtn
+        + '</div>';
 
       app.querySelectorAll('.type-chip').forEach(function (chip) {
         function activate() {
@@ -625,41 +676,8 @@
       });
 
       Promise.all(queue).then(function () {
-        saveExamResult(graded);   // non-blocking — fire and forget
         setState({ phase: 'RESULTS', graded: graded });
       });
-    }
-
-    // ── SAVE EXAM RESULT ─────────────────────────────────────────────────────
-    /**
-     * Persists the completed exam to exam_results in Supabase.
-     * Non-blocking: called without await so grading screen moves on immediately.
-     * Silently logs on failure — never blocks the results UI.
-     */
-    async function saveExamResult(graded) {
-      if (!state.studentId) return;
-      try {
-        var sb       = await getSupabase();
-        var earned   = graded.reduce(function(s, r) { return s + (r.earned || 0); }, 0);
-        var possible = graded.reduce(function(s, r) { return s + r.max; }, 0);
-        // Time elapsed = full duration minus remaining seconds
-        var timeTaken = (state.paper && state.paper.duration)
-          ? (state.paper.duration * 60) - state.timeLeft
-          : null;
-
-        await sb.from('exam_results').insert({
-          student_id:          state.studentId,
-          subject:             state.subject,
-          level:               state.level,
-          exam_type:           state.examType || 'PRACTICE',
-          score:               earned,
-          total_marks:         possible,
-          questions_attempted: graded.length,
-          time_taken:          (timeTaken !== null && timeTaken >= 0) ? timeTaken : null,
-        });
-      } catch (err) {
-        console.error('[exam] saveExamResult failed:', err);
-      }
     }
 
     // ── PHASE: RESULTS ───────────────────────────────────────────────────────
@@ -745,19 +763,18 @@
 
         var results = await Promise.all([
           sb.from('profiles').select('subscription_tier').eq('id', user.id).single(),
-          sb.from('students').select('id,level,selected_subject').eq('parent_id', user.id).single(),
+          sb.from('students').select('level,selected_subject').eq('parent_id', user.id).single(),
         ]);
 
-        var tier      = (results[0].data && results[0].data.subscription_tier) || 'trial';
-        var level     = (results[1].data && results[1].data.level)             || 'Primary 4';
-        var levelKey  = level.toLowerCase().replace(' ', '-');
-        var studentId = (results[1].data && results[1].data.id)               || null;
+        var tier     = (results[0].data && results[0].data.subscription_tier) || 'trial';
+        var level    = (results[1].data && results[1].data.level)             || 'Primary 4';
+        var levelKey = level.toLowerCase().replace(' ', '-');
 
         if (tier === 'single_subject') {
-          var sub = (results[1].data && results[1].data.selected_subject) || 'Mathematics';
-          setState({ phase: 'TYPE', tier: tier, level: level, levelKey: levelKey, subject: sub, subjectKey: sub.toLowerCase(), studentId: studentId });
+          var sub    = (results[1].data && results[1].data.selected_subject) || 'Mathematics';
+          setState({ phase: 'TYPE', tier: tier, level: level, levelKey: levelKey, subject: sub, subjectKey: sub.toLowerCase() });
         } else {
-          setState({ phase: 'SUBJECT', tier: tier, level: level, levelKey: levelKey, studentId: studentId });
+          setState({ phase: 'SUBJECT', tier: tier, level: level, levelKey: levelKey });
         }
 
       } catch (err) {
@@ -790,6 +807,6 @@
    11. Timer counts down in navbar — amber ≤5 min, red ≤1 min, auto-submit at 0
    12. Submit → AI grading overlay → results screen
    13. Results: correct=mint border, partial=amber, wrong=red, pending=grey
-   14. Retry clears exam cache and returns to SUBJECT or TYPE step -->
+   14. Retry clears exam cache and returns to SUBJECT or TYPE step -->  
 </body>
 </html>

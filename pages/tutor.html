@@ -316,5 +316,32 @@
       });
     });
   </script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      
+      if (urlParams.get('intent') === 'remedial') {
+        const topic = urlParams.get('topic').replace(/-/g, ' ');
+        const score = urlParams.get('score');
+        
+        // 1. Show a friendly banner to the student
+        const chatArea = document.getElementById('chat-messages'); // Assuming this is your chat container ID
+        if (chatArea) {
+          const banner = document.createElement('div');
+          banner.className = 'card';
+          banner.style.cssText = 'background: rgba(183,110,121,0.1); border-left: 4px solid var(--rose); padding: var(--space-3); margin-bottom: var(--space-4); text-align:center;';
+          banner.innerHTML = `<strong style="color:var(--rose);">Remedial Session: ${topic.toUpperCase()}</strong><br><span class="text-secondary text-sm">Miss Wena has prepared a special lesson for you!</span>`;
+          chatArea.appendChild(banner);
+        }
+
+        // 2. Secretly inject the system prompt into your chat state
+        // (You will need to pass this string into whatever function you use to send messages to the /api/chat endpoint)
+        const systemInjection = `SYSTEM INSTRUCTION: The student scored ${score}% in ${topic}. Initiate a friendly, highly-encouraging remedial session. Do NOT give them a quiz yet. Explain the basics of ${topic} using the Singapore Model Method, then ask a simple checking question to see if they understand.`;
+        
+        // Example execution (Depends on how your tutor.js is wired):
+        // window.sendToAI(systemInjection, { isHiddenSystemMessage: true });
+      }
+    });
+  </script>
 </body>
 </html>
