@@ -635,16 +635,22 @@
                 method:  'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
+                  questionId:     q.id,
                   questionType:   q.type,
                   questionText:   q.question_text,
+                  subject:        state.subject,          // <-- Added Context
+                  level:          state.level,            // <-- Added Context
                   correctAnswer:  q.correct_answer || q.model_answer || '',
+                  modelAnswer:    q.model_answer || '',   // <-- Added Context
                   keywords:       q.keywords || [],
                   workedSolution: q.worked_solution || '',
+                  parts:          q.parts || [],          // <-- Added Context
                   studentAnswer:  typeof sa === 'object' ? JSON.stringify(sa) : String(sa || ''),
-                  maxMarks:       q.marks,
+                  marks:          q.marks,                // <-- Matches backend perfectly
                 }),
               })
               .then(function (res) { return res.json(); })
+              // ... keep the rest below exactly as it is
               .then(function (data) {
                 graded[idx].earned = data.score || 0;
                 graded[idx].fb     = data.feedback || '';
