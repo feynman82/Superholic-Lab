@@ -890,23 +890,32 @@ import { getCurrentUser, enforcePaywall, checkDailyUsage } from '/js/auth.js';
     }
 
     // Increment daily usage counter
-    if (typeof checkDailyUsage === 'function') {
-      const usage = await checkDailyUsage(currentStudentId);
-      const db2   = await getSupabase();
-      const today = new Date().toISOString().slice(0, 10);
-      const newCount = (usage.questions_attempted || 0) + answers.length;
-      if (!usage.id) {
-        await db2.from('daily_usage').insert({
-          student_id:          currentStudentId,
-          date:                today,
-          questions_attempted: newCount,
-        });
-      } else {
-        await db2.from('daily_usage')
-          .update({ questions_attempted: newCount })
-          .eq('student_id', currentStudentId)
-          .eq('date', today);
-      }
+    const db2   = await getSupabase();
+    const today = new Date().toISOString().slice(0, 10);
+    
+    // 1. Safely check the database directly to see if a row exists for today
+    const { data: existingUsage } = await db2
+      .from('daily_usage')
+      .select('id, questions_attempted')
+      .eq('student_id', currentStudentId)
+      .eq('date', today)
+      .maybeSingle();
+
+    const newCount = (existingUsage?.questions_attempted || 0) + answers.length;
+
+    // 2. Insert or Update based on actual database state
+    if (!existingUsage) {
+      // No record today, safely insert
+      await db2.from('daily_usage').insert({
+        student_id:          currentStudentId,
+        date:                today,
+        questions_attempted: newCount,
+      });
+    } else {
+      // Record exists, update it using its exact ID
+      await db2.from('daily_usage')
+        .update({ questions_attempted: newCount })
+        .eq('id', existingUsage.id);
     }
   }
 

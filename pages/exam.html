@@ -163,6 +163,34 @@
       Object.assign(state, updates);
       render();
     }
+    
+    // ── ANSWER NORMALIZATION ─────────────────────────────────────────────────
+    function normalizeAnswer(str) {
+      if (!str) return '';
+      var s = String(str).toLowerCase().trim();
+      
+      // 1. Remove all spaces and commas (so "1,000" becomes "1000", and "1 hr" becomes "1hr")
+      s = s.replace(/[\s,]+/g, '');
+      
+      // 2. Standardize Time Units
+      s = s.replace(/hours|hour|hrs|hr/g, 'h');
+      s = s.replace(/minutes|minute|mins/g, 'min');
+      s = s.replace(/seconds|second|secs|sec/g, 's');
+      
+      // 3. Standardize Metric Units
+      s = s.replace(/kilograms|kilogram|kgs/g, 'kg');
+      s = s.replace(/grams|gram|gms|gm/g, 'g');
+      s = s.replace(/centimetres|centimeters|centimetre|centimeter|cms/g, 'cm');
+      s = s.replace(/metres|meters|metre|meter/g, 'm');
+      s = s.replace(/litres|liters|litre|liter/g, 'l');
+      s = s.replace(/millilitres|milliliters|millilitre|milliliter|mls/g, 'ml');
+      
+      // 4. Standardize Currency
+      s = s.replace(/dollars|dollar/g, '$');
+      s = s.replace(/cents|cent/g, 'c');
+      
+      return s;
+    }
 
     // ── TIMER ────────────────────────────────────────────────────────────────
     function startTimer(seconds) {
@@ -565,8 +593,11 @@
             graded.push(r);
 
           } else if (q.type === 'short_ans') {
-            var accepted = [q.correct_answer].concat(q.accept_also || []).map(function (a) { return String(a).trim().toLowerCase(); });
-            var correct  = accepted.indexOf(String(sa).toLowerCase()) !== -1;
+            // Normalize both the student's answer and all accepted answers
+            var normSa = normalizeAnswer(sa);
+            var accepted = [q.correct_answer].concat(q.accept_also || []).map(normalizeAnswer);
+            
+            var correct  = accepted.indexOf(normSa) !== -1;
             r.earned = correct ? q.marks : 0;
             r.status = correct ? 'correct' : 'wrong';
             graded.push(r);
