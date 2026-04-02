@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', init);
 
 async function init() {
   const loadingEl = document.getElementById('progress-loading');
-  const statsEl   = document.getElementById('progress-stats');
+  const statsEl   = document.getElementById('progress-stats') || document.getElementById('progress-content');
   const emptyEl   = document.getElementById('progress-empty');
   const errorEl   = document.getElementById('progress-error');
 
