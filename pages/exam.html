@@ -9,10 +9,6 @@
   <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js"></script>
   <script type="module">
     import { guardPage } from '/js/auth.js';
-    await guardPage(True); 
-  </script>
-  <script type="module">
-    import { guardPage } from '/js/auth.js';
     import { initAppShell } from '/js/app-shell.js';
     
     // We fetch the profile/session exactly ONE time here.
@@ -485,10 +481,14 @@
     }
 
     function renderEditing(q) {
-      var lines = q.passage_lines.map(function (line) {
+      var lines = (q.passage_lines || []).map(function (line) {
         var textEsc = esc(line.text);
-        var wordEsc = esc(line.underlined_word);
-        var highlighted = textEsc.split(wordEsc).join('<span class="edit-uw">' + wordEsc + '</span>');
+        // Fallback to wrong_word if underlined_word is missing in the JSON
+        var wordEsc = esc(line.underlined_word || line.wrong_word || ''); 
+        
+        // Only attempt to highlight if a word actually exists to prevent infinite span loops
+        var highlighted = wordEsc ? textEsc.split(wordEsc).join('<span class="edit-uw">' + wordEsc + '</span>') : textEsc;
+        
         return '<div class="edit-line">'
           + '<span class="edit-lnum">' + line.line_number + '.</span>'
           + '<span class="edit-text">' + highlighted + '</span>'
@@ -584,7 +584,11 @@
             var editScore = 0;
             q.passage_lines.forEach(function (line) {
               var given = sa && sa[line.line_number] ? sa[line.line_number].trim().toLowerCase() : '';
-              if (given === line.correct_word.toLowerCase()) editScore++;
+              
+              // Safely check correct_word, correct_answer, or answer keys to match whatever is in your JSON
+              var expected = (line.correct_word || line.correct_answer || line.answer || '').toString().trim().toLowerCase();
+              
+              if (expected && given === expected) editScore++;
             });
             r.earned = editScore;
             r.status = editScore === q.passage_lines.length ? 'correct' : editScore > 0 ? 'partial' : 'wrong';
