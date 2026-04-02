@@ -75,7 +75,7 @@ async function init() {
     // ── Fetch quiz attempts ───────────────────────────────────────────────────
     const { data: attempts, error: attErr } = await db
       .from('quiz_attempts')
-      .select('id, subject, topic, score, total_questions, time_taken, completed_at')
+      .select('id, subject, topic, score, total_questions, time_taken_seconds, completed_at')
       .eq('student_id', student.id)
       .order('completed_at', { ascending: false });
 
