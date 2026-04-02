@@ -167,8 +167,7 @@ async function init() {
     });
 
     // Fire the new renderer (safely ignores missing HTML IDs)
-    renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subjectStats, weakTopics, student, session, activeQuest);
-    loadingEl.hidden = true;
+    renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subjectStats, weakTopics, student, session, activeQuest, allActivity);    loadingEl.hidden = true;
     statsEl.hidden   = false;
 
   } catch (err) {
@@ -884,42 +883,79 @@ function setText(id, value) {
  * Safely populates the new Action Plan UI (Layer 1, 2, and 3).
  * If the new HTML elements don't exist, it safely does nothing.
  */
-function renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subjectStats, weakTopics, student, session, activeQuest) {
-  // Layer 1: Overview
-  const totalHours = Math.floor(totalSeconds / 3600);
-  const totalMins = Math.floor((totalSeconds % 3600) / 60);
-  setText('stat-time', totalHours > 0 ? `${totalHours}h ${totalMins}m` : `${totalMins}m`);
-  setText('stat-mastered', questionsMastered.toString());
-  setText('stat-al', getALBand(overallPct));
+// ── ACTION PLAN RENDERER (NEW UI/UX) ──────────────────────────────────────────
 
-  // Layer 2: Needs Attention (Diagnosis)
-  const needsAttentionList = document.getElementById('needs-attention-list');
-  if (needsAttentionList) {
-    const weakHtml = weakTopics.length > 0 ? weakTopics.slice(0, 3).map(t => {
-      const topicLabel = t.topic.replace(/-/g, ' ');
-      return `
-        <div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:var(--space-3) var(--space-4); flex-wrap:wrap; gap:10px;">
-          <div>
-            <span style="font-size:1.2rem; margin-right:8px;">${t.pct < 45 ? '🔴' : '🟠'}</span>
-            <strong style="color:var(--cream); text-transform:capitalize;">${topicLabel}</strong> 
-            <span class="text-secondary text-sm">(${t.subject}) — ${t.pct}%</span>
-          </div>
-          <div style="display:flex; gap:10px;">
-             <a href="tutor.html?intent=remedial&subject=${t.subject}&topic=${t.topic}&score=${t.pct}" class="btn btn-secondary btn-sm" style="border-color:var(--rose); color:var(--rose);">Ask Miss Wena</a>
-             <button class="btn btn-primary btn-sm" onclick="generateQuest(getSupabase(), '${session?.access_token}', {id:'${student.id}', level:'${student.level}'}, '${t.topic}', '${t.subject}', ${t.pct}, '${t.lastAttemptId || ''}', this)" ${activeQuest ? 'disabled title="Complete active quest first"' : ''}>+ Plan Quest</button>
-          </div>
-        </div>`;
-    }).join('') : '<div class="card" style="padding:var(--space-4); text-align:center; color:var(--mint);">🎉 Great job! No critical weak areas detected this week.</div>';
+function renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subjectStats, weakTopics, student, session, activeQuest, allActivity) {
+  
+  // 1. LAYER 1: Subject Proficiency
+  const subjects = ['mathematics', 'science', 'english'];
+  subjects.forEach(sub => {
+    const stats = subjectStats[sub];
+    const pctEl = document.getElementById(`stat-${sub}-pct`);
+    const alEl = document.getElementById(`stat-${sub}-al`);
+
+    if (stats && stats.total > 0) {
+      const pct = Math.round((stats.earned / stats.total) * 100);
+      const al = getALBand(pct);
+      if (pctEl) pctEl.textContent = pct + '%';
+      if (alEl) {
+        alEl.textContent = al;
+        alEl.className = `badge ${pct >= 75 ? 'badge-success' : pct >= 50 ? 'badge-amber' : 'badge-danger'}`;
+      }
+    } else {
+      if (pctEl) pctEl.textContent = '-';
+      if (alEl) {
+        alEl.textContent = '-';
+        alEl.className = 'badge';
+      }
+    }
+  });
+
+  // 2. LAYER 2: Areas of Weakness (Grouped by Subject, AL2 and worse / < 85%)
+  const weaknessList = document.getElementById('areas-of-weakness-list');
+  if (weaknessList) {
+    const weakHtml = [];
     
-    needsAttentionList.innerHTML = weakHtml;
+    subjects.forEach(sub => {
+      // Filter for this subject, score < 85% (AL2-AL8), sort lowest to highest, limit top 3
+      const subTopics = weakTopics
+        .filter(t => t.subject.toLowerCase() === sub && t.pct < 85)
+        .sort((a, b) => a.pct - b.pct)
+        .slice(0, 3);
+
+      if (subTopics.length > 0) {
+        const colorVar = `var(--${sub === 'mathematics' ? 'maths' : sub}-colour)`;
+        // Add Subject Header
+        weakHtml.push(`<h3 style="color:${colorVar}; font-size:0.9rem; text-transform:uppercase; letter-spacing:1px; margin:var(--space-2) 0 0 0;">${sub}</h3>`);
+        
+        // Add Topic Cards
+        subTopics.forEach(t => {
+          const topicLabel = t.topic.replace(/-/g, ' ');
+          weakHtml.push(`
+            <div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:var(--space-3) var(--space-4); flex-wrap:wrap; gap:10px;">
+              <div>
+                <span style="font-size:1.2rem; margin-right:8px;">${t.pct < 45 ? '🔴' : '🟠'}</span>
+                <strong style="color:var(--cream); text-transform:capitalize;">${topicLabel}</strong> 
+                <span class="text-secondary text-sm"> — ${t.pct}% (${getALBand(t.pct)})</span>
+              </div>
+              <div style="display:flex; gap:10px;">
+                 <a href="tutor.html?intent=remedial&subject=${t.subject}&topic=${t.topic}&score=${t.pct}" class="btn btn-secondary btn-sm" style="border-color:var(--rose); color:var(--rose);">Ask Miss Wena</a>
+                 <button class="btn btn-primary btn-sm" onclick="generateQuest(getSupabase(), '${session?.access_token}', {id:'${student.id}', level:'${student.level}'}, '${t.topic}', '${t.subject}', ${t.pct}, '${t.lastAttemptId || ''}', this)" ${activeQuest ? 'disabled title="Complete active quest first"' : ''}>+ Plan Quest</button>
+              </div>
+            </div>`);
+        });
+      }
+    });
+
+    weaknessList.innerHTML = weakHtml.length > 0 ? weakHtml.join('') : '<div class="card" style="padding:var(--space-4); text-align:center; color:var(--mint);">🎉 Excellent! No weak areas detected (All topics AL1).</div>';
   }
 
-  // Layer 3: Subject Breakdown
+  // 3. LAYER 3: Subject Breakdown & Deep Dive
   const subjectBreakdownList = document.getElementById('subject-breakdown-list');
   if (subjectBreakdownList) {
     const subjectHtml = Object.entries(subjectStats).map(([sub, stats]) => {
-      const pct = stats.accuracy || 0;
-      if (pct === 0 && stats.quizzes === 0) return '';
+      const pct = stats.total > 0 ? Math.round((stats.earned / stats.total) * 100) : 0;
+      if (pct === 0 && stats.total === 0) return '';
       const band = getALBand(pct);
       const colour = pct >= 75 ? 'var(--mint)' : pct >= 50 ? 'var(--amber)' : 'var(--danger)';
       
@@ -932,7 +968,6 @@ function renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subject
           <div style="height:6px; background:var(--glass-border); border-radius:3px; overflow:hidden; margin-bottom:var(--space-4);">
             <div style="height:100%; width:${pct}%; background:${colour};"></div>
           </div>
-          
           <button class="btn btn-ghost btn-sm btn-full" onclick="toggleDeepDive('${student.id}', '${sub}', this)">View More Details ↓</button>
           
           <div id="deep-dive-${sub}" style="display:none; margin-top:var(--space-4); padding:var(--space-3); border-radius:var(--radius-md); background:rgba(0,0,0,0.15); border:1px solid var(--glass-border); font-size:0.9rem; color:var(--cream); line-height:1.5;">
@@ -946,6 +981,19 @@ function renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subject
     
     subjectBreakdownList.innerHTML = subjectHtml || '<p class="text-secondary">No subject data yet.</p>';
   }
+
+  // 4. LAYER 4: Statistics
+  const totalHours = Math.floor(totalSeconds / 3600);
+  const totalMins = Math.floor((totalSeconds % 3600) / 60);
+  setText('stat-time-new', totalHours > 0 ? `${totalHours}h ${totalMins}m` : `${totalMins}m`);
+  setText('stat-mastered-new', questionsMastered.toString());
+  
+  // Papers Attempted (Using length of allActivity)
+  setText('stat-papers', allActivity ? allActivity.length.toString() : '0');
+  
+  // Placeholder for Topics Improved (Visual UI hook)
+  // Requires historical weekly tracking to calculate dynamically. Set to static "1" for layout testing.
+  setText('stat-improved', '1');
 }
 
 /** Helper: MOE AL Banding */
