@@ -3,188 +3,459 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>App Master — Superholic Lab</title>
+  <title>Dashboard — Superholic Lab</title>
+  
+  <!-- Fonts & Styles -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="icon" href="../assets/favicon.ico" />
+  
   <script src="../js/supabase-client.js"></script>
   <script type="module">
     import { guardPage } from '/js/auth.js';
     import { initAppShell } from '/js/app-shell.js';
     
     // We fetch the profile/session exactly ONE time here.
-    const profile = await guardPage(true); 
+    window.userProfile = await guardPage(true); 
     
     // Pass it to the shell to instantly set up the Navbar and CSS padding.
-    // (If profile exists, they are logged in. If null, they are guest).
-    initAppShell(profile); 
+    if(typeof initAppShell === 'function') {
+      initAppShell(window.userProfile); 
+    }
   </script>
-  </head>
 
-<body id="mainBody">
-
-<header class="navbar navbar-homepage" id="navbar" style="justify-content: space-between;">
+  <style>
+    /* Modal Backdrop */
+    .modal-backdrop {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(44, 62, 58, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+    .modal-backdrop.is-open {
+      opacity: 1;
+      pointer-events: auto;
+    }
     
-    <a href="../index.html" class="navbar-logo">
-      <img src="../assets/logo.svg" width="32" height="32" alt="Superholic Lab">
-      Superholic Lab
-    </a>
+    /* Modal Card Animation */
+    .modal-card {
+      transform: translateY(20px);
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      width: 100%;
+      max-width: 400px;
+    }
+    .modal-backdrop.is-open .modal-card {
+      transform: translateY(0);
+    }
+  </style>
+</head>
 
-    <div class="navbar-actions">
-      <span class="plan-badge" id="planBadge"></span>   
-      <div id="auth-header-container">
-        <a href="login.html" class="btn btn-secondary btn-sm">Log In</a>
+<body class="has-bottom-nav">
+
+<!-- ═══════════════════ GLOBAL NAVBAR (Darker Sage) ═══════════════════ -->
+<header class="navbar justify-between bg-sage-dark" id="navbar">
+  <a href="../index.html" class="flex items-center gap-2 font-display text-2xl" style="text-decoration: none; color: #FFFFFF;">
+    <img src="../assets/logo.svg" width="32" height="32" alt="" aria-hidden="true" style="border-radius: var(--radius-sm); flex-shrink:0;">
+    Superholic Lab
+  </a>
+
+  <div class="navbar-actions flex items-center gap-4">
+    <span class="badge" id="planBadge" style="background: rgba(255,255,255,0.15); color: var(--brand-mint);"></span>   
+    <div id="auth-header-container">
+      <!-- Managed dynamically by auth.js or fallback script -->
+    </div>
+    <button class="navbar-toggle" id="navToggle" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+
+  <div class="navbar-mobile" id="navDropdown">
+    <a href="../index.html">Home</a>
+    <a href="about.html">About Us</a>
+    <a href="pricing.html">Pricing</a>
+    <a href="contact.html">Contact Support</a>
+    <a href="#" id="navSignOut" style="color: var(--brand-rose);">Sign Out</a>
+  </div>
+</header>
+
+<!-- ═══════════════════ WELCOME HUB (Hero CRM) ═══════════════════ -->
+<section class="bg-sage texture-dots py-10" style="padding-top: calc(64px + var(--space-8));">
+  <div class="container flex flex-wrap items-center justify-between gap-6">
+    
+    <div class="flex-1 flex flex-col items-start gap-4" style="min-width: 300px;">
+      <div id="trialBanner" class="badge badge-amber hidden mb-2" style="background: rgba(255, 179, 71, 0.15); color: #FFB347; border: 1px solid rgba(255, 179, 71, 0.3);">
+        🎁 <span id="trialDaysLeft" class="font-bold ml-1 mr-1"></span> left in free trial. 
+        <a href="pricing.html" style="color: #FFB347; text-decoration: underline; margin-left: 4px;">Upgrade</a>
       </div>
-      <button class="navbar-toggle" id="navToggle" aria-label="Open menu">
-        <span></span><span></span><span></span>
-      </button>
+      
+      <h1 class="font-display text-4xl text-white" id="welcomeMsg" style="font-size: 3rem; line-height: 1.1;">
+        Welcome back 👋
+      </h1>
+      <p class="text-lg mb-4" style="color: rgba(255,255,255,0.8); max-width: 500px;">
+        Mission Control is ready. Manage your learners, track their progress, and start practicing.
+      </p>
+      
+      <a href="/pages/setup.html" id="addChildBtn" class="btn" style="background: white; color: var(--brand-sage);">＋ Add Learner</a>
     </div>
 
-    <div class="navbar-mobile" id="navDropdown">
-      <div class="container" id="navLinks">
-        <a href="../index.html">Home</a>
-        <a href="../pages/about.html">About Us</a>
-        <a href="../pages/pricing.html">Pricing</a>
-        <a href="../pages/contact.html">Contact Support</a>
-        <a href="../pages/signup.html" id="navSignUp">Start Free Trial</a>
+    <div class="flex-1 flex justify-center items-end hidden sm:flex relative" style="min-width: 300px; height: 200px;">
+      <!-- Friendly Asian Student Graphic -->
+      <img src="../assets/images/student_welcome.png" alt="Happy Student" style="max-height: 260px; position: absolute; bottom: -48px; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.2));" onerror="this.style.display='none'">
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════ LEARNER ROSTER (Off-White) ═══════════════════ -->
+<main class="py-10 bg-page min-h-screen">
+  <div class="container">
+    
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="font-display text-2xl text-main">Your Learners</h2>
+      
+      <!-- Admin Panel Link -->
+      <div class="admin-panel hidden" id="adminPanel">
+        <a href="/pages/admin.html" class="badge badge-info hover-lift flex items-center gap-2" style="text-decoration: none;">
+          👑 Open Admin Panel <span id="adminStats"></span>
+        </a>
       </div>
     </div>
-  </header>
 
-<main class="page-content" style="margin-top: 68px; min-height: 80vh;">
-      <div class="trial-banner" id="trialBanner" style="display:none">
-      <span>🎁 <strong id="trialDaysLeft"></strong> left in your free trial</span>
-      <a href="/pages/pricing.html" class="btn-upgrade">Upgrade now →</a>
-    </div>
-  <div class="dashboard-main">
-
-    <h1 class="welcome" id="welcomeMsg">Welcome back 👋</h1>
-    <p class="welcome-sub">Here's what's happening for your learner today.</p>
-
-    <div class="section-header">
-      <div class="section-title">Your learners</div>
-      <a href="/pages/setup.html" class="btn-add" id="addChildBtn">＋ Add child</a>
-    </div>
-
-    <div class="cards-grid" id="cardsGrid">
-      <div class="skeleton" style="height:180px"></div>
-    </div>
-
-    <div class="admin-panel" id="adminPanel" style="display:none">
-      <h3>🔐 Admin Panel</h3>
-      <div id="adminStats"></div>
-      <a href="/pages/admin.html" class="admin-link">Open admin panel →</a>
-    </div>
-
-  </div> </main>
-
-  <footer class="footer">
-    <div class="container">
-      <div class="footer-bottom">
-        <p>&copy; 2026 Superholic Lab. 🇸🇬 Made in Singapore</p>
-        <div class="flex gap-4">
-          <a href="privacy.html">Privacy</a>
-          <a href="terms.html">Terms</a>
-          <a href="contact.html">Contact</a>
-        </div>
+    <!-- The CRM Grid -->
+    <div class="flex flex-wrap gap-6" id="cardsGrid">
+      <div class="card w-full flex justify-center items-center p-8">
+        <div class="spinner-sm"></div>
       </div>
     </div>
-  </footer>
 
-<nav class="bottom-nav" id="bottomNav" aria-label="Mobile navigation" hidden>
-    <a href="subjects.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-      Practise
-    </a>
-    <a href="tutor.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-      AI Tutor
-    </a>
-    <a href="exam.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="M9 12h6M9 16h4"/></svg>
-      Exam
-    </a>
-    <a href="progress.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-      Progress
-    </a>
-  </nav>
-  
-  <script type="module">
-    import { guardPage } from '/js/auth.js';
+  </div>
+</main>
 
-    async function init() {
-      const profile = await guardPage(true);
-      if (!profile) return;
+<!-- ═══════════════════ MODALS ═══════════════════ -->
 
-      const firstName = profile.full_name?.split(' ')[0] || 'there';
-      document.getElementById('welcomeMsg').textContent = `Welcome back, ${firstName} \ud83d\udc4b`;
+<!-- Edit Modal -->
+<div id="editModal" class="modal-backdrop">
+  <div class="card modal-card p-6 flex flex-col gap-4">
+    <h3 class="font-display text-2xl text-main">Edit Learner</h3>
+    
+    <div class="flex flex-col gap-1">
+      <label class="text-sm font-bold text-muted">First Name</label>
+      <input type="text" id="editName" class="form-input" placeholder="e.g., Jayden">
+    </div>
+    
+    <div class="flex flex-col gap-1">
+      <label class="text-sm font-bold text-muted">Academic Level</label>
+      <select id="editLevel" class="form-input" style="cursor: pointer;">
+        <option value="Primary 1">Primary 1</option>
+        <option value="Primary 2">Primary 2</option>
+        <option value="Primary 3">Primary 3</option>
+        <option value="Primary 4">Primary 4</option>
+        <option value="Primary 5">Primary 5</option>
+        <option value="Primary 6">Primary 6</option>
+        <option value="Secondary 1">Secondary 1</option>
+        <option value="Secondary 2">Secondary 2</option>
+        <option value="Secondary 3">Secondary 3</option>
+        <option value="Secondary 4">Secondary 4</option>
+      </select>
+    </div>
 
-      const badge = document.getElementById('planBadge');
-      const planLabels = { trial: '🎁 Trial', single_subject: 'Single Subject', all_subjects: 'All Subjects', family: 'Family' };
-      badge.textContent = profile.role === 'admin' ? '👑 Admin' : (planLabels[profile.subscription_tier] || profile.subscription_tier);
-      if (profile.role === 'admin') badge.className = 'plan-badge admin';
-      else if (profile.subscription_tier === 'trial') badge.className = 'plan-badge trial';
+    <div class="flex gap-3 mt-4">
+      <button class="btn btn-secondary flex-1" onclick="closeModals()">Cancel</button>
+      <button class="btn btn-primary flex-1" id="saveEditBtn" onclick="saveEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
 
-      if (profile.subscription_tier === 'trial' && profile.trial_ends_at) {
-        const daysLeft = Math.ceil((new Date(profile.trial_ends_at) - new Date()) / 86400000);
-        if (daysLeft > 0) {
-          document.getElementById('trialBanner').style.display = 'flex';
-          document.getElementById('trialDaysLeft').textContent = `${daysLeft} day${daysLeft !== 1 ? 's' : ''}`;
+<!-- Delete Modal -->
+<div id="deleteModal" class="modal-backdrop">
+  <div class="card modal-card p-6 flex flex-col gap-4" style="border-top: 4px solid var(--brand-error);">
+    <h3 class="font-display text-2xl text-danger">Remove Learner?</h3>
+    <p class="text-sm text-muted">
+      Are you sure you want to delete <strong id="deleteTargetName" class="text-main">this learner</strong>? 
+      This will permanently erase their profile and all practice history. This action cannot be undone.
+    </p>
+
+    <div class="flex gap-3 mt-4">
+      <button class="btn btn-secondary flex-1" onclick="closeModals()">Cancel</button>
+      <button class="btn flex-1" id="confirmDeleteBtn" onclick="confirmDelete()" style="background: var(--brand-error); color: white;">Yes, Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ FOOTER & BOTTOM NAV ═══════════════════ -->
+<footer class="footer bg-sage-dark pt-8 pb-8">
+  <div class="container">
+    <div class="footer-bottom" style="border-top-color: rgba(255, 255, 255, 0.1);">
+      <div class="text-muted text-sm">© 2026 Superholic Lab. 🇸🇬 Made in Singapore</div>
+      <div class="flex gap-4">
+        <a href="privacy.html" class="text-sm text-muted" style="text-decoration:none;">Privacy</a>
+        <a href="terms.html" class="text-sm text-muted" style="text-decoration:none;">Terms</a>
+        <a href="contact.html" class="text-sm text-muted" style="text-decoration:none;">Contact</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<nav class="bottom-nav" id="bottomNav" aria-label="Mobile navigation">
+  <a href="subjects.html" class="bottom-nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    Practise
+  </a>
+  <a href="tutor.html" class="bottom-nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+    AI Tutor
+  </a>
+  <a href="exam.html" class="bottom-nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="M9 12h6M9 16h4"/></svg>
+    Exam
+  </a>
+  <a href="progress.html" class="bottom-nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    Progress
+  </a>
+</nav>
+
+<script>
+  /* ── 1. Navbar Toggle Logic ── */
+  document.addEventListener('DOMContentLoaded', () => {
+    const toggle = document.getElementById('navToggle');
+    const dropdown = document.getElementById('navDropdown');
+    
+    if (toggle && dropdown) {
+      toggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdown.classList.toggle('is-open');
+        toggle.classList.toggle('is-active'); 
+      });
+      document.addEventListener('click', (e) => {
+        if (!dropdown.contains(e.target) && !toggle.contains(e.target)) {
+          dropdown.classList.remove('is-open');
+          toggle.classList.remove('is-active');
         }
-      }
+      });
+    }
 
-      // Load students using getSupabase() global
-      const supabase = await getSupabase();
-      const query = profile.role === 'admin'
-        ? supabase.from('students').select('*')
-        : supabase.from('students').select('*').eq('parent_id', profile.id);
+    // Sign Out Logic
+    const signOutBtn = document.getElementById('navSignOut');
+    if (signOutBtn) {
+      signOutBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const sb = await getSupabase();
+        await sb.auth.signOut();
+        window.location.href = '../index.html';
+      });
+    }
+  });
 
-      const { data: students, error } = await query;
-      const grid = document.getElementById('cardsGrid');
-      grid.innerHTML = '';
+  /* ── 2. CRM Dashboard Logic & Modals ── */
+  let currentStudents = [];
+  let targetStudentId = null;
 
-      if (error || !students?.length) {
-        grid.innerHTML = `<div class="empty-state"><div class="empty-icon">\ud83c\udfa2</div><p>No learners added yet.<br>Click "+ Add child" to get started.</p></div>`;
-      } else {
-        students.forEach(student => {
-          const initials = student.name?.charAt(0).toUpperCase() || '?';
-          const card = document.createElement('div');
-          card.className = 'student-card';
-          card.innerHTML = `
-            <div class="card-avatar">${initials}</div>
-            <div class="card-name">${escapeHtml(student.name)}</div>
-            <div class="card-meta">${escapeHtml(student.level)}</div>
-            ${student.selected_subject ? `<span class="card-tag">${escapeHtml(student.selected_subject)}</span>` : ''}
-            <a href="/pages/subjects.html?student=${student.id}" class="btn-practice">Practice Now \u2192</a>
-          `;
-          grid.appendChild(card);
-        });
-      }
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
 
-      // Add child button: hide if at limit
-      const addBtn = document.getElementById('addChildBtn');
-      if (profile.role !== 'admin' && students && students.length >= profile.max_children) {
-        addBtn.classList.add('hidden');
-      }
+  async function initDashboard() {
+    const profile = window.userProfile;
+    if (!profile) return; // Guard page handles redirect
 
-      if (profile.role === 'admin') {
-        document.getElementById('adminPanel').style.display = 'block';
-        document.getElementById('adminStats').innerHTML =
-          `<span class="admin-stat">Total students: <strong>${students?.length ?? 0}</strong></span>`;
+    // Welcome Message
+    const firstName = profile.full_name?.split(' ')[0] || 'there';
+    document.getElementById('welcomeMsg').textContent = `Welcome back, ${escapeHtml(firstName)} 👋`;
+
+    // Plan Badge
+    const badge = document.getElementById('planBadge');
+    const planLabels = { trial: '🎁 Free Trial', single_subject: 'Single Subject', all_subjects: 'All Subjects', family: 'Family' };
+    badge.textContent = profile.role === 'admin' ? '👑 Admin' : (planLabels[profile.subscription_tier] || profile.subscription_tier);
+
+    // Trial Countdown
+    if (profile.subscription_tier === 'trial' && profile.trial_ends_at) {
+      const daysLeft = Math.ceil((new Date(profile.trial_ends_at) - new Date()) / 86400000);
+      if (daysLeft > 0) {
+        document.getElementById('trialBanner').classList.remove('hidden');
+        document.getElementById('trialDaysLeft').textContent = `${daysLeft} day${daysLeft !== 1 ? 's' : ''}`;
       }
     }
 
-    window.handleSignOut = async function () {
-      const { signOut } = await import('/js/auth.js');
-      await signOut();
-    };
-
-    function escapeHtml(str) {
-      if (!str) return '';
-      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    // Admin Tools
+    if (profile.role === 'admin') {
+      document.getElementById('adminPanel').classList.remove('hidden');
     }
 
-    init();
-  </script>  
+    await loadStudents();
+  }
+
+  async function loadStudents() {
+    const profile = window.userProfile;
+    const sb = await getSupabase();
+    
+    // Fetch students
+    const query = profile.role === 'admin'
+      ? sb.from('students').select('*').order('created_at', { ascending: true })
+      : sb.from('students').select('*').eq('parent_id', profile.id).order('created_at', { ascending: true });
+
+    const { data: students, error } = await query;
+    currentStudents = students || [];
+    
+    // Update Admin Stats
+    if (profile.role === 'admin') {
+      document.getElementById('adminStats').textContent = `(${currentStudents.length})`;
+    }
+
+    renderGrid();
+
+    // Enforce Plan Limits
+    const addBtn = document.getElementById('addChildBtn');
+    if (profile.role !== 'admin' && currentStudents.length >= (profile.max_children || 1)) {
+      addBtn.style.display = 'none';
+    } else {
+      addBtn.style.display = 'inline-flex';
+    }
+  }
+
+  function renderGrid() {
+    const grid = document.getElementById('cardsGrid');
+    grid.innerHTML = '';
+
+    if (currentStudents.length === 0) {
+      grid.innerHTML = `
+        <div class="card w-full text-center flex flex-col items-center justify-center p-10" style="background: transparent; border: 2px dashed var(--border-dark); box-shadow: none;">
+          <div class="text-4xl mb-4">🚀</div>
+          <h3 class="font-bold text-lg mb-2">No learners added yet</h3>
+          <p class="text-sm text-muted">Click "+ Add Learner" above to set up a profile and start practicing.</p>
+        </div>
+      `;
+      return;
+    }
+
+    currentStudents.forEach(student => {
+      const initials = student.name?.charAt(0).toUpperCase() || '?';
+      const card = document.createElement('div');
+      card.className = 'card hover-lift flex-1 flex flex-col gap-4 p-6 relative';
+      card.style.minWidth = '280px';
+      card.style.maxWidth = '400px';
+      
+      card.innerHTML = `
+        <!-- CRM Manage Dropdown -->
+        <div class="absolute top-4 right-4" style="z-index: 10;">
+           <button class="btn btn-ghost btn-sm text-xl px-2" onclick="toggleDropdown(event, '${student.id}')" style="height: 32px; width: 32px;">⋮</button>
+           <div id="dropdown-${student.id}" class="hidden absolute right-0 mt-1 bg-surface border border-light rounded shadow-md flex flex-col overflow-hidden text-sm" style="min-width: 140px; background: white;">
+              <button class="px-4 py-3 text-left font-medium text-main hover:bg-elevated w-full border-none cursor-pointer" onclick="openEditModal('${student.id}')">✏️ Edit Level/Name</button>
+              <button class="px-4 py-3 text-left font-medium text-danger hover:bg-elevated w-full border-none cursor-pointer" style="border-top: 1px solid var(--border-light);" onclick="openDeleteModal('${student.id}')">🗑️ Remove</button>
+           </div>
+        </div>
+
+        <div class="flex items-center gap-4 mt-2">
+          <div class="flex justify-center items-center font-display text-2xl text-white bg-sage" style="width: 56px; height: 56px; border-radius: var(--radius-md);">
+            ${initials}
+          </div>
+          <div>
+            <div class="font-bold text-xl text-main">${escapeHtml(student.name)}</div>
+            <div class="text-sm text-muted font-medium">${escapeHtml(student.level)}</div>
+          </div>
+        </div>
+
+        <div class="mt-auto pt-4 flex justify-between items-center" style="border-top: 1px solid var(--border-light);">
+          ${student.selected_subject 
+            ? `<span class="badge badge-info">${escapeHtml(student.selected_subject)}</span>` 
+            : '<span class="badge" style="background: var(--bg-page); color: var(--text-muted);">No subject active</span>'}
+          <a href="/pages/subjects.html?student=${student.id}" class="btn btn-primary btn-sm">Enter Lab →</a>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  /* ── 3. Interaction Logic ── */
+
+  // Dropdown Management
+  window.toggleDropdown = (e, id) => {
+    e.stopPropagation();
+    const dropdown = document.getElementById(`dropdown-${id}`);
+    const isHidden = dropdown.classList.contains('hidden');
+    
+    // Close all other dropdowns
+    document.querySelectorAll('[id^="dropdown-"]').forEach(d => d.classList.add('hidden'));
+    
+    // Toggle targeted
+    if (isHidden) dropdown.classList.remove('hidden');
+  };
+
+  document.addEventListener('click', () => {
+    document.querySelectorAll('[id^="dropdown-"]').forEach(d => d.classList.add('hidden'));
+  });
+
+  // Modal Management
+  window.closeModals = () => {
+    document.getElementById('editModal').classList.remove('is-open');
+    document.getElementById('deleteModal').classList.remove('is-open');
+    targetStudentId = null;
+  };
+
+  window.openEditModal = (id) => {
+    const student = currentStudents.find(s => s.id === id);
+    if(!student) return;
+    targetStudentId = id;
+    document.getElementById('editName').value = student.name;
+    document.getElementById('editLevel').value = student.level;
+    document.getElementById('editModal').classList.add('is-open');
+  };
+
+  window.openDeleteModal = (id) => {
+    const student = currentStudents.find(s => s.id === id);
+    if(!student) return;
+    targetStudentId = id;
+    document.getElementById('deleteTargetName').textContent = student.name;
+    document.getElementById('deleteModal').classList.add('is-open');
+  };
+
+  // Database Actions
+  window.saveEdit = async () => {
+    const name = document.getElementById('editName').value.trim();
+    const level = document.getElementById('editLevel').value;
+    if (!name || !level || !targetStudentId) return;
+
+    const btn = document.getElementById('saveEditBtn');
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+    
+    const sb = await getSupabase();
+    await sb.from('students').update({ name, level }).eq('id', targetStudentId);
+    
+    await loadStudents();
+    closeModals();
+    btn.disabled = false;
+    btn.textContent = 'Save Changes';
+  };
+
+  window.confirmDelete = async () => {
+    if (!targetStudentId) return;
+
+    const btn = document.getElementById('confirmDeleteBtn');
+    btn.disabled = true;
+    btn.textContent = 'Deleting...';
+    
+    const sb = await getSupabase();
+    await sb.from('students').delete().eq('id', targetStudentId);
+    
+    await loadStudents();
+    closeModals();
+    btn.disabled = false;
+    btn.textContent = 'Yes, Delete';
+  };
+
+  // Start sequence
+  setTimeout(initDashboard, 100);
+
+</script>  
 </body>
 </html>
