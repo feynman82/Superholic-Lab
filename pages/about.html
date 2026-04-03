@@ -1,206 +1,273 @@
-<!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>App Master — Superholic Lab</title>
-  <link rel="stylesheet" href="../css/style.css" />
-  <link rel="icon" href="../assets/favicon.ico" />
-  
-  <script type="module">
-    import { guardPage } from '/js/auth.js';
-    await guardPage(false); 
-  </script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About Us — Superholic Lab</title>
+<meta name="description" content="Discover the story behind Superholic Lab and our mission to transform Singapore's exam culture through AI and deep understanding.">
+
+<!-- Fonts & Styles -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../css/style.css">
+<link rel="icon" href="../assets/favicon.ico">
+
+<script type="module">
+  import { guardPage } from '/js/auth.js';
+  await guardPage(false); 
+</script>
 </head>
+<body class="has-bottom-nav">
 
-<body id="mainBody">
-
-<header class="navbar navbar-homepage" id="navbar" style="justify-content: space-between;">
-    
-    <a href="../index.html" class="navbar-logo">
-      <img src="../assets/logo.svg" width="32" height="32" alt="Superholic Lab">
-      Superholic Lab
-    </a>
-
-    <div class="navbar-actions">
-      <div id="auth-header-container">
-        <a href="login.html" class="btn btn-secondary btn-sm">Log In</a>
-      </div>
-
-      <button class="navbar-toggle" id="navToggle" aria-label="Open menu">
-        <span></span><span></span><span></span>
-      </button>
-    </div>
-
-    <div class="navbar-mobile" id="navDropdown">
-      <div class="container" id="navLinks">
-        <a href="../index.html">Home</a>
-        <a href="../pages/about.html">About Us</a>
-        <a href="../pages/pricing.html">Pricing</a>
-        <a href="../pages/contact.html">Contact Support</a>
-        <a href="../pages/signup.html" id="navSignUp">Start Free Trial</a>
-      </div>
-    </div>
-  </header>
-
-
-
-<main class="page-content" style="margin-top: 68px; min-height: 80vh;">
+<!-- ═══════════════════ GLOBAL NAVBAR (Darker Sage) ═══════════════════ -->
+<header class="navbar justify-between bg-sage-dark" id="navbar">
   
-  <div style="background: var(--hero-gradient); padding: var(--space-10) 0 var(--space-16); position:relative; overflow:hidden;">
-    <div class="container" style="position:relative;z-index:1;text-align:center;">
-      <h1 class="animate-in delay-1" style="margin-top:var(--space-4);">Our Story</h1>
+  <a href="../index.html" class="flex items-center gap-2 font-display text-2xl" style="text-decoration: none; color: #FFFFFF;">
+    <img src="../assets/logo.svg" width="32" height="32" alt="" aria-hidden="true" style="border-radius: var(--radius-sm); flex-shrink:0;">
+    Superholic Lab
+  </a>
+
+  <div class="navbar-actions flex items-center gap-4">
+    <div id="auth-header-container">
+      <a href="login.html" class="btn btn-sm" style="background: rgba(255,255,255,0.15); color: #FFFFFF; border: 1px solid rgba(255,255,255,0.1);">Log In</a>
     </div>
-    <div class="wave-divider" aria-hidden="true">
-      <svg viewBox="0 0 1440 70" preserveAspectRatio="none">
-        <path d="M0,40 C360,70 720,10 1080,40 C1260,55 1380,30 1440,40 L1440,70 L0,70 Z" fill="var(--surface)"/>
-      </svg>
+
+    <!-- Mobile menu toggle -->
+    <button class="navbar-toggle" id="navToggle" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+
+  <!-- Mobile Dropdown Menu -->
+  <div class="navbar-mobile" id="navDropdown">
+    <a href="../index.html">Home</a>
+    <a href="about.html">About Us</a>
+    <a href="pricing.html">Pricing</a>
+    <a href="contact.html">Contact Support</a>
+    <a href="signup.html" id="navSignUp">Start Free Trial</a>
+  </div>
+</header>
+
+<!-- ═══════════════════ HERO (Sage + Grid Texture) ═══════════════════ -->
+<section class="bg-sage texture-dots py-10" style="padding-top: calc(64px + var(--space-10)); text-align: center;">
+  <div class="container flex flex-col items-center gap-4">
+    <div class="badge" style="background: rgba(255,255,255,0.15); color: var(--brand-mint); backdrop-filter: blur(4px);">Our Story</div>
+    <h1 class="font-display text-4xl text-white mt-2 mb-2" style="max-width: 800px; font-size: 4rem; line-height: 1.1;">
+      We built the tutor we wished we had.
+    </h1>
+    <p class="text-lg mb-8" style="color: rgba(255,255,255,0.8); max-width: 600px;">
+      Superholic Lab wasn't created by a faceless corporation. It was built by Singaporean educators and engineers who wanted to solve a single, frustrating problem: <span class="text-white font-bold">students memorising answers instead of understanding concepts.</span>
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════ THE PROBLEM (White) ═══════════════════ -->
+<section class="py-10 bg-white">
+  <div class="container flex flex-wrap items-center gap-8">
+    <div class="flex-1 flex flex-col gap-4" style="min-width: 300px;">
+      <h2 class="font-display text-3xl text-main mb-2">The Problem with "Practice Makes Perfect"</h2>
+      <p class="text-muted text-lg mb-4">
+        In Singapore's highly competitive education landscape, parents are told that doing endless past-year papers is the key to success. But doing 1,000 questions means nothing if a child repeats the same conceptual mistake 1,000 times.
+      </p>
+      <p class="text-muted text-base">
+        Most platforms and assessment books simply provide an answer key: <strong class="text-main">"Q1: B"</strong>. If a student chooses 'A', they are left guessing <em>why</em> their logic was flawed. Without intervention, that misconception hardens, leading to anxiety and poorer exam results.
+      </p>
     </div>
+    
+    <div class="flex-1 flex justify-center" style="min-width: 300px;">
+      <div class="card p-6 w-full hover-lift" style="background: var(--bg-page); border: 1px solid var(--border-light);">
+        <div class="badge badge-danger mb-4">Standard Assessment Books</div>
+        <div class="flex items-center justify-between mb-2">
+          <div class="font-bold text-sm">Question 14</div>
+          <div class="text-danger font-bold">✗ Wrong</div>
+        </div>
+        <div class="text-main font-medium mb-2">Student Answer: A</div>
+        <div class="text-success font-medium mb-4">Correct Answer: B</div>
+        <div class="p-4 rounded" style="background: rgba(220, 38, 38, 0.05); border: 1px dashed rgba(220, 38, 38, 0.2);">
+          <div class="text-xs text-danger font-bold uppercase mb-1">Explanation</div>
+          <div class="text-sm text-main">None provided. The student is left to guess why A is wrong.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ THE SOLUTION (Dark Sage + Architectural Grid) ═══════════════════ -->
+<section class="py-10 bg-sage-dark texture-grid">
+  <div class="container flex flex-wrap items-center gap-8 flex-row-reverse">
+    <div class="flex-1 flex flex-col gap-4" style="min-width: 300px;">
+      <h2 class="font-display text-3xl text-white mb-2">The Superholic Solution</h2>
+      <p class="text-lg mb-4" style="color: rgba(255,255,255,0.8);">
+        We engineered Superholic Lab to focus entirely on the <strong class="text-white">"Why"</strong>. We don't just tell students they are wrong; our AI engine breaks down the exact trap they fell into.
+      </p>
+      <p class="text-base" style="color: rgba(255,255,255,0.7);">
+        Every single MCQ option in our database has a dedicated explanation. Every open-ended question comes with a step-by-step worked solution using strict MOE marking-scheme terminology. Mistakes are no longer dead ends; they are precise learning opportunities.
+      </p>
+    </div>
+    
+    <div class="flex-1 flex justify-center" style="min-width: 300px;">
+      <div class="card p-6 w-full hover-lift" style="background: var(--bg-surface);">
+        <div class="badge badge-success mb-4">Superholic AI Engine</div>
+        <div class="flex items-center justify-between mb-2">
+          <div class="font-bold text-sm">Question 14</div>
+          <div class="text-danger font-bold">✗ Answered: A</div>
+        </div>
+        <div class="p-4 rounded mb-4" style="background: rgba(5, 150, 105, 0.05); border: 1px solid rgba(5, 150, 105, 0.2);">
+          <div class="text-xs text-success font-bold uppercase mb-1">Why A is incorrect:</div>
+          <div class="text-sm text-main">Option A suggests that water vapour condenses <em>inside</em> the glass. However, condensation occurs when warm water vapour in the surrounding air touches the <strong>cooler outer surface</strong> of the glass.</div>
+        </div>
+        <div class="flex gap-2">
+          <button class="btn btn-primary btn-sm flex-1">Try Similar Question</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ OUR VALUES (Off-White) ═══════════════════ -->
+<section class="py-10 bg-page texture-light-grid">
+  <div class="container">
+    <div class="flex flex-col items-center text-center mb-8">
+      <div class="badge badge-info mb-2">Core Principles</div>
+      <h2 class="font-display text-3xl mb-2 text-main">What Drives Us Every Day</h2>
+    </div>
+    
+    <div class="flex flex-wrap gap-4">
+      <div class="card flex-1 flex flex-col gap-4 p-6 hover-lift text-center" style="min-width: 250px;">
+        <div class="text-3xl">🇸🇬</div>
+        <h3 class="font-bold text-xl text-main">Hyper-Localised</h3>
+        <p class="text-sm text-muted">We don't use generic international questions. Every syllabus point, keyword, and phrasing is meticulously aligned with the Singapore MOE curriculum.</p>
+      </div>
+      
+      <div class="card flex-1 flex flex-col gap-4 p-6 hover-lift text-center" style="min-width: 250px;">
+        <div class="text-3xl">🛡️</div>
+        <h3 class="font-bold text-xl text-main">Safe AI for Kids</h3>
+        <p class="text-sm text-muted">Our AI tutor ("Miss Wena") is strictly guarded. It acts as a Socratic guide that prompts critical thinking, and will never simply hand out the final answer.</p>
+      </div>
+      
+      <div class="card flex-1 flex flex-col gap-4 p-6 hover-lift text-center" style="min-width: 250px;">
+        <div class="text-3xl">📊</div>
+        <h3 class="font-bold text-xl text-main">Data Transparency</h3>
+        <p class="text-sm text-muted">Parents deserve to know exactly how their child is performing. Our Mission Control dashboards replace guesswork with real, actionable data by topic.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ CTA BANNER (Rose) ═══════════════════ -->
+<section class="bg-rose py-10">
+  <div class="container flex flex-col items-center text-center gap-4">
+    <h2 class="font-display text-4xl text-white">Experience the Superholic Difference</h2>
+    <p class="text-lg mb-4" style="color: rgba(255,255,255,0.8); max-width: 500px;">Join 4,200+ Singapore students already learning smarter. Get full access free for 7 days.</p>
+    <div class="flex flex-wrap gap-4 justify-center">
+      <a href="signup.html" class="btn" style="background: white; color: var(--brand-rose);">Start Free Trial →</a>
+      <a href="pricing.html" class="btn" style="border-color: rgba(255,255,255,0.4); color: white;">View Pricing</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ GLOBAL FOOTER (Darker Sage + Whimsical Texture) ═══════════════════ -->
+<footer class="footer bg-sage-dark texture-whimsical pt-8 pb-8" style="position: relative;">
+  <!-- Cute Exploring Pet Animation -->
+  <div class="footer-pet-track">
+    <div class="walking-pet">🐈</div>
   </div>
 
   <div class="container">
-      <div class="card no-hover reveal" style="max-width:680px; margin:0 auto;">
-        <div class="card-body">
-          <h2>Why we built Superholic Lab</h2>
-          <p class="text-secondary mt-4" style="line-height:1.85; font-size:1.0625rem;">
-            The bill arrived every month like clockwork. Two kids, three subjects each,
-            six tuition slots a week — and still, the quiet anxiety of wondering whether
-            it was enough.
-          </p>
-          <p class="text-secondary" style="line-height:1.85; font-size:1.0625rem;">
-            Superholic Lab began with a simple frustration: why does exam-ready practice
-            cost a fortune, and why does it only happen twice a week in someone else's
-            living room? Singapore children sit high-stakes exams. They need to practise
-            constantly — on the bus, between activities, after dinner. Not just when
-            the tutor is available.
-          </p>
-          <p class="text-secondary" style="line-height:1.85; font-size:1.0625rem;">
-            So we built what we wished existed. A platform that generates unlimited,
-            MOE-aligned practice for any topic, any level, any time — for a fraction
-            of what a single tuition session costs. No scheduling. No travelling. No waiting.
-          </p>
-          <p class="text-secondary" style="line-height:1.85; font-size:1.0625rem;">
-            Every child deserves to walk into the exam hall having practised more than
-            the kid next to them. That is what Superholic Lab is for.
-          </p>
-          <div class="mt-6 pt-6" style="border-top:1px solid var(--border);">
-            <a href="signup.html" class="btn btn-primary">Start Free Trial</a>
-            <a href="contact.html" class="btn btn-ghost" style="margin-left:var(--space-3);">Contact Us</a>
-          </div>
+    <div class="flex flex-wrap justify-between gap-6 mb-8 mt-6">
+      <div class="flex-1 flex flex-col gap-4" style="min-width: 250px;">
+        <div class="flex items-center gap-2 font-display text-xl text-white">
+          <img src="../assets/logo.svg" width="28" height="28" alt="" aria-hidden="true" style="border-radius:6px;">
+          Superholic Lab
         </div>
+        <p class="text-sm text-muted">Singapore's AI-powered learning platform for P1–S4 students. MOE-aligned. Available 24/7.</p>
       </div>
-    </div>
-  </main>
-
-  <footer class="footer">
-    <div class="container">
-      <div class="footer-bottom">
-        <p>&copy; 2026 Superholic Lab. 🇸🇬 Made in Singapore</p>
-        <div class="flex gap-4">
-          <a href="privacy.html">Privacy</a>
-          <a href="terms.html">Terms</a>
-          <a href="contact.html">Contact</a>
-        </div>
-      </div>
-    </div>
-  </footer>
-
-  <nav class="bottom-nav" aria-label="Mobile navigation" hidden>
-    <a href="subjects.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-      Practise
-    </a>
-    <a href="tutor.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-      AI Tutor
-    </a>
-    <a href="exam.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="M9 12h6M9 16h4"/></svg>
-      Exam
-    </a>
-    <a href="progress.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-      Progress
-    </a>
-  </nav>
-
-  <script src="../js/supabase-client.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      /* ── 1. Dropdown Toggle Logic ── */
-      const toggle = document.getElementById('navToggle');
-      const dropdown = document.getElementById('navDropdown');
       
-      if (toggle && dropdown) {
-        toggle.addEventListener('click', (e) => {
-          e.stopPropagation();
-          dropdown.classList.toggle('is-open');
-          toggle.classList.toggle('is-active'); 
-        });
-        document.addEventListener('click', (e) => {
-          if (!dropdown.contains(e.target) && !toggle.contains(e.target)) {
-            dropdown.classList.remove('is-open');
-            toggle.classList.remove('is-active');
-          }
-        });
-      }
+      <div class="flex-1 flex flex-col gap-2" style="min-width: 120px;">
+        <div class="font-bold text-sm mb-2 text-white">Platform</div>
+        <a href="subjects.html" class="text-sm text-muted" style="text-decoration:none;">Subjects</a>
+        <a href="pricing.html" class="text-sm text-muted" style="text-decoration:none;">Pricing</a>
+        <a href="dashboard.html" class="text-sm text-muted" style="text-decoration:none;">Dashboard</a>
+      </div>
+      
+      <div class="flex-1 flex flex-col gap-2" style="min-width: 120px;">
+        <div class="font-bold text-sm mb-2 text-white">Company</div>
+        <a href="about.html" class="text-sm text-muted" style="text-decoration:none;">About Us</a>
+        <a href="contact.html" class="text-sm text-muted" style="text-decoration:none;">Contact</a>
+        <a href="terms.html" class="text-sm text-muted" style="text-decoration:none;">Terms of Use</a>
+        <a href="privacy.html" class="text-sm text-muted" style="text-decoration:none;">Privacy Policy</a>
+      </div>
+    </div>
+    
+    <div class="footer-bottom">
+      <div class="text-muted text-sm">© 2026 Superholic Lab. All rights reserved. 🇸🇬 Made in Singapore</div>
+      <div class="text-muted text-sm" style="max-width: 400px; text-align: right;">Compliant with Singapore PDPA. Student data stored in Singapore (Supabase SG region).</div>
+    </div>
 
-      /* ── 2. Master Auth & Layout Logic ── */
-      getSupabase().then(async function(sb) {
-        try {
-          const { data: { session } } = await sb.auth.getSession();
-          const body = document.getElementById('mainBody');
-          const bottomNav = document.getElementById('bottomNav');
-          const authContainer = document.getElementById('auth-header-container');
-          const navLinks = document.getElementById('navLinks');
+  </div>
+</footer>
 
-          if (session) {
-            // 1. Update Auth Buttons (Applies to ALL pages)
-            if (authContainer) {
-              authContainer.innerHTML = '<a href="dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a>';
-            }
+<script src="/js/supabase-client.js"></script>
+<script>
+  /* ── 1. Dropdown Toggle Logic ── */
+  document.addEventListener('DOMContentLoaded', () => {
+    const toggle = document.getElementById('navToggle');
+    const dropdown = document.getElementById('navDropdown');
+    
+    if (toggle && dropdown) {
+      toggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdown.classList.toggle('is-open');
+        toggle.classList.toggle('is-active'); 
+      });
 
-            if (navLinks && !document.getElementById('navSignOut')) {
-              const signOut = document.createElement('a');
-              signOut.id = "navSignOut";
-              signOut.href = "#";
-              signOut.textContent = "Sign Out";
-              signOut.style.color = "var(--rose)";
-              signOut.onclick = async (e) => { 
-                e.preventDefault();
-                await sb.auth.signOut(); 
-                window.location.href = '../index.html'; 
-              };
-              navLinks.appendChild(signOut);
-              
-              const signUpLink = document.getElementById('navSignUp');
-              if (signUpLink) signUpLink.remove();
-            }
-
-            // 2. Layout Shift (ONLY apply padding if this page has a sidebar)
-            if (bottomNav) {
-              body.classList.add('is-logged-in', 'has-bottom-nav');
-              bottomNav.hidden = false;
-            }
-
-          } else {
-            // User is Guest: Ensure app-specific layout shifts are disabled
-            if (body) body.classList.remove('is-logged-in', 'has-bottom-nav');
-            if (bottomNav) bottomNav.hidden = true;
-          }
-        } catch (e) {
-          console.error('Master auth script failed:', e);
+      document.addEventListener('click', (e) => {
+        if (!dropdown.contains(e.target) && !toggle.contains(e.target)) {
+          dropdown.classList.remove('is-open');
+          toggle.classList.remove('is-active');
         }
       });
-    });
-  </script>
-    <script>
-    (function(){
-      const t=document.getElementById('navToggle'),m=document.getElementById('navMobile');
-      if(t&&m) t.addEventListener('click',function(){const o=m.classList.toggle('is-open');t.setAttribute('aria-expanded',String(o));});
-      const r=document.querySelectorAll('.reveal,.reveal-group');
-      if('IntersectionObserver' in window){const io=new IntersectionObserver(function(e){e.forEach(function(x){if(x.isIntersecting){x.target.classList.add('revealed');io.unobserve(x.target);}});},{threshold:0.1});r.forEach(function(el){io.observe(el);});}else{r.forEach(function(el){el.classList.add('revealed');});}
-    })();
-  </script>
+    }
+  });
+
+  /* ── 2. Auth-aware Navbar Logic ── */
+  getSupabase().then(async function(sb) {
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      
+      if (!session) return; 
+      
+      const authContainer = document.getElementById('auth-header-container');
+      const navLinks = document.getElementById('navDropdown');
+      
+      // Replace "Log In" button with "Dashboard"
+      if (authContainer) {
+        authContainer.innerHTML = '<a href="dashboard.html" class="btn btn-secondary btn-sm" style="background: rgba(255,255,255,0.15); color: #FFFFFF; border: 1px solid rgba(255,255,255,0.1);">Dashboard</a>';
+      }
+
+      // Add "Sign Out" to the bottom of the dropdown tray
+      if (navLinks && !document.getElementById('navSignOut')) {
+        const signOut = document.createElement('a');
+        signOut.id = "navSignOut";
+        signOut.href = "#";
+        signOut.textContent = "Sign Out";
+        signOut.style.color = "var(--brand-rose)"; 
+        signOut.onclick = async (e) => { 
+          e.preventDefault();
+          await sb.auth.signOut(); 
+          window.location.href = '../index.html'; 
+        };
+        navLinks.appendChild(signOut);
+        
+        // Remove the "Start Free Trial" link from the dropdown
+        const signUpLink = document.getElementById('navSignUp');
+        if (signUpLink) signUpLink.remove();
+      }
+
+    } catch (e) {
+      console.error('Nav auth check failed:', e);
+    }
+  });
+</script>
 </body>
 </html>

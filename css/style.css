@@ -506,7 +506,9 @@ body.has-bottom-nav .footer {
   animation: spin 1s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
-
+/* ──────────────────────────────────────────────────────────────────────────
+   7. ADVANCED UI, TEXTURES & ANIMATIONS
+   ────────────────────────────────────────────────────────────────────────── */
   /* ── 1. Navbar & Footer Strict Dark Overrides ── */
   .navbar.bg-sage-dark { background-color: var(--sage-dark) !important; border-bottom: 1px solid rgba(255,255,255,0.08) !important; backdrop-filter: none !important; }
   .footer.bg-sage-dark { background-color: var(--sage-dark) !important; }
