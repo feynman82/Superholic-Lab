@@ -3,483 +3,233 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Choose a Subject — Superholic Lab</title>
-  <meta name="description" content="Choose a subject and topic to start practising MOE-aligned questions." />
+  <title>Set Up Your Account — Superholic Lab</title>
+  
+  <!-- Fonts & Styles -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="../css/style.css" />
-  <link rel="icon" href="../assets/favicon.ico" />
-  <link rel="canonical" href="https://www.superholiclab.com/pages/subjects.html" />
-  <meta property="og:type"        content="website" />
-  <meta property="og:url"         content="https://www.superholiclab.com/pages/subjects.html" />
-  <meta property="og:site_name"   content="Superholic Lab" />
-  <meta property="og:title"       content="Choose a Subject — Superholic Lab" />
-  <meta property="og:description" content="MOE-aligned practice questions for Singapore primary school students." />
-  <meta property="og:image"       content="https://www.superholiclab.com/assets/og-image.png" />
-  <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js"></script>
-  <script type="module">
-    import { guardPage } from '/js/auth.js';
-    await guardPage(true);
-  </script>
-  <script type="module">
-    import { guardPage } from '/js/auth.js';
-    import { initAppShell } from '/js/app-shell.js';
-    
-    // We fetch the profile/session exactly ONE time here.
-    const profile = await guardPage(true); 
-    
-    // Pass it to the shell to instantly set up the Navbar and CSS padding.
-    // (If profile exists, they are logged in. If null, they are guest).
-    initAppShell(profile); 
-  </script>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="icon" href="/assets/favicon.ico" />
 </head>
 
-<body class="has-bottom-nav" id="mainBody">
+<body class="bg-page texture-light-grid" style="display: flex; flex-direction: column; min-height: 100vh;">
 
-  <!-- Loading overlay -->
-  <div id="ov-load" class="full-overlay">
-    <div class="spinner-sm"></div>
-    <p class="text-cream">Loading your profile...</p>
-  </div>
+<!-- ═══════════════════ MINIMAL NAVBAR (Focus on Setup) ═══════════════════ -->
+<header class="navbar justify-center bg-sage-dark" id="navbar" style="position: relative;">
+  <a href="../index.html" class="flex items-center gap-2 font-display text-2xl" style="text-decoration: none; color: #FFFFFF;">
+    <img src="../assets/logo.svg" width="32" height="32" alt="" aria-hidden="true" style="border-radius: var(--radius-sm); flex-shrink:0;">
+    Superholic Lab
+  </a>
+</header>
 
-<header class="navbar navbar-homepage" id="navbar" style="justify-content: space-between;">
+<!-- ═══════════════════ SETUP CARD ═══════════════════ -->
+<main class="flex-1 flex items-center justify-center p-4 py-10">
+  <div class="card p-8 hover-lift w-full" style="max-width: 480px; background: var(--bg-surface);">
     
-    <a href="../index.html" class="navbar-logo">
-      <img src="../assets/logo.svg" width="32" height="32" alt="Superholic Lab">
-      Superholic Lab
-    </a>
-
-    <div class="navbar-actions">
-      <div id="auth-header-container">
-        <a href="login.html" class="btn btn-secondary btn-sm">Log In</a>
-      </div>
-
-      <button class="navbar-toggle" id="navToggle" aria-label="Open menu">
-        <span></span><span></span><span></span>
-      </button>
+    <!-- Step Indicator -->
+    <div class="flex gap-2 mb-8 justify-center">
+      <div id="dot1" class="flex-1" style="height: 6px; background: var(--brand-rose); border-radius: var(--radius-full); transition: background 0.3s ease;"></div>
+      <div id="dot2" class="flex-1" style="height: 6px; background: var(--border-light); border-radius: var(--radius-full); transition: background 0.3s ease;"></div>
     </div>
 
-    <div class="navbar-mobile" id="navDropdown">
-      <div class="container" id="navLinks">
-        <a href="../index.html">Home</a>
-        <a href="../pages/about.html">About Us</a>
-        <a href="../pages/pricing.html">Pricing</a>
-        <a href="../pages/contact.html">Contact Support</a>
-        <a href="../pages/signup.html" id="navSignUp">Start Free Trial</a>
+    <!-- Step 1 -->
+    <div id="step1" class="flex flex-col gap-6">
+      <div class="text-center mb-2">
+        <h1 class="font-display text-3xl text-main">Add your child 👦</h1>
+        <p class="text-sm text-muted">Tell us about the learner — we'll personalise the experience.</p>
       </div>
-    </div>
-  </header>
 
-  <main id="app" class="container" style="max-width:680px;padding-top:var(--space-10);padding-bottom:var(--space-16);margin-top: 68px; min-height: 80vh;"></main>
-
-  <footer class="footer">
-    <div class="container">
-      <div class="footer-bottom">
-        <p>&copy; 2026 Superholic Lab. 🇸🇬 Made in Singapore</p>
-        <div class="flex gap-4">
-          <a href="privacy.html">Privacy</a>
-          <a href="terms.html">Terms</a>
-          <a href="contact.html">Contact</a>
+      <div class="flex flex-col gap-4">
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-bold text-muted" for="childName">Child's name</label>
+          <input class="form-input" type="text" id="childName" placeholder="e.g. Kai" autocomplete="off" />
+        </div>
+        
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-bold text-muted" for="childLevel">Primary level</label>
+          <select class="form-input" id="childLevel" style="cursor: pointer;">
+            <option value="">Select level…</option>
+            <option value="Primary 1">Primary 1</option>
+            <option value="Primary 2">Primary 2</option>
+            <option value="Primary 3">Primary 3</option>
+            <option value="Primary 4">Primary 4</option>
+            <option value="Primary 5">Primary 5</option>
+            <option value="Primary 6">Primary 6</option>
+            <option value="Secondary 1">Secondary 1</option>
+            <option value="Secondary 2">Secondary 2</option>
+            <option value="Secondary 3">Secondary 3</option>
+            <option value="Secondary 4">Secondary 4</option>
+          </select>
+        </div>
+        
+        <div class="flex flex-col gap-1" id="subjectGroup" style="display:none">
+          <label class="text-sm font-bold text-muted" for="childSubject">Subject</label>
+          <select class="form-input" id="childSubject" style="cursor: pointer;">
+            <option value="">Select subject…</option>
+            <option value="Mathematics">Mathematics</option>
+            <option value="Science" id="scienceOption">Science</option>
+            <option value="English">English</option>
+          </select>
+          <p class="text-xs text-amber font-bold mt-1" id="scienceHint" style="display:none">Science is available from Primary 3 onwards.</p>
         </div>
       </div>
+
+      <div id="step1Error" class="p-3 text-sm text-danger font-bold rounded hidden" style="background: rgba(220, 38, 38, 0.1); border: 1px solid rgba(220, 38, 38, 0.2);"></div>
+      
+      <button class="btn btn-primary w-full mt-2 hover-lift" id="step1Btn" onclick="submitStep1()">Continue →</button>
     </div>
-  </footer>
 
-  <nav class="bottom-nav" aria-label="Mobile navigation">
-    <a href="subjects.html" class="bottom-nav-item is-active" aria-current="page">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-      Practise
-    </a>
-    <a href="tutor.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-      AI Tutor
-    </a>
-    <a href="exam.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="M9 12h6M9 16h4"/></svg>
-      Exam
-    </a>
-    <a href="progress.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-      Progress
-    </a>
-  </nav>
+    <!-- Step 2 -->
+    <div id="step2" class="flex flex-col gap-6 hidden">
+      <div class="text-center mb-2">
+        <h1 class="font-display text-3xl text-main">You're all set! 🎉</h1>
+        <p class="text-sm text-muted">Here's a summary of your account.</p>
+      </div>
 
-  <script src="../js/supabase-client.js"></script>
-  <script>
-    (function () {
-      'use strict';
+      <div class="flex justify-center mb-2">
+        <div id="trialBadge" class="badge badge-amber" style="display: none;"></div>
+      </div>
 
-            // ── Static data maps ─────────────────────────────────────────
+      <div class="card p-4" id="summaryCard" style="background: var(--bg-elevated); border: none;">
+        <!-- Filled by JS -->
+      </div>
+      
+      <button class="btn btn-primary w-full mt-2 hover-lift" onclick="window.location.href='/pages/dashboard.html'">Go to Mission Control →</button>
+    </div>
+  </div>
+</main>
 
-      /**
-       * Topics available per level+subject key.
-       * Empty array = aggregate-only (no topic filter offered).
-       * Source: data/questions/ file inventory.
-       */
-      const TOPIC_MAP = {
-        'primary-1:mathematics': ['whole-numbers'],
-        'primary-2:mathematics': [],
-        'primary-2:english':     [],
-        'primary-3:mathematics': ['whole-numbers'],
-        'primary-3:science':     ['diversity'],
-        'primary-3:english':     ['grammar'],
-        'primary-4:mathematics': ['fractions','decimals','geometry','whole-numbers'],
-        'primary-4:science':     ['heat','light','magnets','matter'],
-        'primary-4:english':     ['grammar','cloze','editing','vocabulary','comprehension'],
-        'primary-5:mathematics': [],
-        'primary-5:science':     [],
-        'primary-5:english':     ['grammar'],
-        'primary-6:mathematics': ['fractions'],
-        'primary-6:science':     ['cells'],
-        'primary-6:english':     ['grammar','cloze','editing'],
+<script src="/js/supabase-client.js"></script>
+<script type="module">
+  import { guardPage } from '/js/auth.js';
+
+  let profile = null;
+  let planToShow = null;
+
+  async function init() {
+    profile = await guardPage(true);
+    if (!profile) return;
+
+    // URL param is source of truth — guards against DB race condition on new signups
+    const urlPlan = new URLSearchParams(window.location.search).get('plan');
+    planToShow = urlPlan || profile.subscription_tier;
+
+    if (planToShow === 'single_subject') {
+      document.getElementById('subjectGroup').style.display = 'flex';
+    }
+
+    // Filter Science option based on level — Science is P3 and above only
+    document.getElementById('childLevel').addEventListener('change', handleLevelChange);
+  }
+
+  // Show/hide Science option depending on selected level
+  function handleLevelChange() {
+    const level = document.getElementById('childLevel').value;
+    const scienceOption = document.getElementById('scienceOption');
+    const scienceHint = document.getElementById('scienceHint');
+    const subjectSelect = document.getElementById('childSubject');
+    const juniorLevels = ['Primary 1', 'Primary 2'];
+    const isJunior = juniorLevels.includes(level);
+
+    scienceOption.disabled = isJunior;
+    scienceOption.style.display = isJunior ? 'none' : '';
+    scienceHint.style.display = isJunior ? 'block' : 'none';
+
+    // Reset subject selection if Science was chosen but level no longer supports it
+    if (isJunior && subjectSelect.value === 'Science') {
+      subjectSelect.value = '';
+    }
+  }
+
+  window.submitStep1 = async function () {
+    const name = document.getElementById('childName').value.trim();
+    const level = document.getElementById('childLevel').value;
+    const subject = document.getElementById('childSubject')?.value || null;
+    const errEl = document.getElementById('step1Error');
+    const btn = document.getElementById('step1Btn');
+
+    errEl.classList.add('hidden');
+
+    if (!name) { showErr("Please enter your child's name."); return; }
+    if (!level) { showErr('Please select a level.'); return; }
+    if (planToShow === 'single_subject' && !subject) {
+      showErr('Please select a subject.'); return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+
+    try {
+      // Use getSupabase() global (supabase-client.js loaded above)
+      const supabase = await getSupabase();
+
+      const insert = {
+        parent_id: profile.id,
+        name,
+        level,
+        ...(subject ? { selected_subject: subject } : {}),
       };
 
-      /**
-       * Level+subject combos with ≥10 questions in their primary file.
-       * Others are "Limited" — still routable but flagged in UI.
-       */
-      const FULL_COMBOS = new Set([
-        'primary-1:mathematics',
-        'primary-2:mathematics',
-        'primary-2:english',
-        'primary-4:mathematics',
-        'primary-4:science',
-        'primary-4:english',
-        'primary-5:mathematics',
-        'primary-5:science',
-        'primary-6:english',
-      ]);
+      const { data, error } = await supabase.from('students').insert(insert).select().single();
+      if (error) throw error;
 
-      /** Question types available per subject. */
-      const TYPE_MAP = {
-        mathematics: ['mcq','short_ans','word_problem'],
-        science:     ['mcq','open_ended'],
-        english:     ['mcq','cloze','editing'],
-      };
+      // Mark setup complete 
+      await supabase.from('profiles').update({ setup_complete: true }).eq('id', profile.id);
 
-      /** Human-readable labels for question types. */
-      const TYPE_LABELS = {
-        mcq:          'MCQ',
-        short_ans:    'Short Answer',
-        word_problem: 'Word Problem',
-        open_ended:   'Open-Ended',
-        cloze:        'Cloze',
-        editing:      'Editing',
-      };
+      showStep2(name, level, subject);
+    } catch (err) {
+      showErr('Something went wrong. Please try again.');
+      console.error(err);
+      btn.disabled = false;
+      btn.textContent = 'Continue →';
+    }
 
-      /** CSS variable names for type colour dots (never inline hex). */
-      const TYPE_COLOURS = {
-        mcq:          'var(--type-mcq)',
-        short_ans:    'var(--type-short-ans)',
-        word_problem: 'var(--type-word-prob)',
-        open_ended:   'var(--type-open)',
-        cloze:        'var(--type-cloze)',
-        editing:      'var(--type-editing)',
-      };
+    function showErr(msg) { errEl.textContent = msg; errEl.classList.remove('hidden'); }
+  };
 
-      /** Returns eligible subjects for the given student level string. */
-      function eligibleSubjects(level) {
-        const l = level.toLowerCase();
-        if (l.includes('1')) return ['mathematics'];
-        if (l.includes('2')) return ['mathematics','english'];
-        return ['mathematics','science','english'];
-      }
+  function showStep2(name, level, subject) {
+    document.getElementById('step1').classList.add('hidden');
+    document.getElementById('step2').classList.remove('hidden');
+    
+    // Update progress dots
+    document.getElementById('dot1').style.background = 'var(--border-dark)';
+    document.getElementById('dot2').style.background = 'var(--brand-rose)';
 
-      // ── State machine ─────────────────────────────────────────────
-      const state = { phase: 'INIT', level: '', subject: '', tier: '', topic: '', qtype: '' };
-      const app = document.getElementById('app');
+    const badge = document.getElementById('trialBadge');
+    if (profile.trial_ends_at) {
+      const days = Math.ceil((new Date(profile.trial_ends_at) - new Date()) / 86400000);
+      badge.textContent = `🎁 ${days}-day free trial active`;
+      badge.style.display = 'inline-flex';
+    }
 
-      function setState(updates) {
-        Object.assign(state, updates);
-        render();
-      }
+    const planNames = {
+      single_subject: 'Single Subject',
+      all_subjects: 'All Subjects',
+      family: 'Family Plan',
+      trial: '7-Day Free Trial',
+    };
+    
+    const rows = [
+      ['Learner Name', name], 
+      ['Academic Level', level],
+      ...(subject ? [['Focus Subject', subject]] : []),
+      ['Active Plan', planNames[planToShow] || planToShow]
+    ];
+    
+    document.getElementById('summaryCard').innerHTML = rows.map(([label, value], index) => `
+      <div class="flex justify-between items-center py-3 ${index !== rows.length - 1 ? 'border-b border-light' : ''}" style="border-bottom: ${index !== rows.length - 1 ? '1px solid var(--border-dark)' : 'none'};">
+        <span class="text-sm font-bold text-muted">${label}</span>
+        <span class="text-sm font-bold text-main">${escapeHtml(String(value))}</span>
+      </div>
+    `).join('');
+  }
 
-      function render() {
-        if (state.phase === 'SUBJECT') renderSubject();
-        else if (state.phase === 'TOPIC') renderTopic();
-        else if (state.phase === 'TYPE')  renderType();
-      }
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
 
-      // ── Helpers ───────────────────────────────────────────────────
-
-      /** XSS-safe string escape for insertion into HTML. */
-      function esc(s) {
-        return String(s)
-          .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-          .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-      }
-
-      /** "whole-numbers" → "Whole Numbers" */
-      function titleCase(slug) {
-        return slug.replace(/-/g,' ').replace(/\b\w/g, c => c.toUpperCase());
-      }
-
-      /** "Primary 4" → "P4", "primary-4" → "P4" */
-      function shortLevel(level) {
-        return level.replace(/primary[- ]/i,'P').replace(/secondary[- ]/i,'S');
-      }
-
-      /** Subject colour CSS variable by name. */
-      function subjColour(subj) {
-        if (subj === 'mathematics') return 'var(--maths-colour)';
-        if (subj === 'science')     return 'var(--science-colour)';
-        return 'var(--english-colour)';
-      }
-
-      // ── Phase renderers ──────────────────────────────────────────
-
-      /**
-       * SUBJECT phase: show eligible subject cards filtered by level + tier.
-       * single_subject tier is auto-routed in init() — this phase
-       * is only shown for all_subjects / family / trial tiers.
-       */
-function renderSubject() {
-        const eligible  = eligibleSubjects(state.level);
-        const allSubjs  = ['mathematics','science','english'];
-
-        const cards = allSubjs.map(subj => {
-          const isLevelEligible = eligible.includes(subj);
-          const isTierLocked    = state.tier === 'single_subject' && subj !== state.subject;
-          const isDisabled      = !isLevelEligible || isTierLocked;
-
-          // Match exam.html graphics and tags exactly
-          const icons = { mathematics: '📐', science: '🔬', english: '📖' };
-          const tags  = { mathematics: 'Maths · P1–P6', science: 'Science · P3–P6', english: 'English · P1–P6' };
-
-          return `
-            <div class="subject-card${isDisabled ? ' is-disabled' : ''}" 
-                 data-subject="${subj}" 
-                 role="button" 
-                 tabindex="${isDisabled ? -1 : 0}"
-                 ${isDisabled ? '' : `onclick="pickSubject('${subj}')"`}
-                 style="${isDisabled ? 'opacity:0.5; cursor:not-allowed;' : ''}">
-              <span style="font-size:3rem; display:block; margin-bottom:1rem;">${icons[subj]}</span>
-              <h3 style="font-family:var(--font-display); font-size:1.5rem; letter-spacing:0.04em; margin-bottom:0.5rem; text-transform:uppercase; color:var(--cream);">${subj}</h3>
-              <span class="badge ${isDisabled ? 'badge-standard' : 'badge-info'}">${isDisabled ? '🔒 Locked' : tags[subj]}</span>
-            </div>`;
-        }).join('');
-
-        app.innerHTML = `
-          <div class="wizard-step is-active">
-            <div style="margin-bottom:var(--space-8); text-align:center;">
-              <span class="section-label-tag">Step 1 of 3</span>
-              <h1 style="font-family:var(--font-display);font-size:2.5rem;letter-spacing:.04em;color:var(--cream);margin-top:var(--space-3);text-transform:uppercase;">Choose a Subject</h1>
-              <p class="text-secondary text-sm" style="margin-top:var(--space-2);">${esc(state.level)} — select the subject to practise</p>
-            </div>
-            <div class="subject-grid">${cards}</div>
-          </div>`;
-      }
-
-
-      window.pickSubject = function (subj) {
-        setState({ subject: subj, topic: '', qtype: '', phase: 'TOPIC' });
-      };
-
-      /**
-       * TOPIC phase: show "All Topics" + per-topic buttons.
-       * "All Topics" routes to the aggregate file (no topic URL param).
-       */
-function renderTopic() {
-        const levelSlug = state.level.toLowerCase().replace(' ','-');
-        const key       = levelSlug + ':' + state.subject;
-        const topics    = TOPIC_MAP[key] || [];
-        const hasFull   = FULL_COMBOS.has(key);
-        const label     = state.subject.charAt(0).toUpperCase() + state.subject.slice(1);
-
-        const stepText     = state.tier === 'single_subject' ? 'Step 1 of 2' : 'Step 2 of 3';
-        const allSelClass  = state.topic === 'all' ? ' is-selected' : '';
-        const limitedBadge = hasFull ? '' : `<span class="badge badge-amber" style="margin-left:var(--space-2);">Limited</span>`;
-        
-        const allTopicBtn  = `
-          <div class="type-chip${allSelClass}" style="grid-column:1/-1;" role="button" tabindex="0" onclick="pickTopic('all')">
-            📚 All Topics ${limitedBadge}
-            <div class="type-chip-sub">Practise everything from this subject</div>
-          </div>`;
-
-        const topicBtns = topics.map(t => {
-          const selClass = state.topic === t ? ' is-selected' : '';
-          return `
-            <div class="type-chip${selClass}" role="button" tabindex="0" onclick="pickTopic('${esc(t)}')">
-              ${esc(titleCase(t))}
-              <div class="type-chip-sub">Focused topic practice</div>
-            </div>`;
-        }).join('');
-
-        const backBtn = state.tier !== 'single_subject'
-          ? `<button class="btn btn-ghost btn-full" style="margin-top:var(--space-3);" onclick="goBack('SUBJECT')">← Back to Subjects</button>`
-          : '';
-
-        app.innerHTML = `
-          <div class="wizard-step is-active">
-            <div style="margin-bottom:var(--space-8); text-align:center;">
-              <span class="section-label-tag">${stepText}</span>
-              <h1 style="font-family:var(--font-display);font-size:2.5rem;letter-spacing:.04em;color:var(--cream);margin-top:var(--space-3);text-transform:uppercase;">Choose a Topic</h1>
-              <p class="text-secondary text-sm" style="margin-top:var(--space-2);">${esc(state.level)} · ${esc(label)}</p>
-            </div>
-            <div class="type-grid" style="display:grid; grid-template-columns: repeat(2, 1fr); gap:var(--space-4);">
-              ${allTopicBtn}
-              ${topicBtns}
-            </div>
-            <div class="mt-8">
-              <button class="btn btn-primary btn-lg w-full" ${!state.topic ? 'disabled' : ''} onclick="goToType()">Choose Question Type →</button>
-            </div>
-            ${backBtn}
-          </div>`;
-      }
-
-      window.pickTopic = function (t) {
-        setState({ topic: t });
-      };
-
-      window.goToType = function () {
-        if (!state.topic) return;
-        setState({ qtype: '', phase: 'TYPE' });
-      };
-
-      /**
-       * TYPE phase: show available question types for the chosen subject.
-       */
-function renderType() {
-        const label     = state.subject.charAt(0).toUpperCase() + state.subject.slice(1);
-        const topicLbl  = state.topic === 'all' ? 'All Topics' : titleCase(state.topic);
-        const types     = TYPE_MAP[state.subject] || [];
-        const stepText  = state.tier === 'single_subject' ? 'Step 2 of 2' : 'Step 3 of 3';
-
-        const mixedSelClass = state.qtype === 'mixed' ? ' is-selected' : '';
-        const mixedBtn = `
-          <div class="type-chip${mixedSelClass}" style="grid-column:1/-1;" role="button" tabindex="0" onclick="pickType('mixed')">
-            🎲 Mixed (All Types)
-            <div class="type-chip-sub">A balanced mix of questions</div>
-          </div>`;
-
-        const typeBtns = types.map(t => {
-          const selClass = state.qtype === t ? ' is-selected' : '';
-          return `
-            <div class="type-chip${selClass}" role="button" tabindex="0" onclick="pickType('${esc(t)}')">
-              ${esc(TYPE_LABELS[t] || t)}
-              <div class="type-chip-sub">Specific question format</div>
-            </div>`;
-        }).join('');
-
-        app.innerHTML = `
-          <div class="wizard-step is-active">
-            <div style="margin-bottom:var(--space-8); text-align:center;">
-              <span class="section-label-tag">${stepText}</span>
-              <h1 style="font-family:var(--font-display);font-size:2.5rem;letter-spacing:.04em;color:var(--cream);margin-top:var(--space-3);text-transform:uppercase;">Question Type</h1>
-              <p class="text-secondary text-sm" style="margin-top:var(--space-2);">${esc(state.level)} · ${esc(label)} · ${esc(topicLbl)}</p>
-            </div>
-            <div class="type-grid" style="display:grid; grid-template-columns: repeat(2, 1fr); gap:var(--space-4);">
-              ${mixedBtn}
-              ${typeBtns}
-            </div>
-            <div class="mt-8">
-              <button class="btn btn-primary btn-lg w-full" ${!state.qtype ? 'disabled' : ''} onclick="launchQuiz()">Start Quiz →</button>
-            </div>
-            <button class="btn btn-ghost btn-full" style="margin-top:var(--space-3);" onclick="goBack('TOPIC')">← Back to Topics</button>
-          </div>`;
-      }
-
-      window.pickType = function (t) {
-        setState({ qtype: t });
-      };
-
-      window.goBack = function (phase) {
-        if (phase === 'SUBJECT') setState({ subject: '', topic: '', qtype: '', phase: 'SUBJECT' });
-        else if (phase === 'TOPIC') setState({ qtype: '', phase: 'TOPIC' });
-      };
-
-      /**
-       * Assembles quiz.html URL and navigates to the quiz engine.
-       * quiz.js handles file resolution, question rendering, scoring, and Supabase save.
-       */
-      window.launchQuiz = function () {
-        if (!state.qtype) return;
-
-        const levelSlug = state.level.toLowerCase().replace(' ','-');
-        const params    = new URLSearchParams({ subject: state.subject, level: levelSlug });
-
-        // P1 Maths has no aggregate — always route to the only topic file
-        if (levelSlug === 'primary-1' && state.subject === 'mathematics') {
-          params.set('topic', 'whole-numbers');
-        } else if (state.topic && state.topic !== 'all') {
-          params.set('topic', state.topic);
-        }
-
-        if (state.qtype && state.qtype !== 'mixed') {
-          params.set('type', state.qtype);
-        }
-
-        window.location.href = 'quiz.html?' + params.toString();
-      };
-
-      // ── Init ──────────────────────────────────────────────────────
-      /**
-       * Fetches session, subscription profile, and student record.
-       * Drives initial wizard phase based on subscription tier.
-       */
-      async function init() {
-        try {
-          const sb = await getSupabase();
-          const { data: { session } } = await sb.auth.getSession();
-          if (!session) {
-            window.location.href = 'login.html';
-            return;
-          }
-
-          // Auth-aware navbar
-          const actionsEl = document.getElementById('navbar-actions');
-          const navDash   = document.getElementById('navDashboard');
-          if (actionsEl) {
-            actionsEl.innerHTML =
-              '<a href="dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a>'
-              + '<button class="btn btn-primary btn-sm" id="navSignOut">Sign Out</button>';
-            document.getElementById('navSignOut').addEventListener('click', () => {
-              sb.auth.signOut().then(() => window.location.reload());
-            });
-          }
-          if (navDash) navDash.hidden = false;
-
-          const [{ data: student }, { data: profile }] = await Promise.all([
-            sb.from('students').select('level, selected_subject').eq('parent_id', session.user.id).maybeSingle(),
-            sb.from('profiles').select('subscription_tier').eq('id', session.user.id).maybeSingle(),
-          ]);
-
-          const level = (student && student.level)             || 'Primary 4';
-          const tier  = (profile && profile.subscription_tier) || 'trial';
-
-          document.getElementById('ov-load').hidden = true;
-
-          // single_subject tier: skip subject selection — jump straight to topic picker
-          if (tier === 'single_subject' && student && student.selected_subject) {
-            setState({
-              level, tier,
-              subject: student.selected_subject.toLowerCase(),
-              phase: 'TOPIC',
-            });
-          } else {
-            setState({ level, tier, phase: 'SUBJECT' });
-          }
-
-        } catch (err) {
-          console.error('[subjects] init error:', err);
-          document.getElementById('ov-load').hidden = true;
-          app.innerHTML = `
-            <div class="card" style="padding:var(--space-8); text-align:center;">
-              <p class="text-danger mb-4">Could not load your profile. Please try again.</p>
-              <button class="btn btn-primary" onclick="location.reload()">Retry</button>
-            </div>`;
-        }
-      }
-
-      init();
-
-    })();
-  </script>
- 
-  <!-- TEST: Log in as a P4 all_subjects user → 3 subject cards visible.
-       Select Mathematics → topic selector with "All Topics" + fractions/decimals/geometry/whole-numbers.
-       Select "All Topics" → type selector with Mixed + MCQ + Short Answer + Word Problem.
-       Select MCQ + Start Quiz → navigates to quiz.html?subject=mathematics&level=primary-4&type=mcq
-       Log in as single_subject user → lands directly on topic picker for their subject. -->
+  init();
+</script>
 </body>
 </html>
