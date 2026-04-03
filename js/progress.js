@@ -156,7 +156,41 @@ async function init() {
     }
 // ── Action Plan Aggregations (NEW UI) ─────────────────────────────────────
     const allActivity = [...(attempts || []), ...(examResults || [])];
+    
+    // Sort all activity from newest to oldest
+    allActivity.sort((a, b) => new Date(b.completed_at) - new Date(a.completed_at));
+
     const totalSeconds = allActivity.reduce((sum, a) => sum + (a.time_taken || a.time_taken_seconds || 0), 0);
+    
+    // ── Apply Advanced 14-Day / 1000-Mark / 3-Paper Rule ──
+    const fourteenDaysMs = 14 * 24 * 60 * 60 * 1000;
+    const nowMs = Date.now();
+    
+    // Overwrite legacy subjectStats with advanced tracking
+    const advancedSubjectStats = { 
+      mathematics: { earned: 0, total: 0, count: 0, quizzes: 0 }, 
+      science: { earned: 0, total: 0, count: 0, quizzes: 0 }, 
+      english: { earned: 0, total: 0, count: 0, quizzes: 0 } 
+    };
+
+    allActivity.forEach(act => {
+      const sub = act.subject?.toLowerCase();
+      if (!advancedSubjectStats[sub]) return;
+      
+      const stats = advancedSubjectStats[sub];
+      
+      // Enforce limits: Stop adding if we hit 1000 marks or 14 days
+      const actDateMs = new Date(act.completed_at || act.created_at).getTime();
+      if (stats.total >= 1000 || (nowMs - actDateMs > fourteenDaysMs)) return;
+      
+      const actTotal = act.total_marks || act.total_questions || 1;
+      const actEarned = act.score || 0;
+      
+      stats.total += actTotal;
+      stats.earned += actEarned;
+      stats.count += 1; // Tracks number of papers/quizzes
+      stats.quizzes = stats.count; // For legacy UI compatibility
+    });
     
     let questionsMastered = 0;
     allActivity.forEach(a => {
@@ -203,8 +237,7 @@ async function init() {
     }
 
     // Fire the new Action Plan renderer
-    // Fire the new Action Plan renderer
-    renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subjectStats, weakTopics, student, session, activeQuest, allActivity, improvedText);
+    renderActionPlanUI(totalSeconds, questionsMastered, overallPct, advancedSubjectStats, weakTopics, student, session, activeQuest, allActivity, improvedText);
 
     loadingEl.hidden = true;
     statsEl.hidden   = false;
@@ -926,7 +959,7 @@ function renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subject
     const pctEl = document.getElementById(`stat-${sub}-pct`);
     const alEl = document.getElementById(`stat-${sub}-al`);
 
-    if (stats && stats.total > 0) {
+    if (stats && stats.total > 0 && stats.count >= 3) {
       const pct = Math.round((stats.earned / stats.total) * 100);
       const al = getALBand(pct);
       if (pctEl) pctEl.textContent = pct + '%';
@@ -1037,7 +1070,7 @@ function getALBand(pct) {
   return 'AL8';
 }
 
-// ── AI ACCORDION TOGGLE (NO MOCK DATA) ────────────────────────────────────────
+// ── AI ACCORDION TOGGLE (LIVE GEMINI ENGINE) ──────────────────────────────────
 
 window.toggleDeepDive = async function(studentId, subject, btnEl, quizCount) {
   const container = document.getElementById(`deep-dive-${subject}`);
@@ -1050,16 +1083,35 @@ window.toggleDeepDive = async function(studentId, subject, btnEl, quizCount) {
   
   container.style.display = 'block';
   btnEl.innerHTML = 'Hide Details ↑';
-  
   if (container.dataset.loaded) return;
 
-  await new Promise(r => setTimeout(r, 600));
-
   container.innerHTML = `
-    <div style="text-align:center; padding:var(--space-2);">
-      <strong style="color:var(--sage-light);display:block;margin-bottom:4px;">⏳ AI Analysis Pending</strong>
-      <span class="text-secondary text-sm">Miss Wena's deep-dive analysis engine is currently being connected to the database. Check back soon for detailed insights!</span>
+    <div style="text-align:center; padding:var(--space-2); color:var(--sage-light);">
+      <span class="spinner-sm" style="width:14px;height:14px;border-width:2px;display:inline-block;margin-right:8px;"></span> Generating Miss Wena's analysis...
     </div>
   `;
-  container.dataset.loaded = "true";
+
+  try {
+    const { data: { session } } = await window.getSupabase().auth.getSession();
+    
+    // Call our new backend endpoint
+    const res = await fetch('/api/analyze-weakness', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
+      body: JSON.stringify({ student_id: studentId, subject: subject })
+    });
+    
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+
+    container.innerHTML = `
+      <strong style="color:var(--mint);display:block;margin-bottom:4px;">✨ Miss Wena's Analysis:</strong>
+      ${data.analysis}
+    `;
+    container.dataset.loaded = "true";
+
+  } catch (err) {
+    container.innerHTML = `<div style="text-align:center; padding:var(--space-2); color:var(--danger);">Failed to load analysis. ${err.message}</div>`;
+    container.dataset.loaded = ""; // Allow retry
+  }
 }
