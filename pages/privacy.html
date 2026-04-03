@@ -69,14 +69,14 @@
   <div class="container" style="max-width: 800px;">
 
     <!-- TL;DR Summary Card -->
-    <div class="card bg-sage hover-lift mb-8 p-6" style="border: none;">
-      <h2 class="font-display text-2xl text-white mb-4 flex items-center gap-2">
+    <div class="card hover-lift mb-8 p-6" style="border-left: 4px solid var(--brand-mint);">
+      <h2 class="font-display text-2xl text-main mb-4 flex items-center gap-2">
         <span>✨</span> The Short Version (TL;DR)
       </h2>
-      <ul class="flex flex-col gap-3 text-sm" style="color: rgba(255,255,255,0.9); list-style: none;">
-        <li class="flex items-start gap-2"><span class="text-success font-bold">✓</span> <strong>No Ads, Ever:</strong> We do not sell your personal data or run advertisements.</li>
-        <li class="flex items-start gap-2"><span class="text-success font-bold">✓</span> <strong>Local Storage:</strong> Your child's data is encrypted and securely stored right here in Singapore.</li>
-        <li class="flex items-start gap-2"><span class="text-success font-bold">✓</span> <strong>You have the right to forget:</strong> You can request full deletion of your account and data at any time, processed within 30 days.</li>
+      <ul class="flex flex-col gap-3 text-sm text-main" style="list-style: none; text-align: justify;">
+        <li class="flex items-start gap-2"><span class="text-success font-bold">✓</span> <span><strong>No Ads, Ever:</strong> We do not sell your personal data or run advertisements.</span></li>
+        <li class="flex items-start gap-2"><span class="text-success font-bold">✓</span> <span><strong>Local Storage:</strong> Your child's data is encrypted and securely stored right here in Singapore.</span></li>
+        <li class="flex items-start gap-2"><span class="text-success font-bold">✓</span> <span><strong>You have the right to forget:</strong> You can request full deletion of your account and data at any time, processed within 30 days.</span></li>
       </ul>
     </div>
 
@@ -87,7 +87,7 @@
         <h2 class="font-display text-2xl text-main mb-4 flex items-center gap-3">
           <span class="text-3xl">👋</span> 1. Who We Are & Scope
         </h2>
-        <div class="text-muted text-sm flex flex-col gap-3">
+        <div class="text-muted text-sm flex flex-col gap-3" style="text-align: justify;">
           <p>Superholic Lab is an online educational platform operated by <strong>Superholic Lab Pte. Ltd.</strong> in Singapore.</p>
           <p>We comply fully with Singapore's <strong>Personal Data Protection Act 2012 (PDPA)</strong> and act as the Data Controller. This policy applies to all personal data collected through www.superholiclab.com for parents, guardians, and children.</p>
         </div>
@@ -97,7 +97,7 @@
         <h2 class="font-display text-2xl text-main mb-4 flex items-center gap-3">
           <span class="text-3xl">📝</span> 2. Data We Collect & How We Use It
         </h2>
-        <div class="text-muted text-sm flex flex-col gap-3">
+        <div class="text-muted text-sm flex flex-col gap-3" style="text-align: justify;">
           <p><strong>Account Data:</strong> Parent's name and email. Children's profiles require only a first name and school level.</p>
           <p><strong>Usage Data:</strong> Quiz results, topic progress, and AI tutor chat history. This is used exclusively to personalise the learning experience and build your Mission Control dashboard.</p>
           <p><strong>Payment Data:</strong> Processed securely via Stripe, Inc. We do not store your credit card numbers on our servers.</p>
@@ -109,7 +109,7 @@
         <h2 class="font-display text-2xl text-main mb-4 flex items-center gap-3">
           <span class="text-3xl">🔒</span> 3. Security & Storage
         </h2>
-        <div class="text-muted text-sm flex flex-col gap-3">
+        <div class="text-muted text-sm flex flex-col gap-3" style="text-align: justify;">
           <p>Your data is stored in <strong>Supabase (PostgreSQL)</strong>, hosted on secure AWS servers located physically in <strong>Singapore (ap-southeast-1)</strong>.</p>
           <p>We enforce strict row-level security (RLS) policies so users can only access their own data. All data is transmitted over HTTPS, and passwords are cryptographically hashed using bcrypt.</p>
         </div>
@@ -119,7 +119,7 @@
         <h2 class="font-display text-2xl text-main mb-4 flex items-center gap-3">
           <span class="text-3xl">🤝</span> 4. Sharing with Third Parties
         </h2>
-        <div class="text-muted text-sm flex flex-col gap-3">
+        <div class="text-muted text-sm flex flex-col gap-3" style="text-align: justify;">
           <p>We share data only with essential service providers who are contractually bound to protect it:</p>
           <ul style="padding-left: var(--space-4);">
             <li><strong>Supabase:</strong> Database and authentication.</li>
@@ -134,7 +134,7 @@
         <h2 class="font-display text-2xl text-main mb-4 flex items-center gap-3">
           <span class="text-3xl">🧸</span> 5. Children's Data & Your PDPA Rights
         </h2>
-        <div class="text-muted text-sm flex flex-col gap-3">
+        <div class="text-muted text-sm flex flex-col gap-3" style="text-align: justify;">
           <p>Under the PDPA, you have complete control over your family's data. You have the right to:</p>
           <ul style="padding-left: var(--space-4);">
             <li><strong>Access & Correction:</strong> View or fix the data we hold about you.</li>
@@ -149,7 +149,7 @@
         <h2 class="font-display text-2xl text-main mb-4 flex items-center gap-3">
           <span class="text-3xl">🍪</span> 6. Cookies & Tracking
         </h2>
-        <div class="text-muted text-sm flex flex-col gap-3">
+        <div class="text-muted text-sm flex flex-col gap-3" style="text-align: justify;">
           <p><strong>We do not use tracking cookies.</strong> Our analytics provider (Plausible) is entirely cookie-free and respects your privacy. We only use local browser storage for functional necessities, like keeping you logged into your session safely.</p>
         </div>
       </div>
@@ -172,7 +172,7 @@
           <img src="../assets/logo.svg" width="28" height="28" alt="" aria-hidden="true" style="border-radius:6px;">
           Superholic Lab
         </div>
-        <p class="text-sm text-muted">Singapore's AI-powered learning platform for P1–S4 students. MOE-aligned. Available 24/7.</p>
+        <p class="text-sm text-muted" style="text-align: justify;">Singapore's AI-powered learning platform for P1–S4 students. MOE-aligned. Available 24/7.</p>
       </div>
       
       <div class="flex-1 flex flex-col gap-2" style="min-width: 120px;">
