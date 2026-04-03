@@ -3,241 +3,248 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>App Master — Superholic Lab</title>
+  <title>Terms of Service — Superholic Lab</title>
+  <meta name="description" content="Clear, fair, and straightforward Terms of Service for Superholic Lab.">
+  
+  <!-- Fonts & Styles -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="icon" href="../assets/favicon.ico" />
   
+  <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js"></script>
+
   <script type="module">
     import { guardPage } from '/js/auth.js';
     await guardPage(false); 
   </script>
 </head>
 
-<body id="mainBody">
+<body class="has-bottom-nav">
 
-<header class="navbar navbar-homepage" id="navbar" style="justify-content: space-between;">
-    
-    <a href="../index.html" class="navbar-logo">
-      <img src="../assets/logo.svg" width="32" height="32" alt="Superholic Lab">
-      Superholic Lab
-    </a>
+<!-- ═══════════════════ GLOBAL NAVBAR (Darker Sage) ═══════════════════ -->
+<header class="navbar justify-between bg-sage-dark" id="navbar">
+  
+  <a href="../index.html" class="flex items-center gap-2 font-display text-2xl" style="text-decoration: none; color: #FFFFFF;">
+    <img src="../assets/logo.svg" width="32" height="32" alt="" aria-hidden="true" style="border-radius: var(--radius-sm); flex-shrink:0;">
+    Superholic Lab
+  </a>
 
-    <div class="navbar-actions">
-      <div id="auth-header-container">
-        <a href="login.html" class="btn btn-secondary btn-sm">Log In</a>
-      </div>
-
-      <button class="navbar-toggle" id="navToggle" aria-label="Open menu">
-        <span></span><span></span><span></span>
-      </button>
+  <div class="navbar-actions flex items-center gap-4">
+    <div id="auth-header-container">
+      <a href="login.html" class="btn btn-sm" style="background: rgba(255,255,255,0.15); color: #FFFFFF; border: 1px solid rgba(255,255,255,0.1);">Log In</a>
     </div>
 
-    <div class="navbar-mobile" id="navDropdown">
-      <div class="container" id="navLinks">
-        <a href="../index.html">Home</a>
-        <a href="../pages/about.html">About Us</a>
-        <a href="../pages/pricing.html">Pricing</a>
-        <a href="../pages/contact.html">Contact Support</a>
-        <a href="../pages/signup.html" id="navSignUp">Start Free Trial</a>
-      </div>
-    </div>
-  </header>
+    <!-- Mobile menu toggle -->
+    <button class="navbar-toggle" id="navToggle" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
 
-<main class="page-content" style="margin-top: 68px; min-height: 80vh;">
-  <div style="background: var(--hero-gradient); padding: var(--space-10) 0 var(--space-14); position:relative; overflow:hidden;">
-    <div class="container" style="position:relative;z-index:1;text-align:center;">
-      <h1 class="animate-in delay-1">Terms of Service</h1>
-      <p class="animate-in delay-2">Last updated: 23 March 2026</p>
-    </div>
-    <div class="wave-divider" aria-hidden="true">
-      <svg viewBox="0 0 1440 70" preserveAspectRatio="none">
-        <path d="M0,40 C360,70 720,10 1080,40 C1260,55 1380,30 1440,40 L1440,70 L0,70 Z" fill="var(--surface)"/>
-      </svg>
-    </div>
-  </div> 
-  <div class="container">
-      <div class="card no-hover" style="max-width:720px; margin:0 auto;">
-        <div class="card-body" style="line-height:1.75;">
+  <!-- Mobile Dropdown Menu -->
+  <div class="navbar-mobile" id="navDropdown">
+    <a href="../index.html">Home</a>
+    <a href="about.html">About Us</a>
+    <a href="pricing.html">Pricing</a>
+    <a href="contact.html">Contact Support</a>
+    <a href="signup.html" id="navSignUp">Start Free Trial</a>
+  </div>
+</header>
 
-          <h2 style="font-size:1.05rem; margin-top:var(--space-6); margin-bottom:var(--space-2);">1. About these Terms</h2>
-          <p>These Terms of Service (<strong>"Terms"</strong>) govern your access to and use of <strong>www.superholiclab.com</strong> and all associated services (collectively, the <strong>"Service"</strong>), operated by <strong>Superholic Lab Pte. Ltd.</strong>, a company incorporated in Singapore (<strong>"we"</strong>, <strong>"us"</strong>, <strong>"our"</strong>).</p>
-          <p style="margin-top:var(--space-3);">By creating an account or using the Service, you agree to be bound by these Terms. If you do not agree, please do not use the Service.</p>
+<!-- ═══════════════════ HERO (Sage + Dots) ═══════════════════ -->
+<section class="bg-sage texture-dots py-10" style="padding-top: calc(64px + var(--space-8)); text-align: center;">
+  <div class="container flex flex-col items-center gap-4">
+    <div class="badge" style="background: rgba(0, 0, 0, 0.25); color: #FFFFFF; backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.1);">Legal Information</div>
+    <h1 class="font-display text-4xl text-white mt-2 mb-2" style="font-size: 3.5rem; line-height: 1.1;">
+      Terms of <span class="text-rose">Service</span>
+    </h1>
+    <p class="text-lg" style="color: rgba(255,255,255,0.8); max-width: 600px;">
+      Last updated: 23 March 2026. Simple, honest rules for using Superholic Lab.
+    </p>
+  </div>
+</section>
 
-          <h2 style="font-size:1.05rem; margin-top:var(--space-6); margin-bottom:var(--space-2);">2. Eligibility and account registration</h2>
-          <p>Accounts must be created by a parent or guardian aged 18 or above on behalf of their child. By registering, you represent that:</p>
-          <ul style="padding-left:var(--space-5); margin:0;">
-            <li style="margin-bottom:var(--space-2);">You are at least 18 years old.</li>
-            <li style="margin-bottom:var(--space-2);">You have the authority to agree to these Terms on behalf of yourself and any child profile you create.</li>
-            <li style="margin-bottom:var(--space-2);">The information you provide is accurate and complete.</li>
-          </ul>
-          <p style="margin-top:var(--space-3);">You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. Notify us immediately at <strong>support@superholiclab.com</strong> if you suspect unauthorised access.</p>
+<!-- ═══════════════════ MAIN CONTENT (Off-White + Light Grid) ═══════════════════ -->
+<section class="py-10 bg-page texture-light-grid">
+  <div class="container" style="max-width: 800px;">
 
-          <h2 style="font-size:1.05rem; margin-top:var(--space-6); margin-bottom:var(--space-2);">3. Free trial</h2>
-          <p>New accounts receive a <strong>7-day free trial</strong> that grants full access to the Service, subject to a daily limit of 20 practice questions and 10 AI tutor messages. No credit card is required to start the trial.</p>
-          <p style="margin-top:var(--space-3);">At the end of the trial period, access to paid features will be restricted unless you subscribe to a paid plan.</p>
-
-          <h2 style="font-size:1.05rem; margin-top:var(--space-6); margin-bottom:var(--space-2);">4. Subscriptions and billing</h2>
-          <p>Paid subscriptions are billed monthly in advance. By subscribing, you authorise us to charge your payment method on a recurring basis until you cancel.</p>
-          <ul style="padding-left:var(--space-5); margin:0;">
-            <li style="margin-bottom:var(--space-2);"><strong>Single Subject</strong> — S$9.99/month. Covers one subject for one child.</li>
-            <li style="margin-bottom:var(--space-2);"><strong>All Subjects</strong> — S$19.99/month. Covers all subjects for one child.</li>
-            <li style="margin-bottom:var(--space-2);"><strong>Family Plan</strong> — S$29.99/month. Covers all subjects for up to 3 children.</li>
-          </ul>
-          <p style="margin-top:var(--space-3);">Prices are in Singapore Dollars (SGD) and inclusive of GST where applicable. We reserve the right to change pricing with 30 days' notice to existing subscribers.</p>
-          <p style="margin-top:var(--space-3);">Payments are processed by Stripe, Inc. We do not store your payment card details. Please refer to <a href="https://stripe.com/en-sg/privacy" target="_blank" rel="noopener noreferrer">Stripe's Privacy Policy</a> for details on how they handle payment data.</p>
-
-          <h2 style="font-size:1.05rem; margin-top:var(--space-6); margin-bottom:var(--space-2);">5. Cancellation and refunds</h2>
-          <p>You may cancel your subscription at any time through your account settings or by emailing <strong>support@superholiclab.com</strong>. Cancellation takes effect at the end of the current billing period; you will retain access until then.</p>
-          <p style="margin-top:var(--space-3);">We offer a <strong>7-day money-back guarantee</strong> for new paid subscriptions. If you are not satisfied, contact us within 7 days of your first charge for a full refund. Refund requests beyond 7 days will be considered on a case-by-case basis.</p>
-
-          <h2 style="font-size:1.05rem; margin-top:var(--space-6); margin-bottom:var(--space-2);">6. Acceptable use</h2>
-          <p>You agree not to:</p>
-          <ul style="padding-left:var(--space-5); margin:0;">
-            <li style="margin-bottom:var(--space-2);">Share your account credentials with others or allow others to use your account.</li>
-            <li style="margin-bottom:var(--space-2);">Attempt to circumvent the paywall, daily limits, or any access controls.</li>
-            <li style="margin-bottom:var(--space-2);">Scrape, copy, or redistribute question content or AI-generated responses.</li>
-            <li style="margin-bottom:var(--space-2);">Use the Service for any unlawful purpose or in a manner that could harm us or other users.</li>
-            <li style="margin-bottom:var(--space-2);">Submit content to the AI tutor that is offensive, harmful, or unrelated to educational purposes.</li>
-          </ul>
-          <p style="margin-top:var(--space-3);">We reserve the right to suspend or terminate accounts that violate these Terms without notice or refund.</p>
-
-          <h2 style="font-size:1.05rem; margin-top:var(--space-6); margin-bottom:var(--space-2);">7. Intellectual property</h2>
-          <p>All content on the Service — including question banks, worked solutions, interface design, and AI-generated explanations — is owned by or licensed to Superholic Lab Pte. Ltd. You may not reproduce, distribute, or create derivative works from any part of the Service without our express written permission.</p>
-          <p style="margin-top:var(--space-3);">You retain ownership of any data you input (e.g., AI tutor messages). By using the Service, you grant us a limited licence to process that data solely to provide the Service to you.</p>
-
-          <h2 style="font-size:1.05rem; margin-top:var(--space-6); margin-bottom:var(--space-2);">8. AI-generated content disclaimer</h2>
-          <p>The AI Tutor feature uses large language models (Anthropic Claude) to generate educational explanations. While we design prompts to align with the Singapore MOE curriculum, AI-generated content may occasionally contain inaccuracies. We recommend that parents review AI responses and that students verify answers against official MOE materials for examination preparation.</p>
-          <p style="margin-top:var(--space-3);">AI responses are provided for educational guidance only and do not constitute professional tutoring advice.</p>
-
-          <h2 style="font-size:1.05rem; margin-top:var(--space-6); margin-bottom:var(--space-2);">9. Limitation of liability</h2>
-          <p>To the fullest extent permitted by Singapore law, Superholic Lab Pte. Ltd. shall not be liable for any indirect, incidental, or consequential damages arising from your use of or inability to use the Service.</p>
-          <p style="margin-top:var(--space-3);">Our total aggregate liability to you for any claim arising from these Terms or the Service shall not exceed the amount you paid us in the 3 months preceding the claim.</p>
-          <p style="margin-top:var(--space-3);">The Service is provided on an "as is" and "as available" basis. We do not warrant that the Service will be uninterrupted, error-free, or that AI-generated content will be accurate or complete.</p>
-
-          <h2 style="font-size:1.05rem; margin-top:var(--space-6); margin-bottom:var(--space-2);">10. Service availability</h2>
-          <p>We aim to maintain 99.5% uptime but do not guarantee continuous, uninterrupted availability. We may take the Service down for maintenance with advance notice where possible. Scheduled maintenance windows will be announced via email or in-app notification.</p>
-
-          <h2 style="font-size:1.05rem; margin-top:var(--space-6); margin-bottom:var(--space-2);">11. Termination</h2>
-          <p>We may suspend or terminate your account immediately if you breach these Terms, fail to pay subscription fees, or if we are required to do so by law. Upon termination, your right to use the Service ceases immediately. Sections 7, 9, and 12 survive termination.</p>
-
-          <h2 style="font-size:1.05rem; margin-top:var(--space-6); margin-bottom:var(--space-2);">12. Governing law and disputes</h2>
-          <p>These Terms are governed by the laws of Singapore. Any dispute arising from these Terms shall be subject to the exclusive jurisdiction of the courts of Singapore.</p>
-          <p style="margin-top:var(--space-3);">Before initiating any formal proceedings, we encourage you to contact us at <strong>support@superholiclab.com</strong> to attempt an informal resolution.</p>
-
-          <h2 style="font-size:1.05rem; margin-top:var(--space-6); margin-bottom:var(--space-2);">13. Changes to these Terms</h2>
-          <p>We may update these Terms from time to time. We will notify you of material changes by email at least 14 days before they take effect. Your continued use of the Service after changes take effect constitutes your acceptance of the updated Terms.</p>
-
-          <h2 style="font-size:1.05rem; margin-top:var(--space-6); margin-bottom:var(--space-2);">14. Contact us</h2>
-          <p><strong>Email:</strong> support@superholiclab.com<br />
-          <strong>Address:</strong> Superholic Lab Pte. Ltd., Singapore</p>
-
-        </div>
-      </div>
+    <!-- TL;DR Summary Card -->
+    <div class="card bg-sage hover-lift mb-8 p-6" style="border: none;">
+      <h2 class="font-display text-2xl text-white mb-4 flex items-center gap-2">
+        <span>✨</span> The Short Version (TL;DR)
+      </h2>
+      <ul class="flex flex-col gap-3 text-sm" style="color: rgba(255,255,255,0.9); list-style: none;">
+        <li class="flex items-start gap-2"><span class="text-success font-bold">✓</span> <strong>You're in control:</strong> Cancel your subscription anytime. No hidden fees.</li>
+        <li class="flex items-start gap-2"><span class="text-success font-bold">✓</span> <strong>AI is a tool, not magic:</strong> Our AI Tutor is deeply aligned with the MOE syllabus, but it's a learning aid, not an official examiner.</li>
+        <li class="flex items-start gap-2"><span class="text-success font-bold">✓</span> <strong>Your data is yours:</strong> We do not sell your data, and your child's chat logs are NEVER used to train public AI models.</li>
+      </ul>
     </div>
 
-  </main>
-
-  <footer class="footer">
-    <div class="container">
-      <div class="footer-bottom">
-        <p>&copy; 2026 Superholic Lab. 🇸🇬 Made in Singapore</p>
-        <div class="flex gap-4">
-          <a href="privacy.html">Privacy</a>
-          <a href="terms.html">Terms</a>
-          <a href="contact.html">Contact</a>
-        </div>
-      </div>
-    </div>
-  </footer>
-
-  <nav class="bottom-nav" aria-label="Mobile navigation" hidden>
-    <a href="subjects.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-      Practise
-    </a>
-    <a href="tutor.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-      AI Tutor
-    </a>
-    <a href="exam.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="M9 12h6M9 16h4"/></svg>
-      Exam
-    </a>
-    <a href="progress.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-      Progress
-    </a>
-  </nav>
-
-  <script src="../js/supabase-client.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      /* ── 1. Dropdown Toggle Logic ── */
-      const toggle = document.getElementById('navToggle');
-      const dropdown = document.getElementById('navDropdown');
+    <!-- Full Terms Cards -->
+    <div class="flex flex-col gap-6">
       
-      if (toggle && dropdown) {
-        toggle.addEventListener('click', (e) => {
-          e.stopPropagation();
-          dropdown.classList.toggle('is-open');
-          toggle.classList.toggle('is-active'); 
-        });
-        document.addEventListener('click', (e) => {
-          if (!dropdown.contains(e.target) && !toggle.contains(e.target)) {
-            dropdown.classList.remove('is-open');
-            toggle.classList.remove('is-active');
-          }
-        });
-      }
+      <div class="card p-8 hover-lift">
+        <h2 class="font-display text-2xl text-main mb-4 flex items-center gap-3">
+          <span class="text-3xl">🤝</span> 1. About these Terms
+        </h2>
+        <div class="text-muted text-sm flex flex-col gap-3">
+          <p>These Terms of Service govern your access to and use of <strong>www.superholiclab.com</strong> (the "Service"), operated by <strong>Superholic Lab Pte. Ltd.</strong>, incorporated in Singapore.</p>
+          <p>By creating an account or using the Service, you agree to be bound by these Terms. If you do not agree, please do not use the Service.</p>
+        </div>
+      </div>
 
-      /* ── 2. Master Auth & Layout Logic ── */
-      getSupabase().then(async function(sb) {
-        try {
-          const { data: { session } } = await sb.auth.getSession();
-          const body = document.getElementById('mainBody');
-          const bottomNav = document.getElementById('bottomNav');
-          const authContainer = document.getElementById('auth-header-container');
-          const navLinks = document.getElementById('navLinks');
+      <div class="card p-8 hover-lift">
+        <h2 class="font-display text-2xl text-main mb-4 flex items-center gap-3">
+          <span class="text-3xl">👤</span> 2. Eligibility & Accounts
+        </h2>
+        <div class="text-muted text-sm flex flex-col gap-3">
+          <p>Accounts must be created by a parent or guardian aged 18 or above on behalf of their child. By registering, you represent that you have the authority to agree to these Terms on behalf of your child.</p>
+          <p>You are responsible for maintaining the confidentiality of your account credentials. Notify us immediately at <strong>support@superholiclab.com</strong> if you suspect unauthorised access.</p>
+        </div>
+      </div>
 
-          if (session) {
-            // 1. Update Auth Buttons (Applies to ALL pages)
-            if (authContainer) {
-              authContainer.innerHTML = '<a href="dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a>';
-            }
+      <div class="card p-8 hover-lift">
+        <h2 class="font-display text-2xl text-main mb-4 flex items-center gap-3">
+          <span class="text-3xl">💳</span> 3. Subscriptions & Billing
+        </h2>
+        <div class="text-muted text-sm flex flex-col gap-3">
+          <p><strong>Free Trial:</strong> New accounts receive a 7-day free trial. No credit card is required to start. At the end of the trial, access will pause unless you subscribe.</p>
+          <p><strong>Billing:</strong> Paid subscriptions are billed in advance. By subscribing, you authorise us to charge your payment method (via Stripe, Inc.) on a recurring basis. Prices are in Singapore Dollars (SGD).</p>
+          <p><strong>Cancellations & Refunds:</strong> You may cancel anytime via your billing dashboard. We offer a 7-day money-back guarantee for new paid subscriptions. Refunds beyond 7 days are considered on a case-by-case basis.</p>
+        </div>
+      </div>
 
-            if (navLinks && !document.getElementById('navSignOut')) {
-              const signOut = document.createElement('a');
-              signOut.id = "navSignOut";
-              signOut.href = "#";
-              signOut.textContent = "Sign Out";
-              signOut.style.color = "var(--rose)";
-              signOut.onclick = async (e) => { 
-                e.preventDefault();
-                await sb.auth.signOut(); 
-                window.location.href = '../index.html'; 
-              };
-              navLinks.appendChild(signOut);
-              
-              const signUpLink = document.getElementById('navSignUp');
-              if (signUpLink) signUpLink.remove();
-            }
+      <div class="card p-8 hover-lift">
+        <h2 class="font-display text-2xl text-main mb-4 flex items-center gap-3">
+          <span class="text-3xl">🤖</span> 4. The AI Tutor Clause
+        </h2>
+        <div class="text-muted text-sm flex flex-col gap-3">
+          <p>The AI Tutor feature uses advanced large language models (Anthropic) to generate educational explanations aligned with the Singapore MOE curriculum.</p>
+          <p><strong>Important Disclaimer:</strong> While highly accurate, AI-generated content may occasionally contain errors. It is an educational learning aid and does not constitute official examiner marking advice. Students should verify answers against official MOE materials.</p>
+          <p><strong>No Public Training:</strong> We strictly protect your privacy. Your child's conversation logs and inputs are <strong>never</strong> used by Anthropic or Superholic Lab to train public AI foundation models.</p>
+        </div>
+      </div>
 
-            // 2. Layout Shift (ONLY apply padding if this page has a sidebar)
-            if (bottomNav) {
-              body.classList.add('is-logged-in', 'has-bottom-nav');
-              bottomNav.hidden = false;
-            }
+      <div class="card p-8 hover-lift">
+        <h2 class="font-display text-2xl text-main mb-4 flex items-center gap-3">
+          <span class="text-3xl">🛡️</span> 5. Acceptable Use & IP
+        </h2>
+        <div class="text-muted text-sm flex flex-col gap-3">
+          <p>All content on the Service (question banks, worked solutions, UI) is owned by Superholic Lab Pte. Ltd. You may not scrape, copy, redistribute, or circumvent our paywalls.</p>
+          <p>You retain ownership of any data you input. By using the Service, you grant us a limited licence to process that data solely to provide the Service to you.</p>
+        </div>
+      </div>
 
-          } else {
-            // User is Guest: Ensure app-specific layout shifts are disabled
-            if (body) body.classList.remove('is-logged-in', 'has-bottom-nav');
-            if (bottomNav) bottomNav.hidden = true;
-          }
-        } catch (e) {
-          console.error('Master auth script failed:', e);
+      <div class="card p-8 hover-lift">
+        <h2 class="font-display text-2xl text-main mb-4 flex items-center gap-3">
+          <span class="text-3xl">⚖️</span> 6. Liability & Singapore Law
+        </h2>
+        <div class="text-muted text-sm flex flex-col gap-3">
+          <p>To the fullest extent permitted by Singapore law, Superholic Lab Pte. Ltd. shall not be liable for any indirect, incidental, or consequential damages arising from your use of the Service. The Service is provided on an "as is" basis.</p>
+          <p>These Terms are governed by the laws of Singapore. We encourage you to contact <strong>support@superholiclab.com</strong> to resolve any disputes amicably first.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ GLOBAL FOOTER (Darker Sage + Whimsical Texture) ═══════════════════ -->
+<footer class="footer bg-sage-dark texture-whimsical pt-8 pb-8" style="position: relative;">
+  <!-- Cute Exploring Pet Animation -->
+  <div class="footer-pet-track">
+    <div class="walking-pet">🐈</div>
+  </div>
+
+  <div class="container">
+    <div class="flex flex-wrap justify-between gap-6 mb-8 mt-6">
+      <div class="flex-1 flex flex-col gap-4" style="min-width: 250px;">
+        <div class="flex items-center gap-2 font-display text-xl text-white">
+          <img src="../assets/logo.svg" width="28" height="28" alt="" aria-hidden="true" style="border-radius:6px;">
+          Superholic Lab
+        </div>
+        <p class="text-sm text-muted">Singapore's AI-powered learning platform for P1–S4 students. MOE-aligned. Available 24/7.</p>
+      </div>
+      
+      <div class="flex-1 flex flex-col gap-2" style="min-width: 120px;">
+        <div class="font-bold text-sm mb-2 text-white">Platform</div>
+        <a href="subjects.html" class="text-sm text-muted" style="text-decoration:none;">Subjects</a>
+        <a href="pricing.html" class="text-sm text-muted" style="text-decoration:none;">Pricing</a>
+        <a href="dashboard.html" class="text-sm text-muted" style="text-decoration:none;">Dashboard</a>
+      </div>
+      
+      <div class="flex-1 flex flex-col gap-2" style="min-width: 120px;">
+        <div class="font-bold text-sm mb-2 text-white">Company</div>
+        <a href="about.html" class="text-sm text-muted" style="text-decoration:none;">About Us</a>
+        <a href="contact.html" class="text-sm text-muted" style="text-decoration:none;">Contact</a>
+        <a href="terms.html" class="text-sm text-muted" style="text-decoration:none;">Terms of Use</a>
+        <a href="privacy.html" class="text-sm text-muted" style="text-decoration:none;">Privacy Policy</a>
+      </div>
+    </div>
+    
+    <div class="footer-bottom">
+      <div class="text-muted text-sm">© 2026 Superholic Lab. All rights reserved. 🇸🇬 Made in Singapore</div>
+      <div class="text-muted text-sm" style="max-width: 400px; text-align: right;">Compliant with Singapore PDPA. Student data stored in Singapore (Supabase SG region).</div>
+    </div>
+  </div>
+</footer>
+
+<script src="/js/supabase-client.js"></script>
+<script>
+  /* ── 1. Navbar & Auth Logic ── */
+  document.addEventListener('DOMContentLoaded', () => {
+    const toggle = document.getElementById('navToggle');
+    const dropdown = document.getElementById('navDropdown');
+    
+    if (toggle && dropdown) {
+      toggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdown.classList.toggle('is-open');
+        toggle.classList.toggle('is-active'); 
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!dropdown.contains(e.target) && !toggle.contains(e.target)) {
+          dropdown.classList.remove('is-open');
+          toggle.classList.remove('is-active');
         }
       });
-    });
-  </script>
+    }
+  });
+
+  getSupabase().then(async function(sb) {
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      
+      if (session) {
+        const authContainer = document.getElementById('auth-header-container');
+        const navLinks = document.getElementById('navDropdown');
+        
+        if (authContainer) {
+          authContainer.innerHTML = '<a href="dashboard.html" class="btn btn-secondary btn-sm" style="background: rgba(255,255,255,0.15); color: #FFFFFF; border: 1px solid rgba(255,255,255,0.1);">Dashboard</a>';
+        }
+
+        if (navLinks && !document.getElementById('navSignOut')) {
+          const signOut = document.createElement('a');
+          signOut.id = "navSignOut";
+          signOut.href = "#";
+          signOut.textContent = "Sign Out";
+          signOut.style.color = "var(--brand-rose)"; 
+          signOut.onclick = async (e) => { 
+            e.preventDefault();
+            await sb.auth.signOut(); 
+            window.location.href = '../index.html'; 
+          };
+          navLinks.appendChild(signOut);
+          
+          const signUpLink = document.getElementById('navSignUp');
+          if (signUpLink) signUpLink.remove();
+        }
+      }
+    } catch (e) {
+      console.error('Auth check failed:', e);
+    }
+  });
+</script>
 </body>
 </html>

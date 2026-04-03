@@ -3,238 +3,257 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>App Master — Superholic Lab</title>
+  <title>Privacy Policy — Superholic Lab</title>
+  <meta name="description" content="How we fiercely protect your child's data under Singapore's PDPA.">
+  
+  <!-- Fonts & Styles -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="icon" href="../assets/favicon.ico" />
   
+  <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js"></script>
+
   <script type="module">
     import { guardPage } from '/js/auth.js';
     await guardPage(false); 
   </script>
 </head>
 
-<body id="mainBody">
+<body class="has-bottom-nav">
 
-<header class="navbar navbar-homepage" id="navbar" style="justify-content: space-between;">
-    
-    <a href="../index.html" class="navbar-logo">
-      <img src="../assets/logo.svg" width="32" height="32" alt="Superholic Lab">
-      Superholic Lab
-    </a>
+<!-- ═══════════════════ GLOBAL NAVBAR (Darker Sage) ═══════════════════ -->
+<header class="navbar justify-between bg-sage-dark" id="navbar">
+  
+  <a href="../index.html" class="flex items-center gap-2 font-display text-2xl" style="text-decoration: none; color: #FFFFFF;">
+    <img src="../assets/logo.svg" width="32" height="32" alt="" aria-hidden="true" style="border-radius: var(--radius-sm); flex-shrink:0;">
+    Superholic Lab
+  </a>
 
-    <div class="navbar-actions">
-      <div id="auth-header-container">
-        <a href="login.html" class="btn btn-secondary btn-sm">Log In</a>
+  <div class="navbar-actions flex items-center gap-4">
+    <div id="auth-header-container">
+      <a href="login.html" class="btn btn-sm" style="background: rgba(255,255,255,0.15); color: #FFFFFF; border: 1px solid rgba(255,255,255,0.1);">Log In</a>
+    </div>
+
+    <!-- Mobile menu toggle -->
+    <button class="navbar-toggle" id="navToggle" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+
+  <!-- Mobile Dropdown Menu -->
+  <div class="navbar-mobile" id="navDropdown">
+    <a href="../index.html">Home</a>
+    <a href="about.html">About Us</a>
+    <a href="pricing.html">Pricing</a>
+    <a href="contact.html">Contact Support</a>
+    <a href="signup.html" id="navSignUp">Start Free Trial</a>
+  </div>
+</header>
+
+<!-- ═══════════════════ HERO (Sage + Dots) ═══════════════════ -->
+<section class="bg-sage texture-dots py-10" style="padding-top: calc(64px + var(--space-8)); text-align: center;">
+  <div class="container flex flex-col items-center gap-4">
+    <div class="badge" style="background: rgba(0, 0, 0, 0.25); color: #FFFFFF; backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.1);">PDPA Compliant</div>
+    <h1 class="font-display text-4xl text-white mt-2 mb-2" style="font-size: 3.5rem; line-height: 1.1;">
+      Privacy <span class="text-rose">Policy</span>
+    </h1>
+    <p class="text-lg" style="color: rgba(255,255,255,0.8); max-width: 600px;">
+      Last updated: 23 March 2026. We protect your child's data like it's our own.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════ MAIN CONTENT (Off-White + Light Grid) ═══════════════════ -->
+<section class="py-10 bg-page texture-light-grid">
+  <div class="container" style="max-width: 800px;">
+
+    <!-- TL;DR Summary Card -->
+    <div class="card bg-sage hover-lift mb-8 p-6" style="border: none;">
+      <h2 class="font-display text-2xl text-white mb-4 flex items-center gap-2">
+        <span>✨</span> The Short Version (TL;DR)
+      </h2>
+      <ul class="flex flex-col gap-3 text-sm" style="color: rgba(255,255,255,0.9); list-style: none;">
+        <li class="flex items-start gap-2"><span class="text-success font-bold">✓</span> <strong>No Ads, Ever:</strong> We do not sell your personal data or run advertisements.</li>
+        <li class="flex items-start gap-2"><span class="text-success font-bold">✓</span> <strong>Local Storage:</strong> Your child's data is encrypted and securely stored right here in Singapore.</li>
+        <li class="flex items-start gap-2"><span class="text-success font-bold">✓</span> <strong>You have the right to forget:</strong> You can request full deletion of your account and data at any time, processed within 30 days.</li>
+      </ul>
+    </div>
+
+    <!-- Full Privacy Cards -->
+    <div class="flex flex-col gap-6">
+      
+      <div class="card p-8 hover-lift">
+        <h2 class="font-display text-2xl text-main mb-4 flex items-center gap-3">
+          <span class="text-3xl">👋</span> 1. Who We Are & Scope
+        </h2>
+        <div class="text-muted text-sm flex flex-col gap-3">
+          <p>Superholic Lab is an online educational platform operated by <strong>Superholic Lab Pte. Ltd.</strong> in Singapore.</p>
+          <p>We comply fully with Singapore's <strong>Personal Data Protection Act 2012 (PDPA)</strong> and act as the Data Controller. This policy applies to all personal data collected through www.superholiclab.com for parents, guardians, and children.</p>
+        </div>
       </div>
 
-      <button class="navbar-toggle" id="navToggle" aria-label="Open menu">
-        <span></span><span></span><span></span>
-      </button>
-    </div>
-
-    <div class="navbar-mobile" id="navDropdown">
-      <div class="container" id="navLinks">
-        <a href="../index.html">Home</a>
-        <a href="../pages/about.html">About Us</a>
-        <a href="../pages/pricing.html">Pricing</a>
-        <a href="../pages/contact.html">Contact Support</a>
-        <a href="../pages/signup.html" id="navSignUp">Start Free Trial</a>
+      <div class="card p-8 hover-lift">
+        <h2 class="font-display text-2xl text-main mb-4 flex items-center gap-3">
+          <span class="text-3xl">📝</span> 2. Data We Collect & How We Use It
+        </h2>
+        <div class="text-muted text-sm flex flex-col gap-3">
+          <p><strong>Account Data:</strong> Parent's name and email. Children's profiles require only a first name and school level.</p>
+          <p><strong>Usage Data:</strong> Quiz results, topic progress, and AI tutor chat history. This is used exclusively to personalise the learning experience and build your Mission Control dashboard.</p>
+          <p><strong>Payment Data:</strong> Processed securely via Stripe, Inc. We do not store your credit card numbers on our servers.</p>
+          <p><strong>We never use your data for advertising or sell it to third parties.</strong></p>
+        </div>
       </div>
-    </div>
-  </header>
 
-<main class="page-content" style="margin-top: 68px; min-height: 80vh;">
-  <div style="background: var(--hero-gradient); padding: var(--space-10) 0 var(--space-14); position:relative; overflow:hidden;">
-    <div class="container" style="position:relative;z-index:1;text-align:center;">
-      <h1 class="animate-in delay-1">Privacy Policy</h1>
-      <p class="animate-in delay-2" >Last updated: 23 March 2026</p>
+      <div class="card p-8 hover-lift">
+        <h2 class="font-display text-2xl text-main mb-4 flex items-center gap-3">
+          <span class="text-3xl">🔒</span> 3. Security & Storage
+        </h2>
+        <div class="text-muted text-sm flex flex-col gap-3">
+          <p>Your data is stored in <strong>Supabase (PostgreSQL)</strong>, hosted on secure AWS servers located physically in <strong>Singapore (ap-southeast-1)</strong>.</p>
+          <p>We enforce strict row-level security (RLS) policies so users can only access their own data. All data is transmitted over HTTPS, and passwords are cryptographically hashed using bcrypt.</p>
+        </div>
+      </div>
+
+      <div class="card p-8 hover-lift">
+        <h2 class="font-display text-2xl text-main mb-4 flex items-center gap-3">
+          <span class="text-3xl">🤝</span> 4. Sharing with Third Parties
+        </h2>
+        <div class="text-muted text-sm flex flex-col gap-3">
+          <p>We share data only with essential service providers who are contractually bound to protect it:</p>
+          <ul style="padding-left: var(--space-4);">
+            <li><strong>Supabase:</strong> Database and authentication.</li>
+            <li><strong>Stripe:</strong> Secure payment processing.</li>
+            <li><strong>Anthropic:</strong> The engine behind our AI Tutor. <em>Crucially, Anthropic does not use any API inputs (your child's chat logs) to train their foundation models.</em></li>
+            <li><strong>Plausible Analytics:</strong> A privacy-first, cookie-free analytics provider.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card p-8 hover-lift">
+        <h2 class="font-display text-2xl text-main mb-4 flex items-center gap-3">
+          <span class="text-3xl">🧸</span> 5. Children's Data & Your PDPA Rights
+        </h2>
+        <div class="text-muted text-sm flex flex-col gap-3">
+          <p>Under the PDPA, you have complete control over your family's data. You have the right to:</p>
+          <ul style="padding-left: var(--space-4);">
+            <li><strong>Access & Correction:</strong> View or fix the data we hold about you.</li>
+            <li><strong>Withdrawal:</strong> Withdraw your consent for data usage (which will pause your service).</li>
+            <li><strong>The Right to Forget (Deletion):</strong> Request full deletion of your account and child's data. We process these requests within 30 days.</li>
+          </ul>
+          <p>To exercise these rights, simply email our Data Protection Officer at <strong>privacy@superholiclab.com</strong>.</p>
+        </div>
+      </div>
+
+      <div class="card p-8 hover-lift">
+        <h2 class="font-display text-2xl text-main mb-4 flex items-center gap-3">
+          <span class="text-3xl">🍪</span> 6. Cookies & Tracking
+        </h2>
+        <div class="text-muted text-sm flex flex-col gap-3">
+          <p><strong>We do not use tracking cookies.</strong> Our analytics provider (Plausible) is entirely cookie-free and respects your privacy. We only use local browser storage for functional necessities, like keeping you logged into your session safely.</p>
+        </div>
+      </div>
+
     </div>
-    <div class="wave-divider" aria-hidden="true">
-      <svg viewBox="0 0 1440 70" preserveAspectRatio="none">
-        <path d="M0,40 C360,70 720,10 1080,40 C1260,55 1380,30 1440,40 L1440,70 L0,70 Z" fill="var(--surface)"/>
-      </svg>
-    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ GLOBAL FOOTER (Darker Sage + Whimsical Texture) ═══════════════════ -->
+<footer class="footer bg-sage-dark texture-whimsical pt-8 pb-8" style="position: relative;">
+  <!-- Cute Exploring Pet Animation -->
+  <div class="footer-pet-track">
+    <div class="walking-pet">🐈</div>
   </div>
 
   <div class="container">
-      <div class="card no-hover" style="max-width:720px; margin:0 auto;">
-        <div class="card-body" style="line-height:1.75;">
-
-          <h2 style="font-size:1.05rem; margin-top:var(--space-6); margin-bottom:var(--space-2);">1. Who we are</h2>
-          <p>Superholic Lab is an online educational platform operated by Superholic Lab Pte. Ltd., a company incorporated in Singapore (<strong>"we"</strong>, <strong>"us"</strong>, <strong>"our"</strong>). Our platform provides MOE-aligned practice questions, worked solutions, and an AI tutoring service for students in Singapore.</p>
-          <p style="margin-top:var(--space-3);">For any privacy enquiries, contact our Data Protection Officer at <strong>privacy@superholiclab.com</strong>.</p>
-
-          <h2 style="font-size:1.05rem; margin-top:var(--space-6); margin-bottom:var(--space-2);">2. Scope of this policy</h2>
-          <p>This policy applies to all personal data collected through <strong>www.superholiclab.com</strong> and our associated mobile-optimised web application. It governs how we handle the personal data of parents, guardians, and the children who use the platform (collectively, <strong>"users"</strong>).</p>
-          <p style="margin-top:var(--space-3);">We comply with Singapore's <strong>Personal Data Protection Act 2012 (PDPA)</strong> and act as the Data Controller for all personal data processed by us.</p>
-
-          <h2 style="font-size:1.05rem; margin-top:var(--space-6); margin-bottom:var(--space-2);">3. Data we collect</h2>
-          <p><strong>Account data</strong> — when you sign up, we collect your full name and email address. Children's profiles are created by parents or guardians and require only a first name and school level.</p>
-          <p style="margin-top:var(--space-3);"><strong>Usage data</strong> — quiz results, topics practised, scores, and AI tutor conversation history. This data is used exclusively to personalise your child's learning experience and to show you progress reports.</p>
-          <p style="margin-top:var(--space-3);"><strong>Payment data</strong> — billing and payment details are processed directly by <strong>Stripe, Inc.</strong> We never store credit card numbers or full payment credentials on our servers. We receive only a Stripe customer ID and subscription status.</p>
-          <p style="margin-top:var(--space-3);"><strong>Technical data</strong> — your IP address, browser type, and anonymised page-view events collected by Plausible Analytics (a privacy-first analytics provider that does not use cookies or cross-site tracking).</p>
-
-          <h2 style="font-size:1.05rem; margin-top:var(--space-6); margin-bottom:var(--space-2);">4. How we use your data</h2>
-          <ul style="padding-left:var(--space-5); margin:0;">
-            <li style="margin-bottom:var(--space-2);">To create and manage your account and subscription.</li>
-            <li style="margin-bottom:var(--space-2);">To deliver personalised practice questions and track your child's progress.</li>
-            <li style="margin-bottom:var(--space-2);">To provide the AI tutor service (conversation messages are sent to Anthropic's API for processing; see Section 6).</li>
-            <li style="margin-bottom:var(--space-2);">To process payments and prevent fraud.</li>
-            <li style="margin-bottom:var(--space-2);">To send transactional emails (account confirmation, password reset, subscription receipts).</li>
-            <li style="margin-bottom:var(--space-2);">To improve the platform through aggregated, anonymised analytics.</li>
-          </ul>
-          <p style="margin-top:var(--space-3);">We do <strong>not</strong> use your personal data for advertising, sell it to third parties, or share it with any party other than those described in Section 6.</p>
-
-          <h2 style="font-size:1.05rem; margin-top:var(--space-6); margin-bottom:var(--space-2);">5. Data storage and security</h2>
-          <p>Your data is stored in <strong>Supabase</strong> (PostgreSQL), hosted on servers located in Singapore (AWS ap-southeast-1 region). We use row-level security policies to ensure that users can only access their own data.</p>
-          <p style="margin-top:var(--space-3);">All data is transmitted over HTTPS (TLS 1.2+). Passwords are hashed using bcrypt via Supabase Auth and are never stored in plaintext. We conduct regular security reviews and follow industry best practices.</p>
-
-          <h2 style="font-size:1.05rem; margin-top:var(--space-6); margin-bottom:var(--space-2);">6. Sharing with third parties</h2>
-          <p>We share personal data only with the following service providers, each of whom is contractually required to protect your data:</p>
-          <ul style="padding-left:var(--space-5); margin:0;">
-            <li style="margin-bottom:var(--space-2);"><strong>Supabase, Inc.</strong> — database, authentication, and storage.</li>
-            <li style="margin-bottom:var(--space-2);"><strong>Stripe, Inc.</strong> — payment processing. Subject to Stripe's own Privacy Policy.</li>
-            <li style="margin-bottom:var(--space-2);"><strong>Anthropic, PBC</strong> — AI responses for the AI tutor feature. Tutor conversation messages are sent to Anthropic's Claude API. Anthropic does not use API inputs to train models. Please refer to <a href="https://www.anthropic.com/legal/privacy" target="_blank" rel="noopener noreferrer">Anthropic's Privacy Policy</a>.</li>
-            <li style="margin-bottom:var(--space-2);"><strong>Vercel, Inc.</strong> — web hosting and serverless functions.</li>
-            <li style="margin-bottom:var(--space-2);"><strong>Plausible Analytics</strong> — privacy-first, cookie-free website analytics. No personal data is stored.</li>
-          </ul>
-
-          <h2 style="font-size:1.05rem; margin-top:var(--space-6); margin-bottom:var(--space-2);">7. Children's data</h2>
-          <p>Our platform is designed for use by children under the supervision and consent of a parent or guardian. Accounts are created by parents or guardians, who are responsible for ensuring the platform is used appropriately.</p>
-          <p style="margin-top:var(--space-3);">We collect only the minimum data necessary for children's profiles (first name and school level). We do not knowingly collect sensitive personal data from children without parental consent. If you believe we have inadvertently collected such data, please contact us at <strong>privacy@superholiclab.com</strong> and we will delete it promptly.</p>
-
-          <h2 style="font-size:1.05rem; margin-top:var(--space-6); margin-bottom:var(--space-2);">8. Your rights under the PDPA</h2>
-          <p>Under Singapore's PDPA, you have the right to:</p>
-          <ul style="padding-left:var(--space-5); margin:0;">
-            <li style="margin-bottom:var(--space-2);"><strong>Access</strong> — request a copy of the personal data we hold about you.</li>
-            <li style="margin-bottom:var(--space-2);"><strong>Correction</strong> — request correction of any inaccurate personal data.</li>
-            <li style="margin-bottom:var(--space-2);"><strong>Withdrawal of consent</strong> — withdraw your consent to the collection, use, or disclosure of your personal data. Note that withdrawal may affect our ability to provide the service.</li>
-            <li style="margin-bottom:var(--space-2);"><strong>Deletion</strong> — request deletion of your account and associated data. We will process deletion requests within 30 days.</li>
-          </ul>
-          <p style="margin-top:var(--space-3);">To exercise any of these rights, email us at <strong>privacy@superholiclab.com</strong>.</p>
-
-          <h2 style="font-size:1.05rem; margin-top:var(--space-6); margin-bottom:var(--space-2);">9. Data retention</h2>
-          <p>We retain your account and usage data for as long as your account is active. If you cancel your subscription and request deletion, we will delete all personal data within 30 days, except where retention is required by law (e.g., financial records for 5 years under the Companies Act).</p>
-
-          <h2 style="font-size:1.05rem; margin-top:var(--space-6); margin-bottom:var(--space-2);">10. Cookies</h2>
-          <p>We do not use tracking cookies. Our analytics provider (Plausible) is cookie-free. Supabase Auth uses <code>localStorage</code> to persist your session on your device; this is a functional necessity and not used for tracking.</p>
-
-          <h2 style="font-size:1.05rem; margin-top:var(--space-6); margin-bottom:var(--space-2);">11. Changes to this policy</h2>
-          <p>We may update this policy from time to time. We will notify you of material changes by email or by displaying a prominent notice on the platform. The "Last updated" date at the top of this page always reflects the most recent revision.</p>
-
-          <h2 style="font-size:1.05rem; margin-top:var(--space-6); margin-bottom:var(--space-2);">12. Contact us</h2>
-          <p>For any questions, concerns, or data requests, contact our Data Protection Officer:</p>
-          <p style="margin-top:var(--space-3);"><strong>Email:</strong> privacy@superholiclab.com<br />
-          <strong>Address:</strong> Superholic Lab Pte. Ltd., Singapore<br />
-          <strong>Response time:</strong> Within 3 business days</p>
-
+    <div class="flex flex-wrap justify-between gap-6 mb-8 mt-6">
+      <div class="flex-1 flex flex-col gap-4" style="min-width: 250px;">
+        <div class="flex items-center gap-2 font-display text-xl text-white">
+          <img src="../assets/logo.svg" width="28" height="28" alt="" aria-hidden="true" style="border-radius:6px;">
+          Superholic Lab
         </div>
+        <p class="text-sm text-muted">Singapore's AI-powered learning platform for P1–S4 students. MOE-aligned. Available 24/7.</p>
       </div>
-    </div>
- 
-  </main>
-
-  <footer class="footer">
-    <div class="container">
-      <div class="footer-bottom">
-        <p>&copy; 2026 Superholic Lab. 🇸🇬 Made in Singapore</p>
-        <div class="flex gap-4">
-          <a href="privacy.html">Privacy</a>
-          <a href="terms.html">Terms</a>
-          <a href="contact.html">Contact</a>
-        </div>
-      </div>
-    </div>
-  </footer>
-
-  <nav class="bottom-nav" aria-label="Mobile navigation" hidden>
-    <a href="subjects.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-      Practise
-    </a>
-    <a href="tutor.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-      AI Tutor
-    </a>
-    <a href="exam.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="M9 12h6M9 16h4"/></svg>
-      Exam
-    </a>
-    <a href="progress.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-      Progress
-    </a>
-  </nav>
-
-  <script src="../js/supabase-client.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      /* ── 1. Dropdown Toggle Logic ── */
-      const toggle = document.getElementById('navToggle');
-      const dropdown = document.getElementById('navDropdown');
       
-      if (toggle && dropdown) {
-        toggle.addEventListener('click', (e) => {
-          e.stopPropagation();
-          dropdown.classList.toggle('is-open');
-          toggle.classList.toggle('is-active'); 
-        });
-        document.addEventListener('click', (e) => {
-          if (!dropdown.contains(e.target) && !toggle.contains(e.target)) {
-            dropdown.classList.remove('is-open');
-            toggle.classList.remove('is-active');
-          }
-        });
-      }
+      <div class="flex-1 flex flex-col gap-2" style="min-width: 120px;">
+        <div class="font-bold text-sm mb-2 text-white">Platform</div>
+        <a href="subjects.html" class="text-sm text-muted" style="text-decoration:none;">Subjects</a>
+        <a href="pricing.html" class="text-sm text-muted" style="text-decoration:none;">Pricing</a>
+        <a href="dashboard.html" class="text-sm text-muted" style="text-decoration:none;">Dashboard</a>
+      </div>
+      
+      <div class="flex-1 flex flex-col gap-2" style="min-width: 120px;">
+        <div class="font-bold text-sm mb-2 text-white">Company</div>
+        <a href="about.html" class="text-sm text-muted" style="text-decoration:none;">About Us</a>
+        <a href="contact.html" class="text-sm text-muted" style="text-decoration:none;">Contact</a>
+        <a href="terms.html" class="text-sm text-muted" style="text-decoration:none;">Terms of Use</a>
+        <a href="privacy.html" class="text-sm text-muted" style="text-decoration:none;">Privacy Policy</a>
+      </div>
+    </div>
+    
+    <div class="footer-bottom">
+      <div class="text-muted text-sm">© 2026 Superholic Lab. All rights reserved. 🇸🇬 Made in Singapore</div>
+      <div class="text-muted text-sm" style="max-width: 400px; text-align: right;">Compliant with Singapore PDPA. Student data stored in Singapore (Supabase SG region).</div>
+    </div>
+  </div>
+</footer>
 
-      /* ── 2. Master Auth & Layout Logic ── */
-      getSupabase().then(async function(sb) {
-        try {
-          const { data: { session } } = await sb.auth.getSession();
-          const body = document.getElementById('mainBody');
-          const bottomNav = document.getElementById('bottomNav');
-          const authContainer = document.getElementById('auth-header-container');
-          const navLinks = document.getElementById('navLinks');
+<script src="/js/supabase-client.js"></script>
+<script>
+  /* ── 1. Navbar & Auth Logic ── */
+  document.addEventListener('DOMContentLoaded', () => {
+    const toggle = document.getElementById('navToggle');
+    const dropdown = document.getElementById('navDropdown');
+    
+    if (toggle && dropdown) {
+      toggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdown.classList.toggle('is-open');
+        toggle.classList.toggle('is-active'); 
+      });
 
-          if (session) {
-            // 1. Update Auth Buttons (Applies to ALL pages)
-            if (authContainer) {
-              authContainer.innerHTML = '<a href="dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a>';
-            }
-
-            if (navLinks && !document.getElementById('navSignOut')) {
-              const signOut = document.createElement('a');
-              signOut.id = "navSignOut";
-              signOut.href = "#";
-              signOut.textContent = "Sign Out";
-              signOut.style.color = "var(--rose)";
-              signOut.onclick = async (e) => { 
-                e.preventDefault();
-                await sb.auth.signOut(); 
-                window.location.href = '../index.html'; 
-              };
-              navLinks.appendChild(signOut);
-              
-              const signUpLink = document.getElementById('navSignUp');
-              if (signUpLink) signUpLink.remove();
-            }
-
-            // 2. Layout Shift (ONLY apply padding if this page has a sidebar)
-            if (bottomNav) {
-              body.classList.add('is-logged-in', 'has-bottom-nav');
-              bottomNav.hidden = false;
-            }
-
-          } else {
-            // User is Guest: Ensure app-specific layout shifts are disabled
-            if (body) body.classList.remove('is-logged-in', 'has-bottom-nav');
-            if (bottomNav) bottomNav.hidden = true;
-          }
-        } catch (e) {
-          console.error('Master auth script failed:', e);
+      document.addEventListener('click', (e) => {
+        if (!dropdown.contains(e.target) && !toggle.contains(e.target)) {
+          dropdown.classList.remove('is-open');
+          toggle.classList.remove('is-active');
         }
       });
-    });
-  </script>
+    }
+  });
+
+  getSupabase().then(async function(sb) {
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      
+      if (session) {
+        const authContainer = document.getElementById('auth-header-container');
+        const navLinks = document.getElementById('navDropdown');
+        
+        if (authContainer) {
+          authContainer.innerHTML = '<a href="dashboard.html" class="btn btn-secondary btn-sm" style="background: rgba(255,255,255,0.15); color: #FFFFFF; border: 1px solid rgba(255,255,255,0.1);">Dashboard</a>';
+        }
+
+        if (navLinks && !document.getElementById('navSignOut')) {
+          const signOut = document.createElement('a');
+          signOut.id = "navSignOut";
+          signOut.href = "#";
+          signOut.textContent = "Sign Out";
+          signOut.style.color = "var(--brand-rose)"; 
+          signOut.onclick = async (e) => { 
+            e.preventDefault();
+            await sb.auth.signOut(); 
+            window.location.href = '../index.html'; 
+          };
+          navLinks.appendChild(signOut);
+          
+          const signUpLink = document.getElementById('navSignUp');
+          if (signUpLink) signUpLink.remove();
+        }
+      }
+    } catch (e) {
+      console.error('Auth check failed:', e);
+    }
+  });
+</script>
 </body>
 </html>
