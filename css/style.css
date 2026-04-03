@@ -624,10 +624,10 @@ body.has-bottom-nav .footer {
   }
 
 /* ──────────────────────────────────────────────────────────────────────────
-   8. BADGES & FLOATING DESKTOP NAVIGATION
+   8. BADGES & FLOATING DESKTOP NAVIGATION (CRM STYLE)
    ────────────────────────────────────────────────────────────────────────── */
 
-/* ── Badges ── */
+/* ── Badges (If not already defined) ── */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -652,11 +652,11 @@ body.has-bottom-nav .footer {
   }
   
   .bottom-nav {
-    top: 50%; /* Vertically center */
+    top: 50%; /* Vertically center on screen */
     transform: translateY(-50%);
     bottom: auto;
     left: auto;
-    right: var(--space-6); /* Offset from the right edge */
+    right: var(--space-6); /* Offset gracefully from the right edge */
     width: 72px;
     height: auto; /* Wraps tightly around the 4 icons */
     flex-direction: column;
@@ -690,6 +690,6 @@ body.has-bottom-nav .footer {
 }
 .bottom-nav-item.is-active svg {
   opacity: 1;
-  /* Adds a glowing effect around the SVG */
+  /* Adds a premium glowing effect around the active SVG */
   filter: drop-shadow(0 0 8px rgba(183, 110, 121, 0.6)); 
 }

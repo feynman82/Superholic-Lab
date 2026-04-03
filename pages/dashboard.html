@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -16,16 +16,28 @@
     import { guardPage } from '/js/auth.js';
     import { initAppShell } from '/js/app-shell.js';
     
-    // We fetch the profile/session exactly ONE time here.
-    window.userProfile = await guardPage(true); 
-    
-    // Pass it to the shell to instantly set up the Navbar and CSS padding.
-    // Ensure DOM is ready so app-shell.js can find id="mainBody"
-    document.addEventListener('DOMContentLoaded', () => {
-      if(typeof initAppShell === 'function') {
-        initAppShell(window.userProfile); 
+    // Boot sequence: Ensure profile loads BEFORE we trigger DOM manipulations
+    async function boot() {
+      try {
+        window.userProfile = await guardPage(true); 
+        
+        const runInit = () => {
+          if (typeof initAppShell === 'function') initAppShell(window.userProfile); 
+          if (typeof window.initDashboard === 'function') window.initDashboard();
+        };
+
+        // Check if DOM is already fully parsed to prevent null reference errors
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', runInit);
+        } else {
+          runInit();
+        }
+      } catch (err) {
+        console.error('Boot sequence failed:', err);
       }
-    });
+    }
+
+    boot();
   </script>
 
   <style>
@@ -305,12 +317,13 @@
     return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
-  async function initDashboard() {
+  // Globally accessible so boot sequence can call it
+  window.initDashboard = async function() {
     const profile = window.userProfile;
     if (!profile) return; // Guard page handles redirect
 
-    // Welcome Message
-    const firstName = profile.full_name?.split(' ')[0] || 'there';
+    // Welcome Message (Defaults to Parent if no full name set)
+    const firstName = profile.full_name?.split(' ')[0] || 'Parent';
     document.getElementById('welcomeMsg').textContent = `Welcome back, ${escapeHtml(firstName)} 👋`;
 
     // Plan Badge Fix
@@ -337,7 +350,7 @@
     }
 
     await loadStudents();
-  }
+  };
 
   async function loadStudents() {
     const profile = window.userProfile;
@@ -497,9 +510,6 @@
     btn.disabled = false;
     btn.textContent = 'Yes, Delete';
   };
-
-  // Start sequence
-  setTimeout(initDashboard, 100);
 
 </script>  
 </body>
