@@ -15,11 +15,14 @@
 <body class="bg-page texture-light-grid" style="display: flex; flex-direction: column; min-height: 100vh;">
 
 <!-- ═══════════════════ MINIMAL NAVBAR (Focus on Setup) ═══════════════════ -->
-<header class="navbar justify-center bg-sage-dark" id="navbar" style="position: relative;">
+<header class="navbar justify-between bg-sage-dark" id="navbar" style="position: relative;">
   <a href="../index.html" class="flex items-center gap-2 font-display text-2xl" style="text-decoration: none; color: #FFFFFF;">
     <img src="../assets/logo.svg" width="32" height="32" alt="" aria-hidden="true" style="border-radius: var(--radius-sm); flex-shrink:0;">
     Superholic Lab
   </a>
+  <div class="navbar-actions flex items-center">
+    <button onclick="history.back()" class="btn btn-sm hover-lift" style="background: rgba(255,255,255,0.15); color: #FFFFFF; border: 1px solid rgba(255,255,255,0.1);">← Back</button>
+  </div>
 </header>
 
 <!-- ═══════════════════ SETUP CARD ═══════════════════ -->
