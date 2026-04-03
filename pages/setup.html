@@ -4,193 +4,232 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Set Up Your Account — Superholic Lab</title>
+  
+  <!-- Fonts & Styles -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="/css/style.css" />
+  <link rel="icon" href="/assets/favicon.ico" />
 </head>
-<body class="auth-page">
-  <div class="setup-card">
-    <div class="step-indicator">
-      <div class="step-dot active" id="dot1"></div>
-      <div class="step-dot" id="dot2"></div>
+
+<body class="bg-page texture-light-grid" style="display: flex; flex-direction: column; min-height: 100vh;">
+
+<!-- ═══════════════════ MINIMAL NAVBAR (Focus on Setup) ═══════════════════ -->
+<header class="navbar justify-center bg-sage-dark" id="navbar" style="position: relative;">
+  <a href="../index.html" class="flex items-center gap-2 font-display text-2xl" style="text-decoration: none; color: #FFFFFF;">
+    <img src="../assets/logo.svg" width="32" height="32" alt="" aria-hidden="true" style="border-radius: var(--radius-sm); flex-shrink:0;">
+    Superholic Lab
+  </a>
+</header>
+
+<!-- ═══════════════════ SETUP CARD ═══════════════════ -->
+<main class="flex-1 flex items-center justify-center p-4 py-10">
+  <div class="card p-8 hover-lift w-full" style="max-width: 480px; background: var(--bg-surface);">
+    
+    <!-- Step Indicator -->
+    <div class="flex gap-2 mb-8 justify-center">
+      <div id="dot1" class="flex-1" style="height: 6px; background: var(--brand-rose); border-radius: var(--radius-full); transition: background 0.3s ease;"></div>
+      <div id="dot2" class="flex-1" style="height: 6px; background: var(--border-light); border-radius: var(--radius-full); transition: background 0.3s ease;"></div>
     </div>
 
-    <div id="step1">
-      <div class="setup-title">Add your child 👦</div>
-      <div class="setup-sub">Tell us about the learner — we'll personalise the experience.</div>
-      <div class="form-group">
-        <label class="form-label" for="childName">Child's name</label>
-        <input class="form-input" type="text" id="childName" placeholder="e.g. Kai" autocomplete="off" />
+    <!-- Step 1 -->
+    <div id="step1" class="flex flex-col gap-6">
+      <div class="text-center mb-2">
+        <h1 class="font-display text-3xl text-main">Add your child 👦</h1>
+        <p class="text-sm text-muted">Tell us about the learner — we'll personalise the experience.</p>
       </div>
-      <div class="form-group">
-        <label class="form-label" for="childLevel">Primary level</label>
-        <select class="form-select" id="childLevel">
-          <option value="">Select level…</option>
-          <option value="Primary 1">Primary 1</option>
-          <option value="Primary 2">Primary 2</option>
-          <option value="Primary 3">Primary 3</option>
-          <option value="Primary 4">Primary 4</option>
-          <option value="Primary 5">Primary 5</option>
-          <option value="Primary 6">Primary 6</option>
-        </select>
+
+      <div class="flex flex-col gap-4">
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-bold text-muted" for="childName">Child's name</label>
+          <input class="form-input" type="text" id="childName" placeholder="e.g. Kai" autocomplete="off" />
+        </div>
+        
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-bold text-muted" for="childLevel">Primary level</label>
+          <select class="form-input" id="childLevel" style="cursor: pointer;">
+            <option value="">Select level…</option>
+            <option value="Primary 1">Primary 1</option>
+            <option value="Primary 2">Primary 2</option>
+            <option value="Primary 3">Primary 3</option>
+            <option value="Primary 4">Primary 4</option>
+            <option value="Primary 5">Primary 5</option>
+            <option value="Primary 6">Primary 6</option>
+            <option value="Secondary 1">Secondary 1</option>
+            <option value="Secondary 2">Secondary 2</option>
+            <option value="Secondary 3">Secondary 3</option>
+            <option value="Secondary 4">Secondary 4</option>
+          </select>
+        </div>
+        
+        <div class="flex flex-col gap-1" id="subjectGroup" style="display:none">
+          <label class="text-sm font-bold text-muted" for="childSubject">Subject</label>
+          <select class="form-input" id="childSubject" style="cursor: pointer;">
+            <option value="">Select subject…</option>
+            <option value="Mathematics">Mathematics</option>
+            <option value="Science" id="scienceOption">Science</option>
+            <option value="English">English</option>
+          </select>
+          <p class="text-xs text-amber font-bold mt-1" id="scienceHint" style="display:none">Science is available from Primary 3 onwards.</p>
+        </div>
       </div>
-      <div class="form-group" id="subjectGroup" style="display:none">
-        <label class="form-label" for="childSubject">Subject</label>]]
-        <select class="form-select" id="childSubject">
-          <option value="">Select subject…</option>
-          <option value="Mathematics">Mathematics</option>
-          <option value="Science" id="scienceOption">Science</option>
-          <option value="English">English</option>
-        </select>
-        <p class="form-hint" id="scienceHint" style="display:none">Science is available from Primary 3 onwards.</p>
-      </div>
-      <p class="error-msg" id="step1Error"></p>
-      <button class="btn btn-primary btn-full" id="step1Btn" onclick="submitStep1()">Continue →</button>
+
+      <div id="step1Error" class="p-3 text-sm text-danger font-bold rounded hidden" style="background: rgba(220, 38, 38, 0.1); border: 1px solid rgba(220, 38, 38, 0.2);"></div>
+      
+      <button class="btn btn-primary w-full mt-2 hover-lift" id="step1Btn" onclick="submitStep1()">Continue →</button>
     </div>
 
-    <div id="step2" style="display:none">
-      <div class="setup-title">You're all set! 🎉</div>
-      <div class="setup-sub">Here's a summary of your account.</div>
-      <div id="trialBadge" class="trial-badge"></div>
-      <div class="summary-card" id="summaryCard"></div>
-      <button class="btn btn-primary btn-full" onclick="window.location.href='/pages/subjects.html'">Start Practising →</button>
+    <!-- Step 2 -->
+    <div id="step2" class="flex flex-col gap-6 hidden">
+      <div class="text-center mb-2">
+        <h1 class="font-display text-3xl text-main">You're all set! 🎉</h1>
+        <p class="text-sm text-muted">Here's a summary of your account.</p>
+      </div>
+
+      <div class="flex justify-center mb-2">
+        <div id="trialBadge" class="badge badge-amber" style="display: none;"></div>
+      </div>
+
+      <div class="card p-4" id="summaryCard" style="background: var(--bg-elevated); border: none;">
+        <!-- Filled by JS -->
+      </div>
+      
+      <button class="btn btn-primary w-full mt-2 hover-lift" onclick="window.location.href='/pages/dashboard.html'">Go to Mission Control →</button>
     </div>
   </div>
+</main>
 
-  <!-- supabase-client.js must load before auth.js module so getSupabase() is defined -->
-  <script src="/js/supabase-client.js"></script>
-  <script type="module">
-    import { guardPage } from '/js/auth.js';
+<script src="/js/supabase-client.js"></script>
+<script type="module">
+  import { guardPage } from '/js/auth.js';
 
-    let profile = null;
-    let planToShow = null;
+  let profile = null;
+  let planToShow = null;
 
-    async function init() {
-      profile = await guardPage(true);
-      if (!profile) return;
+  async function init() {
+    profile = await guardPage(true);
+    if (!profile) return;
 
-      // URL param is source of truth — guards against DB race condition on new signups
-      const urlPlan = new URLSearchParams(window.location.search).get('plan');
-      planToShow = urlPlan || profile.subscription_tier;
+    // URL param is source of truth — guards against DB race condition on new signups
+    const urlPlan = new URLSearchParams(window.location.search).get('plan');
+    planToShow = urlPlan || profile.subscription_tier;
 
-      if (planToShow === 'single_subject') {
-        document.getElementById('subjectGroup').style.display = 'block';
-      }
-
-      // Filter Science option based on level — Science is P3 and above only
-      document.getElementById('childLevel').addEventListener('change', handleLevelChange);
+    if (planToShow === 'single_subject') {
+      document.getElementById('subjectGroup').style.display = 'flex';
     }
 
-    // Show/hide Science option depending on selected level
-    function handleLevelChange() {
-      const level = document.getElementById('childLevel').value;
-      const scienceOption = document.getElementById('scienceOption');
-      const scienceHint = document.getElementById('scienceHint');
-      const subjectSelect = document.getElementById('childSubject');
-      const juniorLevels = ['Primary 1', 'Primary 2'];
-      const isJunior = juniorLevels.includes(level);
+    // Filter Science option based on level — Science is P3 and above only
+    document.getElementById('childLevel').addEventListener('change', handleLevelChange);
+  }
 
-      scienceOption.disabled = isJunior;
-      scienceOption.style.display = isJunior ? 'none' : '';
-      scienceHint.style.display = isJunior ? 'block' : 'none';
+  // Show/hide Science option depending on selected level
+  function handleLevelChange() {
+    const level = document.getElementById('childLevel').value;
+    const scienceOption = document.getElementById('scienceOption');
+    const scienceHint = document.getElementById('scienceHint');
+    const subjectSelect = document.getElementById('childSubject');
+    const juniorLevels = ['Primary 1', 'Primary 2'];
+    const isJunior = juniorLevels.includes(level);
 
-      // Reset subject selection if Science was chosen but level no longer supports it
-      if (isJunior && subjectSelect.value === 'Science') {
-        subjectSelect.value = '';
-      }
+    scienceOption.disabled = isJunior;
+    scienceOption.style.display = isJunior ? 'none' : '';
+    scienceHint.style.display = isJunior ? 'block' : 'none';
+
+    // Reset subject selection if Science was chosen but level no longer supports it
+    if (isJunior && subjectSelect.value === 'Science') {
+      subjectSelect.value = '';
+    }
+  }
+
+  window.submitStep1 = async function () {
+    const name = document.getElementById('childName').value.trim();
+    const level = document.getElementById('childLevel').value;
+    const subject = document.getElementById('childSubject')?.value || null;
+    const errEl = document.getElementById('step1Error');
+    const btn = document.getElementById('step1Btn');
+
+    errEl.classList.add('hidden');
+
+    if (!name) { showErr("Please enter your child's name."); return; }
+    if (!level) { showErr('Please select a level.'); return; }
+    if (planToShow === 'single_subject' && !subject) {
+      showErr('Please select a subject.'); return;
     }
 
-    window.submitStep1 = async function () {
-      const name = document.getElementById('childName').value.trim();
-      const level = document.getElementById('childLevel').value;
-      const subject = document.getElementById('childSubject')?.value || null;
-      const errEl = document.getElementById('step1Error');
-      const btn = document.getElementById('step1Btn');
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
 
-      errEl.style.display = 'none';
+    try {
+      // Use getSupabase() global (supabase-client.js loaded above)
+      const supabase = await getSupabase();
 
-      if (!name) { showErr("Please enter your child's name."); return; }
-      if (!level) { showErr('Please select a level.'); return; }
-      if (planToShow === 'single_subject' && !subject) {
-        showErr('Please select a subject.'); return;
-      }
-
-      btn.disabled = true;
-      btn.classList.add('is-loading');
-
-      try {
-        // Use getSupabase() global (supabase-client.js loaded above)
-        const supabase = await getSupabase();
-
-        const insert = {
-          parent_id: profile.id,
-          name,
-          level,
-          ...(subject ? { selected_subject: subject } : {}),
-        };
-
-        const { data, error } = await supabase
-          .from('students')
-          .insert(insert)
-          .select()
-          .single();
-
-        if (error) throw error;
-
-        // Mark setup complete (setup_complete column — migration adds it if missing)
-        await supabase
-          .from('profiles')
-          .update({ setup_complete: true })
-          .eq('id', profile.id);
-
-        showStep2(name, level, subject);
-      } catch (err) {
-        showErr('Something went wrong. Please try again.');
-        console.error(err);
-        btn.disabled = false;
-        btn.classList.remove('is-loading');
-      }
-
-      function showErr(msg) { errEl.textContent = msg; errEl.style.display = 'block'; }
-    };
-
-    function showStep2(name, level, subject) {
-      document.getElementById('step1').style.display = 'none';
-      document.getElementById('step2').style.display = 'block';
-      document.getElementById('dot1').classList.remove('active');
-      document.getElementById('dot2').classList.add('active');
-
-      const badge = document.getElementById('trialBadge');
-      if (profile.trial_ends_at) {
-        const days = Math.ceil((new Date(profile.trial_ends_at) - new Date()) / 86400000);
-        badge.textContent = `🎁 ${days}-day free trial active`;
-      } else {
-        badge.style.display = 'none';
-      }
-
-      const planNames = {
-        single_subject: 'Single Subject — S$9.99/mo',
-        all_subjects: 'All Subjects — S$19.99/mo',
-        family: 'Family — S$29.99/mo',
-        trial: '7-Day Free Trial',
+      const insert = {
+        parent_id: profile.id,
+        name,
+        level,
+        ...(subject ? { selected_subject: subject } : {}),
       };
-      const rows = [
-        ['Child', name], ['Level', level],
-        ...(subject ? [['Subject', subject]] : []),
-        ['Plan', planNames[planToShow] || planToShow],
-        ...(profile.trial_ends_at ? [['Trial ends', new Date(profile.trial_ends_at).toLocaleDateString('en-SG')]] : []),
-      ];
-      document.getElementById('summaryCard').innerHTML = rows.map(([l, v]) =>
-        `<div class="summary-row"><span class="summary-label">${l}</span><span class="summary-value">${escapeHtml(String(v))}</span></div>`
-      ).join('');
+
+      const { data, error } = await supabase.from('students').insert(insert).select().single();
+      if (error) throw error;
+
+      // Mark setup complete 
+      await supabase.from('profiles').update({ setup_complete: true }).eq('id', profile.id);
+
+      showStep2(name, level, subject);
+    } catch (err) {
+      showErr('Something went wrong. Please try again.');
+      console.error(err);
+      btn.disabled = false;
+      btn.textContent = 'Continue →';
     }
 
-    function escapeHtml(str) {
-      if (!str) return '';
-      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    function showErr(msg) { errEl.textContent = msg; errEl.classList.remove('hidden'); }
+  };
+
+  function showStep2(name, level, subject) {
+    document.getElementById('step1').classList.add('hidden');
+    document.getElementById('step2').classList.remove('hidden');
+    
+    // Update progress dots
+    document.getElementById('dot1').style.background = 'var(--border-dark)';
+    document.getElementById('dot2').style.background = 'var(--brand-rose)';
+
+    const badge = document.getElementById('trialBadge');
+    if (profile.trial_ends_at) {
+      const days = Math.ceil((new Date(profile.trial_ends_at) - new Date()) / 86400000);
+      badge.textContent = `🎁 ${days}-day free trial active`;
+      badge.style.display = 'inline-flex';
     }
 
-    init();
-  </script>
+    const planNames = {
+      single_subject: 'Single Subject',
+      all_subjects: 'All Subjects',
+      family: 'Family Plan',
+      trial: '7-Day Free Trial',
+    };
+    
+    const rows = [
+      ['Learner Name', name], 
+      ['Academic Level', level],
+      ...(subject ? [['Focus Subject', subject]] : []),
+      ['Active Plan', planNames[planToShow] || planToShow]
+    ];
+    
+    document.getElementById('summaryCard').innerHTML = rows.map(([label, value], index) => `
+      <div class="flex justify-between items-center py-3 ${index !== rows.length - 1 ? 'border-b border-light' : ''}" style="border-bottom: ${index !== rows.length - 1 ? '1px solid var(--border-dark)' : 'none'};">
+        <span class="text-sm font-bold text-muted">${label}</span>
+        <span class="text-sm font-bold text-main">${escapeHtml(String(value))}</span>
+      </div>
+    `).join('');
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  init();
+</script>
 </body>
 </html>
