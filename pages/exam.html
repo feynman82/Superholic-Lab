@@ -4,833 +4,847 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Practice Paper — Superholic Lab</title>
+  
+  <!-- Fonts & Styles -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="icon" href="../assets/favicon.ico" />
+  
   <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js"></script>
+  
   <script type="module">
     import { guardPage } from '/js/auth.js';
     import { initAppShell } from '/js/app-shell.js';
     
-    // We fetch the profile/session exactly ONE time here.
-    const profile = await guardPage(true); 
-    
-    // Pass it to the shell to instantly set up the Navbar and CSS padding.
-    // (If profile exists, they are logged in. If null, they are guest).
-    initAppShell(profile); 
+    // Boot sequence: Ensure profile loads BEFORE we trigger DOM manipulations
+    async function boot() {
+      try {
+        window.userProfile = await guardPage(true); 
+        
+        const runInit = () => {
+          if (typeof initAppShell === 'function') initAppShell(window.userProfile); 
+          if (typeof window.initExamEngine === 'function') window.initExamEngine();
+        };
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', runInit);
+        } else {
+          runInit();
+        }
+      } catch (err) {
+        console.error('Boot sequence failed:', err);
+      }
+    }
+    boot();
   </script>
-</head>
-<body class="has-bottom-nav">
 
-  <!-- ── NAVBAR ── -->
-<header class="navbar navbar-homepage" id="navbar" style="justify-content: space-between;">
+  <style>
+    /* ─── EXAM SPECIFIC STYLES ─── */
+    .exam-navigator {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: var(--space-6);
+    }
+    .nav-pip {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-sm);
+      font-size: var(--text-sm);
+      font-weight: 700;
+      background: var(--bg-elevated);
+      color: var(--text-muted);
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .nav-pip.is-answered { background: rgba(5, 150, 105, 0.1); color: var(--brand-mint); border-color: rgba(5, 150, 105, 0.2); }
+    .nav-pip.is-flagged { background: rgba(217, 119, 6, 0.1); color: var(--brand-amber); border-color: rgba(217, 119, 6, 0.4); }
+    .nav-pip.is-active { border-color: var(--text-main); transform: scale(1.1); box-shadow: var(--shadow-sm); }
     
-    <a href="../index.html" class="navbar-logo">
-      <img src="../assets/logo.svg" width="32" height="32" alt="Superholic Lab">
-      Superholic Lab
-    </a>
-    <div id="exam-timer" aria-live="polite" aria-label="Time remaining"></div>
-    <div class="navbar-actions">
-      <div id="auth-header-container">
-        <a href="login.html" class="btn btn-secondary btn-sm">Log In</a>
+    .mcq-opt {
+      display: flex;
+      align-items: center;
+      padding: var(--space-4);
+      margin-bottom: var(--space-2);
+      border: 2px solid var(--border-light);
+      border-radius: var(--radius-md);
+      background: var(--bg-surface);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .mcq-opt:hover { border-color: var(--border-dark); background: var(--bg-elevated); }
+    .mcq-opt.is-sel {
+      border-color: var(--brand-mint);
+      background: rgba(5, 150, 105, 0.05);
+      box-shadow: 0 4px 12px rgba(5, 150, 105, 0.1);
+    }
+    .mcq-badge {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: var(--radius-full);
+      background: var(--bg-elevated);
+      font-weight: bold;
+      margin-right: var(--space-3);
+    }
+    .mcq-opt.is-sel .mcq-badge { background: var(--brand-mint); color: white; }
+
+    /* Digital Scratchpad */
+    .scratchpad-container {
+      border: 2px solid var(--border-light);
+      border-radius: var(--radius-md);
+      background: #FFFFFF;
+      position: relative;
+      overflow: hidden;
+      margin-top: var(--space-2);
+    }
+    .scratchpad-canvas {
+      width: 100%;
+      height: 300px;
+      cursor: crosshair;
+      touch-action: none; /* Prevents scrolling while drawing */
+    }
+    .scratchpad-tools {
+      position: absolute;
+      top: 8px; right: 8px;
+      display: flex;
+      gap: 8px;
+    }
+
+    /* Results Accordion */
+    .result-item { border-left: 4px solid var(--border-light); padding-left: var(--space-4); margin-bottom: var(--space-6); }
+    .result-item.c-ok { border-left-color: var(--brand-mint); }
+    .result-item.c-part { border-left-color: var(--brand-amber); }
+    .result-item.c-bad { border-left-color: var(--brand-error); }
+    
+    .timer-pill {
+      background: var(--bg-surface);
+      color: var(--text-main);
+      padding: 6px 16px;
+      border-radius: var(--radius-full);
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      box-shadow: var(--shadow-sm);
+    }
+    .timer-pill.danger { background: var(--brand-error); color: white; animation: pulse 1s infinite; }
+    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+  </style>
+</head>
+
+<body id="mainBody" class="has-bottom-nav">
+
+<!-- ═══════════════════ GLOBAL NAVBAR (Darker Sage) ═══════════════════ -->
+<header class="navbar justify-between bg-sage-dark" id="navbar">
+  <a href="../index.html" class="flex items-center gap-2 font-display text-2xl" style="text-decoration: none; color: #FFFFFF;">
+    <img src="../assets/logo.svg" width="32" height="32" alt="" aria-hidden="true" style="border-radius: var(--radius-sm); flex-shrink:0;">
+    Superholic Lab
+  </a>
+
+  <!-- Timer injects here during EXAM phase -->
+  <div id="nav-timer-container" class="hidden sm:flex"></div>
+
+  <div class="navbar-actions flex items-center gap-4">
+    <div id="auth-header-container"></div>
+    <button class="navbar-toggle" id="navToggle" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+
+  <div class="navbar-mobile" id="navDropdown">
+    <a href="../index.html">Home</a>
+    <a href="about.html">About Us</a>
+    <a href="pricing.html">Pricing</a>
+    <a href="contact.html">Contact Support</a>
+    <a href="#" id="navSignOut" style="color: var(--brand-rose);">Sign Out</a>
+  </div>
+</header>
+
+<!-- ═══════════════════ MAIN EXAM APP CONTAINER ═══════════════════ -->
+<main id="app" class="container py-10" style="padding-top: calc(64px + var(--space-8)); min-height: 85vh; max-width: 800px;"></main>
+
+<!-- ═══════════════════ GLOBAL FOOTER ═══════════════════ -->
+<footer class="footer bg-sage-dark texture-whimsical pt-8 pb-8" style="position: relative;">
+  <div class="footer-pet-track"><div class="walking-pet">🐈</div></div>
+  <div class="container">
+    <div class="footer-bottom">
+      <div class="text-muted text-sm">© 2026 Superholic Lab. 🇸🇬 Made in Singapore</div>
+      <div class="flex gap-4">
+        <a href="privacy.html" class="text-sm text-muted" style="text-decoration:none;">Privacy</a>
+        <a href="terms.html" class="text-sm text-muted" style="text-decoration:none;">Terms</a>
+        <a href="contact.html" class="text-sm text-muted" style="text-decoration:none;">Contact</a>
       </div>
-
-      <button class="navbar-toggle" id="navToggle" aria-label="Open menu">
-        <span></span><span></span><span></span>
-      </button>
     </div>
+  </div>
+</footer>
 
-    <div class="navbar-mobile" id="navDropdown">
-      <div class="container" id="navLinks">
-        <a href="../index.html">Home</a>
-        <a href="../pages/about.html">About Us</a>
-        <a href="../pages/pricing.html">Pricing</a>
-        <a href="../pages/contact.html">Contact Support</a>
-        <a href="../pages/signup.html" id="navSignUp">Start Free Trial</a>
+<!-- ═══════════════════ BOTTOM NAV (Desktop Right Float / Mobile Bottom) ═══════════════════ -->
+<nav class="bottom-nav" id="bottomNav" aria-label="Mobile navigation" hidden>
+  <a href="subjects.html" class="bottom-nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    Practise
+  </a>
+  <a href="tutor.html" class="bottom-nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+    AI Tutor
+  </a>
+  <a href="exam.html" class="bottom-nav-item is-active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="M9 12h6M9 16h4"/></svg>
+    Exam
+  </a>
+  <a href="progress.html" class="bottom-nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    Progress
+  </a>
+</nav>
+
+<!-- Scripts -->
+<script src="../js/supabase-client.js"></script>
+<script src="../js/exam-templates.js"></script>
+<script src="../js/exam-generator.js"></script>
+
+<script>
+/* ─────────────────────────────────────────────────────────────────────────
+ * EXAM ENGINE 3.0 — The "Focus Room" State Machine
+ * ───────────────────────────────────────────────────────────────────────── */
+window.initExamEngine = function () {
+  'use strict';
+
+  // ── STATE ────────────────────────────────────────────────────────────────
+  const state = {
+    phase:      'INIT',
+    level:      '',      
+    levelKey:   '',      
+    subject:    '',      
+    subjectKey: '',      
+    tier:       '',      
+    examType:   '',      
+    studentId:  null,    
+    paper:      null,
+    allQs:      [],      // Flattened array for Focus Mode
+    currentQIdx: 0,
+    answers:    {},      // text answers
+    drawings:   {},      // canvas data URLs
+    flagged:    {},      // flagged question indices
+    graded:     null,
+    timerHandle: null,
+    timeLeft:   0,
+  };
+
+  const app = document.getElementById('app');
+  const TYPE_LABELS = { WA1: 'WA 1', WA2: 'WA 2', WA3: 'WA 3', EOY: 'End-of-Year', PRELIM: 'PSLE Prelim' };
+
+  // ── UTILITIES ────────────────────────────────────────────────────────────
+  function esc(str) {
+    if (str == null) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  function setState(updates) {
+    Object.assign(state, updates);
+    render();
+  }
+
+  // Normalize Answer for Short Answer matching
+  function normalizeAnswer(str) {
+    if (!str) return '';
+    let s = String(str).toLowerCase().trim().replace(/[\s,]+/g, '');
+    s = s.replace(/hours|hour|hrs|hr/g, 'h').replace(/minutes|minute|mins/g, 'min').replace(/seconds|second|secs|sec/g, 's');
+    s = s.replace(/kilograms|kilogram|kgs/g, 'kg').replace(/grams|gram|gms|gm/g, 'g').replace(/centimetres|centimeters|centimetre|centimeter|cms/g, 'cm').replace(/metres|meters|metre|meter/g, 'm').replace(/litres|liters|litre|liter/g, 'l').replace(/millilitres|milliliters|millilitre|milliliter|mls/g, 'ml');
+    s = s.replace(/dollars|dollar/g, '$').replace(/cents|cent/g, 'c');
+    return s;
+  }
+
+  // ── TIMER ────────────────────────────────────────────────────────────────
+  function startTimer(seconds) {
+    state.timeLeft = seconds;
+    clearInterval(state.timerHandle);
+    
+    const timerContainer = document.getElementById('nav-timer-container');
+    timerContainer.innerHTML = `<div id="exam-timer" class="timer-pill"></div>`;
+    
+    tickTimer();
+    state.timerHandle = setInterval(() => {
+      state.timeLeft = Math.max(0, state.timeLeft - 1);
+      tickTimer();
+      if (state.timeLeft === 0) {
+        clearInterval(state.timerHandle);
+        autoSubmit();
+      }
+    }, 1000);
+  }
+
+  function stopTimer() {
+    clearInterval(state.timerHandle);
+    document.getElementById('nav-timer-container').innerHTML = '';
+  }
+
+  function tickTimer() {
+    const el = document.getElementById('exam-timer');
+    if (!el) return;
+    const m = Math.floor(state.timeLeft / 60);
+    const s = state.timeLeft % 60;
+    el.textContent = `⏱ ${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
+    
+    if (state.timeLeft <= 60) el.className = 'timer-pill danger';
+    else if (state.timeLeft <= 300) el.style.color = 'var(--brand-amber)';
+  }
+
+  function autoSubmit() {
+    saveCurrentAnswerState();
+    submitExam();
+  }
+
+  // ── RENDER DISPATCHER ────────────────────────────────────────────────────
+  function render() {
+    switch (state.phase) {
+      case 'INIT':    renderInit();    break;
+      case 'SUBJECT': renderSubject(); break;
+      case 'TYPE':    renderType();    break;
+      case 'GEN':     renderGenerating(); break;
+      case 'EXAM':    renderFocusExam(); break;
+      case 'RESULTS': renderResults(); break;
+    }
+  }
+
+  // ── PHASE: INIT ──────────────────────────────────────────────────────────
+  async function renderInit() {
+    app.innerHTML = `<div class="flex justify-center p-10"><div class="spinner-sm"></div></div>`;
+    try {
+      const profile = window.userProfile;
+      if (!profile) { window.location.href = 'login.html?redirect=exam'; return; }
+
+      const sb = await getSupabase();
+      const { data: student } = await sb.from('students').select('id,level,selected_subject').eq('parent_id', profile.id).single();
+
+      const tier = profile.subscription_tier || 'trial';
+      const level = student?.level || 'Primary 4';
+      const levelKey = level.toLowerCase().replace(' ', '-');
+      const studentId = student?.id || null;
+
+      if (tier === 'single_subject') {
+        const sub = student?.selected_subject || 'Mathematics';
+        setState({ phase: 'TYPE', tier, level, levelKey, subject: sub, subjectKey: sub.toLowerCase(), studentId });
+      } else {
+        setState({ phase: 'SUBJECT', tier, level, levelKey, studentId });
+      }
+    } catch (err) {
+      app.innerHTML = `<div class="card p-8 text-center"><p class="text-danger font-bold mb-4">Failed to load profile.</p><button class="btn btn-primary" onclick="location.reload()">Reload</button></div>`;
+    }
+  }
+
+  // ── PHASE: SUBJECT ───────────────────────────────────────────────────────
+  function renderSubject() {
+    const levelNum = state.level.replace('Primary ', '');
+    const subjects = [
+      { name: 'Mathematics', icon: '📐', tag: 'P1–P6' },
+      { name: 'Science', icon: '🔬', tag: 'P3–P6' },
+      { name: 'English', icon: '📖', tag: 'P1–P6' }
+    ];
+
+    const cards = subjects.map(s => `
+      <div class="card hover-lift flex flex-col items-center justify-center p-6 cursor-pointer" onclick="window.selectSubject('${s.name}')">
+        <div class="text-4xl mb-4">${s.icon}</div>
+        <h3 class="font-bold text-xl">${s.name}</h3>
+        <span class="badge mt-2">${s.tag}</span>
       </div>
-    </div>
-  </header>
+    `).join('');
 
+    app.innerHTML = `
+      <div class="text-center mb-8">
+        <div class="badge badge-info mb-2">Step 1 of 2</div>
+        <h1 class="font-display text-4xl text-main">Choose a Subject</h1>
+        <p class="text-muted text-lg mt-2">Primary ${esc(levelNum)}</p>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-4);">
+        ${cards}
+      </div>
+    `;
 
-  <!-- ── OVERLAY: CREDENTIAL LOAD ── -->
-  <div id="ov-load" class="full-overlay" hidden>
-    <div class="spinner-sm"></div>
-    <p class="text-cream font-semibold">Detecting credentials…</p>
-  </div>
+    window.selectSubject = (sub) => setState({ subject: sub, subjectKey: sub.toLowerCase(), phase: 'TYPE', examType: '' });
+  }
 
-  <!-- ── OVERLAY: MERLION GENERATION ── -->
-  <div id="ov-gen" class="full-overlay" hidden>
-    <div class="merlion-wrap">
-      <div class="merlion-glow"></div>
-      <div class="merlion-head"><div class="merlion-water"></div></div>
-      <div class="merlion-body"></div>
-      <div class="merlion-wave"></div>
-    </div>
-    <p id="gen-msg" class="text-cream font-bold" style="max-width:300px;text-align:center;font-size:1rem;"></p>
-    <p class="text-secondary text-sm">Assembling MOE-aligned questions</p>
-  </div>
+  // ── PHASE: TYPE ──────────────────────────────────────────────────────────
+  function renderType() {
+    let types = [
+      { id: 'WA1', label: 'WA 1', sub: 'Weighted Assessment 1' },
+      { id: 'WA2', label: 'WA 2', sub: 'Weighted Assessment 2' }
+    ];
+    if (state.levelKey === 'primary-6') {
+      types.push({ id: 'PRELIM', label: 'PSLE Prelim', sub: 'Full PSLE simulation' });
+    } else {
+      types.push({ id: 'WA3', label: 'WA 3', sub: 'Weighted Assessment 3' });
+      types.push({ id: 'EOY', label: 'End of Year', sub: 'End-of-Year examination' });
+    }
 
-  <!-- ── OVERLAY: AI GRADING ── -->
-  <div id="ov-grade" class="full-overlay" hidden>
-    <div class="spinner-sm"></div>
-    <p class="text-cream font-bold">Miss Wena is marking your paper…</p>
-    <p class="text-secondary text-sm">AI-powered semantic grading in progress</p>
-  </div>
+    if (!state.examType) state.examType = types[0].id;
 
-  <!-- ── MAIN APP ── -->
-  <main id="app" class="container" style="max-width:680px;padding-top:var(--space-10);padding-bottom:var(--space-16);margin-top: 68px; min-height: 80vh;"></main>
+    const chips = types.map(t => `
+      <div class="card p-4 cursor-pointer hover-lift flex flex-col justify-center ${t.id === state.examType ? 'bg-sage-dark' : ''}" 
+           style="border: 2px solid ${t.id === state.examType ? 'var(--brand-mint)' : 'var(--border-light)'};"
+           onclick="window.selectType('${t.id}')">
+        <div class="font-bold text-lg ${t.id === state.examType ? 'text-white' : 'text-main'}">${esc(t.label)}</div>
+        <div class="text-xs ${t.id === state.examType ? 'text-white' : 'text-muted'} opacity-80 mt-1">${esc(t.sub)}</div>
+      </div>
+    `).join('');
 
-  <footer class="footer">
-    <div class="container">
-      <div class="footer-bottom">
-        <p>&copy; 2026 Superholic Lab. 🇸🇬 Made in Singapore</p>
-        <div class="flex gap-4">
-          <a href="privacy.html">Privacy</a>
-          <a href="terms.html">Terms</a>
-          <a href="contact.html">Contact</a>
+    // Fetch Template Data for Dossier
+    const tpl = (typeof getTemplate !== 'undefined') ? getTemplate(state.subjectKey, state.levelKey) : null;
+    let blueprintHtml = '<p class="text-muted text-sm">Loading blueprint...</p>';
+    if (tpl) {
+      const isWA = state.examType.startsWith('WA');
+      const scale = isWA ? 0.5 : 1.0;
+      const duration = Math.round(tpl.duration * scale);
+      const totalMarks = Math.round(tpl.totalMarks * scale);
+      blueprintHtml = `
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="font-display text-2xl text-main">Exam Dossier</h2>
+          <div class="badge badge-info">DRAFT</div>
+        </div>
+        <ul class="flex flex-col gap-2 text-sm text-main mb-4" style="list-style:none;">
+          <li class="flex justify-between border-b border-light pb-2"><span>Total Duration</span> <span class="font-bold">⏱ ${duration} mins</span></li>
+          <li class="flex justify-between border-b border-light pb-2"><span>Total Marks</span> <span class="font-bold">${totalMarks} M</span></li>
+        </ul>
+      `;
+    }
+
+    app.innerHTML = `
+      <div class="text-center mb-8">
+        <div class="badge badge-info mb-2">${state.tier === 'single_subject' ? 'Step 1 of 1' : 'Step 2 of 2'}</div>
+        <h1 class="font-display text-4xl text-main">Select Paper Type</h1>
+      </div>
+      
+      <div class="flex flex-wrap gap-8">
+        <div class="flex-1 flex flex-col gap-4" style="min-width: 300px;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+            ${chips}
+          </div>
+          ${state.tier !== 'single_subject' ? `<button class="btn btn-ghost mt-4" onclick="window.backToSubject()">← Back to Subjects</button>` : ''}
+        </div>
+        
+        <div class="flex-1" style="min-width: 300px;">
+          <div class="card p-6 border-l-4 border-mint" style="background: var(--bg-elevated); border-left: 4px solid var(--brand-mint);">
+            ${blueprintHtml}
+            <button class="btn btn-primary btn-full mt-4 hover-lift" onclick="window.triggerGen()">Generate Paper →</button>
+          </div>
         </div>
       </div>
-    </div>
-  </footer>
+    `;
 
-  <!-- ── BOTTOM NAV ── -->
-  <nav class="bottom-nav" aria-label="Mobile navigation">
-    <a href="subjects.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-      Practise
-    </a>
-    <a href="tutor.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-      AI Tutor
-    </a>
-    <a href="exam.html" class="bottom-nav-item is-active">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="M9 12h6M9 16h4"/></svg>
-      Exam
-    </a>
-    <a href="progress.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-      Progress
-    </a>
-  </nav>
+    window.selectType = (id) => setState({ examType: id });
+    window.backToSubject = () => setState({ phase: 'SUBJECT', examType: '' });
+    window.triggerGen = () => setState({ phase: 'GEN' });
+  }
 
-  <script src="../js/supabase-client.js"></script>
-  <script src="../js/exam-templates.js"></script>
-  <script src="../js/exam-generator.js"></script>
-  <script>
-  /* ─────────────────────────────────────────────────────────────────────────
-   * EXAM ENGINE — Linear State-Machine
-   * States: INIT → SUBJECT → TYPE → [generating] → EXAM → RESULTS
-   * All UI is rebuilt by render() on each setState() call.
-   * ───────────────────────────────────────────────────────────────────────── */
-  (function () {
-    'use strict';
+  // ── PHASE: GENERATING ────────────────────────────────────────────────────
+  function renderGenerating() {
+    app.innerHTML = `
+      <div class="flex flex-col items-center justify-center min-h-[50vh] text-center">
+        <div class="spinner-sm mb-6" style="width:40px; height:40px; border-width: 4px;"></div>
+        <h2 class="font-display text-3xl text-main mb-2" id="genMsg">Assembling Paper...</h2>
+        <p class="text-muted text-sm">Applying MOE difficulty calibration</p>
+      </div>
+    `;
 
-    // ── STATE ────────────────────────────────────────────────────────────────
-    var state = {
-      phase:      'INIT',
-      level:      '',      // 'Primary 4'
-      levelKey:   '',      // 'primary-4'
-      subject:    '',      // 'Mathematics'
-      subjectKey: '',      // 'mathematics'
-      tier:       '',      // subscription_tier
-      examType:   '',      // 'WA1' | 'WA2' | 'WA3' | 'EOY' | 'PRELIM'
-      studentId:  null,    // students.id — used for exam_results insert
-      paper:      null,
-      answers:    {},
-      graded:     null,
-      timerHandle: null,
-      timeLeft:   0,
-    };
+    const msgs = ['Gathering questions...', 'Calibrating difficulty...', 'Checking syllabus alignment...'];
+    let m = 0;
+    const int = setInterval(() => { m = (m+1)%msgs.length; const el = document.getElementById('genMsg'); if(el) el.textContent = msgs[m]; }, 1000);
 
-    var app      = document.getElementById('app');
-    var timerEl  = document.getElementById('exam-timer');
-    var ovLoad   = document.getElementById('ov-load');
-    var ovGen    = document.getElementById('ov-gen');
-    var ovGrade  = document.getElementById('ov-grade');
+    generateExam(state.subjectKey, state.levelKey, state.examType).then(paper => {
+      clearInterval(int);
+      // Flatten questions for Focus Mode
+      let flat = [];
+      paper.sections.forEach(sec => {
+        sec.questions.forEach(q => {
+          flat.push({ ...q, sectionLabel: sec.label, sectionInstr: sec.instructions });
+        });
+      });
+      setState({ phase: 'EXAM', paper, allQs: flat, currentQIdx: 0, answers: {}, drawings: {}, flagged: {} });
+    }).catch(err => {
+      clearInterval(int);
+      app.innerHTML = `<div class="card p-8 text-center"><p class="text-danger font-bold mb-4">Error: ${err.message}</p><button class="btn btn-primary" onclick="location.reload()">Try Again</button></div>`;
+    });
+  }
 
-    // ── UTILITIES ────────────────────────────────────────────────────────────
-    function esc(str) {
-      return String(str == null ? '' : str)
-        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-        .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  // ── PHASE: EXAM (THE FOCUS ROOM) ─────────────────────────────────────────
+  function renderFocusExam() {
+    if (state.currentQIdx === 0 && !state.timerHandle) {
+      startTimer(state.paper.duration * 60);
     }
 
-    function showOnly(el) {
-      [ovLoad, ovGen, ovGrade].forEach(function(o) { o.hidden = true; });
-      if (el) el.hidden = false;
+    const q = state.allQs[state.currentQIdx];
+    const totalQs = state.allQs.length;
+
+    // Build Navigator Grid
+    const navPips = state.allQs.map((_, i) => {
+      let classes = 'nav-pip hover-lift';
+      if (i === state.currentQIdx) classes += ' is-active';
+      if (state.flagged[i]) classes += ' is-flagged';
+      else if (state.answers[i] || state.drawings[i]) classes += ' is-answered';
+      
+      return `<button class="${classes}" onclick="window.jumpToQ(${i})">${i+1}</button>`;
+    }).join('');
+
+    // Build Question UI
+    let uiHtml = '';
+    const ansKey = state.currentQIdx; 
+    const savedAns = state.answers[ansKey] || '';
+
+    if (q.type === 'mcq') {
+      const letters = ['A','B','C','D'];
+      uiHtml = q.options.map((opt, i) => {
+        const isSel = savedAns === letters[i];
+        return `
+          <div class="mcq-opt hover-lift ${isSel ? 'is-sel' : ''}" onclick="window.selectMcq('${letters[i]}')">
+            <span class="mcq-badge">${letters[i]}</span>
+            <span class="font-medium">${esc(opt)}</span>
+          </div>`;
+      }).join('');
+    } else if (q.type === 'short_ans') {
+      uiHtml = `<input type="text" id="qInput" class="form-input mt-4" placeholder="Type your final answer..." value="${esc(savedAns)}" autocomplete="off">`;
+    } else if (['open_ended', 'word_problem'].includes(q.type)) {
+      // Electronic Pen / Text Toggle
+      const isDrawingMode = !!state.drawings[ansKey];
+      uiHtml = `
+        <div class="flex justify-end gap-2 mb-2">
+          <button class="btn btn-sm ${!isDrawingMode ? 'btn-secondary bg-sage-dark text-white' : 'btn-ghost'}" onclick="window.setMode('text')">⌨️ Type</button>
+          <button class="btn btn-sm ${isDrawingMode ? 'btn-secondary bg-sage-dark text-white' : 'btn-ghost'}" onclick="window.setMode('draw')">✏️ Pen Tool</button>
+        </div>
+        ${!isDrawingMode 
+          ? `<textarea id="qInput" class="form-input w-full p-4" rows="6" style="height:auto; resize:vertical;" placeholder="Show your working and final answer...">${esc(savedAns)}</textarea>`
+          : `
+            <div class="scratchpad-container">
+              <canvas id="scratchpadCanvas" class="scratchpad-canvas"></canvas>
+              <div class="scratchpad-tools">
+                <button class="btn btn-sm btn-ghost bg-surface" onclick="window.clearCanvas()">🗑️ Clear</button>
+              </div>
+            </div>
+            <input type="text" id="qInput" class="form-input mt-4" placeholder="Final Answer (Required for AI Grading)" value="${esc(savedAns)}" autocomplete="off">
+          `
+        }
+      `;
+    } else {
+      uiHtml = `<textarea id="qInput" class="form-input w-full p-4" rows="4" style="height:auto;">${esc(savedAns)}</textarea>`;
     }
 
-    function setState(updates) {
-      Object.assign(state, updates);
-      render();
+    app.innerHTML = `
+      <div class="flex flex-col md:flex-row gap-8">
+        <!-- Left: Question Area -->
+        <div class="flex-1 flex flex-col min-w-[300px]">
+          <div class="badge badge-info mb-4 self-start">${esc(q.sectionLabel)}</div>
+          
+          <div class="card p-6 mb-4 flex-1">
+            <div class="flex justify-between items-center mb-4 border-b border-light pb-2">
+              <div class="font-bold text-muted">Question ${state.currentQIdx + 1} of ${totalQs}</div>
+              <div class="text-sm font-bold text-main bg-elevated px-2 py-1 rounded">${q.marks} mark${q.marks > 1 ? 's' : ''}</div>
+            </div>
+            
+            ${q.sectionInstr ? `<p class="text-sm text-muted italic mb-4">${esc(q.sectionInstr)}</p>` : ''}
+            <p class="text-lg text-main font-medium mb-6 leading-relaxed">${esc(q.question_text)}</p>
+            
+            <div class="question-ui">${uiHtml}</div>
+          </div>
+
+          <!-- Bottom Action Bar -->
+          <div class="flex justify-between items-center bg-surface p-4 rounded-lg border border-light box-shadow-sm">
+            <button class="btn btn-ghost" onclick="window.navExam(-1)" ${state.currentQIdx === 0 ? 'disabled' : ''}>← Previous</button>
+            <button class="btn btn-ghost hover-lift" onclick="window.toggleFlag()" style="color: ${state.flagged[ansKey] ? 'var(--brand-amber)' : 'var(--text-muted)'}; border: 1px solid ${state.flagged[ansKey] ? 'var(--brand-amber)' : 'transparent'};">
+              ${state.flagged[ansKey] ? '🚩 Flagged' : '🚩 Flag for review'}
+            </button>
+            ${state.currentQIdx === totalQs - 1 
+              ? `<button class="btn btn-primary hover-lift" onclick="window.manualSubmit()">Submit Paper →</button>`
+              : `<button class="btn btn-secondary hover-lift" onclick="window.navExam(1)">Next →</button>`
+            }
+          </div>
+        </div>
+
+        <!-- Right: Exam Navigator -->
+        <div class="w-full md:w-64">
+          <div class="card p-6 sticky top-[100px]">
+            <h3 class="font-bold text-main mb-4">Exam Navigator</h3>
+            <div class="exam-navigator">${navPips}</div>
+            <div class="flex flex-col gap-2 mt-4 pt-4 border-t border-light text-xs text-muted font-medium">
+              <div class="flex items-center gap-2"><div class="w-3 h-3 rounded bg-elevated"></div> Unanswered</div>
+              <div class="flex items-center gap-2"><div class="w-3 h-3 rounded" style="background: rgba(5, 150, 105, 0.2);"></div> Answered</div>
+              <div class="flex items-center gap-2"><div class="w-3 h-3 rounded" style="background: rgba(217, 119, 6, 0.2);"></div> Flagged</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Initialize Canvas if in draw mode
+    if (document.getElementById('scratchpadCanvas')) {
+      initCanvas(ansKey);
+    }
+  }
+
+  // ── EXAM INTERACTIONS ────────────────────────────────────────────────────
+  window.saveCurrentAnswerState = () => {
+    const qType = state.allQs[state.currentQIdx].type;
+    const ansKey = state.currentQIdx;
+    
+    if (qType !== 'mcq') {
+      const inp = document.getElementById('qInput');
+      if (inp) state.answers[ansKey] = inp.value;
     }
     
-    // ── ANSWER NORMALIZATION ─────────────────────────────────────────────────
-    function normalizeAnswer(str) {
-      if (!str) return '';
-      var s = String(str).toLowerCase().trim();
-      
-      // 1. Remove all spaces and commas (so "1,000" becomes "1000", and "1 hr" becomes "1hr")
-      s = s.replace(/[\s,]+/g, '');
-      
-      // 2. Standardize Time Units
-      s = s.replace(/hours|hour|hrs|hr/g, 'h');
-      s = s.replace(/minutes|minute|mins/g, 'min');
-      s = s.replace(/seconds|second|secs|sec/g, 's');
-      
-      // 3. Standardize Metric Units
-      s = s.replace(/kilograms|kilogram|kgs/g, 'kg');
-      s = s.replace(/grams|gram|gms|gm/g, 'g');
-      s = s.replace(/centimetres|centimeters|centimetre|centimeter|cms/g, 'cm');
-      s = s.replace(/metres|meters|metre|meter/g, 'm');
-      s = s.replace(/litres|liters|litre|liter/g, 'l');
-      s = s.replace(/millilitres|milliliters|millilitre|milliliter|mls/g, 'ml');
-      
-      // 4. Standardize Currency
-      s = s.replace(/dollars|dollar/g, '$');
-      s = s.replace(/cents|cent/g, 'c');
-      
-      return s;
+    const canvas = document.getElementById('scratchpadCanvas');
+    if (canvas) state.drawings[ansKey] = canvas.toDataURL();
+  };
+
+  window.navExam = (dir) => {
+    window.saveCurrentAnswerState();
+    const newIdx = state.currentQIdx + dir;
+    if (newIdx >= 0 && newIdx < state.allQs.length) {
+      setState({ currentQIdx: newIdx });
     }
+  };
 
-    // ── TIMER ────────────────────────────────────────────────────────────────
-    function startTimer(seconds) {
-      state.timeLeft = seconds;
-      clearInterval(state.timerHandle);
-      tickTimer();
-      state.timerHandle = setInterval(function () {
-        state.timeLeft = Math.max(0, state.timeLeft - 1);
-        tickTimer();
-        if (state.timeLeft === 0) {
-          clearInterval(state.timerHandle);
-          autoSubmit();
-        }
-      }, 1000);
+  window.jumpToQ = (idx) => {
+    window.saveCurrentAnswerState();
+    setState({ currentQIdx: idx });
+  };
+
+  window.selectMcq = (letter) => {
+    state.answers[state.currentQIdx] = letter;
+    renderFocusExam(); // Re-render to show selection & update pip
+  };
+
+  window.toggleFlag = () => {
+    window.saveCurrentAnswerState();
+    const k = state.currentQIdx;
+    state.flagged[k] = !state.flagged[k];
+    renderFocusExam();
+  };
+
+  window.setMode = (mode) => {
+    window.saveCurrentAnswerState();
+    const k = state.currentQIdx;
+    if (mode === 'draw') {
+      state.drawings[k] = state.drawings[k] || 'init'; // flag to trigger drawing mode
+    } else {
+      delete state.drawings[k]; // text mode
     }
+    renderFocusExam();
+  };
 
-    function stopTimer() {
-      clearInterval(state.timerHandle);
-      state.timerHandle = null;
-    }
-
-    function tickTimer() {
-      var m = Math.floor(state.timeLeft / 60);
-      var s = state.timeLeft % 60;
-      timerEl.textContent = pad(m) + ':' + pad(s);
-      timerEl.classList.toggle('warn',   state.timeLeft <= 300 && state.timeLeft > 60);
-      timerEl.classList.toggle('danger', state.timeLeft <= 60);
-    }
-
-    function pad(n) { return n < 10 ? '0' + n : String(n); }
-
-    function autoSubmit() {
-      timerEl.textContent = '00:00';
+  window.manualSubmit = () => {
+    window.saveCurrentAnswerState();
+    if (confirm("Are you sure you want to submit your paper?")) {
       submitExam();
     }
+  };
 
-    // ── ASSESSMENT TYPES ─────────────────────────────────────────────────────
-    function getTypes(levelKey) {
-      if (levelKey === 'primary-6') {
-        return [
-          { id: 'WA1',    label: 'WA 1',        sub: 'Weighted Assessment 1' },
-          { id: 'WA2',    label: 'WA 2',        sub: 'Weighted Assessment 2' },
-          { id: 'PRELIM', label: 'PSLE Prelim',  sub: 'Full PSLE simulation'  },
-        ];
+  // ── CANVAS LOGIC ─────────────────────────────────────────────────────────
+  let ctx, isDrawing = false;
+  function initCanvas(qid) {
+    const canvas = document.getElementById('scratchpadCanvas');
+    if (!canvas) return;
+    
+    // Setup for High-DPI screens
+    const rect = canvas.parentElement.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = 300;
+    
+    ctx = canvas.getContext('2d');
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#2C3E3A';
+
+    // Load existing drawing
+    if (state.drawings[qid] && state.drawings[qid] !== 'init') {
+      let img = new Image();
+      img.onload = () => ctx.drawImage(img, 0, 0);
+      img.src = state.drawings[qid];
+    }
+
+    const getPos = (e) => {
+      const r = canvas.getBoundingClientRect();
+      const x = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
+      const y = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
+      return { x, y };
+    };
+
+    const start = (e) => { isDrawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); e.preventDefault(); };
+    const draw = (e) => { if (!isDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); e.preventDefault(); };
+    const stop = () => { if(isDrawing) { isDrawing = false; state.drawings[qid] = canvas.toDataURL(); } };
+
+    canvas.addEventListener('mousedown', start);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stop);
+    canvas.addEventListener('mouseout', stop);
+
+    canvas.addEventListener('touchstart', start, {passive: false});
+    canvas.addEventListener('touchmove', draw, {passive: false});
+    canvas.addEventListener('touchend', stop);
+  }
+
+  window.clearCanvas = () => {
+    if(ctx) {
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      state.drawings[state.currentQIdx] = ctx.canvas.toDataURL();
+    }
+  };
+
+  // ── SUBMIT & GRADE ───────────────────────────────────────────────────────
+  function submitExam() {
+    stopTimer();
+    app.innerHTML = `
+      <div class="flex flex-col items-center justify-center min-h-[50vh] text-center">
+        <div class="spinner-sm mb-6" style="width:40px; height:40px;"></div>
+        <h2 class="font-display text-3xl text-main mb-2">Miss Wena is marking...</h2>
+        <p class="text-muted text-sm">Checking for MOE keywords and methods</p>
+      </div>
+    `;
+
+    let graded = [];
+    let queue = [];
+
+    state.allQs.forEach((q, i) => {
+      const sa = state.answers[i] || '';
+      let r = { q, sa, earned: 0, max: q.marks, status: 'wrong', fb: '' };
+
+      if (q.type === 'mcq') {
+        r.earned = sa === q.correct_answer ? q.marks : 0;
+        r.status = sa === q.correct_answer ? 'correct' : 'wrong';
+        r.fb = r.status === 'wrong' && sa ? (q.wrong_explanations?.[sa] || '') : '';
+        graded.push(r);
+      } 
+      else if (q.type === 'short_ans') {
+        const normSa = normalizeAnswer(sa);
+        const accepted = [q.correct_answer, ...(q.accept_also||[])].map(normalizeAnswer);
+        const correct = accepted.includes(normSa);
+        r.earned = correct ? q.marks : 0;
+        r.status = correct ? 'correct' : 'wrong';
+        graded.push(r);
       }
-      return [
-        { id: 'WA1', label: 'WA 1',        sub: 'Weighted Assessment 1' },
-        { id: 'WA2', label: 'WA 2',        sub: 'Weighted Assessment 2' },
-        { id: 'WA3', label: 'WA 3',        sub: 'Weighted Assessment 3' },
-        { id: 'EOY', label: 'End of Year', sub: 'End-of-Year examination' },
-      ];
-    }
-
-    var TYPE_LABELS = { WA1: 'WA 1', WA2: 'WA 2', WA3: 'WA 3', EOY: 'End-of-Year', PRELIM: 'PSLE Prelim' };
-
-    // ── BLUEPRINT ────────────────────────────────────────────────────────────
-    function blueprintHTML(subjectKey, levelKey, examType) {
-      var tpl = (typeof getTemplate !== 'undefined') ? getTemplate(subjectKey, levelKey) : null;
-      if (!tpl) return '<p class="text-secondary text-sm">Template not available.</p>';
-
-      var isWA = examType === 'WA1' || examType === 'WA2' || examType === 'WA3';
-      var scale = isWA ? 0.5 : 1.0;
-      var duration   = Math.round(tpl.duration   * scale);
-      var totalMarks = Math.round(tpl.totalMarks * scale);
-
-      var rows = tpl.sections.map(function (sec) {
-        var count  = Math.max(1, Math.round(sec.count * scale));
-        var marks  = count * sec.marksEach;
-        var parts  = sec.label.split(' — ');
-        var lbl    = esc(parts[0]) + (parts[1] ? '<br><span style="font-size:.68rem;opacity:.55;">' + esc(parts[1]) + '</span>' : '');
-        return '<div class="blueprint-row"><span class="bp-label">' + lbl + '</span><span class="bp-count">' + count + ' Qs</span><span class="bp-marks">' + marks + 'M</span></div>';
-      }).join('');
-
-      return '<div class="blueprint-header"><span class="blueprint-eyebrow">Exam Blueprint</span><span class="blueprint-draft">DRAFT PREVIEW</span></div>'
-        + rows
-        + '<div class="blueprint-footer"><span class="bp-duration">⏱ ' + duration + ' min</span><span class="bp-total">Total: ' + totalMarks + ' marks</span></div>';
-    }
-
-    function confirmText() {
-      if (!state.examType) return 'Select a paper type to continue.';
-      return 'Generating <strong>' + esc(state.level) + ' ' + esc(state.subject) + '</strong> assessment paper for <strong>' + esc(TYPE_LABELS[state.examType] || state.examType) + '</strong>.';
-    }
-
-    // ── RENDER DISPATCHER ────────────────────────────────────────────────────
-    function render() {
-      switch (state.phase) {
-        case 'INIT':    renderInit();    break;
-        case 'SUBJECT': renderSubject(); break;
-        case 'TYPE':    renderType();    break;
-        case 'EXAM':    renderExam();    break;
-        case 'RESULTS': renderResults(); break;
-      }
-    }
-
-    // ── PHASE: INIT ──────────────────────────────────────────────────────────
-    function renderInit() {
-      showOnly(ovLoad);
-      app.innerHTML = '';
-    }
-
-    // ── PHASE: SUBJECT ───────────────────────────────────────────────────────
-    function renderSubject() {
-      showOnly(null);
-      var levelNum = state.level.replace('Primary ', '');
-      var cards = ['Mathematics','Science','English'].map(function (sub) {
-        var icons = { Mathematics: '📐', Science: '🔬', English: '📖' };
-        var tags  = { Mathematics: 'Maths · P1–P6', Science: 'Science · P3–P6', English: 'English · P1–P6' };
-        return '<div class="subject-card" data-subject="' + sub + '" role="button" tabindex="0">'
-          + '<span class="subject-card-icon">' + icons[sub] + '</span>'
-          + '<span class="subject-card-name">' + sub + '</span>'
-          + '<span class="subject-card-tag">' + tags[sub] + '</span>'
-          + '</div>';
-      }).join('');
-
-      app.innerHTML = `
-        <div class="wizard-step is-active">
-          <div style="margin-bottom:var(--space-8); text-align:center;">
-            <span class="section-label-tag">Step 1 of 2</span>
-            <h1 style="font-family:var(--font-display);font-size:2.5rem;letter-spacing:.04em;color:var(--cream);margin-top:var(--space-3);text-transform:uppercase;">Choose a Subject</h1>
-            <p class="text-secondary text-sm" style="margin-top:var(--space-2);">Primary ${esc(levelNum)} — select the subject to practise</p>
-          </div>
-          <div class="subject-grid">${cards}</div>
-        </div>`;
-
-      app.querySelectorAll('.subject-card').forEach(function (card) {
-        card.addEventListener('click', function () {
-          var sub = card.dataset.subject;
-          setState({ subject: sub, subjectKey: sub.toLowerCase(), phase: 'TYPE', examType: '' });
-        });
-        card.addEventListener('keydown', function (e) {
-          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); card.click(); }
-        });
-      });
-    }
-
-    // ── PHASE: TYPE ──────────────────────────────────────────────────────────
-    function renderType() {
-      showOnly(null);
-      var types = getTypes(state.levelKey);
-      if (!state.examType) state.examType = types[0].id;
-
-      var chips = types.map(function (t) {
-        return '<div class="type-chip' + (t.id === state.examType ? ' is-selected' : '') + '" data-type="' + t.id + '" role="button" tabindex="0">'
-          + esc(t.label)
-          + '<div class="type-chip-sub">' + esc(t.sub) + '</div>'
-          + '</div>';
-      }).join('');
-
-      var stepLabel = state.tier === 'single_subject' ? 'Step 1 of 1' : 'Step 2 of 2';
-      var backBtn   = state.tier !== 'single_subject'
-        ? '<button id="back-btn" class="btn btn-ghost btn-full" style="margin-top:var(--space-3);">← Back to Subjects</button>'
-        : '';
-
-      app.innerHTML = `
-        <div class="wizard-step is-active">
-          <div style="margin-bottom:var(--space-8); text-align:center;">
-            <span class="section-label-tag">${stepLabel}</span>
-            <h1 style="font-family:var(--font-display);font-size:2.5rem;letter-spacing:.04em;color:var(--cream);margin-top:var(--space-3);text-transform:uppercase;">Select Paper Type</h1>
-          </div>
-          <div id="confirm-banner" class="confirm-banner">${confirmText()}</div>
-          <div class="type-grid" id="type-grid">${chips}</div>
-          <div class="blueprint-card" id="bp-card">${blueprintHTML(state.subjectKey, state.levelKey, state.examType)}</div>
-          <button id="gen-btn" class="btn btn-primary btn-full btn-lg mt-4">Generate Paper →</button>
-          ${backBtn}
-        </div>`;
-
-      app.querySelectorAll('.type-chip').forEach(function (chip) {
-        function activate() {
-          state.examType = chip.dataset.type;
-          app.querySelectorAll('.type-chip').forEach(function (c) { c.classList.remove('is-selected'); });
-          chip.classList.add('is-selected');
-          document.getElementById('confirm-banner').innerHTML = confirmText();
-          document.getElementById('bp-card').innerHTML = blueprintHTML(state.subjectKey, state.levelKey, state.examType);
-        }
-        chip.addEventListener('click', activate);
-        chip.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); } });
-      });
-
-      document.getElementById('gen-btn').addEventListener('click', triggerGeneration);
-
-      var backEl = document.getElementById('back-btn');
-      if (backEl) backEl.addEventListener('click', function () { setState({ phase: 'SUBJECT', examType: '' }); });
-    }
-
-    // ── GENERATION ───────────────────────────────────────────────────────────
-    function triggerGeneration() {
-      showOnly(ovGen);
-      app.innerHTML = '';
-
-      var msgs = [
-        'Gathering ' + state.level + ' ' + state.subject + ' questions…',
-        'Applying MOE difficulty calibration…',
-        'Shuffling sections for optimal practice…',
-        'Almost ready — final quality check…',
-      ];
-      var mi = 0;
-      var msgEl = document.getElementById('gen-msg');
-      if (msgEl) msgEl.textContent = msgs[0];
-      var msgInt = setInterval(function () {
-        mi = (mi + 1) % msgs.length;
-        if (msgEl) msgEl.textContent = msgs[mi];
-      }, 950);
-
-      generateExam(state.subjectKey, state.levelKey, state.examType).then(function (paper) {
-        clearInterval(msgInt);
-        setState({ phase: 'EXAM', paper: paper, answers: {}, graded: null });
-      }).catch(function (err) {
-        clearInterval(msgInt);
-        showOnly(null);
-        app.innerHTML = '<div class="card" style="text-align:center;padding:var(--space-10);">'
-          + '<p class="text-danger font-bold" style="margin-bottom:var(--space-4);">Could not generate paper</p>'
-          + '<p class="text-secondary text-sm" style="margin-bottom:var(--space-6);">' + esc(err.message) + '</p>'
-          + '<button class="btn btn-primary" onclick="location.reload()">Try Again</button>'
-          + '</div>';
-      });
-    }
-
-    // ── PHASE: EXAM ──────────────────────────────────────────────────────────
-    function renderExam() {
-      showOnly(null);
-      var paper = state.paper;
-      startTimer(paper.duration * 60);
-
-      var qNum = 0;
-      var sectionsHTML = paper.sections.map(function (sec) {
-        var qs = sec.questions.map(function (q) {
-          qNum++;
-          return renderQuestion(q, qNum);
-        }).join('');
-        return '<div class="exam-section-hd">'
-          + '<div class="exam-section-title">' + esc(sec.label) + '</div>'
-          + '<div class="exam-section-instr">' + esc(sec.instructions) + '</div>'
-          + '</div>' + qs;
-      }).join('');
-
-      app.innerHTML = '<div>'
-        + '<div style="margin-bottom:var(--space-8);padding-bottom:var(--space-6);border-bottom:1px solid var(--glass-border);">'
-        + '<h1 id="exam-paper-title" style="font-family:var(--font-display);font-size:2rem;color:var(--cream);letter-spacing:.04em;">' + esc(paper.template.label) + '</h1>'
-        + '<p class="text-secondary text-sm" style="margin-top:var(--space-2);">'
-        + esc(TYPE_LABELS[state.examType] || state.examType) + ' · '
-        + paper.totalMarks + ' marks · '
-        + paper.duration + ' minutes'
-        + '</p></div>'
-        + sectionsHTML
-        + '<button id="submit-btn" class="btn btn-primary btn-full btn-lg" style="margin-top:var(--space-8);">Submit &amp; Mark with AI →</button>'
-        + '</div>';
-
-      document.getElementById('submit-btn').addEventListener('click', submitExam);
-    }
-
-    function renderQuestion(q, num) {
-      var meta = '<div class="exam-q-meta"><span>Q' + num + '</span><span class="exam-q-marks">' + q.marks + ' mark' + (q.marks !== 1 ? 's' : '') + '</span></div>';
-      var qtext = '<p class="exam-q-text">' + esc(q.question_text) + '</p>';
-      var ui = '';
-
-      switch (q.type) {
-        case 'mcq':          ui = renderMCQ(q);         break;
-        case 'short_ans':    ui = renderShortAns(q);     break;
-        case 'word_problem': ui = renderWordProblem(q);  break;
-        case 'open_ended':   ui = renderOpenEnded(q);    break;
-        case 'cloze':        ui = renderCloze(q);        break;
-        case 'editing':      ui = renderEditing(q);      break;
-        default:             ui = '<p class="text-secondary text-sm">Question type "' + esc(q.type) + '" not supported.</p>';
-      }
-
-      return '<div class="exam-q" data-qid="' + esc(q.id) + '" data-type="' + esc(q.type) + '">' + meta + qtext + ui + '</div>';
-    }
-
-    function renderMCQ(q) {
-      var letters = ['A','B','C','D'];
-      var opts = q.options.map(function (opt, i) {
-        return '<div class="mcq-opt" data-letter="' + letters[i] + '" role="radio" tabindex="0" aria-checked="false">'
-          + '<span class="mcq-badge">' + letters[i] + '</span>'
-          + '<span>' + esc(opt) + '</span>'
-          + '</div>';
-      }).join('');
-      return '<div class="mcq-opts" data-qid="' + esc(q.id) + '">' + opts + '</div>';
-    }
-
-    function renderShortAns(q) {
-      return '<input type="text" class="exam-input" data-qid="' + esc(q.id) + '" placeholder="Write your answer here" autocomplete="off">';
-    }
-
-    function renderWordProblem(q) {
-      return q.parts.map(function (part) {
-        return '<div class="wp-part-label"><span>' + esc(part.label) + '</span><span class="wp-marks">[' + part.marks + ' marks]</span></div>'
-          + '<p class="exam-q-text" style="font-size:.9rem;margin-bottom:var(--space-2);">' + esc(part.question) + '</p>'
-          + '<textarea class="exam-ta" data-qid="' + esc(q.id) + '" data-part="' + esc(part.label) + '" placeholder="Show your working clearly…" rows="4"></textarea>';
-      }).join('');
-    }
-
-    function renderOpenEnded(q) {
-      return '<textarea class="exam-ta" data-qid="' + esc(q.id) + '" placeholder="Write your explanation in complete sentences. Use scientific keywords." rows="5"></textarea>';
-    }
-
-    function renderCloze(q) {
-      var passageHTML = esc(q.passage);
-      q.blanks.forEach(function (blank) {
-        passageHTML = passageHTML.replace('[' + blank.number + ']', '<span class="cloze-num">[' + blank.number + ']</span>');
-      });
-
-      var controls = q.blanks.map(function (blank) {
-        var letters = ['A','B','C','D'];
-        var opts = blank.options.map(function (opt, i) {
-          return '<option value="' + letters[i] + '">' + letters[i] + ': ' + esc(opt) + '</option>';
-        }).join('');
-        return '<div class="cloze-blank-box">'
-          + '<div class="cloze-blank-lbl">Blank [' + blank.number + ']</div>'
-          + '<select class="cloze-sel" data-qid="' + esc(q.id) + '" data-blank="' + blank.number + '">'
-          + '<option value="">— Select —</option>' + opts
-          + '</select></div>';
-      }).join('');
-
-      return '<div class="cloze-passage">' + passageHTML + '</div>'
-        + '<div class="cloze-blanks-grid">' + controls + '</div>';
-    }
-
-    function renderEditing(q) {
-      var lines = (q.passage_lines || []).map(function (line) {
-        var textEsc = esc(line.text);
-        // Fallback to wrong_word if underlined_word is missing in the JSON
-        var wordEsc = esc(line.underlined_word || line.wrong_word || ''); 
+      else {
+        // AI Grading for open_ended / word_problem
+        r.status = 'pending';
+        graded.push(r);
+        const idx = graded.length - 1;
         
-        // Only attempt to highlight if a word actually exists to prevent infinite span loops
-        var highlighted = wordEsc ? textEsc.split(wordEsc).join('<span class="edit-uw">' + wordEsc + '</span>') : textEsc;
-        
-        return '<div class="edit-line">'
-          + '<span class="edit-lnum">' + line.line_number + '.</span>'
-          + '<span class="edit-text">' + highlighted + '</span>'
-          + '<input type="text" class="edit-inp" data-qid="' + esc(q.id) + '" data-line="' + line.line_number + '" placeholder="correction" autocomplete="off">'
-          + '</div>';
-      }).join('');
-      return '<div class="edit-lines">' + lines + '</div>';
-    }
-
-    // ── MCQ INTERACTION (event delegation) ───────────────────────────────────
-    app.addEventListener('click', function (e) {
-      var opt = e.target.closest('.mcq-opt');
-      if (!opt) return;
-      var group = opt.closest('.mcq-opts');
-      if (!group) return;
-      group.querySelectorAll('.mcq-opt').forEach(function (o) { o.classList.remove('is-sel'); o.setAttribute('aria-checked','false'); });
-      opt.classList.add('is-sel');
-      opt.setAttribute('aria-checked','true');
+        queue.push(
+          fetch('/api/grade-answer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              questionId: q.id, questionType: q.type, questionText: q.question_text,
+              subject: state.subject, level: state.level,
+              correctAnswer: q.correct_answer || q.model_answer || '',
+              modelAnswer: q.model_answer || '',
+              keywords: q.keywords || [], workedSolution: q.worked_solution || '',
+              studentAnswer: sa, marks: q.marks
+            })
+          })
+          .then(res => res.json())
+          .then(data => {
+            graded[idx].earned = data.score || 0;
+            graded[idx].fb = data.feedback || '';
+            graded[idx].status = graded[idx].earned === q.marks ? 'correct' : graded[idx].earned > 0 ? 'partial' : 'wrong';
+          })
+          .catch(() => {
+            graded[idx].status = 'pending';
+            graded[idx].fb = 'AI grading unavailable. Review model answer manually.';
+          })
+        );
+      }
     });
 
-    app.addEventListener('keydown', function (e) {
-      if (e.key !== 'Enter' && e.key !== ' ') return;
-      var opt = e.target.closest('.mcq-opt');
-      if (opt) { e.preventDefault(); opt.click(); }
+    Promise.all(queue).then(() => {
+      saveExamResult(graded);
+      setState({ phase: 'RESULTS', graded });
     });
+  }
 
-    // ── COLLECT ANSWERS ──────────────────────────────────────────────────────
-    function collectAnswers() {
-      var ans = {};
-      app.querySelectorAll('.mcq-opts').forEach(function (g) {
-        var sel = g.querySelector('.mcq-opt.is-sel');
-        ans[g.dataset.qid] = sel ? sel.dataset.letter : '';
+  async function saveExamResult(graded) {
+    if (!state.studentId) return;
+    try {
+      const sb = await getSupabase();
+      const earned = graded.reduce((s, r) => s + (r.earned || 0), 0);
+      const possible = graded.reduce((s, r) => s + r.max, 0);
+      const timeTaken = (state.paper?.duration * 60) - state.timeLeft;
+
+      await sb.from('exam_results').insert({
+        student_id: state.studentId, subject: state.subject, level: state.level,
+        exam_type: state.examType || 'PRACTICE', score: earned, total_marks: possible,
+        questions_attempted: graded.length, time_taken: timeTaken >= 0 ? timeTaken : null,
       });
-      app.querySelectorAll('.exam-input').forEach(function (inp) {
-        ans[inp.dataset.qid] = inp.value.trim();
-      });
-      app.querySelectorAll('.exam-ta[data-part]').forEach(function (ta) {
-        if (!ans[ta.dataset.qid]) ans[ta.dataset.qid] = {};
-        ans[ta.dataset.qid][ta.dataset.part] = ta.value.trim();
-      });
-      app.querySelectorAll('.exam-ta:not([data-part])').forEach(function (ta) {
-        ans[ta.dataset.qid] = ta.value.trim();
-      });
-      app.querySelectorAll('.cloze-sel').forEach(function (sel) {
-        if (!ans[sel.dataset.qid]) ans[sel.dataset.qid] = {};
-        ans[sel.dataset.qid][Number(sel.dataset.blank)] = sel.value;
-      });
-      app.querySelectorAll('.edit-inp').forEach(function (inp) {
-        if (!ans[inp.dataset.qid]) ans[inp.dataset.qid] = {};
-        ans[inp.dataset.qid][Number(inp.dataset.line)] = inp.value.trim();
-      });
-      return ans;
-    }
+    } catch (err) { console.error('[exam] saveExamResult failed:', err); }
+  }
 
-    // ── SUBMIT & GRADE ───────────────────────────────────────────────────────
-    function submitExam() {
-      stopTimer();
-      state.answers = collectAnswers();
-      showOnly(ovGrade);
-      app.innerHTML = '';
+  // ── PHASE: RESULTS ───────────────────────────────────────────────────────
+  function renderResults() {
+    const graded = state.graded || [];
+    const earned = graded.reduce((s,r) => s + (r.earned || 0), 0);
+    const possible = graded.reduce((s,r) => s + r.max, 0);
+    const pct = possible > 0 ? Math.round(earned / possible * 100) : 0;
+    
+    let gradeStr = 'NEEDS REVIEW';
+    let gradeCol = 'var(--brand-error)';
+    if (pct >= 85) { gradeStr = 'AL1 - DISTINCTION'; gradeCol = 'var(--brand-mint)'; }
+    else if (pct >= 65) { gradeStr = 'MERIT'; gradeCol = 'var(--maths-colour)'; }
+    else if (pct >= 50) { gradeStr = 'PASS'; gradeCol = 'var(--brand-amber)'; }
 
-      var graded = [];
-      var queue  = [];
-
-      state.paper.sections.forEach(function (sec) {
-        sec.questions.forEach(function (q) {
-          var sa = state.answers[q.id];
-          var r  = { q: q, sa: sa, earned: 0, max: q.marks, status: 'wrong', fb: '' };
-
-          if (q.type === 'mcq') {
-            r.earned = sa === q.correct_answer ? q.marks : 0;
-            r.status = sa === q.correct_answer ? 'correct' : 'wrong';
-            r.fb     = r.status === 'wrong' && sa ? (q.wrong_explanations && q.wrong_explanations[sa]) || '' : '';
-            graded.push(r);
-
-          } else if (q.type === 'short_ans') {
-            // Normalize both the student's answer and all accepted answers
-            var normSa = normalizeAnswer(sa);
-            var accepted = [q.correct_answer].concat(q.accept_also || []).map(normalizeAnswer);
-            
-            var correct  = accepted.indexOf(normSa) !== -1;
-            r.earned = correct ? q.marks : 0;
-            r.status = correct ? 'correct' : 'wrong';
-            graded.push(r);
-
-          } else if (q.type === 'cloze') {
-            var clozeScore = 0;
-            q.blanks.forEach(function (blank) {
-              if (sa && sa[blank.number] === blank.correct_answer) clozeScore++;
-            });
-            r.earned = clozeScore;
-            r.status = clozeScore === q.blanks.length ? 'correct' : clozeScore > 0 ? 'partial' : 'wrong';
-            graded.push(r);
-
-          } else if (q.type === 'editing') {
-            var editScore = 0;
-            q.passage_lines.forEach(function (line) {
-              var given = sa && sa[line.line_number] ? sa[line.line_number].trim().toLowerCase() : '';
-              
-              // Safely check correct_word, correct_answer, or answer keys to match whatever is in your JSON
-              var expected = (line.correct_word || line.correct_answer || line.answer || '').toString().trim().toLowerCase();
-              
-              if (expected && given === expected) editScore++;
-            });
-            r.earned = editScore;
-            r.status = editScore === q.passage_lines.length ? 'correct' : editScore > 0 ? 'partial' : 'wrong';
-            graded.push(r);
-
-          } else {
-            // word_problem / open_ended → AI graded
-            r.status = 'pending';
-            graded.push(r);
-            var idx = graded.length - 1;
-            queue.push(
-              fetch('/api/grade-answer', {
-                method:  'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  questionId:     q.id,
-                  questionType:   q.type,
-                  questionText:   q.question_text,
-                  subject:        state.subject,          // <-- Added Context
-                  level:          state.level,            // <-- Added Context
-                  correctAnswer:  q.correct_answer || q.model_answer || '',
-                  modelAnswer:    q.model_answer || '',   // <-- Added Context
-                  keywords:       q.keywords || [],
-                  workedSolution: q.worked_solution || '',
-                  parts:          q.parts || [],          // <-- Added Context
-                  studentAnswer:  typeof sa === 'object' ? JSON.stringify(sa) : String(sa || ''),
-                  marks:          q.marks,                // <-- Matches backend perfectly
-                }),
-              })
-              .then(function (res) { return res.json(); })
-              // ... keep the rest below exactly as it is
-              .then(function (data) {
-                graded[idx].earned = data.score || 0;
-                graded[idx].fb     = data.feedback || '';
-                graded[idx].status = graded[idx].earned === q.marks ? 'correct' : graded[idx].earned > 0 ? 'partial' : 'wrong';
-              })
-              .catch(function () {
-                graded[idx].status = 'pending';
-                graded[idx].fb     = 'AI grading unavailable.';
-              })
-            );
-          }
-        });
-      });
-
-      Promise.all(queue).then(function () {
-        saveExamResult(graded);   // non-blocking — fire and forget
-        setState({ phase: 'RESULTS', graded: graded });
-      });
-    }
-
-    // ── SAVE EXAM RESULT ─────────────────────────────────────────────────────
-    /**
-     * Persists the completed exam to exam_results in Supabase.
-     * Non-blocking: called without await so grading screen moves on immediately.
-     * Silently logs on failure — never blocks the results UI.
-     */
-    async function saveExamResult(graded) {
-      if (!state.studentId) return;
-      try {
-        var sb       = await getSupabase();
-        var earned   = graded.reduce(function(s, r) { return s + (r.earned || 0); }, 0);
-        var possible = graded.reduce(function(s, r) { return s + r.max; }, 0);
-        // Time elapsed = full duration minus remaining seconds
-        var timeTaken = (state.paper && state.paper.duration)
-          ? (state.paper.duration * 60) - state.timeLeft
-          : null;
-
-        await sb.from('exam_results').insert({
-          student_id:          state.studentId,
-          subject:             state.subject,
-          level:               state.level,
-          exam_type:           state.examType || 'PRACTICE',
-          score:               earned,
-          total_marks:         possible,
-          questions_attempted: graded.length,
-          time_taken:          (timeTaken !== null && timeTaken >= 0) ? timeTaken : null,
-        });
-      } catch (err) {
-        console.error('[exam] saveExamResult failed:', err);
+    const items = graded.map((r, i) => {
+      let cls = r.status === 'correct' ? 'c-ok' : r.status === 'partial' ? 'c-part' : 'c-bad';
+      let ansHtml = '';
+      
+      if (r.q.type === 'mcq') {
+        const letters = ['A','B','C','D'];
+        const yourLbl = r.sa ? `${r.sa}: ${esc(r.q.options[letters.indexOf(r.sa)]||'')}` : '(no answer)';
+        const corrLbl = `${r.q.correct_answer}: ${esc(r.q.options[letters.indexOf(r.q.correct_answer)]||'')}`;
+        ansHtml = `<div class="bg-page p-3 rounded mt-2 text-sm"><span class="font-bold">Yours:</span> ${yourLbl}<br><span class="font-bold text-success">Correct:</span> ${corrLbl}</div>`;
+      } else {
+        const modelAns = r.q.model_answer || r.q.correct_answer || r.q.worked_solution || '';
+        ansHtml = `<div class="bg-page p-3 rounded mt-2 text-sm"><span class="font-bold">Yours:</span> ${esc(r.sa || '(blank)')}<br><span class="font-bold text-success">Model:</span> ${esc(modelAns)}</div>`;
       }
-    }
 
-    // ── PHASE: RESULTS ───────────────────────────────────────────────────────
-    function renderResults() {
-      showOnly(null);
-      var graded  = state.graded || [];
-      var earned  = graded.reduce(function (s,r) { return s + (r.earned || 0); }, 0);
-      var possible = graded.reduce(function (s,r) { return s + r.max; }, 0);
-      var pct     = possible > 0 ? Math.round(earned / possible * 100) : 0;
-      var grade   = pct >= 85 ? 'DISTINCTION' : pct >= 70 ? 'MERIT' : pct >= 50 ? 'PASS' : 'NEEDS REVIEW';
-      var gradeCl = pct >= 85 ? 'var(--mint)' : pct >= 70 ? 'var(--maths-colour)' : pct >= 50 ? 'var(--amber)' : 'var(--danger)';
+      // Drawing attachment
+      const drawingData = state.drawings[i];
+      const drawingHtml = (drawingData && drawingData !== 'init') ? `<div class="mt-2"><p class="text-xs font-bold text-muted mb-1">Your Digital Scratchpad:</p><img src="${drawingData}" style="max-height: 100px; border: 1px solid var(--border-light); border-radius: var(--radius-sm); background: white;"></div>` : '';
 
-      var items = graded.map(function (r) {
-        var cls = r.status === 'correct' ? 'c-ok' : r.status === 'partial' ? 'c-part' : r.status === 'pending' ? 'c-pend' : 'c-bad';
-        var qSnippet = esc(r.q.question_text.length > 120 ? r.q.question_text.substring(0,120) + '…' : r.q.question_text);
-        var ansRow = '';
-        var letters = ['A','B','C','D'];
+      return `
+        <div class="card p-6 mb-4 result-item ${cls}">
+          <div class="flex justify-between">
+            <span class="font-bold text-muted">Q${i+1}</span>
+            <span class="font-bold" style="color: ${r.earned > 0 ? 'var(--brand-mint)' : 'var(--text-muted)'}">${r.earned}/${r.max}</span>
+          </div>
+          <p class="font-medium mt-2 mb-2">${esc(r.q.question_text)}</p>
+          ${ansHtml}
+          ${drawingHtml}
+          ${r.fb ? `<div class="mt-4 p-3 rounded text-sm bg-elevated border-l-4 border-amber"><strong class="text-main">Miss Wena's Feedback:</strong><br>${esc(r.fb)}</div>` : ''}
+        </div>
+      `;
+    }).join('');
 
-        if (r.q.type === 'mcq') {
-          var yourLbl = r.sa ? r.sa + ': ' + esc(r.q.options[letters.indexOf(r.sa)] || '') : '(no answer)';
-          var corrLbl = r.q.correct_answer + ': ' + esc(r.q.options[letters.indexOf(r.q.correct_answer)] || '');
-          ansRow = '<div class="result-row"><span class="result-your">Yours: ' + yourLbl + '</span><span class="result-corr">Correct: ' + corrLbl + '</span></div>';
-          if (r.fb) ansRow += '<p class="result-fb">' + esc(r.fb) + '</p>';
+    app.innerHTML = `
+      <div class="text-center mb-8">
+        <h1 class="font-display text-4xl text-main mb-2">Paper Complete</h1>
+        <div class="card p-8 inline-flex flex-col items-center justify-center border-l-4" style="border-left-color: ${gradeCol};">
+          <div class="text-5xl font-display" style="color: ${gradeCol};">${earned} <span class="text-3xl text-muted">/ ${possible}</span></div>
+          <div class="font-bold mt-2" style="color: ${gradeCol};">${gradeStr} (${pct}%)</div>
+        </div>
+      </div>
+      
+      <h3 class="font-display text-2xl text-main mb-4">Question Breakdown</h3>
+      ${items}
+      
+      <div class="flex justify-center gap-4 mt-8">
+        <button class="btn btn-primary hover-lift" onclick="location.reload()">Try Another Paper</button>
+        <a href="tutor.html" class="btn btn-secondary hover-lift">Ask Miss Wena</a>
+      </div>
+    `;
+  }
+};
+</script>
 
-        } else if (r.q.type === 'short_ans') {
-          ansRow = '<div class="result-row"><span class="result-your">Yours: ' + esc(String(r.sa || '(blank)')) + '</span><span class="result-corr">Correct: ' + esc(r.q.correct_answer) + '</span></div>';
-
-        } else if (r.q.type === 'cloze') {
-          ansRow = '<p class="result-model">Blanks scored: ' + r.earned + '/' + r.q.blanks.length + '</p>';
-
-        } else if (r.q.type === 'editing') {
-          ansRow = '<p class="result-model">Lines correct: ' + r.earned + '/' + r.q.passage_lines.length + '</p>';
-
-        } else {
-          var modelAns = esc(r.q.model_answer || r.q.worked_solution || '');
-          ansRow = '<p class="result-model"><strong>Model answer:</strong> ' + modelAns + '</p>';
-          if (r.fb) ansRow += '<p class="result-fb">' + esc(r.fb) + '</p>';
-        }
-
-        var scoreColour = r.earned > 0 ? 'var(--mint)' : 'var(--sage-light)';
-        return '<div class="result-item ' + cls + '">'
-          + '<p class="result-qtext">' + qSnippet + '</p>'
-          + ansRow
-          + '<div class="result-score" style="color:' + scoreColour + ';">' + r.earned + '/' + r.max + ' marks</div>'
-          + '</div>';
-      }).join('');
-
-      app.innerHTML = '<div>'
-        + '<div class="results-score-wrap">'
-        + '<span class="section-label-tag" style="display:inline-block;margin-bottom:var(--space-4);">Paper Complete</span>'
-        + '<div class="results-num" style="color:' + gradeCl + ';">' + earned + '<span class="results-denom">/' + possible + '</span></div>'
-        + '<div class="results-grade" style="color:' + gradeCl + ';">' + grade + '</div>'
-        + '<p class="text-secondary text-sm" style="margin-top:var(--space-3);">' + pct + '% · ' + esc(state.level) + ' ' + esc(state.subject) + ' · ' + esc(TYPE_LABELS[state.examType] || state.examType) + '</p>'
-        + '</div>'
-        + '<h3 style="color:var(--cream);margin-bottom:var(--space-4);">Question Breakdown</h3>'
-        + items
-        + '<div style="display:flex;gap:var(--space-4);flex-wrap:wrap;margin-top:var(--space-8);">'
-        + '<button id="retry-btn" class="btn btn-primary">Try Another Paper</button>'
-        + '<a href="tutor.html" class="btn btn-secondary">Ask Miss Wena</a>'
-        + '</div></div>';
-
-      document.getElementById('retry-btn').addEventListener('click', function () {
-        if (typeof clearExamCache !== 'undefined') clearExamCache();
-        setState({
-          phase: state.tier === 'single_subject' ? 'TYPE' : 'SUBJECT',
-          paper: null, answers: {}, graded: null, examType: '',
-        });
-      });
-    }
-
-    // ── INIT ─────────────────────────────────────────────────────────────────
-    async function init() {
-      showOnly(ovLoad);
-      try {
-        var sb   = await getSupabase();
-        var auth = await sb.auth.getUser();
-        var user = auth.data && auth.data.user;
-
-        if (!user) {
-          window.location.href = 'login.html?redirect=exam';
-          return;
-        }
-
-        var results = await Promise.all([
-          sb.from('profiles').select('subscription_tier').eq('id', user.id).single(),
-          sb.from('students').select('id,level,selected_subject').eq('parent_id', user.id).single(),
-        ]);
-
-        var tier      = (results[0].data && results[0].data.subscription_tier) || 'trial';
-        var level     = (results[1].data && results[1].data.level)             || 'Primary 4';
-        var levelKey  = level.toLowerCase().replace(' ', '-');
-        var studentId = (results[1].data && results[1].data.id)               || null;
-
-        if (tier === 'single_subject') {
-          var sub = (results[1].data && results[1].data.selected_subject) || 'Mathematics';
-          setState({ phase: 'TYPE', tier: tier, level: level, levelKey: levelKey, subject: sub, subjectKey: sub.toLowerCase(), studentId: studentId });
-        } else {
-          setState({ phase: 'SUBJECT', tier: tier, level: level, levelKey: levelKey, studentId: studentId });
-        }
-
-      } catch (err) {
-        console.error('[exam] init failed:', err);
-        showOnly(null);
-        app.innerHTML = '<div class="card" style="text-align:center;padding:var(--space-10);">'
-          + '<p class="text-danger font-bold" style="margin-bottom:var(--space-4);">Failed to load your profile</p>'
-          + '<p class="text-secondary text-sm" style="margin-bottom:var(--space-6);">Please check your connection and try again.</p>'
-          + '<button class="btn btn-primary" onclick="location.reload()">Reload</button>'
-          + '</div>';
-      }
-    }
-
-    init();
-
-  })();
-  </script>
-
-  <!-- TEST:
-    1. Overlay shows "Detecting credentials…" on load
-    2. single_subject → skips subject grid, goes straight to Type step
-    3. family/all_subjects → shows 3 subject cards with subject colour tags
-    4. P6 level: type grid = WA1, WA2, PSLE Prelim (no WA3/EOY)
-    5. P3–P5: type grid = WA1, WA2, WA3, EOY
-    6. Blueprint card refreshes on each type chip click
-    7. Confirm banner shows "Generating Primary X Subject paper for WA1"
-    8. Merlion overlay plays during generateExam(), messages cycle every ~1s
-    9. Exam renders all 6 question types with correct controls
-   10. MCQ: click selects option (mint badge), click another deselects previous
-   11. Timer counts down in navbar — amber ≤5 min, red ≤1 min, auto-submit at 0
-   12. Submit → AI grading overlay → results screen
-   13. Results: correct=mint border, partial=amber, wrong=red, pending=grey
-   14. Retry clears exam cache and returns to SUBJECT or TYPE step -->
 </body>
 </html>
