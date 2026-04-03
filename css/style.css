@@ -3990,6 +3990,50 @@ body.is-logged-in .footer .container {
       display: flex; flex-direction: column;
       align-items: center; justify-content: center; gap: var(--space-4);
     }
+/* ==========================================================================
+   APP-WIDE FOOTER NORMALISER
+   Enforces the exact alignment of progress.html across all pages
+   ========================================================================== */
+
+/* 1. Constrain the footer container to perfectly match the main app width */
+.footer .container {
+  max-width: 800px !important;
+  margin: 0 auto !important;
+  padding-left: var(--space-4) !important;
+  padding-right: var(--space-4) !important;
+}
+
+/* 2. Ensure it never gets hidden behind the mobile bottom navbar */
+body.has-bottom-nav .footer {
+  padding-bottom: 96px !important; 
+}
+
+/* 3. Force consistent flush-left alignment on mobile screens */
+.footer-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-4) 0;
+  border-top: 1px solid var(--glass-border);
+  gap: 16px;
+}
+
+@media (max-width: 640px) {
+  .footer-bottom {
+    flex-direction: column;
+    align-items: flex-start !important; /* Flushes everything exactly to the left */
+    text-align: left !important;
+  }
+  .footer-bottom p {
+    margin: 0;
+  }
+  .footer-bottom .flex {
+    justify-content: flex-start !important;
+    width: 100%;
+    gap: var(--space-4);
+  }
+}
 
 
 
