@@ -20,45 +20,17 @@
     window.userProfile = await guardPage(true); 
     
     // Pass it to the shell to instantly set up the Navbar and CSS padding.
-    if(typeof initAppShell === 'function') {
-      initAppShell(window.userProfile); 
-    }
+    // Ensure DOM is ready so app-shell.js can find id="mainBody"
+    document.addEventListener('DOMContentLoaded', () => {
+      if(typeof initAppShell === 'function') {
+        initAppShell(window.userProfile); 
+      }
+    });
   </script>
-
-  <style>
-    /* Modal Backdrop */
-    .modal-backdrop {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(44, 62, 58, 0.6);
-      backdrop-filter: blur(4px);
-      z-index: 1000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.2s ease;
-    }
-    .modal-backdrop.is-open {
-      opacity: 1;
-      pointer-events: auto;
-    }
-    
-    /* Modal Card Animation */
-    .modal-card {
-      transform: translateY(20px);
-      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-      width: 100%;
-      max-width: 400px;
-    }
-    .modal-backdrop.is-open .modal-card {
-      transform: translateY(0);
-    }
-  </style>
 </head>
 
-<body class="has-bottom-nav">
+<!-- Restored id="mainBody" so app-shell.js doesn't crash reading classList -->
+<body id="mainBody" class="has-bottom-nav">
 
 <!-- ═══════════════════ GLOBAL NAVBAR (Darker Sage) ═══════════════════ -->
 <header class="navbar justify-between bg-sage-dark" id="navbar">
@@ -91,6 +63,8 @@
   <div class="container flex flex-wrap items-center justify-between gap-6">
     
     <div class="flex-1 flex flex-col items-start gap-4" style="min-width: 300px;">
+      
+      <!-- Trial Banner explicitly styled as requested -->
       <div id="trialBanner" class="badge badge-amber hidden mb-2" style="background: rgba(255, 179, 71, 0.15); color: #FFB347; border: 1px solid rgba(255, 179, 71, 0.3);">
         🎁 <span id="trialDaysLeft" class="font-bold ml-1 mr-1"></span> left in free trial. 
         <a href="pricing.html" style="color: #FFB347; text-decoration: underline; margin-left: 4px;">Upgrade</a>
@@ -103,7 +77,7 @@
         Mission Control is ready. Manage your learners, track their progress, and start practicing.
       </p>
       
-      <a href="/pages/setup.html" id="addChildBtn" class="btn" style="background: white; color: var(--brand-sage);">＋ Add Learner</a>
+      <a href="/pages/setup.html" id="addChildBtn" class="btn hover-lift" style="background: white; color: var(--brand-sage);">＋ Add Learner</a>
     </div>
 
     <div class="flex-1 flex justify-center items-end hidden sm:flex relative" style="min-width: 300px; height: 200px;">
@@ -272,16 +246,20 @@
     const firstName = profile.full_name?.split(' ')[0] || 'there';
     document.getElementById('welcomeMsg').textContent = `Welcome back, ${escapeHtml(firstName)} 👋`;
 
-    // Plan Badge
+    // Plan Badge Fix
     const badge = document.getElementById('planBadge');
-    const planLabels = { trial: '🎁 Free Trial', single_subject: 'Single Subject', all_subjects: 'All Subjects', family: 'Family' };
-    badge.textContent = profile.role === 'admin' ? '👑 Admin' : (planLabels[profile.subscription_tier] || profile.subscription_tier);
+    if (badge) {
+      const planLabels = { trial: '🎁 Free Trial', single_subject: 'Single Subject', all_subjects: 'All Subjects', family: 'Family' };
+      badge.textContent = profile.role === 'admin' ? '👑 Admin' : (planLabels[profile.subscription_tier] || profile.subscription_tier || 'Free Trial');
+    }
 
-    // Trial Countdown
+    // Trial Countdown Fix
     if (profile.subscription_tier === 'trial' && profile.trial_ends_at) {
       const daysLeft = Math.ceil((new Date(profile.trial_ends_at) - new Date()) / 86400000);
       if (daysLeft > 0) {
-        document.getElementById('trialBanner').classList.remove('hidden');
+        const trialBanner = document.getElementById('trialBanner');
+        trialBanner.classList.remove('hidden');
+        trialBanner.style.display = 'inline-flex'; // Ensures flex alignment displays correctly
         document.getElementById('trialDaysLeft').textContent = `${daysLeft} day${daysLeft !== 1 ? 's' : ''}`;
       }
     }
