@@ -321,7 +321,10 @@ window.initExamEngine = function () {
       if (!profile) { window.location.href = 'login.html?redirect=exam'; return; }
 
       const sb = await getSupabase();
-      const { data: student } = await sb.from('students').select('id,level,selected_subject').eq('parent_id', profile.id).single();
+      
+      // FIX: Use .limit(1) to avoid 406 Not Acceptable error when parent has multiple children
+      const { data: students } = await sb.from('students').select('id,level,selected_subject').eq('parent_id', profile.id).limit(1);
+      const student = students && students.length > 0 ? students[0] : null;
 
       const tier = profile.subscription_tier || 'trial';
       const level = student?.level || 'Primary 4';
@@ -385,12 +388,13 @@ window.initExamEngine = function () {
 
     if (!state.examType) state.examType = types[0].id;
 
+    // FIX: Replaced .card and .bg-sage-dark conflicts with explicit inline styles to guarantee white text renders properly
     const chips = types.map(t => `
-      <div class="card p-4 cursor-pointer hover-lift flex flex-col justify-center ${t.id === state.examType ? 'bg-sage-dark' : ''}" 
-           style="border: 2px solid ${t.id === state.examType ? 'var(--brand-mint)' : 'var(--border-light)'};"
+      <div class="card p-4 cursor-pointer hover-lift flex flex-col justify-center" 
+           style="background: ${t.id === state.examType ? 'var(--sage-dark)' : 'var(--bg-surface)'}; border: 2px solid ${t.id === state.examType ? 'var(--brand-mint)' : 'var(--border-light)'};"
            onclick="window.selectType('${t.id}')">
-        <div class="font-bold text-lg ${t.id === state.examType ? 'text-white' : 'text-main'}">${esc(t.label)}</div>
-        <div class="text-xs ${t.id === state.examType ? 'text-white' : 'text-muted'} opacity-80 mt-1">${esc(t.sub)}</div>
+        <div class="font-bold text-lg" style="color: ${t.id === state.examType ? '#FFFFFF' : 'var(--text-main)'};">${esc(t.label)}</div>
+        <div class="text-xs mt-1" style="color: ${t.id === state.examType ? 'rgba(255,255,255,0.8)' : 'var(--text-muted)'};">${esc(t.sub)}</div>
       </div>
     `).join('');
 
@@ -420,12 +424,14 @@ window.initExamEngine = function () {
         <h1 class="font-display text-4xl text-main">Select Paper Type</h1>
       </div>
       
-      <div class="flex flex-wrap gap-8">
+      <!-- FIX: Apply inline gap: var(--space-8) directly to guarantee gap rendering -->
+      <div class="flex flex-wrap" style="gap: var(--space-8);">
         <div class="flex-1 flex flex-col gap-4" style="min-width: 300px;">
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
             ${chips}
           </div>
-          ${state.tier !== 'single_subject' ? `<button class="btn btn-ghost mt-4" onclick="window.backToSubject()">← Back to Subjects</button>` : ''}
+          <!-- FIX: Center the Back Button to align properly -->
+          ${state.tier !== 'single_subject' ? `<div class="text-center mt-4"><button class="btn btn-ghost" onclick="window.backToSubject()">← Back to Subjects</button></div>` : ''}
         </div>
         
         <div class="flex-1" style="min-width: 300px;">
@@ -698,7 +704,7 @@ window.initExamEngine = function () {
     stopTimer();
     app.innerHTML = `
       <div class="flex flex-col items-center justify-center min-h-[50vh] text-center">
-        <div class="spinner-sm mb-6" style="width:40px; height:40px;"></div>
+        <div class="spinner-sm mb-6" style="width:40px; height:40px; border-width: 4px;"></div>
         <h2 class="font-display text-3xl text-main mb-2">Miss Wena is marking...</h2>
         <p class="text-muted text-sm">Checking for MOE keywords and methods</p>
       </div>
@@ -735,13 +741,16 @@ window.initExamEngine = function () {
           fetch('/api/grade-answer', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            // FIX: Added JSON.stringify for sa and added parts array back into payload for robust processing
             body: JSON.stringify({
               questionId: q.id, questionType: q.type, questionText: q.question_text,
               subject: state.subject, level: state.level,
               correctAnswer: q.correct_answer || q.model_answer || '',
               modelAnswer: q.model_answer || '',
               keywords: q.keywords || [], workedSolution: q.worked_solution || '',
-              studentAnswer: sa, marks: q.marks
+              parts: q.parts || [],
+              studentAnswer: typeof sa === 'object' ? JSON.stringify(sa) : String(sa || ''),
+              marks: q.marks
             })
           })
           .then(res => res.json())
