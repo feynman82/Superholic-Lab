@@ -1,4 +1,4 @@
-
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -147,8 +147,8 @@
     </div>
 
     <!-- The CRM Grid -->
-    <div class="flex flex-wrap gap-6" id="cardsGrid">
-      <div class="card w-full flex justify-center items-center p-8">
+    <div id="cardsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; align-items: start;">
+      <div class="card w-full flex justify-center items-center p-8" style="grid-column: 1 / -1;">
         <div class="spinner-sm"></div>
       </div>
     </div>
@@ -386,7 +386,7 @@
 
     if (currentStudents.length === 0) {
       grid.innerHTML = `
-        <div class="card w-full text-center flex flex-col items-center justify-center p-10" style="background: transparent; border: 2px dashed var(--border-dark); box-shadow: none;">
+        <div class="card w-full text-center flex flex-col items-center justify-center p-10" style="background: transparent; border: 2px dashed var(--border-dark); box-shadow: none; grid-column: 1 / -1;">
           <div class="text-4xl mb-4">🚀</div>
           <h3 class="font-bold text-lg mb-2">No learners added yet</h3>
           <p class="text-sm text-muted">Click "+ Add Learner" above to set up a profile and start practicing.</p>
@@ -398,9 +398,7 @@
     currentStudents.forEach(student => {
       const initials = student.name?.charAt(0).toUpperCase() || '?';
       const card = document.createElement('div');
-      card.className = 'card hover-lift flex-1 flex flex-col gap-4 p-6 relative';
-      card.style.minWidth = '280px';
-      card.style.maxWidth = '400px';
+      card.className = 'card hover-lift flex flex-col gap-4 p-6 relative';
       
       card.innerHTML = `
         <!-- CRM Manage Dropdown -->
