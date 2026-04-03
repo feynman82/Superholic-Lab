@@ -35,20 +35,25 @@
   "address": { "@type": "PostalAddress", "addressCountry": "SG" }
 }
 </script>
+
+<style>
+  /* Override navbar toggle spans for the dark Sage header */
+  .navbar-toggle span { background-color: var(--cream) !important; }
+</style>
 </head>
 <body class="has-bottom-nav">
 
 <!-- ═══════════════════ NAVBAR ═══════════════════ -->
-<header class="navbar justify-between" id="navbar">
+<header class="navbar justify-between" id="navbar" style="background-color: var(--brand-sage); border-bottom: 1px solid rgba(255,255,255,0.1); backdrop-filter: none;">
   
-  <a href="index.html" class="navbar-logo" style="text-decoration: none;">
+  <a href="index.html" class="flex items-center gap-2 font-display text-2xl" style="text-decoration: none; color: var(--cream);">
     <img src="assets/logo.svg" width="32" height="32" alt="" aria-hidden="true" style="border-radius: var(--radius-sm); flex-shrink:0;">
     Superholic Lab
   </a>
 
   <div class="navbar-actions flex items-center gap-4">
     <div id="auth-header-container">
-      <a href="pages/login.html" class="btn btn-secondary btn-sm">Log In</a>
+      <a href="pages/login.html" class="btn btn-sm" style="background: rgba(255,255,255,0.15); color: var(--cream); border: 1px solid rgba(255,255,255,0.1);">Log In</a>
     </div>
 
     <!-- Mobile menu toggle -->
@@ -68,11 +73,11 @@
 </header>
 
 <!-- ═══════════════════ HERO ═══════════════════ -->
-<section class="bg-sage-dark py-10" style="padding-top: calc(64px + var(--space-8));">
+<section class="bg-sage py-10" style="padding-top: calc(64px + var(--space-8));">
   <div class="container flex flex-wrap items-center justify-between gap-6">
     
     <div class="flex-1 flex flex-col items-start gap-4" style="min-width: 320px;">
-      <div class="badge badge-info" style="background: rgba(255,255,255,0.1); color: #fff;">Singapore's MOE-Aligned AI Tutor</div>
+      <div class="badge" style="background: rgba(255,255,255,0.15); color: var(--brand-mint);">Singapore's MOE-Aligned AI Tutor</div>
       
       <h1 class="font-display text-4xl mt-2 mb-2 text-white">
         Learn Like a Champion.<br>
@@ -85,7 +90,7 @@
       
       <div class="flex flex-wrap gap-4 mb-6">
         <a href="/pages/signup.html" class="btn btn-primary">Start Free Trial →</a>
-        <a href="/pages/pricing.html" class="btn btn-secondary">See Plans</a>
+        <a href="/pages/pricing.html" class="btn" style="background: rgba(255,255,255,0.1); color: var(--cream); border: 1px solid rgba(255,255,255,0.2);">See Plans</a>
       </div>
       
       <div class="flex flex-wrap gap-6 mt-2 text-white">
@@ -122,7 +127,7 @@
 </section>
 
 <!-- ═══════════════════ HOW IT WORKS ═══════════════════ -->
-<section class="py-10 bg-page">
+<section class="py-10 bg-white">
   <div class="container">
     <div class="flex flex-col items-center text-center mb-6">
       <div class="badge badge-amber mb-2">How It Works</div>
@@ -131,19 +136,19 @@
     </div>
     
     <div class="flex flex-wrap gap-4">
-      <div class="card flex-1 flex flex-col gap-2" style="min-width: 280px;">
+      <div class="card flex-1 flex flex-col gap-2" style="min-width: 280px; background: var(--bg-page); border: none;">
         <div class="font-display text-4xl text-rose mb-2">01</div>
         <h3 class="font-bold text-xl">Choose Subject &amp; Level</h3>
         <p class="text-muted text-sm">Pick from Mathematics, Science, or English for Primary 1 through Secondary 4. Every question bank is strictly MOE-syllabus-aligned.</p>
       </div>
       
-      <div class="card flex-1 flex flex-col gap-2" style="min-width: 280px;">
+      <div class="card flex-1 flex flex-col gap-2" style="min-width: 280px; background: var(--bg-page); border: none;">
         <div class="font-display text-4xl text-rose mb-2">02</div>
         <h3 class="font-bold text-xl">Practice with Explanations</h3>
         <p class="text-muted text-sm">Answer questions and instantly see full worked solutions — plus a clear explanation for each wrong option, so mistakes become lessons.</p>
       </div>
       
-      <div class="card flex-1 flex flex-col gap-2" style="min-width: 280px;">
+      <div class="card flex-1 flex flex-col gap-2" style="min-width: 280px; background: var(--bg-page); border: none;">
         <div class="font-display text-4xl text-rose mb-2">03</div>
         <h3 class="font-bold text-xl">Ask the AI Tutor</h3>
         <p class="text-muted text-sm">Stuck? The AI tutor guides with questions first — never giving the answer away — using Singapore exam keywords and MOE language.</p>
@@ -266,10 +271,40 @@
   </div>
 </section>
 
+<!-- ═══════════════════ SOCIAL PROOF ═══════════════════ -->
+<section class="py-10 bg-page">
+  <div class="container">
+    <div class="flex flex-col items-center text-center mb-8">
+      <div class="badge badge-info mb-2">Parents Love It</div>
+      <h2 class="font-display text-3xl mb-2 text-main">Trusted by Singapore Families</h2>
+      <p class="text-muted text-lg" style="max-width: 600px;">Join thousands of parents who finally have visibility into exactly where their child needs help — and the tools to fix it.</p>
+    </div>
+    
+    <div class="flex flex-wrap items-center gap-8">
+      <div class="flex-1 flex flex-col gap-6" style="min-width: 300px;">
+        <div class="card" style="border-left: 4px solid var(--brand-rose);">
+          <p class="text-main font-medium italic mb-4">"My daughter went from 60% to 82% in Science in just 6 weeks. The wrong-answer explanations are brilliant — she understands her mistakes now instead of repeating them."</p>
+          <div class="font-bold text-sm">Mrs Lim, Bukit Timah</div>
+          <div class="text-xs text-muted">Mother of P5 student</div>
+        </div>
+        <div class="card" style="border-left: 4px solid var(--brand-mint);">
+          <p class="text-main font-medium italic mb-4">"My two kids can share one Family Plan. I log in every Sunday to check their progress dashboards. It's the only tutor platform that shows me actual data."</p>
+          <div class="font-bold text-sm">Mr Rahman, Punggol</div>
+          <div class="text-xs text-muted">Father of P3 and P6 students</div>
+        </div>
+      </div>
+      
+      <div class="flex-1 flex justify-center" style="min-width: 300px;">
+        <img src="assets/images/mum_daughter_ipad.png" alt="Singapore mother and daughter using Superholic Lab on iPad" style="width: 100%; max-width: 450px; border-radius: var(--radius-lg); box-shadow: var(--shadow-md);">
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ═══════════════════ TRUST BAR ═══════════════════ -->
-<section class="bg-page">
-  <div class="container mb-8">
-    <div class="flex flex-wrap justify-center items-center gap-4 p-4 text-sm font-bold text-muted" style="border-radius: var(--radius-lg);">
+<section class="bg-white">
+  <div class="container py-6">
+    <div class="flex flex-wrap justify-center items-center gap-4 p-4 text-sm font-bold text-muted" style="border-radius: var(--radius-lg); background: var(--bg-page);">
       <div class="flex items-center gap-2"><span class="text-success">✓</span> 100% MOE-Aligned</div>
       <div class="flex items-center gap-2"><span class="text-success">✓</span> PDPA Compliant</div>
       <div class="flex items-center gap-2"><span class="text-success">✓</span> Cancel Anytime</div>
@@ -350,7 +385,7 @@
 </section>
 
 <!-- ═══════════════════ FOOTER ═══════════════════ -->
-<footer class="footer bg-sage-dark pt-8 pb-8">
+<footer class="footer bg-sage pt-8 pb-8">
   <div class="container">
     
     <div class="flex flex-wrap justify-between gap-6 mb-8 mt-6">
@@ -445,7 +480,7 @@ document.querySelectorAll('.mc-fill, .float-progress-fill').forEach(bar => {
       
       // Replace "Log In" button with "Dashboard"
       if (authContainer) {
-        authContainer.innerHTML = '<a href="pages/dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a>';
+        authContainer.innerHTML = '<a href="pages/dashboard.html" class="btn btn-secondary btn-sm" style="background: rgba(255,255,255,0.15); color: var(--cream); border: 1px solid rgba(255,255,255,0.1);">Dashboard</a>';
       }
 
       // Add "Sign Out" to the bottom of the dropdown tray
