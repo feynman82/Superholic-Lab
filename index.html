@@ -41,129 +41,142 @@
 <!-- ═══════════════════ NAVBAR ═══════════════════ -->
 <header class="navbar justify-between" id="navbar">
   
-  <a href="index.html" class="flex items-center gap-2 font-display text-2xl text-main" style="text-decoration: none;">
+  <a href="index.html" class="navbar-logo" style="text-decoration: none;">
     <img src="assets/logo.svg" width="32" height="32" alt="" aria-hidden="true" style="border-radius: var(--radius-sm); flex-shrink:0;">
     Superholic Lab
   </a>
 
-  <div class="flex items-center gap-4">
+  <div class="navbar-actions flex items-center gap-4">
     <div id="auth-header-container">
       <a href="pages/login.html" class="btn btn-secondary btn-sm">Log In</a>
     </div>
 
-    <!-- Mobile menu toggle placeholder -->
-    <button class="btn btn-ghost btn-sm hidden" id="navToggle" aria-label="Open menu">
-      Menu
+    <!-- Mobile menu toggle -->
+    <button class="navbar-toggle" id="navToggle" aria-label="Open menu">
+      <span></span><span></span><span></span>
     </button>
+  </div>
+
+  <!-- Mobile Dropdown Menu -->
+  <div class="navbar-mobile" id="navDropdown">
+    <a href="index.html">Home</a>
+    <a href="pages/about.html">About Us</a>
+    <a href="pages/pricing.html">Pricing</a>
+    <a href="pages/contact.html">Contact Support</a>
+    <a href="pages/signup.html" id="navSignUp">Start Free Trial</a>
   </div>
 </header>
 
 <!-- ═══════════════════ HERO ═══════════════════ -->
-<section class="container flex flex-wrap items-center justify-between gap-6 mb-8" style="margin-top: calc(64px + var(--space-8));">
-  
-  <div class="flex-1 flex flex-col items-start gap-4" style="min-width: 320px;">
-    <div class="badge badge-info">Singapore's MOE-Aligned AI Tutor</div>
+<section class="bg-sage-dark py-10" style="padding-top: calc(64px + var(--space-8));">
+  <div class="container flex flex-wrap items-center justify-between gap-6">
     
-    <h1 class="font-display text-4xl mt-2 mb-2">
-      Learn Like a Champion.<br>
-      <span class="text-rose">Think Like a Winner.</span>
-    </h1>
-    
-    <p class="text-muted text-lg mb-4">
-      Superholic Lab is Singapore's first AI-powered learning platform with wrong-answer explanations for every option. Built for P1–S4 students. Available 24/7.
-    </p>
-    
-    <div class="flex flex-wrap gap-4 mb-6">
-      <a href="/pages/signup.html" class="btn btn-primary">Start Free Trial →</a>
-      <a href="/pages/pricing.html" class="btn btn-secondary">See Plans</a>
+    <div class="flex-1 flex flex-col items-start gap-4" style="min-width: 320px;">
+      <div class="badge badge-info" style="background: rgba(255,255,255,0.1); color: #fff;">Singapore's MOE-Aligned AI Tutor</div>
+      
+      <h1 class="font-display text-4xl mt-2 mb-2 text-white">
+        Learn Like a Champion.<br>
+        <span class="text-rose">Think Like a Winner.</span>
+      </h1>
+      
+      <p class="text-muted text-lg mb-4">
+        Superholic Lab is Singapore's first AI-powered learning platform with wrong-answer explanations for every option. Built for P1–S4 students. Available 24/7.
+      </p>
+      
+      <div class="flex flex-wrap gap-4 mb-6">
+        <a href="/pages/signup.html" class="btn btn-primary">Start Free Trial →</a>
+        <a href="/pages/pricing.html" class="btn btn-secondary">See Plans</a>
+      </div>
+      
+      <div class="flex flex-wrap gap-6 mt-2 text-white">
+        <div class="flex flex-col">
+          <div class="font-display text-2xl">4,200+</div>
+          <div class="text-xs text-muted font-bold uppercase">Active Students</div>
+        </div>
+        <div class="flex flex-col">
+          <div class="font-display text-2xl">98%</div>
+          <div class="text-xs text-muted font-bold uppercase">MOE-Aligned</div>
+        </div>
+        <div class="flex flex-col">
+          <div class="font-display text-2xl">3×</div>
+          <div class="text-xs text-muted font-bold uppercase">Faster Mastery</div>
+        </div>
+      </div>
     </div>
-    
-    <div class="flex flex-wrap gap-6 mt-2">
-      <div class="flex flex-col">
-        <div class="font-display text-2xl">4,200+</div>
-        <div class="text-xs text-muted font-bold uppercase">Active Students</div>
-      </div>
-      <div class="flex flex-col">
-        <div class="font-display text-2xl">98%</div>
-        <div class="text-xs text-muted font-bold uppercase">MOE-Aligned</div>
-      </div>
-      <div class="flex flex-col">
-        <div class="font-display text-2xl">3×</div>
-        <div class="text-xs text-muted font-bold uppercase">Faster Mastery</div>
-      </div>
-    </div>
-  </div>
 
-  <div class="flex-1 flex justify-center items-center" style="min-width: 320px; position: relative;">
-    <img src="assets/images/student_with_glowing_apple.png" alt="Singapore student using AI Tutor" style="width: 100%; max-width: 520px; border-radius: var(--radius-lg); box-shadow: var(--shadow-md);">
-    
-    <!-- Floating Mission Control Card -->
-    <div class="card p-4" style="position: absolute; bottom: -20px; right: -10px; width: 250px; background: rgba(255,255,255,0.95); backdrop-filter: blur(8px);">
-      <div class="text-xs font-bold text-muted uppercase mb-2">Current Mission</div>
-      <div class="font-bold text-sm mb-2">P4 Mathematics · Fractions</div>
-      <div class="quiz-progress-bar mb-2">
-        <div class="quiz-progress-fill float-progress-fill" style="width:0%; background: var(--maths-colour);" data-target="68"></div>
+    <div class="flex-1 flex justify-center items-center" style="min-width: 320px; position: relative;">
+      <img src="assets/images/student_with_glowing_apple.png" alt="Singapore student using AI Tutor" style="width: 100%; max-width: 520px; border-radius: var(--radius-lg); box-shadow: var(--shadow-md);">
+      
+      <!-- Floating Mission Control Card -->
+      <div class="card p-4" style="position: absolute; bottom: -20px; right: -10px; width: 250px; background: rgba(255,255,255,0.95); backdrop-filter: blur(8px);">
+        <div class="text-xs font-bold text-muted uppercase mb-2">Current Mission</div>
+        <div class="font-bold text-sm mb-2 text-main">P4 Mathematics · Fractions</div>
+        <div class="quiz-progress-bar mb-2">
+          <div class="quiz-progress-fill float-progress-fill" style="width:0%; background: var(--maths-colour);" data-target="68"></div>
+        </div>
+        <div class="text-xs text-muted">Chapter 3 of 5 · <strong class="text-main">68% complete</strong></div>
       </div>
-      <div class="text-xs text-muted">Chapter 3 of 5 · <strong class="text-main">68% complete</strong></div>
     </div>
-  </div>
 
+  </div>
 </section>
 
 <!-- ═══════════════════ HOW IT WORKS ═══════════════════ -->
-<section class="container mb-8 mt-8" style="padding-top: var(--space-6);">
-  <div class="flex flex-col items-center text-center mb-6">
-    <div class="badge badge-amber mb-2">How It Works</div>
-    <h2 class="font-display text-3xl mb-2">Three Steps to Better Results</h2>
-    <p class="text-muted text-lg" style="max-width: 600px;">Your child builds real exam confidence — not just correct answers, but a deep understanding of why every wrong option is wrong.</p>
-  </div>
-  
-  <div class="flex flex-wrap gap-4">
-    <div class="card flex-1 flex flex-col gap-2" style="min-width: 280px;">
-      <div class="font-display text-4xl text-rose mb-2">01</div>
-      <h3 class="font-bold text-xl">Choose Subject &amp; Level</h3>
-      <p class="text-muted text-sm">Pick from Mathematics, Science, or English for Primary 1 through Secondary 4. Every question bank is strictly MOE-syllabus-aligned.</p>
+<section class="py-10 bg-page">
+  <div class="container">
+    <div class="flex flex-col items-center text-center mb-6">
+      <div class="badge badge-amber mb-2">How It Works</div>
+      <h2 class="font-display text-3xl mb-2 text-main">Three Steps to Better Results</h2>
+      <p class="text-muted text-lg" style="max-width: 600px;">Your child builds real exam confidence — not just correct answers, but a deep understanding of why every wrong option is wrong.</p>
     </div>
     
-    <div class="card flex-1 flex flex-col gap-2" style="min-width: 280px;">
-      <div class="font-display text-4xl text-rose mb-2">02</div>
-      <h3 class="font-bold text-xl">Practice with Explanations</h3>
-      <p class="text-muted text-sm">Answer questions and instantly see full worked solutions — plus a clear explanation for each wrong option, so mistakes become lessons.</p>
-    </div>
-    
-    <div class="card flex-1 flex flex-col gap-2" style="min-width: 280px;">
-      <div class="font-display text-4xl text-rose mb-2">03</div>
-      <h3 class="font-bold text-xl">Ask the AI Tutor</h3>
-      <p class="text-muted text-sm">Stuck? The AI tutor guides with questions first — never giving the answer away — using Singapore exam keywords and MOE language.</p>
+    <div class="flex flex-wrap gap-4">
+      <div class="card flex-1 flex flex-col gap-2" style="min-width: 280px;">
+        <div class="font-display text-4xl text-rose mb-2">01</div>
+        <h3 class="font-bold text-xl">Choose Subject &amp; Level</h3>
+        <p class="text-muted text-sm">Pick from Mathematics, Science, or English for Primary 1 through Secondary 4. Every question bank is strictly MOE-syllabus-aligned.</p>
+      </div>
+      
+      <div class="card flex-1 flex flex-col gap-2" style="min-width: 280px;">
+        <div class="font-display text-4xl text-rose mb-2">02</div>
+        <h3 class="font-bold text-xl">Practice with Explanations</h3>
+        <p class="text-muted text-sm">Answer questions and instantly see full worked solutions — plus a clear explanation for each wrong option, so mistakes become lessons.</p>
+      </div>
+      
+      <div class="card flex-1 flex flex-col gap-2" style="min-width: 280px;">
+        <div class="font-display text-4xl text-rose mb-2">03</div>
+        <h3 class="font-bold text-xl">Ask the AI Tutor</h3>
+        <p class="text-muted text-sm">Stuck? The AI tutor guides with questions first — never giving the answer away — using Singapore exam keywords and MOE language.</p>
+      </div>
     </div>
   </div>
 </section>
 
 <!-- ═══════════════════ ECC FRAMEWORK ═══════════════════ -->
-<section class="container mb-8 mt-8">
-  <div class="card p-6" style="background: var(--bg-elevated); border: none;">
-    <div class="flex flex-col items-center text-center mb-6">
-      <div class="badge badge-success mb-2">Our Teaching Framework</div>
-      <h2 class="font-display text-3xl mb-2">Every Feature Built on ECC</h2>
+<section class="py-10 bg-sage">
+  <div class="container">
+    <div class="flex flex-col items-center text-center mb-8">
+      <div class="badge mb-2" style="background: rgba(255,255,255,0.1); color: var(--brand-mint);">Our Teaching Framework</div>
+      <h2 class="font-display text-3xl mb-2 text-white">Every Feature Built on ECC</h2>
       <p class="text-muted text-lg" style="max-width: 600px;">The ECC Framework guides every design decision at Superholic Lab.</p>
     </div>
     
-    <div class="flex flex-wrap gap-4 text-center">
+    <div class="flex flex-wrap gap-6 text-center">
       <div class="flex-1 flex flex-col gap-2 items-center" style="min-width: 250px;">
         <div class="font-display text-4xl text-success mb-2">E</div>
-        <h3 class="font-bold text-xl">Engagement</h3>
+        <h3 class="font-bold text-xl text-white">Engagement</h3>
         <p class="text-muted text-sm">Learning that holds attention. Streaks, progress missions, and immediate feedback keep students coming back every day.</p>
       </div>
       
       <div class="flex-1 flex flex-col gap-2 items-center" style="min-width: 250px;">
         <div class="font-display text-4xl text-success mb-2">C</div>
-        <h3 class="font-bold text-xl">Clarity</h3>
+        <h3 class="font-bold text-xl text-white">Clarity</h3>
         <p class="text-muted text-sm">No ambiguity in explanations. Every worked solution uses MOE marking-scheme language. What the examiner expects is front and centre.</p>
       </div>
       
       <div class="flex-1 flex flex-col gap-2 items-center" style="min-width: 250px;">
         <div class="font-display text-4xl text-success mb-2">C</div>
-        <h3 class="font-bold text-xl">Consistency</h3>
+        <h3 class="font-bold text-xl text-white">Consistency</h3>
         <p class="text-muted text-sm">The same high-quality explanation approach across every subject, every level. Parents can trust the platform, not just hope it works.</p>
       </div>
     </div>
@@ -171,170 +184,178 @@
 </section>
 
 <!-- ═══════════════════ FEATURES ═══════════════════ -->
-<section class="container mb-8 mt-8">
-  <div class="flex flex-col items-center text-center mb-6">
-    <div class="badge badge-info mb-2">What Makes Us Different</div>
-    <h2 class="font-display text-3xl mb-2">Built for Singapore Exam Culture</h2>
-    <p class="text-muted text-lg" style="max-width: 600px;">No other platform explains every wrong answer — systematically, for every question, across all subjects.</p>
-  </div>
-  
-  <div class="flex flex-wrap gap-4">
-    <div class="card flex-1 flex flex-col gap-2" style="min-width: 300px;">
-      <div class="text-2xl mb-2">🎯</div>
-      <h3 class="font-bold text-lg">Wrong-Answer Explanations</h3>
-      <p class="text-muted text-sm">For every MCQ, we explain exactly why each wrong option is wrong. Not just "B is correct" — but why A, C, and D are traps.</p>
+<section class="py-10 bg-sage-dark">
+  <div class="container">
+    <div class="flex flex-col items-center text-center mb-8">
+      <div class="badge badge-info mb-2" style="background: rgba(255,255,255,0.1); color: #fff;">What Makes Us Different</div>
+      <h2 class="font-display text-3xl mb-2 text-white">Built for Singapore Exam Culture</h2>
+      <p class="text-muted text-lg" style="max-width: 600px;">No other platform explains every wrong answer — systematically, for every question, across all subjects.</p>
     </div>
-    <div class="card flex-1 flex flex-col gap-2" style="min-width: 300px;">
-      <div class="text-2xl mb-2">🤖</div>
-      <h3 class="font-bold text-lg">AI Tutor, Available 24/7</h3>
-      <p class="text-muted text-sm">The AI guides students with questions, never handing out answers. It uses Singapore exam language and marking-scheme keywords.</p>
-    </div>
-    <div class="card flex-1 flex flex-col gap-2" style="min-width: 300px;">
-      <div class="text-2xl mb-2">📚</div>
-      <h3 class="font-bold text-lg">100% MOE-Aligned</h3>
-      <p class="text-muted text-sm">Every question, every solution, and every explanation is built strictly against the official MOE Primary and Secondary syllabuses.</p>
-    </div>
-    <div class="card flex-1 flex flex-col gap-2" style="min-width: 300px;">
-      <div class="text-2xl mb-2">📊</div>
-      <h3 class="font-bold text-lg">Progress Parents Can See</h3>
-      <p class="text-muted text-sm">The Family Plan shows every child's accuracy by topic. No more asking "how was school?" — see exactly where help is needed.</p>
+    
+    <div class="flex flex-wrap gap-4">
+      <div class="card flex-1 flex flex-col gap-2" style="min-width: 300px;">
+        <div class="text-2xl mb-2">🎯</div>
+        <h3 class="font-bold text-lg">Wrong-Answer Explanations</h3>
+        <p class="text-muted text-sm">For every MCQ, we explain exactly why each wrong option is wrong. Not just "B is correct" — but why A, C, and D are traps.</p>
+      </div>
+      <div class="card flex-1 flex flex-col gap-2" style="min-width: 300px;">
+        <div class="text-2xl mb-2">🤖</div>
+        <h3 class="font-bold text-lg">AI Tutor, Available 24/7</h3>
+        <p class="text-muted text-sm">The AI guides students with questions, never handing out answers. It uses Singapore exam language and marking-scheme keywords.</p>
+      </div>
+      <div class="card flex-1 flex flex-col gap-2" style="min-width: 300px;">
+        <div class="text-2xl mb-2">📚</div>
+        <h3 class="font-bold text-lg">100% MOE-Aligned</h3>
+        <p class="text-muted text-sm">Every question, every solution, and every explanation is built strictly against the official MOE Primary and Secondary syllabuses.</p>
+      </div>
+      <div class="card flex-1 flex flex-col gap-2" style="min-width: 300px;">
+        <div class="text-2xl mb-2">📊</div>
+        <h3 class="font-bold text-lg">Progress Parents Can See</h3>
+        <p class="text-muted text-sm">The Family Plan shows every child's accuracy by topic. No more asking "how was school?" — see exactly where help is needed.</p>
+      </div>
     </div>
   </div>
 </section>
 
 <!-- ═══════════════════ MISSION CONTROL ═══════════════════ -->
-<section class="container mb-8 mt-8">
-  <div class="flex flex-col items-center text-center mb-6">
-    <div class="badge mb-2">Mission Control</div>
-    <h2 class="font-display text-3xl mb-2">Your Personal Learning Dashboard</h2>
-    <p class="text-muted text-lg" style="max-width: 600px;">Track progress across all subjects. See where to focus next. Built for students who want to perform, not just participate.</p>
-  </div>
-  
-  <div class="card p-6 flex flex-wrap items-center justify-between gap-6">
-    <div class="flex-1 flex flex-col gap-4" style="min-width: 300px;">
-      
-      <div class="card flex flex-col gap-2" style="padding: var(--space-3) var(--space-4);">
-        <div class="flex justify-between items-center mb-1">
-          <div class="font-bold text-sm">🧮 Mathematics</div>
-          <div class="font-bold text-sm text-success">72%</div>
-        </div>
-        <div class="quiz-progress-bar"><div class="quiz-progress-fill mc-fill" style="width:0%; background: var(--maths-colour);" data-target="72"></div></div>
-        <div class="text-xs text-muted mt-1">Fractions &amp; Decimals · 240 questions done</div>
-      </div>
-      
-      <div class="card flex flex-col gap-2" style="padding: var(--space-3) var(--space-4);">
-        <div class="flex justify-between items-center mb-1">
-          <div class="font-bold text-sm">🔬 Science</div>
-          <div class="font-bold text-sm text-amber">45%</div>
-        </div>
-        <div class="quiz-progress-bar"><div class="quiz-progress-fill mc-fill" style="width:0%; background: var(--science-colour);" data-target="45"></div></div>
-        <div class="text-xs text-muted mt-1">Living Systems · 88 questions done</div>
-      </div>
-      
-      <div class="card flex flex-col gap-2" style="padding: var(--space-3) var(--space-4);">
-        <div class="flex justify-between items-center mb-1">
-          <div class="font-bold text-sm">📖 English Language</div>
-          <div class="font-bold text-sm text-success">88%</div>
-        </div>
-        <div class="quiz-progress-bar"><div class="quiz-progress-fill mc-fill" style="width:0%; background: var(--english-colour);" data-target="88"></div></div>
-        <div class="text-xs text-muted mt-1">Comprehension Inference · 312 questions done</div>
-      </div>
-      
-      <a href="/pages/signup.html" class="btn btn-primary w-full mt-2" id="dashboard-cta-btn">Access Your Dashboard →</a>
+<section class="py-10 bg-white">
+  <div class="container">
+    <div class="flex flex-col items-center text-center mb-8">
+      <div class="badge mb-2">Mission Control</div>
+      <h2 class="font-display text-3xl mb-2 text-main">Your Personal Learning Dashboard</h2>
+      <p class="text-muted text-lg" style="max-width: 600px;">Track progress across all subjects. See where to focus next. Built for students who want to perform, not just participate.</p>
     </div>
     
-    <div class="flex-1 flex justify-center" style="min-width: 300px;">
-      <img src="assets/images/kid_studying.png" alt="Singapore student studying" style="width:100%; max-width: 400px; border-radius: var(--radius-lg); box-shadow: var(--shadow-md);">
+    <div class="card p-6 flex flex-wrap items-center justify-between gap-6" style="background: var(--bg-elevated); border: none;">
+      <div class="flex-1 flex flex-col gap-4" style="min-width: 300px;">
+        
+        <div class="card flex flex-col gap-2" style="padding: var(--space-3) var(--space-4);">
+          <div class="flex justify-between items-center mb-1">
+            <div class="font-bold text-sm">🧮 Mathematics</div>
+            <div class="font-bold text-sm text-success">72%</div>
+          </div>
+          <div class="quiz-progress-bar"><div class="quiz-progress-fill mc-fill" style="width:0%; background: var(--maths-colour);" data-target="72"></div></div>
+          <div class="text-xs text-muted mt-1">Fractions &amp; Decimals · 240 questions done</div>
+        </div>
+        
+        <div class="card flex flex-col gap-2" style="padding: var(--space-3) var(--space-4);">
+          <div class="flex justify-between items-center mb-1">
+            <div class="font-bold text-sm">🔬 Science</div>
+            <div class="font-bold text-sm text-amber">45%</div>
+          </div>
+          <div class="quiz-progress-bar"><div class="quiz-progress-fill mc-fill" style="width:0%; background: var(--science-colour);" data-target="45"></div></div>
+          <div class="text-xs text-muted mt-1">Living Systems · 88 questions done</div>
+        </div>
+        
+        <div class="card flex flex-col gap-2" style="padding: var(--space-3) var(--space-4);">
+          <div class="flex justify-between items-center mb-1">
+            <div class="font-bold text-sm">📖 English Language</div>
+            <div class="font-bold text-sm text-success">88%</div>
+          </div>
+          <div class="quiz-progress-bar"><div class="quiz-progress-fill mc-fill" style="width:0%; background: var(--english-colour);" data-target="88"></div></div>
+          <div class="text-xs text-muted mt-1">Comprehension Inference · 312 questions done</div>
+        </div>
+        
+        <a href="/pages/signup.html" class="btn btn-primary w-full mt-2" id="dashboard-cta-btn">Access Your Dashboard →</a>
+      </div>
+      
+      <div class="flex-1 flex justify-center" style="min-width: 300px;">
+        <img src="assets/images/kid_studying.png" alt="Singapore student studying" style="width:100%; max-width: 400px; border-radius: var(--radius-lg); box-shadow: var(--shadow-md);">
+      </div>
     </div>
   </div>
 </section>
 
 <!-- ═══════════════════ TRUST BAR ═══════════════════ -->
-<div class="container mb-8">
-  <div class="flex flex-wrap justify-center items-center gap-4 p-4 text-sm font-bold text-muted" style="background: var(--bg-elevated); border-radius: var(--radius-lg);">
-    <div class="flex items-center gap-2"><span class="text-success">✓</span> 100% MOE-Aligned</div>
-    <div class="flex items-center gap-2"><span class="text-success">✓</span> PDPA Compliant</div>
-    <div class="flex items-center gap-2"><span class="text-success">✓</span> Cancel Anytime</div>
-    <div class="flex items-center gap-2"><span class="text-success">✓</span> Singapore Servers</div>
+<section class="bg-page">
+  <div class="container mb-8">
+    <div class="flex flex-wrap justify-center items-center gap-4 p-4 text-sm font-bold text-muted" style="border-radius: var(--radius-lg);">
+      <div class="flex items-center gap-2"><span class="text-success">✓</span> 100% MOE-Aligned</div>
+      <div class="flex items-center gap-2"><span class="text-success">✓</span> PDPA Compliant</div>
+      <div class="flex items-center gap-2"><span class="text-success">✓</span> Cancel Anytime</div>
+      <div class="flex items-center gap-2"><span class="text-success">✓</span> Singapore Servers</div>
+    </div>
   </div>
-</div>
+</section>
 
 <!-- ═══════════════════ PRICING ═══════════════════ -->
-<section class="container mb-8 mt-8" id="pricing">
-  <div class="flex flex-col items-center text-center mb-6">
-    <div class="badge badge-info mb-2">Simple Pricing</div>
-    <h2 class="font-display text-3xl mb-2">No Surprises. No Lock-in.</h2>
-    <p class="text-muted text-lg">7-day free trial on all plans. Cancel any time.</p>
-  </div>
-  
-  <div class="flex flex-wrap gap-4 items-start">
-    
-    <div class="card flex-1 flex flex-col gap-4 p-6 text-center" style="min-width: 280px; margin-top: 16px;">
-      <h3 class="font-bold text-xl">Single Subject</h3>
-      <div class="font-display text-4xl mt-2 mb-2">S$9.99<span class="text-sm text-muted font-body" style="text-transform: none;">/month</span></div>
-      <p class="text-sm text-muted mb-4">Perfect for focused PSLE prep in one subject.</p>
-      <ul class="flex flex-col gap-2 text-sm text-left flex-1 mb-4" style="list-style: none;">
-        <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> 1 subject of your choice</li>
-        <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Unlimited questions</li>
-        <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Full worked solutions</li>
-        <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> 1 child profile</li>
-      </ul>
-      <a href="/pages/signup.html?plan=single" class="btn btn-secondary w-full">Start Free Trial</a>
-      <div class="text-xs text-muted mt-2">7 days free · No credit card</div>
+<section class="py-10 bg-page" id="pricing">
+  <div class="container mb-8">
+    <div class="flex flex-col items-center text-center mb-6">
+      <div class="badge badge-info mb-2">Simple Pricing</div>
+      <h2 class="font-display text-3xl mb-2 text-main">No Surprises. No Lock-in.</h2>
+      <p class="text-muted text-lg">7-day free trial on all plans. Cancel any time.</p>
     </div>
     
-    <div class="card flex-1 flex flex-col gap-4 p-6 text-center" style="min-width: 280px; border-color: var(--brand-rose); box-shadow: var(--shadow-md);">
-      <div class="badge mb-2 self-center" style="background: var(--brand-rose); color: white;">Most Popular</div>
-      <h3 class="font-bold text-xl">All Subjects</h3>
-      <div class="font-display text-4xl mt-2 mb-2">S$19.99<span class="text-sm text-muted font-body" style="text-transform: none;">/month</span></div>
-      <p class="text-sm text-muted mb-4">The complete PSLE toolkit — Maths, Science &amp; English.</p>
-      <ul class="flex flex-col gap-2 text-sm text-left flex-1 mb-4" style="list-style: none;">
-        <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> All 3 subjects</li>
-        <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Unlimited questions</li>
-        <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Wrong-answer explanations</li>
-        <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> AI Tutor access</li>
-        <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> 1 child profile</li>
-      </ul>
-      <a href="/pages/signup.html?plan=all_subjects" class="btn btn-primary w-full">Start Free Trial</a>
-      <div class="text-xs text-muted mt-2">7 days free · No credit card</div>
-    </div>
-    
-    <div class="card flex-1 flex flex-col gap-4 p-6 text-center" style="min-width: 280px; margin-top: 16px;">
-      <h3 class="font-bold text-xl">Family</h3>
-      <div class="font-display text-4xl mt-2 mb-2">S$29.99<span class="text-sm text-muted font-body" style="text-transform: none;">/month</span></div>
-      <p class="text-sm text-muted mb-4">For families with multiple children preparing for exams.</p>
-      <ul class="flex flex-col gap-2 text-sm text-left flex-1 mb-4" style="list-style: none;">
-        <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> All 3 subjects</li>
-        <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Up to 3 child profiles</li>
-        <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Parent dashboard</li>
-        <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Priority support</li>
-      </ul>
-      <a href="/pages/signup.html?plan=family" class="btn btn-secondary w-full">Start Free Trial</a>
-      <div class="text-xs text-muted mt-2">7 days free · No credit card</div>
-    </div>
+    <div class="flex flex-wrap gap-4 items-start">
+      
+      <div class="card flex-1 flex flex-col gap-4 p-6 text-center" style="min-width: 280px; margin-top: 16px;">
+        <h3 class="font-bold text-xl">Single Subject</h3>
+        <div class="font-display text-4xl mt-2 mb-2 text-main">S$9.99<span class="text-sm text-muted font-body" style="text-transform: none;">/month</span></div>
+        <p class="text-sm text-muted mb-4">Perfect for focused PSLE prep in one subject.</p>
+        <ul class="flex flex-col gap-2 text-sm text-left flex-1 mb-4" style="list-style: none;">
+          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> 1 subject of your choice</li>
+          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Unlimited questions</li>
+          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Full worked solutions</li>
+          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> 1 child profile</li>
+        </ul>
+        <a href="/pages/signup.html?plan=single" class="btn btn-secondary w-full">Start Free Trial</a>
+        <div class="text-xs text-muted mt-2">7 days free · No credit card</div>
+      </div>
+      
+      <div class="card flex-1 flex flex-col gap-4 p-6 text-center" style="min-width: 280px; border-color: var(--brand-rose); box-shadow: var(--shadow-md);">
+        <div class="badge mb-2 self-center" style="background: var(--brand-rose); color: white;">Most Popular</div>
+        <h3 class="font-bold text-xl">All Subjects</h3>
+        <div class="font-display text-4xl mt-2 mb-2 text-main">S$19.99<span class="text-sm text-muted font-body" style="text-transform: none;">/month</span></div>
+        <p class="text-sm text-muted mb-4">The complete PSLE toolkit — Maths, Science &amp; English.</p>
+        <ul class="flex flex-col gap-2 text-sm text-left flex-1 mb-4" style="list-style: none;">
+          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> All 3 subjects</li>
+          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Unlimited questions</li>
+          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Wrong-answer explanations</li>
+          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> AI Tutor access</li>
+          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> 1 child profile</li>
+        </ul>
+        <a href="/pages/signup.html?plan=all_subjects" class="btn btn-primary w-full">Start Free Trial</a>
+        <div class="text-xs text-muted mt-2">7 days free · No credit card</div>
+      </div>
+      
+      <div class="card flex-1 flex flex-col gap-4 p-6 text-center" style="min-width: 280px; margin-top: 16px;">
+        <h3 class="font-bold text-xl">Family</h3>
+        <div class="font-display text-4xl mt-2 mb-2 text-main">S$29.99<span class="text-sm text-muted font-body" style="text-transform: none;">/month</span></div>
+        <p class="text-sm text-muted mb-4">For families with multiple children preparing for exams.</p>
+        <ul class="flex flex-col gap-2 text-sm text-left flex-1 mb-4" style="list-style: none;">
+          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> All 3 subjects</li>
+          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Up to 3 child profiles</li>
+          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Parent dashboard</li>
+          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Priority support</li>
+        </ul>
+        <a href="/pages/signup.html?plan=family" class="btn btn-secondary w-full">Start Free Trial</a>
+        <div class="text-xs text-muted mt-2">7 days free · No credit card</div>
+      </div>
 
+    </div>
   </div>
 </section>
 
 <!-- ═══════════════════ CTA BANNER ═══════════════════ -->
-<section class="container mb-8 mt-8">
-  <div class="card flex flex-col items-center text-center gap-4 p-6" style="background: var(--bg-elevated); border: none; padding-top: var(--space-6); padding-bottom: var(--space-6);">
-    <h2 class="font-display text-3xl">Your Child's Best Exam Season Starts Today</h2>
+<section class="bg-rose py-10">
+  <div class="container flex flex-col items-center text-center gap-4">
+    <h2 class="font-display text-4xl text-white">Your Child's Best Exam Season Starts Today</h2>
     <p class="text-muted text-lg mb-4" style="max-width: 500px;">Join 4,200+ Singapore students already using Superholic Lab. First 7 days completely free.</p>
     <div class="flex flex-wrap gap-4 justify-center">
-      <a href="/pages/signup.html" class="btn btn-primary">Start Free Trial →</a>
-      <a href="/pages/pricing.html" class="btn btn-secondary">See All Plans</a>
+      <a href="/pages/signup.html" class="btn" style="background: white; color: var(--brand-rose);">Start Free Trial →</a>
+      <a href="/pages/pricing.html" class="btn" style="border-color: rgba(255,255,255,0.4); color: white;">See All Plans</a>
     </div>
   </div>
 </section>
 
 <!-- ═══════════════════ FOOTER ═══════════════════ -->
-<footer class="footer">
+<footer class="footer bg-sage-dark pt-8 pb-8">
   <div class="container">
     
     <div class="flex flex-wrap justify-between gap-6 mb-8 mt-6">
       <div class="flex-1 flex flex-col gap-4" style="min-width: 250px;">
-        <div class="flex items-center gap-2 font-display text-xl text-main">
+        <div class="flex items-center gap-2 font-display text-xl text-white">
           <img src="assets/logo.svg" width="28" height="28" alt="" aria-hidden="true" style="border-radius:6px;">
           Superholic Lab
         </div>
@@ -342,14 +363,14 @@
       </div>
       
       <div class="flex-1 flex flex-col gap-2" style="min-width: 120px;">
-        <div class="font-bold text-sm mb-2">Platform</div>
+        <div class="font-bold text-sm mb-2 text-white">Platform</div>
         <a href="/pages/subjects.html" class="text-sm text-muted" style="text-decoration:none;">Subjects</a>
         <a href="/pages/pricing.html" class="text-sm text-muted" style="text-decoration:none;">Pricing</a>
         <a href="/pages/dashboard.html" class="text-sm text-muted" style="text-decoration:none;">Dashboard</a>
       </div>
       
       <div class="flex-1 flex flex-col gap-2" style="min-width: 120px;">
-        <div class="font-bold text-sm mb-2">Company</div>
+        <div class="font-bold text-sm mb-2 text-white">Company</div>
         <a href="/pages/about.html" class="text-sm text-muted" style="text-decoration:none;">About Us</a>
         <a href="/pages/contact.html" class="text-sm text-muted" style="text-decoration:none;">Contact</a>
         <a href="/pages/terms.html" class="text-sm text-muted" style="text-decoration:none;">Terms of Use</a>
@@ -391,7 +412,28 @@ document.querySelectorAll('.mc-fill, .float-progress-fill').forEach(bar => {
 </script>
 
 <script>
-  /* ── Auth-aware Navbar Logic ── */
+  /* ── 1. Dropdown Toggle Logic ── */
+  document.addEventListener('DOMContentLoaded', () => {
+    const toggle = document.getElementById('navToggle');
+    const dropdown = document.getElementById('navDropdown');
+    
+    if (toggle && dropdown) {
+      toggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdown.classList.toggle('is-open');
+        toggle.classList.toggle('is-active'); 
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!dropdown.contains(e.target) && !toggle.contains(e.target)) {
+          dropdown.classList.remove('is-open');
+          toggle.classList.remove('is-active');
+        }
+      });
+    }
+  });
+
+  /* ── 2. Auth-aware Navbar Logic ── */
   getSupabase().then(async function(sb) {
     try {
       const { data: { session } } = await sb.auth.getSession();
@@ -399,10 +441,29 @@ document.querySelectorAll('.mc-fill, .float-progress-fill').forEach(bar => {
       if (!session) return; 
       
       const authContainer = document.getElementById('auth-header-container');
+      const navLinks = document.getElementById('navDropdown');
       
       // Replace "Log In" button with "Dashboard"
       if (authContainer) {
         authContainer.innerHTML = '<a href="pages/dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a>';
+      }
+
+      // Add "Sign Out" to the bottom of the dropdown tray
+      if (navLinks) {
+        const signOut = document.createElement('a');
+        signOut.href = "#";
+        signOut.textContent = "Sign Out";
+        signOut.style.color = "var(--brand-rose)"; 
+        signOut.onclick = async (e) => { 
+          e.preventDefault();
+          await sb.auth.signOut(); 
+          window.location.href = 'index.html'; 
+        };
+        navLinks.appendChild(signOut);
+        
+        // Remove the "Start Free Trial" link from the dropdown
+        const signUpLink = document.getElementById('navSignUp');
+        if (signUpLink) signUpLink.remove();
       }
 
       // Update the Mission Control banner button for logged-in users
