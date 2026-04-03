@@ -623,63 +623,73 @@ body.has-bottom-nav .footer {
     100% { transform: translateX(100vw) scaleX(-1); }
   }
 
-  /* ─── Floating Right Side Navigation (Desktop CRM Style) ─── */
-    @media (min-width: 768px) {
-      body.has-bottom-nav {
-        padding-bottom: 0 !important;
-        padding-right: 80px; /* Make space for the right sidebar */
-      }
-      .bottom-nav {
-        top: 64px; /* Sit right below the top navbar */
-        bottom: 0;
-        left: auto;
-        right: 0;
-        width: 80px;
-        height: calc(100vh - 64px);
-        flex-direction: column;
-        justify-content: flex-start;
-        padding-top: var(--space-4);
-        border-top: none;
-        border-left: 1px solid var(--border-light);
-        background: var(--bg-surface);
-        box-shadow: -4px 0 15px rgba(0,0,0,0.03);
-      }
-      .bottom-nav-item {
-        width: 100%;
-        padding: var(--space-3) 0;
-        gap: 6px;
-      }
-      .footer {
-        padding-right: 80px !important;
-      }
-    }
+/* ──────────────────────────────────────────────────────────────────────────
+   8. BADGES & FLOATING DESKTOP NAVIGATION
+   ────────────────────────────────────────────────────────────────────────── */
 
-    /* Modal Backdrop */
-    .modal-backdrop {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(44, 62, 58, 0.6);
-      backdrop-filter: blur(4px);
-      z-index: 1000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.2s ease;
-    }
-    .modal-backdrop.is-open {
-      opacity: 1;
-      pointer-events: auto;
-    }
+/* ── Badges ── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  background: var(--bg-elevated);
+  color: var(--text-main);
+}
+.badge-info    { background: rgba(59, 130, 246, 0.1); color: var(--maths-colour); }
+.badge-success { background: rgba(5, 150, 105, 0.1); color: var(--brand-mint); }
+.badge-amber   { background: rgba(217, 119, 6, 0.1); color: var(--brand-amber); }
+.badge-danger  { background: rgba(220, 38, 38, 0.1); color: var(--brand-error); }
+
+/* ── Floating Right Side Navigation (Desktop CRM Style) ── */
+@media (min-width: 768px) {
+  body.has-bottom-nav {
+    padding-bottom: 0 !important;
+    padding-right: 0 !important; /* Floats directly over content, no reserved space */
+  }
+  
+  .bottom-nav {
+    top: 50%; /* Vertically center */
+    transform: translateY(-50%);
+    bottom: auto;
+    left: auto;
+    right: var(--space-6); /* Offset from the right edge */
+    width: 72px;
+    height: auto; /* Wraps tightly around the 4 icons */
+    flex-direction: column;
+    justify-content: center;
+    padding: var(--space-4) 0;
     
-    /* Modal Card Animation */
-    .modal-card {
-      transform: translateY(20px);
-      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-      width: 100%;
-      max-width: 400px;
-    }
-    .modal-backdrop.is-open .modal-card {
-      transform: translateY(0);
-    }
+    /* Premium Glassmorphism Pill Styling */
+    background: rgba(255, 255, 255, 0.85); 
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 40px; /* Perfectly rounded top and bottom */
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
+  }
+  
+  .bottom-nav-item {
+    width: 100%;
+    padding: var(--space-3) 0;
+    gap: 6px;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  
+  .bottom-nav-item:hover {
+    transform: scale(1.1); /* Subtle playful bump on hover */
+  }
+}
+
+/* ── Active Icon "Light Up" Effect ── */
+.bottom-nav-item.is-active {
+  color: var(--brand-rose);
+}
+.bottom-nav-item.is-active svg {
+  opacity: 1;
+  /* Adds a glowing effect around the SVG */
+  filter: drop-shadow(0 0 8px rgba(183, 110, 121, 0.6)); 
+}
