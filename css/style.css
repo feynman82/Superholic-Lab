@@ -43,14 +43,18 @@
   --border-light: #E2E8E6; /* Soft borders */
   --border-dark:  #CBD5D2; /* Stronger borders */
 
-  /* -- BRAND ACCENTS -- */
+  /* -- BRAND ACCENTS (Original Sage Elements Restored) -- */
   --brand-sage:   #51615E; /* Primary Brand Color */
+  --sage-dark:    #3A4E4A; /* Deepest Sage for Footers & Hero */
+  --cream:        #F9F6F0; /* Soft readable text for dark backgrounds */
+  --cream-dim:    rgba(249, 246, 240, 0.7);
+  
   --brand-rose:   #B76E79; /* Primary Action / CTA */
   --brand-rose-hover: #A05D67; 
   
-  --brand-mint:   #059669; /* Success (Deepened for contrast on white) */
-  --brand-amber:  #D97706; /* Warning (Deepened for contrast) */
-  --brand-error:  #DC2626; /* Danger (Deepened for contrast) */
+  --brand-mint:   #059669; /* Success */
+  --brand-amber:  #D97706; /* Warning */
+  --brand-error:  #DC2626; /* Danger */
 
   /* -- SUBJECT COLORS -- */
   --maths-colour:   #3B82F6; /* Vibrant Blue */
@@ -85,7 +89,7 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  color: var(--text-main);
+  color: inherit; /* Allows text to inherit white on dark backgrounds */
   line-height: 1.2;
 }
 
@@ -105,8 +109,14 @@ a:hover {
   color: var(--brand-rose-hover);
 }
 
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
 /* ──────────────────────────────────────────────────────────────────────────
-   3. LAYOUT & UTILITIES (Tailwind-style)
+   3. LAYOUT & UTILITIES
    ────────────────────────────────────────────────────────────────────────── */
 .container {
   width: 100%;
@@ -125,6 +135,7 @@ a:hover {
 .gap-2 { gap: var(--space-2); }
 .gap-3 { gap: var(--space-3); }
 .gap-4 { gap: var(--space-4); }
+.gap-6 { gap: var(--space-6); }
 .flex-wrap { flex-wrap: wrap; }
 .flex-1 { flex: 1; }
 
@@ -135,8 +146,27 @@ a:hover {
 .mb-8 { margin-bottom: var(--space-8); }
 .mt-2 { margin-top: var(--space-2); }
 .mt-4 { margin-top: var(--space-4); }
+.mt-8 { margin-top: var(--space-8); }
 .p-4 { padding: var(--space-4); }
 .p-6 { padding: var(--space-6); }
+
+/* Vertical Padding Utilities for Section Backgrounds */
+.py-6 { padding-top: var(--space-6); padding-bottom: var(--space-6); }
+.py-8 { padding-top: var(--space-8); padding-bottom: var(--space-8); }
+.py-10 { padding-top: var(--space-10); padding-bottom: var(--space-10); }
+
+/* Section Backgrounds (Color Blocking) */
+.bg-sage { background-color: var(--brand-sage); color: var(--cream); }
+.bg-sage .text-muted { color: var(--cream-dim) !important; }
+
+.bg-sage-dark { background-color: var(--sage-dark); color: var(--cream); }
+.bg-sage-dark .text-muted { color: var(--cream-dim) !important; }
+
+.bg-rose { background-color: var(--brand-rose); color: #FFFFFF; }
+.bg-rose .text-muted { color: rgba(255,255,255,0.8) !important; }
+
+.bg-white { background-color: var(--bg-surface); }
+.bg-page { background-color: var(--bg-page); }
 
 /* Typography */
 .text-center { text-align: center; }
@@ -145,15 +175,22 @@ a:hover {
 .text-sm { font-size: var(--text-sm); }
 .text-lg { font-size: var(--text-lg); }
 .text-xl { font-size: var(--text-xl); }
+.text-2xl { font-size: var(--text-2xl); }
+.text-3xl { font-size: var(--text-3xl); }
+.text-4xl { font-size: var(--text-4xl); }
 .font-bold { font-weight: 700; }
 .font-semibold { font-weight: 600; }
 .font-medium { font-weight: 500; }
+.uppercase { text-transform: uppercase; }
 
 /* Semantic Text Colors */
+.text-main { color: var(--text-main); }
 .text-secondary, .text-muted { color: var(--text-muted); }
 .text-danger, .text-error { color: var(--brand-error); }
 .text-success { color: var(--brand-mint); }
+.text-amber { color: var(--brand-amber); }
 .text-rose { color: var(--brand-rose); }
+.text-white { color: #FFFFFF; }
 
 /* Helpers */
 .hidden { display: none !important; }
@@ -166,6 +203,7 @@ a:hover {
 /* -- CARDS -- */
 .card {
   background: var(--bg-surface);
+  color: var(--text-main); /* Force dark text even on dark backgrounds */
   border: 1px solid var(--border-light);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
@@ -174,6 +212,12 @@ a:hover {
 }
 .card:hover {
   box-shadow: var(--shadow-md);
+}
+.card h1, .card h2, .card h3, .card h4 {
+  color: var(--text-main);
+}
+.card .text-muted {
+  color: var(--text-muted) !important;
 }
 
 /* -- BUTTONS -- */
@@ -204,6 +248,7 @@ a:hover {
 }
 .btn-primary:hover:not(:disabled) {
   background: var(--brand-rose-hover);
+  color: #FFFFFF;
 }
 
 .btn-secondary {
@@ -268,13 +313,6 @@ a:hover {
   border-color: var(--brand-rose);
   box-shadow: 0 0 0 3px rgba(183, 110, 121, 0.1);
 }
-select.form-input {
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B7A77' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  padding-right: 40px;
-}
 
 /* ──────────────────────────────────────────────────────────────────────────
    5. APP LAYOUT SHELL
@@ -304,6 +342,60 @@ select.form-input {
   letter-spacing: 0.02em;
 }
 
+/* -- MOBILE NAVBAR TOGGLE -- */
+.navbar-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--space-2);
+}
+.navbar-toggle span {
+  width: 22px;
+  height: 2px;
+  background: var(--text-main);
+  border-radius: 2px;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+.navbar-toggle.is-active span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.navbar-toggle.is-active span:nth-child(2) { opacity: 0; }
+.navbar-toggle.is-active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* -- MOBILE MENU DROPDOWN -- */
+.navbar-mobile {
+  position: absolute;
+  top: 64px;
+  left: 0;
+  right: 0;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-light);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-4);
+  display: none;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.navbar-mobile.is-open {
+  display: flex;
+}
+.navbar-mobile a {
+  padding: var(--space-2) 0;
+  color: var(--text-main);
+  font-weight: 500;
+  border-bottom: 1px solid var(--bg-elevated);
+}
+.navbar-mobile a:last-child {
+  border-bottom: none;
+}
+
+@media (max-width: 768px) {
+  .navbar-actions #auth-header-container { display: none; } /* Hide desktop login on tiny screens */
+  .navbar-toggle { display: flex !important; }
+}
+
 /* -- BOTTOM NAV (Mobile) -- */
 .bottom-nav {
   position: fixed;
@@ -315,7 +407,7 @@ select.form-input {
   justify-content: space-around;
   align-items: center;
   z-index: 100;
-  padding-bottom: env(safe-area-inset-bottom); /* iOS safe area */
+  padding-bottom: env(safe-area-inset-bottom);
 }
 .bottom-nav-item {
   display: flex;
@@ -341,9 +433,19 @@ select.form-input {
 
 /* -- GLOBAL FOOTER NORMALISER -- */
 .footer {
-  margin-top: var(--space-8);
-  border-top: 1px solid var(--border-light);
   background: var(--bg-page);
+}
+.footer.bg-sage-dark {
+  border-top: none;
+}
+.footer.bg-sage-dark .footer-bottom {
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+.footer.bg-sage-dark a {
+  color: var(--cream-dim);
+}
+.footer.bg-sage-dark a:hover {
+  color: var(--brand-rose);
 }
 .footer .container {
   max-width: 800px !important;
@@ -362,6 +464,7 @@ body.has-bottom-nav .footer {
   padding: var(--space-4) 0;
   color: var(--text-muted);
   font-size: var(--text-sm);
+  border-top: 1px solid var(--border-light);
   gap: 16px;
 }
 .footer-bottom a {
