@@ -9,339 +9,119 @@
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="icon" href="../assets/favicon.ico" />
   <meta name="robots" content="noindex, nofollow" />
-  <!-- Analytics: ⚠️ CONFIGURE — sign up at plausible.io and add superholiclab.com -->
+  
+  <script src="/js/header.js" defer></script>
+  <script src="/js/footer.js" defer></script>
   <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js"></script>
-  <!-- Auth guard: redirects to login if no session -->
+  
   <script type="module">
-    import { guardPage }    from '/js/auth.js';
+    import { guardPage } from '/js/auth.js';
     import { initAppShell } from '/js/app-shell.js';
     const profile = await guardPage(true);
     initAppShell(profile);
   </script>
 </head>
 
-<body id="mainBody">
+<body id="mainBody" class="has-bottom-nav bg-page texture-light-grid">
 
-<header class="navbar navbar-homepage" id="navbar" style="justify-content: space-between;">
+  <global-header></global-header>
+
+  <main class="container py-8" style="padding-top: calc(64px + var(--space-8)); max-width: 800px; min-height: 85vh;">
     
-    <a href="../index.html" class="navbar-logo">
-      <img src="../assets/logo.svg" width="32" height="32" alt="Superholic Lab">
-      Superholic Lab
-    </a>
-
-    <div class="navbar-actions">
-      <div id="auth-header-container">
-        <a href="login.html" class="btn btn-secondary btn-sm">Log In</a>
-      </div>
-
-      <button class="navbar-toggle" id="navToggle" aria-label="Open menu">
-        <span></span><span></span><span></span>
-      </button>
+    <!-- Trial limit banner -->
+    <div id="tutor-limit-banner" class="p-4 mb-4 rounded-lg hidden" style="background: rgba(217, 119, 6, 0.1); border: 1px solid rgba(217, 119, 6, 0.2); color: var(--brand-amber);">
+      <strong>Daily Limit Reached:</strong> You've used your 10 free AI tutor messages today. <a href="pricing.html" style="text-decoration: underline; font-weight: bold;">Upgrade to continue</a>.
     </div>
 
-    <div class="navbar-mobile" id="navDropdown">
-      <div class="container" id="navLinks">
-        <a href="../index.html">Home</a>
-        <a href="../pages/about.html">About Us</a>
-        <a href="../pages/pricing.html">Pricing</a>
-        <a href="../pages/contact.html">Contact Support</a>
-        <a href="../pages/signup.html" id="navSignUp">Start Free Trial</a>
-      </div>
+    <!-- Remedial Quest Context Banner -->
+    <div id="remedial-banner" class="hidden flex items-center justify-between flex-wrap gap-4 mb-4 p-4 rounded-lg" style="background: rgba(57,255,179,0.07); border: 1.5px solid var(--border-light); border-left: 3px solid var(--brand-mint); backdrop-filter: blur(12px);">
+      <p class="m-0 text-sm text-main">
+        🗺️ <strong class="text-success">Remedial Quest Active</strong> — Ask Miss Wena about <strong id="quest-topic-name" style="text-transform: capitalize;"></strong>
+      </p>
+      <a href="progress.html" class="btn btn-ghost btn-sm flex-shrink-0">← Quest Map</a>
     </div>
-  </header>
 
-  <main style="padding: var(--space-6) 0 var(--space-16);">
-    <div class="container" style="max-width:760px;">
-      <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="../index.html">Home</a>
-        <span class="breadcrumb-sep">›</span>
-        <span class="breadcrumb-current">AI Tutor</span>
-      </nav>
-
-      <!-- Trial limit banner (hidden until limit hit) -->
-      <div id="tutor-limit-banner" class="alert alert-info mt-4" hidden>
-        You've used your 10 free AI tutor messages today.
-        <a href="pricing.html" style="font-weight:600;">Upgrade to continue</a> with unlimited access.
-      </div>
-
-      <!-- Remedial Quest context banner (shown when ?intent=remedial is in URL) -->
-      <div id="remedial-banner" style="display:none; margin-top:var(--space-4); padding: var(--space-3) var(--space-4); background:rgba(57,255,179,0.07); border:1.5px solid var(--glass-border); border-left:3px solid var(--mint); border-radius:var(--radius-md); align-items:center; justify-content:space-between; gap:var(--space-4); flex-wrap:wrap; backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);">
-        <p style="margin:0; font-size:0.875rem; color:var(--cream);">
-          🗺️ Remedial Quest active — ask Miss Wena about <strong id="quest-topic-name" style="color:var(--mint);"></strong>
-        </p>
-        <a id="back-to-quest-link" href="progress.html" class="btn btn-ghost btn-sm" style="white-space:nowrap; flex-shrink:0;">← Quest Map</a>
-      </div>
-      <script>
-        (function() {
-          const rp = new URLSearchParams(window.location.search);
-          if (rp.get('intent') === 'remedial' && rp.get('topic')) {
-            const banner = document.getElementById('remedial-banner');
-            const topicEl = document.getElementById('quest-topic-name');
-            if (banner && topicEl) {
-              // Use textContent — topic from URL, not user-submitted
-              topicEl.textContent = rp.get('topic').replace(/-/g, ' ');
-              banner.style.display = 'flex';
-            }
-          }
-        })();
-      </script>
-
-      <!-- Chat card -->
-      <div class="card no-hover mt-6" style="overflow:hidden;">
-
-        <!-- Card header: Miss Wena avatar + name + subject label + online badge -->
-        <div class="card-header" style="border-bottom:1px solid var(--border);">
-          <div class="flex items-center gap-3" style="flex-wrap:wrap; row-gap:var(--space-4);">
-            <!-- Miss Wena avatar: real photo if available, SVG fallback otherwise -->
-            <div style="width:52px;height:52px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid var(--rose);box-shadow:0 0 0 3px rgba(183,110,121,0.2);">
-              <img
-                src="../assets/images/miss_wena.png"
-                alt="Miss Wena"
-                style="width:100%;height:100%;object-fit:cover;"
-                onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
-              />
-              <!-- SVG fallback shown if miss_wena.png not found -->
-              <svg style="display:none;width:100%;height:100%;background:linear-gradient(135deg,var(--rose,#B76E79),var(--peach,#B88078));align-items:center;justify-content:center;"
-                   viewBox="0 0 52 52" fill="none">
-                <!-- Hair -->
-                <ellipse cx="26" cy="18" rx="14" ry="15" fill="#1a1a1a"/>
-                <!-- Face -->
-                <ellipse cx="26" cy="22" rx="11" ry="12" fill="#f0c090"/>
-                <!-- Eyes -->
-                <ellipse cx="22" cy="21" rx="2.2" ry="2.8" fill="#2d1a0e"/>
-                <ellipse cx="30" cy="21" rx="2.2" ry="2.8" fill="#2d1a0e"/>
-                <!-- Eye shine -->
-                <circle cx="23" cy="20" r="0.8" fill="white"/>
-                <circle cx="31" cy="20" r="0.8" fill="white"/>
-                <!-- Smile -->
-                <path d="M21 26 Q26 30 31 26" stroke="#c97060" stroke-width="1.5" stroke-linecap="round" fill="none"/>
-                <!-- Hair fringe -->
-                <ellipse cx="26" cy="10" rx="13" ry="6" fill="#1a1a1a"/>
-              </svg>
-            </div>
+    <!-- The 3.0 Chat Card -->
+    <div class="card p-0 overflow-hidden flex flex-col hover-lift" style="height: 65vh; min-height: 500px; border: 1px solid var(--border-dark);">
+      
+      <!-- Trust Header -->
+      <div class="bg-sage-dark p-4 flex items-center justify-between" style="border-bottom: 3px solid var(--brand-rose);">
+         <div class="flex items-center gap-3">
+            <img src="../assets/images/miss_wena.png" alt="Miss Wena" class="w-12 h-12 object-cover rounded-full" style="border: 2px solid var(--brand-rose); background: #f0c090;" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 52 52%22><rect width=%2252%22 height=%2252%22 fill=%22%23B76E79%22/><circle cx=%2226%22 cy=%2222%22 r=%2211%22 fill=%22%23f0c090%22/></svg>'">
             <div>
-              <div style="font-weight:700;font-size:1rem;">Miss Wena</div>
-              <div class="text-xs" style="color:var(--rose);">AI Tutor · Superholic Lab</div>
-              <div class="text-xs text-secondary" id="tutor-subject-label">Mathematics</div>
+               <div class="font-display text-xl text-white tracking-wide">Miss Wena</div>
+               <div class="text-xs font-bold text-success flex items-center gap-1">✨ Verified MOE-Aligned Omni-Tutor</div>
             </div>
-            <span class="badge badge-success" style="margin-left:auto;">Online</span>
-          </div>
-
-          <!-- Subject selector tabs -->
-          <div class="flex gap-2 mt-4" style="flex-wrap:wrap;">
-            <button class="btn btn-primary btn-sm" data-subject="mathematics">Mathematics</button>
-            <button class="btn btn-secondary btn-sm" data-subject="science">Science</button>
-            <button class="btn btn-secondary btn-sm" data-subject="english">English</button>
-          </div>
-
-          <!-- Miss Wena bio -->
-          <p style="font-size:0.8rem;color:var(--text-secondary);margin-top:var(--space-3);font-style:italic;">
-            "I'm here to help you think, not just memorise. Ask me anything! 😊"
-          </p>
-
-          <!-- Level selector -->
-          <div class="flex items-center gap-3 mt-3">
-            <label class="form-label" for="level-select" style="margin:0;white-space:nowrap;font-size:0.875rem;">Level:</label>
-            <select id="level-select" class="form-input" style="max-width:160px;padding:0.4rem 0.75rem;height:auto;">
-              <option value="primary-1">Primary 1</option>
-              <option value="primary-2">Primary 2</option>
-              <option value="primary-3">Primary 3</option>
-              <option value="primary-4" selected>Primary 4</option>
-              <option value="primary-5">Primary 5</option>
-              <option value="primary-6">Primary 6</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Messages area -->
-        <div
-          class="chat-messages"
-          id="chat-messages"
-          style="height:400px;padding:var(--space-5);display:flex;flex-direction:column;gap:var(--space-4);"
-          aria-live="polite"
-          aria-label="Chat messages"
-        ></div>
-
-        <!-- Input bar -->
-        <div class="chat-input-bar" style="border-top:1px solid var(--border);">
-          <input
-            type="text"
-            id="chat-input"
-            class="chat-input"
-            placeholder="Ask your tutor anything…"
-            autocomplete="off"
-            aria-label="Message input"
-            maxlength="500"
-          />
-          <button class="btn btn-primary" id="chat-send" aria-label="Send message">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
-            </svg>
-          </button>
-        </div>
+         </div>
+         <span class="badge badge-success">Online</span>
       </div>
 
-      <!-- Suggested starter questions -->
-      <div class="mt-6">
-        <p class="text-secondary text-sm" style="margin-bottom:var(--space-3);">Try asking:</p>
-        <div class="flex gap-2" style="flex-wrap:wrap;" id="starter-prompts">
-          <button class="btn btn-secondary btn-sm starter-prompt">Miss Wena, I keep getting fractions wrong — can you help?</button>
-          <button class="btn btn-secondary btn-sm starter-prompt">How do I write a good PSLE comprehension inference answer?</button>
-          <button class="btn btn-secondary btn-sm starter-prompt">What's the difference between mass and weight in Science?</button>
-          <button class="btn btn-secondary btn-sm starter-prompt">Miss Wena, how do I know when to use 'who' or 'whom'?</button>
-        </div>
+      <!-- Messages Area -->
+      <div id="chat-messages" class="flex-1 p-6 chat-scroll-area flex flex-col gap-4 overflow-y-auto bg-page">
+         <!-- Bubbles injected by JS -->
+      </div>
+
+      <!-- Interaction Bar -->
+      <div class="p-4 bg-surface" style="border-top: 1px solid var(--border-light);">
+         
+         <div class="flex justify-between items-center mb-3">
+            <span class="text-xs font-bold text-muted uppercase tracking-wider">💡 Tip: Draw your working to get better help!</span>
+            <div class="flex gap-2">
+               <button id="modeTextBtn" class="btn btn-sm" style="background: var(--sage-dark); color: white;">⌨️ Type</button>
+               <button id="modeDrawBtn" class="btn btn-sm btn-ghost">✏️ Pen Tool</button>
+            </div>
+         </div>
+         
+         <!-- Canvas Area -->
+         <div id="drawArea" class="scratchpad-container">
+            <canvas id="tutorCanvas" class="scratchpad-canvas"></canvas>
+            <div style="position: absolute; top: 8px; right: 8px;">
+               <button class="btn btn-sm btn-ghost bg-surface hover-lift border border-light" onclick="window.clearCanvas()">🗑️ Clear</button>
+            </div>
+         </div>
+
+         <!-- Text Input & Send -->
+         <div class="flex gap-2">
+            <input type="text" id="chat-input" class="form-input flex-1" placeholder="Ask your tutor anything..." autocomplete="off">
+            <button id="chat-send" class="btn btn-primary hover-lift px-6">Send</button>
+         </div>
+      </div>
+    </div>
+
+    <!-- Smart Starter Prompts -->
+    <div class="mt-6 mb-8">
+      <p class="text-xs font-bold text-muted uppercase tracking-wider mb-3">Try asking about any subject:</p>
+      <div class="flex flex-wrap gap-2" id="starter-prompts">
+        <button class="btn btn-secondary btn-sm starter-prompt hover-lift">How do I draw a before-after bar model?</button>
+        <button class="btn btn-secondary btn-sm starter-prompt hover-lift">Test my Science Claim-Evidence-Reasoning!</button>
+        <button class="btn btn-secondary btn-sm starter-prompt hover-lift">Check my grammar for this sentence.</button>
       </div>
     </div>
   </main>
 
-  <footer class="footer">
-    <div class="container">
-      <div class="footer-bottom">
-        <p>&copy; 2026 Superholic Lab. 🇸🇬 Made in Singapore</p>
-        <div class="flex gap-4">
-          <a href="privacy.html">Privacy</a>
-          <a href="terms.html">Terms</a>
-          <a href="contact.html">Contact</a>
-        </div>
-      </div>
-    </div>
-  </footer>
+  <global-footer></global-footer>
 
-  <nav class="bottom-nav" aria-label="Mobile navigation">
+  <!-- Bottom Nav -->
+  <nav class="bottom-nav" id="bottomNav" aria-label="Mobile navigation">
     <a href="subjects.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
-        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
       Practise
     </a>
-    <a href="tutor.html" class="bottom-nav-item is-active" aria-current="page">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
-        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
-      </svg>
+    <a href="tutor.html" class="bottom-nav-item is-active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
       AI Tutor
     </a>
     <a href="exam.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
-        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
-        <rect x="9" y="3" width="6" height="4" rx="2"/>
-        <path d="M9 12h6M9 16h4"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="M9 12h6M9 16h4"/></svg>
       Exam
     </a>
     <a href="progress.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
-        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
       Progress
     </a>
   </nav>
 
   <script src="../js/supabase-client.js"></script>
-  <script src="../js/auth.js"></script>
   <script src="../js/tutor.js"></script>
-  <script>
-    // Wire up starter prompt chips to the chat input
-    document.querySelectorAll('.starter-prompt').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const input = document.getElementById('chat-input');
-        if (input && !input.disabled) {
-          input.value = btn.textContent;
-          input.focus();
-        }
-      });
-    });
-  </script>
-   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      /* ── 1. Dropdown Toggle Logic ── */
-      const toggle = document.getElementById('navToggle');
-      const dropdown = document.getElementById('navDropdown');
-      
-      if (toggle && dropdown) {
-        toggle.addEventListener('click', (e) => {
-          e.stopPropagation();
-          dropdown.classList.toggle('is-open');
-          toggle.classList.toggle('is-active'); 
-        });
-        document.addEventListener('click', (e) => {
-          if (!dropdown.contains(e.target) && !toggle.contains(e.target)) {
-            dropdown.classList.remove('is-open');
-            toggle.classList.remove('is-active');
-          }
-        });
-      }
-
-      /* ── 2. Master Auth & Layout Logic ── */
-      getSupabase().then(async function(sb) {
-        try {
-          const { data: { session } } = await sb.auth.getSession();
-          const body = document.getElementById('mainBody');
-          const bottomNav = document.getElementById('bottomNav');
-          const authContainer = document.getElementById('auth-header-container');
-          const navLinks = document.getElementById('navLinks');
-
-          if (session) {
-            // User is Logged In: Inject UI classes and reveal sidebar
-            body.classList.add('is-logged-in', 'has-bottom-nav');
-            if (bottomNav) bottomNav.hidden = false;
-            
-            if (authContainer) {
-              authContainer.innerHTML = '<a href="dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a>';
-            }
-
-            if (navLinks && !document.getElementById('navSignOut')) {
-              const signOut = document.createElement('a');
-              signOut.id = "navSignOut";
-              signOut.href = "#";
-              signOut.textContent = "Sign Out";
-              signOut.style.color = "var(--rose)";
-              signOut.onclick = async (e) => { 
-                e.preventDefault();
-                await sb.auth.signOut(); 
-                window.location.href = '../index.html'; 
-              };
-              navLinks.appendChild(signOut);
-              
-              const signUpLink = document.getElementById('navSignUp');
-              if (signUpLink) signUpLink.remove();
-            }
-          } else {
-            // User is Guest: Ensure app-specific layout shifts are disabled
-            body.classList.remove('is-logged-in', 'has-bottom-nav');
-            if (bottomNav) bottomNav.hidden = true;
-          }
-        } catch (e) {
-          console.error('Master auth script failed:', e);
-        }
-      });
-    });
-  </script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      
-      if (urlParams.get('intent') === 'remedial') {
-        const topic = urlParams.get('topic').replace(/-/g, ' ');
-        const score = urlParams.get('score');
-        
-        // 1. Show a friendly banner to the student
-        const chatArea = document.getElementById('chat-messages'); // Assuming this is your chat container ID
-        if (chatArea) {
-          const banner = document.createElement('div');
-          banner.className = 'card';
-          banner.style.cssText = 'background: rgba(183,110,121,0.1); border-left: 4px solid var(--rose); padding: var(--space-3); margin-bottom: var(--space-4); text-align:center;';
-          banner.innerHTML = `<strong style="color:var(--rose);">Remedial Session: ${topic.toUpperCase()}</strong><br><span class="text-secondary text-sm">Miss Wena has prepared a special lesson for you!</span>`;
-          chatArea.appendChild(banner);
-        }
-
-        // 2. Secretly inject the system prompt into your chat state
-        // (You will need to pass this string into whatever function you use to send messages to the /api/chat endpoint)
-        const systemInjection = `SYSTEM INSTRUCTION: The student scored ${score}% in ${topic}. Initiate a friendly, highly-encouraging remedial session. Do NOT give them a quiz yet. Explain the basics of ${topic} using the Singapore Model Method, then ask a simple checking question to see if they understand.`;
-        
-        // Example execution (Depends on how your tutor.js is wired):
-        // window.sendToAI(systemInjection, { isHiddenSystemMessage: true });
-      }
-    });
-  </script>
 </body>
 </html>

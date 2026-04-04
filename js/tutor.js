@@ -1,240 +1,244 @@
 /**
  * tutor.js
- * AI tutor chat logic for pages/tutor.html.
- *
- * Flow:
- *   1. Read ?subject=&level= URL params (set by quiz page or subject selector)
- *   2. Render welcome message from tutor
- *   3. User types question → POST to /api/chat with full conversation history
- *   4. Render assistant reply as chat bubble
- *   5. Track ai_tutor_messages in daily_usage (trial users: limit 10/day)
- *
- * TEST: Open pages/tutor.html?subject=mathematics&level=primary-4
- *   Type "What is a fraction?" and verify an AI response appears.
+ * Omni-Tutor 3.0 Chat Logic with Multi-modal Canvas Support.
  */
 
 (() => {
-  // ── Constants ──────────────────────────────────────────────────
-  const TRIAL_AI_LIMIT = 10; // max AI messages per day on trial
-
-  const WELCOME_MESSAGES = {
-    mathematics: "Heyy! I'm Miss Wena, your Maths tutor. 😊 What are we working on today? Fractions, word problems, geometry — nothing is too hard once we break it down step by step. What's giving you trouble?",
-    science:     "Hello! Miss Wena here, your Science guide! 🔬 Science is all about asking WHY — and that's exactly what we'll do together. Which topic are you exploring today? Let's make sure you know the exact keywords the PSLE examiner is looking for.",
-    english:     "Hi there! It's Miss Wena. 📖 English is my favourite because it teaches you to think, not just remember. Are you working on comprehension, composition, or grammar? Tell me what's confusing you and we'll figure it out together, okay?",
-    general:     "Hello! I'm Miss Wena, your AI tutor here at Superholic Lab. 😊 I'm here to help you understand — not just give you answers. What subject are we tackling today? Ask me anything!",
-  };
-
-  // ── DOM refs ───────────────────────────────────────────────────
-  const chatMessages  = document.getElementById('chat-messages');
-  const chatInput     = document.getElementById('chat-input');
-  const sendBtn       = document.getElementById('chat-send');
-  const subjectTabs   = document.querySelectorAll('[data-subject]');
-  const levelSelect   = document.getElementById('level-select');
-  const headerSubject = document.getElementById('tutor-subject-label');
-  const limitBanner   = document.getElementById('tutor-limit-banner');
-
-  // ── State ──────────────────────────────────────────────────────
-  let currentSubject  = 'mathematics';
-  let currentLevel    = 'primary-4';
-  let history         = []; // [{ role: 'user'|'assistant', content: string }]
-  let isLoading       = false;
+  const TRIAL_AI_LIMIT = 10;
+  let history = [];
+  let isLoading = false;
   let currentStudentId = null;
+  
+  // Canvas State
+  let isDrawMode = false;
+  let ctx = null;
+  let isDrawing = false;
+  let canvasHasContent = false;
 
-  // ── Init ────────────────────────────────────────────────────────
+  // DOM
+  const chatMessages = document.getElementById('chat-messages');
+  const chatInput = document.getElementById('chat-input');
+  const sendBtn = document.getElementById('chat-send');
+  const modeTextBtn = document.getElementById('modeTextBtn');
+  const modeDrawBtn = document.getElementById('modeDrawBtn');
+  const drawArea = document.getElementById('drawArea');
+  const canvas = document.getElementById('tutorCanvas');
+  const limitBanner = document.getElementById('tutor-limit-banner');
+
   document.addEventListener('DOMContentLoaded', init);
 
   async function init() {
-    // Read URL params set by quiz page or direct link
-    const params = new URLSearchParams(window.location.search);
-    currentSubject = (params.get('subject') || 'mathematics').toLowerCase();
-    currentLevel   = (params.get('level')   || 'primary-4').toLowerCase();
+    initCanvas();
 
-    // Sync UI to params
-    setActiveSubjectTab(currentSubject);
-    if (levelSelect) {
-      const match = Array.from(levelSelect.options).find(o => o.value === currentLevel);
-      if (match) levelSelect.value = currentLevel;
-    }
+    // Starter Prompts wiring
+    document.querySelectorAll('.starter-prompt').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (!chatInput.disabled) {
+          chatInput.value = btn.textContent;
+          chatInput.focus();
+        }
+      });
+    });
 
-    // Load student for daily usage tracking
-    try {
-      const user = await getCurrentUser();
-      if (user) {
-        const db = await getSupabase();
-        const { data: students } = await db
-          .from('students')
-          .select('id')
-          .eq('parent_id', user.id)
-          .limit(1);
-        if (students?.length) currentStudentId = students[0].id;
-      }
-    } catch { /* non-blocking */ }
+    // Check student usage & Remedial intent
+    checkStudentLimits();
+    handleRemedialIntent();
 
-    // Show welcome message
-    appendBubble('assistant', WELCOME_MESSAGES[currentSubject] || WELCOME_MESSAGES.general);
-    updateHeaderLabel();
+    // Welcome message
+    appendBubble('assistant', "Hello! I'm Miss Wena. 😊 I'm your Omni-Tutor, so you can ask me about Mathematics, Science, or English all in one place! Need help with a bar model, a science experiment, or grammar? Let's figure it out together!");
   }
 
-  // ── Subject tabs ───────────────────────────────────────────────
-  subjectTabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      const subject = tab.dataset.subject;
-      if (subject === currentSubject) return;
-      currentSubject = subject;
-      setActiveSubjectTab(subject);
-      updateHeaderLabel();
-      // Reset conversation for new subject
-      history = [];
-      clearMessages();
-      appendBubble('assistant', WELCOME_MESSAGES[subject] || WELCOME_MESSAGES.general);
-    });
+  // ── Canvas Pen Tool Logic ──
+  function initCanvas() {
+    const getPos = (e) => {
+      const r = canvas.getBoundingClientRect();
+      const x = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
+      const y = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
+      return { x, y };
+    };
+
+    const start = (e) => { isDrawing = true; canvasHasContent = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); e.preventDefault(); };
+    const draw = (e) => { if (!isDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); e.preventDefault(); };
+    const stop = () => { if(isDrawing) isDrawing = false; };
+
+    canvas.addEventListener('mousedown', start); canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stop); canvas.addEventListener('mouseout', stop);
+    canvas.addEventListener('touchstart', start, {passive: false});
+    canvas.addEventListener('touchmove', draw, {passive: false});
+    canvas.addEventListener('touchend', stop);
+  }
+
+  window.clearCanvas = () => {
+    if(ctx) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      canvasHasContent = false;
+    }
+  };
+
+  // ── Mode Toggles ──
+  modeTextBtn.addEventListener('click', () => {
+    isDrawMode = false;
+    drawArea.classList.remove('is-open');
+    modeTextBtn.style.background = 'var(--sage-dark)'; modeTextBtn.style.color = 'white';
+    modeDrawBtn.style.background = 'transparent'; modeDrawBtn.style.color = 'var(--text-muted)';
   });
 
-  function setActiveSubjectTab(subject) {
-    subjectTabs.forEach(t => {
-      const isActive = t.dataset.subject === subject;
-      t.className = isActive
-        ? 'btn btn-primary btn-sm'
-        : 'btn btn-secondary btn-sm';
-    });
-  }
+  modeDrawBtn.addEventListener('click', () => {
+    isDrawMode = true;
+    drawArea.classList.add('is-open');
+    modeDrawBtn.style.background = 'var(--sage-dark)'; modeDrawBtn.style.color = 'white';
+    modeTextBtn.style.background = 'transparent'; modeTextBtn.style.color = 'var(--text-muted)';
+    
+    // Resize canvas safely after display block
+    const rect = canvas.parentElement.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = 200;
+    ctx = canvas.getContext('2d');
+    ctx.lineWidth = 2.5; 
+    ctx.lineCap = 'round'; 
+    ctx.strokeStyle = '#2C3E3A';
+  });
 
-  if (levelSelect) {
-    levelSelect.addEventListener('change', () => {
-      currentLevel = levelSelect.value;
-    });
-  }
-
-  // ── Send message ───────────────────────────────────────────────
+  // ── Chat Logic ──
   sendBtn.addEventListener('click', handleSend);
-  chatInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  });
+  chatInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } });
 
   async function handleSend() {
     if (isLoading) return;
     const text = chatInput.value.trim();
-    if (!text) return;
+    const hasImage = isDrawMode && canvasHasContent;
+    
+    if (!text && !hasImage) return;
 
-    // Check trial daily limit
-    if (currentStudentId) {
-      try {
-        const usage = await checkDailyUsage(currentStudentId);
-        if (usage.ai_tutor_messages >= TRIAL_AI_LIMIT) {
-          showLimitBanner();
-          return;
-        }
-      } catch { /* continue — don't block on usage check failure */ }
-    }
+    // Fast fail for limits
+    if (limitBanner && !limitBanner.classList.contains('hidden')) return;
 
-    chatInput.value = '';
-    chatInput.disabled = true;
-    sendBtn.disabled   = true;
     isLoading = true;
+    chatInput.disabled = true;
+    sendBtn.disabled = true;
 
-    // Append user bubble
-    appendBubble('user', text);
+    // Grab image data if present
+    const imageData = hasImage ? canvas.toDataURL('image/png') : null;
 
-    // Add to history
-    history.push({ role: 'user', content: text });
-
-    // Show typing indicator
+    // UI Updates
+    appendBubble('user', text, imageData);
+    history.push({ role: 'user', content: text, image: imageData });
+    
+    chatInput.value = '';
+    if (hasImage) window.clearCanvas(); // reset for next turn
+    
     const typingEl = appendTyping();
 
     try {
       const res = await fetch('/api/chat', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({
-          subject:  currentSubject,
-          messages: history,
-        }),
+        body:    JSON.stringify({ messages: history }),
       });
 
       const data = await res.json();
-
       typingEl.remove();
 
       if (!res.ok || data.error) {
         appendBubble('assistant', data.error || 'Sorry, something went wrong. Please try again.');
-        // Remove the last user message from history so they can retry
-        history.pop();
+        history.pop(); // Remove failed user message
       } else {
         appendBubble('assistant', data.reply);
         history.push({ role: 'assistant', content: data.reply });
-
-        // Track usage for trial users
-        if (currentStudentId) {
-          incrementDailyUsage(currentStudentId, 'ai_tutor_messages').catch(() => {});
-        }
+        
+        if (currentStudentId) incrementDailyUsage(currentStudentId, 'ai_tutor_messages').catch(()=>{});
       }
     } catch (err) {
       typingEl.remove();
-      appendBubble('assistant', 'Could not reach the tutor. Please check your connection and try again.');
+      appendBubble('assistant', 'Could not reach the tutor. Please check your connection.');
       history.pop();
-      console.error('[tutor]', err);
     } finally {
-      isLoading          = false;
+      isLoading = false;
       chatInput.disabled = false;
-      sendBtn.disabled   = false;
+      sendBtn.disabled = false;
       chatInput.focus();
     }
   }
 
-  // ── DOM helpers ────────────────────────────────────────────────
+  // ── DOM Helpers ──
+  function formatMessage(text) {
+    // Escapes HTML then replaces **bold** with the branded strong tag
+    let safe = String(text).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return safe.replace(/\*\*(.*?)\*\*/g, '<strong class="text-rose">$1</strong>');
+  }
 
-  /**
-   * Appends a chat bubble to the messages container.
-   * Uses textContent to set message text — safe against XSS.
-   * Preserves line breaks from the API response.
-   */
-  function appendBubble(role, text) {
+  function appendBubble(role, text, imageBase64 = null) {
     const bubble = document.createElement('div');
-    bubble.className = `chat-bubble chat-bubble-${role === 'user' ? 'user' : 'tutor'}`;
+    bubble.className = `chat-bubble-${role}`;
 
-    // Split on newlines and create text nodes separated by <br> elements
-    const lines = String(text).split('\n');
-    lines.forEach((line, i) => {
-      bubble.appendChild(document.createTextNode(line));
-      if (i < lines.length - 1) bubble.appendChild(document.createElement('br'));
-    });
+    // Add Image if present
+    if (imageBase64) {
+      const img = document.createElement('img');
+      img.src = imageBase64;
+      img.className = 'w-full h-auto bg-white rounded border border-light mb-2';
+      bubble.appendChild(img);
+    }
+
+    // Add Text (parsing newlines and bold syntax)
+    if (text) {
+      const textContainer = document.createElement('div');
+      const lines = String(text).split('\n');
+      lines.forEach((line, i) => {
+        const span = document.createElement('span');
+        span.innerHTML = formatMessage(line);
+        textContainer.appendChild(span);
+        if (i < lines.length - 1) textContainer.appendChild(document.createElement('br'));
+      });
+      bubble.appendChild(textContainer);
+    }
 
     chatMessages.appendChild(bubble);
-    scrollToBottom();
+    chatMessages.scrollTop = chatMessages.scrollHeight;
     return bubble;
   }
 
-  /** Shows an animated three-dot typing indicator. */
   function appendTyping() {
     const el = document.createElement('div');
     el.className = 'chat-typing';
-    el.setAttribute('aria-label', 'Tutor is typing');
     el.innerHTML = '<span></span><span></span><span></span>';
     chatMessages.appendChild(el);
-    scrollToBottom();
+    chatMessages.scrollTop = chatMessages.scrollHeight;
     return el;
   }
 
-  function clearMessages() {
-    chatMessages.innerHTML = '';
+  // ── Context & Limit Handling ──
+  async function checkStudentLimits() {
+    try {
+      const user = await getCurrentUser();
+      if (!user) return;
+      const db = await getSupabase();
+      const { data: students } = await db.from('students').select('id').eq('parent_id', user.id).limit(1);
+      if (students?.length) {
+        currentStudentId = students[0].id;
+        const usage = await checkDailyUsage(currentStudentId);
+        if (usage && usage.ai_tutor_messages >= TRIAL_AI_LIMIT) {
+          limitBanner.classList.remove('hidden');
+        }
+      }
+    } catch {}
   }
 
-  function scrollToBottom() {
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-  }
+  function handleRemedialIntent() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('intent') === 'remedial' && params.get('topic')) {
+      const banner = document.getElementById('remedial-banner');
+      const topicEl = document.getElementById('quest-topic-name');
+      const topic = params.get('topic').replace(/-/g, ' ');
+      
+      topicEl.textContent = topic;
+      banner.classList.remove('hidden');
 
-  function updateHeaderLabel() {
-    if (!headerSubject) return;
-    const labels = { mathematics: 'Mathematics', science: 'Science', english: 'English' };
-    headerSubject.textContent = labels[currentSubject] || 'General';
-  }
-
-  function showLimitBanner() {
-    if (!limitBanner) return;
-    limitBanner.hidden = false;
-    limitBanner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      // Secretly inject system context for Miss Wena
+      const score = params.get('score');
+      history.push({
+        role: 'user',
+        content: `SYSTEM CONTEXT: The student scored ${score}% in ${topic}. Initiate a highly-encouraging remedial session. Break down the basics step-by-step and ask a simple checking question.`
+      });
+    }
   }
 })();
