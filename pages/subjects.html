@@ -104,7 +104,6 @@
 window.initSubjectsEngine = function() {
   'use strict';
 
-  // These are the questions currently mapped and available in the DB
   const TOPIC_MAP = {
     'primary-1:mathematics': ['whole-numbers'],
     'primary-3:science':     ['diversity'],
@@ -116,11 +115,26 @@ window.initSubjectsEngine = function() {
     'primary-6:english':     ['grammar','cloze','editing'],
   };
 
-  // The comprehensive list to display the premium syllabus UI
-  const ALL_TOPICS = {
-    mathematics: ['Whole Numbers', 'Fractions', 'Decimals', 'Percentage', 'Ratio', 'Geometry', 'Measurement', 'Volume', 'Rate', 'Speed', 'Data Analysis', 'Algebra'],
-    science: ['Diversity', 'Cycles', 'Systems', 'Energy', 'Interactions', 'Cells', 'Forces', 'Heat', 'Light', 'Magnets', 'Matter'],
-    english: ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing', 'Synthesis']
+  // NEW: Strict Syllabus Map to prevent P1 from seeing Algebra
+  const SYLLABUS_MAP = {
+    'primary-1:mathematics': ['Whole Numbers', 'Addition and Subtraction', 'Length', 'Time', 'Money', 'Picture Graphs'],
+    'primary-2:mathematics': ['Whole Numbers', 'Addition and Subtraction', 'Multiplication and Division', 'Length', 'Mass', 'Volume', 'Time', 'Money', 'Fractions', 'Picture Graphs'],
+    'primary-3:mathematics': ['Whole Numbers', 'Addition and Subtraction', 'Multiplication and Division', 'Money', 'Length, Mass and Volume', 'Bar Graphs', 'Fractions', 'Time', 'Geometry', 'Area and Perimeter'],
+    'primary-4:mathematics': ['Whole Numbers', 'Fractions', 'Decimals', 'Measurement', 'Geometry', 'Data Analysis'],
+    'primary-5:mathematics': ['Whole Numbers', 'Fractions', 'Decimals', 'Percentage', 'Ratio', 'Geometry', 'Measurement', 'Volume', 'Data Analysis'],
+    'primary-6:mathematics': ['Fractions', 'Percentage', 'Ratio', 'Speed', 'Measurement', 'Geometry', 'Algebra', 'Data Analysis', 'Pie Charts'],
+    
+    'primary-3:science': ['Diversity', 'Systems', 'Interactions'],
+    'primary-4:science': ['Cycles', 'Energy', 'Heat', 'Light', 'Magnets', 'Matter'],
+    'primary-5:science': ['Cycles', 'Systems', 'Energy', 'Interactions'],
+    'primary-6:science': ['Interactions', 'Energy', 'Cells', 'Forces'],
+    
+    'primary-1:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze'],
+    'primary-2:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze'],
+    'primary-3:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing'],
+    'primary-4:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing'],
+    'primary-5:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing', 'Synthesis'],
+    'primary-6:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing', 'Synthesis']
   };
 
   const TYPE_MAP = {
@@ -148,9 +162,12 @@ window.initSubjectsEngine = function() {
   function titleCase(s) { return s.replace(/-/g,' ').replace(/\b\w/g, c => c.toUpperCase()); }
 
   function renderSubject() {
+    // FIX: Hide Science for Primary 1 and Primary 2
+    const isJunior = state.level.toLowerCase().includes('primary 1') || state.level.toLowerCase().includes('primary 2');
+    
     const subjects = [
       { id: 'mathematics', icon: '📐', label: 'Mathematics', tag: 'P1–P6' },
-      { id: 'science', icon: '🔬', label: 'Science', tag: 'P3–P6' },
+      ...(isJunior ? [] : [{ id: 'science', icon: '🔬', label: 'Science', tag: 'P3–P6' }]),
       { id: 'english', icon: '📖', label: 'English', tag: 'P1–P6' }
     ];
 
@@ -171,7 +188,6 @@ window.initSubjectsEngine = function() {
         <h1 class="font-display text-4xl text-main">Choose a Subject</h1>
         <p class="text-muted text-lg mt-2">${esc(state.level)} — Select your mission</p>
       </div>
-      <!-- Fixed: CSS Grid forces 1 single row for the 3 subjects -->
       <div class="w-full" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-6);">
         ${cards}
       </div>`;
@@ -184,7 +200,9 @@ window.initSubjectsEngine = function() {
   function renderTopic() {
     const key = state.level.toLowerCase().replace(' ','-') + ':' + state.subject;
     const activeTopics = TOPIC_MAP[key] || [];
-    const allTopicsForSubj = ALL_TOPICS[state.subject] || [];
+    
+    // FIX: Pull exact syllabus for the specific level, fallback to empty
+    const allTopicsForSubj = SYLLABUS_MAP[key] || [];
     const stepText = state.tier === 'single_subject' ? 'Step 1 of 2' : 'Step 2 of 3';
 
     const buildCard = (id, title, sub, isSelected, isLocked) => `
@@ -283,7 +301,6 @@ window.initSubjectsEngine = function() {
       const urlParams = new URLSearchParams(window.location.search);
       const urlStudentId = urlParams.get('student');
       
-      // FIXED: Specifically fetch the student passed in the URL params
       let query = sb.from('students').select('id, level, selected_subject').eq('parent_id', profile.id);
       if (urlStudentId) {
         query = query.eq('id', urlStudentId);
@@ -294,6 +311,15 @@ window.initSubjectsEngine = function() {
       state.level = student?.level || 'Primary 4';
       state.tier = profile.subscription_tier || 'trial';
       state.studentId = student?.id || null;
+
+      // FIX: Maintain URL state on navbar links
+      if (state.studentId) {
+        document.querySelectorAll('.bottom-nav-item').forEach(link => {
+          const url = new URL(link.href, window.location.origin);
+          url.searchParams.set('student', state.studentId);
+          link.href = url.pathname + url.search;
+        });
+      }
 
       if (state.tier === 'single_subject' && student?.selected_subject) {
         state.subject = student.selected_subject.toLowerCase();
