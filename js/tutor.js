@@ -122,6 +122,9 @@
 
     // UI Updates
     appendBubble('user', text, imageData);
+    
+    // Fix 500 Error: Strip old images from history to prevent Vercel 4.5MB payload crashes
+    history.forEach(msg => msg.image = null);
     history.push({ role: 'user', content: text, image: imageData });
     
     chatInput.value = '';
