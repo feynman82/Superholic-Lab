@@ -994,14 +994,14 @@ function renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subject
         subTopics.forEach(t => {
           const topicLabel = t.topic.replace(/-/g, ' ');
           weakHtml.push(`
-            <div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:var(--space-3) var(--space-4); flex-wrap:wrap; gap:10px;">
+            <div class="card hover-lift" style="display:flex; justify-content:space-between; align-items:center; padding:var(--space-3) var(--space-4); flex-wrap:wrap; gap:10px; margin-bottom:var(--space-2);">
               <div>
                 <span style="font-size:1.2rem; margin-right:8px;">${t.pct < 45 ? '🔴' : '🟠'}</span>
-                <strong style="color:var(--cream); text-transform:capitalize;">${topicLabel}</strong> 
-                <span class="text-secondary text-sm"> — ${t.pct}% (${getALBand(t.pct)})</span>
+                <strong class="text-main" style="text-transform:capitalize;">${topicLabel}</strong> 
+                <span class="text-muted text-sm"> — ${t.pct}% (${getALBand(t.pct)})</span>
               </div>
               <div style="display:flex; gap:10px;">
-                 <a href="tutor.html?intent=remedial&subject=${t.subject}&topic=${t.topic}&score=${t.pct}" class="btn btn-secondary btn-sm" style="border-color:var(--rose); color:var(--rose);">Ask Miss Wena</a>
+                 <a href="tutor.html?intent=remedial&subject=${t.subject}&topic=${t.topic}&score=${t.pct}" class="btn btn-secondary btn-sm" style="border-color:var(--brand-rose); color:var(--brand-rose);">Ask Miss Wena</a>
                  <button class="btn btn-primary btn-sm" onclick="generateQuest(getSupabase(), '${session?.access_token}', {id:'${student.id}', level:'${student.level}'}, '${t.topic}', '${t.subject}', ${t.pct}, '${t.lastAttemptId || ''}', this)" ${activeQuest ? 'disabled title="Complete active quest first"' : ''}>+ Plan Quest</button>
               </div>
             </div>`);
@@ -1009,7 +1009,7 @@ function renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subject
       }
     });
 
-    weaknessList.innerHTML = weakHtml.length > 0 ? weakHtml.join('') : '<div class="card" style="padding:var(--space-4); text-align:center; color:var(--mint);">🎉 Excellent! No weak areas detected (All topics AL1).</div>';
+    weaknessList.innerHTML = weakHtml.length > 0 ? weakHtml.join('') : '<div class="card p-6 text-center text-success font-bold">🎉 Excellent! No weak areas detected (All topics AL1).</div>';
   }
 
   // 3. LAYER 3: Subject Breakdown & Deep Dive
@@ -1019,28 +1019,28 @@ function renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subject
       const pct = stats.total > 0 ? Math.round((stats.earned / stats.total) * 100) : 0;
       if (pct === 0 && stats.total === 0) return '';
       const band = getALBand(pct);
-      const colour = pct >= 75 ? 'var(--mint)' : pct >= 50 ? 'var(--amber)' : 'var(--danger)';
+      const colour = pct >= 75 ? 'var(--brand-mint)' : pct >= 50 ? 'var(--brand-amber)' : 'var(--brand-error)';
       
       return `
-        <div class="card" style="padding:var(--space-4);">
+        <div class="card hover-lift" style="padding:var(--space-4); margin-bottom:var(--space-3);">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-2);">
-            <strong style="font-size:1.2rem; color:var(--cream); text-transform:capitalize;">${sub}</strong>
+            <strong class="text-main" style="font-size:1.2rem; text-transform:capitalize;">${sub}</strong>
             <span class="badge ${pct >= 75 ? 'badge-success' : pct >= 50 ? 'badge-amber' : 'badge-danger'}">${pct}% correct · ${band}</span>
           </div>
-          <div style="height:6px; background:var(--glass-border); border-radius:3px; overflow:hidden; margin-bottom:var(--space-4);">
+          <div style="height:6px; background:var(--border-light); border-radius:3px; overflow:hidden; margin-bottom:var(--space-4);">
             <div style="height:100%; width:${pct}%; background:${colour};"></div>
           </div>
           <button class="btn btn-ghost btn-sm btn-full" onclick="toggleDeepDive('${student.id}', '${sub}', this, ${stats.quizzes || 0})">View More Details ↓</button>
-          <div id="deep-dive-${sub}" style="display:none; margin-top:var(--space-4); padding:var(--space-3); border-radius:var(--radius-md); background:rgba(0,0,0,0.15); border:1px solid var(--glass-border); font-size:0.9rem; color:var(--cream); line-height:1.5;">
-             <div style="text-align:center; padding:var(--space-2); color:var(--sage-light);">
-               <span class="spinner-sm" style="width:14px;height:14px;border-width:2px;display:inline-block;margin-right:8px;"></span> Analyzing performance...
+          <div id="deep-dive-${sub}" style="display:none; margin-top:var(--space-4); padding:var(--space-4); border-radius:var(--radius-md); background:var(--bg-elevated); border:1px solid var(--border-light); font-size:0.9rem; color:var(--text-main); line-height:1.5;">
+             <div style="text-align:center; padding:var(--space-2); color:var(--text-muted);">
+               <span class="spinner-sm" style="width:14px;height:14px;border-width:2px;display:inline-block;margin-right:8px;border-top-color:var(--brand-rose);"></span> Analyzing performance...
              </div>
           </div>
         </div>
       `;
     }).join('');
     
-    subjectBreakdownList.innerHTML = subjectHtml || '<p class="text-secondary">No subject data yet.</p>';
+    subjectBreakdownList.innerHTML = subjectHtml || '<p class="text-muted">No subject data yet.</p>';
   }
 
   // 4. LAYER 4: Statistics
@@ -1086,13 +1086,15 @@ window.toggleDeepDive = async function(studentId, subject, btnEl, quizCount) {
   if (container.dataset.loaded) return;
 
   container.innerHTML = `
-    <div style="text-align:center; padding:var(--space-2); color:var(--sage-light);">
-      <span class="spinner-sm" style="width:14px;height:14px;border-width:2px;display:inline-block;margin-right:8px;"></span> Generating Miss Wena's analysis...
+    <div style="text-align:center; padding:var(--space-2); color:var(--text-muted);">
+      <span class="spinner-sm" style="width:14px;height:14px;border-width:2px;display:inline-block;margin-right:8px;border-top-color:var(--brand-rose);"></span> Generating Miss Wena's analysis...
     </div>
   `;
 
   try {
-    const { data: { session } } = await window.getSupabase().auth.getSession();
+    // FIX: Await the Supabase client initialization before extracting the session
+    const sb = await window.getSupabase();
+    const { data: { session } } = await sb.auth.getSession();
     
     // Call our new backend endpoint
     const res = await fetch('/api/analyze-weakness', {
@@ -1105,13 +1107,13 @@ window.toggleDeepDive = async function(studentId, subject, btnEl, quizCount) {
     if (data.error) throw new Error(data.error);
 
     container.innerHTML = `
-      <strong style="color:var(--mint);display:block;margin-bottom:4px;">✨ Miss Wena's Analysis:</strong>
+      <strong style="color:var(--brand-mint);display:block;margin-bottom:4px;">✨ Miss Wena's Analysis:</strong>
       ${data.analysis}
     `;
     container.dataset.loaded = "true";
 
   } catch (err) {
-    container.innerHTML = `<div style="text-align:center; padding:var(--space-2); color:var(--danger);">Failed to load analysis. ${err.message}</div>`;
+    container.innerHTML = `<div style="text-align:center; padding:var(--space-2); color:var(--brand-error);">Failed to load analysis. ${err.message}</div>`;
     container.dataset.loaded = ""; // Allow retry
   }
 }
