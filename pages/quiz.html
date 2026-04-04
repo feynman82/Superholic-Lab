@@ -460,16 +460,84 @@ window.initQuizEngine = function() {
 
     try {
       const sb = await getSupabase();
-      await sb.from('exam_results').insert({
-        student_id: studentId,
-        subject: params.get('subject') || 'mathematics',
-        level: params.get('level') || 'primary-4',
-        exam_type: 'QUIZ',
-        score: state.score,
-        total_marks: state.questions.length,
-        questions_attempted: state.questions.length,
-        time_taken: state.quizStartTime ? Math.round((Date.now() - state.quizStartTime) / 1000) : null
+      
+      // 1. Determine primary topic for the quiz attempt record
+      const topicCounts = {};
+      state.questions.forEach(q => {
+        if (q.topic) topicCounts[q.topic] = (topicCounts[q.topic] || 0) + 1;
       });
+      const primaryTopic = Object.entries(topicCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || params.get('topic') || 'Mixed';
+
+      // 2. Insert into quiz_attempts (This powers the Progress Dashboard)
+      const { data: attempt, error: attErr } = await sb
+        .from('quiz_attempts')
+        .insert({
+          student_id:         studentId,
+          subject:            params.get('subject') || 'mathematics',
+          level:              params.get('level') || 'primary-4',
+          topic:              primaryTopic,
+          difficulty:         'Mixed',
+          score:              state.score,
+          total_questions:    state.questions.length,
+          time_taken_seconds: state.quizStartTime ? Math.round((Date.now() - state.quizStartTime) / 1000) : null,
+          completed_at:       new Date().toISOString(),
+        })
+        .select('id')
+        .single();
+
+      if (attErr) throw attErr;
+
+      // 3. Log individual question attempts for deep dive analytics
+      const qAttempts = state.questions.map((q, i) => {
+         const ans = state.answers[i];
+         let isCorrect = false;
+         
+         if (q.type === 'mcq') {
+           isCorrect = (ans === q.correct_answer);
+         } else {
+           const norm = (s) => String(s || '').toLowerCase().replace(/\s/g,'');
+           isCorrect = (norm(ans) === norm(q.correct_answer));
+         }
+         
+         return {
+           quiz_attempt_id: attempt.id,
+           student_id:      studentId,
+           question_text:   (q.question_text || '').slice(0, 500),
+           topic:           q.topic || primaryTopic,
+           difficulty:      q.difficulty || 'standard',
+           correct:         isCorrect,
+           answer_chosen:   String(ans || '').slice(0, 200),
+           correct_answer:  String(q.correct_answer || ''),
+         };
+      });
+
+      if (qAttempts.length > 0) {
+        await sb.from('question_attempts').insert(qAttempts);
+      }
+
+      // 4. Update daily_usage table for today's streaks and limits
+      const today = new Date().toISOString().slice(0, 10);
+      const { data: existingUsage } = await sb
+        .from('daily_usage')
+        .select('id, questions_attempted')
+        .eq('student_id', studentId)
+        .eq('date', today)
+        .maybeSingle();
+
+      const newCount = (existingUsage?.questions_attempted || 0) + state.questions.length;
+
+      if (!existingUsage) {
+        await sb.from('daily_usage').insert({
+          student_id:          studentId,
+          date:                today,
+          questions_attempted: newCount,
+        });
+      } else {
+        await sb.from('daily_usage')
+          .update({ questions_attempted: newCount })
+          .eq('id', existingUsage.id);
+      }
+      
     } catch (e) {
       console.error('Failed to save quiz result:', e);
     }
