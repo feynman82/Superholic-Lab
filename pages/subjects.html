@@ -138,19 +138,14 @@ window.initSubjectsEngine = function() {
   const state = { phase: 'INIT', level: '', subject: '', tier: '', topic: '', qtype: '', studentId: null };
   const app = document.getElementById('app');
 
-  function setState(updates) {
-    Object.assign(state, updates);
-    render();
-  }
-
-  function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-  function titleCase(s) { return s.replace(/-/g,' ').replace(/\b\w/g, c => c.toUpperCase()); }
-
   function render() {
     if (state.phase === 'SUBJECT') renderSubject();
     else if (state.phase === 'TOPIC') renderTopic();
     else if (state.phase === 'TYPE') renderType();
   }
+
+  function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function titleCase(s) { return s.replace(/-/g,' ').replace(/\b\w/g, c => c.toUpperCase()); }
 
   function renderSubject() {
     const subjects = [
@@ -162,7 +157,7 @@ window.initSubjectsEngine = function() {
     const cards = subjects.map(s => {
       const locked = state.tier === 'single_subject' && s.id !== state.subject;
       return `
-        <div class="card hover-lift flex flex-col items-center justify-center p-8 text-center flex-1 min-w-[200px] max-w-[250px] ${locked ? 'opacity-50' : 'cursor-pointer'}" 
+        <div class="card hover-lift flex flex-col items-center justify-center p-8 text-center ${locked ? 'opacity-50' : 'cursor-pointer'}" 
              ${locked ? '' : `onclick="window.pickSubject('${s.id}')"`}>
           <div class="text-4xl mb-4">${s.icon}</div>
           <h3 class="font-display text-2xl text-main">${s.label}</h3>
@@ -176,12 +171,15 @@ window.initSubjectsEngine = function() {
         <h1 class="font-display text-4xl text-main">Choose a Subject</h1>
         <p class="text-muted text-lg mt-2">${esc(state.level)} — Select your mission</p>
       </div>
-      <div class="w-full flex flex-wrap justify-center gap-6">
+      <!-- Fixed: CSS Grid forces 1 single row for the 3 subjects -->
+      <div class="w-full" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-6);">
         ${cards}
       </div>`;
   }
 
-  window.pickSubject = (subj) => setState({ subject: subj, topic: '', qtype: '', phase: 'TOPIC' });
+  window.pickSubject = (subj) => {
+    state.subject = subj; state.topic = ''; state.qtype = ''; state.phase = 'TOPIC'; render();
+  };
 
   function renderTopic() {
     const key = state.level.toLowerCase().replace(' ','-') + ':' + state.subject;
@@ -220,8 +218,8 @@ window.initSubjectsEngine = function() {
       </div>`;
   }
 
-  window.pickTopic = (t) => setState({ topic: t });
-  window.goToType = () => { if (state.topic) setState({ qtype: '', phase: 'TYPE' }); };
+  window.pickTopic = (t) => { state.topic = t; render(); };
+  window.goToType = () => { if (state.topic) { state.qtype = ''; state.phase = 'TYPE'; render(); } };
 
   function renderType() {
     const activeTypes = TYPE_MAP[state.subject] || [];
@@ -253,15 +251,16 @@ window.initSubjectsEngine = function() {
         ${mixedBtn} ${typeBtns}
       </div>
       <div class="w-full flex flex-col items-center gap-4" style="max-width: 400px;">
-        <button class="btn btn-primary btn-lg w-full hover-lift" ${!state.qtype ? 'disabled' : ''} onclick="window.launchQuiz()">Enter Training Dojo →</button>
+        <button class="btn btn-primary btn-lg w-full hover-lift" ${!state.qtype ? 'disabled' : ''} onclick="window.launchQuiz()">Enter Training Lab →</button>
         <button class="btn btn-ghost" onclick="window.goBack('TOPIC')">← Back to Topics</button>
       </div>`;
   }
 
-  window.pickType = (t) => setState({ qtype: t });
+  window.pickType = (t) => { state.qtype = t; render(); };
   window.goBack = (phase) => {
-    if (phase === 'SUBJECT') setState({ subject: '', topic: '', qtype: '', phase: 'SUBJECT' });
-    else if (phase === 'TOPIC') setState({ qtype: '', phase: 'TOPIC' });
+    if (phase === 'SUBJECT') { state.subject = ''; state.topic = ''; state.qtype = ''; state.phase = 'SUBJECT'; }
+    else if (phase === 'TOPIC') { state.qtype = ''; state.phase = 'TOPIC'; }
+    render();
   };
 
   window.launchQuiz = function () {
@@ -284,7 +283,7 @@ window.initSubjectsEngine = function() {
       const urlParams = new URLSearchParams(window.location.search);
       const urlStudentId = urlParams.get('student');
       
-      // Fetch specific student if passed via URL, else fetch the first one
+      // FIXED: Specifically fetch the student passed in the URL params
       let query = sb.from('students').select('id, level, selected_subject').eq('parent_id', profile.id);
       if (urlStudentId) {
         query = query.eq('id', urlStudentId);
@@ -292,15 +291,17 @@ window.initSubjectsEngine = function() {
       
       const { data: student } = await query.limit(1).single();
 
-      const level = student?.level || 'Primary 4';
-      const tier = profile.subscription_tier || 'trial';
-      const studentId = student?.id || null;
+      state.level = student?.level || 'Primary 4';
+      state.tier = profile.subscription_tier || 'trial';
+      state.studentId = student?.id || null;
 
-      if (tier === 'single_subject' && student?.selected_subject) {
-        setState({ level, tier, studentId, subject: student.selected_subject.toLowerCase(), phase: 'TOPIC' });
+      if (state.tier === 'single_subject' && student?.selected_subject) {
+        state.subject = student.selected_subject.toLowerCase();
+        state.phase = 'TOPIC';
       } else {
-        setState({ level, tier, studentId, phase: 'SUBJECT' });
+        state.phase = 'SUBJECT';
       }
+      render();
     } catch (err) {
       console.error(err);
       app.innerHTML = `<div class="card p-8 text-center text-danger font-bold">Could not load profile. Please refresh.</div>`;

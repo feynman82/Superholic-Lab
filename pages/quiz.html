@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Training Dojo — Superholic Lab</title>
+  <title>Training Lab — Superholic Lab</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -105,12 +105,6 @@ window.initQuizEngine = function() {
   function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
   function titleCase(s) { return s.replace(/-/g,' ').replace(/\b\w/g, c => c.toUpperCase()); }
 
-  // FIX: Restored setState helper so transitions & interactions don't crash
-  function setState(updates) {
-    Object.assign(state, updates);
-    render();
-  }
-
   function render() {
     switch(state.phase) {
       case 'LOAD': renderLoading(); break;
@@ -120,13 +114,13 @@ window.initQuizEngine = function() {
   }
 
   function renderLoading() {
-    app.innerHTML = `<div class="card p-10 flex flex-col items-center w-full max-w-[600px]"><div class="spinner-sm mb-4"></div><h2 class="font-display text-2xl text-main">Preparing Training Dojo...</h2><p class="text-sm text-muted mt-2">Loading MOE-aligned questions</p></div>`;
+    app.innerHTML = `<div class="card p-10 flex flex-col items-center w-full max-w-[600px]"><div class="spinner-sm mb-4"></div><h2 class="font-display text-2xl text-main">Preparing Training Lab...</h2><p class="text-sm text-muted mt-2">Loading MOE-aligned questions</p></div>`;
   }
 
   function renderQuiz() {
-    // FIX: Clean, graceful fallback if DB finds no questions for specific filters
+    // FIXED: Properly handles 0 questions without falling back to dummy data
     if (state.questions.length === 0) {
-      app.innerHTML = `<div class="card p-10 text-center max-w-[600px] w-full"><div class="text-4xl mb-4">🕵️</div><h2 class="font-display text-2xl text-main">No questions found!</h2><p class="text-muted text-sm my-4">We couldn't find questions for this specific combination yet.</p><button class="btn btn-primary hover-lift" onclick="window.location.href='subjects.html'">Return to Subjects</button></div>`;
+      app.innerHTML = `<div class="card p-10 text-center max-w-[600px] w-full hover-lift"><div class="text-4xl mb-4">🕵️</div><h2 class="font-display text-2xl text-main">No questions found!</h2><p class="text-muted text-sm my-4">Miss Wena hasn't added questions for this specific combination yet. Check back soon!</p><button class="btn btn-primary" onclick="window.location.href='subjects.html'">Return to Subjects</button></div>`;
       return;
     }
 
@@ -217,7 +211,7 @@ window.initQuizEngine = function() {
             
             ${!state.isAnswered 
               ? `<button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">Check Answer</button>`
-              : `<button class="btn btn-primary hover-lift" onclick="window.navQuiz(1)">${isLast ? 'Finish Dojo →' : 'Next Question →'}</button>`
+              : `<button class="btn btn-primary hover-lift" onclick="window.navQuiz(1)">${isLast ? 'Finish Lab →' : 'Next Question →'}</button>`
             }
           </div>
         </div>
@@ -233,14 +227,14 @@ window.initQuizEngine = function() {
   window.selectMcq = (letter) => {
     if (state.isAnswered) return;
     state.answers[state.currentIndex] = letter;
-    renderQuiz();
+    render();
   };
 
   window.setMode = (mode) => {
     if (state.isAnswered) return;
     saveInputState();
     state.drawings[state.currentIndex] = mode === 'draw' ? 'init' : 'text';
-    renderQuiz();
+    render();
   };
 
   function saveInputState() {
@@ -261,12 +255,14 @@ window.initQuizEngine = function() {
        state.currentIndex--;
        state.isAnswered = true; 
        state.feedback = null; 
-       renderQuiz();
+       render();
        return;
     }
 
+    // FIXED: Avoids ReferenceError by directly mutating state instead of calling setState
     if (state.currentIndex === state.questions.length - 1) {
-      setState({ phase: 'DONE' });
+      state.phase = 'DONE';
+      render();
       return;
     }
 
@@ -274,7 +270,7 @@ window.initQuizEngine = function() {
     state.currentIndex++;
     state.isAnswered = !!state.answers[state.currentIndex]; 
     state.feedback = null;
-    renderQuiz();
+    render();
   };
 
   window.checkAnswer = () => {
@@ -309,20 +305,142 @@ window.initQuizEngine = function() {
 
     state.isAnswered = true;
     state.feedback = { status: isCorrect ? 'correct' : 'wrong', text: fbText };
-    renderQuiz();
+    render();
   };
 
   function renderResults() {
-    saveQuizResult(); // Push score to Dashboard silently
+    saveQuizResult(); 
     
     const pct = Math.round((state.score / state.questions.length) * 100);
     app.innerHTML = `
       <div class="card p-10 flex flex-col items-center text-center max-w-[600px] w-full hover-lift border-t-4 border-mint" style="border-top: 4px solid var(--brand-mint);">
         <h1 class="font-display text-4xl text-main mb-2">Training Complete!</h1>
-        <p class="text-muted text-lg mb-6">You've successfully completed the dojo.</p>
+        <p class="text-muted text-lg mb-6">You've successfully completed the lab session.</p>
         
         <div class="flex gap-6 mb-8 w-full justify-center">
           <div class="card p-6 flex-1 max-w-[200px]" style="background: var(--bg-elevated); border: none;">
             <div class="text-sm font-bold text-muted uppercase">Score</div>
             <div class="font-display text-5xl text-success mt-2">${pct}%</div>
-            <div class="text
+            <div class="text-sm text-main mt-1">${state.score} / ${state.questions.length} Correct</div>
+          </div>
+          <div class="card p-6 flex-1 max-w-[200px]" style="background: rgba(217, 119, 6, 0.1); border: none;">
+            <div class="text-sm font-bold text-amber uppercase">Best Streak</div>
+            <div class="font-display text-5xl text-amber mt-2">🔥 ${state.maxStreak}</div>
+            <div class="text-sm text-amber mt-1">In a row!</div>
+          </div>
+        </div>
+
+        <div class="flex gap-4">
+          <button class="btn btn-primary" onclick="window.location.href='subjects.html'">Train Another Topic</button>
+          <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'">Mission Control</button>
+        </div>
+      </div>
+    `;
+  }
+
+  // ── SAVE RESULTS ──
+  async function saveQuizResult() {
+    const params = new URLSearchParams(window.location.search);
+    const studentId = params.get('student');
+    if (!studentId) return;
+
+    try {
+      const sb = await getSupabase();
+      await sb.from('exam_results').insert({
+        student_id: studentId,
+        subject: params.get('subject') || 'mathematics',
+        level: params.get('level') || 'primary-4',
+        exam_type: 'QUIZ',
+        score: state.score,
+        total_marks: state.questions.length,
+        questions_attempted: state.questions.length
+      });
+    } catch (e) {
+      console.error('Failed to save quiz result:', e);
+    }
+  }
+
+  // ── CANVAS LOGIC ──
+  let ctx, isDrawing = false;
+  function initCanvas(qid) {
+    const canvas = document.getElementById('scratchpadCanvas');
+    if (!canvas) return;
+    
+    const rect = canvas.parentElement.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = 300;
+    
+    ctx = canvas.getContext('2d');
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#2C3E3A';
+
+    if (state.drawings[qid] && state.drawings[qid] !== 'init' && state.drawings[qid] !== 'text') {
+      let img = new Image();
+      img.onload = () => ctx.drawImage(img, 0, 0);
+      img.src = state.drawings[qid];
+    }
+
+    if (state.isAnswered) return; 
+
+    const getPos = (e) => {
+      const r = canvas.getBoundingClientRect();
+      const x = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
+      const y = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
+      return { x, y };
+    };
+
+    const start = (e) => { isDrawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); e.preventDefault(); };
+    const draw = (e) => { if (!isDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); e.preventDefault(); };
+    const stop = () => { if(isDrawing) { isDrawing = false; state.drawings[qid] = canvas.toDataURL(); } };
+
+    canvas.addEventListener('mousedown', start);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stop);
+    canvas.addEventListener('mouseout', stop);
+    canvas.addEventListener('touchstart', start, {passive: false});
+    canvas.addEventListener('touchmove', draw, {passive: false});
+    canvas.addEventListener('touchend', stop);
+  }
+
+  window.clearCanvas = () => {
+    if(ctx && !state.isAnswered) {
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      state.drawings[state.currentIndex] = ctx.canvas.toDataURL();
+    }
+  };
+
+  // ── DATA FETCHING ──
+  async function init() {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const subject = params.get('subject') || 'mathematics';
+      const levelSlug = params.get('level') || 'primary-4';
+      const topic = params.get('topic');
+      const type = params.get('type');
+      
+      const sb = await getSupabase();
+      
+      let query = sb.from('questions').select('*').eq('subject', subject).eq('level', levelSlug).limit(10);
+      
+      if (topic && topic !== 'all') query = query.eq('topic', topic);
+      if (type && type !== 'mixed') query = query.eq('type', type);
+      
+      const { data, error } = await query;
+      if (error) throw error;
+      
+      state.questions = data || [];
+      render();
+    } catch (err) {
+      console.warn("DB Fetch failed:", err);
+      // FIXED: Removed dummy fallback. Now correctly displays "No questions found!"
+      state.questions = [];
+      render();
+    }
+  }
+
+  setTimeout(init, 100);
+};
+</script>
+</body>
+</html>
