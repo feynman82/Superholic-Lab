@@ -12,7 +12,7 @@
   <link rel="icon" href="../assets/favicon.ico" />
   
   <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js"></script>
-  
+  <script src="/js/footer.js" defer></script>
   <script type="module">
     import { guardPage } from '/js/auth.js';
     import { initAppShell } from '/js/app-shell.js';
@@ -65,19 +65,7 @@
 <main id="app" class="container py-10 flex flex-col items-center" style="padding-top: calc(64px + var(--space-10)); min-height: 80vh; max-width: 800px;"></main>
 
 <!-- ═══════════════════ GLOBAL FOOTER ═══════════════════ -->
-<footer class="footer bg-sage-dark texture-whimsical pt-8 pb-8" style="position: relative;">
-  <div class="footer-pet-track"><div class="walking-pet">🐈</div></div>
-  <div class="container">
-    <div class="footer-bottom">
-      <div class="text-muted text-sm">© 2026 Superholic Lab. 🇸🇬 Made in Singapore</div>
-      <div class="flex gap-4">
-        <a href="privacy.html" class="text-muted" style="text-decoration:none;">Privacy</a>
-        <a href="terms.html" class="text-muted" style="text-decoration:none;">Terms</a>
-        <a href="contact.html" class="text-muted" style="text-decoration:none;">Contact</a>
-      </div>
-    </div>
-  </div>
-</footer>
+<global-footer></global-footer>
 
 <!-- ═══════════════════ BOTTOM NAV ═══════════════════ -->
 <nav class="bottom-nav" id="bottomNav" aria-label="Mobile navigation">
