@@ -4,16 +4,16 @@
  * the current student on pages/progress.html.
  *
  * Stats shown:
- *   - Active Remedial Quest (Quest Map card — Smart Remedial Quests feature)
- *   - Total questions answered, overall accuracy %, current streak
- *   - Subject accuracy bars (Mathematics, Science, English)
- *   - Weak topics (5 topics with lowest accuracy) + Generate Quest buttons
- *   - Recent quiz history (last 8 attempts)
- *   - Exam performance trends (WA / EOY / Prelim)
+ * - Active Remedial Quest (Quest Map card — Smart Remedial Quests feature)
+ * - Total questions answered, overall accuracy %, current streak
+ * - Subject accuracy bars (Mathematics, Science, English)
+ * - Weak topics (5 topics with lowest accuracy) + Generate Quest buttons
+ * - Recent quiz history (last 8 attempts)
+ * - Exam performance trends (WA / EOY / Prelim)
  *
  * TEST: Log in as a user who has completed at least one quiz.
- *   Open pages/progress.html and verify stats render correctly.
- *   To test quest: click "+ Generate Quest" on a weak topic, verify quest map appears.
+ * Open pages/progress.html and verify stats render correctly.
+ * To test quest: click "+ Generate Quest" on a weak topic, verify quest map appears.
  */
 
 document.addEventListener('DOMContentLoaded', init);
@@ -71,6 +71,28 @@ async function init() {
     }
 
     updateStudentLabel(student);
+
+    // ── JUNIOR LOGIC ENFORCEMENT (P1 / P2) ───────────────────────────────────
+    const levelSlug = (student.level || '').toLowerCase();
+    const isJunior = levelSlug.includes('primary 1') || levelSlug.includes('primary 2') || levelSlug.includes('p1') || levelSlug.includes('p2');
+
+    // Propagate student state to bottom nav and hide Exam tab for P1/P2
+    document.querySelectorAll('.bottom-nav-item').forEach(link => {
+      const url = new URL(link.href, window.location.origin);
+      url.searchParams.set('student', student.id);
+      link.href = url.pathname + url.search;
+      
+      if (isJunior && link.getAttribute('href').includes('exam.html')) {
+        link.style.display = 'none';
+      }
+    });
+
+    if (isJunior) {
+      const nav = document.querySelector('.bottom-nav');
+      if (nav) nav.style.justifyContent = 'space-evenly';
+      const papersCard = document.getElementById('stat-card-papers');
+      if (papersCard) papersCard.style.display = 'none';
+    }
 
     // ── Fetch quiz attempts ───────────────────────────────────────────────────
     const { data: attempts, error: attErr } = await db
@@ -154,7 +176,8 @@ async function init() {
     if (activeQuest) {
       renderQuestMap(activeQuest, db);
     }
-// ── Action Plan Aggregations (NEW UI) ─────────────────────────────────────
+    
+    // ── Action Plan Aggregations (NEW UI) ─────────────────────────────────────
     const allActivity = [...(attempts || []), ...(examResults || [])];
     
     // Sort all activity from newest to oldest
@@ -301,30 +324,28 @@ function renderQuestMap(quest, db) {
 
   // ── Card wrapper ────────────────────────────────────────────────────────────
   const card = document.createElement('div');
-  card.className = 'card';
-  card.style.cssText = 'border-top: 3px solid var(--mint); margin-bottom: var(--space-6);';
+  card.className = 'card hover-lift';
+  card.style.cssText = 'border-top: 4px solid var(--brand-mint); margin-bottom: var(--space-6);';
 
   // ── Card header ─────────────────────────────────────────────────────────────
   const header = document.createElement('div');
-  header.className = 'card-header';
-  header.style.cssText = 'display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap: var(--space-3);';
+  header.style.cssText = 'display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap: var(--space-3); margin-bottom:var(--space-4);';
 
   const label = document.createElement('div');
   label.style.cssText = 'display:flex; align-items:center; gap: var(--space-3);';
 
   const eyebrow = document.createElement('span');
-  eyebrow.className = 'section-label-tag';
+  eyebrow.className = 'badge badge-info';
   eyebrow.textContent = 'Active Quest';
 
   const titleEl = document.createElement('h3');
-  titleEl.style.cssText = 'margin:0; font-size:1rem; font-weight:700;';
+  titleEl.className = 'text-main font-bold text-lg';
   titleEl.textContent = quest.quest_title;
 
   label.append(eyebrow, titleEl);
 
   const abandonBtn = document.createElement('button');
   abandonBtn.className = 'btn btn-ghost btn-sm';
-  abandonBtn.style.color = 'var(--sage-light)';
   abandonBtn.textContent = 'Abandon';
   abandonBtn.setAttribute('aria-label', 'Abandon this quest');
   abandonBtn.addEventListener('click', () => abandonQuest(db, quest.id, section));
@@ -333,7 +354,6 @@ function renderQuestMap(quest, db) {
 
   // ── Timeline ────────────────────────────────────────────────────────────────
   const body = document.createElement('div');
-  body.className = 'card-body';
 
   const timeline = document.createElement('div');
   timeline.style.cssText = 'display:flex; align-items:center; gap:0; margin-bottom: var(--space-6);';
@@ -347,12 +367,12 @@ function renderQuestMap(quest, db) {
     node.style.cssText = `
       width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
-      font-size: 0.875rem; font-weight: 700; font-family: 'JetBrains Mono', monospace;
-      background: ${isDone ? 'var(--mint)' : isActive ? 'var(--rose)' : 'var(--glass)'};
-      color: ${isDone ? 'var(--sage-darker)' : isActive ? 'var(--white)' : 'var(--sage-light)'};
-      border: ${(!isDone && !isActive) ? '1.5px solid var(--glass-border)' : 'none'};
+      font-size: 0.875rem; font-weight: 700;
+      background: ${isDone ? 'var(--brand-mint)' : isActive ? 'var(--brand-rose)' : 'var(--bg-elevated)'};
+      color: ${isDone ? '#FFF' : isActive ? '#FFF' : 'var(--text-muted)'};
+      border: ${(!isDone && !isActive) ? '1.5px solid var(--border-light)' : 'none'};
       position: relative; z-index: 1;
-      box-shadow: ${isActive ? '0 0 0 3px rgba(183,110,121,0.2)' : ''};
+      box-shadow: ${isActive ? '0 0 0 4px rgba(183,110,121,0.2)' : ''};
     `;
     node.setAttribute('aria-label', `Day ${step.day}: ${isDone ? 'Complete' : isActive ? 'Active' : 'Locked'}`);
     node.textContent = isDone ? '✓' : String(step.day);
@@ -364,7 +384,7 @@ function renderQuestMap(quest, db) {
       const line = document.createElement('div');
       line.style.cssText = `
         flex: 1; height: 2px;
-        background: ${isDone ? 'var(--mint)' : 'var(--glass-border)'};
+        background: ${isDone ? 'var(--brand-mint)' : 'var(--border-light)'};
         transition: background 0.4s ease;
       `;
       timeline.appendChild(line);
@@ -383,7 +403,7 @@ function renderQuestMap(quest, db) {
     labelWrap.style.cssText = `
       flex: 1; text-align: center;
       font-size: 0.75rem; font-weight: ${isActive ? '700' : '500'};
-      color: ${isDone ? 'var(--mint)' : isActive ? 'var(--rose)' : 'var(--sage-light)'};
+      color: ${isDone ? 'var(--brand-mint)' : isActive ? 'var(--brand-rose)' : 'var(--text-muted)'};
     `;
     const dayTag = document.createElement('div');
     dayTag.textContent = `Day ${step.day}`;
@@ -403,26 +423,22 @@ function renderQuestMap(quest, db) {
   const stepDetail = document.createElement('div');
   stepDetail.style.cssText = `
     padding: var(--space-4) var(--space-5);
-    background: var(--glass);
-    border: 1.5px solid var(--glass-border);
+    background: var(--bg-surface);
+    border: 1px solid var(--border-light);
     border-radius: var(--radius-md);
-    border-left: 3px solid var(--rose);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    border-left: 3px solid var(--brand-rose);
   `;
 
   const stepTitle = document.createElement('div');
-  stepTitle.style.cssText = 'font-weight: 600; font-size: 0.9375rem; margin-bottom: var(--space-2);';
+  stepTitle.className = 'font-bold text-main mb-2';
   stepTitle.textContent = activeStepData.title;
 
   const stepDesc = document.createElement('div');
-  stepDesc.className = 'text-secondary text-sm';
-  stepDesc.style.marginBottom = 'var(--space-4)';
+  stepDesc.className = 'text-muted text-sm mb-4';
   stepDesc.textContent = activeStepData.description;
 
   const minutesBadge = document.createElement('span');
-  minutesBadge.className = 'badge badge-info';
-  minutesBadge.style.marginBottom = 'var(--space-4)';
+  minutesBadge.className = 'badge badge-info mb-4';
   minutesBadge.style.display = 'inline-block';
   minutesBadge.textContent = `~${activeStepData.estimated_minutes} min`;
 
@@ -579,8 +595,7 @@ function showBtnError(btnEl, message) {
   const existing = btnEl.parentElement?.querySelector('.quest-btn-error');
   if (existing) existing.remove();
   const err = document.createElement('span');
-  err.className = 'quest-btn-error text-sm';
-  err.style.cssText = 'color:var(--danger); display:block; margin-top:var(--space-1);';
+  err.className = 'quest-btn-error text-sm text-danger mt-1 block';
   err.textContent = message;
   btnEl.insertAdjacentElement('afterend', err);
 }
@@ -636,7 +651,7 @@ function renderSummaryStats(total, pct, streak, questionsToday) {
 
   const accEl = document.getElementById('stat-accuracy');
   if (accEl) {
-    accEl.style.color = pct >= 80 ? 'var(--success)' : pct >= 60 ? 'var(--amber)' : 'var(--danger)';
+    accEl.style.color = pct >= 80 ? 'var(--brand-mint)' : pct >= 60 ? 'var(--brand-amber)' : 'var(--brand-error)';
   }
 
   const bars = [
@@ -674,16 +689,14 @@ function renderSubjectBars(stats) {
     row.style.cssText = 'margin-bottom:var(--space-5);';
 
     const labelRow = document.createElement('div');
-    labelRow.className = 'flex gap-2';
-    labelRow.style.cssText = 'justify-content:space-between; margin-bottom:var(--space-2);';
+    labelRow.className = 'flex gap-2 justify-between mb-2';
 
     const nameSpan = document.createElement('span');
-    nameSpan.style.fontWeight = '500';
+    nameSpan.className = 'font-medium text-main';
     nameSpan.textContent      = labels[sub];
 
     const pctSpan = document.createElement('span');
-    pctSpan.style.color    = 'var(--text-secondary)';
-    pctSpan.style.fontSize = '0.875rem';
+    pctSpan.className = 'text-muted text-sm';
     pctSpan.textContent    = pct !== null
       ? `${pct}% (${data.quizzes} ${data.quizzes === 1 ? 'quiz' : 'quizzes'})`
       : 'No quizzes yet';
@@ -722,8 +735,8 @@ function renderWeakTopics(topics, activeQuest, student, session) {
 
   topics.forEach(t => {
     const row = document.createElement('div');
-    row.className = 'flex gap-3 items-center';
-    row.style.cssText = 'padding: var(--space-3) 0; border-bottom: 1px solid var(--border); flex-wrap:wrap; row-gap:var(--space-2);';
+    row.className = 'flex gap-3 items-center py-3 border-b border-light flex-wrap';
+    row.style.rowGap = 'var(--space-2)';
 
     // Accuracy badge
     const badge = document.createElement('span');
@@ -736,12 +749,11 @@ function renderWeakTopics(topics, activeQuest, student, session) {
     info.style.flex = '1';
 
     const topicName = document.createElement('span');
-    topicName.style.fontWeight = '500';
+    topicName.className = 'font-medium text-main';
     topicName.textContent = t.topic;
 
     const subTag = document.createElement('span');
-    subTag.className = 'text-secondary text-sm';
-    subTag.style.marginLeft = 'var(--space-2)';
+    subTag.className = 'text-muted text-sm ml-2';
     subTag.textContent = subLabels[t.subject?.toLowerCase()] || t.subject;
 
     info.append(topicName, subTag);
@@ -754,13 +766,12 @@ function renderWeakTopics(topics, activeQuest, student, session) {
 
     // Generate Quest button
     const questBtn = document.createElement('button');
-    questBtn.className = 'btn btn-ghost btn-sm';
+    questBtn.className = 'btn btn-ghost btn-sm text-success';
     questBtn.setAttribute('data-quest-btn', '');
     questBtn.setAttribute('data-topic',   t.topic);
     questBtn.setAttribute('data-subject', t.subject || 'mathematics');
     questBtn.setAttribute('data-score',   String(t.pct));
     questBtn.textContent = '+ Quest';
-    questBtn.style.color = 'var(--mint)';
 
     if (hasActiveQuest) {
       questBtn.disabled = true;
@@ -799,27 +810,26 @@ function renderRecentHistory(attempts) {
       : 0;
 
     const row = document.createElement('div');
-    row.className = 'flex gap-3 items-center';
-    row.style.cssText = 'padding: var(--space-3) 0; border-bottom: 1px solid var(--border); flex-wrap:wrap; row-gap:var(--space-2);';
+    row.className = 'flex gap-3 items-center py-3 border-b border-light flex-wrap';
+    row.style.rowGap = 'var(--space-2)';
 
     const dateEl = document.createElement('span');
-    dateEl.className    = 'text-secondary text-sm';
-    dateEl.style.cssText = 'min-width:80px;';
+    dateEl.className    = 'text-muted text-sm min-w-[80px]';
     dateEl.textContent  = formatDate(a.completed_at);
 
     const info = document.createElement('div');
     info.style.flex = '1';
     const subEl = document.createElement('span');
-    subEl.style.fontWeight = '500';
+    subEl.className = 'font-medium text-main';
     subEl.textContent = subLabels[a.subject?.toLowerCase()] || a.subject || 'Quiz';
     const topicEl = document.createElement('span');
-    topicEl.className = 'text-secondary text-sm';
-    topicEl.style.marginLeft = 'var(--space-2)';
+    topicEl.className = 'text-muted text-sm ml-2';
     topicEl.textContent = a.topic ? `· ${a.topic}` : '';
     info.append(subEl, topicEl);
 
     const scoreEl = document.createElement('span');
-    scoreEl.style.cssText = `font-weight:600; color:${pct >= 80 ? 'var(--success)' : pct >= 60 ? 'var(--amber)' : 'var(--danger)'};`;
+    scoreEl.className = 'font-semibold';
+    scoreEl.style.color = pct >= 80 ? 'var(--brand-mint)' : pct >= 60 ? 'var(--brand-amber)' : 'var(--brand-error)';
     scoreEl.textContent = `${a.score}/${a.total_questions}`;
 
     row.append(dateEl, info, scoreEl);
@@ -895,10 +905,11 @@ function renderExamHistory(exams) {
 
   Object.entries(grouped).forEach(function([sub, subExams]) {
     const subLabel = sub.charAt(0).toUpperCase() + sub.slice(1);
-    const colour   = subColours[sub] || 'var(--cream)';
+    const colour   = subColours[sub] || 'var(--text-main)';
 
     const heading = document.createElement('p');
-    heading.style.cssText = `font-weight:700; font-size:.875rem; color:${colour}; margin-bottom:var(--space-2); margin-top:var(--space-4);`;
+    heading.className = 'font-bold text-sm mb-2 mt-4';
+    heading.style.color = colour;
     heading.textContent = subLabel;
     listEl.appendChild(heading);
 
@@ -908,11 +919,10 @@ function renderExamHistory(exams) {
       const mins  = e.time_taken ? Math.round(e.time_taken / 60) + ' min' : '';
 
       const row = document.createElement('div');
-      row.style.cssText = 'padding:var(--space-3) 0; border-bottom:1px solid var(--glass-border); display:flex; align-items:center; gap:var(--space-3); flex-wrap:wrap;';
+      row.className = 'py-3 border-b border-light flex items-center gap-3 flex-wrap';
 
       const dateEl = document.createElement('span');
-      dateEl.className = 'text-secondary text-sm';
-      dateEl.style.minWidth = '72px';
+      dateEl.className = 'text-muted text-sm min-w-[72px]';
       dateEl.textContent = formatDate(e.completed_at);
 
       const typeEl = document.createElement('span');
@@ -920,22 +930,23 @@ function renderExamHistory(exams) {
       typeEl.textContent = label;
 
       const barWrap = document.createElement('div');
-      barWrap.style.cssText = 'flex:1; min-width:120px;';
+      barWrap.className = 'flex-1 min-w-[120px]';
 
       const track = document.createElement('div');
-      track.style.cssText = 'height:6px; border-radius:999px; background:var(--glass-border); overflow:hidden; margin-bottom:var(--space-1);';
+      track.className = 'h-[6px] rounded-full bg-elevated overflow-hidden mb-1';
+      
       const fill = document.createElement('div');
       fill.style.cssText = `height:100%; width:${pct}%; border-radius:999px; background:${colour}; transition:width .8s cubic-bezier(.16,1,.3,1);`;
       track.appendChild(fill);
 
       const scoreLabel = document.createElement('span');
-      scoreLabel.className = 'text-secondary text-sm';
+      scoreLabel.className = 'text-muted text-sm';
       scoreLabel.textContent = e.score + '/' + e.total_marks + ' (' + pct + '%)' + (mins ? ' · ' + mins : '');
 
       barWrap.append(track, scoreLabel);
 
       const bandEl = document.createElement('span');
-      bandEl.className = pct >= 85 ? 'badge badge-success' : pct >= 55 ? 'badge badge-amber' : 'badge badge-danger';
+      bandEl.className = `badge ${pct >= 85 ? 'badge-success' : pct >= 55 ? 'badge-amber' : 'badge-danger'}`;
       bandEl.textContent = pct >= 85 ? 'AL1–2' : pct >= 70 ? 'AL3–4' : pct >= 55 ? 'AL5–6' : 'Needs Work';
 
       row.append(dateEl, typeEl, barWrap, bandEl);
@@ -949,6 +960,7 @@ function setText(id, value) {
   const el = document.getElementById(id);
   if (el) el.textContent = value;
 }
+
 // ── ACTION PLAN RENDERER (NEW UI/UX) ──────────────────────────────────────────
 
 function renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subjectStats, weakTopics, student, session, activeQuest, allActivity, improvedText) {  
@@ -965,13 +977,13 @@ function renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subject
       if (pctEl) pctEl.textContent = pct + '%';
       if (alEl) {
         alEl.textContent = al;
-        alEl.className = `badge ${pct >= 75 ? 'badge-success' : pct >= 50 ? 'badge-amber' : 'badge-danger'}`;
+        alEl.className = `badge text-sm ${pct >= 75 ? 'badge-success' : pct >= 50 ? 'badge-amber' : 'badge-danger'}`;
       }
     } else {
       if (pctEl) pctEl.textContent = '-';
       if (alEl) {
         alEl.textContent = '-';
-        alEl.className = 'badge';
+        alEl.className = 'badge text-sm';
       }
     }
   });
@@ -994,22 +1006,22 @@ function renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subject
         subTopics.forEach(t => {
           const topicLabel = t.topic.replace(/-/g, ' ');
           weakHtml.push(`
-            <div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:var(--space-3) var(--space-4); flex-wrap:wrap; gap:10px;">
+            <div class="card hover-lift p-4 flex flex-wrap justify-between items-center gap-2 mb-2">
               <div>
-                <span style="font-size:1.2rem; margin-right:8px;">${t.pct < 45 ? '🔴' : '🟠'}</span>
-                <strong style="color:var(--cream); text-transform:capitalize;">${topicLabel}</strong> 
-                <span class="text-secondary text-sm"> — ${t.pct}% (${getALBand(t.pct)})</span>
+                <span class="text-xl mr-2">${t.pct < 45 ? '🔴' : '🟠'}</span>
+                <strong class="text-main capitalize">${topicLabel}</strong> 
+                <span class="text-muted text-sm"> — ${t.pct}% (${getALBand(t.pct)})</span>
               </div>
-              <div style="display:flex; gap:10px;">
-                 <a href="tutor.html?intent=remedial&subject=${t.subject}&topic=${t.topic}&score=${t.pct}" class="btn btn-secondary btn-sm" style="border-color:var(--rose); color:var(--rose);">Ask Miss Wena</a>
-                 <button class="btn btn-primary btn-sm" onclick="generateQuest(getSupabase(), '${session?.access_token}', {id:'${student.id}', level:'${student.level}'}, '${t.topic}', '${t.subject}', ${t.pct}, '${t.lastAttemptId || ''}', this)" ${activeQuest ? 'disabled title="Complete active quest first"' : ''}>+ Plan Quest</button>
+              <div class="flex gap-2">
+                 <a href="tutor.html?intent=remedial&subject=${t.subject}&topic=${t.topic}&score=${t.pct}" class="btn btn-secondary btn-sm border-rose text-rose">Ask Miss Wena</a>
+                 <button class="btn btn-primary btn-sm" onclick="generateQuest(getSupabase(), '${session?.access_token}', {id:'${student.id}', level:'${student.level}'}, '${t.topic}', '${t.subject}', ${t.pct}, '${t.lastAttemptId || ''}', this)" ${activeQuest ? 'disabled title="Complete active quest first"' : ''} data-quest-btn>+ Plan Quest</button>
               </div>
             </div>`);
         });
       }
     });
 
-    weaknessList.innerHTML = weakHtml.length > 0 ? weakHtml.join('') : '<div class="card" style="padding:var(--space-4); text-align:center; color:var(--mint);">🎉 Excellent! No weak areas detected (All topics AL1).</div>';
+    weaknessList.innerHTML = weakHtml.length > 0 ? weakHtml.join('') : '<div class="card p-6 text-center text-success font-bold">🎉 Excellent! No weak areas detected (All topics AL1).</div>';
   }
 
   // 3. LAYER 3: Subject Breakdown & Deep Dive
@@ -1019,28 +1031,29 @@ function renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subject
       const pct = stats.total > 0 ? Math.round((stats.earned / stats.total) * 100) : 0;
       if (pct === 0 && stats.total === 0) return '';
       const band = getALBand(pct);
-      const colour = pct >= 75 ? 'var(--mint)' : pct >= 50 ? 'var(--amber)' : 'var(--danger)';
+      const colour = pct >= 75 ? 'var(--brand-mint)' : pct >= 50 ? 'var(--brand-amber)' : 'var(--brand-error)';
       
       return `
-        <div class="card" style="padding:var(--space-4);">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-2);">
-            <strong style="font-size:1.2rem; color:var(--cream); text-transform:capitalize;">${sub}</strong>
+        <div class="card hover-lift p-4">
+          <div class="flex justify-between items-center mb-2">
+            <strong class="text-main text-lg capitalize">${sub}</strong>
             <span class="badge ${pct >= 75 ? 'badge-success' : pct >= 50 ? 'badge-amber' : 'badge-danger'}">${pct}% correct · ${band}</span>
           </div>
-          <div style="height:6px; background:var(--glass-border); border-radius:3px; overflow:hidden; margin-bottom:var(--space-4);">
-            <div style="height:100%; width:${pct}%; background:${colour};"></div>
+          <div class="h-[6px] bg-light rounded-full overflow-hidden mb-4">
+            <div class="h-full" style="width:${pct}%; background:${colour}; transition:width 0.8s ease;"></div>
           </div>
-          <button class="btn btn-ghost btn-sm btn-full" onclick="toggleDeepDive('${student.id}', '${sub}', this, ${stats.quizzes || 0})">View More Details ↓</button>
-          <div id="deep-dive-${sub}" style="display:none; margin-top:var(--space-4); padding:var(--space-3); border-radius:var(--radius-md); background:rgba(0,0,0,0.15); border:1px solid var(--glass-border); font-size:0.9rem; color:var(--cream); line-height:1.5;">
-             <div style="text-align:center; padding:var(--space-2); color:var(--sage-light);">
-               <span class="spinner-sm" style="width:14px;height:14px;border-width:2px;display:inline-block;margin-right:8px;"></span> Analyzing performance...
+          <button class="btn btn-ghost btn-sm w-full" onclick="toggleDeepDive('${student.id}', '${sub}', this, ${stats.quizzes || 0})">View More Details ↓</button>
+          
+          <div id="deep-dive-${sub}" class="hidden mt-4 p-4 rounded-md bg-elevated border border-light text-sm text-main leading-relaxed">
+             <div class="text-center p-2 text-muted">
+               <span class="spinner-sm inline-block mr-2 border-t-rose"></span> Analyzing performance...
              </div>
           </div>
         </div>
       `;
     }).join('');
     
-    subjectBreakdownList.innerHTML = subjectHtml || '<p class="text-secondary">No subject data yet.</p>';
+    subjectBreakdownList.innerHTML = subjectHtml || '<p class="text-muted">No subject data yet.</p>';
   }
 
   // 4. LAYER 4: Statistics
@@ -1075,19 +1088,21 @@ function getALBand(pct) {
 window.toggleDeepDive = async function(studentId, subject, btnEl, quizCount) {
   const container = document.getElementById(`deep-dive-${subject}`);
   
-  if (container.style.display === 'block') {
+  if (container.style.display === 'block' || !container.classList.contains('hidden') && container.style.display !== 'none') {
     container.style.display = 'none';
+    container.classList.add('hidden');
     btnEl.innerHTML = 'View More Details ↓';
     return;
   }
   
   container.style.display = 'block';
+  container.classList.remove('hidden');
   btnEl.innerHTML = 'Hide Details ↑';
   if (container.dataset.loaded) return;
 
   container.innerHTML = `
-    <div style="text-align:center; padding:var(--space-2); color:var(--sage-light);">
-      <span class="spinner-sm" style="width:14px;height:14px;border-width:2px;display:inline-block;margin-right:8px;"></span> Generating Miss Wena's analysis...
+    <div class="text-center p-2 text-muted">
+      <span class="spinner-sm inline-block mr-2 border-t-rose"></span> Generating Miss Wena's analysis...
     </div>
   `;
 
@@ -1105,13 +1120,13 @@ window.toggleDeepDive = async function(studentId, subject, btnEl, quizCount) {
     if (data.error) throw new Error(data.error);
 
     container.innerHTML = `
-      <strong style="color:var(--mint);display:block;margin-bottom:4px;">✨ Miss Wena's Analysis:</strong>
+      <strong class="text-success block mb-1">✨ Miss Wena's Analysis:</strong>
       ${data.analysis}
     `;
     container.dataset.loaded = "true";
 
   } catch (err) {
-    container.innerHTML = `<div style="text-align:center; padding:var(--space-2); color:var(--danger);">Failed to load analysis. ${err.message}</div>`;
+    container.innerHTML = `<div class="text-center p-2 text-danger">Failed to load analysis. ${err.message}</div>`;
     container.dataset.loaded = ""; // Allow retry
   }
 }
