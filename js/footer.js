@@ -32,7 +32,7 @@ class GlobalFooter extends HTMLElement {
               <!-- Company Column -->
               <div class="flex flex-col items-end text-right gap-2" style="min-width: 120px;">
                 <div class="font-bold text-xs mb-2 text-white uppercase tracking-wider" style="letter-spacing: 0.05em; opacity: 0.5;">Company</div>
-                <a href="/pages/about.html" class="text-sm text-muted footer-link" style="text-decoration:none; color: var(--cream) !important; font-weight: bold;">About Us</a>
+                <a href="/pages/about.html" class="text-sm text-muted footer-link" style="text-decoration:none; color: var(--cream) !important;">About Us</a>
                 <a href="/pages/contact.html" class="text-sm text-muted footer-link" style="text-decoration:none;">Contact Us</a>
               </div>
 
