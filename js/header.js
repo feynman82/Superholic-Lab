@@ -2,6 +2,11 @@ class GlobalHeader extends HTMLElement {
   connectedCallback() {
     this.innerHTML = `
       <style>
+        /* Force Rose Border (Overrides global style.css !important) */
+        header.navbar {
+          border-bottom: 3px solid var(--brand-rose) !important;
+        }
+
         /* 1. Force Auth Button to be persistent on mobile */
         .navbar-actions #auth-header-container {
           display: flex !important;
@@ -24,8 +29,8 @@ class GlobalHeader extends HTMLElement {
         }
       </style>
       
-      <!-- 4. Rose Bottom Border & Text Color Overrides -->
-      <header class="navbar justify-between bg-sage-dark" id="navbar" style="border-bottom: 3px solid var(--brand-rose); color: var(--text-logo);">
+      <!-- 4. Text Color Overrides -->
+      <header class="navbar justify-between bg-sage-dark" id="navbar" style="color: var(--text-logo);">
         
         <!-- Logo & Brand Text -->
         <a href="/index.html" class="flex items-center gap-2 font-display text-2xl" style="text-decoration: none; color: var(--text-logo);">
