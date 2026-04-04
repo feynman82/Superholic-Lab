@@ -1092,7 +1092,6 @@ window.toggleDeepDive = async function(studentId, subject, btnEl, quizCount) {
   `;
 
   try {
-    // FIX: Await the Supabase client initialization before extracting the session
     const sb = await window.getSupabase();
     const { data: { session } } = await sb.auth.getSession();
     
@@ -1103,6 +1102,19 @@ window.toggleDeepDive = async function(studentId, subject, btnEl, quizCount) {
       body: JSON.stringify({ student_id: studentId, subject: subject })
     });
     
+    // FIX: Check if the response is actually JSON before parsing to prevent HTML 404 crashes
+    const contentType = res.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+       // Graceful Fallback UI if the backend API is not deployed yet
+       container.innerHTML = `
+         <strong style="color:var(--brand-mint);display:block;margin-bottom:8px;">✨ Miss Wena's Analysis (Preview):</strong>
+         <p class="text-sm text-main mb-2">You have completed <strong>${quizCount} practice sessions</strong> in ${subject}. To improve your AL band, focus on reviewing the questions you flagged and completing your active remedial quests.</p>
+         <p class="text-xs text-muted" style="border-top: 1px solid var(--border-light); padding-top: 8px; margin-top: 8px;"><em>Note: The live AI API endpoint (/api/analyze-weakness) is currently unreachable.</em></p>
+       `;
+       container.dataset.loaded = "true";
+       return;
+    }
+
     const data = await res.json();
     if (data.error) throw new Error(data.error);
 
