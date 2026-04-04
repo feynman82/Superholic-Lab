@@ -348,11 +348,24 @@ window.initSubjectsEngine = function() {
       state.studentId = student?.id || null;
 
       if (state.studentId) {
+        const isJunior = state.level.toLowerCase().includes('primary 1') || state.level.toLowerCase().includes('primary 2');
+        
         document.querySelectorAll('.bottom-nav-item').forEach(link => {
           const url = new URL(link.href, window.location.origin);
           url.searchParams.set('student', state.studentId);
           link.href = url.pathname + url.search;
+          
+          // Hide Exam tab for P1 and P2
+          if (isJunior && link.getAttribute('href').includes('exam.html')) {
+            link.style.display = 'none';
+          }
         });
+        
+        // Rebalance the nav items if one is hidden
+        if (isJunior) {
+          const nav = document.getElementById('bottomNav');
+          if (nav) nav.style.justifyContent = 'space-evenly';
+        }
       }
 
       if (state.tier === 'single_subject' && student?.selected_subject) {

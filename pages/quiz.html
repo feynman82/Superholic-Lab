@@ -525,6 +525,65 @@ window.initQuizEngine = function() {
     }
   };
 
+  // ── DATA FETCHING ──
+  async function init() {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const subject = params.get('subject') || 'mathematics';
+      const levelSlug = params.get('level') || 'primary-4';
+      const topic = params.get('topic');
+      const type = params.get('type');
+      const studentId = params.get('student');
+      
+      state.currentType = type;
+
+      // Propagate student state and hide exam for P1/P2
+      if (studentId) {
+        const isJunior = levelSlug.includes('primary-1') || levelSlug.includes('primary-2') || levelSlug === 'p1' || levelSlug === 'p2';
+        
+        document.querySelectorAll('.bottom-nav-item').forEach(link => {
+          const url = new URL(link.href, window.location.origin);
+          url.searchParams.set('student', studentId);
+          link.href = url.pathname + url.search;
+          
+          if (isJunior && link.getAttribute('href').includes('exam.html')) {
+            link.style.display = 'none';
+          }
+        });
+        
+        if (isJunior) {
+          const nav = document.getElementById('bottomNav');
+          if (nav) nav.style.justifyContent = 'space-evenly';
+        }
+      }
+      
+      const filePath = resolveFile(subject, levelSlug, topic);
+      if (!filePath) {
+        state.questions = [];
+        state.phase = 'QUIZ';
+        render();
+        return;
+      }
+
+      const res = await fetch(filePath);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const all = await res.json();
+      
+      const pool = type && type !== 'mixed' ? all.filter(q => q.type === type) : all;
+      
+      state.questions = shuffle(pool).slice(0, 10);
+      state.quizStartTime = Date.now();
+      state.phase = 'QUIZ';
+      render();
+    } catch (err) {
+      console.warn("Local fetch failed:", err);
+      // FIXED: Removed dummy fallback and correctly transition phase so spinner stops
+      state.questions = [];
+      state.phase = 'QUIZ';
+      render();
+    }
+  }
+
   setTimeout(init, 100);
 };
 </script>
