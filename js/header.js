@@ -34,7 +34,7 @@ class GlobalHeader extends HTMLElement {
         
         <!-- Logo & Brand Text -->
         <a href="/index.html" class="flex items-center gap-2 font-display text-2xl" style="text-decoration: none; color: var(--text-logo);">
-          <img src="/assets/logo.svg" width="32" height="32" alt="Superholic Lab Logo" aria-hidden="true" style="border-radius: var(--radius-sm); flex-shrink:0;">
+          <img src="/assets/logo.svg" height="48" alt="Superholic Lab Logo" aria-hidden="true" style="border-radius: var(--radius-sm); flex-shrink:0;">
           SUPERHOLIC LAB
         </a>
 
