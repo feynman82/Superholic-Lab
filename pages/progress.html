@@ -4,14 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>My Progress — Superholic Lab</title>
+  
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="icon" href="../assets/favicon.ico" />
   <meta name="robots" content="noindex, nofollow" />
-  <!-- Analytics: configure at plausible.io -->
+  
   <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js"></script>
-  <!-- Auth guard: redirects to login if no active session -->
+  
   <script type="module">
     import { guardPage }    from '/js/auth.js';
     import { initAppShell } from '/js/app-shell.js';
@@ -20,180 +21,205 @@
   </script>
 </head>
 
-<body id="mainBody">
+<body id="mainBody" class="has-bottom-nav bg-page texture-light-grid">
 
-  <!-- ── Navbar ─────────────────────────────────────────────────────────── -->
-  <header class="navbar navbar-homepage" id="navbar" style="justify-content: space-between;">
-    <a href="../index.html" class="navbar-logo">
-      <img src="../assets/logo.svg" width="32" height="32" alt="Superholic Lab">
+  <header class="navbar justify-between bg-sage-dark" id="navbar">
+    <a href="../index.html" class="flex items-center gap-2 font-display text-2xl text-white" style="text-decoration: none;">
+      <img src="../assets/logo.svg" width="32" height="32" alt="" aria-hidden="true" style="border-radius: var(--radius-sm); flex-shrink:0;">
       Superholic Lab
     </a>
-    <div class="navbar-actions">
-      <div id="auth-header-container">
-        <a href="login.html" class="btn btn-secondary btn-sm">Log In</a>
-      </div>
+    <div class="navbar-actions flex items-center gap-4">
+      <div id="auth-header-container"></div>
       <button class="navbar-toggle" id="navToggle" aria-label="Open menu">
         <span></span><span></span><span></span>
       </button>
     </div>
     <div class="navbar-mobile" id="navDropdown">
-      <div class="container" id="navLinks">
-        <a href="../index.html">Home</a>
-        <a href="../pages/about.html">About Us</a>
-        <a href="../pages/pricing.html">Pricing</a>
-        <a href="../pages/contact.html">Contact Support</a>
-        <a href="../pages/signup.html" id="navSignUp">Start Free Trial</a>
-      </div>
+      <a href="../index.html">Home</a>
+      <a href="about.html">About Us</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="contact.html">Contact Support</a>
+      <a href="#" id="navSignOut" class="text-rose">Sign Out</a>
     </div>
   </header>
 
-  <!-- ── Hero ───────────────────────────────────────────────────────────── -->
-  <div style="background: var(--hero-gradient); padding: var(--space-12) 0 var(--space-14); position:relative; overflow:hidden; margin-top: 66px;">
-    <!-- Decorative glows -->
-    <div aria-hidden="true" style="position:absolute; top:-60px; right:-80px; width:320px; height:320px; border-radius:50%; background: radial-gradient(circle, rgba(57,255,179,0.12) 0%, transparent 70%); pointer-events:none;"></div>
-    <div aria-hidden="true" style="position:absolute; bottom:-40px; left:-60px; width:240px; height:240px; border-radius:50%; background: radial-gradient(circle, rgba(255,184,48,0.10) 0%, transparent 70%); pointer-events:none;"></div>
+  <div class="bg-sage texture-dots py-10" style="padding-top: calc(64px + var(--space-8)); position:relative; overflow:hidden;">
     
-    <!-- NEW: Student Switcher (Only visible for Family Plans) -->
-      <div id="student-selector" class="animate-in delay-2" style="display:none; margin: 0 auto var(--space-4); max-width: 240px;">
-        <select id="student-select" class="form-input" style="background: rgba(255,255,255,0.1); color: var(--cream); border-color: rgba(255,255,255,0.2); text-align: center; font-weight: 600; cursor: pointer;">
-        </select>
-      </div>
-    
-      <div class="container" style="position:relative; z-index:1; text-align:center;">
-      <h1 class="animate-in delay-2" style="margin-bottom:var(--space-3);">
-        <span id="student-name" style="color: var(--mint);"></span>'s Progress
-      </h1>
+    <div id="student-selector" class="animate-in delay-2" style="display:none; margin: 0 auto var(--space-4); max-width: 240px; position:relative; z-index:10;">
+      <select id="student-select" class="form-input" style="background: rgba(255,255,255,0.15); color: #FFFFFF; border-color: rgba(255,255,255,0.2); text-align: center; font-weight: 600; cursor: pointer;">
+      </select>
     </div>
-
-    <!-- Wave divider -->
-    <div class="wave-divider" aria-hidden="true" style="margin-top:var(--space-10);">
-      <svg viewBox="0 0 1440 70" preserveAspectRatio="none">
-        <path d="M0,40 C360,70 720,10 1080,40 C1260,55 1380,30 1440,40 L1440,70 L0,70 Z" fill="var(--sage-dark)"/>
-      </svg>
+    
+    <div class="container relative z-10 text-center">
+      <div class="badge mb-2" style="background: rgba(0, 0, 0, 0.25); color: #FFFFFF; backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.1);">Mission Report</div>
+      <h1 class="font-display text-4xl text-white mb-2" style="font-size: 3rem;">
+        <span id="student-name" class="text-success"></span>'s Progress
+      </h1>
     </div>
   </div>
 
-  <!-- ── Main content ────────────────────────────────────────────────────── -->
-<main id="app" class="container" style="max-width:800px; padding-top:var(--space-10); padding-bottom: 120px; margin-top: 68px;">
+  <main id="app" class="container py-10" style="max-width:800px; min-height: 80vh;">
     
-    <div id="progress-loading" style="text-align:center; padding: 4rem 0;">
-      <div class="spinner-sm" style="margin: 0 auto var(--space-4);"></div>
-      <p class="text-secondary">Crunching the latest data...</p>
+    <div id="progress-loading" class="text-center py-10">
+      <div class="spinner-sm mx-auto mb-4"></div>
+      <p class="text-muted font-bold">Crunching the latest data...</p>
     </div>
 
-    <div id="progress-empty" class="card" style="text-align:center; padding:var(--space-10);" hidden>
-      <div style="font-size:3rem; margin-bottom:var(--space-4);">🚀</div>
-      <h2 style="color:var(--cream); margin-bottom:var(--space-2);">Ready for Liftoff!</h2>
-      <p class="text-secondary text-sm" style="margin-bottom:var(--space-6);">Complete your first practice paper or quiz to unlock your personalized Action Plan.</p>
-      <a href="subjects.html" class="btn btn-primary">Start Practising</a>
+    <div id="progress-empty" class="card p-10 text-center hover-lift" hidden>
+      <div class="text-4xl mb-4">🚀</div>
+      <h2 class="font-display text-2xl text-main mb-2">Ready for Liftoff!</h2>
+      <p class="text-muted text-sm mb-6">Complete your first practice paper or quiz to unlock your personalized Action Plan.</p>
+      <a href="subjects.html" class="btn btn-primary hover-lift">Start Practising</a>
     </div>
 
     <div id="progress-content" hidden>
       
-      <h2 style="font-family:var(--font-display); font-size:2rem; letter-spacing:.04em; color:var(--cream); margin-bottom:var(--space-4); text-transform:uppercase;">Subject Proficiency</h2>
+      <h2 class="font-display text-2xl text-main mb-4 uppercase">Subject Proficiency</h2>
       
       <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:var(--space-4); margin-bottom:var(--space-8);">
-        <div class="card" style="padding:var(--space-4); text-align:center; border-top: 3px solid var(--maths-colour);">
-          <div class="text-secondary text-sm" style="margin-bottom:var(--space-2); text-transform:uppercase; letter-spacing:1px; font-weight:600;">Mathematics</div>
-          <div style="display:flex; justify-content:center; align-items:baseline; gap:12px;">
-            <div style="font-size:2rem; font-weight:700; color:var(--cream);" id="stat-mathematics-pct">-</div>
-            <div id="stat-mathematics-al" class="badge" style="font-size:1rem; padding: 4px 8px;">-</div>
+        <div class="card p-6 text-center hover-lift" style="border-top: 4px solid var(--maths-colour);">
+          <div class="text-muted text-sm mb-2 uppercase font-bold tracking-wider">Mathematics</div>
+          <div class="flex justify-center items-baseline gap-3">
+            <div class="font-display text-4xl text-main" id="stat-mathematics-pct">-</div>
+            <div id="stat-mathematics-al" class="badge text-sm">-</div>
           </div>
         </div>
-        <div class="card" style="padding:var(--space-4); text-align:center; border-top: 3px solid var(--science-colour);">
-          <div class="text-secondary text-sm" style="margin-bottom:var(--space-2); text-transform:uppercase; letter-spacing:1px; font-weight:600;">Science</div>
-          <div style="display:flex; justify-content:center; align-items:baseline; gap:12px;">
-            <div style="font-size:2rem; font-weight:700; color:var(--cream);" id="stat-science-pct">-</div>
-            <div id="stat-science-al" class="badge" style="font-size:1rem; padding: 4px 8px;">-</div>
+        
+        <div class="card p-6 text-center hover-lift" style="border-top: 4px solid var(--science-colour);">
+          <div class="text-muted text-sm mb-2 uppercase font-bold tracking-wider">Science</div>
+          <div class="flex justify-center items-baseline gap-3">
+            <div class="font-display text-4xl text-main" id="stat-science-pct">-</div>
+            <div id="stat-science-al" class="badge text-sm">-</div>
           </div>
         </div>
-        <div class="card" style="padding:var(--space-4); text-align:center; border-top: 3px solid var(--english-colour);">
-          <div class="text-secondary text-sm" style="margin-bottom:var(--space-2); text-transform:uppercase; letter-spacing:1px; font-weight:600;">English</div>
-          <div style="display:flex; justify-content:center; align-items:baseline; gap:12px;">
-            <div style="font-size:2rem; font-weight:700; color:var(--cream);" id="stat-english-pct">-</div>
-            <div id="stat-english-al" class="badge" style="font-size:1rem; padding: 4px 8px;">-</div>
+        
+        <div class="card p-6 text-center hover-lift" style="border-top: 4px solid var(--english-colour);">
+          <div class="text-muted text-sm mb-2 uppercase font-bold tracking-wider">English</div>
+          <div class="flex justify-center items-baseline gap-3">
+            <div class="font-display text-4xl text-main" id="stat-english-pct">-</div>
+            <div id="stat-english-al" class="badge text-sm">-</div>
           </div>
         </div>
       </div>
 
-      <h2 style="font-family:var(--font-display); font-size:1.5rem; letter-spacing:.04em; color:var(--cream); margin-bottom:var(--space-4); text-transform:uppercase;">Areas of Weakness</h2>
-      <div id="areas-of-weakness-list" style="display:flex; flex-direction:column; gap:var(--space-3); margin-bottom:var(--space-8);">
-        </div>
+      <div id="quest-map-section" style="display: none;"></div>
 
-      <h2 style="font-family:var(--font-display); font-size:1.5rem; letter-spacing:.04em; color:var(--cream); margin-bottom:var(--space-4); text-transform:uppercase;">Subject Breakdown</h2>
-      <div id="subject-breakdown-list" style="display:flex; flex-direction:column; gap:var(--space-4); margin-bottom:var(--space-8);">
-        </div>
+      <h2 class="font-display text-2xl text-main mb-4 uppercase">Areas of Weakness</h2>
+      <div id="areas-of-weakness-list" class="flex flex-col gap-3 mb-8"></div>
 
-      <h2 style="font-family:var(--font-display); font-size:1.5rem; letter-spacing:.04em; color:var(--cream); margin-bottom:var(--space-4); text-transform:uppercase;">Statistics</h2>
+      <h2 class="font-display text-2xl text-main mb-4 uppercase">Subject Breakdown</h2>
+      <div id="subject-breakdown-list" class="flex flex-col gap-4 mb-8"></div>
+
+      <h2 class="font-display text-2xl text-main mb-4 uppercase">Statistics</h2>
       <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:var(--space-4); margin-bottom:var(--space-8);">
-        <div class="card" style="padding:var(--space-4); text-align:center;">
-          <div class="text-secondary text-sm" style="margin-bottom:var(--space-2);">Papers Attempted</div>
-          <div id="stat-papers" style="font-size:1.5rem; font-weight:700; color:var(--cream);">-</div>
+        
+        <div class="card p-6 text-center hover-lift" id="stat-card-papers">
+          <div class="text-muted text-sm mb-2 uppercase font-bold tracking-wider">Papers Attempted</div>
+          <div id="stat-papers" class="font-display text-3xl text-main">-</div>
         </div>
-        <div class="card" style="padding:var(--space-4); text-align:center;">
-          <div class="text-secondary text-sm" style="margin-bottom:var(--space-2);">Questions Mastered</div>
-          <div id="stat-mastered-new" style="font-size:1.5rem; font-weight:700; color:var(--maths-colour);">-</div>
+        
+        <div class="card p-6 text-center hover-lift">
+          <div class="text-muted text-sm mb-2 uppercase font-bold tracking-wider">Questions Mastered</div>
+          <div id="stat-mastered-new" class="font-display text-3xl text-success">-</div>
         </div>
-        <div class="card" style="padding:var(--space-4); text-align:center;">
-          <div class="text-secondary text-sm" style="margin-bottom:var(--space-2);">Total Practice Time</div>
-          <div id="stat-time-new" style="font-size:1.5rem; font-weight:700; color:var(--mint);">-</div>
+        
+        <div class="card p-6 text-center hover-lift">
+          <div class="text-muted text-sm mb-2 uppercase font-bold tracking-wider">Practice Time</div>
+          <div id="stat-time-new" class="font-display text-3xl text-main">-</div>
         </div>
-        <div class="card" style="padding:var(--space-4); text-align:center;">
-          <div class="text-secondary text-sm" style="margin-bottom:var(--space-2);">Topics Improved</div>
-          <div style="font-size:1.5rem; font-weight:700; color:var(--science-colour);"><span id="stat-improved">-</span></div>
-          <div class="text-secondary text-sm" style="opacity:0.6; font-size:0.7rem;">vs Last Week</div>
+        
+        <div class="card p-6 text-center hover-lift">
+          <div class="text-muted text-sm mb-2 uppercase font-bold tracking-wider">Topics Improved</div>
+          <div class="font-bold text-lg text-amber"><span id="stat-improved">-</span></div>
+          <div class="text-muted text-xs uppercase font-bold mt-1">vs Last Week</div>
         </div>
+
       </div>
 
+      <div id="subject-bars" hidden></div>
+      <div id="weak-topics" hidden></div>
+      <div id="recent-history" hidden></div>
+      <div id="exam-history-empty" hidden></div>
+      <div id="exam-history-list" hidden></div>
     </div>
   </main>
 
-  <!-- ── Footer ─────────────────────────────────────────────────────────── -->
-  <footer class="footer">
+  <footer class="footer bg-sage-dark texture-whimsical pt-8 pb-8" style="position: relative;">
+    <div class="footer-pet-track"><div class="walking-pet">🐈</div></div>
     <div class="container">
       <div class="footer-bottom">
-        <p>&copy; 2026 Superholic Lab. 🇸🇬 Made in Singapore</p>
+        <div class="text-muted text-sm">© 2026 Superholic Lab. 🇸🇬 Made in Singapore</div>
         <div class="flex gap-4">
-          <a href="privacy.html">Privacy</a>
-          <a href="terms.html">Terms</a>
-          <a href="contact.html">Contact</a>
+          <a href="privacy.html" class="text-muted" style="text-decoration:none;">Privacy</a>
+          <a href="terms.html" class="text-muted" style="text-decoration:none;">Terms</a>
+          <a href="contact.html" class="text-muted" style="text-decoration:none;">Contact</a>
         </div>
       </div>
     </div>
   </footer>
 
-  <!-- ── Bottom nav ─────────────────────────────────────────────────────── -->
-  <nav class="bottom-nav" aria-label="Mobile navigation">
+  <nav class="bottom-nav" id="bottomNav" aria-label="Mobile navigation">
     <a href="subjects.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
-        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
       Practise
     </a>
     <a href="tutor.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
-        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
       AI Tutor
     </a>
     <a href="exam.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
-        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
-        <rect x="9" y="3" width="6" height="4" rx="2"/>
-        <path d="M9 12h6M9 16h4"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="M9 12h6M9 16h4"/></svg>
       Exam
     </a>
     <a href="progress.html" class="bottom-nav-item is-active" aria-current="page">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
-        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
       Progress
     </a>
   </nav>
 
   <script src="../js/supabase-client.js"></script>
   <script src="../js/progress.js"></script>
+  
+  <script>
+    // ── ROBUST EVENT DELEGATION FOR NAVBAR ──
+    document.addEventListener('click', (e) => {
+      const toggleBtn = e.target.closest('#navToggle');
+      const dropdown = document.getElementById('navDropdown');
+      
+      if (toggleBtn && dropdown) {
+        e.stopPropagation();
+        dropdown.classList.toggle('is-open');
+        toggleBtn.classList.toggle('is-active'); 
+        return;
+      }
+    
+      if (dropdown && dropdown.classList.contains('is-open') && !dropdown.contains(e.target)) {
+        dropdown.classList.remove('is-open');
+        const actualToggle = document.getElementById('navToggle');
+        if (actualToggle) actualToggle.classList.remove('is-active');
+      }
+    
+      const signOutBtn = e.target.closest('#navSignOut');
+      if (signOutBtn) {
+        e.preventDefault();
+        getSupabase().then(async (sb) => {
+          await sb.auth.signOut();
+          window.location.href = '../index.html';
+        });
+      }
+    });
+    
+    // Auto-Light Up Active Nav Icon
+    (function() {
+      const currentPath = window.location.pathname;
+      document.querySelectorAll('.bottom-nav-item').forEach(link => {
+        const href = link.getAttribute('href');
+        if (href && currentPath.includes(href)) {
+          link.classList.add('is-active');
+        }
+      });
+    })();
+  </script>
 
 </body>
 </html>
