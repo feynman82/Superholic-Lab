@@ -104,6 +104,7 @@
 window.initSubjectsEngine = function() {
   'use strict';
 
+  // These are the questions currently mapped and available in the DB
   const TOPIC_MAP = {
     'primary-1:mathematics': ['whole-numbers'],
     'primary-3:science':     ['diversity'],
@@ -115,18 +116,26 @@ window.initSubjectsEngine = function() {
     'primary-6:english':     ['grammar','cloze','editing'],
   };
 
+  // The comprehensive list to display the premium syllabus UI
+  const ALL_TOPICS = {
+    mathematics: ['Whole Numbers', 'Fractions', 'Decimals', 'Percentage', 'Ratio', 'Geometry', 'Measurement', 'Volume', 'Rate', 'Speed', 'Data Analysis', 'Algebra'],
+    science: ['Diversity', 'Cycles', 'Systems', 'Energy', 'Interactions', 'Cells', 'Forces', 'Heat', 'Light', 'Magnets', 'Matter'],
+    english: ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing', 'Synthesis']
+  };
+
   const TYPE_MAP = {
     mathematics: ['mcq','short_ans','word_problem'],
     science:     ['mcq','open_ended'],
     english:     ['mcq','cloze','editing'],
   };
 
-  const TYPE_LABELS = {
-    mcq: 'MCQ', short_ans: 'Short Answer', word_problem: 'Word Problem', 
-    open_ended: 'Open-Ended', cloze: 'Cloze', editing: 'Editing',
+  const ALL_TYPES = {
+    mathematics: [{id: 'mcq', label: 'MCQ'}, {id: 'short_ans', label: 'Short Answer'}, {id: 'word_problem', label: 'Word Problem'}],
+    science: [{id: 'mcq', label: 'MCQ'}, {id: 'open_ended', label: 'Open-Ended'}],
+    english: [{id: 'mcq', label: 'MCQ'}, {id: 'cloze', label: 'Cloze'}, {id: 'editing', label: 'Editing'}, {id: 'comprehension', label: 'Comprehension'}]
   };
 
-  const state = { phase: 'INIT', level: '', subject: '', tier: '', topic: '', qtype: '' };
+  const state = { phase: 'INIT', level: '', subject: '', tier: '', topic: '', qtype: '', studentId: null };
   const app = document.getElementById('app');
 
   function setState(updates) {
@@ -153,7 +162,7 @@ window.initSubjectsEngine = function() {
     const cards = subjects.map(s => {
       const locked = state.tier === 'single_subject' && s.id !== state.subject;
       return `
-        <div class="card hover-lift flex flex-col items-center justify-center p-8 text-center cursor-pointer ${locked ? 'opacity-50' : ''}" 
+        <div class="card hover-lift flex flex-col items-center justify-center p-8 text-center flex-1 min-w-[200px] max-w-[250px] ${locked ? 'opacity-50' : 'cursor-pointer'}" 
              ${locked ? '' : `onclick="window.pickSubject('${s.id}')"`}>
           <div class="text-4xl mb-4">${s.icon}</div>
           <h3 class="font-display text-2xl text-main">${s.label}</h3>
@@ -167,7 +176,7 @@ window.initSubjectsEngine = function() {
         <h1 class="font-display text-4xl text-main">Choose a Subject</h1>
         <p class="text-muted text-lg mt-2">${esc(state.level)} — Select your mission</p>
       </div>
-      <div class="w-full" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-6);">
+      <div class="w-full flex flex-wrap justify-center gap-6">
         ${cards}
       </div>`;
   }
@@ -176,27 +185,33 @@ window.initSubjectsEngine = function() {
 
   function renderTopic() {
     const key = state.level.toLowerCase().replace(' ','-') + ':' + state.subject;
-    const topics = TOPIC_MAP[key] || [];
+    const activeTopics = TOPIC_MAP[key] || [];
+    const allTopicsForSubj = ALL_TOPICS[state.subject] || [];
     const stepText = state.tier === 'single_subject' ? 'Step 1 of 2' : 'Step 2 of 3';
 
-    const buildCard = (id, title, sub, isSelected) => `
-      <div class="card p-6 cursor-pointer hover-lift flex flex-col justify-center text-center" 
+    const buildCard = (id, title, sub, isSelected, isLocked) => `
+      <div class="card p-6 ${isLocked ? 'opacity-50' : 'cursor-pointer hover-lift'} flex flex-col justify-center text-center relative" 
            style="border: 2px solid ${isSelected ? 'var(--brand-mint)' : 'var(--border-light)'}; background: ${isSelected ? 'var(--bg-elevated)' : 'var(--bg-surface)'};"
-           onclick="window.pickTopic('${id}')">
+           ${isLocked ? '' : `onclick="window.pickTopic('${id}')"`}>
+        ${isLocked ? '<div class="absolute top-2 right-2 text-xs text-muted" title="More questions coming soon">🔒</div>' : ''}
         <div class="font-bold text-lg text-main">${esc(title)}</div>
         <div class="text-xs text-muted mt-1">${esc(sub)}</div>
       </div>`;
 
-    const allBtn = buildCard('all', '📚 All Topics', 'Practise everything', state.topic === 'all');
-    const topicBtns = topics.map(t => buildCard(t, titleCase(t), 'Focused topic practice', state.topic === t)).join('');
+    const allBtn = buildCard('all', '📚 All Topics', 'Practise everything', state.topic === 'all', false);
+    const topicBtns = allTopicsForSubj.map(t => {
+      const slug = t.toLowerCase().replace(/ /g, '-');
+      const isLocked = !activeTopics.includes(slug);
+      return buildCard(slug, t, isLocked ? 'Coming soon' : 'Focused topic practice', state.topic === slug, isLocked);
+    }).join('');
 
     app.innerHTML = `
       <div class="text-center mb-8 w-full">
         <div class="badge badge-info mb-2">${stepText}</div>
         <h1 class="font-display text-4xl text-main">Choose a Topic</h1>
-        <p class="text-muted text-lg mt-2">${esc(titleCase(state.subject))}</p>
+        <p class="text-muted text-lg mt-2">${esc(titleCase(state.subject))} · ${esc(state.level)}</p>
       </div>
-      <div class="w-full mb-8" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: var(--space-4);">
+      <div class="w-full mb-8" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--space-4);">
         ${allBtn} ${topicBtns}
       </div>
       <div class="w-full flex flex-col items-center gap-4" style="max-width: 400px;">
@@ -209,27 +224,32 @@ window.initSubjectsEngine = function() {
   window.goToType = () => { if (state.topic) setState({ qtype: '', phase: 'TYPE' }); };
 
   function renderType() {
-    const types = TYPE_MAP[state.subject] || [];
+    const activeTypes = TYPE_MAP[state.subject] || [];
+    const allTypesForSubj = ALL_TYPES[state.subject] || [];
     const stepText = state.tier === 'single_subject' ? 'Step 2 of 2' : 'Step 3 of 3';
 
-    const buildCard = (id, title, sub, isSelected) => `
-      <div class="card p-6 cursor-pointer hover-lift flex flex-col justify-center text-center" 
+    const buildCard = (id, title, sub, isSelected, isLocked) => `
+      <div class="card p-6 ${isLocked ? 'opacity-50' : 'cursor-pointer hover-lift'} flex flex-col justify-center text-center relative" 
            style="border: 2px solid ${isSelected ? 'var(--brand-mint)' : 'var(--border-light)'}; background: ${isSelected ? 'var(--bg-elevated)' : 'var(--bg-surface)'};"
-           onclick="window.pickType('${id}')">
+           ${isLocked ? '' : `onclick="window.pickType('${id}')"`}>
+        ${isLocked ? '<div class="absolute top-2 right-2 text-xs text-muted" title="More questions coming soon">🔒</div>' : ''}
         <div class="font-bold text-lg text-main">${esc(title)}</div>
         <div class="text-xs text-muted mt-1">${esc(sub)}</div>
       </div>`;
 
-    const mixedBtn = buildCard('mixed', '🎲 Mixed', 'A balanced mix of questions', state.qtype === 'mixed');
-    const typeBtns = types.map(t => buildCard(t, TYPE_LABELS[t] || t, 'Specific question format', state.qtype === t)).join('');
+    const mixedBtn = buildCard('mixed', '🎲 Mixed', 'A balanced mix of questions', state.qtype === 'mixed', false);
+    const typeBtns = allTypesForSubj.map(t => {
+      const isLocked = !activeTypes.includes(t.id);
+      return buildCard(t.id, t.label, isLocked ? 'Coming soon' : 'Specific question format', state.qtype === t.id, isLocked);
+    }).join('');
 
     app.innerHTML = `
       <div class="text-center mb-8 w-full">
         <div class="badge badge-info mb-2">${stepText}</div>
         <h1 class="font-display text-4xl text-main">Question Format</h1>
-        <p class="text-muted text-lg mt-2">${esc(state.topic === 'all' ? 'All Topics' : titleCase(state.topic))}</p>
+        <p class="text-muted text-lg mt-2">${esc(state.topic === 'all' ? 'All Topics' : titleCase(state.topic))} · ${esc(titleCase(state.subject))}</p>
       </div>
-      <div class="w-full mb-8" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: var(--space-4);">
+      <div class="w-full mb-8" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--space-4);">
         ${mixedBtn} ${typeBtns}
       </div>
       <div class="w-full flex flex-col items-center gap-4" style="max-width: 400px;">
@@ -248,6 +268,7 @@ window.initSubjectsEngine = function() {
     if (!state.qtype) return;
     const levelSlug = state.level.toLowerCase().replace(' ','-');
     const params = new URLSearchParams({ subject: state.subject, level: levelSlug });
+    if (state.studentId) params.set('student', state.studentId);
     if (state.topic && state.topic !== 'all') params.set('topic', state.topic);
     if (state.qtype && state.qtype !== 'mixed') params.set('type', state.qtype);
     window.location.href = 'quiz.html?' + params.toString();
@@ -257,18 +278,28 @@ window.initSubjectsEngine = function() {
     app.innerHTML = `<div class="flex flex-col items-center justify-center p-10"><div class="spinner-sm mb-4"></div><p class="text-muted font-bold">Loading mission files...</p></div>`;
     try {
       const profile = window.userProfile;
-      if (!profile) return; // Guardpage redirects
+      if (!profile) return;
       
       const sb = await getSupabase();
-      const { data: student } = await sb.from('students').select('level, selected_subject').eq('parent_id', profile.id).limit(1).single();
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlStudentId = urlParams.get('student');
+      
+      // Fetch specific student if passed via URL, else fetch the first one
+      let query = sb.from('students').select('id, level, selected_subject').eq('parent_id', profile.id);
+      if (urlStudentId) {
+        query = query.eq('id', urlStudentId);
+      }
+      
+      const { data: student } = await query.limit(1).single();
 
       const level = student?.level || 'Primary 4';
       const tier = profile.subscription_tier || 'trial';
+      const studentId = student?.id || null;
 
       if (tier === 'single_subject' && student?.selected_subject) {
-        setState({ level, tier, subject: student.selected_subject.toLowerCase(), phase: 'TOPIC' });
+        setState({ level, tier, studentId, subject: student.selected_subject.toLowerCase(), phase: 'TOPIC' });
       } else {
-        setState({ level, tier, phase: 'SUBJECT' });
+        setState({ level, tier, studentId, phase: 'SUBJECT' });
       }
     } catch (err) {
       console.error(err);
@@ -276,7 +307,7 @@ window.initSubjectsEngine = function() {
     }
   }
   
-  setTimeout(init, 100); // Allow auth to settle
+  setTimeout(init, 100);
 };
 </script>
 </body>

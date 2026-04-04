@@ -818,7 +818,7 @@ body.has-bottom-nav .footer {
     .modal-backdrop.is-open .modal-card {
       transform: translateY(0);
     }
-    /* Dojo Specific UI */
+/* Dojo Specific UI */
     .mcq-opt {
       display: flex;
       align-items: center;
@@ -834,7 +834,7 @@ body.has-bottom-nav .footer {
     .mcq-opt.is-sel {
       border-color: var(--brand-mint);
       background: rgba(5, 150, 105, 0.05);
-      transform: scale(0.98); /* Tactile press effect */
+      transform: scale(0.98); 
       box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
     }
     .mcq-badge {
@@ -866,7 +866,6 @@ body.has-bottom-nav .footer {
       touch-action: none;
     }
     
-    /* Miss Wena Feedback Panel Animation */
     .feedback-panel {
       max-height: 0;
       opacity: 0;
@@ -879,12 +878,10 @@ body.has-bottom-nav .footer {
       margin-top: var(--space-4);
     }
 
-    /* Streak Fire Animation */
     @keyframes flameFlicker {
       0% { transform: scale(1); opacity: 1; }
       50% { transform: scale(1.1) rotate(-3deg); opacity: 0.9; }
       100% { transform: scale(1); opacity: 1; }
     }
     .streak-fire { display: inline-block; animation: flameFlicker 1.5s ease-in-out infinite; 
-    }
-    
+}

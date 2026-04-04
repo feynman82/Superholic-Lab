@@ -95,15 +95,21 @@ window.initQuizEngine = function() {
     streak: 0,
     maxStreak: 0,
     score: 0,
-    answers: {},       // Stores current inputs
-    drawings: {},      // Persists canvas strokes per question index
-    isAnswered: false, // Locks the UI on 'Check Answer'
-    feedback: null     // Correct/Wrong state data
+    answers: {},       
+    drawings: {},      
+    isAnswered: false, 
+    feedback: null     
   };
 
   const app = document.getElementById('app');
   function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
   function titleCase(s) { return s.replace(/-/g,' ').replace(/\b\w/g, c => c.toUpperCase()); }
+
+  // FIX: Restored setState helper so transitions & interactions don't crash
+  function setState(updates) {
+    Object.assign(state, updates);
+    render();
+  }
 
   function render() {
     switch(state.phase) {
@@ -118,8 +124,9 @@ window.initQuizEngine = function() {
   }
 
   function renderQuiz() {
+    // FIX: Clean, graceful fallback if DB finds no questions for specific filters
     if (state.questions.length === 0) {
-      app.innerHTML = `<div class="card p-10 text-center max-w-[600px] w-full"><div class="text-4xl mb-4">🕵️</div><h2 class="font-display text-2xl text-main">No questions found!</h2><p class="text-muted text-sm my-4">We couldn't find questions for this specific combination yet.</p><button class="btn btn-primary" onclick="window.location.href='subjects.html'">Return to Subjects</button></div>`;
+      app.innerHTML = `<div class="card p-10 text-center max-w-[600px] w-full"><div class="text-4xl mb-4">🕵️</div><h2 class="font-display text-2xl text-main">No questions found!</h2><p class="text-muted text-sm my-4">We couldn't find questions for this specific combination yet.</p><button class="btn btn-primary hover-lift" onclick="window.location.href='subjects.html'">Return to Subjects</button></div>`;
       return;
     }
 
@@ -127,7 +134,6 @@ window.initQuizEngine = function() {
     const isFirst = state.currentIndex === 0;
     const isLast = state.currentIndex === state.questions.length - 1;
     
-    // UI Builder
     let inputUi = '';
     const savedAns = state.answers[state.currentIndex] || '';
 
@@ -135,7 +141,6 @@ window.initQuizEngine = function() {
       const letters = ['A','B','C','D'];
       inputUi = q.options.map((opt, i) => {
         const isSel = savedAns === letters[i];
-        // If answered, lock the UI and highlight correct/wrong options visually
         let extraStyles = '';
         if (state.isAnswered) {
            if (letters[i] === q.correct_answer) extraStyles = 'border-color: var(--brand-mint); background: rgba(5,150,105,0.1);';
@@ -165,7 +170,6 @@ window.initQuizEngine = function() {
       `;
     }
 
-    // Feedback Panel Logic
     let feedbackHtml = '';
     if (state.isAnswered && state.feedback) {
       const isCorrect = state.feedback.status === 'correct';
@@ -220,7 +224,6 @@ window.initQuizEngine = function() {
       </div>
     `;
 
-    // Re-initialize Canvas if in draw mode
     if (document.getElementById('scratchpadCanvas')) {
       initCanvas(state.currentIndex);
     }
@@ -251,19 +254,17 @@ window.initQuizEngine = function() {
   }
 
   window.navQuiz = (dir) => {
-    if (!state.isAnswered && dir > 0) return; // Must answer to move forward
+    if (!state.isAnswered && dir > 0) return; 
     
-    // Moving backwards allows viewing past questions and canvas states!
     if (dir < 0) {
        saveInputState();
        state.currentIndex--;
-       state.isAnswered = true; // Old questions remain locked
-       state.feedback = null; // Clear feedback panel when reviewing
+       state.isAnswered = true; 
+       state.feedback = null; 
        renderQuiz();
        return;
     }
 
-    // Moving forward
     if (state.currentIndex === state.questions.length - 1) {
       setState({ phase: 'DONE' });
       return;
@@ -271,10 +272,8 @@ window.initQuizEngine = function() {
 
     saveInputState();
     state.currentIndex++;
-    state.isAnswered = !!state.answers[state.currentIndex]; // Check if previously answered
+    state.isAnswered = !!state.answers[state.currentIndex]; 
     state.feedback = null;
-    
-    // Auto-wipe visual canvas for new question by relying on fresh state
     renderQuiz();
   };
 
@@ -295,7 +294,6 @@ window.initQuizEngine = function() {
       isCorrect = ans === q.correct_answer;
       fbText = isCorrect ? "Perfectly executed!" : (q.wrong_explanations?.[ans] || `The correct answer was ${q.correct_answer}.`);
     } else {
-      // Basic strict text matching for short answers (ignoring case/spaces)
       const norm = (s) => String(s || '').toLowerCase().replace(/\s/g,'');
       isCorrect = norm(ans) === norm(q.correct_answer);
       fbText = isCorrect ? "Excellent logic!" : (q.model_answer || `The expected answer is ${q.correct_answer}. Please review your working steps.`);
@@ -306,7 +304,7 @@ window.initQuizEngine = function() {
       state.streak++;
       if (state.streak > state.maxStreak) state.maxStreak = state.streak;
     } else {
-      state.streak = 0; // Reset streak
+      state.streak = 0; 
     }
 
     state.isAnswered = true;
@@ -315,6 +313,8 @@ window.initQuizEngine = function() {
   };
 
   function renderResults() {
+    saveQuizResult(); // Push score to Dashboard silently
+    
     const pct = Math.round((state.score / state.questions.length) * 100);
     app.innerHTML = `
       <div class="card p-10 flex flex-col items-center text-center max-w-[600px] w-full hover-lift border-t-4 border-mint" style="border-top: 4px solid var(--brand-mint);">
@@ -325,110 +325,4 @@ window.initQuizEngine = function() {
           <div class="card p-6 flex-1 max-w-[200px]" style="background: var(--bg-elevated); border: none;">
             <div class="text-sm font-bold text-muted uppercase">Score</div>
             <div class="font-display text-5xl text-success mt-2">${pct}%</div>
-            <div class="text-sm text-main mt-1">${state.score} / ${state.questions.length} Correct</div>
-          </div>
-          <div class="card p-6 flex-1 max-w-[200px]" style="background: rgba(217, 119, 6, 0.1); border: none;">
-            <div class="text-sm font-bold text-amber uppercase">Best Streak</div>
-            <div class="font-display text-5xl text-amber mt-2">🔥 ${state.maxStreak}</div>
-            <div class="text-sm text-amber mt-1">In a row!</div>
-          </div>
-        </div>
-
-        <div class="flex gap-4">
-          <button class="btn btn-primary" onclick="window.location.href='subjects.html'">Train Another Topic</button>
-          <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'">Mission Control</button>
-        </div>
-      </div>
-    `;
-  }
-
-  // ── CANVAS LOGIC ──
-  let ctx, isDrawing = false;
-  function initCanvas(qid) {
-    const canvas = document.getElementById('scratchpadCanvas');
-    if (!canvas) return;
-    
-    const rect = canvas.parentElement.getBoundingClientRect();
-    canvas.width = rect.width;
-    canvas.height = 300;
-    
-    ctx = canvas.getContext('2d');
-    ctx.lineWidth = 2;
-    ctx.lineCap = 'round';
-    ctx.strokeStyle = '#2C3E3A';
-
-    // Retain past drawings seamlessly!
-    if (state.drawings[qid] && state.drawings[qid] !== 'init' && state.drawings[qid] !== 'text') {
-      let img = new Image();
-      img.onload = () => ctx.drawImage(img, 0, 0);
-      img.src = state.drawings[qid];
-    }
-
-    if (state.isAnswered) return; // Lock interactions
-
-    const getPos = (e) => {
-      const r = canvas.getBoundingClientRect();
-      const x = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
-      const y = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
-      return { x, y };
-    };
-
-    const start = (e) => { isDrawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); e.preventDefault(); };
-    const draw = (e) => { if (!isDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); e.preventDefault(); };
-    const stop = () => { if(isDrawing) { isDrawing = false; state.drawings[qid] = canvas.toDataURL(); } };
-
-    canvas.addEventListener('mousedown', start);
-    canvas.addEventListener('mousemove', draw);
-    canvas.addEventListener('mouseup', stop);
-    canvas.addEventListener('mouseout', stop);
-    canvas.addEventListener('touchstart', start, {passive: false});
-    canvas.addEventListener('touchmove', draw, {passive: false});
-    canvas.addEventListener('touchend', stop);
-  }
-
-  window.clearCanvas = () => {
-    if(ctx && !state.isAnswered) {
-      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-      state.drawings[state.currentIndex] = ctx.canvas.toDataURL();
-    }
-  };
-
-  // ── DATA FETCHING ──
-  async function loadDummyFallback() {
-    // If Supabase fails or user has no DB setup, ensure the UI can be tested
-    state.questions = [
-      { id: 1, type: 'mcq', topic: 'Fractions', question_text: 'A baker used 3/4 kg of flour for a cake and 1/2 kg for cookies. How much flour did she use in total?', options: ['1 1/4 kg', '4/6 kg', '5/8 kg', '1 kg'], correct_answer: 'A', wrong_explanations: { 'B': 'You added the numerators and denominators directly. Find a common denominator first!', 'C': 'Incorrect conversion.', 'D': 'Close, but 3/4 + 1/2 is greater than 1.' } },
-      { id: 2, type: 'short_ans', topic: 'Decimals', question_text: 'Convert 0.85 into its simplest fraction form.', correct_answer: '17/20', model_answer: '0.85 = 85/100. Divide both by 5 to get 17/20.' },
-      { id: 3, type: 'mcq', topic: 'Whole Numbers', question_text: 'What is the value of the digit 7 in 4,752,900?', options: ['70,000', '700,000', '7,000,000', '7,000'], correct_answer: 'B', wrong_explanations: { 'A': 'That is the hundred thousands place.', 'C': 'That would be the millions place.', 'D': 'That is the thousands place.' } }
-    ];
-    renderQuiz();
-  }
-
-  async function init() {
-    try {
-      const params = new URLSearchParams(window.location.search);
-      const subject = params.get('subject') || 'mathematics';
-      const levelSlug = params.get('level') || 'primary-4';
-      const topic = params.get('topic');
-      const type = params.get('type');
-      
-      const sb = await getSupabase();
-      let query = sb.from('questions').select('*').eq('subject', subject).limit(5);
-      
-      // We apply basic filters if DB supports it, otherwise fallback gracefully
-      const { data, error } = await query;
-      
-      if (error || !data || data.length === 0) throw new Error("No data");
-      state.questions = data;
-      renderQuiz();
-    } catch (err) {
-      console.warn("DB Fetch failed, falling back to dummy questions for UI demonstration.");
-      loadDummyFallback();
-    }
-  }
-
-  setTimeout(init, 100);
-};
-</script>
-</body>
-</html>
+            <div class="text
