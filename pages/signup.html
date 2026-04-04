@@ -10,7 +10,7 @@
   <link rel="icon" href="../assets/favicon.ico" />
 </head>
 
-<body class="bg-page texture-light-grid flex items-center justify-center" style="min-height: 100vh; padding: var(--space-4);">
+<body class="bg-page texture-light-grid flex items-center justify-center" style="min-height: 100vh; padding: var(--space-4); padding-top: var(--space-8); padding-bottom: var(--space-8);">
 
   <main class="card p-8 w-full hover-lift" style="max-width: 480px; background: var(--bg-surface);">
     
@@ -30,32 +30,47 @@
     <!-- Error Alert -->
     <div id="errorMsg" class="mb-4 p-3 text-sm text-danger font-bold rounded" style="display: none; background: rgba(220, 38, 38, 0.1); border: 1px solid rgba(220, 38, 38, 0.2);"></div>
 
-    <!-- Plan Selection Cards -->
-    <div class="flex flex-col gap-2 mb-6">
-      <span class="text-sm font-bold text-muted mb-1">Choose your plan</span>
+    <!-- Premium Plan Selection Cards -->
+    <div class="flex flex-col gap-3 mb-8">
+      <span class="text-xs font-bold text-muted mb-1 uppercase tracking-wider">Choose your plan</span>
       
-      <label class="plan-card flex justify-between items-center p-3 rounded-lg cursor-pointer" style="border: 1px solid var(--border-dark); background: var(--bg-surface); transition: all 0.2s ease;">
-        <div class="flex items-center gap-3">
-          <input type="radio" name="plan" id="plan_single" value="single_subject" onchange="updatePlanStyles()" style="accent-color: var(--brand-rose); width: 16px; height: 16px;" />
-          <span class="font-bold text-main text-sm">Single Subject</span>
+      <!-- Single Subject -->
+      <label class="plan-card relative flex items-start gap-3 p-4 rounded-lg cursor-pointer" style="border: 2px solid var(--border-light); background: var(--bg-surface); transition: all 0.2s ease;">
+        <input type="radio" name="plan" id="plan_single" value="single_subject" onchange="updatePlanStyles()" style="accent-color: var(--brand-rose); width: 18px; height: 18px; margin-top: 2px;" />
+        <div class="flex-1">
+          <div class="flex justify-between items-center mb-1">
+            <span class="font-bold text-main">Single Subject</span>
+            <span class="plan-price font-display text-xl text-main">S$9.99<span class="text-xs text-muted font-body" style="text-transform: none;">/mo</span></span>
+          </div>
+          <p class="text-xs text-muted m-0">Focused PSLE prep for one subject.</p>
         </div>
-        <span class="plan-price font-display text-lg text-main">S$9.99<span class="text-xs text-muted font-body" style="text-transform: none;">/mo</span></span>
       </label>
 
-      <label class="plan-card flex justify-between items-center p-3 rounded-lg cursor-pointer" style="border: 2px solid var(--brand-rose); background: rgba(183, 110, 121, 0.05); transition: all 0.2s ease;">
-        <div class="flex items-center gap-3">
-          <input type="radio" name="plan" id="plan_all" value="all_subjects" checked onchange="updatePlanStyles()" style="accent-color: var(--brand-rose); width: 16px; height: 16px;" />
-          <span class="font-bold text-main text-sm flex items-center gap-2">All Subjects <span class="badge" style="background: var(--brand-rose); color: white; padding: 2px 6px; font-size: 0.65rem;">Popular</span></span>
+      <!-- All Subjects (Featured) -->
+      <label class="plan-card relative flex items-start gap-3 p-4 rounded-lg cursor-pointer" style="border: 2px solid var(--brand-rose); background: rgba(183, 110, 121, 0.05); transition: all 0.2s ease;">
+        <div class="absolute top-0 right-0" style="transform: translate(8px, -12px);">
+            <span class="badge" style="background: var(--brand-rose); color: white; padding: 4px 10px; font-size: 0.65rem; box-shadow: 0 4px 6px rgba(183,110,121,0.2);">Most Popular</span>
         </div>
-        <span class="plan-price font-display text-lg text-rose">S$19.99<span class="text-xs text-muted font-body" style="text-transform: none;">/mo</span></span>
+        <input type="radio" name="plan" id="plan_all" value="all_subjects" checked onchange="updatePlanStyles()" style="accent-color: var(--brand-rose); width: 18px; height: 18px; margin-top: 2px;" />
+        <div class="flex-1">
+          <div class="flex justify-between items-center mb-1">
+            <span class="font-bold text-main">All Subjects</span>
+            <span class="plan-price font-display text-xl text-rose">S$19.99<span class="text-xs text-rose font-body" style="text-transform: none; opacity: 0.8;">/mo</span></span>
+          </div>
+          <p class="text-xs text-muted m-0">The complete PSLE toolkit (Maths, Science & English).</p>
+        </div>
       </label>
 
-      <label class="plan-card flex justify-between items-center p-3 rounded-lg cursor-pointer" style="border: 1px solid var(--border-dark); background: var(--bg-surface); transition: all 0.2s ease;">
-        <div class="flex items-center gap-3">
-          <input type="radio" name="plan" id="plan_family" value="family" onchange="updatePlanStyles()" style="accent-color: var(--brand-rose); width: 16px; height: 16px;" />
-          <span class="font-bold text-main text-sm">Family <span class="text-xs text-muted font-normal">(up to 3)</span></span>
+      <!-- Family -->
+      <label class="plan-card relative flex items-start gap-3 p-4 rounded-lg cursor-pointer" style="border: 2px solid var(--border-light); background: var(--bg-surface); transition: all 0.2s ease;">
+        <input type="radio" name="plan" id="plan_family" value="family" onchange="updatePlanStyles()" style="accent-color: var(--brand-rose); width: 18px; height: 18px; margin-top: 2px;" />
+        <div class="flex-1">
+          <div class="flex justify-between items-center mb-1">
+            <span class="font-bold text-main">Family <span class="font-normal text-xs text-muted ml-1">(up to 3)</span></span>
+            <span class="plan-price font-display text-xl text-main">S$29.99<span class="text-xs text-muted font-body" style="text-transform: none;">/mo</span></span>
+          </div>
+          <p class="text-xs text-muted m-0">Independent profiles & Parent Mission Control.</p>
         </div>
-        <span class="plan-price font-display text-lg text-main">S$29.99<span class="text-xs text-muted font-body" style="text-transform: none;">/mo</span></span>
       </label>
     </div>
 
@@ -74,6 +89,11 @@
       <div class="flex flex-col gap-1">
         <label class="text-sm font-bold text-muted" for="password">Password</label>
         <input class="form-input" type="password" id="password" placeholder="At least 8 characters" autocomplete="new-password" />
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-bold text-muted" for="confirmPassword">Confirm Password</label>
+        <input class="form-input" type="password" id="confirmPassword" placeholder="Repeat your password" autocomplete="new-password" />
       </div>
     </div>
 
@@ -115,24 +135,29 @@
   <!-- supabase-client.js must load before auth.js module so getSupabase() is defined -->
   <script src="/js/supabase-client.js"></script>
   <script>
-    // Tiny script to handle dynamic styling of radio button cards
+    // Handles dynamic styling of radio button cards
     function updatePlanStyles() {
       document.querySelectorAll('.plan-card').forEach(card => {
         const radio = card.querySelector('input[type="radio"]');
         const price = card.querySelector('.plan-price');
+        const moText = price.querySelector('span');
         
         if (radio.checked) {
           card.style.borderColor = 'var(--brand-rose)';
-          card.style.borderWidth = '2px';
           card.style.background = 'rgba(183, 110, 121, 0.05)';
           price.classList.add('text-rose');
           price.classList.remove('text-main');
+          moText.classList.add('text-rose');
+          moText.classList.remove('text-muted');
+          moText.style.opacity = '0.8';
         } else {
-          card.style.borderColor = 'var(--border-dark)';
-          card.style.borderWidth = '1px';
+          card.style.borderColor = 'var(--border-light)';
           card.style.background = 'var(--bg-surface)';
           price.classList.remove('text-rose');
           price.classList.add('text-main');
+          moText.classList.remove('text-rose');
+          moText.classList.add('text-muted');
+          moText.style.opacity = '1';
         }
       });
     }
@@ -151,6 +176,7 @@
       const name = document.getElementById('fullName').value.trim();
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
       const plan = document.querySelector('input[name="plan"]:checked')?.value || 'all_subjects';
       const btn = document.getElementById('signupBtn');
 
@@ -159,6 +185,7 @@
       if (!name) { showError('Please enter your name.'); return; }
       if (!email) { showError('Please enter your email.'); return; }
       if (!password || password.length < 8) { showError('Password must be at least 8 characters.'); return; }
+      if (password !== confirmPassword) { showError('Passwords do not match. Please try again.'); return; }
 
       btn.disabled = true;
       btn.textContent = 'Creating account…';
