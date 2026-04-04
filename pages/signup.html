@@ -48,13 +48,10 @@
 
       <!-- All Subjects (Featured) -->
       <label class="plan-card relative flex items-start gap-3 p-4 rounded-lg cursor-pointer" style="border: 2px solid var(--brand-rose); background: rgba(183, 110, 121, 0.05); transition: all 0.2s ease;">
-        <div class="absolute top-0 right-0" style="transform: translate(8px, -12px);">
-            <span class="badge" style="background: var(--brand-rose); color: white; padding: 4px 10px; font-size: 0.65rem; box-shadow: 0 4px 6px rgba(183,110,121,0.2);">Most Popular</span>
-        </div>
         <input type="radio" name="plan" id="plan_all" value="all_subjects" checked onchange="updatePlanStyles()" style="accent-color: var(--brand-rose); width: 18px; height: 18px; margin-top: 2px;" />
         <div class="flex-1">
           <div class="flex justify-between items-center mb-1">
-            <span class="font-bold text-main">All Subjects</span>
+            <span class="font-bold text-main">All Subjects</span><span class="badge" style="background: var(--brand-rose); color: white; padding: 4px 10px; font-size: 0.65rem; box-shadow: 0 4px 6px rgba(183,110,121,0.2);">  Most Popular</span>
             <span class="plan-price font-display text-xl text-rose">S$19.99<span class="text-xs text-rose font-body" style="text-transform: none; opacity: 0.8;">/mo</span></span>
           </div>
           <p class="text-xs text-muted m-0">The complete PSLE toolkit (Maths, Science & English).</p>
