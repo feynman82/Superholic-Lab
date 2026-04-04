@@ -11,8 +11,10 @@
   <link rel="icon" href="../assets/favicon.ico" />
   <meta name="robots" content="noindex, nofollow" />
   
+  <!-- Analytics: configure at plausible.io -->
   <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js"></script>
   
+  <!-- Auth guard: redirects to login if no active session -->
   <script type="module">
     import { guardPage }    from '/js/auth.js';
     import { initAppShell } from '/js/app-shell.js';
@@ -23,6 +25,7 @@
 
 <body id="mainBody" class="has-bottom-nav bg-page texture-light-grid">
 
+  <!-- ── Navbar ─────────────────────────────────────────────────────────── -->
   <header class="navbar justify-between bg-sage-dark" id="navbar">
     <a href="../index.html" class="flex items-center gap-2 font-display text-2xl text-white" style="text-decoration: none;">
       <img src="../assets/logo.svg" width="32" height="32" alt="" aria-hidden="true" style="border-radius: var(--radius-sm); flex-shrink:0;">
@@ -43,8 +46,10 @@
     </div>
   </header>
 
+  <!-- ── Hero ───────────────────────────────────────────────────────────── -->
   <div class="bg-sage texture-dots py-10" style="padding-top: calc(64px + var(--space-8)); position:relative; overflow:hidden;">
     
+    <!-- Student Switcher (Only visible for Family Plans) -->
     <div id="student-selector" class="animate-in delay-2" style="display:none; margin: 0 auto var(--space-4); max-width: 240px; position:relative; z-index:10;">
       <select id="student-select" class="form-input" style="background: rgba(255,255,255,0.15); color: #FFFFFF; border-color: rgba(255,255,255,0.2); text-align: center; font-weight: 600; cursor: pointer;">
       </select>
@@ -58,6 +63,7 @@
     </div>
   </div>
 
+  <!-- ── Main content ────────────────────────────────────────────────────── -->
   <main id="app" class="container py-10" style="max-width:800px; min-height: 80vh;">
     
     <div id="progress-loading" class="text-center py-10">
@@ -84,7 +90,6 @@
             <div id="stat-mathematics-al" class="badge text-sm">-</div>
           </div>
         </div>
-        
         <div class="card p-6 text-center hover-lift" style="border-top: 4px solid var(--science-colour);">
           <div class="text-muted text-sm mb-2 uppercase font-bold tracking-wider">Science</div>
           <div class="flex justify-center items-baseline gap-3">
@@ -92,7 +97,6 @@
             <div id="stat-science-al" class="badge text-sm">-</div>
           </div>
         </div>
-        
         <div class="card p-6 text-center hover-lift" style="border-top: 4px solid var(--english-colour);">
           <div class="text-muted text-sm mb-2 uppercase font-bold tracking-wider">English</div>
           <div class="flex justify-center items-baseline gap-3">
@@ -102,6 +106,7 @@
         </div>
       </div>
 
+      <!-- Action Plan Containers (IDs perfectly matched to JS) -->
       <div id="quest-map-section" style="display: none;"></div>
 
       <h2 class="font-display text-2xl text-main mb-4 uppercase">Areas of Weakness</h2>
@@ -112,38 +117,34 @@
 
       <h2 class="font-display text-2xl text-main mb-4 uppercase">Statistics</h2>
       <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:var(--space-4); margin-bottom:var(--space-8);">
-        
         <div class="card p-6 text-center hover-lift" id="stat-card-papers">
           <div class="text-muted text-sm mb-2 uppercase font-bold tracking-wider">Papers Attempted</div>
           <div id="stat-papers" class="font-display text-3xl text-main">-</div>
         </div>
-        
         <div class="card p-6 text-center hover-lift">
           <div class="text-muted text-sm mb-2 uppercase font-bold tracking-wider">Questions Mastered</div>
           <div id="stat-mastered-new" class="font-display text-3xl text-success">-</div>
         </div>
-        
         <div class="card p-6 text-center hover-lift">
-          <div class="text-muted text-sm mb-2 uppercase font-bold tracking-wider">Practice Time</div>
+          <div class="text-muted text-sm mb-2 uppercase font-bold tracking-wider">Total Practice Time</div>
           <div id="stat-time-new" class="font-display text-3xl text-main">-</div>
         </div>
-        
         <div class="card p-6 text-center hover-lift">
           <div class="text-muted text-sm mb-2 uppercase font-bold tracking-wider">Topics Improved</div>
           <div class="font-bold text-lg text-amber"><span id="stat-improved">-</span></div>
           <div class="text-muted text-xs uppercase font-bold mt-1">vs Last Week</div>
         </div>
-
       </div>
 
-      <div id="subject-bars" hidden></div>
-      <div id="weak-topics" hidden></div>
+      <!-- Additional History Containers -->
       <div id="recent-history" hidden></div>
       <div id="exam-history-empty" hidden></div>
       <div id="exam-history-list" hidden></div>
+
     </div>
   </main>
 
+  <!-- ── Footer ─────────────────────────────────────────────────────────── -->
   <footer class="footer bg-sage-dark texture-whimsical pt-8 pb-8" style="position: relative;">
     <div class="footer-pet-track"><div class="walking-pet">🐈</div></div>
     <div class="container">
@@ -158,28 +159,39 @@
     </div>
   </footer>
 
+  <!-- ── Bottom nav ─────────────────────────────────────────────────────── -->
   <nav class="bottom-nav" id="bottomNav" aria-label="Mobile navigation">
     <a href="subjects.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+      </svg>
       Practise
     </a>
     <a href="tutor.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+      </svg>
       AI Tutor
     </a>
     <a href="exam.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="M9 12h6M9 16h4"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+        <rect x="9" y="3" width="6" height="4" rx="2"/>
+        <path d="M9 12h6M9 16h4"/>
+      </svg>
       Exam
     </a>
     <a href="progress.html" class="bottom-nav-item is-active" aria-current="page">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+      </svg>
       Progress
     </a>
   </nav>
 
   <script src="../js/supabase-client.js"></script>
   <script src="../js/progress.js"></script>
-  
+
   <script>
     // ── ROBUST EVENT DELEGATION FOR NAVBAR ──
     document.addEventListener('click', (e) => {
