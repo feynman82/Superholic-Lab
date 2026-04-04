@@ -56,7 +56,7 @@
     <a href="about.html">About Us</a>
     <a href="pricing.html">Pricing</a>
     <a href="contact.html">Contact Support</a>
-    <a href="#" id="navSignOut" class="text-rose">Sign Out</a>
+    <a href="#" id="navSignOut" style="color: var(--brand-rose);">Sign Out</a>
   </div>
 </header>
 
@@ -85,6 +85,48 @@
 
 <script src="../js/supabase-client.js"></script>
 <script>
+// ── ROBUST EVENT DELEGATION FOR NAVBAR ──
+document.addEventListener('click', (e) => {
+  const toggleBtn = e.target.closest('#navToggle');
+  const dropdown = document.getElementById('navDropdown');
+  
+  // Toggle Mobile Menu
+  if (toggleBtn && dropdown) {
+    e.stopPropagation();
+    dropdown.classList.toggle('is-open');
+    toggleBtn.classList.toggle('is-active'); 
+    return;
+  }
+
+  // Close Mobile Menu on outside click
+  if (dropdown && dropdown.classList.contains('is-open') && !dropdown.contains(e.target)) {
+    dropdown.classList.remove('is-open');
+    const actualToggle = document.getElementById('navToggle');
+    if (actualToggle) actualToggle.classList.remove('is-active');
+  }
+
+  // Handle Sign Out
+  const signOutBtn = e.target.closest('#navSignOut');
+  if (signOutBtn) {
+    e.preventDefault();
+    getSupabase().then(async (sb) => {
+      await sb.auth.signOut();
+      window.location.href = '../index.html';
+    });
+  }
+});
+
+// Auto-Light Up Active Nav Icon
+(function() {
+  const currentPath = window.location.pathname;
+  document.querySelectorAll('.bottom-nav-item').forEach(link => {
+    const href = link.getAttribute('href');
+    if (href && currentPath.includes(href)) {
+      link.classList.add('is-active');
+    }
+  });
+})();
+
 window.initQuizEngine = function() {
   'use strict';
 
@@ -98,7 +140,9 @@ window.initQuizEngine = function() {
     answers: {},       
     drawings: {},      
     isAnswered: false, 
-    feedback: null     
+    feedback: null,
+    currentType: null,
+    quizStartTime: null
   };
 
   const app = document.getElementById('app');
@@ -118,9 +162,8 @@ window.initQuizEngine = function() {
   }
 
   function renderQuiz() {
-    // FIXED: Properly handles 0 questions without falling back to dummy data
     if (state.questions.length === 0) {
-      app.innerHTML = `<div class="card p-10 text-center max-w-[600px] w-full hover-lift"><div class="text-4xl mb-4">🕵️</div><h2 class="font-display text-2xl text-main">No questions found!</h2><p class="text-muted text-sm my-4">Miss Wena hasn't added questions for this specific combination yet. Check back soon!</p><button class="btn btn-primary" onclick="window.location.href='subjects.html'">Return to Subjects</button></div>`;
+      app.innerHTML = `<div class="card p-10 text-center max-w-[600px] w-full hover-lift"><div class="text-4xl mb-4">🕵️</div><h2 class="font-display text-2xl text-main">No questions found!</h2><p class="text-muted text-sm my-4">Miss Wena hasn't added questions for this specific combination yet. Check back soon!</p><button class="btn btn-primary hover-lift" onclick="window.location.href='subjects.html'">Return to Subjects</button></div>`;
       return;
     }
 
@@ -259,7 +302,6 @@ window.initQuizEngine = function() {
        return;
     }
 
-    // FIXED: Avoids ReferenceError by directly mutating state instead of calling setState
     if (state.currentIndex === state.questions.length - 1) {
       state.phase = 'DONE';
       render();
@@ -338,6 +380,78 @@ window.initQuizEngine = function() {
     `;
   }
 
+  // ── DATA ENGINE (Restored static file logic) ──
+  function resolveFile(subject, level, topic) {
+    const broadMap = {
+      'primary-1:mathematics': '../data/questions/p1-mathematics-whole-numbers.json',
+      'primary-2:mathematics': '../data/questions/p2-mathematics.json',
+      'primary-2:english':     '../data/questions/p2-english.json',
+      'primary-4:mathematics': '../data/questions/p4-mathematics.json',
+      'primary-4:science':     '../data/questions/p4-science.json',
+      'primary-4:english':     '../data/questions/p4-english.json',
+      'primary-5:mathematics': '../data/questions/p5-mathematics.json',
+      'primary-5:science':     '../data/questions/p5-science.json',
+    };
+
+    if (subject === 'english' && state.currentType && ['cloze', 'editing'].includes(state.currentType)) {
+      const levelShort = level.replace('primary-', 'p');
+      return `../data/questions/${levelShort}-english-${state.currentType}.json`;
+    }
+
+    const key = `${level}:${subject}`;
+    const broadPath = broadMap[key];
+    if (!broadPath) return null;
+
+    if (topic && topic !== 'all') {
+      const levelShort = level.replace('primary-', 'p');
+      return `../data/questions/${levelShort}-${subject}-${topic}.json`;
+    }
+
+    return broadPath;
+  }
+
+  function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  async function init() {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const subject = params.get('subject') || 'mathematics';
+      const levelSlug = params.get('level') || 'primary-4';
+      const topic = params.get('topic');
+      const type = params.get('type');
+      
+      state.currentType = type;
+      
+      const filePath = resolveFile(subject, levelSlug, topic);
+      if (!filePath) {
+        state.questions = [];
+        render();
+        return;
+      }
+
+      const res = await fetch(filePath);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const all = await res.json();
+      
+      const pool = type && type !== 'mixed' ? all.filter(q => q.type === type) : all;
+      
+      state.questions = shuffle(pool).slice(0, 10);
+      state.quizStartTime = Date.now();
+      render();
+    } catch (err) {
+      console.warn("Local fetch failed:", err);
+      state.questions = [];
+      render();
+    }
+  }
+
   // ── SAVE RESULTS ──
   async function saveQuizResult() {
     const params = new URLSearchParams(window.location.search);
@@ -353,7 +467,8 @@ window.initQuizEngine = function() {
         exam_type: 'QUIZ',
         score: state.score,
         total_marks: state.questions.length,
-        questions_attempted: state.questions.length
+        questions_attempted: state.questions.length,
+        time_taken: state.quizStartTime ? Math.round((Date.now() - state.quizStartTime) / 1000) : null
       });
     } catch (e) {
       console.error('Failed to save quiz result:', e);
@@ -409,35 +524,6 @@ window.initQuizEngine = function() {
       state.drawings[state.currentIndex] = ctx.canvas.toDataURL();
     }
   };
-
-  // ── DATA FETCHING ──
-  async function init() {
-    try {
-      const params = new URLSearchParams(window.location.search);
-      const subject = params.get('subject') || 'mathematics';
-      const levelSlug = params.get('level') || 'primary-4';
-      const topic = params.get('topic');
-      const type = params.get('type');
-      
-      const sb = await getSupabase();
-      
-      let query = sb.from('questions').select('*').eq('subject', subject).eq('level', levelSlug).limit(10);
-      
-      if (topic && topic !== 'all') query = query.eq('topic', topic);
-      if (type && type !== 'mixed') query = query.eq('type', type);
-      
-      const { data, error } = await query;
-      if (error) throw error;
-      
-      state.questions = data || [];
-      render();
-    } catch (err) {
-      console.warn("DB Fetch failed:", err);
-      // FIXED: Removed dummy fallback. Now correctly displays "No questions found!"
-      state.questions = [];
-      render();
-    }
-  }
 
   setTimeout(init, 100);
 };

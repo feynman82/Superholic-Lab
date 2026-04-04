@@ -57,7 +57,7 @@
     <a href="about.html">About Us</a>
     <a href="pricing.html">Pricing</a>
     <a href="contact.html">Contact Support</a>
-    <a href="#" id="navSignOut" class="text-rose">Sign Out</a>
+    <a href="#" id="navSignOut" style="color: var(--brand-rose);">Sign Out</a>
   </div>
 </header>
 
@@ -101,6 +101,45 @@
 
 <script src="../js/supabase-client.js"></script>
 <script>
+// ── ROBUST EVENT DELEGATION FOR NAVBAR ──
+document.addEventListener('click', (e) => {
+  const toggleBtn = e.target.closest('#navToggle');
+  const dropdown = document.getElementById('navDropdown');
+  
+  if (toggleBtn && dropdown) {
+    e.stopPropagation();
+    dropdown.classList.toggle('is-open');
+    toggleBtn.classList.toggle('is-active'); 
+    return;
+  }
+
+  if (dropdown && dropdown.classList.contains('is-open') && !dropdown.contains(e.target)) {
+    dropdown.classList.remove('is-open');
+    const actualToggle = document.getElementById('navToggle');
+    if (actualToggle) actualToggle.classList.remove('is-active');
+  }
+
+  const signOutBtn = e.target.closest('#navSignOut');
+  if (signOutBtn) {
+    e.preventDefault();
+    getSupabase().then(async (sb) => {
+      await sb.auth.signOut();
+      window.location.href = '../index.html';
+    });
+  }
+});
+
+// Auto-Light Up Active Nav Icon
+(function() {
+  const currentPath = window.location.pathname;
+  document.querySelectorAll('.bottom-nav-item').forEach(link => {
+    const href = link.getAttribute('href');
+    if (href && currentPath.includes(href)) {
+      link.classList.add('is-active');
+    }
+  });
+})();
+
 window.initSubjectsEngine = function() {
   'use strict';
 
@@ -115,7 +154,6 @@ window.initSubjectsEngine = function() {
     'primary-6:english':     ['grammar','cloze','editing'],
   };
 
-  // NEW: Strict Syllabus Map to prevent P1 from seeing Algebra
   const SYLLABUS_MAP = {
     'primary-1:mathematics': ['Whole Numbers', 'Addition and Subtraction', 'Length', 'Time', 'Money', 'Picture Graphs'],
     'primary-2:mathematics': ['Whole Numbers', 'Addition and Subtraction', 'Multiplication and Division', 'Length', 'Mass', 'Volume', 'Time', 'Money', 'Fractions', 'Picture Graphs'],
@@ -162,7 +200,6 @@ window.initSubjectsEngine = function() {
   function titleCase(s) { return s.replace(/-/g,' ').replace(/\b\w/g, c => c.toUpperCase()); }
 
   function renderSubject() {
-    // FIX: Hide Science for Primary 1 and Primary 2
     const isJunior = state.level.toLowerCase().includes('primary 1') || state.level.toLowerCase().includes('primary 2');
     
     const subjects = [
@@ -200,8 +237,6 @@ window.initSubjectsEngine = function() {
   function renderTopic() {
     const key = state.level.toLowerCase().replace(' ','-') + ':' + state.subject;
     const activeTopics = TOPIC_MAP[key] || [];
-    
-    // FIX: Pull exact syllabus for the specific level, fallback to empty
     const allTopicsForSubj = SYLLABUS_MAP[key] || [];
     const stepText = state.tier === 'single_subject' ? 'Step 1 of 2' : 'Step 2 of 3';
 
@@ -312,7 +347,6 @@ window.initSubjectsEngine = function() {
       state.tier = profile.subscription_tier || 'trial';
       state.studentId = student?.id || null;
 
-      // FIX: Maintain URL state on navbar links
       if (state.studentId) {
         document.querySelectorAll('.bottom-nav-item').forEach(link => {
           const url = new URL(link.href, window.location.origin);
