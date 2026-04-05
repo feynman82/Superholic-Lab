@@ -52,7 +52,7 @@
     if (saveBtn) saveBtn.addEventListener('click', generateStudyNote);
 
     // Welcome message
-    appendBubble('assistant', "Hello! I'm Miss Wena. 😊 I'm your Superholic Tutor, so you can ask me about Mathematics, Science, or English all in one place! Need help with a bar model, a science experiment, or grammar? Let's figure it out together!");
+    appendBubble('tutor', "Hello! I'm Miss Wena. 😊 I'm your Superholic Tutor, so you can ask me about Mathematics, Science, or English all in one place! Need help with a bar model, a science experiment, or grammar? Let's figure it out together!");
   }
 
   // ── Canvas Pen Tool Logic ──
@@ -150,12 +150,12 @@
       typingEl.remove();
 
       if (!res.ok || data.error) {
-        appendBubble('assistant', data.error || 'Sorry, something went wrong. Please try again.');
+        appendBubble('tutor', data.error || 'Sorry, something went wrong. Please try again.');
         history.pop(); // Remove failed user message
         chatInput.value = text; // Restore the user's text!
       } else {
-        appendBubble('assistant', data.reply);
-        history.push({ role: 'assistant', content: data.reply });
+        appendBubble('tutor', data.reply);
+        history.push({ role: 'tutor', content: data.reply });
         
         // Expose Save Note button once an actual conversation exists
         if (saveBtn && history.filter(m => m.role === 'user').length >= 1) {
@@ -166,7 +166,7 @@
       }
     } catch (err) {
       typingEl.remove();
-      appendBubble('assistant', 'Could not reach the tutor. Please check your connection.');
+      appendBubble('tutor', 'Could not reach the tutor. Please check your connection.');
       history.pop();
       chatInput.value = text; // FIX: Restore the text if API completely fails!
     } finally {
