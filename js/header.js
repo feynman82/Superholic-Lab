@@ -85,9 +85,14 @@ class GlobalHeader extends HTMLElement {
             // Append "Sign Out" to Dropdown Menu & Remove "Free Trial"
             const navLinks = this.querySelector('#navDropdown');
             if (navLinks) {
-              // Robust fix: Remove any existing sign out links before appending to prevent duplicates
-              const existingSignOuts = this.querySelectorAll('#navSignOut');
-              existingSignOuts.forEach(el => el.remove());
+              // Defensive Shield: Remove ANY existing sign out links by ID *or* Text Content
+              // This actively prevents duplicates caused by legacy inline scripts on older pages.
+              const existingLinks = Array.from(navLinks.querySelectorAll('a'));
+              existingLinks.forEach(el => {
+                if (el.id === 'navSignOut' || el.textContent.trim() === 'Sign Out') {
+                  el.remove();
+                }
+              });
 
               const signOut = document.createElement('a');
               signOut.id = "navSignOut";
