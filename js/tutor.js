@@ -45,7 +45,7 @@
     handleRemedialIntent();
 
     // Welcome message
-    appendBubble('assistant', "Hello! I'm Miss Wena. 😊 I'm your Superholic Tutor, so you can ask me about Mathematics, Science, or English all in one place! Need help with a bar model, a science experiment, or grammar? Let's figure it out together!");
+    appendBubble('assistant', "Hello! I'm Miss Wena. 😊 I'm your Omni-Tutor, so you can ask me about Mathematics, Science, or English all in one place! Need help with a bar model, a science experiment, or grammar? Let's figure it out together!");
   }
 
   // ── Canvas Pen Tool Logic ──
@@ -167,6 +167,16 @@
   function formatMessage(text) {
     // Escapes HTML then replaces **bold** with the branded strong tag
     let safe = String(text).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    
+    // 1. Convert LaTeX fractions \frac{1}{2} to 1/2
+    safe = safe.replace(/\\frac\s*\{([^{}]+)\}\s*\{([^{}]+)\}/g, '$1/$2');
+    
+    // 2. Clean up annoying $ delimiters wrapped around equations or fractions
+    // Matches $...$ containing a slash, plus, minus, or equals sign to avoid catching currency
+    safe = safe.replace(/\$([^$]*?[/+\-=][^$]*?)\$/g, '$1');
+    // Matches isolated variables/numbers like $x$ or $5$
+    safe = safe.replace(/\$\s*([0-9a-zA-Z])\s*\$/g, '$1');
+    
     return safe.replace(/\*\*(.*?)\*\*/g, '<strong class="text-rose">$1</strong>');
   }
 

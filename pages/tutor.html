@@ -20,13 +20,67 @@
     const profile = await guardPage(true);
     initAppShell(profile);
   </script>
+
+  <style>
+    /* ── Tutor 3.0 Specific Chat Styles ── */
+    .chat-scroll-area { scroll-behavior: smooth; }
+    
+    .chat-bubble-user {
+      background-color: var(--sage-dark);
+      color: var(--cream);
+      align-self: flex-end;
+      border-radius: 16px 16px 0 16px;
+      padding: 12px 16px;
+      max-width: 85%;
+      box-shadow: var(--shadow-sm);
+      word-break: break-word; /* Fixes text overflow issues */
+    }
+    
+    .chat-bubble-tutor {
+      background-color: var(--bg-elevated);
+      color: var(--text-main);
+      align-self: flex-start;
+      border-radius: 16px 16px 16px 0;
+      padding: 16px;
+      max-width: 85%;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-light);
+      line-height: 1.6;
+      word-break: break-word; /* Fixes text overflow issues */
+    }
+
+    .chat-typing { align-self: flex-start; padding: 12px 16px; }
+    .chat-typing span {
+      display: inline-block; width: 6px; height: 6px;
+      background-color: var(--brand-rose); border-radius: 50%;
+      margin: 0 2px; animation: typing 1.4s infinite both;
+    }
+    .chat-typing span:nth-child(1) { animation-delay: 0s; }
+    .chat-typing span:nth-child(2) { animation-delay: 0.2s; }
+    .chat-typing span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typing { 0%, 80%, 100% { transform: scale(0); opacity: 0.5; } 40% { transform: scale(1); opacity: 1; } }
+
+    /* Canvas Area */
+    .scratchpad-container { 
+      border: 2px solid var(--border-light); 
+      border-radius: var(--radius-md); 
+      background: #FFFFFF; 
+      position: relative; 
+      overflow: hidden; 
+      margin-bottom: var(--space-4); 
+      display: none; 
+    }
+    .scratchpad-container.is-open { display: block; }
+    .scratchpad-canvas { width: 100%; height: 200px; cursor: crosshair; touch-action: none; }
+  </style>
 </head>
 
 <body id="mainBody" class="has-bottom-nav bg-page texture-light-grid">
 
   <global-header></global-header>
 
-  <main class="container py-8" style="padding-top: calc(64px + var(--space-8)); max-width: 800px; min-height: 85vh;">
+  <!-- Flex-col architecture applied here to safely contain the inner card without overlap -->
+  <main class="container py-8 flex flex-col" style="padding-top: calc(64px + var(--space-8)); max-width: 800px; min-height: 85vh;">
     
     <!-- Trial limit banner -->
     <div id="tutor-limit-banner" class="p-4 mb-4 rounded-lg hidden" style="background: rgba(217, 119, 6, 0.1); border: 1px solid rgba(217, 119, 6, 0.2); color: var(--brand-amber);">
@@ -41,32 +95,33 @@
       <a href="progress.html" class="btn btn-ghost btn-sm flex-shrink-0">← Quest Map</a>
     </div>
 
-    <!-- The 3.0 Chat Card -->
-    <div class="card p-0 overflow-hidden flex flex-col hover-lift" style="height: 65vh; min-height: 500px; border: 1px solid var(--border-dark);">
+    <!-- The 3.0 Chat Card (Strictly bounded height to force internal scrolling) -->
+    <div class="card p-0 overflow-hidden flex flex-col hover-lift flex-1 mb-6" style="height: 60vh; min-height: 500px; max-height: 800px; border: 1px solid var(--border-dark);">
       
-      <!-- Trust Header -->
-      <div class="bg-sage-dark p-4 flex items-center justify-between">
+      <!-- Trust Header (Lightened to Cream with contrasting dark sage text) -->
+      <div class="p-4 flex items-center justify-between" style="background: #F9F6F0; border-bottom: 3px solid var(--brand-rose);">
          <div class="flex items-center gap-3">
             <img src="../assets/images/miss_wena.png" alt="Miss Wena" style="width: 48px; height: 48px; object-fit: cover; border-radius: 50%; border: 2px solid var(--brand-rose); background: #f0c090;" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 52 52%22><rect width=%2252%22 height=%2252%22 fill=%22%23B76E79%22/><circle cx=%2226%22 cy=%2222%22 r=%2211%22 fill=%22%23f0c090%22/></svg>'">
             <div>
-               <div class="font-display text-xl text-white tracking-wide">Miss Wena</div>
-               <div class="text-xs font-bold text-success flex items-center gap-1">✨ Superholic Tutor</div>
+               <!-- High Contrast Text -->
+               <div class="font-display text-xl text-main tracking-wide">Miss Wena</div>
+               <div class="text-xs font-bold flex items-center gap-1" style="color: var(--brand-mint);">✨ Verified MOE-Aligned Superholic Tutor</div>
             </div>
          </div>
-         <span class="badge badge-success">Online</span>
+         <span class="badge badge-success" style="background: rgba(5,150,105,0.15);">Online</span>
       </div>
 
-      <!-- Messages Area -->
-      <div id="chat-messages" class="flex-1 p-6 chat-scroll-area flex flex-col gap-4 overflow-y-auto bg-page">
+      <!-- Messages Area (min-height:0 ensures the scrollbar triggers properly within the flex container) -->
+      <div id="chat-messages" class="flex-1 p-6 chat-scroll-area flex flex-col gap-4 overflow-y-auto bg-page" style="min-height: 0;">
          <!-- Bubbles injected by JS -->
       </div>
 
-      <!-- Interaction Bar -->
-      <div class="p-4 bg-surface" style="border-top: 1px solid var(--border-light);">
+      <!-- Interaction Bar (flex-shrink:0 ensures canvas expansion pushes up, not down) -->
+      <div class="p-5 bg-surface" style="border-top: 1px solid var(--border-light); flex-shrink: 0;">
          
-         <div class="flex justify-between items-center mb-3">
+         <div class="flex justify-between items-center mb-4">
             <span class="text-xs font-bold text-muted uppercase tracking-wider">💡 Tip: Draw your working to get better help!</span>
-            <div class="flex gap-2">
+            <div class="flex gap-3">
                <button id="modeTextBtn" class="btn btn-sm" style="background: var(--sage-dark); color: white;">⌨️ Type</button>
                <button id="modeDrawBtn" class="btn btn-sm btn-ghost">✏️ Pen Tool</button>
             </div>
@@ -81,17 +136,17 @@
          </div>
 
          <!-- Text Input & Send -->
-         <div class="flex gap-2">
-            <input type="text" id="chat-input" class="form-input flex-1" placeholder="Ask your tutor anything..." autocomplete="off">
-            <button id="chat-send" class="btn btn-primary hover-lift px-6">Send</button>
+         <div class="flex gap-3 mt-2">
+            <input type="text" id="chat-input" class="form-input flex-1" placeholder="Ask your tutor anything..." autocomplete="off" style="height: 48px; padding: 0 16px;">
+            <button id="chat-send" class="btn btn-primary hover-lift px-6" style="height: 48px;">Send</button>
          </div>
       </div>
     </div>
 
-    <!-- Smart Starter Prompts -->
-    <div class="mt-6 mb-8">
+    <!-- Smart Starter Prompts (Safely anchored below the card) -->
+    <div class="mb-8" style="flex-shrink: 0;">
       <p class="text-xs font-bold text-muted uppercase tracking-wider mb-3">Try asking about any subject:</p>
-      <div class="flex flex-wrap gap-2" id="starter-prompts">
+      <div class="flex flex-wrap gap-3" id="starter-prompts">
         <button class="btn btn-secondary btn-sm starter-prompt hover-lift">How do I draw a before-after bar model?</button>
         <button class="btn btn-secondary btn-sm starter-prompt hover-lift">Test my Science Claim-Evidence-Reasoning!</button>
         <button class="btn btn-secondary btn-sm starter-prompt hover-lift">Check my grammar for this sentence.</button>
