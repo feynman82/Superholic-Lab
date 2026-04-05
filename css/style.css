@@ -913,6 +913,7 @@ body.has-bottom-nav .footer {
 
     /* overflow-hidden utility (used by chat card to clip border-radius) */
     .overflow-hidden { overflow: hidden; }
+    .overflow-y-auto { overflow-y: auto; }
 
     .chat-bubble-user {
       background-color: var(--sage-dark);

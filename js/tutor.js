@@ -155,7 +155,7 @@
         chatInput.value = text; // Restore the user's text!
       } else {
         appendBubble('tutor', data.reply);
-        history.push({ role: 'tutor', content: data.reply });
+        history.push({ role: 'assistant', content: data.reply });
         
         // Expose Save Note button once an actual conversation exists
         if (saveBtn && history.filter(m => m.role === 'user').length >= 1) {
