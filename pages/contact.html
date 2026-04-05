@@ -39,79 +39,89 @@
 
 <!-- ═══════════════════ HUMAN CONNECTION & FORM (Off-White) ═══════════════════ -->
 <section class="py-10 bg-page">
-  <div class="container flex flex-wrap items-start gap-8 justify-center">
+  <div class="container flex flex-col items-center gap-8">
+    
+    <!-- Top Row: Face of Trust & Contact Form -->
+    <div class="flex flex-wrap items-start gap-8 justify-center w-full">
+      <!-- Left Column: The Face of Trust -->
+      <div class="flex-1 flex flex-col justify-center" style="min-width: 300px; max-width: 400px;">
+        <img src="../assets/images/linzy_support.png" alt="Linzy, Superholic Lab Support" style="width: 100%; height: auto; filter: drop-shadow(0 12px 24px rgba(0,0,0,0.15)); display: block; margin: 0 auto;">
+      </div>
 
-    <!-- Left Column: The Face of Trust -->
-    <div class="flex-1 flex flex-col gap-6" style="min-width: 300px; max-width: 400px;">
-      <!-- Full transparent image with drop shadow -->
-      <img src="../assets/images/linzy_support.png" alt="Linzy, Superholic Lab Support" style="width: 100%; height: auto; filter: drop-shadow(0 12px 24px rgba(0,0,0,0.15)); display: block; margin: 0 auto;">
+      <!-- Right Column: The Contact Form -->
+      <div class="flex-1 card p-8 hover-lift" style="min-width: 300px; max-width: 500px; width: 100%;">
+        <h2 id="formHeader" class="font-display text-3xl text-main mb-6">Send a Message</h2>
 
-      <div class="flex flex-col gap-4 mt-2">
-        <div class="flex items-center gap-4 card p-4" style="background: transparent; border: 1px solid var(--border-light); box-shadow: none;">
-          <div class="text-3xl">📧</div>
-          <div>
-            <div class="text-xs text-muted font-bold uppercase mb-1">Email Us Directly</div>
-            <a href="mailto:support@superholiclab.com" class="font-bold text-main" style="text-decoration: none;">support@superholiclab.com</a>
-          </div>
+        <!-- Alerts -->
+        <div id="contact-success" hidden class="mb-4 p-4 rounded" style="background: rgba(5, 150, 105, 0.1); border: 1px solid rgba(5, 150, 105, 0.2); color: var(--brand-mint);">
+          <strong class="font-bold">Message sent!</strong> Linzy will get back to you within 48 hours.
         </div>
-        <div class="flex items-center gap-4 card p-4" style="background: transparent; border: 1px solid var(--border-light); box-shadow: none;">
-          <div class="text-3xl">🕒</div>
-          <div>
-            <div class="text-xs text-muted font-bold uppercase mb-1">Operating Hours</div>
-            <div class="font-bold text-main">Mon – Fri, 9am – 6pm</div>
-          </div>
+        <div id="contact-error" hidden class="mb-4 p-4 rounded text-sm text-danger" style="background: rgba(220, 38, 38, 0.1); border: 1px solid rgba(220, 38, 38, 0.2);">
+          Error message goes here.
         </div>
+
+        <form id="contact-form" action="https://formspree.io/f/xdoqbqol" method="POST" class="flex flex-col gap-4">
+          
+          <!-- Hidden Fields for logged-in CRM Data Injection -->
+          <input type="hidden" id="hidden_plan" name="Plan Subscribed" value="Guest / Not Logged In">
+          <input type="hidden" id="hidden_status" name="Subscription Status" value="N/A">
+          <input type="hidden" id="hidden_end_date" name="Subscription End Date" value="N/A">
+          <input type="hidden" id="hidden_students" name="Registered Students" value="N/A">
+
+          <div class="flex flex-col gap-1">
+            <label for="name" class="text-sm font-bold text-muted">Your Name</label>
+            <input type="text" id="name" name="name" class="form-input" required placeholder="e.g., Mrs Lim" />
+          </div>
+          
+          <div class="flex flex-col gap-1">
+            <label for="email" class="text-sm font-bold text-muted">Email Address</label>
+            <input type="email" id="email" name="email" class="form-input" required placeholder="name@example.com" />
+          </div>
+          
+          <div class="flex flex-col gap-1">
+            <label for="subject" class="text-sm font-bold text-muted">Subject</label>
+            <select id="subject" name="subject" class="form-input" required style="cursor: pointer;">
+              <option value="" disabled selected>Select a topic...</option>
+              <option value="Syllabus & Questions">Syllabus & Questions</option>
+              <option value="Technical Support">Technical Support</option>
+              <option value="Billing & Plans">Billing & Plans</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          
+          <div class="flex flex-col gap-1">
+            <label for="message" class="text-sm font-bold text-muted">Message</label>
+            <textarea id="message" name="message" class="form-input" required placeholder="How can we help you today?" style="min-height: 140px; padding-top: 12px; resize: vertical;"></textarea>
+          </div>
+
+          <button type="submit" id="contact-submit" class="btn btn-primary w-full mt-2">Send Message to Linzy</button>
+
+          <div class="flex flex-wrap justify-center items-center gap-4 mt-4 text-xs font-bold text-muted">
+            <div class="flex items-center gap-1"><span class="text-success">✓</span> Real humans</div>
+            <div class="flex items-center gap-1"><span class="text-success">✓</span> 48h response</div>
+            <div class="flex items-center gap-1"><span class="text-success">✓</span> SG support</div>
+          </div>
+        </form>
       </div>
     </div>
 
-    <!-- Right Column: The Contact Form -->
-    <div class="flex-1 card p-8 hover-lift" style="min-width: 300px; max-width: 500px;">
-      <h2 class="font-display text-3xl text-main mb-6">Send a Message</h2>
-
-      <!-- Alerts -->
-      <div id="contact-success" hidden class="mb-4 p-4 rounded" style="background: rgba(5, 150, 105, 0.1); border: 1px solid rgba(5, 150, 105, 0.2); color: var(--brand-mint);">
-        <strong class="font-bold">Message sent!</strong> Linzy will get back to you within 24 hours.
+    <!-- Bottom Row: Operating Hours & Direct Email -->
+    <div class="flex flex-wrap justify-center gap-6 w-full mt-4 max-w-[900px]">
+      <div class="flex items-center gap-4 card p-6 hover-lift flex-1" style="background: var(--bg-surface); min-width: 280px; border-top: 4px solid var(--brand-rose);">
+        <div class="text-4xl">📧</div>
+        <div>
+          <div class="text-xs text-muted font-bold uppercase mb-1 tracking-wider">Email Us Directly</div>
+          <a href="mailto:support@superholiclab.com" class="font-bold text-main text-lg" style="text-decoration: none;">support@superholiclab.com</a>
+        </div>
       </div>
-      <div id="contact-error" hidden class="mb-4 p-4 rounded text-sm text-danger" style="background: rgba(220, 38, 38, 0.1); border: 1px solid rgba(220, 38, 38, 0.2);">
-        Error message goes here.
+      
+      <div class="flex items-center gap-4 card p-6 hover-lift flex-1" style="background: var(--bg-surface); min-width: 280px; border-top: 4px solid var(--brand-mint);">
+        <div class="text-4xl">🕒</div>
+        <div>
+          <div class="text-xs text-muted font-bold uppercase mb-1 tracking-wider">Operating Hours</div>
+          <div class="font-bold text-main text-lg">Mon – Fri, 9am – 6pm</div>
+        </div>
       </div>
-
-      <form id="contact-form" action="https://formspree.io/f/xdoqbqol" method="POST" class="flex flex-col gap-4">
-        
-        <div class="flex flex-col gap-1">
-          <label for="name" class="text-sm font-bold text-muted">Your Name</label>
-          <input type="text" id="name" name="name" class="form-input" required placeholder="e.g., Mrs Lim" />
-        </div>
-        
-        <div class="flex flex-col gap-1">
-          <label for="email" class="text-sm font-bold text-muted">Email Address</label>
-          <input type="email" id="email" name="email" class="form-input" required placeholder="name@example.com" />
-        </div>
-        
-        <div class="flex flex-col gap-1">
-          <label for="subject" class="text-sm font-bold text-muted">Subject</label>
-          <select id="subject" name="subject" class="form-input" required style="cursor: pointer;">
-            <option value="" disabled selected>Select a topic...</option>
-            <option value="Syllabus & Questions">Syllabus & Questions</option>
-            <option value="Technical Support">Technical Support</option>
-            <option value="Billing & Plans">Billing & Plans</option>
-            <option value="Other">Other</option>
-          </select>
-        </div>
-        
-        <div class="flex flex-col gap-1">
-          <label for="message" class="text-sm font-bold text-muted">Message</label>
-          <textarea id="message" name="message" class="form-input" required placeholder="How can we help you today?" style="min-height: 140px; padding-top: 12px; resize: vertical;"></textarea>
-        </div>
-
-        <button type="submit" id="contact-submit" class="btn btn-primary w-full mt-2">Send Message to Linzy</button>
-
-        <div class="flex flex-wrap justify-center items-center gap-4 mt-4 text-xs font-bold text-muted">
-          <div class="flex items-center gap-1"><span class="text-success">✓</span> Real humans</div>
-          <div class="flex items-center gap-1"><span class="text-success">✓</span> 24h response</div>
-          <div class="flex items-center gap-1"><span class="text-success">✓</span> SG support</div>
-        </div>
-      </form>
     </div>
 
   </div>
@@ -121,58 +131,49 @@
 
 <script src="/js/supabase-client.js"></script>
 <script>
-  /* ── 1. Navbar & Auth Logic ── */
-  document.addEventListener('DOMContentLoaded', () => {
-    const toggle = document.getElementById('navToggle');
-    const dropdown = document.getElementById('navDropdown');
-    
-    if (toggle && dropdown) {
-      toggle.addEventListener('click', (e) => {
-        e.stopPropagation();
-        dropdown.classList.toggle('is-open');
-        toggle.classList.toggle('is-active'); 
-      });
-
-      document.addEventListener('click', (e) => {
-        if (!dropdown.contains(e.target) && !toggle.contains(e.target)) {
-          dropdown.classList.remove('is-open');
-          toggle.classList.remove('is-active');
-        }
-      });
-    }
-  });
-
+  /* ── 1. Data Injection & Personalisation Logic ── */
   getSupabase().then(async function(sb) {
     try {
       const { data: { session } } = await sb.auth.getSession();
+      const headerEl = document.getElementById('formHeader');
       
       if (session) {
-        const authContainer = document.getElementById('auth-header-container');
-        const navLinks = document.getElementById('navDropdown');
+        // Fetch Parent Profile & Registered Students
+        const { data: profile } = await sb.from('profiles').select('*').eq('id', session.user.id).single();
+        const { data: students } = await sb.from('students').select('name, level').eq('parent_id', session.user.id);
         
-        if (authContainer) {
-          authContainer.innerHTML = '<a href="dashboard.html" class="btn btn-secondary btn-sm" style="background: rgba(255,255,255,0.15); color: #FFFFFF; border: 1px solid rgba(255,255,255,0.1);">Dashboard</a>';
-        }
+        if (profile) {
+          // 1. Personalise Header
+          const firstName = profile.full_name ? profile.full_name.split(' ')[0] : 'Parent';
+          if (headerEl) headerEl.textContent = `${firstName}, how can we help?`;
 
-        if (navLinks && !document.getElementById('navSignOut')) {
-          const signOut = document.createElement('a');
-          signOut.id = "navSignOut";
-          signOut.href = "#";
-          signOut.textContent = "Sign Out";
-          signOut.style.color = "var(--brand-rose)"; 
-          signOut.onclick = async (e) => { 
-            e.preventDefault();
-            await sb.auth.signOut(); 
-            window.location.href = '../index.html'; 
-          };
-          navLinks.appendChild(signOut);
+          // 2. Pre-fill Visible Fields
+          document.getElementById('name').value = profile.full_name || '';
+          document.getElementById('email').value = session.user.email || '';
+
+          // 3. Inject Hidden CRM Data for Formspree
+          document.getElementById('hidden_plan').value = profile.subscription_tier || 'trial';
           
-          const signUpLink = document.getElementById('navSignUp');
-          if (signUpLink) signUpLink.remove();
+          // Determine Active Status
+          const isTrial = profile.subscription_tier === 'trial';
+          document.getElementById('hidden_status').value = isTrial ? 'Trial' : (profile.subscription_status || 'Active');
+          
+          // Calculate End Date safely
+          const endDateRaw = profile.current_period_end || profile.trial_ends_at;
+          document.getElementById('hidden_end_date').value = endDateRaw ? new Date(endDateRaw).toLocaleDateString('en-SG') : 'Unknown';
+
+          // Compile Student Names
+          if (students && students.length > 0) {
+            const studentStr = students.map(s => `${s.name} (${s.level})`).join(', ');
+            document.getElementById('hidden_students').value = studentStr;
+          }
         }
+      } else {
+        // 4. Default for Logged Out / Guests
+        if (headerEl) headerEl.textContent = 'Send a message';
       }
     } catch (e) {
-      console.error('Auth check failed:', e);
+      console.error('Data injection failed:', e);
     }
   });
 
@@ -216,7 +217,7 @@
       errEl.hidden = false;
     } finally {
       submit.disabled    = false;
-      submit.textContent = 'Send Message to Superholic Lab';
+      submit.textContent = 'Send Message to Linzy';
     }
   });
 </script>
