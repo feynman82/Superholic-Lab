@@ -381,18 +381,28 @@
       const card = document.createElement('div');
       card.className = 'card hover-lift flex flex-col gap-4 p-6 relative';
       card.innerHTML = `
-        <div class="absolute top-4 right-4" style="z-index: 10;">
-           <button class="btn btn-ghost text-xl flex justify-center items-center transition-colors" onclick="toggleDropdown(event, '${student.id}')" style="height: 32px; width: 32px; padding: 0 !important; border-radius: 50%; line-height: 1;">⋮</button>
+        <div style="position: absolute; top: var(--space-3); right: var(--space-3); z-index: 20;">
+           <button class="kebab-btn" onclick="toggleDropdown(event, '${student.id}')">⋮</button>
            
-           <div id="dropdown-${student.id}" class="hidden absolute right-0 mt-2 border border-light shadow-md flex flex-col overflow-hidden text-sm" style="min-width: 170px; background: var(--bg-surface); border-radius: var(--radius-md); z-index: 20;">
+           <div id="dropdown-${student.id}" class="hidden learner-dropdown">
               
               <input type="file" id="photo-upload-${student.id}" class="hidden" accept="image/*" onchange="handlePhotoUpload(event, '${student.id}')">
               
-              <button class="px-4 py-3 text-left font-medium text-main hover:bg-elevated w-full border-none cursor-pointer transition-colors" style="background: transparent;" onclick="document.getElementById('photo-upload-${student.id}').click(); toggleDropdown(event, '${student.id}')">📸 Upload Photo</button>
+              <button class="learner-dropdown-item" onclick="document.getElementById('photo-upload-${student.id}').click(); toggleDropdown(event, '${student.id}')">
+                 📸 Upload Photo
+              </button>
               
-              <button class="px-4 py-3 text-left font-medium text-main hover:bg-elevated w-full border-none cursor-pointer transition-colors" style="background: transparent; border-top: 1px solid var(--border-light);" onclick="openEditModal('${student.id}')">✏️ Edit Learner</button>
+              <div class="learner-dropdown-divider"></div>
               
-              <button class="px-4 py-3 text-left font-medium text-danger hover:bg-elevated w-full border-none cursor-pointer transition-colors" style="background: transparent; border-top: 1px solid var(--border-light);" onclick="openDeleteModal('${student.id}')">🗑️ Remove</button>
+              <button class="learner-dropdown-item" onclick="openEditModal('${student.id}')">
+                 ✏️ Edit Learner
+              </button>
+              
+              <div class="learner-dropdown-divider"></div>
+              
+              <button class="learner-dropdown-item danger" onclick="openDeleteModal('${student.id}')">
+                 🗑️ Remove
+              </button>
            </div>
         </div>
 
