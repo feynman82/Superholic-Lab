@@ -310,6 +310,20 @@
     else addBtn.style.display = 'inline-flex';
   }
 
+  // Photo Upload Handler Placeholder
+  window.handlePhotoUpload = async (event, studentId) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // TODO: Connect this to your Supabase Storage bucket!
+    // 1. Upload `file` to Supabase Storage
+    // 2. Get the public URL of the uploaded image
+    // 3. Update the `students` table: await sb.from('students').update({ photo_url: publicUrl }).eq('id', studentId);
+    // 4. await loadStudents();
+    
+    alert(`Photo "${file.name}" selected! Ready to be connected to Supabase storage.`);
+  };
+
   function renderGrid(unreadMap) {
     const grid = document.getElementById('cardsGrid');
     grid.innerHTML = '';
@@ -332,11 +346,17 @@
       card.className = 'card hover-lift flex flex-col gap-4 p-6 relative';
       card.innerHTML = `
         <div class="absolute top-4 right-4" style="z-index: 10;">
-           <button class="btn btn-ghost btn-sm text-xl px-2" onclick="toggleDropdown(event, '${student.id}')" style="height: 32px; width: 32px; border-radius: 50%;">⋮</button>
+           <button class="btn btn-ghost btn-sm text-xl px-2 flex justify-center items-center" onclick="toggleDropdown(event, '${student.id}')" style="height: 32px; width: 32px; border-radius: 50%;">⋮</button>
            
-           <div id="dropdown-${student.id}" class="hidden absolute right-0 mt-1 border border-light shadow-md flex flex-col overflow-hidden text-sm" style="min-width: 160px; background: var(--bg-surface); border-radius: var(--radius-md);">
-              <button class="px-4 py-3 text-left font-medium text-main hover:bg-elevated w-full border-none cursor-pointer" style="background: transparent;" onclick="openEditModal('${student.id}')">✏️ Edit Learner</button>
-              <button class="px-4 py-3 text-left font-medium text-danger hover:bg-elevated w-full border-none cursor-pointer" style="background: transparent; border-top: 1px solid var(--border-light);" onclick="openDeleteModal('${student.id}')">🗑️ Remove</button>
+           <div id="dropdown-${student.id}" class="hidden absolute right-0 mt-2 border border-light shadow-md flex flex-col overflow-hidden text-sm" style="min-width: 170px; background: var(--bg-surface); border-radius: var(--radius-md); z-index: 20;">
+              
+              <input type="file" id="photo-upload-${student.id}" class="hidden" accept="image/*" onchange="handlePhotoUpload(event, '${student.id}')">
+              
+              <button class="px-4 py-3 text-left font-medium text-main hover:bg-elevated w-full border-none cursor-pointer transition-colors" style="background: transparent;" onclick="document.getElementById('photo-upload-${student.id}').click(); toggleDropdown(event, '${student.id}')">📸 Upload Photo</button>
+              
+              <button class="px-4 py-3 text-left font-medium text-main hover:bg-elevated w-full border-none cursor-pointer transition-colors" style="background: transparent; border-top: 1px solid var(--border-light);" onclick="openEditModal('${student.id}')">✏️ Edit Learner</button>
+              
+              <button class="px-4 py-3 text-left font-medium text-danger hover:bg-elevated w-full border-none cursor-pointer transition-colors" style="background: transparent; border-top: 1px solid var(--border-light);" onclick="openDeleteModal('${student.id}')">🗑️ Remove</button>
            </div>
         </div>
 
@@ -353,8 +373,8 @@
            ${unreadCount > 0 ? `<span class="badge" style="background: var(--brand-rose); color: white;">${unreadCount} New</span>` : `<span class="text-xs text-muted">Notes</span>`}
         </button>
 
-        <div class="mt-auto pt-4 flex justify-center items-center w-full" style="border-top: 1px solid var(--border-light);">
-          <a href="/pages/subjects.html?student=${student.id}" class="btn btn-primary">Enter Lab →</a>
+        <div class="mt-auto flex justify-center items-center w-full">
+          <a href="/pages/subjects.html?student=${student.id}" class="btn btn-primary w-full">Enter Lab →</a>
         </div>
       `;
       grid.appendChild(card);
