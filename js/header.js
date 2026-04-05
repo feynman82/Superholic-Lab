@@ -1,51 +1,29 @@
 class GlobalHeader extends HTMLElement {
   connectedCallback() {
+    // The inline <style> block was removed to prevent conflicts with style.css.
+    // This allows the mobile layout and buttons to perfectly match index.html.
     this.innerHTML = `
-      <style>
-        /* 1. Force Auth Button to be persistent on mobile */
-        .navbar-actions #auth-header-container {
-          display: flex !important;
-        }
-        
-        /* 2. Change Hamburger Menu Lines Color to match logo */
-        .navbar-toggle span {
-          background-color: var(--text-logo) !important;
-        }
-
-        /* 3. Wrap Dropdown Menu to content size instead of full width */
-        #navDropdown {
-          left: auto !important;
-          right: var(--space-4) !important;
-          width: max-content !important;
-          min-width: 200px;
-          border-radius: var(--radius-md) !important;
-          top: 68px !important; /* Pushed down to cleanly clear the rose border */
-          box-shadow: var(--shadow-md);
-        }
-      </style>
-      
-      <!-- 4. Text Color Overrides -->
-      <header class="navbar justify-between bg-sage-dark" id="navbar" style="color: var(--text-logo);">
+      <header class="navbar justify-between bg-sage-dark" id="navbar">
         
         <!-- Logo & Brand Text -->
-        <a href="/index.html" class="flex items-center gap-2 font-display text-2xl" style="text-decoration: none; color: var(--text-logo);">
+        <a href="/index.html" class="flex items-center gap-2 font-display text-2xl" style="text-decoration: none; color: #FFFFFF;">
           <img src="/assets/logo.svg" width="32" height="32" alt="Superholic Lab Logo" aria-hidden="true" style="border-radius: var(--radius-sm); flex-shrink:0;">
-          SUPERHOLIC LAB
+          Superholic Lab
         </a>
 
-        <!-- Timer injects here during EXAM phase (Removed '.hidden' to prevent !important CSS overrides) -->
-        <div id="nav-timer-container" style="display: flex; align-items: center; justify-content: center;"></div>
+        <!-- Timer injects here during EXAM phase -->
+        <div id="nav-timer-container" class="hidden sm:flex"></div>
 
         <div class="navbar-actions flex items-center gap-4">
           <!-- Dynamic Plan Badge (e.g., Trial, Admin) -->
           <span class="badge hidden" id="planBadge" style="background: rgba(255,255,255,0.15); color: var(--brand-mint);"></span>
           
-          <!-- Persistent Login/Dashboard button -->
+          <!-- Persistent Login/Dashboard button (Matches index.html exactly) -->
           <div id="auth-header-container">
-            <a href="/pages/login.html" class="btn btn-sm hover-lift" style="background: rgba(255,255,255,0.15); color: var(--text-logo); border: 1px solid rgba(255,255,255,0.1);">Log In</a>
+            <a href="/pages/login.html" class="btn btn-sm" style="background: rgba(255,255,255,0.15); color: #FFFFFF; border: 1px solid rgba(255,255,255,0.1);">Log In</a>
           </div>
           
-          <!-- Hamburger Menu (Lines colored via injected CSS) -->
+          <!-- Hamburger Menu -->
           <button class="navbar-toggle" id="navToggle" aria-label="Open menu">
             <span></span><span></span><span></span>
           </button>
@@ -62,37 +40,42 @@ class GlobalHeader extends HTMLElement {
       </header>
     `;
 
-    // ── 1. Hamburger Menu Toggle Logic (Self-contained) ──
-    const toggle = this.querySelector('#navToggle');
-    const dropdown = this.querySelector('#navDropdown');
-    
-    if (toggle && dropdown) {
-      toggle.addEventListener('click', (e) => {
+    // ── 1. Robust Event Delegation for Hamburger Menu ──
+    this.addEventListener('click', (e) => {
+      const toggleBtn = e.target.closest('#navToggle');
+      const dropdown = this.querySelector('#navDropdown');
+      
+      if (toggleBtn && dropdown) {
         e.stopPropagation();
         dropdown.classList.toggle('is-open');
-        toggle.classList.toggle('is-active'); 
-      });
+        toggleBtn.classList.toggle('is-active'); 
+      }
+    });
 
-      document.addEventListener('click', (e) => {
-        if (!dropdown.contains(e.target) && !toggle.contains(e.target)) {
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      const dropdown = this.querySelector('#navDropdown');
+      const toggleBtn = this.querySelector('#navToggle');
+      
+      if (dropdown && dropdown.classList.contains('is-open')) {
+        if (!dropdown.contains(e.target) && (!toggleBtn || !toggleBtn.contains(e.target))) {
           dropdown.classList.remove('is-open');
-          toggle.classList.remove('is-active');
+          if (toggleBtn) toggleBtn.classList.remove('is-active');
         }
-      });
-    }
+      }
+    });
 
     // ── 2. Self-Aware Auth Logic ──
-    // This allows the Web Component to verify sessions on ANY page it is placed on.
     if (typeof window.getSupabase === 'function') {
       window.getSupabase().then(async (sb) => {
         try {
           const { data: { session } } = await sb.auth.getSession();
           
           if (session) {
-            // Swap "Log In" for "Dashboard"
+            // Swap "Log In" for "Dashboard" using the exact classes from index.html
             const authContainer = this.querySelector('#auth-header-container');
             if (authContainer) {
-              authContainer.innerHTML = '<a href="/pages/dashboard.html" class="btn btn-sm hover-lift" style="background: rgba(255,255,255,0.15); color: var(--text-logo); border: 1px solid rgba(255,255,255,0.1);">Dashboard</a>';
+              authContainer.innerHTML = '<a href="/pages/dashboard.html" class="btn btn-secondary btn-sm" style="background: rgba(255,255,255,0.15); color: #FFFFFF; border: 1px solid rgba(255,255,255,0.1);">Dashboard</a>';
             }
 
             // Append "Sign Out" to Dropdown Menu & Remove "Free Trial"
