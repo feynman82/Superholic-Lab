@@ -52,7 +52,7 @@
     if (saveBtn) saveBtn.addEventListener('click', generateStudyNote);
 
     // Welcome message
-    appendBubble('assistant', "Hello! I'm Miss Wena. 😊 I'm your Omni-Tutor, so you can ask me about Mathematics, Science, or English all in one place! Need help with a bar model, a science experiment, or grammar? Let's figure it out together!");
+    appendBubble('assistant', "Hello! I'm Miss Wena. 😊 I'm your Superholic Tutor, so you can ask me about Mathematics, Science, or English all in one place! Need help with a bar model, a science experiment, or grammar? Let's figure it out together!");
   }
 
   // ── Canvas Pen Tool Logic ──
