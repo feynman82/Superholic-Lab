@@ -310,18 +310,54 @@
     else addBtn.style.display = 'inline-flex';
   }
 
-  // Photo Upload Handler Placeholder
+  // ── Real Photo Upload Logic ──
   window.handlePhotoUpload = async (event, studentId) => {
     const file = event.target.files[0];
     if (!file) return;
 
-    // TODO: Connect this to your Supabase Storage bucket!
-    // 1. Upload `file` to Supabase Storage
-    // 2. Get the public URL of the uploaded image
-    // 3. Update the `students` table: await sb.from('students').update({ photo_url: publicUrl }).eq('id', studentId);
-    // 4. await loadStudents();
-    
-    alert(`Photo "${file.name}" selected! Ready to be connected to Supabase storage.`);
+    // Optional: Add a visual loading state to the button
+    const dropdownBtn = document.querySelector(`#dropdown-${studentId} button`);
+    const originalText = dropdownBtn.innerHTML;
+    dropdownBtn.innerHTML = '⏳ Uploading...';
+    dropdownBtn.disabled = true;
+
+    try {
+      const sb = await getSupabase();
+      
+      // 1. Create a safe, unique file name (e.g., student_id-123456789.png)
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${studentId}-${Date.now()}.${fileExt}`;
+
+      // 2. Upload the file to our new 'avatars' bucket
+      const { error: uploadError } = await sb.storage
+        .from('avatars')
+        .upload(fileName, file, { cacheControl: '3600', upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      // 3. Get the public URL of the uploaded image
+      const { data: { publicUrl } } = sb.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+
+      // 4. Save that URL into the student's database profile
+      const { error: dbError } = await sb.from('students')
+        .update({ photo_url: publicUrl })
+        .eq('id', studentId);
+
+      if (dbError) throw dbError;
+
+      // 5. Reload the UI to instantly display the new photo!
+      await loadStudents();
+      
+    } catch (err) {
+      console.error("Upload error:", err);
+      alert("Failed to upload photo: " + err.message);
+    } finally {
+      // Reset the button state
+      dropdownBtn.innerHTML = originalText;
+      dropdownBtn.disabled = false;
+    }
   };
 
   function renderGrid(unreadMap) {
@@ -346,7 +382,7 @@
       card.className = 'card hover-lift flex flex-col gap-4 p-6 relative';
       card.innerHTML = `
         <div class="absolute top-4 right-4" style="z-index: 10;">
-           <button class="btn btn-ghost btn-sm text-xl px-2 flex justify-center items-center" onclick="toggleDropdown(event, '${student.id}')" style="height: 32px; width: 32px; border-radius: 50%;">⋮</button>
+           <button class="btn btn-ghost text-xl flex justify-center items-center transition-colors" onclick="toggleDropdown(event, '${student.id}')" style="height: 32px; width: 32px; padding: 0 !important; border-radius: 50%; line-height: 1;">⋮</button>
            
            <div id="dropdown-${student.id}" class="hidden absolute right-0 mt-2 border border-light shadow-md flex flex-col overflow-hidden text-sm" style="min-width: 170px; background: var(--bg-surface); border-radius: var(--radius-md); z-index: 20;">
               
