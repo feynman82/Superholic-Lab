@@ -223,27 +223,7 @@
 </nav>
 
 <script>
-  /* ── 1. Navbar Toggle Logic ── */
-  
-    // Handle click outside to close
-    if (dropdown && dropdown.classList.contains('is-open') && !dropdown.contains(e.target)) {
-      dropdown.classList.remove('is-open');
-      const actualToggle = document.getElementById('navToggle');
-      if (actualToggle) actualToggle.classList.remove('is-active');
-    }
-
-    // Handle Sign Out Logic
-    const signOutBtn = e.target.closest('#navSignOut');
-    if (signOutBtn) {
-      e.preventDefault();
-      getSupabase().then(async (sb) => {
-        await sb.auth.signOut();
-        window.location.href = '../index.html';
-      });
-    }
-  ;
-
-  // Auto-Light Up Active Nav Icon (Run immediately)
+// Auto-Light Up Active Nav Icon (Run immediately)
   (function() {
     const currentPath = window.location.pathname;
     document.querySelectorAll('.bottom-nav-item').forEach(link => {
