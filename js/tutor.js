@@ -152,6 +152,7 @@
       if (!res.ok || data.error) {
         appendBubble('assistant', data.error || 'Sorry, something went wrong. Please try again.');
         history.pop(); // Remove failed user message
+        chatInput.value = text; // Restore the user's text!
       } else {
         appendBubble('assistant', data.reply);
         history.push({ role: 'assistant', content: data.reply });

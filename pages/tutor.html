@@ -78,8 +78,8 @@
     /* ── The Masterclass Mobile Overflow Fix ── */
     .chat-main-card {
       /* Fluid viewport math ensures it never pushes off the screen */
-      height: calc(100dvh - 280px);
-      min-height: 400px;
+      height: calc(100dvh - 240px);
+      min-height: 350px;
       max-height: 800px;
       border: 1px solid var(--border-dark);
       display: flex;
@@ -136,11 +136,11 @@
       <!-- Interaction Bar (Enforced z-index creates solid boundary over scrolling text) -->
       <div class="p-4 bg-surface relative" style="border-top: 1px solid var(--border-light); flex-shrink: 0; z-index: 10;">
          
-         <div class="flex justify-between items-center mb-4">
+         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
             <span class="text-xs font-bold text-muted uppercase tracking-wider">💡 Tip: Draw your working to get better help!</span>
-            <div class="flex gap-2 md:gap-3">
-               <button id="modeTextBtn" class="btn btn-sm" style="background: var(--sage-dark); color: white;">⌨️ Type</button>
-               <button id="modeDrawBtn" class="btn btn-sm btn-ghost">✏️ Pen Tool</button>
+            <div class="flex gap-2 w-full sm:w-auto">
+               <button id="modeTextBtn" class="btn btn-sm flex-1 sm:flex-none" style="background: var(--sage-dark); color: white;">⌨️ Type</button>
+               <button id="modeDrawBtn" class="btn btn-sm btn-ghost flex-1 sm:flex-none">✏️ Pen Tool</button>
             </div>
          </div>
          
@@ -153,9 +153,9 @@
          </div>
 
          <!-- Text Input & Send -->
-         <div class="flex gap-2 md:gap-3 mt-2">
-            <input type="text" id="chat-input" class="form-input flex-1" placeholder="Ask your tutor anything..." autocomplete="off" style="height: 48px; padding: 0 16px;">
-            <button id="chat-send" class="btn btn-primary hover-lift px-6" style="height: 48px;">Send</button>
+         <div class="flex gap-2 sm:gap-3 mt-2 w-full">
+            <input type="text" id="chat-input" class="form-input flex-1" placeholder="Ask your tutor anything..." autocomplete="off" style="height: 48px; padding: 0 16px; min-width: 0;">
+            <button id="chat-send" class="btn btn-primary hover-lift px-4 sm:px-6" style="height: 48px; flex-shrink: 0;">Send</button>
          </div>
       </div>
     </div>
