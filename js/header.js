@@ -1,8 +1,6 @@
 class GlobalHeader extends HTMLElement {
   connectedCallback() {
     // ── TEMPLATE ──
-    // The inline <style> block was removed to enforce CSS hygiene.
-    // Button classes and colors now perfectly match the non-bottom-nav pages (index.html).
     this.innerHTML = `
       <header class="navbar justify-between bg-sage-dark" id="navbar">
         
@@ -19,9 +17,9 @@ class GlobalHeader extends HTMLElement {
           <!-- Dynamic Plan Badge (e.g., Trial, Admin) -->
           <span class="badge hidden" id="planBadge" style="background: rgba(255,255,255,0.15); color: var(--brand-mint);"></span>
           
-          <!-- Persistent Login/Dashboard button (Matches index.html exactly) -->
-          <div id="auth-header-container">
-            <a href="/pages/login.html" class="btn btn-sm" style="background: rgba(255,255,255,0.15); color: var(--text-logo); border: 1px solid rgba(255,255,255,0.1);">Log In</a>
+          <!-- Masterclass Fix: Renamed ID to 'wc-auth-container' to bypass all legacy script overwrites -->
+          <div id="wc-auth-container" style="display: flex;">
+            <a href="/pages/login.html" class="btn btn-sm hover-lift" style="background: var(--bg-elevated) !important; color: var(--text-main) !important; border: none !important;">Log In</a>
           </div>
           
           <!-- Hamburger Menu -->
@@ -44,7 +42,6 @@ class GlobalHeader extends HTMLElement {
     `;
 
     // ── 1. Component-Level Event Delegation ──
-    // By binding to 'this', we keep the logic completely isolated to the component.
     this.addEventListener('click', (e) => {
       const toggleBtn = e.target.closest('#navToggle');
       const dropdown = this.querySelector('#navDropdown');
@@ -76,17 +73,16 @@ class GlobalHeader extends HTMLElement {
           const { data: { session } } = await sb.auth.getSession();
           
           if (session) {
-            // Swap "Log In" for "Dashboard" (Matching index.html button styles)
-            const authContainer = this.querySelector('#auth-header-container');
+            // Swap "Log In" for "Dashboard" (Uniform Light Sage Background)
+            const authContainer = this.querySelector('#wc-auth-container');
             if (authContainer) {
-              authContainer.innerHTML = '<a href="/pages/dashboard.html" class="btn btn-sm" style="background: rgba(255,255,255,0.15); color: var(--text-logo); border: 1px solid rgba(255,255,255,0.1);">Dashboard</a>';
+              authContainer.innerHTML = '<a href="/pages/dashboard.html" class="btn btn-sm hover-lift" style="background: var(--bg-elevated) !important; color: var(--text-main) !important; border: none !important;">Dashboard</a>';
             }
 
             // Append "Sign Out" to Dropdown Menu & Remove "Free Trial"
             const navLinks = this.querySelector('#navDropdown');
             if (navLinks) {
-              // Defensive Shield: Remove ANY existing sign out links by ID *or* Text Content
-              // This actively prevents duplicates caused by legacy inline scripts on older pages.
+              // Defensive Shield: Remove ANY existing sign out links
               const existingLinks = Array.from(navLinks.querySelectorAll('a'));
               existingLinks.forEach(el => {
                 if (el.id === 'navSignOut' || el.textContent.trim() === 'Sign Out') {
