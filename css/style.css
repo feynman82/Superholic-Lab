@@ -1031,7 +1031,7 @@ body.has-bottom-nav .footer {
         .footer-top-btn:hover {
           background-color: var(--brand-rose) !important;
           border-color: var(--brand-rose) !important;
-          color: #FFFFFF !important;
+          color: #fffde7 !important;
         }
 
         /* ── Mobile Responsiveness for Footer ── */
