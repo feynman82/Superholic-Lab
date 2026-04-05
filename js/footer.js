@@ -47,7 +47,7 @@ class GlobalFooter extends HTMLElement {
     </div>
     
     <!-- Cute Exploring Pet Animation (Walks on the line) -->
-    <div class="footer-pet-track" style="position: relative; top: auto; left: auto; width: 100%; border: none; margin-bottom: -1px;">
+    <div class="footer-pet-track" style="position: relative; top: auto; left: auto; width: 100%; border: none; margin-bottom: -1px;"> 
       <div class="walking-pet">🐈</div>
     </div>
 
