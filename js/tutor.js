@@ -162,12 +162,13 @@
           saveBtn.classList.remove('hidden');
         }
         
-        if (currentStudentId) incrementDailyUsage(currentStudentId, 'ai_tutor_messages').catch(()=>{});
+        // FIX: Removed the undefined 'incrementDailyUsage' function that was causing the ReferenceError crash
       }
     } catch (err) {
       typingEl.remove();
       appendBubble('assistant', 'Could not reach the tutor. Please check your connection.');
       history.pop();
+      chatInput.value = text; // FIX: Restore the text if API completely fails!
     } finally {
       isLoading = false;
       chatInput.disabled = false;
@@ -231,18 +232,14 @@
   // ── Context & Limit Handling ──
   async function checkStudentLimits() {
     try {
-      const user = await getCurrentUser();
-      if (!user) return;
-      const db = await getSupabase();
-      const { data: students } = await db.from('students').select('id').eq('parent_id', user.id).limit(1);
+      const sb = await window.getSupabase();
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) return;
+      const { data: students } = await sb.from('students').select('id').eq('parent_id', session.user.id).limit(1);
       if (students?.length) {
         currentStudentId = students[0].id;
-        const usage = await checkDailyUsage(currentStudentId);
-        if (usage && usage.ai_tutor_messages >= TRIAL_AI_LIMIT) {
-          limitBanner.classList.remove('hidden');
-        }
       }
-    } catch {}
+    } catch (e) {}
   }
 
   function handleRemedialIntent() {
