@@ -132,29 +132,6 @@ async function init() {
       .sort((a, b) => a.pct - b.pct)
       .slice(0, 5);
 
-    // ── Fetch exam results ────────────────────────────────────────────────────
-    const { data: examResults } = await db
-      .from('exam_results')
-      .select('id, subject, level, exam_type, score, total_marks, time_taken, completed_at')
-      .eq('student_id', student.id)
-      .order('completed_at', { ascending: false })
-      .limit(20);
-
-    // ── Fetch active remedial quest ───────────────────────────────────────────
-    const activeQuest = await loadActiveQuest(db, student.id);
-
-    // ── Render ────────────────────────────────────────────────────────────────
-    renderSummaryStats(totalQuestions, overallPct, streak, questionsToday);
-    renderSubjectBars(subjectStats);
-    if (weakTopics.length) renderWeakTopics(weakTopics, activeQuest, student, session);
-    renderRecentHistory(attempts.slice(0, 8));
-    renderExamHistory(examResults || []);
-
-    // Quest Map — shown above stat cards when an active quest exists
-    if (activeQuest) {
-      renderQuestMap(activeQuest, db);
-    }
-
     // ── Fetch exam results & Active Quest ──
     const { data: examResults } = await db.from('exam_results').select('id, subject, level, exam_type, score, total_marks, time_taken, completed_at').eq('student_id', student.id).order('completed_at', { ascending: false }).limit(20);
     const activeQuest = await loadActiveQuest(db, student.id);
@@ -166,10 +143,8 @@ async function init() {
       insertRevisionVault(studyNotes);
     }
 
-// ── Action Plan Aggregations (NEW UI) ─────────────────────────────────────
+    // ── Action Plan Aggregations (NEW UI) ──
     const allActivity = [...(attempts || []), ...(examResults || [])];
-    
-    // Sort all activity from newest to oldest
     allActivity.sort((a, b) => new Date(b.completed_at) - new Date(a.completed_at));
 
     const totalSeconds = allActivity.reduce((sum, a) => sum + (a.time_taken || a.time_taken_seconds || 0), 0);
@@ -178,7 +153,6 @@ async function init() {
     const fourteenDaysMs = 14 * 24 * 60 * 60 * 1000;
     const nowMs = Date.now();
     
-    // Overwrite legacy subjectStats with advanced tracking
     const advancedSubjectStats = { 
       mathematics: { earned: 0, total: 0, count: 0, quizzes: 0 }, 
       science: { earned: 0, total: 0, count: 0, quizzes: 0 }, 
@@ -188,20 +162,15 @@ async function init() {
     allActivity.forEach(act => {
       const sub = act.subject?.toLowerCase();
       if (!advancedSubjectStats[sub]) return;
-      
       const stats = advancedSubjectStats[sub];
       
-      // Enforce limits: Stop adding if we hit 1000 marks or 14 days
       const actDateMs = new Date(act.completed_at || act.created_at).getTime();
       if (stats.total >= 1000 || (nowMs - actDateMs > fourteenDaysMs)) return;
       
-      const actTotal = act.total_marks || act.total_questions || 1;
-      const actEarned = act.score || 0;
-      
-      stats.total += actTotal;
-      stats.earned += actEarned;
-      stats.count += 1; // Tracks number of papers/quizzes
-      stats.quizzes = stats.count; // For legacy UI compatibility
+      stats.total += (act.total_marks || act.total_questions || 1);
+      stats.earned += (act.score || 0);
+      stats.count += 1;
+      stats.quizzes = stats.count; 
     });
     
     let questionsMastered = 0;
@@ -220,16 +189,11 @@ async function init() {
       if (!q.topic || q.topic === 'all') return;
       const key = `${q.subject}:${q.topic}`;
       const qDate = new Date(q.completed_at || q.created_at);
+      const target = qDate >= oneWeekAgo ? topicStatsThisWeek : topicStatsLastWeek;
 
-      if (qDate >= oneWeekAgo) {
-        if (!topicStatsThisWeek[key]) topicStatsThisWeek[key] = { earned: 0, total: 0, subject: q.subject, topic: q.topic };
-        topicStatsThisWeek[key].earned += q.score;
-        topicStatsThisWeek[key].total += q.total_questions;
-      } else {
-        if (!topicStatsLastWeek[key]) topicStatsLastWeek[key] = { earned: 0, total: 0, subject: q.subject, topic: q.topic };
-        topicStatsLastWeek[key].earned += q.score;
-        topicStatsLastWeek[key].total += q.total_questions;
-      }
+      if (!target[key]) target[key] = { earned: 0, total: 0, subject: q.subject, topic: q.topic };
+      target[key].earned += q.score;
+      target[key].total += q.total_questions;
     });
 
     let improvedText = "Keep practicing to track improvements!";
@@ -250,6 +214,13 @@ async function init() {
 
     // Fire the new Action Plan renderer
     renderActionPlanUI(totalSeconds, questionsMastered, overallPct, advancedSubjectStats, weakTopics, student, session, activeQuest, allActivity, improvedText);
+
+    // Fire legacy bottom history renderers
+    if (activeQuest) renderQuestMap(activeQuest, db);
+    renderRecentHistory(attempts.slice(0, 10));
+    
+    const isJunior = student.level.toLowerCase().includes('primary 1') || student.level.toLowerCase().includes('primary 2');
+    if (!isJunior) renderExamHistory(examResults || []);
 
     loadingEl.hidden = true;
     statsEl.hidden   = false;
