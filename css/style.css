@@ -1040,3 +1040,23 @@ body.has-bottom-nav .footer {
           .footer-mid-row { flex-direction: column !important; align-items: flex-start !important; gap: var(--space-6) !important; }
           .footer-social-wrap { width: 100%; justify-content: space-between !important; }
         }
+
+        /* ==========================================================================
+   GLOBAL HEADER COMPONENT OVERRIDES
+   ========================================================================== */
+/* 1. Force Auth Button to be persistent on mobile */
+.navbar-actions #auth-header-container {
+  display: flex !important;
+}
+
+/* 2. Wrap Dropdown Menu to content size instead of full width */
+#navDropdown {
+  left: auto !important;
+  right: var(--space-4) !important;
+  width: max-content !important;
+  min-width: 200px;
+  border-radius: var(--radius-md) !important;
+  top: 68px !important; 
+  box-shadow: var(--shadow-md);
+}
+
