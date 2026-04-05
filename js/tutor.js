@@ -208,6 +208,7 @@
       textContainer.style.whiteSpace = 'pre-wrap';
       textContainer.style.wordBreak = 'break-word';
       textContainer.style.overflowWrap = 'anywhere';
+      textContainer.style.width = '100%'; // <-- ADD THIS LINE
       textContainer.innerHTML = formatMessage(text);
       bubble.appendChild(textContainer);
     }
