@@ -1131,5 +1131,6 @@ body.has-bottom-nav .footer {
       background: var(--border-light); 
       width: 100%;
     }
-
     .badge-xs { font-size: var(--text-xs); padding: 2px 8px; }
+    .text-light { color: rgba(255,255,255,0.82); }
+    .label-mono { letter-spacing: 0.08em; }
