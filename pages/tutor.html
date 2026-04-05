@@ -25,6 +25,38 @@
     /* ── Tutor 3.0 Specific Chat Styles ── */
     .chat-scroll-area { scroll-behavior: smooth; }
     
+    /* CRITICAL FLEXBOX FIX: Removed width: fit-content; so the max-width: 85% rule is correctly enforced. */
+    .chat-bubble-user, .chat-bubble-tutor {
+      min-width: 0; 
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+
+    .chat-bubble-user {
+      background-color: var(--sage-dark);
+      color: var(--cream);
+      align-self: flex-end;
+      border-radius: 16px 16px 0 16px;
+      padding: 12px 16px;
+      max-width: 85%;
+      box-shadow: var(--shadow-sm);
+      flex-shrink: 0;
+    }
+    
+    .chat-bubble-tutor {
+      background-color: var(--bg-elevated);
+      color: var(--text-main);
+      align-self: flex-start;
+      border-radius: 16px 16px 16px 0;
+      padding: 16px;
+      max-width: 85%;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-light);
+      line-height: 1.6;
+      flex-shrink: 0;
+    }
+    
+    .chat-typing { align-self: flex-start; padding: 12px 16px; flex-shrink: 0; }
     .chat-typing span {
       display: inline-block; width: 6px; height: 6px;
       background-color: var(--brand-rose); border-radius: 50%;
@@ -50,7 +82,6 @@
     
     /* ── The Masterclass Mobile Overflow Fix ── */
     .chat-main-card {
-      /* Fluid viewport math ensures it never pushes off the screen */
       height: calc(100dvh - 240px);
       min-height: 350px;
       max-height: 800px;
