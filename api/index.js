@@ -62,7 +62,7 @@ export default async function handler(req, res) {
   // All other routes: attach parsed JSON body then dispatch.
   try {
     req.body = await parseJsonBody(req);
-  } catch (err) { 
+  } catch (err) {
     console.error('[api/index] Body parse error:', err.message);
     req.body = {};
   }
