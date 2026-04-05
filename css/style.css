@@ -1131,3 +1131,5 @@ body.has-bottom-nav .footer {
       background: var(--border-light); 
       width: 100%;
     }
+
+    .badge-xs { font-size: var(--text-xs); padding: 2px 8px; }
