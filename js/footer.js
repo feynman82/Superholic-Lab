@@ -2,7 +2,6 @@ class GlobalFooter extends HTMLElement {
   connectedCallback() {
     this.innerHTML = `
 
-
       <footer class="footer bg-sage-dark texture-whimsical pt-10 pb-8" style="position: relative; overflow: hidden;">
         <div class="container" style="position: relative; z-index: 10;">
           
@@ -71,7 +70,7 @@ class GlobalFooter extends HTMLElement {
               <div class="hidden md:block" style="width: 1px; height: 24px; background: rgba(255,255,255,0.1);"></div>
 
               <!-- Back to Top Button -->
-              <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="btn btn-sm btn-ghost hover-lift flex items-center gap-2" style="color: var(--cream); border: 1px solid rgba(255,255,255,0.2); border-radius: var(--radius-full); padding: 0 16px;">
+              <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="btn btn-sm hover-lift flex items-center gap-2 footer-top-btn">
                 ↑ Top
               </button>
               
