@@ -519,7 +519,7 @@ body.has-bottom-nav .footer {
 
 /* Fix Mobile Hamburger Menu Visibility - FORCE ON DESKTOP TOO */
 .navbar-toggle { display: flex !important; }
-.navbar-toggle span { background-color: #FFFFFF !important; }
+.navbar-toggle span { background-color: #fffde7 !important; }
 
 /* ── 2. High-Tech Hover Animations ── */
 /* Springy Buttons */

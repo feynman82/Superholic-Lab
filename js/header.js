@@ -76,7 +76,7 @@ class GlobalHeader extends HTMLElement {
             // Swap "Log In" for "Dashboard" (Uniform Brand Sage Background)
             const authContainer = this.querySelector('#wc-auth-container');
             if (authContainer) {
-              authContainer.innerHTML = '<a href="/pages/dashboard.html" class="btn btn-sm hover-lift" style="background: var(--brand-sage) !important; color: #FFFFFF !important; border: none !important;">Dashboard</a>';
+              authContainer.innerHTML = '<a href="/pages/dashboard.html" class="btn btn-sm hover-lift" style="background: var(--brand-sage) !important; color: #fffde7 !important; border: none !important;">Dashboard</a>';
             }
 
             // Append "Sign Out" to Dropdown Menu & Remove "Free Trial"
