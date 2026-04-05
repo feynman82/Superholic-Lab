@@ -1060,12 +1060,12 @@ function renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subject
             <div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:var(--space-3) var(--space-4); flex-wrap:wrap; gap:10px;">
               <div>
                 <span style="font-size:1.2rem; margin-right:8px;">${t.pct < 45 ? '🔴' : '🟠'}</span>
-                <strong style="color:var(--cream); text-transform:capitalize;">${topicLabel}</strong> 
+                <strong style="color:var(--text-main); text-transform:capitalize;">${topicLabel}</strong> 
                 <span class="text-secondary text-sm"> — ${t.pct}% (${getALBand(t.pct)})</span>
               </div>
               <div style="display:flex; gap:10px;">
                  <a href="tutor.html?intent=remedial&subject=${t.subject}&topic=${t.topic}&score=${t.pct}" class="btn btn-secondary btn-sm" style="border-color:var(--rose); color:var(--rose);">Ask Miss Wena</a>
-                 <button class="btn btn-primary btn-sm" onclick="generateQuest(getSupabase(), '${session?.access_token}', {id:'${student.id}', level:'${student.level}'}, '${t.topic}', '${t.subject}', ${t.pct}, '${t.lastAttemptId || ''}', this)" ${activeQuest ? 'disabled title="Complete active quest first"' : ''}>+ Plan Quest</button>
+                 <button class="btn btn-primary btn-sm" onclick="window.handlePlanQuest(this, '${student.id}', '${student.level}', '${t.topic}', '${t.subject}', ${t.pct}, '${t.lastAttemptId || ''}')" ${activeQuest ? 'disabled title="Complete active quest first"' : ''}>+ Plan Quest</button>
               </div>
             </div>`);
         });
@@ -1087,15 +1087,16 @@ function renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subject
       return `
         <div class="card" style="padding:var(--space-4);">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-2);">
-            <strong style="font-size:1.2rem; color:var(--cream); text-transform:capitalize;">${sub}</strong>
+            <strong style="font-size:1.2rem; color:var(--text-main); text-transform:capitalize;">${sub}</strong>
             <span class="badge ${pct >= 75 ? 'badge-success' : pct >= 50 ? 'badge-amber' : 'badge-danger'}">${pct}% correct · ${band}</span>
           </div>
           <div style="height:6px; background:var(--glass-border); border-radius:3px; overflow:hidden; margin-bottom:var(--space-4);">
             <div style="height:100%; width:${pct}%; background:${colour};"></div>
           </div>
           <button class="btn btn-ghost btn-sm btn-full" onclick="toggleDeepDive('${student.id}', '${sub}', this, ${stats.quizzes || 0})">View More Details ↓</button>
-          <div id="deep-dive-${sub}" style="display:none; margin-top:var(--space-4); padding:var(--space-3); border-radius:var(--radius-md); background:rgba(0,0,0,0.15); border:1px solid var(--glass-border); font-size:0.9rem; color:var(--cream); line-height:1.5;">
-             <div style="text-align:center; padding:var(--space-2); color:var(--sage-light);">
+          
+          <div id="deep-dive-${sub}" style="display:none; margin-top:var(--space-4); padding:var(--space-3); border-radius:var(--radius-md); background:var(--bg-elevated); border:1px solid var(--border-light); font-size:0.9rem; color:var(--text-main); line-height:1.5;">
+             <div style="text-align:center; padding:var(--space-2); color:var(--text-muted);">
                <span class="spinner-sm" style="width:14px;height:14px;border-width:2px;display:inline-block;margin-right:8px;"></span> Analyzing performance...
              </div>
           </div>
@@ -1120,6 +1121,18 @@ function renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subject
     improvedEl.style.lineHeight = '1.3';
   }
 }
+
+// ── Global Helper for + Plan Quest Button ──
+window.handlePlanQuest = async function(btnEl, studentId, studentLevel, topic, subject, score, attemptId) {
+  try {
+    const db = await getSupabase();
+    const { data: { session } } = await db.auth.getSession();
+    const student = { id: studentId, level: studentLevel };
+    await generateQuest(db, session, student, topic, subject, score, attemptId || null, btnEl);
+  } catch (err) {
+    console.error("Plan Quest Trigger Error:", err);
+  }
+};
 
 /** Helper: MOE AL Banding */
 function getALBand(pct) {
