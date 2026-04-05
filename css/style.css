@@ -1005,11 +1005,12 @@ body.has-bottom-nav .footer {
     .scratchpad-container.is-open { display: block; }
     .scratchpad-canvas { width: 100%; height: 200px; cursor: crosshair; touch-action: none; 
     }
-    /* ── Premium Dropdown for Useful Links ── */
+    
+/* ── Premium Dropdown for Useful Links ── */
         .useful-links-dropdown { position: relative; outline: none; }
         .useful-links-btn {
           background: rgba(255,255,255,0.08); 
-          color: var(--cream); 
+          color: var(--text-logo) !important; 
           border: 1px solid rgba(255,255,255,0.15);
           padding: 8px 16px; 
           border-radius: var(--radius-md); 
@@ -1026,23 +1027,23 @@ body.has-bottom-nav .footer {
           border-color: rgba(255,255,255,0.3);
         }
         
-        /* Dropdown pops UPWARDS so it isn't cut off by the bottom of the screen */
+        /* Dropdown drops DOWNWARDS and to the left, floating above all elements */
         .useful-links-menu {
           position: absolute; 
           right: 0; 
-          bottom: calc(100% + 8px); 
-          background: var(--bg-surface);
-          border: 1px solid var(--border-light); 
+          top: calc(100% + 8px); 
+          background: var(--sage-dark);
+          border: 1px solid rgba(255,255,255,0.15); 
           border-radius: var(--radius-md); 
-          box-shadow: var(--shadow-md);
+          box-shadow: 0 10px 25px rgba(0,0,0,0.3);
           min-width: 180px; 
           display: flex; 
           flex-direction: column; 
           padding: var(--space-2); 
-          z-index: 50;
+          z-index: 999;
           opacity: 0; 
           visibility: hidden; 
-          transform: translateY(10px); 
+          transform: translateY(-10px); 
           transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         .useful-links-dropdown:hover .useful-links-menu,
@@ -1053,7 +1054,7 @@ body.has-bottom-nav .footer {
         }
         .useful-links-menu a {
           padding: 10px 12px; 
-          color: var(--text-main) !important; 
+          color: var(--cream) !important; 
           text-decoration: none;
           font-size: var(--text-sm); 
           font-weight: 500; 
@@ -1062,8 +1063,23 @@ body.has-bottom-nav .footer {
           text-align: left;
         }
         .useful-links-menu a:hover { 
-          background: var(--bg-elevated); 
+          background: rgba(255,255,255,0.1); 
           color: var(--brand-rose) !important; 
+        }
+
+        /* ── Top Button Custom Hover ── */
+        .footer-top-btn {
+          color: var(--text-logo) !important; 
+          border: 1px solid rgba(255,255,255,0.2); 
+          border-radius: var(--radius-full); 
+          padding: 0 16px;
+          background: transparent;
+          transition: all 0.2s ease;
+        }
+        .footer-top-btn:hover {
+          background-color: var(--brand-rose) !important;
+          border-color: var(--brand-rose) !important;
+          color: #FFFFFF !important;
         }
 
         /* ── Mobile Responsiveness for Footer ── */
