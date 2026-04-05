@@ -1162,13 +1162,15 @@ window.toggleDeepDive = async function(studentId, subject, btnEl, quizCount) {
   if (container.dataset.loaded) return;
 
   container.innerHTML = `
-    <div style="text-align:center; padding:var(--space-2); color:var(--sage-light);">
+    <div style="text-align:center; padding:var(--space-2); color:var(--text-muted);">
       <span class="spinner-sm" style="width:14px;height:14px;border-width:2px;display:inline-block;margin-right:8px;"></span> Generating Miss Wena's analysis...
     </div>
   `;
 
   try {
-    const { data: { session } } = await window.getSupabase().auth.getSession();
+    // FIXED: Safely await the database client before reading the session
+    const db = await window.getSupabase();
+    const { data: { session } } = await db.auth.getSession();
     
     // Call our new backend endpoint
     const res = await fetch('/api/analyze-weakness', {
@@ -1181,13 +1183,26 @@ window.toggleDeepDive = async function(studentId, subject, btnEl, quizCount) {
     if (data.error) throw new Error(data.error);
 
     container.innerHTML = `
-      <strong style="color:var(--mint);display:block;margin-bottom:4px;">✨ Miss Wena's Analysis:</strong>
+      <strong style="color:var(--brand-mint);display:block;margin-bottom:4px;">✨ Miss Wena's Analysis:</strong>
       ${data.analysis}
     `;
     container.dataset.loaded = "true";
 
   } catch (err) {
-    container.innerHTML = `<div style="text-align:center; padding:var(--space-2); color:var(--danger);">Failed to load analysis. ${err.message}</div>`;
+    container.innerHTML = `<div style="text-align:center; padding:var(--space-2); color:var(--brand-error);">Failed to load analysis. ${err.message}</div>`;
     container.dataset.loaded = ""; // Allow retry
   }
-}
+};
+
+// ── Global Helper for + Plan Quest Button ──
+window.handlePlanQuest = async function(btnEl, studentId, studentLevel, topic, subject, score, attemptId) {
+  try {
+    // FIXED: Safely await the database client before reading the session
+    const db = await window.getSupabase();
+    const { data: { session } } = await db.auth.getSession();
+    const student = { id: studentId, level: studentLevel };
+    await generateQuest(db, session, student, topic, subject, score, attemptId || null, btnEl);
+  } catch (err) {
+    console.error("Plan Quest Trigger Error:", err);
+  }
+};
