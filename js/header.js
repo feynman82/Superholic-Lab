@@ -19,7 +19,7 @@ class GlobalHeader extends HTMLElement {
           
           <!-- Masterclass Fix: Renamed ID to 'wc-auth-container' to bypass all legacy script overwrites -->
           <div id="wc-auth-container" style="display: flex;">
-            <a href="/pages/login.html" class="btn btn-sm hover-lift" style="background: var(--bg-elevated) !important; color: var(--text-main) !important; border: none !important;">Log In</a>
+            <a href="/pages/login.html" class="btn btn-sm hover-lift" style="background: var(--brand-sage) !important; color: #fffde7 !important; border: none !important;">Log In</a>
           </div>
           
           <!-- Hamburger Menu -->
@@ -73,10 +73,10 @@ class GlobalHeader extends HTMLElement {
           const { data: { session } } = await sb.auth.getSession();
           
           if (session) {
-            // Swap "Log In" for "Dashboard" (Uniform Light Sage Background)
+            // Swap "Log In" for "Dashboard" (Uniform Brand Sage Background)
             const authContainer = this.querySelector('#wc-auth-container');
             if (authContainer) {
-              authContainer.innerHTML = '<a href="/pages/dashboard.html" class="btn btn-sm hover-lift" style="background: var(--bg-elevated) !important; color: var(--text-main) !important; border: none !important;">Dashboard</a>';
+              authContainer.innerHTML = '<a href="/pages/dashboard.html" class="btn btn-sm hover-lift" style="background: var(--brand-sage) !important; color: #FFFFFF !important; border: none !important;">Dashboard</a>';
             }
 
             // Append "Sign Out" to Dropdown Menu & Remove "Free Trial"
