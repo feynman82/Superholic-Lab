@@ -81,14 +81,14 @@
         <a href="pricing.html" style="color: #FFB347; text-decoration: underline; margin-left: 4px;">Upgrade</a>
       </div>
       
-      <h1 class="font-display text-4xl text-white" id="welcomeMsg" style="font-size: 3rem; line-height: 1.1;">
+      <h1 class="font-display text-4xl text-white" id="welcomeMsg">
         Welcome back 👋
       </h1>
       <p class="text-lg mb-4" style="color: rgba(255,255,255,0.8); max-width: 500px;">
         Mission Control is ready. Manage your learners, track their progress, and start practicing.
       </p>
       
-      <a href="/pages/setup.html" id="addChildBtn" class="btn hover-lift" style="background: white; color: var(--brand-sage);">＋ Add Learner</a>
+      <a href="/pages/setup.html" id="addChildBtn" class="btn btn-secondary hover-lift">＋ Add Learner</a>
     </div>
 
     <div class="flex-1 flex justify-center items-end hidden sm:flex relative" style="min-width: 300px; height: 200px;">
@@ -224,18 +224,7 @@
 
 <script>
   /* ── 1. Navbar Toggle Logic ── */
-  document.addEventListener('click', (e) => {
-    // Handle Hamburger Click via Event Delegation
-    const toggleBtn = e.target.closest('#navToggle');
-    const dropdown = document.getElementById('navDropdown');
-    
-    if (toggleBtn && dropdown) {
-      e.stopPropagation();
-      dropdown.classList.toggle('is-open');
-      toggleBtn.classList.toggle('is-active'); 
-      return;
-    }
-
+  
     // Handle click outside to close
     if (dropdown && dropdown.classList.contains('is-open') && !dropdown.contains(e.target)) {
       dropdown.classList.remove('is-open');
@@ -252,7 +241,7 @@
         window.location.href = '../index.html';
       });
     }
-  });
+  ;
 
   // Auto-Light Up Active Nav Icon (Run immediately)
   (function() {
@@ -354,34 +343,38 @@
       const initials = student.name?.charAt(0).toUpperCase() || '?';
       const unreadCount = unreadMap ? (unreadMap[student.id] || 0) : 0;
       
+      // Avatar Logic: Use photo_url if it exists, otherwise fallback to initials
+      const avatarHtml = student.photo_url 
+        ? `<img src="${escapeHtml(student.photo_url)}" alt="${escapeHtml(student.name)}" style="width: 56px; height: 56px; border-radius: var(--radius-md); object-fit: cover;">`
+        : `<div class="flex justify-center items-center font-display text-2xl text-white bg-sage" style="width: 56px; height: 56px; border-radius: var(--radius-md); flex-shrink: 0;">${initials}</div>`;
+      
       const card = document.createElement('div');
       card.className = 'card hover-lift flex flex-col gap-4 p-6 relative';
       card.innerHTML = `
         <div class="absolute top-4 right-4" style="z-index: 10;">
-           <button class="btn btn-ghost btn-sm text-xl px-2" onclick="toggleDropdown(event, '${student.id}')" style="height: 32px; width: 32px;">⋮</button>
-           <div id="dropdown-${student.id}" class="hidden absolute right-0 mt-1 bg-surface border border-light rounded shadow-md flex flex-col overflow-hidden text-sm" style="min-width: 140px; background: white;">
-              <button class="px-4 py-3 text-left font-medium text-main hover:bg-elevated w-full border-none cursor-pointer" onclick="openEditModal('${student.id}')">✏️ Edit Level/Name</button>
-              <button class="px-4 py-3 text-left font-medium text-danger hover:bg-elevated w-full border-none cursor-pointer" style="border-top: 1px solid var(--border-light);" onclick="openDeleteModal('${student.id}')">🗑️ Remove</button>
+           <button class="btn btn-ghost btn-sm text-xl px-2" onclick="toggleDropdown(event, '${student.id}')" style="height: 32px; width: 32px; border-radius: 50%;">⋮</button>
+           
+           <div id="dropdown-${student.id}" class="hidden absolute right-0 mt-1 border border-light shadow-md flex flex-col overflow-hidden text-sm" style="min-width: 160px; background: var(--bg-surface); border-radius: var(--radius-md);">
+              <button class="px-4 py-3 text-left font-medium text-main hover:bg-elevated w-full border-none cursor-pointer" style="background: transparent;" onclick="openEditModal('${student.id}')">✏️ Edit Learner</button>
+              <button class="px-4 py-3 text-left font-medium text-danger hover:bg-elevated w-full border-none cursor-pointer" style="background: transparent; border-top: 1px solid var(--border-light);" onclick="openDeleteModal('${student.id}')">🗑️ Remove</button>
            </div>
         </div>
 
         <div class="flex items-center gap-4 mt-2">
-          <div class="flex justify-center items-center font-display text-2xl text-white bg-sage" style="width: 56px; height: 56px; border-radius: var(--radius-md);">${initials}</div>
+          ${avatarHtml}
           <div>
             <div class="font-bold text-xl text-main">${escapeHtml(student.name)}</div>
             <div class="text-sm text-muted font-medium">${escapeHtml(student.level)}</div>
           </div>
         </div>
 
-        <!-- Learner's Backpack UI -->
         <button class="btn btn-ghost w-full justify-between items-center px-4" style="border: 1px solid var(--border-light); background: var(--bg-elevated);" onclick="openBackpackModal('${student.id}')">
            <span class="flex items-center gap-2">🎒 View Backpack</span>
            ${unreadCount > 0 ? `<span class="badge" style="background: var(--brand-rose); color: white;">${unreadCount} New</span>` : `<span class="text-xs text-muted">Notes</span>`}
         </button>
 
-        <div class="mt-auto pt-4 flex justify-between items-center" style="border-top: 1px solid var(--border-light);">
-          ${student.selected_subject ? `<span class="badge badge-info">${escapeHtml(student.selected_subject)}</span>` : '<span class="badge" style="background: var(--bg-page); color: var(--text-muted);">No subject active</span>'}
-          <a href="/pages/subjects.html?student=${student.id}" class="btn btn-primary btn-sm">Enter Lab →</a>
+        <div class="mt-auto pt-4 flex justify-center items-center w-full" style="border-top: 1px solid var(--border-light);">
+          <a href="/pages/subjects.html?student=${student.id}" class="btn btn-primary">Enter Lab →</a>
         </div>
       `;
       grid.appendChild(card);
