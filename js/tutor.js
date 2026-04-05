@@ -202,16 +202,13 @@
       bubble.appendChild(img);
     }
 
-    // Add Text
+    // Add Text with robust text wrapping
     if (text) {
       const textContainer = document.createElement('div');
-      const lines = String(text).split('\n');
-      lines.forEach((line, i) => {
-        const span = document.createElement('span');
-        span.innerHTML = formatMessage(line);
-        textContainer.appendChild(span);
-        if (i < lines.length - 1) textContainer.appendChild(document.createElement('br'));
-      });
+      textContainer.style.whiteSpace = 'pre-wrap';
+      textContainer.style.wordBreak = 'break-word';
+      textContainer.style.overflowWrap = 'anywhere';
+      textContainer.innerHTML = formatMessage(text);
       bubble.appendChild(textContainer);
     }
 
