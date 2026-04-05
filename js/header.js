@@ -7,7 +7,7 @@ class GlobalHeader extends HTMLElement {
       <header class="navbar justify-between bg-sage-dark" id="navbar">
         
         <!-- Logo & Brand Text -->
-        <a href="/index.html" class="flex items-center gap-2 font-display text-2xl" style="text-decoration: none; color: #FFFFFF;">
+        <a href="/index.html" class="flex items-center gap-2 font-display text-2xl" style="text-decoration: none; color: var(--text-logo);">
           <img src="/assets/logo.svg" width="32" height="32" alt="Superholic Lab Logo" aria-hidden="true" style="border-radius: var(--radius-sm); flex-shrink:0;">
           Superholic Lab
         </a>
@@ -21,12 +21,14 @@ class GlobalHeader extends HTMLElement {
           
           <!-- Persistent Login/Dashboard button (Matches index.html exactly) -->
           <div id="auth-header-container">
-            <a href="/pages/login.html" class="btn btn-sm" style="background: rgba(255,255,255,0.15); color: #FFFFFF; border: 1px solid rgba(255,255,255,0.1);">Log In</a>
+            <a href="/pages/login.html" class="btn btn-sm" style="background: rgba(255,255,255,0.15); color: var(--text-logo); border: 1px solid rgba(255,255,255,0.1);">Log In</a>
           </div>
           
           <!-- Hamburger Menu -->
           <button class="navbar-toggle" id="navToggle" aria-label="Open menu">
-            <span></span><span></span><span></span>
+            <span style="background-color: var(--text-logo);"></span>
+            <span style="background-color: var(--text-logo);"></span>
+            <span style="background-color: var(--text-logo);"></span>
           </button>
         </div>
 
@@ -77,12 +79,16 @@ class GlobalHeader extends HTMLElement {
             // Swap "Log In" for "Dashboard" (Matching index.html button styles)
             const authContainer = this.querySelector('#auth-header-container');
             if (authContainer) {
-              authContainer.innerHTML = '<a href="/pages/dashboard.html" class="btn btn-sm" style="background: rgba(255,255,255,0.15); color: #FFFFFF; border: 1px solid rgba(255,255,255,0.1);">Dashboard</a>';
+              authContainer.innerHTML = '<a href="/pages/dashboard.html" class="btn btn-sm" style="background: rgba(255,255,255,0.15); color: var(--text-logo); border: 1px solid rgba(255,255,255,0.1);">Dashboard</a>';
             }
 
             // Append "Sign Out" to Dropdown Menu & Remove "Free Trial"
             const navLinks = this.querySelector('#navDropdown');
-            if (navLinks && !this.querySelector('#navSignOut')) {
+            if (navLinks) {
+              // Robust fix: Remove any existing sign out links before appending to prevent duplicates
+              const existingSignOuts = this.querySelectorAll('#navSignOut');
+              existingSignOuts.forEach(el => el.remove());
+
               const signOut = document.createElement('a');
               signOut.id = "navSignOut";
               signOut.href = "#";
