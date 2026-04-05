@@ -1,68 +1,37 @@
 class GlobalFooter extends HTMLElement {
   connectedCallback() {
     this.innerHTML = `
-      <style>
-        /* ── Mobile Responsiveness for Footer ── */
-        @media (max-width: 768px) {
-          /* Stack the top row and remove right-justification */
-          .footer-top-row { flex-direction: column !important; gap: var(--space-6) !important; }
-          .footer-nav-container { justify-content: flex-start !important; gap: var(--space-8) !important; }
-          
-          /* Snap nav columns to the left */
-          .footer-nav-col { align-items: flex-start !important; text-align: left !important; }
-          
-          /* Fix hover animation direction for left-aligned mobile links */
-          .footer-nav-col .footer-link:hover { transform: translateX(4px) !important; } 
-          
-          /* Stack the middle row (Badges & Socials) cleanly */
-          .footer-mid-row { flex-direction: column !important; align-items: flex-start !important; gap: var(--space-6) !important; }
-          .footer-social-wrap { width: 100%; justify-content: space-between !important; }
-        }
-      </style>
+
 
       <footer class="footer bg-sage-dark texture-whimsical pt-10 pb-8" style="position: relative;">
         <div class="container" style="position: relative; z-index: 10;">
           
-          <!-- TOP SECTION: Links and Brand -->
-          <div class="flex flex-wrap justify-between gap-8 mt-4 footer-top-row" style="margin-bottom: var(--space-4);">
+          <!-- TOP SECTION: Logo & Useful Links Dropdown -->
+          <div class="flex flex-wrap items-center justify-between gap-4 mt-4" style="margin-bottom: var(--space-4);">
             
-            <!-- Brand & Trust Pillar -->
-            <div class="flex-1 flex flex-col gap-4" style="min-width: 300px; max-width: 400px;">
-              <div class="flex items-center gap-3 font-display text-2xl text-white">
-                <img src="/assets/logo.svg" width="36" height="36" alt="Superholic Lab Logo" aria-hidden="true" style="border-radius:8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                <span style="color: var(--text-logo);">SUPERHOLIC LAB</span>
-              </div>
-              <p class="text-sm text-muted leading-relaxed" style="color: rgba(255,255,255,0.7) !important; text-align: justify;">
-                Singapore's premier AI-powered learning platform. Transforming assessment culture through deep conceptual understanding.
-              </p>
+            <!-- Brand (Left) -->
+            <div class="flex items-center gap-3 font-display text-2xl text-white">
+              <img src="/assets/logo.svg" width="36" height="36" alt="Superholic Lab Logo" aria-hidden="true" style="border-radius:8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+              <span style="color: var(--text-logo);">SUPERHOLIC LAB</span>
             </div>
             
-            <!-- Navigation Pillars -->
-            <div class="flex flex-wrap gap-10 footer-nav-container" style="flex: 2; justify-content: flex-end;">
-              
-              <!-- Platform Column -->
-              <div class="flex flex-col items-end text-right gap-2 footer-nav-col" style="min-width: 120px;">
-                <div class="font-bold text-xs mb-2 text-white uppercase tracking-wider" style="letter-spacing: 0.05em; opacity: 0.5;">Platform</div>
-                <a href="/pages/subjects.html" class="text-sm text-muted footer-link" style="text-decoration:none;">Subjects</a>
-                <a href="/pages/pricing.html" class="text-sm text-muted footer-link" style="text-decoration:none;">Pricing</a>
-                <a href="/pages/dashboard.html" class="text-sm text-muted footer-link" style="text-decoration:none;">Dashboard</a>
+            <!-- Useful Links Dropdown (Right) -->
+            <div class="useful-links-dropdown" tabindex="0">
+              <button class="useful-links-btn hover-lift" aria-haspopup="true" aria-expanded="false">
+                Useful Links
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </button>
+              <div class="useful-links-menu" role="menu">
+                <a href="/pages/subjects.html" role="menuitem">Subjects</a>
+                <a href="/pages/exam.html" role="menuitem">Exams</a>
+                <a href="/pages/tutor.html" role="menuitem">Miss Wena Tutor</a>
+                <a href="/pages/dashboard.html" role="menuitem">Dashboard</a>
+                <a href="/pages/about.html" role="menuitem">About Us</a>
+                <a href="/pages/pricing.html" role="menuitem">Pricing</a>
+                <a href="/pages/signup.html" role="menuitem">Sign Up</a>
               </div>
-              
-              <!-- Company Column -->
-              <div class="flex flex-col items-end text-right gap-2 footer-nav-col" style="min-width: 120px;">
-                <div class="font-bold text-xs mb-2 text-white uppercase tracking-wider" style="letter-spacing: 0.05em; opacity: 0.5;">Company</div>
-                <a href="/pages/about.html" class="text-sm text-muted footer-link" style="text-decoration:none; color: var(--cream) !important;">About Us</a>
-                <a href="/pages/contact.html" class="text-sm text-muted footer-link" style="text-decoration:none;">Contact Us</a>
-              </div>
+            </div>
 
-              <!-- Legal Column -->
-              <div class="flex flex-col items-end text-right gap-2 footer-nav-col" style="min-width: 120px;">
-                <div class="font-bold text-xs mb-2 text-white uppercase tracking-wider" style="letter-spacing: 0.05em; opacity: 0.5;">Legal</div>
-                <a href="/pages/terms.html" class="text-sm text-muted footer-link" style="text-decoration:none;">Terms</a>
-                <a href="/pages/privacy.html" class="text-sm text-muted footer-link" style="text-decoration:none;">Privacy</a>
-              </div>
-              
-            </div>
           </div>
           
           <!-- Cute Exploring Pet Animation (Walks on the line) -->
@@ -109,9 +78,16 @@ class GlobalFooter extends HTMLElement {
             </div>
           </div>
 
-          <!-- BOTTOM SECTION: Copyright -->
-          <div class="w-full text-center mt-8">
-            <div class="text-sm" style="color: rgba(255,255,255,0.5);">© 2026 Superholic Lab Pte. Ltd. All rights reserved.</div>
+          <!-- BOTTOM SECTION: Copyright & Legal Links -->
+          <div class="w-full mt-8 flex flex-col items-center gap-3">
+            <div class="text-sm text-center" style="color: rgba(255,255,255,0.5);">© 2026 Superholic Lab Pte. Ltd. All rights reserved.</div>
+            <div class="flex flex-wrap justify-center items-center gap-4 text-sm" style="color: rgba(255,255,255,0.5);">
+              <a href="/pages/contact.html" class="footer-link" style="text-decoration:none; color: inherit;">Contact Us</a>
+              <span class="opacity-50">|</span>
+              <a href="/pages/privacy.html" class="footer-link" style="text-decoration:none; color: inherit;">Privacy Policy</a>
+              <span class="opacity-50">|</span>
+              <a href="/pages/terms.html" class="footer-link" style="text-decoration:none; color: inherit;">Terms of Services</a>
+            </div>
           </div>
 
         </div>
