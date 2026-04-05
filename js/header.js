@@ -2,11 +2,6 @@ class GlobalHeader extends HTMLElement {
   connectedCallback() {
     this.innerHTML = `
       <style>
-        /* Force Rose Border (Overrides global style.css !important) */
-        header.navbar {
-          border-bottom: 3px solid var(--brand-rose) !important;
-        }
-
         /* 1. Force Auth Button to be persistent on mobile */
         .navbar-actions #auth-header-container {
           display: flex !important;
@@ -34,12 +29,12 @@ class GlobalHeader extends HTMLElement {
         
         <!-- Logo & Brand Text -->
         <a href="/index.html" class="flex items-center gap-2 font-display text-2xl" style="text-decoration: none; color: var(--text-logo);">
-          <img src="/assets/logo.svg" width="48" height="48" alt="Superholic Lab Logo" aria-hidden="true" style="border-radius: var(--radius-sm); flex-shrink:0;">
+          <img src="/assets/logo.svg" width="32" height="32" alt="Superholic Lab Logo" aria-hidden="true" style="border-radius: var(--radius-sm); flex-shrink:0;">
           SUPERHOLIC LAB
         </a>
 
-        <!-- Timer injects here during EXAM phase -->
-        <div id="nav-timer-container" class="hidden sm:flex"></div>
+        <!-- Timer injects here during EXAM phase (Removed '.hidden' to prevent !important CSS overrides) -->
+        <div id="nav-timer-container" style="display: flex; align-items: center; justify-content: center;"></div>
 
         <div class="navbar-actions flex items-center gap-4">
           <!-- Dynamic Plan Badge (e.g., Trial, Admin) -->
@@ -66,6 +61,64 @@ class GlobalHeader extends HTMLElement {
         </div>
       </header>
     `;
+
+    // ── 1. Hamburger Menu Toggle Logic (Self-contained) ──
+    const toggle = this.querySelector('#navToggle');
+    const dropdown = this.querySelector('#navDropdown');
+    
+    if (toggle && dropdown) {
+      toggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdown.classList.toggle('is-open');
+        toggle.classList.toggle('is-active'); 
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!dropdown.contains(e.target) && !toggle.contains(e.target)) {
+          dropdown.classList.remove('is-open');
+          toggle.classList.remove('is-active');
+        }
+      });
+    }
+
+    // ── 2. Self-Aware Auth Logic ──
+    // This allows the Web Component to verify sessions on ANY page it is placed on.
+    if (typeof window.getSupabase === 'function') {
+      window.getSupabase().then(async (sb) => {
+        try {
+          const { data: { session } } = await sb.auth.getSession();
+          
+          if (session) {
+            // Swap "Log In" for "Dashboard"
+            const authContainer = this.querySelector('#auth-header-container');
+            if (authContainer) {
+              authContainer.innerHTML = '<a href="/pages/dashboard.html" class="btn btn-sm hover-lift" style="background: rgba(255,255,255,0.15); color: var(--text-logo); border: 1px solid rgba(255,255,255,0.1);">Dashboard</a>';
+            }
+
+            // Append "Sign Out" to Dropdown Menu & Remove "Free Trial"
+            const navLinks = this.querySelector('#navDropdown');
+            if (navLinks && !this.querySelector('#navSignOut')) {
+              const signOut = document.createElement('a');
+              signOut.id = "navSignOut";
+              signOut.href = "#";
+              signOut.textContent = "Sign Out";
+              signOut.style.color = "var(--brand-rose)"; 
+              signOut.onclick = async (e) => { 
+                e.preventDefault();
+                await sb.auth.signOut(); 
+                window.location.href = '/index.html'; 
+              };
+              navLinks.appendChild(signOut);
+              
+              const signUpLink = this.querySelector('#navSignUp');
+              if (signUpLink) signUpLink.remove();
+            }
+          }
+        } catch (e) {
+          console.error('Header auth check failed:', e);
+        }
+      });
+    }
   }
 }
 
