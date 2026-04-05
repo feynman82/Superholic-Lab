@@ -1060,3 +1060,62 @@ body.has-bottom-nav .footer {
   box-shadow: var(--shadow-md);
 }
 
+/* ── Learner Kebab Menu & Dropdown 3.0 Styles ── */
+    .kebab-btn {
+      width: 32px; 
+      height: 32px; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      border-radius: 50%; 
+      border: none; 
+      background: transparent; 
+      cursor: pointer; 
+      color: var(--text-muted); 
+      font-size: 1.25rem; 
+      transition: background 0.2s ease, color 0.2s ease; 
+      flex-shrink: 0;
+    }
+    .kebab-btn:hover {
+      background: var(--bg-elevated); 
+      color: var(--text-main);
+    }
+    .learner-dropdown {
+      position: absolute; 
+      right: 0; 
+      top: 40px; 
+      min-width: 180px; 
+      background: var(--bg-surface); 
+      border: 1px solid var(--border-light); 
+      border-radius: var(--radius-md); 
+      box-shadow: var(--shadow-md); 
+      z-index: 100; 
+      overflow: hidden; 
+      display: flex; 
+      flex-direction: column;
+    }
+    .learner-dropdown-item {
+      width: 100%; 
+      text-align: left; 
+      padding: 12px 16px; 
+      background: transparent; 
+      border: none; 
+      font-family: var(--font-body); 
+      font-size: var(--text-sm); 
+      font-weight: 600; 
+      color: var(--text-main); 
+      cursor: pointer; 
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+    .learner-dropdown-item:hover {
+      background: var(--bg-elevated);
+    }
+    .learner-dropdown-item.danger:hover {
+      background: rgba(220, 38, 38, 0.08);
+      color: var(--brand-error);
+    }
+    .learner-dropdown-divider {
+      height: 1px; 
+      background: var(--border-light); 
+      width: 100%;
+    }
