@@ -31,9 +31,10 @@
       align-self: flex-end;
       border-radius: 16px 16px 0 16px;
       padding: 12px 16px;
-      max-width: 85%;
+      max-width: 90%; /* Expanded slightly for mobile */
       box-shadow: var(--shadow-sm);
-      word-break: break-word; /* Fixes text overflow issues */
+      word-break: break-word; 
+      overflow-wrap: anywhere; /* Hard break long math equations to fix mobile overflow */
     }
     
     .chat-bubble-tutor {
@@ -42,11 +43,12 @@
       align-self: flex-start;
       border-radius: 16px 16px 16px 0;
       padding: 16px;
-      max-width: 85%;
+      max-width: 90%; /* Expanded slightly for mobile */
       box-shadow: var(--shadow-sm);
       border: 1px solid var(--border-light);
       line-height: 1.6;
-      word-break: break-word; /* Fixes text overflow issues */
+      word-break: break-word; 
+      overflow-wrap: anywhere; /* Hard break long math equations to fix mobile overflow */
     }
 
     .chat-typing { align-self: flex-start; padding: 12px 16px; }
@@ -72,6 +74,17 @@
     }
     .scratchpad-container.is-open { display: block; }
     .scratchpad-canvas { width: 100%; height: 200px; cursor: crosshair; touch-action: none; }
+    
+    /* ── The Masterclass Mobile Overflow Fix ── */
+    .chat-main-card {
+      /* Fluid viewport math ensures it never pushes off the screen */
+      height: calc(100dvh - 280px);
+      min-height: 400px;
+      max-height: 800px;
+      border: 1px solid var(--border-dark);
+      display: flex;
+      flex-direction: column;
+    }
   </style>
 </head>
 
@@ -95,11 +108,11 @@
       <a href="progress.html" class="btn btn-ghost btn-sm flex-shrink-0">← Quest Map</a>
     </div>
 
-    <!-- The 3.0 Chat Card (Strictly bounded height to force internal scrolling) -->
-    <div class="card p-0 overflow-hidden flex flex-col hover-lift flex-1 mb-6" style="height: 60vh; min-height: 500px; max-height: 800px; border: 1px solid var(--border-dark);">
+    <!-- The 3.0 Chat Card with Fixed Mobile Fluid Height -->
+    <div class="card p-0 overflow-hidden hover-lift flex-1 mb-6 chat-main-card">
       
-      <!-- Trust Header (Lightened to Cream with contrasting dark sage text) -->
-      <div class="p-4 flex items-center justify-between" style="background: #F9F6F0; border-bottom: 3px solid var(--brand-rose);">
+      <!-- Trust Header with Save Note Button -->
+      <div class="p-4 flex items-center justify-between" style="background: #F9F6F0; border-bottom: 3px solid var(--brand-rose); z-index: 10;">
          <div class="flex items-center gap-3">
             <img src="../assets/images/miss_wena.png" alt="Miss Wena" style="width: 48px; height: 48px; object-fit: cover; border-radius: 50%; border: 2px solid var(--brand-rose); background: #f0c090;" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 52 52%22><rect width=%2252%22 height=%2252%22 fill=%22%23B76E79%22/><circle cx=%2226%22 cy=%2222%22 r=%2211%22 fill=%22%23f0c090%22/></svg>'">
             <div>
@@ -108,20 +121,24 @@
                <div class="text-xs font-bold flex items-center gap-1" style="color: var(--brand-mint);">✨ Verified MOE-Aligned Superholic Tutor</div>
             </div>
          </div>
-         <span class="badge badge-success" style="background: rgba(5,150,105,0.15);">Online</span>
+         <div class="flex items-center gap-2">
+            <!-- New AI Summarizer Trigger Button -->
+            <button id="saveChatBtn" class="btn btn-sm hover-lift hidden" style="background: rgba(183,110,121,0.1); color: var(--brand-rose); border: 1px solid rgba(183,110,121,0.3); font-size: 0.75rem; padding: 0 10px;">💾 Save Notes</button>
+            <span class="badge badge-success hidden sm:inline-flex" style="background: rgba(5,150,105,0.15);">Online</span>
+         </div>
       </div>
 
       <!-- Messages Area (min-height:0 ensures the scrollbar triggers properly within the flex container) -->
-      <div id="chat-messages" class="flex-1 p-6 chat-scroll-area flex flex-col gap-4 overflow-y-auto bg-page" style="min-height: 0;">
+      <div id="chat-messages" class="flex-1 p-4 md:p-6 chat-scroll-area flex flex-col gap-4 overflow-y-auto bg-page" style="min-height: 0;">
          <!-- Bubbles injected by JS -->
       </div>
 
-      <!-- Interaction Bar (flex-shrink:0 ensures canvas expansion pushes up, not down) -->
-      <div class="p-4 bg-surface" style="border-top: 1px solid var(--border-light); flex-shrink: 0;">
+      <!-- Interaction Bar (Enforced z-index creates solid boundary over scrolling text) -->
+      <div class="p-4 bg-surface relative" style="border-top: 1px solid var(--border-light); flex-shrink: 0; z-index: 10;">
          
          <div class="flex justify-between items-center mb-4">
             <span class="text-xs font-bold text-muted uppercase tracking-wider">💡 Tip: Draw your working to get better help!</span>
-            <div class="flex gap-3">
+            <div class="flex gap-2 md:gap-3">
                <button id="modeTextBtn" class="btn btn-sm" style="background: var(--sage-dark); color: white;">⌨️ Type</button>
                <button id="modeDrawBtn" class="btn btn-sm btn-ghost">✏️ Pen Tool</button>
             </div>
@@ -136,7 +153,7 @@
          </div>
 
          <!-- Text Input & Send -->
-         <div class="flex gap-3 mt-2">
+         <div class="flex gap-2 md:gap-3 mt-2">
             <input type="text" id="chat-input" class="form-input flex-1" placeholder="Ask your tutor anything..." autocomplete="off" style="height: 48px; padding: 0 16px;">
             <button id="chat-send" class="btn btn-primary hover-lift px-6" style="height: 48px;">Send</button>
          </div>
@@ -146,7 +163,7 @@
     <!-- Smart Starter Prompts (Safely anchored below the card) -->
     <div class="mb-8" style="flex-shrink: 0;">
       <p class="text-xs font-bold text-muted uppercase tracking-wider mb-3">Try asking about any subject:</p>
-      <div class="flex flex-wrap gap-3" id="starter-prompts">
+      <div class="flex flex-wrap gap-2 md:gap-3" id="starter-prompts">
         <button class="btn btn-secondary btn-sm starter-prompt hover-lift">How do I draw a before-after bar model?</button>
         <button class="btn btn-secondary btn-sm starter-prompt hover-lift">Test my Science Claim-Evidence-Reasoning!</button>
         <button class="btn btn-secondary btn-sm starter-prompt hover-lift">Check my grammar for this sentence.</button>

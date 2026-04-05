@@ -21,7 +21,8 @@ import {
   handleGradeAnswer,
   handleSaveExamResult,
   handleGenerateQuest,
-  handleAnalyzeWeakness
+  handleAnalyzeWeakness,
+  handleSummarizeChat
 } from '../lib/api/handlers.js';
 
 // Disable Vercel's auto body parsing — required for Stripe webhook raw body.
@@ -75,6 +76,7 @@ export default async function handler(req, res) {
     case 'save-exam-result':   return handleSaveExamResult(req, res);
     case 'generate-quest':     return handleGenerateQuest(req, res);
     case 'analyze-weakness':   return handleAnalyzeWeakness(req, res); 
+    case 'summarize-chat':     return handleSummarizeChat(req, res);
     default:
       return res.status(404).json({ error: `API route not found: ${route}` });
   }

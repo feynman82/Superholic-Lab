@@ -1,6 +1,7 @@
 /**
  * tutor.js
  * Omni-Tutor 3.0 Chat Logic with Multi-modal Canvas Support.
+ * Connects to /api/summarize-chat to build persistent Study Notes.
  */
 
 (() => {
@@ -8,6 +9,8 @@
   let history = [];
   let isLoading = false;
   let currentStudentId = null;
+  let currentSubjectContext = 'general';
+  let currentTopicContext = 'mixed';
   
   // Canvas State
   let isDrawMode = false;
@@ -19,6 +22,7 @@
   const chatMessages = document.getElementById('chat-messages');
   const chatInput = document.getElementById('chat-input');
   const sendBtn = document.getElementById('chat-send');
+  const saveBtn = document.getElementById('saveChatBtn'); // Study Note Button
   const modeTextBtn = document.getElementById('modeTextBtn');
   const modeDrawBtn = document.getElementById('modeDrawBtn');
   const drawArea = document.getElementById('drawArea');
@@ -43,6 +47,9 @@
     // Check student usage & Remedial intent
     checkStudentLimits();
     handleRemedialIntent();
+
+    // Study Note save action
+    if (saveBtn) saveBtn.addEventListener('click', generateStudyNote);
 
     // Welcome message
     appendBubble('assistant', "Hello! I'm Miss Wena. 😊 I'm your Omni-Tutor, so you can ask me about Mathematics, Science, or English all in one place! Need help with a bar model, a science experiment, or grammar? Let's figure it out together!");
@@ -149,6 +156,11 @@
         appendBubble('assistant', data.reply);
         history.push({ role: 'assistant', content: data.reply });
         
+        // Expose Save Note button once an actual conversation exists
+        if (saveBtn && history.filter(m => m.role === 'user').length >= 1) {
+          saveBtn.classList.remove('hidden');
+        }
+        
         if (currentStudentId) incrementDailyUsage(currentStudentId, 'ai_tutor_messages').catch(()=>{});
       }
     } catch (err) {
@@ -165,16 +177,12 @@
 
   // ── DOM Helpers ──
   function formatMessage(text) {
-    // Escapes HTML then replaces **bold** with the branded strong tag
     let safe = String(text).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     
-    // 1. Convert LaTeX fractions \frac{1}{2} to 1/2
+    // Convert LaTeX fractions \frac{1}{2} to 1/2
     safe = safe.replace(/\\frac\s*\{([^{}]+)\}\s*\{([^{}]+)\}/g, '$1/$2');
-    
-    // 2. Clean up annoying $ delimiters wrapped around equations or fractions
-    // Matches $...$ containing a slash, plus, minus, or equals sign to avoid catching currency
+    // Clean up annoying $ delimiters wrapped around equations or fractions
     safe = safe.replace(/\$([^$]*?[/+\-=][^$]*?)\$/g, '$1');
-    // Matches isolated variables/numbers like $x$ or $5$
     safe = safe.replace(/\$\s*([0-9a-zA-Z])\s*\$/g, '$1');
     
     return safe.replace(/\*\*(.*?)\*\*/g, '<strong class="text-rose">$1</strong>');
@@ -192,7 +200,7 @@
       bubble.appendChild(img);
     }
 
-    // Add Text (parsing newlines and bold syntax)
+    // Add Text
     if (text) {
       const textContainer = document.createElement('div');
       const lines = String(text).split('\n');
@@ -243,15 +251,62 @@
       const topicEl = document.getElementById('quest-topic-name');
       const topic = params.get('topic').replace(/-/g, ' ');
       
+      currentSubjectContext = params.get('subject') || 'general';
+      currentTopicContext = params.get('topic');
+
       topicEl.textContent = topic;
       banner.classList.remove('hidden');
 
-      // Secretly inject system context for Miss Wena
       const score = params.get('score');
       history.push({
         role: 'user',
         content: `SYSTEM CONTEXT: The student scored ${score}% in ${topic}. Initiate a highly-encouraging remedial session. Break down the basics step-by-step and ask a simple checking question.`
       });
+    }
+  }
+
+  // ── STUDY NOTES ENGINE: Generate & Save ──
+  async function generateStudyNote() {
+    if (!currentStudentId || history.length < 2) return;
+    
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<span class="spinner-sm" style="width:14px;height:14px;border-width:2px;display:inline-block;margin-right:6px;border-top-color:var(--brand-rose);"></span> Saving...';
+
+    try {
+      const sb = await getSupabase();
+      const { data: { session } } = await sb.auth.getSession();
+      
+      const res = await fetch('/api/summarize-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ 
+          student_id: currentStudentId, 
+          subject: currentSubjectContext, 
+          topic: currentTopicContext, 
+          messages: history 
+        })
+      });
+      
+      const data = await res.json();
+      if(data.success) {
+         saveBtn.innerHTML = '✅ Saved to Backpack';
+         saveBtn.style.color = 'var(--brand-mint)';
+         saveBtn.style.background = 'rgba(5, 150, 105, 0.1)';
+         saveBtn.style.borderColor = 'rgba(5, 150, 105, 0.3)';
+         setTimeout(() => { 
+           saveBtn.innerHTML = '💾 Save Notes'; 
+           saveBtn.disabled = false; 
+           saveBtn.style.color = 'var(--brand-rose)';
+           saveBtn.style.background = 'rgba(183,110,121,0.1)';
+           saveBtn.style.borderColor = 'rgba(183,110,121,0.3)';
+         }, 3000);
+      } else { 
+         throw new Error(data.error); 
+      }
+    } catch(e) {
+      alert("Failed to save note: " + e.message);
+      saveBtn.innerHTML = '💾 Save Notes';
+      saveBtn.disabled = false;
     }
   }
 })();
