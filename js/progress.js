@@ -154,6 +154,18 @@ async function init() {
     if (activeQuest) {
       renderQuestMap(activeQuest, db);
     }
+
+    // ── Fetch exam results & Active Quest ──
+    const { data: examResults } = await db.from('exam_results').select('id, subject, level, exam_type, score, total_marks, time_taken, completed_at').eq('student_id', student.id).order('completed_at', { ascending: false }).limit(20);
+    const activeQuest = await loadActiveQuest(db, student.id);
+
+    // ── Fetch Study Notes for Revision Vault ──
+    const { data: studyNotes } = await db.from('study_notes').select('id, title, subject, topic, created_at, content_html, is_read').eq('student_id', student.id).order('created_at', { ascending: false }).limit(10);
+    if (studyNotes && studyNotes.length > 0) {
+      window.cachedNotes = studyNotes; // For the modal viewer
+      insertRevisionVault(studyNotes);
+    }
+
 // ── Action Plan Aggregations (NEW UI) ─────────────────────────────────────
     const allActivity = [...(attempts || []), ...(examResults || [])];
     
@@ -253,6 +265,86 @@ async function init() {
     }
   }
 }
+
+// ── REVISION VAULT UI INJECTION ──
+function insertRevisionVault(notes) {
+  const weakAreasContainer = document.getElementById('areas-of-weakness-list');
+  if (!weakAreasContainer) return;
+  
+  // Create the vault container above weak areas
+  const vaultContainer = document.createElement('div');
+  vaultContainer.id = 'revision-vault-container';
+  vaultContainer.style.marginBottom = 'var(--space-8)';
+  
+  const cardsHtml = notes.map(n => `
+    <div class="card p-5 hover-lift relative" style="min-width: 240px; max-width: 280px; scroll-snap-align: start; cursor: pointer; border-top: 3px solid var(--brand-rose);" onclick="openVaultNote('${n.id}')">
+      ${!n.is_read ? `<div class="absolute top-2 right-2 w-3 h-3 rounded-full bg-rose"></div>` : ''}
+      <div class="badge badge-info mb-2 text-[10px] uppercase">${n.subject}</div>
+      <h3 class="font-bold text-main mb-2 leading-tight" style="font-size: 1rem;">${n.title.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</h3>
+      <div class="text-xs text-muted">${new Date(n.created_at).toLocaleDateString('en-SG', { day: 'numeric', month: 'short' })}</div>
+    </div>
+  `).join('');
+
+  vaultContainer.innerHTML = `
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="font-display text-2xl text-main m-0 uppercase">Revision Vault</h2>
+      <span class="badge" style="background: rgba(183,110,121,0.1); color: var(--brand-rose);">Miss Wena's Notes</span>
+    </div>
+    <div id="revision-vault-list" class="flex gap-4 overflow-x-auto pb-4" style="scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; padding-bottom: 12px; margin-bottom: -12px;">
+      ${cardsHtml}
+    </div>
+  `;
+
+  weakAreasContainer.parentNode.insertBefore(vaultContainer, weakAreasContainer.previousElementSibling);
+  
+  // Inject the viewer modal to the DOM dynamically if not present
+  if (!document.getElementById('vaultViewerModal')) {
+    const modal = document.createElement('div');
+    modal.id = 'vaultViewerModal';
+    modal.className = 'modal-backdrop fixed top-0 left-0 right-0 bottom-0 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-200 z-50';
+    modal.style.background = 'rgba(44, 62, 58, 0.6)';
+    modal.style.backdropFilter = 'blur(4px)';
+    modal.innerHTML = `
+      <div class="card modal-card p-6 flex flex-col gap-4 transform translate-y-4 transition-transform duration-300 w-full max-w-[600px] max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center border-b border-light pb-2">
+          <div class="badge badge-info" id="vaultNoteSubject">Maths</div>
+          <button class="btn btn-ghost btn-sm text-xl" onclick="document.getElementById('vaultViewerModal').classList.remove('opacity-100', 'pointer-events-auto'); document.getElementById('vaultViewerModal').classList.add('opacity-0', 'pointer-events-none');">×</button>
+        </div>
+        <h2 class="font-display text-3xl text-main m-0" id="vaultNoteTitle"></h2>
+        <div id="vaultNoteHtml" class="mt-2 mb-4 bg-page p-6 rounded border border-light" style="font-size: 0.95rem; color: var(--text-main); line-height: 1.6;"></div>
+        <button class="btn btn-secondary w-full" onclick="document.getElementById('vaultViewerModal').classList.remove('opacity-100', 'pointer-events-auto'); document.getElementById('vaultViewerModal').classList.add('opacity-0', 'pointer-events-none');">Close Note</button>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  }
+}
+
+window.openVaultNote = async (noteId) => {
+  const note = (window.cachedNotes || []).find(n => n.id === noteId);
+  if (!note) return;
+
+  document.getElementById('vaultNoteTitle').textContent = note.title;
+  document.getElementById('vaultNoteSubject').textContent = note.subject.toUpperCase();
+  document.getElementById('vaultNoteHtml').innerHTML = note.content_html; 
+  
+  const modal = document.getElementById('vaultViewerModal');
+  modal.classList.remove('opacity-0', 'pointer-events-none');
+  modal.classList.add('opacity-100', 'pointer-events-auto');
+  modal.querySelector('.modal-card').style.transform = 'translateY(0)';
+
+  if (!note.is_read) {
+    const sb = await getSupabase();
+    await sb.from('study_notes').update({ is_read: true }).eq('id', noteId);
+    note.is_read = true; 
+    
+    // Visually remove the red dot
+    const targetCard = Array.from(document.querySelectorAll('#revision-vault-list .card')).find(c => c.innerHTML.includes(note.title));
+    if (targetCard) {
+      const dot = targetCard.querySelector('.bg-rose');
+      if (dot && dot.classList.contains('rounded-full')) dot.remove();
+    }
+  }
+};
 
 // ── Quest: load ────────────────────────────────────────────────────────────────
 
@@ -994,14 +1086,14 @@ function renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subject
         subTopics.forEach(t => {
           const topicLabel = t.topic.replace(/-/g, ' ');
           weakHtml.push(`
-            <div class="card hover-lift" style="display:flex; justify-content:space-between; align-items:center; padding:var(--space-3) var(--space-4); flex-wrap:wrap; gap:10px; margin-bottom:var(--space-2);">
+            <div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:var(--space-3) var(--space-4); flex-wrap:wrap; gap:10px;">
               <div>
                 <span style="font-size:1.2rem; margin-right:8px;">${t.pct < 45 ? '🔴' : '🟠'}</span>
-                <strong class="text-main" style="text-transform:capitalize;">${topicLabel}</strong> 
-                <span class="text-muted text-sm"> — ${t.pct}% (${getALBand(t.pct)})</span>
+                <strong style="color:var(--cream); text-transform:capitalize;">${topicLabel}</strong> 
+                <span class="text-secondary text-sm"> — ${t.pct}% (${getALBand(t.pct)})</span>
               </div>
               <div style="display:flex; gap:10px;">
-                 <a href="tutor.html?intent=remedial&subject=${t.subject}&topic=${t.topic}&score=${t.pct}" class="btn btn-secondary btn-sm" style="border-color:var(--brand-rose); color:var(--brand-rose);">Ask Miss Wena</a>
+                 <a href="tutor.html?intent=remedial&subject=${t.subject}&topic=${t.topic}&score=${t.pct}" class="btn btn-secondary btn-sm" style="border-color:var(--rose); color:var(--rose);">Ask Miss Wena</a>
                  <button class="btn btn-primary btn-sm" onclick="generateQuest(getSupabase(), '${session?.access_token}', {id:'${student.id}', level:'${student.level}'}, '${t.topic}', '${t.subject}', ${t.pct}, '${t.lastAttemptId || ''}', this)" ${activeQuest ? 'disabled title="Complete active quest first"' : ''}>+ Plan Quest</button>
               </div>
             </div>`);
@@ -1009,7 +1101,7 @@ function renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subject
       }
     });
 
-    weaknessList.innerHTML = weakHtml.length > 0 ? weakHtml.join('') : '<div class="card p-6 text-center text-success font-bold">🎉 Excellent! No weak areas detected (All topics AL1).</div>';
+    weaknessList.innerHTML = weakHtml.length > 0 ? weakHtml.join('') : '<div class="card" style="padding:var(--space-4); text-align:center; color:var(--mint);">🎉 Excellent! No weak areas detected (All topics AL1).</div>';
   }
 
   // 3. LAYER 3: Subject Breakdown & Deep Dive
@@ -1019,28 +1111,28 @@ function renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subject
       const pct = stats.total > 0 ? Math.round((stats.earned / stats.total) * 100) : 0;
       if (pct === 0 && stats.total === 0) return '';
       const band = getALBand(pct);
-      const colour = pct >= 75 ? 'var(--brand-mint)' : pct >= 50 ? 'var(--brand-amber)' : 'var(--brand-error)';
+      const colour = pct >= 75 ? 'var(--mint)' : pct >= 50 ? 'var(--amber)' : 'var(--danger)';
       
       return `
-        <div class="card hover-lift" style="padding:var(--space-4); margin-bottom:var(--space-3);">
+        <div class="card" style="padding:var(--space-4);">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-2);">
-            <strong class="text-main" style="font-size:1.2rem; text-transform:capitalize;">${sub}</strong>
+            <strong style="font-size:1.2rem; color:var(--cream); text-transform:capitalize;">${sub}</strong>
             <span class="badge ${pct >= 75 ? 'badge-success' : pct >= 50 ? 'badge-amber' : 'badge-danger'}">${pct}% correct · ${band}</span>
           </div>
-          <div style="height:6px; background:var(--border-light); border-radius:3px; overflow:hidden; margin-bottom:var(--space-4);">
+          <div style="height:6px; background:var(--glass-border); border-radius:3px; overflow:hidden; margin-bottom:var(--space-4);">
             <div style="height:100%; width:${pct}%; background:${colour};"></div>
           </div>
           <button class="btn btn-ghost btn-sm btn-full" onclick="toggleDeepDive('${student.id}', '${sub}', this, ${stats.quizzes || 0})">View More Details ↓</button>
-          <div id="deep-dive-${sub}" style="display:none; margin-top:var(--space-4); padding:var(--space-4); border-radius:var(--radius-md); background:var(--bg-elevated); border:1px solid var(--border-light); font-size:0.9rem; color:var(--text-main); line-height:1.5;">
-             <div style="text-align:center; padding:var(--space-2); color:var(--text-muted);">
-               <span class="spinner-sm" style="width:14px;height:14px;border-width:2px;display:inline-block;margin-right:8px;border-top-color:var(--brand-rose);"></span> Analyzing performance...
+          <div id="deep-dive-${sub}" style="display:none; margin-top:var(--space-4); padding:var(--space-3); border-radius:var(--radius-md); background:rgba(0,0,0,0.15); border:1px solid var(--glass-border); font-size:0.9rem; color:var(--cream); line-height:1.5;">
+             <div style="text-align:center; padding:var(--space-2); color:var(--sage-light);">
+               <span class="spinner-sm" style="width:14px;height:14px;border-width:2px;display:inline-block;margin-right:8px;"></span> Analyzing performance...
              </div>
           </div>
         </div>
       `;
     }).join('');
     
-    subjectBreakdownList.innerHTML = subjectHtml || '<p class="text-muted">No subject data yet.</p>';
+    subjectBreakdownList.innerHTML = subjectHtml || '<p class="text-secondary">No subject data yet.</p>';
   }
 
   // 4. LAYER 4: Statistics
@@ -1086,14 +1178,13 @@ window.toggleDeepDive = async function(studentId, subject, btnEl, quizCount) {
   if (container.dataset.loaded) return;
 
   container.innerHTML = `
-    <div style="text-align:center; padding:var(--space-2); color:var(--text-muted);">
-      <span class="spinner-sm" style="width:14px;height:14px;border-width:2px;display:inline-block;margin-right:8px;border-top-color:var(--brand-rose);"></span> Generating Miss Wena's analysis...
+    <div style="text-align:center; padding:var(--space-2); color:var(--sage-light);">
+      <span class="spinner-sm" style="width:14px;height:14px;border-width:2px;display:inline-block;margin-right:8px;"></span> Generating Miss Wena's analysis...
     </div>
   `;
 
   try {
-    const sb = await window.getSupabase();
-    const { data: { session } } = await sb.auth.getSession();
+    const { data: { session } } = await window.getSupabase().auth.getSession();
     
     // Call our new backend endpoint
     const res = await fetch('/api/analyze-weakness', {
@@ -1102,30 +1193,17 @@ window.toggleDeepDive = async function(studentId, subject, btnEl, quizCount) {
       body: JSON.stringify({ student_id: studentId, subject: subject })
     });
     
-    // FIX: Check if the response is actually JSON before parsing to prevent HTML 404 crashes
-    const contentType = res.headers.get("content-type");
-    if (!contentType || !contentType.includes("application/json")) {
-       // Graceful Fallback UI if the backend API is not deployed yet
-       container.innerHTML = `
-         <strong style="color:var(--brand-mint);display:block;margin-bottom:8px;">✨ Miss Wena's Analysis (Preview):</strong>
-         <p class="text-sm text-main mb-2">You have completed <strong>${quizCount} practice sessions</strong> in ${subject}. To improve your AL band, focus on reviewing the questions you flagged and completing your active remedial quests.</p>
-         <p class="text-xs text-muted" style="border-top: 1px solid var(--border-light); padding-top: 8px; margin-top: 8px;"><em>Note: The live AI API endpoint (/api/analyze-weakness) is currently unreachable.</em></p>
-       `;
-       container.dataset.loaded = "true";
-       return;
-    }
-
     const data = await res.json();
     if (data.error) throw new Error(data.error);
 
     container.innerHTML = `
-      <strong style="color:var(--brand-mint);display:block;margin-bottom:4px;">✨ Miss Wena's Analysis:</strong>
+      <strong style="color:var(--mint);display:block;margin-bottom:4px;">✨ Miss Wena's Analysis:</strong>
       ${data.analysis}
     `;
     container.dataset.loaded = "true";
 
   } catch (err) {
-    container.innerHTML = `<div style="text-align:center; padding:var(--space-2); color:var(--brand-error);">Failed to load analysis. ${err.message}</div>`;
+    container.innerHTML = `<div style="text-align:center; padding:var(--space-2); color:var(--danger);">Failed to load analysis. ${err.message}</div>`;
     container.dataset.loaded = ""; // Allow retry
   }
 }
