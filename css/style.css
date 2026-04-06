@@ -1179,7 +1179,7 @@ body.has-bottom-nav .footer {
   box-shadow: var(--shadow-md);
   line-height: 0;
 
-  height: 430px; /* increase height (~1.5x, adjust as needed) */
+  height: 400px; /* increase height (~1.5x, adjust as needed) */
 }
 .video-wrap video {
   width: 100%;
