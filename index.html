@@ -4,15 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Superholic Lab — Your Child's Path to AL1 Starts Here</title>
-<meta name="description" content="Singapore's AI-powered study system for P1–P6 students. MOE-aligned question bank, WA/SA/PSLE practice papers, AL1–AL8 live tracking, Plan Quest, and Miss Wena AI Tutor. 7-day free trial.">
-
-<!-- Open Graph -->
-<meta property="og:title" content="Superholic Lab — Diagnose Weaknesses. Build Strengths. Track AL Progress.">
-<meta property="og:description" content="Not just a quiz app. A complete AI study system for P1–P6. Practice papers, Plan Quest, AL tracking, and Miss Wena tutor — all from S$12.99/month.">
+<meta name="description" content="Singapore's AI-powered study system for P1–P6. MOE-aligned question bank, WA/SA/PSLE practice papers, AL1–AL8 live tracking, Plan Quest, and Miss Wena AI Tutor. 7-day free trial.">
+<meta property="og:title" content="Superholic Lab — Diagnose Weaknesses. Track AL Progress. Build Strengths.">
+<meta property="og:description" content="Not just a quiz app. A complete AI study system for P1–P6. From S$12.99/month.">
 <meta property="og:url" content="https://www.superholiclab.com">
 <meta property="og:type" content="website">
-<meta property="og:image" content="https://www.superholiclab.com/assets/images/og-image.png">
-
 <link rel="canonical" href="https://www.superholiclab.com/">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,127 +17,304 @@
 <script src="/js/header.js" defer></script>
 <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js"></script>
 <script src="/js/footer.js" defer></script>
-
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "EducationalOrganization",
   "name": "Superholic Lab",
   "url": "https://www.superholiclab.com",
-  "description": "AI-powered MOE-aligned study platform for Singapore P1–P6 students. Practice papers, AL tracking, AI Tutor Miss Wena.",
-  "address": { "@type": "PostalAddress", "addressCountry": "SG" },
-  "offers": [
-    { "@type": "Offer", "name": "All Subjects", "priceCurrency": "SGD", "price": "12.99" },
-    { "@type": "Offer", "name": "Family Plan",  "priceCurrency": "SGD", "price": "19.99" }
-  ]
+  "description": "AI-powered MOE-aligned study platform for Singapore P1-P6 students.",
+  "address": { "@type": "PostalAddress", "addressCountry": "SG" }
 }
 </script>
+
+<!-- ─────────────────────────────────────────────────────────────────
+     PAGE-LEVEL CSS EXTENSIONS  (index.html only)
+     All rgba values and helpers not in style.css v3.0.
+     Audited against design-guardian.md — no violations.
+     ───────────────────────────────────────────────────────────────── -->
+<style>
+
+/* ── Button variants for dark / coloured backgrounds ──────────── */
+.btn-glass {
+  background: rgba(255,255,255,0.12);
+  color: var(--cream);
+  border: 1px solid rgba(255,255,255,0.22);
+  backdrop-filter: blur(4px);
+}
+.btn-glass:hover:not(:disabled) {
+  background: rgba(255,255,255,0.2);
+  color: var(--cream);
+}
+.btn-white {
+  background: var(--bg-surface);
+  color: var(--brand-rose);
+  font-weight: 700;
+}
+.btn-white:hover:not(:disabled) {
+  background: var(--bg-elevated);
+  color: var(--brand-rose);
+}
+.btn-outline-white {
+  background: transparent;
+  color: var(--cream);
+  border: 1px solid rgba(255,255,255,0.35);
+}
+.btn-outline-white:hover:not(:disabled) {
+  background: rgba(255,255,255,0.1);
+}
+
+/* ── Badge variants ──────────────────────────────────────────── */
+.badge-hero {
+  background: rgba(0,0,0,0.22);
+  color: var(--brand-mint);
+  backdrop-filter: blur(4px);
+}
+.badge-glass {
+  background: rgba(255,255,255,0.1);
+  color: var(--cream);
+}
+.badge-rose-solid {
+  background: var(--brand-rose);
+  color: var(--bg-surface);
+}
+.badge-maths {
+  background: rgba(59,130,246,0.18);
+  color: var(--maths-colour);
+}
+.badge-dark-mint {
+  background: rgba(5,150,105,0.18);
+  color: var(--brand-mint);
+}
+
+/* ── Accent border cards (left-rule accent only) ─────────────── */
+.card-accent-rose {
+  border-left: 4px solid var(--brand-rose);
+  border-top: none;
+  border-right: none;
+  border-bottom: none;
+  background: var(--bg-page);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+.card-accent-amber {
+  border-left: 4px solid var(--brand-amber);
+  border-top: none;
+  border-right: none;
+  border-bottom: none;
+  background: var(--bg-page);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+/* Full-border cards with left colour accent */
+.card-rule-rose  { border-left: 4px solid var(--brand-rose); }
+.card-rule-mint  { border-left: 4px solid var(--brand-mint); }
+.card-rule-amber { border-left: 4px solid var(--brand-amber); }
+
+/* ── Video wrapper ────────────────────────────────────────────── */
+/* The box naturally wraps around the video — no fixed heights.  */
+.video-wrap {
+  display: block;
+  width: 100%;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  background: var(--text-main);
+  line-height: 0;
+}
+.video-wrap video {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ── Hero specifics ──────────────────────────────────────────── */
+.hero-stat-rule {
+  border-top: 1px solid rgba(255,255,255,0.15);
+  padding-top: var(--space-5);
+}
+.stat-label {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(255,255,255,0.55);
+  margin-top: var(--space-1);
+}
+.hero-img-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 300px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-bottom: var(--space-10);
+}
+.hero-float-card {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 240px;
+}
+
+/* ── Credibility bar separator ───────────────────────────────── */
+.cred-sep {
+  width: 1px;
+  height: 36px;
+  background: var(--border-light);
+  flex-shrink: 0;
+}
+
+/* ── Miss Wena avatar ────────────────────────────────────────── */
+.wena-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+  border: 3px solid var(--brand-rose);
+  flex-shrink: 0;
+}
+
+/* ── Placeholder card (pending screenshots) ──────────────────── */
+.placeholder-box {
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  text-align: center;
+  background: var(--bg-page);
+  border: 2px dashed var(--border-dark);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+}
+
+/* ── Pricing toggle ──────────────────────────────────────────── */
+.billing-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  background: var(--brand-sage);
+  border-radius: var(--radius-full);
+  padding: var(--space-1);
+}
+.billing-toggle .btn-sm { border-radius: var(--radius-full); }
+.billing-toggle .btn-active   { background: var(--bg-surface); color: var(--text-main); }
+.billing-toggle .btn-inactive { background: transparent; color: var(--cream); }
+
+/* ── Featured pricing card border ────────────────────────────── */
+.card-featured { border-color: var(--brand-rose); box-shadow: var(--shadow-md); }
+
+/* ── Align-self helpers ──────────────────────────────────────── */
+.self-start  { align-self: flex-start; }
+.self-center { align-self: center; }
+.ml-auto     { margin-left: auto; }
+
+/* ── Section prose cap ───────────────────────────────────────── */
+.prose-cap { max-width: 600px; margin-left: auto; margin-right: auto; }
+
+/* ── Pricing suffix (disable font-display uppercase) ─────────── */
+.price-suffix {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  text-transform: none;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+/* ── Letter-spacing label ────────────────────────────────────── */
+.label-spaced { letter-spacing: 0.08em; text-transform: uppercase; }
+
+</style>
 </head>
 <body class="has-bottom-nav">
 
-<!-- Global Web Component -->
 <global-header></global-header>
+
 
 <!-- ═══════════════════════════════════════════════════════════════
      S1 · HERO — bg-sage + texture-dots
+     Outcome-first headline. Dual CTA above fold. Live AL card.
      ═══════════════════════════════════════════════════════════════ -->
 <section class="bg-sage texture-dots py-10" style="padding-top: calc(64px + var(--space-10)); position: relative;">
   <div class="container flex flex-wrap items-center justify-between gap-8">
 
-    <!-- LEFT: Headline + Feature Pills + Dual CTA + Stats -->
     <div class="flex-1 flex flex-col items-start gap-4" style="min-width: 300px;">
 
-      <div class="badge" style="background: var(--sage-dark); color: var(--brand-mint); border: 1px solid var(--border-light);">
-        P1–P6 · MOE-Aligned · AI-Powered
-      </div>
+      <div class="badge badge-hero">P1–P6 · MOE-Aligned · AI-Powered</div>
 
-      <h1 class="font-display text-4xl mt-2 mb-2 text-white">
+      <h1 class="font-display text-4xl">
         Your Child's Path<br>
         <span class="text-rose">to AL1 Starts Here.</span>
       </h1>
 
-      <p class="text-lg mb-2 text-muted" style="max-width: 480px;">
-        Superholic Lab is Singapore's only study platform that diagnoses your child's weaknesses, builds a personalised Plan Quest, and puts Miss Wena — an AI tutor — on call 24/7. All for less than a hawker meal a week.
+      <p class="text-muted text-lg" style="max-width: 460px;">
+        Superholic Lab diagnoses your child's weaknesses, builds a personalised Plan Quest, and puts Miss Wena — an AI tutor — on call 24/7. All for less than a hawker meal a week.
       </p>
 
-      <!-- Feature pills -->
-      <div class="flex flex-wrap gap-2 mb-2">
-        <span class="badge badge-info">📚 1,000+ Questions</span>
-        <span class="badge badge-success">📋 WA · SA · PSLE Papers</span>
-        <span class="badge" style="background: var(--bg-surface); color: var(--brand-rose);">🤖 Miss Wena, 24/7</span>
-        <span class="badge badge-amber">📊 AL1–AL8 Tracking</span>
+      <div class="flex flex-wrap gap-4">
+        <a href="/pages/signup.html" class="btn btn-primary">Start 7-Day Free Trial →</a>
+        <a href="#pricing" class="btn btn-glass">Subscribe — from S$12.99</a>
       </div>
 
-      <!-- Dual CTA -->
-      <div class="flex flex-wrap gap-4 mt-2">
-        <a href="/pages/signup.html" class="btn btn-primary hover-lift">Start 7-Day Free Trial →</a>
-        <a href="#pricing" class="btn btn-ghost hover-lift" style="border: 1px solid var(--border-light); color: var(--bg-surface);">Subscribe — from S$12.99</a>
-      </div>
-      <p class="text-xs mt-2 text-muted">7 days free · No credit card required · Cancel anytime</p>
+      <p class="text-xs text-muted">7 days free · No credit card required · Cancel anytime</p>
 
-      <!-- Stats -->
-      <div class="flex flex-wrap gap-6 mt-4 pt-4 w-full" style="border-top: 1px solid var(--border-dark);">
-        <div class="flex flex-col gap-1">
-          <div class="font-display text-2xl text-white">4,200+</div>
-          <div class="text-xs font-bold uppercase text-muted">Students Enrolled</div>
+      <div class="flex flex-wrap gap-6 hero-stat-rule">
+        <div>
+          <div class="font-display text-2xl">4,200+</div>
+          <div class="stat-label">Students Enrolled</div>
         </div>
-        <div class="flex flex-col gap-1">
-          <div class="font-display text-2xl text-white">3 Subjects</div>
-          <div class="text-xs font-bold uppercase text-muted">All P1–P6 Topics</div>
+        <div>
+          <div class="font-display text-2xl">3 Subjects</div>
+          <div class="stat-label">All P1–P6 Topics</div>
         </div>
-        <div class="flex flex-col gap-1">
-          <div class="font-display text-2xl text-white">AL1–AL8</div>
-          <div class="text-xs font-bold uppercase text-muted">Live Grade Tracking</div>
+        <div>
+          <div class="font-display text-2xl">AL1–AL8</div>
+          <div class="stat-label">Live Grade Tracking</div>
         </div>
       </div>
+
     </div>
 
-    <!-- RIGHT: Student photo + Floating Live Progress Card -->
-    <div class="flex-1 flex justify-center items-center" style="min-width: 300px; position: relative;">
+    <div class="hero-img-wrap">
       <img src="assets/images/student_with_glowing_apple.png"
-           alt="Singapore student using Superholic Lab on tablet with AI hologram"
-           style="width: 100%; max-width: 520px; border-radius: var(--radius-lg); box-shadow: var(--shadow-md);">
+           alt="Singapore student using Superholic Lab on tablet"
+           style="width: 100%; max-width: 500px; border-radius: var(--radius-lg); box-shadow: var(--shadow-md);">
 
-      <!-- Floating AL Card -->
-      <div class="card p-6 hover-lift" style="position: absolute; bottom: -5%; right: 0; min-width: 240px; max-width: 280px; z-index: 10;">
-        <div class="text-xs font-bold text-muted uppercase mb-4">Live Progress — Aiden · P4</div>
+      <div class="card p-4 hero-float-card hover-lift">
+        <div class="text-xs font-bold text-muted uppercase mb-3">Live Progress · Aiden · P4</div>
         <div class="flex flex-col gap-4">
-
           <div>
             <div class="flex justify-between items-center mb-2">
               <span class="text-xs font-bold text-main">🧮 Mathematics</span>
-              <span class="badge badge-info" style="font-size: 0.65rem; padding: 2px 8px;">AL4</span>
+              <span class="badge badge-maths">AL4</span>
             </div>
             <div class="quiz-progress-bar">
               <div class="quiz-progress-fill float-progress-fill"
                    style="width:0%; background: var(--maths-colour);" data-target="52"></div>
             </div>
           </div>
-
           <div>
             <div class="flex justify-between items-center mb-2">
               <span class="text-xs font-bold text-main">🔬 Science</span>
-              <span class="badge badge-amber" style="font-size: 0.65rem; padding: 2px 8px;">AL3</span>
+              <span class="badge badge-amber">AL3</span>
             </div>
             <div class="quiz-progress-bar">
               <div class="quiz-progress-fill float-progress-fill"
                    style="width:0%; background: var(--science-colour);" data-target="68"></div>
             </div>
           </div>
-
           <div>
             <div class="flex justify-between items-center mb-2">
               <span class="text-xs font-bold text-main">📖 English</span>
-              <span class="badge badge-success" style="font-size: 0.65rem; padding: 2px 8px;">AL2</span>
+              <span class="badge badge-success">AL2</span>
             </div>
             <div class="quiz-progress-bar">
               <div class="quiz-progress-fill float-progress-fill"
                    style="width:0%; background: var(--english-colour);" data-target="81"></div>
             </div>
           </div>
-
         </div>
-        <p class="text-xs text-muted mt-4 text-center">Updated from last 14 days</p>
+        <p class="text-xs text-muted mt-3">Updated from last 14 days of practice</p>
       </div>
     </div>
 
@@ -152,48 +325,60 @@
   </div>
 </section>
 
+
 <!-- ═══════════════════════════════════════════════════════════════
      S2 · CREDIBILITY BAR — bg-white
+     5 trust signals immediately below the hero.
      ═══════════════════════════════════════════════════════════════ -->
 <section class="bg-white py-6">
   <div class="container">
-    <div class="card flex flex-wrap justify-center items-center gap-6 p-6 text-sm w-full bg-page">
+    <div class="card flex flex-wrap justify-center items-center gap-6 p-4">
 
       <div class="flex items-center gap-3">
-        <span class="text-2xl">📚</span>
-        <div class="flex flex-col gap-1">
-          <div class="font-bold text-main leading-none">1,000+ Questions</div>
-          <div class="text-xs text-muted leading-none">MOE-aligned bank</div>
+        <span class="text-xl">📚</span>
+        <div>
+          <div class="font-bold text-sm text-main">1,000+ Questions</div>
+          <div class="text-xs text-muted">MOE-aligned bank</div>
         </div>
       </div>
 
-      <div class="hidden md:block" style="width: 1px; height: 32px; background: var(--border-dark);"></div>
+      <div class="cred-sep"></div>
 
       <div class="flex items-center gap-3">
-        <span class="text-2xl">📋</span>
-        <div class="flex flex-col gap-1">
-          <div class="font-bold text-main leading-none">WA · SA1 · SA2 · PSLE</div>
-          <div class="text-xs text-muted leading-none">4 full exam formats</div>
+        <span class="text-xl">📋</span>
+        <div>
+          <div class="font-bold text-sm text-main">WA · SA1 · SA2 · PSLE</div>
+          <div class="text-xs text-muted">4 full exam formats</div>
         </div>
       </div>
 
-      <div class="hidden md:block" style="width: 1px; height: 32px; background: var(--border-dark);"></div>
+      <div class="cred-sep"></div>
 
       <div class="flex items-center gap-3">
-        <span class="text-2xl">🤖</span>
-        <div class="flex flex-col gap-1">
-          <div class="font-bold text-main leading-none">Miss Wena AI Tutor</div>
-          <div class="text-xs text-muted leading-none">Available 24/7</div>
+        <span class="text-xl">🤖</span>
+        <div>
+          <div class="font-bold text-sm text-main">Miss Wena AI Tutor</div>
+          <div class="text-xs text-muted">Available 24/7</div>
         </div>
       </div>
 
-      <div class="hidden lg:block" style="width: 1px; height: 32px; background: var(--border-dark);"></div>
+      <div class="cred-sep"></div>
 
       <div class="flex items-center gap-3">
-        <span class="text-2xl text-success">✓</span>
-        <div class="flex flex-col gap-1">
-          <div class="font-bold text-main leading-none">PDPA Compliant</div>
-          <div class="text-xs text-muted leading-none">Singapore servers</div>
+        <span class="text-xl">📊</span>
+        <div>
+          <div class="font-bold text-sm text-main">AL1–AL8 Live Tracking</div>
+          <div class="text-xs text-muted">Real grade calculation</div>
+        </div>
+      </div>
+
+      <div class="cred-sep"></div>
+
+      <div class="flex items-center gap-3">
+        <span class="text-success text-xl">✓</span>
+        <div>
+          <div class="font-bold text-sm text-main">PDPA Compliant</div>
+          <div class="text-xs text-muted">Singapore servers</div>
         </div>
       </div>
 
@@ -201,145 +386,144 @@
   </div>
 </section>
 
+
 <!-- ═══════════════════════════════════════════════════════════════
      S3 · PARENT PROBLEM — bg-page + texture-light-grid
+     Mirror the exact anxiety Singapore parents feel.
      ═══════════════════════════════════════════════════════════════ -->
 <section class="bg-page texture-light-grid py-10">
   <div class="container">
-    <div class="flex flex-col items-center text-center mb-8 gap-2">
-      <div class="badge badge-amber">Sound Familiar?</div>
-      <h2 class="font-display text-3xl text-main">Every Singapore Parent Has Said This.</h2>
-      <p class="text-muted text-lg" style="max-width: 560px;">We built Superholic Lab to solve the exact frustrations that keep parents up the night before a big exam.</p>
+
+    <div class="flex flex-col items-center text-center mb-8">
+      <div class="badge badge-amber mb-2">Sound Familiar?</div>
+      <h2 class="font-display text-3xl mb-2 text-main">Every Singapore Parent Has Said This.</h2>
+      <p class="text-muted text-lg prose-cap">We built Superholic Lab to solve the exact frustrations that keep parents up the night before a big exam.</p>
     </div>
 
     <div class="flex flex-wrap gap-6">
 
-      <div class="card flex-1 flex flex-col gap-4 p-6 hover-lift" style="min-width: 280px; border-left: 4px solid var(--brand-rose);">
-        <div class="text-3xl">😰</div>
-        <h3 class="font-bold text-xl text-main">"My child keeps getting it wrong — but has no idea why."</h3>
-        <p class="text-muted text-sm flex-1">Superholic Lab explains every wrong option in detail. Students learn the exact misconception that led them to each wrong choice — so they stop repeating the same mistake.</p>
-        <span class="badge badge-success w-max">✓ Explanations for every option</span>
+      <div class="card flex-1 flex flex-col gap-3 hover-lift card-rule-rose" style="min-width: 280px;">
+        <div class="text-2xl mb-2">😰</div>
+        <h3 class="font-bold text-xl">"My child keeps getting it wrong — but has no idea why."</h3>
+        <p class="text-muted text-sm">Superholic Lab explains every wrong option in detail. Students learn the exact misconception behind each wrong choice — so they stop repeating the same mistake.</p>
+        <span class="badge badge-success self-start">✓ Wrong-answer explanations, every option</span>
       </div>
 
-      <div class="card flex-1 flex flex-col gap-4 p-6 hover-lift" style="min-width: 280px; border-left: 4px solid var(--brand-amber);">
-        <div class="text-3xl">😤</div>
-        <h3 class="font-bold text-xl text-main">"Good tutors cost $300/month. I can't justify it for three kids."</h3>
-        <p class="text-muted text-sm flex-1">Superholic Lab costs less than two plates of char kway teow a month — with AL-grade tracking, mock exam papers, a Plan Quest, and a personal AI tutor. All included.</p>
-        <span class="badge badge-amber w-max">⚡ All features from S$12.99/mo</span>
+      <div class="card flex-1 flex flex-col gap-3 hover-lift card-rule-amber" style="min-width: 280px;">
+        <div class="text-2xl mb-2">😤</div>
+        <h3 class="font-bold text-xl">"Good tutors cost $300/month. I can't justify it for three kids."</h3>
+        <p class="text-muted text-sm">Superholic Lab costs less than two plates of char kway teow a month — with AL-grade tracking, exam papers, a Plan Quest, and a personal AI tutor. All included.</p>
+        <span class="badge badge-amber self-start">⚡ All features from S$12.99/month</span>
       </div>
 
-      <div class="card flex-1 flex flex-col gap-4 p-6 hover-lift" style="min-width: 280px; border-left: 4px solid var(--brand-mint);">
-        <div class="text-3xl">😓</div>
-        <h3 class="font-bold text-xl text-main">"I can't sit with my child every night. They need someone to ask."</h3>
-        <p class="text-muted text-sm flex-1">Miss Wena is available at 11pm on school nights. She guides students with questions — never just giving answers — using the MOE marking-scheme language examiners expect.</p>
-        <span class="badge badge-success w-max">🤖 Miss Wena, on call 24/7</span>
+      <div class="card flex-1 flex flex-col gap-3 hover-lift card-rule-mint" style="min-width: 280px;">
+        <div class="text-2xl mb-2">😓</div>
+        <h3 class="font-bold text-xl">"I can't sit with my child every night. They need someone to ask."</h3>
+        <p class="text-muted text-sm">Miss Wena is available at 11pm on school nights. She guides students with questions — never handing out answers — using MOE marking-scheme language.</p>
+        <span class="badge badge-success self-start">🤖 Miss Wena, on call 24/7</span>
       </div>
 
     </div>
   </div>
 </section>
 
+
 <!-- ═══════════════════════════════════════════════════════════════
      S4 · QUIZ BANK — bg-white
+     The core differentiator: wrong-answer explanations.
      ═══════════════════════════════════════════════════════════════ -->
 <section class="bg-white py-10">
   <div class="container">
     <div class="flex flex-wrap items-center gap-8">
 
-      <!-- Left: Deep-dive screenshot -->
       <div class="flex-1" style="min-width: 300px;">
         <img src="assets/images/deepdive-screenshot.png"
              alt="Superholic Lab quiz showing wrong-answer explanation panel"
              style="width: 100%; border-radius: var(--radius-lg); box-shadow: var(--shadow-md);">
       </div>
 
-      <!-- Right: Feature copy -->
-      <div class="flex-1 flex flex-col gap-6" style="min-width: 300px;">
-        <div class="flex flex-col gap-2 items-start">
-          <div class="badge badge-info">The Question Bank</div>
-          <h2 class="font-display text-3xl text-main">Practise Until It Clicks.</h2>
-          <p class="text-muted text-lg">1,000+ MOE-aligned questions across Mathematics, Science, and English — every Primary 1 to Primary 6 topic. Generated by AI, verified by educators.</p>
-        </div>
+      <div class="flex-1 flex flex-col gap-4" style="min-width: 300px;">
+        <div class="badge badge-info">The Question Bank</div>
+        <h2 class="font-display text-3xl text-main">Practise Until It Clicks.</h2>
+        <p class="text-muted text-lg">1,000+ MOE-aligned questions across Mathematics, Science, and English — every P1 to P6 topic. AI-generated and educator-verified.</p>
 
-        <!-- Pull quote -->
-        <div class="card p-6" style="border: none; border-left: 4px solid var(--brand-rose); background: var(--bg-page); border-radius: 0 var(--radius-md) var(--radius-md) 0;">
+        <div class="card card-accent-rose p-4">
           <p class="font-bold text-xl text-main">"Most platforms tell your child the right answer. We explain why every wrong answer is a trap."</p>
         </div>
 
-        <!-- Feature bullets -->
-        <div class="flex flex-col gap-4">
-          <div class="flex items-start gap-4">
-            <span class="text-rose font-bold text-xl leading-none">✓</span>
-            <div class="flex flex-col gap-1">
-              <div class="font-bold text-main">Wrong-Answer Explanations</div>
-              <div class="text-muted text-sm">Not just "A is wrong" — here's the exact misconception that traps students into choosing A over B.</div>
+        <div class="flex flex-col gap-4 mt-2">
+          <div class="flex items-start gap-3">
+            <span class="text-rose font-bold text-lg">✓</span>
+            <div>
+              <div class="font-bold text-sm">Wrong-Answer Explanations for Every Option</div>
+              <div class="text-muted text-sm">The exact misconception behind each wrong choice — so the same mistake never happens twice.</div>
             </div>
           </div>
-          <div class="flex items-start gap-4">
-            <span class="text-rose font-bold text-xl leading-none">✓</span>
-            <div class="flex flex-col gap-1">
-              <div class="font-bold text-main">Instant Worked Solutions</div>
-              <div class="text-muted text-sm">Step-by-step working shown immediately, labelled exactly the way MOE examiners expect to see it.</div>
+          <div class="flex items-start gap-3">
+            <span class="text-rose font-bold text-lg">✓</span>
+            <div>
+              <div class="font-bold text-sm">Instant Worked Solutions in MOE Format</div>
+              <div class="text-muted text-sm">Step-by-step working shown immediately, labelled the way examiners expect.</div>
             </div>
           </div>
-          <div class="flex items-start gap-4">
-            <span class="text-rose font-bold text-xl leading-none">✓</span>
-            <div class="flex flex-col gap-1">
-              <div class="font-bold text-main">Digital Scratchpad</div>
-              <div class="text-muted text-sm">Students can draw bar models and diagrams directly inside the quiz to show their working.</div>
+          <div class="flex items-start gap-3">
+            <span class="text-rose font-bold text-lg">✓</span>
+            <div>
+              <div class="font-bold text-sm">Digital Scratchpad for Working</div>
+              <div class="text-muted text-sm">Students draw bar models and diagrams inside the quiz — feedback on approach, not just the final answer.</div>
             </div>
           </div>
         </div>
 
-        <a href="/pages/signup.html" class="btn btn-primary hover-lift" style="align-self: flex-start;">Try a Free Quiz →</a>
+        <a href="/pages/signup.html" class="btn btn-primary self-start">Try a Free Quiz →</a>
       </div>
 
     </div>
   </div>
 </section>
 
+
 <!-- ═══════════════════════════════════════════════════════════════
      S5 · PRACTICE PAPERS — bg-sage + texture-dots
+     WA · SA1 · SA2 · PSLE. Real exam simulation.
      ═══════════════════════════════════════════════════════════════ -->
 <section class="bg-sage texture-dots py-10">
   <div class="container">
-    <div class="flex flex-col items-center text-center mb-8 gap-2">
-      <div class="badge" style="background: rgba(255,255,255,0.15); color: var(--brand-mint);">Practice Papers</div>
-      <h2 class="font-display text-3xl text-white">Exam-Ready. Not Just Quiz-Ready.</h2>
-      <p class="text-lg text-muted" style="max-width: 600px;">Doing individual questions is only half the battle. Superholic Lab prepares your child for the full exam — in every format they will actually face.</p>
+
+    <div class="flex flex-col items-center text-center mb-8">
+      <div class="badge badge-glass mb-2">Practice Papers</div>
+      <h2 class="font-display text-3xl mb-2">Exam-Ready. Not Just Quiz-Ready.</h2>
+      <p class="text-muted text-lg prose-cap">Individual questions are only half the battle. Superholic Lab prepares your child for the full exam — in every format they will actually face.</p>
     </div>
 
-    <!-- 3 exam format cards -->
     <div class="flex flex-wrap gap-6 mb-8">
 
-      <div class="ecc-card flex-1 flex flex-col gap-4 p-6" style="min-width: 250px;">
-        <div class="text-3xl">📝</div>
+      <div class="ecc-card flex-1 flex flex-col gap-3" style="min-width: 250px;">
+        <div class="text-2xl mb-2">📝</div>
         <h3 class="font-bold text-xl text-white">Weighted Assessments</h3>
-        <p class="text-sm flex-1" style="color: rgba(255,255,255,0.75);">WA1, WA2, WA3, WA4 formats. Timed papers that mirror the exact school test structure your child faces each term.</p>
-        <span class="badge w-max" style="background: rgba(255,255,255,0.1); color: var(--bg-surface);">P3–P6 · Maths · Science · English</span>
+        <p class="text-muted text-sm">WA1–WA4 formats. Timed papers that mirror the exact school test structure your child faces each term.</p>
+        <span class="badge badge-glass self-start">P3–P6 · Maths · Science · English</span>
       </div>
 
-      <div class="ecc-card flex-1 flex flex-col gap-4 p-6" style="min-width: 250px;">
-        <div class="text-3xl">📄</div>
+      <div class="ecc-card flex-1 flex flex-col gap-3" style="min-width: 250px;">
+        <div class="text-2xl mb-2">📄</div>
         <h3 class="font-bold text-xl text-white">SA1 &amp; SA2 Exams</h3>
-        <p class="text-sm flex-1" style="color: rgba(255,255,255,0.75);">Semester Assessment format. Full-length papers with question navigator pips, timed sessions, and instant results.</p>
-        <span class="badge w-max" style="background: rgba(255,255,255,0.1); color: var(--bg-surface);">P3–P6 · Maths · Science · English</span>
+        <p class="text-muted text-sm">Full-length Semester Assessment papers with question navigator, timed sessions, and instant per-topic score breakdowns.</p>
+        <span class="badge badge-glass self-start">P3–P6 · Maths · Science · English</span>
       </div>
 
-      <div class="ecc-card flex-1 flex flex-col gap-4 p-6" style="min-width: 250px;">
-        <div class="text-3xl">🏆</div>
+      <div class="ecc-card flex-1 flex flex-col gap-3" style="min-width: 250px;">
+        <div class="text-2xl mb-2">🏆</div>
         <h3 class="font-bold text-xl text-white">PSLE Format Papers</h3>
-        <p class="text-sm flex-1" style="color: rgba(255,255,255,0.75);">Booklet A and Booklet B. Paper 1 and Paper 2. Built to the exact MOE PSLE structure for perfect simulation.</p>
-        <span class="badge w-max" style="background: rgba(255,255,255,0.1); color: var(--bg-surface);">P6 · Maths · Science · English</span>
+        <p class="text-muted text-sm">Booklet A and B. Paper 1 and 2. Built to the exact MOE PSLE structure — the closest simulation available outside school.</p>
+        <span class="badge badge-glass self-start">P6 · Maths · Science · English</span>
       </div>
 
     </div>
 
-    <!-- Exam demo video -->
-    <div class="card p-6" style="background: var(--sage-dark); border-color: rgba(255,255,255,0.1);">
-      <div class="text-xs font-bold uppercase mb-4 tracking-wider text-success">See It In Action</div>
-      <video style="width: 100%; border-radius: var(--radius-sm); max-height: 380px; object-fit: cover; display: block;"
-             autoplay loop muted playsinline>
+    <!-- Video — box naturally wraps around video content -->
+    <div class="video-wrap">
+      <video autoplay loop muted playsinline>
         <source src="assets/videos/exam-demo.mp4" type="video/mp4">
       </video>
     </div>
@@ -347,53 +531,54 @@
   </div>
 </section>
 
+
 <!-- ═══════════════════════════════════════════════════════════════
      S6 · PROGRESS + AL TRACKER — bg-sage-dark + texture-grid
+     Real data. Real AL grade. Topic-level weakness map.
      ═══════════════════════════════════════════════════════════════ -->
 <section class="bg-sage-dark texture-grid py-10">
   <div class="container">
-    <div class="flex flex-col items-center text-center mb-8 gap-2">
-      <div class="badge" style="background: rgba(255,255,255,0.08); color: var(--brand-mint);">Live Progress Tracking</div>
-      <h2 class="font-display text-3xl text-white">Know Exactly Where Your Child Stands.</h2>
-      <p class="text-lg text-muted" style="max-width: 600px;">No more guessing. Superholic Lab calculates your child's Achievement Level in real time — updated after every session, across all 3 subjects.</p>
+
+    <div class="flex flex-col items-center text-center mb-8">
+      <div class="badge badge-dark-mint mb-2">Live Progress Tracking</div>
+      <h2 class="font-display text-3xl mb-2">Know Exactly Where Your Child Stands.</h2>
+      <p class="text-muted text-lg prose-cap">Superholic Lab calculates your child's Achievement Level in real time — updated after every session, across all 3 subjects.</p>
     </div>
 
-    <div class="flex flex-wrap items-center gap-8">
+    <div class="flex flex-wrap items-start gap-8">
 
-      <!-- Left: Feature callout cards -->
-      <div class="flex-1 flex flex-col gap-6" style="min-width: 300px;">
+      <div class="flex-1 flex flex-col gap-4" style="min-width: 300px;">
 
-        <div class="ecc-card flex flex-col gap-3 p-6">
-          <div class="flex items-center gap-4">
-            <span class="text-3xl">🎯</span>
+        <div class="ecc-card flex flex-col gap-2">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="text-2xl">🎯</span>
             <h3 class="font-bold text-xl text-white">AL1–AL8 Live Grade</h3>
           </div>
-          <p class="text-sm" style="color: rgba(255,255,255,0.75);">Your child's Achievement Level is calculated directly from their scores across the last 14 days — not an estimate. Real performance data.</p>
+          <p class="text-muted text-sm">Calculated directly from your child's scores over the last 14 days. Real data — not an estimate.</p>
         </div>
 
-        <div class="ecc-card flex flex-col gap-3 p-6">
-          <div class="flex items-center gap-4">
-            <span class="text-3xl">📅</span>
+        <div class="ecc-card flex flex-col gap-2">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="text-2xl">📅</span>
             <h3 class="font-bold text-xl text-white">14-Day Rolling Results</h3>
           </div>
-          <p class="text-sm" style="color: rgba(255,255,255,0.75);">A full history of quizzes, WA, SA and PSLE papers — day by day. See the trend before the school report card tells you.</p>
+          <p class="text-muted text-sm">A full history of quizzes, WA, SA, and PSLE papers day by day. See the trend before the school report card does.</p>
         </div>
 
-        <div class="ecc-card flex flex-col gap-3 p-6">
-          <div class="flex items-center gap-4">
-            <span class="text-3xl">🔍</span>
+        <div class="ecc-card flex flex-col gap-2">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="text-2xl">🔍</span>
             <h3 class="font-bold text-xl text-white">Topic-Level Weakness Map</h3>
           </div>
-          <p class="text-sm" style="color: rgba(255,255,255,0.75);">Not just "weak in Maths" — specific topics flagged by name and AL grade. Geometry at AL7. Fractions at AL6. Know exactly where to focus next.</p>
+          <p class="text-muted text-sm">Specific topics flagged by name and AL grade. Geometry at AL7. Fractions at AL6. Know exactly where to focus.</p>
         </div>
 
-        <a href="/pages/signup.html" class="btn btn-primary hover-lift" style="align-self: flex-start;">See a Sample Dashboard →</a>
+        <a href="/pages/signup.html" class="btn btn-primary self-start mt-2">See a Sample Dashboard →</a>
       </div>
 
-      <!-- Right: Dashboard screenshot -->
       <div class="flex-1" style="min-width: 300px;">
         <img src="assets/images/dashboard-screenshot.png"
-             alt="Superholic Lab progress dashboard showing AL grades by subject and 14-day history"
+             alt="Superholic Lab progress dashboard showing AL grades by subject"
              style="width: 100%; border-radius: var(--radius-lg); box-shadow: var(--shadow-md);">
       </div>
 
@@ -401,25 +586,22 @@
   </div>
 </section>
 
+
 <!-- ═══════════════════════════════════════════════════════════════
      S7 · PLAN QUEST — bg-white
+     AI action plan. Specific, personal, actionable.
      ═══════════════════════════════════════════════════════════════ -->
 <section class="bg-white py-10">
   <div class="container">
-    <div class="flex flex-wrap items-center gap-8">
+    <div class="flex flex-wrap items-start gap-8">
 
-      <!-- Left: Copy -->
-      <div class="flex-1 flex flex-col gap-6" style="min-width: 300px;">
-        <div class="flex flex-col gap-2 items-start">
-          <div class="badge badge-amber">Plan Quest</div>
-          <h2 class="font-display text-3xl text-main">Your Child's Personal AI Study Blueprint.</h2>
-          <p class="text-muted text-lg">When Superholic Lab identifies a weakness, it doesn't just flag it. It builds a Plan Quest — a targeted remediation path that tells your child exactly what to practise next, and why.</p>
-        </div>
+      <div class="flex-1 flex flex-col gap-4" style="min-width: 300px;">
+        <div class="badge badge-amber">Plan Quest</div>
+        <h2 class="font-display text-3xl text-main">Your Child's Personal AI Study Blueprint.</h2>
+        <p class="text-muted text-lg">When Superholic Lab identifies a weakness, it doesn't just flag it. It builds a Plan Quest — a targeted path that tells your child exactly what to practise next, and why.</p>
 
-        <!-- Example Plan Quest output -->
-        <div class="card p-6 flex flex-col gap-3"
-             style="border: none; border-left: 4px solid var(--brand-amber); background: var(--bg-page); border-radius: 0 var(--radius-md) var(--radius-md) 0;">
-          <div class="text-xs font-bold uppercase text-muted tracking-wider">Example Plan Quest</div>
+        <div class="card card-accent-amber p-4">
+          <div class="text-xs font-bold text-muted label-spaced mb-3">Example Plan Quest Output</div>
           <p class="text-sm text-main" style="line-height: 1.75;">
             <strong>Based on Aiden's last 14 days:</strong><br>
             🔴 Geometry — 20% (AL7) &nbsp;·&nbsp; 🔴 Fractions — 20% (AL7)<br><br>
@@ -428,41 +610,39 @@
           </p>
         </div>
 
-        <!-- Feature bullets -->
-        <div class="flex flex-col gap-4">
-          <div class="flex items-start gap-4">
-            <span class="text-amber font-bold text-xl leading-none">✓</span>
-            <div class="flex flex-col gap-1">
-              <div class="font-bold text-main">AI-Generated from Real Data</div>
-              <div class="text-muted text-sm">Each quest is built from your child's actual performance — not a generic worksheet.</div>
+        <div class="flex flex-col gap-4 mt-2">
+          <div class="flex items-start gap-3">
+            <span class="text-amber font-bold text-lg">✓</span>
+            <div>
+              <div class="font-bold text-sm">AI-Generated from Real Performance Data</div>
+              <div class="text-muted text-sm">Each quest is built from your child's actual results — not a generic worksheet.</div>
             </div>
           </div>
-          <div class="flex items-start gap-4">
-            <span class="text-amber font-bold text-xl leading-none">✓</span>
-            <div class="flex flex-col gap-1">
-              <div class="font-bold text-main">Powered by Miss Wena</div>
-              <div class="text-muted text-sm">Students can ask Miss Wena to guide them through their Plan Quest topics directly from the chat.</div>
+          <div class="flex items-start gap-3">
+            <span class="text-amber font-bold text-lg">✓</span>
+            <div>
+              <div class="font-bold text-sm">Linked to Miss Wena</div>
+              <div class="text-muted text-sm">Students ask Miss Wena to guide them through Plan Quest topics directly in the chat.</div>
             </div>
           </div>
-          <div class="flex items-start gap-4">
-            <span class="text-amber font-bold text-xl leading-none">✓</span>
-            <div class="flex flex-col gap-1">
-              <div class="font-bold text-main">Visible to Parents</div>
-              <div class="text-muted text-sm">Available from the Progress page — parents can monitor the quest and track whether it's being followed.</div>
+          <div class="flex items-start gap-3">
+            <span class="text-amber font-bold text-lg">✓</span>
+            <div>
+              <div class="font-bold text-sm">Visible to Parents</div>
+              <div class="text-muted text-sm">Track the quest from the Progress page — watch the AL grade improve as it's followed.</div>
             </div>
           </div>
         </div>
 
-        <a href="/pages/signup.html" class="btn btn-primary hover-lift" style="align-self: flex-start;">Get Your Child's Plan Quest →</a>
+        <a href="/pages/signup.html" class="btn btn-primary self-start">Get Your Child's Plan Quest →</a>
       </div>
 
-      <!-- Right: Placeholder -->
       <div class="flex-1" style="min-width: 300px;">
-        <div class="card p-8 flex flex-col items-center justify-center gap-4 text-center"
-             style="min-height: 340px; background: var(--bg-page); border: 2px dashed var(--border-dark);">
+        <!-- ⚠️ CONFIGURE: Replace with assets/images/action-plan-screenshot.png when ready -->
+        <div class="placeholder-box">
           <div class="text-4xl">🗺️</div>
-          <div class="font-bold text-main text-xl">Plan Quest UI Screenshot</div>
-          <div class="text-sm text-muted">Coming soon — add <code style="font-size: 0.75rem; background: var(--bg-elevated); padding: 4px 8px; border-radius: var(--radius-sm);">assets/images/action-plan-screenshot.png</code></div>
+          <div class="font-bold text-main">Plan Quest Screenshot</div>
+          <div class="text-sm text-muted">Add <code>assets/images/action-plan-screenshot.png</code></div>
         </div>
       </div>
 
@@ -470,97 +650,88 @@
   </div>
 </section>
 
+
 <!-- ═══════════════════════════════════════════════════════════════
      S8 · MISS WENA — bg-sage + texture-dots
+     The AI tutor gets her own section — name, face, personality.
      ═══════════════════════════════════════════════════════════════ -->
 <section class="bg-sage texture-dots py-10">
   <div class="container">
     <div class="flex flex-wrap items-start gap-8">
 
-      <!-- Left: Miss Wena intro + feature bullets -->
-      <div class="flex-1 flex flex-col gap-6" style="min-width: 300px;">
+      <div class="flex-1 flex flex-col gap-4" style="min-width: 300px;">
 
-        <div class="flex flex-col gap-4 items-start">
-          <div class="badge" style="background: rgba(183,110,121,0.2); color: var(--brand-rose);">Your AI Tutor</div>
+        <div class="badge badge-glass self-start">Your AI Tutor</div>
 
-          <div class="flex items-center gap-4">
-            <img src="assets/images/miss_wena.png"
-                 alt="Miss Wena — Superholic Lab AI Tutor"
-                 style="width: 80px; height: 80px; border-radius: var(--radius-full); border: 3px solid var(--brand-rose); object-fit: cover; flex-shrink: 0;"
-                 onerror="this.style.display='none'">
-            <div class="flex flex-col gap-1">
-              <h2 class="font-display text-4xl text-white leading-none">Meet Miss Wena.</h2>
-              <p class="text-sm text-muted">Verified MOE-Aligned · Omni-Tutor · 24/7</p>
-            </div>
+        <div class="flex items-center gap-4">
+          <img src="assets/images/miss_wena.png"
+               alt="Miss Wena — Superholic Lab AI Tutor"
+               class="wena-avatar"
+               onerror="this.style.display='none'">
+          <div>
+            <h2 class="font-display text-3xl">Meet Miss Wena.</h2>
+            <p class="text-muted text-sm">Verified MOE-Aligned · Omni-Tutor · 24/7</p>
           </div>
-          
-          <p class="text-lg text-white" style="line-height: 1.6;">Miss Wena covers Mathematics, Science, and English — all in one conversation. She guides students with Socratic questions, never handing out answers, using the exact language Singapore examiners expect.</p>
         </div>
 
+        <p class="text-muted text-lg">Miss Wena covers Mathematics, Science, and English — all in one conversation. She guides students with Socratic questions, using the exact language Singapore examiners expect.</p>
+
         <div class="flex flex-col gap-4">
-          <div class="flex items-start gap-4">
-            <span class="text-rose font-bold text-xl leading-none">✓</span>
-            <div class="flex flex-col gap-1">
-              <div class="font-bold text-white">Omni-Subject in One Chat</div>
-              <div class="text-sm text-muted">Bar models, Science CER format, English inference — Miss Wena handles all subjects and all levels without switching tabs.</div>
+          <div class="flex items-start gap-3">
+            <span class="text-rose font-bold text-lg">✓</span>
+            <div>
+              <div class="font-bold text-sm text-white">Omni-Subject in One Chat</div>
+              <div class="text-muted text-sm">Bar models, Science CER format, English inference — all subjects, all levels, one conversation.</div>
             </div>
           </div>
-          <div class="flex items-start gap-4">
-            <span class="text-rose font-bold text-xl leading-none">✓</span>
-            <div class="flex flex-col gap-1">
-              <div class="font-bold text-white">Plan Quest Integration</div>
-              <div class="text-sm text-muted">Students can ask Miss Wena to guide them through their AI-generated Plan Quest topics — creating a direct link between diagnosis and remediation.</div>
+          <div class="flex items-start gap-3">
+            <span class="text-rose font-bold text-lg">✓</span>
+            <div>
+              <div class="font-bold text-sm text-white">Plan Quest Integration</div>
+              <div class="text-muted text-sm">Ask Miss Wena to work through your Plan Quest topics — linking diagnosis directly to remediation.</div>
             </div>
           </div>
-          <div class="flex items-start gap-4">
-            <span class="text-rose font-bold text-xl leading-none">✓</span>
-            <div class="flex flex-col gap-1">
-              <div class="font-bold text-white">Draw Your Working</div>
-              <div class="text-sm text-muted">Miss Wena has a built-in pen tool. Students can sketch bar models and diagrams and get direct feedback on their approach.</div>
+          <div class="flex items-start gap-3">
+            <span class="text-rose font-bold text-lg">✓</span>
+            <div>
+              <div class="font-bold text-sm text-white">Draw Your Working</div>
+              <div class="text-muted text-sm">A built-in pen tool lets students sketch bar models and get direct feedback on their approach.</div>
             </div>
           </div>
         </div>
 
       </div>
 
-      <!-- Right: Live chat preview + Study Notes callout -->
       <div class="flex-1 flex flex-col gap-6" style="min-width: 300px;">
 
-        <!-- Chat UI preview -->
-        <div class="card p-6 flex flex-col">
-          <div class="flex items-center gap-3 mb-6">
-            <span class="text-2xl">🤖</span>
-            <span class="font-bold text-lg text-main">Miss Wena</span>
-            <span class="badge badge-success text-xs ml-auto">● Online</span>
+        <div class="card p-4 flex flex-col gap-3">
+          <div class="flex items-center gap-2 mb-2">
+            <span>🤖</span>
+            <span class="font-bold text-sm text-main">Miss Wena</span>
+            <span class="badge badge-success ml-auto">● Online</span>
           </div>
-
-          <div class="chat-bubble-user text-sm mb-4" style="min-width: 0; word-break: break-word; overflow-wrap: anywhere; background-color: var(--sage-dark); color: var(--cream); align-self: flex-end; border-radius: 16px 16px 0 16px; padding: 12px 16px; max-width: 85%; box-shadow: var(--shadow-sm);">
-            I don't understand why the answer to Q4 is B and not A. Both seem right to me?
+          <div class="chat-bubble-user text-sm">
+            I don't understand why Q4 is B and not A. Both seem correct to me?
           </div>
-
-          <div class="chat-bubble-tutor text-sm mb-4" style="min-width: 0; word-break: break-word; overflow-wrap: anywhere; background-color: var(--bg-elevated); color: var(--text-main); align-self: flex-start; border-radius: 16px 16px 16px 0; padding: 16px; max-width: 85%; box-shadow: var(--shadow-sm); border: 1px solid var(--border-light); line-height: 1.6;">
-            Great question — let's think it through together. 🤔 In option A, the force is applied at the pivot point. What does that tell us about the moment arm?
+          <div class="chat-bubble-tutor text-sm">
+            Great question! In option A, the force is at the pivot point. What does that tell us about the moment arm?
           </div>
-
-          <div class="chat-bubble-user text-sm mb-4" style="min-width: 0; word-break: break-word; overflow-wrap: anywhere; background-color: var(--sage-dark); color: var(--cream); align-self: flex-end; border-radius: 16px 16px 0 16px; padding: 12px 16px; max-width: 85%; box-shadow: var(--shadow-sm);">
-            Oh… the moment arm would be zero? So there's no turning effect?
+          <div class="chat-bubble-user text-sm">
+            The moment arm is zero? So there's no turning effect?
           </div>
-
-          <div class="chat-bubble-tutor text-sm mb-6" style="min-width: 0; word-break: break-word; overflow-wrap: anywhere; background-color: var(--bg-elevated); color: var(--text-main); align-self: flex-start; border-radius: 16px 16px 16px 0; padding: 16px; max-width: 85%; box-shadow: var(--shadow-sm); border: 1px solid var(--border-light); line-height: 1.6;">
-            Exactly right! 🌟 In PSLE, the keyword the examiner is looking for here is <em class="font-bold">"moment arm"</em>. A zero moment arm = zero turning effect. That's why A cannot cause movement — and why B is the correct answer. Does that make sense?
+          <div class="chat-bubble-tutor text-sm">
+            Exactly right! 🌟 In PSLE, the keyword the examiner looks for is <em>"moment arm"</em>. Zero moment arm = zero turning effect. That's why B is correct.
           </div>
-
-          <button class="btn btn-secondary btn-sm hover-lift" style="align-self: flex-start;">💾 Save as Study Note</button>
+          <button class="btn btn-secondary btn-sm self-start mt-2">💾 Save as Study Note</button>
         </div>
 
-        <!-- Study Notes / Backpack callout -->
-        <div class="ecc-card flex flex-col gap-3 p-6">
-          <div class="flex items-center gap-3">
-            <span class="text-2xl">🎒</span>
-            <h3 class="font-bold text-xl text-white">Study Notes (Backpack)</h3>
+        <div class="ecc-card flex flex-col gap-2">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="text-xl">🎒</span>
+            <h3 class="font-bold text-lg text-white">Study Notes (Backpack)</h3>
           </div>
-          <p class="text-sm text-muted">Every Miss Wena conversation can be saved as a formatted Study Note. Your child builds their own revision library — auto-generated, always accessible from the Dashboard and Progress page.</p>
-          <span class="badge w-max mt-2" style="background: rgba(255,255,255,0.1); color: var(--bg-surface);">Included on all plans</span>
+          <p class="text-muted text-sm">Every Miss Wena conversation can be saved as a formatted Study Note. Your child builds their own revision library — always accessible from the Dashboard and Progress page.</p>
+          <span class="badge badge-glass self-start mt-2">Included on all plans</span>
         </div>
 
       </div>
@@ -568,28 +739,31 @@
   </div>
 </section>
 
+
 <!-- ═══════════════════════════════════════════════════════════════
      S9 · TESTIMONIALS — bg-page
+     Social proof. Update with real quotes post-launch.
      ═══════════════════════════════════════════════════════════════ -->
 <section class="bg-page py-10">
   <div class="container">
-    <div class="flex flex-col items-center text-center mb-8 gap-2">
-      <div class="badge badge-info">Parent Feedback</div>
-      <h2 class="font-display text-3xl text-main">Trusted by Singapore Families.</h2>
-      <p class="text-muted text-lg" style="max-width: 560px;">What parents say when they finally have real data — and the tools to act on it.</p>
+
+    <div class="flex flex-col items-center text-center mb-8">
+      <div class="badge badge-info mb-2">Parent Feedback</div>
+      <h2 class="font-display text-3xl mb-2 text-main">Trusted by Singapore Families.</h2>
+      <p class="text-muted text-lg prose-cap">What parents say when they finally have real data — and the tools to act on it.</p>
     </div>
 
     <div class="flex flex-wrap items-center gap-8">
 
       <div class="flex-1 flex flex-col gap-6" style="min-width: 300px;">
-        <div class="card p-6 hover-lift" style="border-left: 4px solid var(--brand-rose);">
-          <p class="text-main font-medium italic mb-4">"My daughter went from 60% to 82% in Science in six weeks. The wrong-answer explanations changed how she approaches every MCQ — she actually understands her mistakes now instead of repeating them."</p>
-          <div class="font-bold text-main">Mrs Lim, Bukit Timah</div>
+        <div class="card hover-lift card-rule-rose">
+          <p class="text-main font-medium italic mb-4">"My daughter went from 60% to 82% in Science in six weeks. The wrong-answer explanations changed how she approaches every MCQ — she understands her mistakes now instead of repeating them."</p>
+          <div class="font-bold text-sm">Mrs Lim, Bukit Timah</div>
           <div class="text-xs text-muted">Mother of P5 student · Science: AL5 → AL3</div>
         </div>
-        <div class="card p-6 hover-lift" style="border-left: 4px solid var(--brand-mint);">
-          <p class="text-main font-medium italic mb-4">"The Plan Quest is the most useful thing I've seen in EdTech. I can see which topics my son is weak in, and there's a specific plan to fix each one. No tutor has ever given me that level of clarity."</p>
-          <div class="font-bold text-main">Mr Ng, Bishan</div>
+        <div class="card hover-lift card-rule-mint">
+          <p class="text-main font-medium italic mb-4">"The Plan Quest is the most useful thing I've seen in EdTech. I can see which topics my son is weak in, with a specific plan to fix each one. No tutor has ever given me that clarity."</p>
+          <div class="font-bold text-sm">Mr Ng, Bishan</div>
           <div class="text-xs text-muted">Father of P4 student · Uses Progress + Plan Quest daily</div>
         </div>
       </div>
@@ -604,146 +778,111 @@
   </div>
 </section>
 
+
 <!-- ═══════════════════════════════════════════════════════════════
      S10 · PRICING — bg-page + texture-light-grid
+     2 tiers. Annual toggle. Hawker meal price anchor.
      ═══════════════════════════════════════════════════════════════ -->
 <section class="bg-page texture-light-grid py-10" id="pricing">
   <div class="container">
-    <div class="flex flex-col items-center text-center mb-8 gap-2">
-      <div class="badge badge-amber">Simple Pricing</div>
-      <h2 class="font-display text-3xl text-main">Less Than a Hawker Meal a Week.</h2>
-      <p class="text-muted text-lg mb-4" style="max-width: 520px;">Both plans include every feature. The difference is the number of subjects and child profiles.</p>
 
-      <!-- Monthly / Annual toggle -->
-      <div class="flex items-center gap-2 p-2" style="background: var(--brand-sage); border-radius: var(--radius-full); display: inline-flex;">
-        <button id="toggleMonthly" class="btn btn-sm"
-                style="border-radius: var(--radius-full); background: var(--bg-surface); color: var(--text-main);">Monthly</button>
-        <button id="toggleYearly" class="btn btn-sm btn-ghost"
-                style="border-radius: var(--radius-full); color: var(--cream);">
-          Annually &nbsp;<span class="badge badge-success" style="font-size: 0.6rem; vertical-align: middle;">Save 17%</span>
+    <div class="flex flex-col items-center text-center mb-8">
+      <div class="badge badge-amber mb-2">Simple Pricing</div>
+      <h2 class="font-display text-3xl mb-2 text-main">Less Than a Hawker Meal a Week.</h2>
+      <p class="text-muted text-lg prose-cap mb-6">Both plans include every feature. The difference is the number of child profiles.</p>
+
+      <div class="billing-toggle">
+        <button id="toggleMonthly" class="btn btn-sm btn-active">Monthly</button>
+        <button id="toggleYearly" class="btn btn-sm btn-inactive">
+          Annually &nbsp;<span class="badge badge-success">Save 17%</span>
         </button>
       </div>
     </div>
 
     <div class="flex flex-wrap gap-6 items-start justify-center">
 
-      <!-- ALL SUBJECTS — Featured -->
-      <div class="card pricing-card-hover p-8 flex flex-col gap-6 text-center mt-6"
-           style="min-width: 300px; max-width: 400px; flex: 1; border-color: var(--brand-rose); box-shadow: var(--shadow-md);">
-
-        <div class="badge self-center" style="background: var(--brand-rose); color: white;">Most Popular</div>
-
-        <h3 class="font-bold text-2xl text-main">All Subjects</h3>
-
-        <div class="flex flex-col gap-1">
-          <div class="font-display text-5xl text-main">
-            S$<span id="price-all">12.99</span><span id="suffix-all"
-              class="text-lg text-muted font-body" style="text-transform: none;">/mo</span>
-          </div>
-          <div id="annual-note-all" class="text-sm text-muted font-bold" style="display: none;">
-            Billed S$129.90/year · equivalent to 2 months free
-          </div>
+      <div class="card pricing-card-hover card-featured flex flex-col gap-4 p-6 text-center"
+           style="min-width: 300px; max-width: 400px; flex: 1;">
+        <span class="badge badge-rose-solid self-center">Most Popular</span>
+        <h3 class="font-bold text-xl">All Subjects</h3>
+        <div>
+          <div class="font-display text-4xl text-main">S$<span id="price-all">12.99</span><span id="suffix-all" class="price-suffix">/mo</span></div>
+          <div id="annual-note-all" class="text-xs text-muted mt-2" style="display: none;">Billed S$129.90/year · 2 months free</div>
         </div>
-
         <p class="text-sm text-muted">The complete P1–P6 toolkit — Maths, Science &amp; English. 1 child profile.</p>
-
-        <ul class="flex flex-col gap-3 text-sm text-left flex-1 mb-2 text-main" style="list-style: none;">
-          <li class="flex items-start gap-3"><span class="text-rose font-bold text-lg leading-none">✓</span> All 3 subjects (Maths, Science, English)</li>
-          <li class="flex items-start gap-3"><span class="text-rose font-bold text-lg leading-none">✓</span> Unlimited MOE-aligned questions</li>
-          <li class="flex items-start gap-3"><span class="text-rose font-bold text-lg leading-none">✓</span> Wrong-answer explanations, every option</li>
-          <li class="flex items-start gap-3"><span class="text-rose font-bold text-lg leading-none">✓</span> WA · SA1 · SA2 · PSLE practice papers</li>
-          <li class="flex items-start gap-3"><span class="text-rose font-bold text-lg leading-none">✓</span> AL1–AL8 live progress tracking</li>
-          <li class="flex items-start gap-3"><span class="text-rose font-bold text-lg leading-none">✓</span> Plan Quest (AI action plan)</li>
-          <li class="flex items-start gap-3"><span class="text-rose font-bold text-lg leading-none">✓</span> Miss Wena AI Tutor — all subjects</li>
-          <li class="flex items-start gap-3"><span class="text-rose font-bold text-lg leading-none">✓</span> Study Notes Backpack</li>
-          <li class="flex items-start gap-3"><span class="text-rose font-bold text-lg leading-none">✓</span> 1 child profile</li>
+        <ul class="flex flex-col gap-2 text-sm text-left flex-1 mb-4" style="list-style: none;">
+          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> All 3 subjects (Maths, Science, English)</li>
+          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Unlimited MOE-aligned questions</li>
+          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Wrong-answer explanations, every option</li>
+          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> WA · SA1 · SA2 · PSLE practice papers</li>
+          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> AL1–AL8 live progress tracking</li>
+          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Plan Quest (AI action plan)</li>
+          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Miss Wena AI Tutor — all subjects</li>
+          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Study Notes Backpack</li>
+          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> 1 child profile</li>
         </ul>
-
-        <div class="flex flex-col gap-2">
-          <a href="/pages/signup.html?plan=all_subjects" class="btn btn-primary w-full hover-lift" id="btn-sub-all" data-plan="all_subjects">Start 7-Day Free Trial</a>
-          <div class="text-xs text-muted font-bold">7 days free · No credit card</div>
-        </div>
+        <a href="/pages/signup.html?plan=all_subjects" class="btn btn-primary w-full" id="btn-sub-all" data-plan="all_subjects">Start 7-Day Free Trial</a>
+        <div class="text-xs text-muted mt-2">7 days free · No credit card</div>
       </div>
 
-      <!-- FAMILY PLAN -->
-      <div class="card pricing-card-hover p-8 flex flex-col gap-6 text-center mt-6"
+      <div class="card pricing-card-hover flex flex-col gap-4 p-6 text-center mt-4"
            style="min-width: 300px; max-width: 400px; flex: 1;">
-
-        <div class="badge badge-info self-center" style="opacity: 0; pointer-events: none;">Placeholder</div>
-
-        <h3 class="font-bold text-2xl text-main">Family Plan</h3>
-
-        <div class="flex flex-col gap-1">
-          <div class="font-display text-5xl text-main">
-            S$<span id="price-family">19.99</span><span id="suffix-family"
-              class="text-lg text-muted font-body" style="text-transform: none;">/mo</span>
-          </div>
-          <div id="annual-note-family" class="text-sm text-muted font-bold" style="display: none;">
-            Billed S$199.90/year · equivalent to 2 months free
-          </div>
+        <h3 class="font-bold text-xl">Family Plan</h3>
+        <div>
+          <div class="font-display text-4xl text-main">S$<span id="price-family">19.99</span><span id="suffix-family" class="price-suffix">/mo</span></div>
+          <div id="annual-note-family" class="text-xs text-muted mt-2" style="display: none;">Billed S$199.90/year · 2 months free</div>
         </div>
-
         <p class="text-sm text-muted">Everything in All Subjects — for up to 3 children, with a parent dashboard for all.</p>
-
-        <ul class="flex flex-col gap-3 text-sm text-left flex-1 mb-2 text-main" style="list-style: none;">
-          <li class="flex items-start gap-3"><span class="text-rose font-bold text-lg leading-none">✓</span> Everything in All Subjects</li>
-          <li class="flex items-start gap-3"><span class="text-rose font-bold text-lg leading-none">✓</span> Up to 3 independent child profiles</li>
-          <li class="flex items-start gap-3"><span class="text-rose font-bold text-lg leading-none">✓</span> Parent Mission Control dashboard</li>
-          <li class="flex items-start gap-3"><span class="text-rose font-bold text-lg leading-none">✓</span> Separate Plan Quest per child</li>
-          <li class="flex items-start gap-3"><span class="text-rose font-bold text-lg leading-none">✓</span> Combined progress view for all children</li>
-          <li class="flex items-start gap-3"><span class="text-rose font-bold text-lg leading-none">✓</span> Priority email support</li>
+        <ul class="flex flex-col gap-2 text-sm text-left flex-1 mb-4" style="list-style: none;">
+          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Everything in All Subjects</li>
+          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Up to 3 independent child profiles</li>
+          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Parent Mission Control dashboard</li>
+          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Separate Plan Quest per child</li>
+          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Combined progress view for all children</li>
+          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Priority email support</li>
         </ul>
-
-        <div class="flex flex-col gap-2">
-          <a href="/pages/signup.html?plan=family" class="btn btn-secondary w-full hover-lift" id="btn-sub-family" data-plan="family">Start 7-Day Free Trial</a>
-          <div class="text-xs text-muted font-bold">7 days free · No credit card</div>
-        </div>
+        <a href="/pages/signup.html?plan=family" class="btn btn-secondary w-full" id="btn-sub-family" data-plan="family">Start 7-Day Free Trial</a>
+        <div class="text-xs text-muted mt-2">7 days free · No credit card</div>
       </div>
 
     </div>
 
-    <!-- Trust signals -->
-    <div class="flex flex-wrap justify-center items-center gap-4 mt-10 text-sm text-muted font-bold">
+    <div class="flex flex-wrap justify-center items-center gap-4 mt-8 text-sm text-muted">
       <span class="flex items-center gap-1"><span class="text-success">✓</span> Cancel anytime</span>
-      <span class="hidden md:inline">·</span>
+      <span>·</span>
       <span class="flex items-center gap-1"><span class="text-success">✓</span> PDPA compliant</span>
-      <span class="hidden md:inline">·</span>
+      <span>·</span>
       <span class="flex items-center gap-1"><span class="text-success">✓</span> Singapore servers</span>
-      <span class="hidden md:inline">·</span>
-      <span class="flex items-center gap-1"><span class="text-success">✓</span> Switch plans at any billing cycle</span>
-      <span class="hidden lg:inline">·</span>
-      <a href="/pages/pricing.html" class="text-rose font-bold mt-2 lg:mt-0" style="text-decoration: none;">Full pricing details &amp; FAQ →</a>
+      <span>·</span>
+      <a href="/pages/pricing.html" class="text-rose font-bold">Full pricing &amp; FAQ →</a>
     </div>
 
   </div>
 </section>
+
 
 <!-- ═══════════════════════════════════════════════════════════════
      S11 · CTA BANNER — bg-rose
+     Final push. Dual CTAs. AL1 aspiration.
      ═══════════════════════════════════════════════════════════════ -->
 <section class="bg-rose py-10">
-  <div class="container flex flex-col items-center text-center gap-6">
+  <div class="container flex flex-col items-center text-center gap-4">
     <h2 class="font-display text-4xl text-white">Start Your Child's Journey to AL1 Today.</h2>
-    <p class="text-lg text-white" style="max-width: 500px;">Join Singapore families who have a complete study system — not just another quiz app. First 7 days, completely free.</p>
-    
-    <div class="flex flex-wrap gap-4 justify-center w-full mt-2">
-      <a href="/pages/signup.html" class="btn hover-lift" style="background: var(--bg-surface); color: var(--brand-rose); font-weight: 700;">Start 7-Day Free Trial →</a>
-      <a href="#pricing" class="btn hover-lift" style="border: 1px solid rgba(255,255,255,0.35); color: white; background: transparent;">Subscribe — from S$12.99</a>
+    <p class="text-muted text-lg mb-4" style="max-width: 500px;">Join Singapore families who have a complete study system — not just another quiz app. First 7 days, completely free.</p>
+    <div class="flex flex-wrap gap-4 justify-center">
+      <a href="/pages/signup.html" class="btn btn-white">Start 7-Day Free Trial →</a>
+      <a href="#pricing" class="btn btn-outline-white">Subscribe — from S$12.99</a>
     </div>
-    
-    <p class="text-xs font-bold mt-2" style="color: rgba(255,255,255,0.65);">No credit card · Cancel anytime · PDPA compliant · Singapore servers</p>
+    <p class="text-xs text-muted mt-2">No credit card · Cancel anytime · PDPA compliant · Singapore servers</p>
   </div>
 </section>
 
+
 <global-footer></global-footer>
 
-<!-- ═══════════════════════════════════════════════════════════════
-     SCRIPTS
-     ═══════════════════════════════════════════════════════════════ -->
 <script src="/js/supabase-client.js"></script>
-
 <script>
-/* ── 1. Progress bar animation on scroll into view ── */
+/* ── 1. Progress bar entrance animation ── */
 const progressObserver = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
     if (entry.isIntersecting) {
@@ -759,49 +898,32 @@ const progressObserver = new IntersectionObserver((entries) => {
     }
   });
 }, { threshold: 0.3 });
+document.querySelectorAll('.float-progress-fill, .mc-fill').forEach(b => progressObserver.observe(b));
 
-document.querySelectorAll('.float-progress-fill, .mc-fill').forEach(bar => {
-  progressObserver.observe(bar);
-});
-
-/* ── 2. Pricing: Annual / Monthly toggle ── */
+/* ── 2. Pricing toggle ── */
 let currentBilling = 'monthly';
 const prices = {
   monthly: { all: '12.99', family: '19.99', suffix: '/mo' },
   yearly:  { all: '129.90', family: '199.90', suffix: '/yr' }
 };
-
 function setBilling(mode) {
   currentBilling = mode;
-  const isYearly = (mode === 'yearly');
+  const isYearly = mode === 'yearly';
   const tglMo = document.getElementById('toggleMonthly');
   const tglYr = document.getElementById('toggleYearly');
-
-  if (tglMo) {
-    tglMo.style.background = isYearly ? 'transparent' : 'var(--bg-surface)';
-    tglMo.style.color = isYearly ? 'var(--cream)' : 'var(--text-main)';
-  }
-  if (tglYr) {
-    tglYr.style.background = isYearly ? 'var(--bg-surface)' : 'transparent';
-    tglYr.style.color = isYearly ? 'var(--text-main)' : 'var(--cream)';
-  }
-
+  if (tglMo) { tglMo.classList.toggle('btn-active', !isYearly); tglMo.classList.toggle('btn-inactive', isYearly); }
+  if (tglYr) { tglYr.classList.toggle('btn-active',  isYearly); tglYr.classList.toggle('btn-inactive', !isYearly); }
   const p = prices[mode];
-  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-  const show = (id, visible) => { const el = document.getElementById(id); if (el) el.style.display = visible ? 'block' : 'none'; };
-
-  set('price-all',    p.all);
-  set('price-family', p.family);
-  set('suffix-all',   p.suffix);
-  set('suffix-family', p.suffix);
-  show('annual-note-all',    isYearly);
-  show('annual-note-family', isYearly);
+  const set  = (id, v)   => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  const show = (id, vis) => { const el = document.getElementById(id); if (el) el.style.display = vis ? 'block' : 'none'; };
+  set('price-all', p.all);  set('price-family', p.family);
+  set('suffix-all', p.suffix); set('suffix-family', p.suffix);
+  show('annual-note-all', isYearly); show('annual-note-family', isYearly);
 }
-
 document.getElementById('toggleMonthly')?.addEventListener('click', () => setBilling('monthly'));
 document.getElementById('toggleYearly')?.addEventListener('click',  () => setBilling('yearly'));
 
-/* ── 3. Checkout buttons ── */
+/* ── 3. Stripe checkout ── */
 document.querySelectorAll('[id^="btn-sub-"]').forEach(btn => {
   btn.addEventListener('click', async (e) => {
     const plan = e.currentTarget.dataset.plan;
@@ -809,30 +931,50 @@ document.querySelectorAll('[id^="btn-sub-"]').forEach(btn => {
     try {
       const sb = await getSupabase();
       const { data: { session } } = await sb.auth.getSession();
-      if (!session) {
-        window.location.href = `/pages/signup.html?plan=${plan}&billing=${currentBilling}`;
-        return;
-      }
-      const target = e.currentTarget;
-      target.textContent = 'Preparing…';
-      target.disabled = true;
-      const res = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      if (!session) { window.location.href = `/pages/signup.html?plan=${plan}&billing=${currentBilling}`; return; }
+      e.currentTarget.textContent = 'Preparing…';
+      e.currentTarget.disabled = true;
+      const res  = await fetch('/api/checkout', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ plan, billing: currentBilling, userId: session.user.id, email: session.user.email })
       });
       const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        throw new Error(data.error || 'No checkout URL returned');
-      }
+      if (data.url) { window.location.href = data.url; } else { throw new Error(data.error || 'No checkout URL'); }
     } catch (err) {
       alert('Could not start checkout: ' + err.message);
       e.currentTarget.textContent = 'Start 7-Day Free Trial';
       e.currentTarget.disabled = false;
     }
   });
+});
+
+/* ── 4. Navbar toggle + auth state ── */
+document.addEventListener('DOMContentLoaded', () => {
+  const toggle = document.getElementById('navToggle');
+  const dropdown = document.getElementById('navDropdown');
+  if (toggle && dropdown) {
+    toggle.addEventListener('click', e => { e.stopPropagation(); dropdown.classList.toggle('is-open'); toggle.classList.toggle('is-active'); });
+    document.addEventListener('click', e => { if (!dropdown.contains(e.target) && !toggle.contains(e.target)) { dropdown.classList.remove('is-open'); toggle.classList.remove('is-active'); } });
+  }
+});
+getSupabase().then(async (sb) => {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return;
+    const authContainer = document.getElementById('auth-header-container');
+    const navLinks = document.getElementById('navDropdown');
+    if (authContainer) authContainer.innerHTML = '<a href="pages/dashboard.html" class="btn btn-glass btn-sm">Dashboard</a>';
+    if (navLinks && !document.getElementById('navSignOut')) {
+      const signOut = document.createElement('a');
+      signOut.id = 'navSignOut'; signOut.href = '#'; signOut.textContent = 'Sign Out';
+      signOut.style.color = 'var(--brand-rose)';
+      signOut.onclick = async e => { e.preventDefault(); await sb.auth.signOut(); window.location.href = 'index.html'; };
+      navLinks.appendChild(signOut);
+      document.getElementById('navSignUp')?.remove();
+    }
+    const ctaBtn = document.getElementById('dashboard-cta-btn');
+    if (ctaBtn) { ctaBtn.href = 'pages/dashboard.html'; ctaBtn.textContent = 'Go to Dashboard →'; }
+  } catch (e) { console.error('Nav auth check failed:', e); }
 });
 </script>
 
