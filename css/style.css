@@ -1264,7 +1264,7 @@ body.has-bottom-nav .footer {
   flex: 0 0 44%;
   position: relative;
   overflow: hidden;
-  padding-top: var(--space-10);
+  padding-top: var(--space-6);
   padding-bottom: var(--space-1);
   padding-left: var(--space-4);
 }
@@ -1272,7 +1272,7 @@ body.has-bottom-nav .footer {
   width: 100%;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
-  transform: translateY(150px) rotate(-10deg); 
+  transform: translateY(80px) rotate(-10deg); 
   transform-origin: top left;
   display: block;
 }
