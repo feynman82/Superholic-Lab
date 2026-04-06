@@ -1172,10 +1172,18 @@ body.has-bottom-nav .footer {
 .card-rule-amber { border-left: 4px solid var(--brand-amber); }
 
 /* ══ VIDEO ══════════════════════════════════════════════════════ */
-.video-wrap { display: block; border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-md); line-height: 0; }
+.video-wrap {
+  display: block;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  line-height: 0;
+
+  height: 450px; /* increase height (~1.5x, adjust as needed) */
+}
 .video-wrap video {
   width: 100%;
-  height: 150%;
+  height: 100%;
   object-fit: cover; /* 🔥 removes black bars */
   display: block;
 }
