@@ -1229,7 +1229,7 @@ body.has-bottom-nav .footer {
 /* Float card: absolute, overlapping bottom-right quarter of photo */
 .hero-float-card {
   position: absolute;
-  bottom: var(--space-1);   /* sits inside the photo — bottom-right quarter */
+  bottom: var(--space-3);   /* sits inside the photo — bottom-right quarter */
   right: calc(-1 * var(--space-3)); /* slight overhang */
   width: 240px;
   z-index: 2;
