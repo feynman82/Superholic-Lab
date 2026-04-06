@@ -1263,7 +1263,7 @@ body.has-bottom-nav .footer {
 .quiz-photo-col {
   flex: 0 0 44%;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   padding-top: var(--space-6);
   padding-left: var(--space-4);
 }
