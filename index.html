@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Superholic Lab — Your Child's Path to AL1 Starts Here</title>
-<meta name="description" content="Singapore's AI-powered study system for P1–P6. MOE-aligned question bank, WA/SA/PSLE practice papers, AL1–AL8 live tracking, Plan Quest, and Miss Wena AI Tutor. 7-day free trial.">
+<meta name="description" content="Singapore's AI-powered study system for P1–P6. MOE-aligned question bank, WA/EOY/PSLE practice papers, AL1–AL8 live tracking, Plan Quest, and Miss Wena AI Tutor. 7-day free trial.">
 <meta property="og:title" content="Superholic Lab — Diagnose Weaknesses. Track AL Progress. Build Strengths.">
 <meta property="og:description" content="Not just a quiz app. A complete AI study system for P1–P6. From S$12.99/month.">
 <meta property="og:url" content="https://www.superholiclab.com">
@@ -23,113 +23,90 @@
   "@type": "EducationalOrganization",
   "name": "Superholic Lab",
   "url": "https://www.superholiclab.com",
-  "description": "AI-powered MOE-aligned study platform for Singapore P1-P6 students.",
+  "description": "AI-powered MOE-aligned study platform for Singapore P1–P6 students.",
   "address": { "@type": "PostalAddress", "addressCountry": "SG" }
 }
 </script>
 
 <!-- ─────────────────────────────────────────────────────────────────
-     PAGE-LEVEL CSS EXTENSIONS  (index.html only)
-     All rgba values and helpers not in style.css v3.0.
-     Audited against design-guardian.md — no violations.
+     PAGE-LEVEL CSS EXTENSIONS (index.html only)
+     Audited against design-guardian.md — all rgba in <style>, zero in HTML.
      ───────────────────────────────────────────────────────────────── -->
 <style>
 
-/* ── Button variants for dark / coloured backgrounds ──────────── */
+/* ══ CUSTOM SVG ICON SYSTEM ══════════════════════════════════════
+   Inline SVG icons using brand palette.
+   --text-logo:  #fffde7  (light cream — used on dark backgrounds)
+   --brand-rose: #B76E79
+   --brand-sage: #51615E
+   All icons sized via width/height on the <svg> element.           */
+
+/* ══ BUTTON VARIANTS ═════════════════════════════════════════════ */
 .btn-glass {
   background: rgba(255,255,255,0.12);
   color: var(--cream);
   border: 1px solid rgba(255,255,255,0.22);
   backdrop-filter: blur(4px);
 }
-.btn-glass:hover:not(:disabled) {
-  background: rgba(255,255,255,0.2);
-  color: var(--cream);
-}
-.btn-white {
-  background: var(--bg-surface);
-  color: var(--brand-rose);
-  font-weight: 700;
-}
-.btn-white:hover:not(:disabled) {
-  background: var(--bg-elevated);
-  color: var(--brand-rose);
-}
-.btn-outline-white {
-  background: transparent;
-  color: var(--cream);
-  border: 1px solid rgba(255,255,255,0.35);
-}
-.btn-outline-white:hover:not(:disabled) {
-  background: rgba(255,255,255,0.1);
-}
+.btn-glass:hover:not(:disabled) { background: rgba(255,255,255,0.2); color: var(--cream); }
 
-/* ── Badge variants ──────────────────────────────────────────── */
-.badge-hero {
-  background: rgba(0,0,0,0.22);
-  color: var(--brand-mint);
-  backdrop-filter: blur(4px);
-}
-.badge-glass {
-  background: rgba(255,255,255,0.1);
-  color: var(--cream);
-}
-.badge-rose-solid {
-  background: var(--brand-rose);
-  color: var(--bg-surface);
-}
-.badge-maths {
-  background: rgba(59,130,246,0.18);
-  color: var(--maths-colour);
-}
-.badge-dark-mint {
-  background: rgba(5,150,105,0.18);
-  color: var(--brand-mint);
-}
+.btn-white { background: var(--bg-surface); color: var(--brand-rose); font-weight: 700; }
+.btn-white:hover:not(:disabled) { background: var(--bg-elevated); color: var(--brand-rose); }
 
-/* ── Accent border cards (left-rule accent only) ─────────────── */
+.btn-outline-white { background: transparent; color: var(--cream); border: 1px solid rgba(255,255,255,0.35); }
+.btn-outline-white:hover:not(:disabled) { background: rgba(255,255,255,0.1); }
+
+/* ══ BADGE VARIANTS ══════════════════════════════════════════════ */
+.badge-glass      { background: rgba(255,255,255,0.1);   color: var(--cream); }
+.badge-rose-solid { background: var(--brand-rose);        color: var(--bg-surface); }
+.badge-maths      { background: rgba(59,130,246,0.18);   color: var(--maths-colour); }
+.badge-dark-mint  { background: rgba(5,150,105,0.18);    color: var(--brand-mint); }
+
+/* ══ CARD BORDER ACCENTS ════════════════════════════════════════ */
 .card-accent-rose {
   border-left: 4px solid var(--brand-rose);
-  border-top: none;
-  border-right: none;
-  border-bottom: none;
+  border-top: none; border-right: none; border-bottom: none;
   background: var(--bg-page);
   border-radius: 0 var(--radius-md) var(--radius-md) 0;
 }
 .card-accent-amber {
   border-left: 4px solid var(--brand-amber);
-  border-top: none;
-  border-right: none;
-  border-bottom: none;
+  border-top: none; border-right: none; border-bottom: none;
   background: var(--bg-page);
   border-radius: 0 var(--radius-md) var(--radius-md) 0;
 }
-/* Full-border cards with left colour accent */
 .card-rule-rose  { border-left: 4px solid var(--brand-rose); }
 .card-rule-mint  { border-left: 4px solid var(--brand-mint); }
 .card-rule-amber { border-left: 4px solid var(--brand-amber); }
 
-/* ── Video wrapper ────────────────────────────────────────────── */
-/* The box naturally wraps around the video — no fixed heights.  */
-.video-wrap {
-  display: block;
-  width: 100%;
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  box-shadow: var(--shadow-md);
-  background: var(--text-main);
-  line-height: 0;
-}
-.video-wrap video {
-  width: 100%;
-  height: auto;
-  display: block;
-}
+/* ══ VIDEO WRAPPER — box hugs video, no black bars ══════════════ */
+.video-wrap { display: block; border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-md); line-height: 0; }
+.video-wrap video { width: 100%; height: auto; display: block; }
 
-/* ── Hero specifics ──────────────────────────────────────────── */
-.hero-stat-rule {
-  border-top: 1px solid rgba(255,255,255,0.15);
+/* ══ HERO ═══════════════════════════════════════════════════════ */
+/* Outer layout: two-column flex. Left = copy, Right = photo+card  */
+.hero-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;   /* bottom-align: stats row meets card bottom */
+  justify-content: space-between;
+  gap: var(--space-8);
+}
+.hero-left {
+  flex: 1;
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+/* Stats row must align to bottom of the float card — both sides use align-items: flex-end */
+.hero-stat-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-6);
   padding-top: var(--space-5);
+  border-top: 1px solid rgba(255,255,255,0.15);
+  margin-top: auto;
 }
 .stat-label {
   font-size: var(--text-xs);
@@ -139,90 +116,190 @@
   color: rgba(255,255,255,0.55);
   margin-top: var(--space-1);
 }
-.hero-img-wrap {
-  position: relative;
+/* Hero divider between CTAs and the note line */
+.hero-cta-note {
+  font-size: var(--text-xs);
+  color: rgba(255,255,255,0.55);
+  margin-top: calc(-1 * var(--space-2)); /* pull up slightly under buttons */
+}
+/* Right column: photo + float card. padding-bottom gives room for the card */
+.hero-right {
   flex: 1;
   min-width: 300px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+.hero-photo {
+  width: 100%;
+  max-width: 500px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  display: block;
+}
+/* Float card sits outside the photo bottom-right, with a gap so it never touches the image */
+.hero-float-card {
+  width: 240px;
+  margin-top: var(--space-4);  /* gap from photo bottom — no overlap */
+  align-self: flex-end;
+}
+
+/* ══ CREDIBILITY BAR ════════════════════════════════════════════ */
+.cred-sep { width: 1px; height: 36px; background: var(--border-light); flex-shrink: 0; }
+
+/* ══ QUIZ BANK — rotated photo + 3-feature strip ════════════════ */
+/* Photo is rotated -30deg; we contain it so it doesn't overflow   */
+.quiz-photo-wrap {
+  flex: 1;
+  min-width: 280px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow: visible;
+  padding: var(--space-8) var(--space-4) var(--space-4) var(--space-4);
+}
+.quiz-photo-rotated {
+  width: 100%;
+  max-width: 380px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  transform: rotate(-30deg);
+  transform-origin: top center;
+  display: block;
+}
+/* Feature strip spans full width below the two-col area */
+.quiz-feature-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+}
+.quiz-feature-item {
+  flex: 1;
+  min-width: 220px;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+/* ══ PRACTICE PAPERS — stacked left, video right ════════════════ */
+.papers-layout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+  align-items: flex-start;
+}
+.papers-stack {
+  flex: 1;
+  min-width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.papers-video {
+  flex: 1;
+  min-width: 280px;
+}
+
+/* ══ PROGRESS TRACKER — dual rotated screenshots ════════════════ */
+/* progress-screenshot (left, +30deg) aligns top with first ecc-card */
+/* dashboard-screenshot (stacked below, -30deg) aligns bottom with last ecc-card */
+.progress-layout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+  align-items: stretch;
+}
+.progress-cards-col {
+  flex: 1;
+  min-width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.progress-photos-col {
+  flex: 1;
+  min-width: 280px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4);       /* breathing room from cards */
+}
+.progress-photo-top {
+  width: 100%;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  transform: rotate(30deg);
+  transform-origin: top center;
+  display: block;
+}
+.progress-photo-bottom {
+  width: 100%;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  transform: rotate(-30deg);
+  transform-origin: bottom center;
+  display: block;
+  margin-top: auto;
+}
+
+/* ══ STUDY NOTES (replaces Plan Quest) ══════════════════════════ */
+.studynotes-layout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+  align-items: flex-start;
+}
+.studynotes-text { flex: 1; min-width: 280px; display: flex; flex-direction: column; gap: var(--space-4); }
+.studynotes-photo-wrap {
+  flex: 1;
+  min-width: 280px;
   display: flex;
   justify-content: center;
-  align-items: flex-start;
-  padding-bottom: var(--space-10);
+  padding: var(--space-4);     /* gap so photo never touches text column */
 }
-.hero-float-card {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 240px;
-}
-
-/* ── Credibility bar separator ───────────────────────────────── */
-.cred-sep {
-  width: 1px;
-  height: 36px;
-  background: var(--border-light);
-  flex-shrink: 0;
+.studynotes-photo {
+  width: 100%;
+  max-width: 400px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  transform: rotate(30deg);
+  transform-origin: top center;
+  display: block;
 }
 
-/* ── Miss Wena avatar ────────────────────────────────────────── */
+/* ══ MISS WENA ══════════════════════════════════════════════════ */
 .wena-avatar {
-  width: 64px;
-  height: 64px;
+  width: 64px; height: 64px;
   border-radius: var(--radius-full);
   object-fit: cover;
   border: 3px solid var(--brand-rose);
   flex-shrink: 0;
 }
 
-/* ── Placeholder card (pending screenshots) ──────────────────── */
-.placeholder-box {
-  min-height: 280px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-3);
-  text-align: center;
-  background: var(--bg-page);
-  border: 2px dashed var(--border-dark);
-  border-radius: var(--radius-lg);
-  padding: var(--space-6);
-}
-
-/* ── Pricing toggle ──────────────────────────────────────────── */
-.billing-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  background: var(--brand-sage);
-  border-radius: var(--radius-full);
-  padding: var(--space-1);
-}
-.billing-toggle .btn-sm { border-radius: var(--radius-full); }
-.billing-toggle .btn-active   { background: var(--bg-surface); color: var(--text-main); }
-.billing-toggle .btn-inactive { background: transparent; color: var(--cream); }
-
-/* ── Featured pricing card border ────────────────────────────── */
-.card-featured { border-color: var(--brand-rose); box-shadow: var(--shadow-md); }
-
-/* ── Align-self helpers ──────────────────────────────────────── */
+/* ══ HELPERS ════════════════════════════════════════════════════ */
 .self-start  { align-self: flex-start; }
 .self-center { align-self: center; }
 .ml-auto     { margin-left: auto; }
-
-/* ── Section prose cap ───────────────────────────────────────── */
-.prose-cap { max-width: 600px; margin-left: auto; margin-right: auto; }
-
-/* ── Pricing suffix (disable font-display uppercase) ─────────── */
-.price-suffix {
-  font-family: var(--font-body);
-  font-size: var(--text-sm);
-  text-transform: none;
-  font-weight: 400;
-  color: var(--text-muted);
-}
-
-/* ── Letter-spacing label ────────────────────────────────────── */
+.prose-cap   { max-width: 600px; margin-left: auto; margin-right: auto; }
 .label-spaced { letter-spacing: 0.08em; text-transform: uppercase; }
+.list-reset  { list-style: none; }
+/* Justify all paragraphs site-wide */
+p { text-align: justify; }
+/* Exception: badges, labels, buttons keep auto alignment */
+.badge, .btn, h1, h2, h3, h4 { text-align: initial; }
+/* Pricing suffix — suppress uppercase from font-display */
+.price-suffix { font-family: var(--font-body); font-size: var(--text-sm); text-transform: none; font-weight: 400; color: var(--text-muted); }
+
+/* ══ PRICING CARD ═══════════════════════════════════════════════ */
+.card-featured { border-color: var(--brand-rose); box-shadow: var(--shadow-md); }
+.billing-toggle { display: inline-flex; align-items: center; gap: var(--space-1); background: var(--brand-sage); border-radius: var(--radius-full); padding: var(--space-1); }
+.billing-toggle .btn-sm { border-radius: var(--radius-full); }
+.billing-toggle .btn-active   { background: var(--bg-surface); color: var(--text-main); }
+.billing-toggle .btn-inactive { background: transparent; color: var(--cream); }
 
 </style>
 </head>
@@ -233,14 +310,13 @@
 
 <!-- ═══════════════════════════════════════════════════════════════
      S1 · HERO — bg-sage + texture-dots
-     Outcome-first headline. Dual CTA above fold. Live AL card.
+     No eyebrow badge. Elements shifted up. Stats align to float-card bottom.
      ═══════════════════════════════════════════════════════════════ -->
-<section class="bg-sage texture-dots py-10" style="padding-top: calc(64px + var(--space-10)); position: relative;">
-  <div class="container flex flex-wrap items-center justify-between gap-8">
+<section class="bg-sage texture-dots py-10" style="padding-top: calc(64px + var(--space-8)); position: relative;">
+  <div class="container hero-inner">
 
-    <div class="flex-1 flex flex-col items-start gap-4" style="min-width: 300px;">
-
-      <div class="badge badge-hero">P1–P6 · MOE-Aligned · AI-Powered</div>
+    <!-- LEFT: headline → paragraph → CTAs → note → stats -->
+    <div class="hero-left">
 
       <h1 class="font-display text-4xl">
         Your Child's Path<br>
@@ -248,17 +324,20 @@
       </h1>
 
       <p class="text-muted text-lg" style="max-width: 460px;">
-        Superholic Lab diagnoses your child's weaknesses, builds a personalised Plan Quest, and puts Miss Wena — an AI tutor — on call 24/7. All for less than a hawker meal a week.
+        Superholic Lab diagnoses your child's weaknesses, builds a personalised Plan Quest, and puts Miss Wena — an AI tutor — on call 24/7. For the price of a single Michelin dining experience a month, your child gets unlimited AI-powered learning.
       </p>
 
       <div class="flex flex-wrap gap-4">
-        <a href="/pages/signup.html" class="btn btn-primary">Start 7-Day Free Trial →</a>
-        <a href="#pricing" class="btn btn-glass">Subscribe — from S$12.99</a>
+        <!-- Trial: always leads to free signup -->
+        <a href="/pages/signup.html?mode=trial" class="btn btn-primary" id="hero-trial-btn">Start 7-Day Free Trial →</a>
+        <!-- Subscribe: leads to signup with intent to pay, auth-aware -->
+        <a href="/pages/signup.html?mode=subscribe" class="btn btn-glass" id="hero-subscribe-btn">Subscribe — from S$12.99</a>
       </div>
 
-      <p class="text-xs text-muted">7 days free · No credit card required · Cancel anytime</p>
+      <p class="hero-cta-note">7 days free · No credit card required · Cancel anytime</p>
 
-      <div class="flex flex-wrap gap-6 hero-stat-rule">
+      <!-- Stats row — aligns to bottom of right column (align-items: flex-end on parent) -->
+      <div class="hero-stat-row">
         <div>
           <div class="font-display text-2xl">4,200+</div>
           <div class="stat-label">Students Enrolled</div>
@@ -275,44 +354,56 @@
 
     </div>
 
-    <div class="hero-img-wrap">
+    <!-- RIGHT: photo above, float card below (no overlap — card has margin-top gap) -->
+    <div class="hero-right">
       <img src="assets/images/student_with_glowing_apple.png"
            alt="Singapore student using Superholic Lab on tablet"
-           style="width: 100%; max-width: 500px; border-radius: var(--radius-lg); box-shadow: var(--shadow-md);">
+           class="hero-photo">
 
+      <!-- Float card: margin-top creates explicit gap from photo bottom -->
       <div class="card p-4 hero-float-card hover-lift">
         <div class="text-xs font-bold text-muted uppercase mb-3">Live Progress · Aiden · P4</div>
         <div class="flex flex-col gap-4">
+
           <div>
             <div class="flex justify-between items-center mb-2">
-              <span class="text-xs font-bold text-main">🧮 Mathematics</span>
+              <span class="text-xs font-bold text-main">
+                <!-- Maths icon -->
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--maths-colour)" stroke-width="2.5" stroke-linecap="round" style="display:inline;vertical-align:middle;margin-right:4px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Mathematics
+              </span>
               <span class="badge badge-maths">AL4</span>
             </div>
             <div class="quiz-progress-bar">
-              <div class="quiz-progress-fill float-progress-fill"
-                   style="width:0%; background: var(--maths-colour);" data-target="52"></div>
+              <div class="quiz-progress-fill float-progress-fill" style="width:0%; background: var(--maths-colour);" data-target="52"></div>
             </div>
           </div>
+
           <div>
             <div class="flex justify-between items-center mb-2">
-              <span class="text-xs font-bold text-main">🔬 Science</span>
+              <span class="text-xs font-bold text-main">
+                <!-- Science icon -->
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--science-colour)" stroke-width="2.5" stroke-linecap="round" style="display:inline;vertical-align:middle;margin-right:4px;"><path d="M9 3h6v7l3 10H6L9 10V3z"/><line x1="6" y1="7" x2="18" y2="7"/></svg>Science
+              </span>
               <span class="badge badge-amber">AL3</span>
             </div>
             <div class="quiz-progress-bar">
-              <div class="quiz-progress-fill float-progress-fill"
-                   style="width:0%; background: var(--science-colour);" data-target="68"></div>
+              <div class="quiz-progress-fill float-progress-fill" style="width:0%; background: var(--science-colour);" data-target="68"></div>
             </div>
           </div>
+
           <div>
             <div class="flex justify-between items-center mb-2">
-              <span class="text-xs font-bold text-main">📖 English</span>
+              <span class="text-xs font-bold text-main">
+                <!-- English icon -->
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--english-colour)" stroke-width="2.5" stroke-linecap="round" style="display:inline;vertical-align:middle;margin-right:4px;"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>English
+              </span>
               <span class="badge badge-success">AL2</span>
             </div>
             <div class="quiz-progress-bar">
-              <div class="quiz-progress-fill float-progress-fill"
-                   style="width:0%; background: var(--english-colour);" data-target="81"></div>
+              <div class="quiz-progress-fill float-progress-fill" style="width:0%; background: var(--english-colour);" data-target="81"></div>
             </div>
           </div>
+
         </div>
         <p class="text-xs text-muted mt-3">Updated from last 14 days of practice</p>
       </div>
@@ -320,22 +411,23 @@
 
   </div>
 
-  <div class="hero-pet-track">
-    <div class="walking-dog">🐕</div>
-  </div>
+  <div class="hero-pet-track"><div class="walking-dog">🐕</div></div>
 </section>
 
 
 <!-- ═══════════════════════════════════════════════════════════════
      S2 · CREDIBILITY BAR — bg-white
-     5 trust signals immediately below the hero.
+     All elements in a single row. SA1 removed — now WA · EOY · PSLE.
      ═══════════════════════════════════════════════════════════════ -->
 <section class="bg-white py-6">
   <div class="container">
     <div class="card flex flex-wrap justify-center items-center gap-6 p-4">
 
       <div class="flex items-center gap-3">
-        <span class="text-xl">📚</span>
+        <!-- Book icon -->
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+        </svg>
         <div>
           <div class="font-bold text-sm text-main">1,000+ Questions</div>
           <div class="text-xs text-muted">MOE-aligned bank</div>
@@ -345,17 +437,23 @@
       <div class="cred-sep"></div>
 
       <div class="flex items-center gap-3">
-        <span class="text-xl">📋</span>
+        <!-- Exam paper icon -->
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="12" y2="17"/>
+        </svg>
         <div>
-          <div class="font-bold text-sm text-main">WA · SA1 · SA2 · PSLE</div>
-          <div class="text-xs text-muted">4 full exam formats</div>
+          <div class="font-bold text-sm text-main">WA · EOY · PSLE</div>
+          <div class="text-xs text-muted">3 exam formats</div>
         </div>
       </div>
 
       <div class="cred-sep"></div>
 
       <div class="flex items-center gap-3">
-        <span class="text-xl">🤖</span>
+        <!-- AI / sparkle icon -->
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
+        </svg>
         <div>
           <div class="font-bold text-sm text-main">Miss Wena AI Tutor</div>
           <div class="text-xs text-muted">Available 24/7</div>
@@ -365,9 +463,12 @@
       <div class="cred-sep"></div>
 
       <div class="flex items-center gap-3">
-        <span class="text-xl">📊</span>
+        <!-- Chart / progress icon -->
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+        </svg>
         <div>
-          <div class="font-bold text-sm text-main">AL1–AL8 Live Tracking</div>
+          <div class="font-bold text-main text-sm">AL1–AL8 Live Tracking</div>
           <div class="text-xs text-muted">Real grade calculation</div>
         </div>
       </div>
@@ -375,7 +476,10 @@
       <div class="cred-sep"></div>
 
       <div class="flex items-center gap-3">
-        <span class="text-success text-xl">✓</span>
+        <!-- Shield / PDPA icon -->
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand-mint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
         <div>
           <div class="font-bold text-sm text-main">PDPA Compliant</div>
           <div class="text-xs text-muted">Singapore servers</div>
@@ -389,7 +493,7 @@
 
 <!-- ═══════════════════════════════════════════════════════════════
      S3 · PARENT PROBLEM — bg-page + texture-light-grid
-     Mirror the exact anxiety Singapore parents feel.
+     Updated: $100/hour tutor cost, upmarket comparison, no hawker.
      ═══════════════════════════════════════════════════════════════ -->
 <section class="bg-page texture-light-grid py-10">
   <div class="container">
@@ -403,24 +507,36 @@
     <div class="flex flex-wrap gap-6">
 
       <div class="card flex-1 flex flex-col gap-3 hover-lift card-rule-rose" style="min-width: 280px;">
-        <div class="text-2xl mb-2">😰</div>
+        <!-- Wrong answer icon -->
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round" class="mb-2">
+          <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+        </svg>
         <h3 class="font-bold text-xl">"My child keeps getting it wrong — but has no idea why."</h3>
         <p class="text-muted text-sm">Superholic Lab explains every wrong option in detail. Students learn the exact misconception behind each wrong choice — so they stop repeating the same mistake.</p>
         <span class="badge badge-success self-start">✓ Wrong-answer explanations, every option</span>
       </div>
 
       <div class="card flex-1 flex flex-col gap-3 hover-lift card-rule-amber" style="min-width: 280px;">
-        <div class="text-2xl mb-2">😤</div>
-        <h3 class="font-bold text-xl">"Good tutors cost $300/month. I can't justify it for three kids."</h3>
-        <p class="text-muted text-sm">Superholic Lab costs less than two plates of char kway teow a month — with AL-grade tracking, exam papers, a Plan Quest, and a personal AI tutor. All included.</p>
+        <!-- Cost icon -->
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--brand-amber)" stroke-width="2" stroke-linecap="round" class="mb-2">
+          <circle cx="12" cy="12" r="10"/><path d="M12 6v12m-3-3c0 1.66 1.34 3 3 3s3-1.34 3-3-1.34-3-3-3-3-1.34-3-3 1.34-3 3-3 3 1.34 3 3"/>
+        </svg>
+        <h3 class="font-bold text-xl">"Good tutors cost $100/hour. I can't justify it for three kids."</h3>
+        <p class="text-muted text-sm">Superholic Lab costs less than a fine-dining appetiser a month — with AL-grade tracking, exam papers, and a personal AI tutor that generates study notes. All included.</p>
         <span class="badge badge-amber self-start">⚡ All features from S$12.99/month</span>
       </div>
 
       <div class="card flex-1 flex flex-col gap-3 hover-lift card-rule-mint" style="min-width: 280px;">
-        <div class="text-2xl mb-2">😓</div>
+        <!-- Clock/availability icon -->
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--brand-mint)" stroke-width="2" stroke-linecap="round" class="mb-2">
+          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+        </svg>
         <h3 class="font-bold text-xl">"I can't sit with my child every night. They need someone to ask."</h3>
         <p class="text-muted text-sm">Miss Wena is available at 11pm on school nights. She guides students with questions — never handing out answers — using MOE marking-scheme language.</p>
-        <span class="badge badge-success self-start">🤖 Miss Wena, on call 24/7</span>
+        <span class="badge badge-success self-start">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="display:inline;vertical-align:middle;margin-right:4px;"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
+          Miss Wena, on call 24/7
+        </span>
       </div>
 
     </div>
@@ -430,19 +546,23 @@
 
 <!-- ═══════════════════════════════════════════════════════════════
      S4 · QUIZ BANK — bg-white
-     The core differentiator: wrong-answer explanations.
+     Photo rotated -30deg, top-aligned. 3-feature strip spans full width.
      ═══════════════════════════════════════════════════════════════ -->
 <section class="bg-white py-10">
   <div class="container">
-    <div class="flex flex-wrap items-center gap-8">
 
-      <div class="flex-1" style="min-width: 300px;">
+    <!-- Two-column: rotated photo left, heading+pullquote right -->
+    <div class="flex flex-wrap items-start gap-8">
+
+      <!-- Rotated photo, contained, padded so rotation doesn't clip parent -->
+      <div class="quiz-photo-wrap">
         <img src="assets/images/deepdive-screenshot.png"
              alt="Superholic Lab quiz showing wrong-answer explanation panel"
-             style="width: 100%; border-radius: var(--radius-lg); box-shadow: var(--shadow-md);">
+             class="quiz-photo-rotated">
       </div>
 
-      <div class="flex-1 flex flex-col gap-4" style="min-width: 300px;">
+      <!-- Right: badge + heading + pull-quote only -->
+      <div class="flex-1 flex flex-col gap-4" style="min-width: 300px; padding-left: var(--space-4);">
         <div class="badge badge-info">The Question Bank</div>
         <h2 class="font-display text-3xl text-main">Practise Until It Clicks.</h2>
         <p class="text-muted text-lg">1,000+ MOE-aligned questions across Mathematics, Science, and English — every P1 to P6 topic. AI-generated and educator-verified.</p>
@@ -451,41 +571,53 @@
           <p class="font-bold text-xl text-main">"Most platforms tell your child the right answer. We explain why every wrong answer is a trap."</p>
         </div>
 
-        <div class="flex flex-col gap-4 mt-2">
-          <div class="flex items-start gap-3">
-            <span class="text-rose font-bold text-lg">✓</span>
-            <div>
-              <div class="font-bold text-sm">Wrong-Answer Explanations for Every Option</div>
-              <div class="text-muted text-sm">The exact misconception behind each wrong choice — so the same mistake never happens twice.</div>
-            </div>
-          </div>
-          <div class="flex items-start gap-3">
-            <span class="text-rose font-bold text-lg">✓</span>
-            <div>
-              <div class="font-bold text-sm">Instant Worked Solutions in MOE Format</div>
-              <div class="text-muted text-sm">Step-by-step working shown immediately, labelled the way examiners expect.</div>
-            </div>
-          </div>
-          <div class="flex items-start gap-3">
-            <span class="text-rose font-bold text-lg">✓</span>
-            <div>
-              <div class="font-bold text-sm">Digital Scratchpad for Working</div>
-              <div class="text-muted text-sm">Students draw bar models and diagrams inside the quiz — feedback on approach, not just the final answer.</div>
-            </div>
-          </div>
-        </div>
-
-        <a href="/pages/signup.html" class="btn btn-primary self-start">Try a Free Quiz →</a>
+        <a href="/pages/signup.html?mode=trial" class="btn btn-primary self-start">Try a Free Quiz →</a>
       </div>
 
     </div>
+
+    <!-- Feature strip: 3 items spanning the full container width -->
+    <div class="quiz-feature-strip">
+
+      <div class="quiz-feature-item">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round" flex-shrink="0">
+          <circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/>
+        </svg>
+        <div>
+          <div class="font-bold text-sm">Wrong-Answer Explanations for Every Option</div>
+          <div class="text-muted text-sm">The exact misconception behind each wrong choice — so the same mistake never happens twice.</div>
+        </div>
+      </div>
+
+      <div class="quiz-feature-item">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round" flex-shrink="0">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/>
+        </svg>
+        <div>
+          <div class="font-bold text-sm">Instant Worked Solutions in MOE Format</div>
+          <div class="text-muted text-sm">Step-by-step working shown immediately, labelled the way examiners expect.</div>
+        </div>
+      </div>
+
+      <div class="quiz-feature-item">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round" flex-shrink="0">
+          <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
+        </svg>
+        <div>
+          <div class="font-bold text-sm">Digital Scratchpad for Working</div>
+          <div class="text-muted text-sm">Students draw bar models and diagrams inside the quiz — feedback on approach, not just the final answer.</div>
+        </div>
+      </div>
+
+    </div>
+
   </div>
 </section>
 
 
 <!-- ═══════════════════════════════════════════════════════════════
      S5 · PRACTICE PAPERS — bg-sage + texture-dots
-     WA · SA1 · SA2 · PSLE. Real exam simulation.
+     SA1 removed. SA2→EOY. 3 cards stacked left. Video right.
      ═══════════════════════════════════════════════════════════════ -->
 <section class="bg-sage texture-dots py-10">
   <div class="container">
@@ -493,48 +625,64 @@
     <div class="flex flex-col items-center text-center mb-8">
       <div class="badge badge-glass mb-2">Practice Papers</div>
       <h2 class="font-display text-3xl mb-2">Exam-Ready. Not Just Quiz-Ready.</h2>
-      <p class="text-muted text-lg prose-cap">Individual questions are only half the battle. Superholic Lab prepares your child for the full exam — in every format they will actually face.</p>
+      <p class="text-muted text-lg prose-cap">Individual questions are only half the battle. Superholic Lab prepares your child for every format they will actually face in school.</p>
     </div>
 
-    <div class="flex flex-wrap gap-6 mb-8">
+    <div class="papers-layout">
 
-      <div class="ecc-card flex-1 flex flex-col gap-3" style="min-width: 250px;">
-        <div class="text-2xl mb-2">📝</div>
-        <h3 class="font-bold text-xl text-white">Weighted Assessments</h3>
-        <p class="text-muted text-sm">WA1–WA4 formats. Timed papers that mirror the exact school test structure your child faces each term.</p>
-        <span class="badge badge-glass self-start">P3–P6 · Maths · Science · English</span>
+      <!-- Left: 3 stacked ecc-cards, no subject badge -->
+      <div class="papers-stack">
+
+        <div class="ecc-card flex flex-col gap-3">
+          <div class="flex items-center gap-3">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-logo)" stroke-width="2" stroke-linecap="round">
+              <rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="12" y2="13"/>
+            </svg>
+            <h3 class="font-bold text-xl text-white">Weighted Assessments</h3>
+          </div>
+          <p class="text-muted text-sm">WA1 and WA2 formats. Timed papers that mirror the exact school test structure your child faces each term — before the real thing.</p>
+        </div>
+
+        <div class="ecc-card flex flex-col gap-3">
+          <div class="flex items-center gap-3">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-logo)" stroke-width="2" stroke-linecap="round">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/>
+            </svg>
+            <h3 class="font-bold text-xl text-white">End-of-Year Exams</h3>
+          </div>
+          <p class="text-muted text-sm">Full-length SA2 / End-of-Year papers with question navigator, timed sessions, and instant per-topic score breakdowns after completion.</p>
+        </div>
+
+        <div class="ecc-card flex flex-col gap-3">
+          <div class="flex items-center gap-3">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-logo)" stroke-width="2" stroke-linecap="round">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+            <h3 class="font-bold text-xl text-white">PSLE Format Papers</h3>
+          </div>
+          <p class="text-muted text-sm">Booklet A and B. Paper 1 and 2. Built to the exact MOE PSLE structure — the closest simulation available outside school.</p>
+        </div>
+
       </div>
 
-      <div class="ecc-card flex-1 flex flex-col gap-3" style="min-width: 250px;">
-        <div class="text-2xl mb-2">📄</div>
-        <h3 class="font-bold text-xl text-white">SA1 &amp; SA2 Exams</h3>
-        <p class="text-muted text-sm">Full-length Semester Assessment papers with question navigator, timed sessions, and instant per-topic score breakdowns.</p>
-        <span class="badge badge-glass self-start">P3–P6 · Maths · Science · English</span>
-      </div>
-
-      <div class="ecc-card flex-1 flex flex-col gap-3" style="min-width: 250px;">
-        <div class="text-2xl mb-2">🏆</div>
-        <h3 class="font-bold text-xl text-white">PSLE Format Papers</h3>
-        <p class="text-muted text-sm">Booklet A and B. Paper 1 and 2. Built to the exact MOE PSLE structure — the closest simulation available outside school.</p>
-        <span class="badge badge-glass self-start">P6 · Maths · Science · English</span>
+      <!-- Right: video — box wraps the video without black excess -->
+      <div class="papers-video">
+        <div class="video-wrap">
+          <video autoplay loop muted playsinline>
+            <source src="assets/videos/exam-demo.mp4" type="video/mp4">
+          </video>
+        </div>
       </div>
 
     </div>
-
-    <!-- Video — box naturally wraps around video content -->
-    <div class="video-wrap">
-      <video autoplay loop muted playsinline>
-        <source src="assets/videos/exam-demo.mp4" type="video/mp4">
-      </video>
-    </div>
-
   </div>
 </section>
 
 
 <!-- ═══════════════════════════════════════════════════════════════
-     S6 · PROGRESS + AL TRACKER — bg-sage-dark + texture-grid
-     Real data. Real AL grade. Topic-level weakness map.
+     S6 · PROGRESS TRACKER — bg-sage-dark + texture-grid
+     Two rotated screenshots: progress (top, +30deg) + dashboard (bottom, -30deg).
+     "See a Sample" button removed.
      ═══════════════════════════════════════════════════════════════ -->
 <section class="bg-sage-dark texture-grid py-10">
   <div class="container">
@@ -545,13 +693,16 @@
       <p class="text-muted text-lg prose-cap">Superholic Lab calculates your child's Achievement Level in real time — updated after every session, across all 3 subjects.</p>
     </div>
 
-    <div class="flex flex-wrap items-start gap-8">
+    <div class="progress-layout">
 
-      <div class="flex-1 flex flex-col gap-4" style="min-width: 300px;">
+      <!-- Left: 3 stacked ecc-cards -->
+      <div class="progress-cards-col">
 
         <div class="ecc-card flex flex-col gap-2">
           <div class="flex items-center gap-3 mb-2">
-            <span class="text-2xl">🎯</span>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand-mint)" stroke-width="2" stroke-linecap="round">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
             <h3 class="font-bold text-xl text-white">AL1–AL8 Live Grade</h3>
           </div>
           <p class="text-muted text-sm">Calculated directly from your child's scores over the last 14 days. Real data — not an estimate.</p>
@@ -559,27 +710,36 @@
 
         <div class="ecc-card flex flex-col gap-2">
           <div class="flex items-center gap-3 mb-2">
-            <span class="text-2xl">📅</span>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand-mint)" stroke-width="2" stroke-linecap="round">
+              <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
             <h3 class="font-bold text-xl text-white">14-Day Rolling Results</h3>
           </div>
-          <p class="text-muted text-sm">A full history of quizzes, WA, SA, and PSLE papers day by day. See the trend before the school report card does.</p>
+          <p class="text-muted text-sm">A full history of quizzes, WA, EOY, and PSLE papers day by day. See the trend before the school report card does.</p>
         </div>
 
         <div class="ecc-card flex flex-col gap-2">
           <div class="flex items-center gap-3 mb-2">
-            <span class="text-2xl">🔍</span>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand-mint)" stroke-width="2" stroke-linecap="round">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
             <h3 class="font-bold text-xl text-white">Topic-Level Weakness Map</h3>
           </div>
-          <p class="text-muted text-sm">Specific topics flagged by name and AL grade. Geometry at AL7. Fractions at AL6. Know exactly where to focus.</p>
+          <p class="text-muted text-sm">Specific topics flagged by name and AL grade. Geometry at AL7. Fractions at AL6. Know exactly where to focus next.</p>
         </div>
 
-        <a href="/pages/signup.html" class="btn btn-primary self-start mt-2">See a Sample Dashboard →</a>
       </div>
 
-      <div class="flex-1" style="min-width: 300px;">
+      <!-- Right: two photos, padded from cards column -->
+      <div class="progress-photos-col">
+        <!-- Top photo: progress-screenshot, +30deg, top aligned with first card -->
+        <img src="assets/images/progress-screenshot.png"
+             alt="Superholic Lab progress page showing AL grade and topic breakdown"
+             class="progress-photo-top">
+        <!-- Bottom photo: dashboard-screenshot, -30deg, bottom aligned with last card -->
         <img src="assets/images/dashboard-screenshot.png"
-             alt="Superholic Lab progress dashboard showing AL grades by subject"
-             style="width: 100%; border-radius: var(--radius-lg); box-shadow: var(--shadow-md);">
+             alt="Superholic Lab dashboard showing all-subject progress"
+             class="progress-photo-bottom">
       </div>
 
     </div>
@@ -588,62 +748,67 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════════
-     S7 · PLAN QUEST — bg-white
-     AI action plan. Specific, personal, actionable.
+     S7 · STUDY NOTES (BACKPACK) — bg-white
+     Replaces Plan Quest section. studynote-screenshot.png rotated +30deg.
      ═══════════════════════════════════════════════════════════════ -->
 <section class="bg-white py-10">
   <div class="container">
-    <div class="flex flex-wrap items-start gap-8">
+    <div class="studynotes-layout">
 
-      <div class="flex-1 flex flex-col gap-4" style="min-width: 300px;">
-        <div class="badge badge-amber">Plan Quest</div>
-        <h2 class="font-display text-3xl text-main">Your Child's Personal AI Study Blueprint.</h2>
-        <p class="text-muted text-lg">When Superholic Lab identifies a weakness, it doesn't just flag it. It builds a Plan Quest — a targeted path that tells your child exactly what to practise next, and why.</p>
+      <!-- Left: copy -->
+      <div class="studynotes-text">
+        <div class="badge badge-amber">Study Notes · Backpack</div>
+        <h2 class="font-display text-3xl text-main">Every Lesson. Saved. Searchable. Yours.</h2>
+        <p class="text-muted text-lg">Every conversation with Miss Wena can be saved as a formatted Study Note. Your child builds their own revision library — auto-generated, always accessible from the Dashboard and Progress page.</p>
 
-        <div class="card card-accent-amber p-4">
-          <div class="text-xs font-bold text-muted label-spaced mb-3">Example Plan Quest Output</div>
+        <div class="card card-accent-rose p-4">
+          <div class="text-xs font-bold text-muted label-spaced mb-3">Study Notes (Backpack)</div>
           <p class="text-sm text-main" style="line-height: 1.75;">
-            <strong>Based on Aiden's last 14 days:</strong><br>
-            🔴 Geometry — 20% (AL7) &nbsp;·&nbsp; 🔴 Fractions — 20% (AL7)<br><br>
-            <strong>This week's quest:</strong> 3× Geometry drills &nbsp;·&nbsp; 2× Fraction concept reviews<br>
-            <strong>Target:</strong> Improve both to AL5 within 2 weeks.
+            Every Miss Wena conversation can be saved as a formatted Study Note. Your child builds their own revision library — always accessible from the Dashboard and Progress page.
           </p>
+          <span class="badge badge-success self-start mt-3">Included on all plans</span>
         </div>
 
         <div class="flex flex-col gap-4 mt-2">
           <div class="flex items-start gap-3">
-            <span class="text-amber font-bold text-lg">✓</span>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round" flex-shrink="0" style="flex-shrink:0;">
+              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+            </svg>
             <div>
-              <div class="font-bold text-sm">AI-Generated from Real Performance Data</div>
-              <div class="text-muted text-sm">Each quest is built from your child's actual results — not a generic worksheet.</div>
+              <div class="font-bold text-sm">Conversations Become Notes</div>
+              <div class="text-muted text-sm">One tap saves any Miss Wena exchange as a structured, searchable note — organised by subject and topic.</div>
             </div>
           </div>
           <div class="flex items-start gap-3">
-            <span class="text-amber font-bold text-lg">✓</span>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round" flex-shrink="0" style="flex-shrink:0;">
+              <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
+            </svg>
             <div>
-              <div class="font-bold text-sm">Linked to Miss Wena</div>
-              <div class="text-muted text-sm">Students ask Miss Wena to guide them through Plan Quest topics directly in the chat.</div>
+              <div class="font-bold text-sm">Personal Revision Library</div>
+              <div class="text-muted text-sm">Your child's Backpack grows with every session — a curated library built from their own learning moments.</div>
             </div>
           </div>
           <div class="flex items-start gap-3">
-            <span class="text-amber font-bold text-lg">✓</span>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round" flex-shrink="0" style="flex-shrink:0;">
+              <rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/>
+            </svg>
             <div>
-              <div class="font-bold text-sm">Visible to Parents</div>
-              <div class="text-muted text-sm">Track the quest from the Progress page — watch the AL grade improve as it's followed.</div>
+              <div class="font-bold text-sm">Accessible Everywhere</div>
+              <div class="text-muted text-sm">View study notes from the Dashboard or Progress page — on any device, any time.</div>
             </div>
           </div>
         </div>
 
-        <a href="/pages/signup.html" class="btn btn-primary self-start">Get Your Child's Plan Quest →</a>
+        <a href="/pages/signup.html?mode=trial" class="btn btn-primary self-start">Build Your Child's Backpack →</a>
       </div>
 
-      <div class="flex-1" style="min-width: 300px;">
-        <!-- ⚠️ CONFIGURE: Replace with assets/images/action-plan-screenshot.png when ready -->
-        <div class="placeholder-box">
-          <div class="text-4xl">🗺️</div>
-          <div class="font-bold text-main">Plan Quest Screenshot</div>
-          <div class="text-sm text-muted">Add <code>assets/images/action-plan-screenshot.png</code></div>
-        </div>
+      <!-- Right: rotated study note screenshot -->
+      <div class="studynotes-photo-wrap">
+        <!-- ⚠️ CONFIGURE: add assets/images/studynote-screenshot.png -->
+        <img src="assets/images/studynote-screenshot.png"
+             alt="Superholic Lab study note saved from Miss Wena conversation"
+             class="studynotes-photo"
+             onerror="this.style.display='none'">
       </div>
 
     </div>
@@ -653,13 +818,14 @@
 
 <!-- ═══════════════════════════════════════════════════════════════
      S8 · MISS WENA — bg-sage + texture-dots
-     The AI tutor gets her own section — name, face, personality.
+     Tagline updated. Study Notes ecc-card removed. Padding applied.
      ═══════════════════════════════════════════════════════════════ -->
 <section class="bg-sage texture-dots py-10">
   <div class="container">
     <div class="flex flex-wrap items-start gap-8">
 
-      <div class="flex-1 flex flex-col gap-4" style="min-width: 300px;">
+      <!-- Left: Miss Wena intro + 3 bullets -->
+      <div class="flex-1 flex flex-col gap-4" style="min-width: 300px; padding-right: var(--space-4);">
 
         <div class="badge badge-glass self-start">Your AI Tutor</div>
 
@@ -670,7 +836,7 @@
                onerror="this.style.display='none'">
           <div>
             <h2 class="font-display text-3xl">Meet Miss Wena.</h2>
-            <p class="text-muted text-sm">Verified MOE-Aligned · Omni-Tutor · 24/7</p>
+            <p class="text-muted text-sm">Verified MOE-Aligned · Superholic Tutor · 24/7</p>
           </div>
         </div>
 
@@ -678,21 +844,27 @@
 
         <div class="flex flex-col gap-4">
           <div class="flex items-start gap-3">
-            <span class="text-rose font-bold text-lg">✓</span>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;">
+              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+            </svg>
             <div>
               <div class="font-bold text-sm text-white">Omni-Subject in One Chat</div>
               <div class="text-muted text-sm">Bar models, Science CER format, English inference — all subjects, all levels, one conversation.</div>
             </div>
           </div>
           <div class="flex items-start gap-3">
-            <span class="text-rose font-bold text-lg">✓</span>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;">
+              <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
+            </svg>
             <div>
               <div class="font-bold text-sm text-white">Plan Quest Integration</div>
               <div class="text-muted text-sm">Ask Miss Wena to work through your Plan Quest topics — linking diagnosis directly to remediation.</div>
             </div>
           </div>
           <div class="flex items-start gap-3">
-            <span class="text-rose font-bold text-lg">✓</span>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;">
+              <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
+            </svg>
             <div>
               <div class="font-bold text-sm text-white">Draw Your Working</div>
               <div class="text-muted text-sm">A built-in pen tool lets students sketch bar models and get direct feedback on their approach.</div>
@@ -702,11 +874,14 @@
 
       </div>
 
-      <div class="flex-1 flex flex-col gap-6" style="min-width: 300px;">
+      <!-- Right: chat preview card — with explicit padding gap from left column -->
+      <div class="flex-1 flex flex-col gap-6" style="min-width: 300px; padding-left: var(--space-4);">
 
         <div class="card p-4 flex flex-col gap-3">
           <div class="flex items-center gap-2 mb-2">
-            <span>🤖</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round">
+              <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
+            </svg>
             <span class="font-bold text-sm text-main">Miss Wena</span>
             <span class="badge badge-success ml-auto">● Online</span>
           </div>
@@ -722,16 +897,12 @@
           <div class="chat-bubble-tutor text-sm">
             Exactly right! 🌟 In PSLE, the keyword the examiner looks for is <em>"moment arm"</em>. Zero moment arm = zero turning effect. That's why B is correct.
           </div>
-          <button class="btn btn-secondary btn-sm self-start mt-2">💾 Save as Study Note</button>
-        </div>
-
-        <div class="ecc-card flex flex-col gap-2">
-          <div class="flex items-center gap-3 mb-2">
-            <span class="text-xl">🎒</span>
-            <h3 class="font-bold text-lg text-white">Study Notes (Backpack)</h3>
-          </div>
-          <p class="text-muted text-sm">Every Miss Wena conversation can be saved as a formatted Study Note. Your child builds their own revision library — always accessible from the Dashboard and Progress page.</p>
-          <span class="badge badge-glass self-start mt-2">Included on all plans</span>
+          <button class="btn btn-secondary btn-sm self-start mt-2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:inline;vertical-align:middle;margin-right:4px;">
+              <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v14a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+            </svg>
+            Save as Study Note
+          </button>
         </div>
 
       </div>
@@ -742,7 +913,6 @@
 
 <!-- ═══════════════════════════════════════════════════════════════
      S9 · TESTIMONIALS — bg-page
-     Social proof. Update with real quotes post-launch.
      ═══════════════════════════════════════════════════════════════ -->
 <section class="bg-page py-10">
   <div class="container">
@@ -781,14 +951,15 @@
 
 <!-- ═══════════════════════════════════════════════════════════════
      S10 · PRICING — bg-page + texture-light-grid
-     2 tiers. Annual toggle. Hawker meal price anchor.
+     Both cards: identical feature list. Auth-aware button logic.
+     SA1 removed → WA · EOY · PSLE.
      ═══════════════════════════════════════════════════════════════ -->
 <section class="bg-page texture-light-grid py-10" id="pricing">
   <div class="container">
 
     <div class="flex flex-col items-center text-center mb-8">
       <div class="badge badge-amber mb-2">Simple Pricing</div>
-      <h2 class="font-display text-3xl mb-2 text-main">Less Than a Hawker Meal a Week.</h2>
+      <h2 class="font-display text-3xl mb-2 text-main">Less Than One Hour of Private Tuition a Month.</h2>
       <p class="text-muted text-lg prose-cap mb-6">Both plans include every feature. The difference is the number of child profiles.</p>
 
       <div class="billing-toggle">
@@ -801,8 +972,8 @@
 
     <div class="flex flex-wrap gap-6 items-start justify-center">
 
-      <div class="card pricing-card-hover card-featured flex flex-col gap-4 p-6 text-center"
-           style="min-width: 300px; max-width: 400px; flex: 1;">
+      <!-- ALL SUBJECTS — Featured -->
+      <div class="card pricing-card-hover card-featured flex flex-col gap-4 p-6 text-center" style="min-width: 300px; max-width: 420px; flex: 1;">
         <span class="badge badge-rose-solid self-center">Most Popular</span>
         <h3 class="font-bold text-xl">All Subjects</h3>
         <div>
@@ -810,49 +981,62 @@
           <div id="annual-note-all" class="text-xs text-muted mt-2" style="display: none;">Billed S$129.90/year · 2 months free</div>
         </div>
         <p class="text-sm text-muted">The complete P1–P6 toolkit — Maths, Science &amp; English. 1 child profile.</p>
-        <ul class="flex flex-col gap-2 text-sm text-left flex-1 mb-4" style="list-style: none;">
+        <ul class="flex flex-col gap-2 text-sm text-left flex-1 mb-4 list-reset">
           <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> All 3 subjects (Maths, Science, English)</li>
           <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Unlimited MOE-aligned questions</li>
           <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Wrong-answer explanations, every option</li>
-          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> WA · SA1 · SA2 · PSLE practice papers</li>
+          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> WA · EOY Exam · PSLE practice papers</li>
           <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> AL1–AL8 live progress tracking</li>
           <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Plan Quest (AI action plan)</li>
           <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Miss Wena AI Tutor — all subjects</li>
           <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Study Notes Backpack</li>
           <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> 1 child profile</li>
         </ul>
-        <a href="/pages/signup.html?plan=all_subjects" class="btn btn-primary w-full" id="btn-sub-all" data-plan="all_subjects">Start 7-Day Free Trial</a>
+        <!-- Auth-aware: shows "Subscribe" for logged-in / post-trial users -->
+        <a href="/pages/signup.html?plan=all_subjects&mode=trial" class="btn btn-primary w-full" id="btn-sub-all" data-plan="all_subjects">Start 7-Day Free Trial</a>
         <div class="text-xs text-muted mt-2">7 days free · No credit card</div>
       </div>
 
-      <div class="card pricing-card-hover flex flex-col gap-4 p-6 text-center mt-4"
-           style="min-width: 300px; max-width: 400px; flex: 1;">
+      <!-- FAMILY PLAN -->
+      <div class="card pricing-card-hover flex flex-col gap-4 p-6 text-center mt-4" style="min-width: 300px; max-width: 420px; flex: 1;">
         <h3 class="font-bold text-xl">Family Plan</h3>
         <div>
           <div class="font-display text-4xl text-main">S$<span id="price-family">19.99</span><span id="suffix-family" class="price-suffix">/mo</span></div>
           <div id="annual-note-family" class="text-xs text-muted mt-2" style="display: none;">Billed S$199.90/year · 2 months free</div>
         </div>
         <p class="text-sm text-muted">Everything in All Subjects — for up to 3 children, with a parent dashboard for all.</p>
-        <ul class="flex flex-col gap-2 text-sm text-left flex-1 mb-4" style="list-style: none;">
-          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Everything in All Subjects</li>
-          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Up to 3 independent child profiles</li>
-          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Parent Mission Control dashboard</li>
-          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Separate Plan Quest per child</li>
-          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Combined progress view for all children</li>
-          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Priority email support</li>
+        <ul class="flex flex-col gap-2 text-sm text-left flex-1 mb-4 list-reset">
+          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> All 3 subjects (Maths, Science, English)</li>
+          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Unlimited MOE-aligned questions</li>
+          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Wrong-answer explanations, every option</li>
+          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> WA · EOY Exam · PSLE practice papers</li>
+          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> AL1–AL8 live progress tracking</li>
+          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Plan Quest (AI action plan)</li>
+          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Miss Wena AI Tutor — all subjects</li>
+          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Study Notes Backpack</li>
+          <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> 3 child profiles + parent dashboard</li>
         </ul>
-        <a href="/pages/signup.html?plan=family" class="btn btn-secondary w-full" id="btn-sub-family" data-plan="family">Start 7-Day Free Trial</a>
+        <a href="/pages/signup.html?plan=family&mode=trial" class="btn btn-secondary w-full" id="btn-sub-family" data-plan="family">Start 7-Day Free Trial</a>
         <div class="text-xs text-muted mt-2">7 days free · No credit card</div>
       </div>
 
     </div>
 
     <div class="flex flex-wrap justify-center items-center gap-4 mt-8 text-sm text-muted">
-      <span class="flex items-center gap-1"><span class="text-success">✓</span> Cancel anytime</span>
+      <span class="flex items-center gap-1">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--brand-mint)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Cancel anytime
+      </span>
       <span>·</span>
-      <span class="flex items-center gap-1"><span class="text-success">✓</span> PDPA compliant</span>
+      <span class="flex items-center gap-1">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--brand-mint)" stroke-width="2.5" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        PDPA compliant
+      </span>
       <span>·</span>
-      <span class="flex items-center gap-1"><span class="text-success">✓</span> Singapore servers</span>
+      <span class="flex items-center gap-1">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--brand-mint)" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Singapore servers
+      </span>
       <span>·</span>
       <a href="/pages/pricing.html" class="text-rose font-bold">Full pricing &amp; FAQ →</a>
     </div>
@@ -863,15 +1047,14 @@
 
 <!-- ═══════════════════════════════════════════════════════════════
      S11 · CTA BANNER — bg-rose
-     Final push. Dual CTAs. AL1 aspiration.
      ═══════════════════════════════════════════════════════════════ -->
 <section class="bg-rose py-10">
   <div class="container flex flex-col items-center text-center gap-4">
     <h2 class="font-display text-4xl text-white">Start Your Child's Journey to AL1 Today.</h2>
     <p class="text-muted text-lg mb-4" style="max-width: 500px;">Join Singapore families who have a complete study system — not just another quiz app. First 7 days, completely free.</p>
     <div class="flex flex-wrap gap-4 justify-center">
-      <a href="/pages/signup.html" class="btn btn-white">Start 7-Day Free Trial →</a>
-      <a href="#pricing" class="btn btn-outline-white">Subscribe — from S$12.99</a>
+      <a href="/pages/signup.html?mode=trial" class="btn btn-white">Start 7-Day Free Trial →</a>
+      <a href="/pages/signup.html?mode=subscribe" class="btn btn-outline-white" id="cta-subscribe-btn">Subscribe — from S$12.99</a>
     </div>
     <p class="text-xs text-muted mt-2">No credit card · Cancel anytime · PDPA compliant · Singapore servers</p>
   </div>
@@ -923,44 +1106,12 @@ function setBilling(mode) {
 document.getElementById('toggleMonthly')?.addEventListener('click', () => setBilling('monthly'));
 document.getElementById('toggleYearly')?.addEventListener('click',  () => setBilling('yearly'));
 
-/* ── 3. Stripe checkout ── */
-document.querySelectorAll('[id^="btn-sub-"]').forEach(btn => {
-  btn.addEventListener('click', async (e) => {
-    const plan = e.currentTarget.dataset.plan;
-    if (!plan) return;
-    try {
-      const sb = await getSupabase();
-      const { data: { session } } = await sb.auth.getSession();
-      if (!session) { window.location.href = `/pages/signup.html?plan=${plan}&billing=${currentBilling}`; return; }
-      e.currentTarget.textContent = 'Preparing…';
-      e.currentTarget.disabled = true;
-      const res  = await fetch('/api/checkout', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan, billing: currentBilling, userId: session.user.id, email: session.user.email })
-      });
-      const data = await res.json();
-      if (data.url) { window.location.href = data.url; } else { throw new Error(data.error || 'No checkout URL'); }
-    } catch (err) {
-      alert('Could not start checkout: ' + err.message);
-      e.currentTarget.textContent = 'Start 7-Day Free Trial';
-      e.currentTarget.disabled = false;
-    }
-  });
-});
-
-/* ── 4. Navbar toggle + auth state ── */
-document.addEventListener('DOMContentLoaded', () => {
-  const toggle = document.getElementById('navToggle');
-  const dropdown = document.getElementById('navDropdown');
-  if (toggle && dropdown) {
-    toggle.addEventListener('click', e => { e.stopPropagation(); dropdown.classList.toggle('is-open'); toggle.classList.toggle('is-active'); });
-    document.addEventListener('click', e => { if (!dropdown.contains(e.target) && !toggle.contains(e.target)) { dropdown.classList.remove('is-open'); toggle.classList.remove('is-active'); } });
-  }
-});
+/* ── 3. Auth-aware buttons: Trial → signup trial, Subscribe → signup subscribe / checkout ── */
 getSupabase().then(async (sb) => {
   try {
     const { data: { session } } = await sb.auth.getSession();
-    if (!session) return;
+
+    /* ── 3a. Auth state: navbar + hero buttons ── */
     const authContainer = document.getElementById('auth-header-container');
     const navLinks = document.getElementById('navDropdown');
     if (authContainer) authContainer.innerHTML = '<a href="pages/dashboard.html" class="btn btn-glass btn-sm">Dashboard</a>';
@@ -972,9 +1123,66 @@ getSupabase().then(async (sb) => {
       navLinks.appendChild(signOut);
       document.getElementById('navSignUp')?.remove();
     }
+
+    if (!session) return; // Guest — keep default button text
+
+    /* ── 3b. User is logged in → check subscription tier ── */
+    const { data: prof } = await sb.from('profiles').select('subscription_tier, subscription_status').eq('id', session.user.id).single();
+    const isPaid = prof && (prof.subscription_status === 'active' || prof.subscription_tier === 'all_subjects' || prof.subscription_tier === 'family');
+    const isTrialExpired = prof && prof.subscription_tier === 'trial' && isPaid === false;
+
+    /* If paid or trial expired, change pricing buttons to "Subscribe" */
+    if (isPaid || isTrialExpired) {
+      const btnAll    = document.getElementById('btn-sub-all');
+      const btnFamily = document.getElementById('btn-sub-family');
+      const heroSub   = document.getElementById('hero-subscribe-btn');
+      const ctaSub    = document.getElementById('cta-subscribe-btn');
+
+      if (btnAll)    { btnAll.textContent    = 'Subscribe'; btnAll.href    = '#'; }
+      if (btnFamily) { btnFamily.textContent = 'Subscribe'; btnFamily.href = '#'; }
+      if (heroSub)   { heroSub.href = '/pages/pricing.html'; }
+      if (ctaSub)    { ctaSub.href  = '/pages/pricing.html'; }
+    }
+
+    /* ── 3c. Stripe checkout handler for pricing buttons ── */
+    document.querySelectorAll('[id^="btn-sub-"]').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const plan = e.currentTarget.dataset.plan;
+        if (!plan) return;
+        try {
+          e.currentTarget.textContent = 'Preparing…';
+          e.currentTarget.disabled = true;
+          const res  = await fetch('/api/checkout', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ plan, billing: currentBilling, userId: session.user.id, email: session.user.email })
+          });
+          const data = await res.json();
+          if (data.url) { window.location.href = data.url; }
+          else { throw new Error(data.error || 'No checkout URL'); }
+        } catch (err) {
+          alert('Could not start checkout: ' + err.message);
+          e.currentTarget.textContent = 'Subscribe';
+          e.currentTarget.disabled = false;
+        }
+      });
+    });
+
+    /* Update any dashboard CTA on the page */
     const ctaBtn = document.getElementById('dashboard-cta-btn');
     if (ctaBtn) { ctaBtn.href = 'pages/dashboard.html'; ctaBtn.textContent = 'Go to Dashboard →'; }
-  } catch (e) { console.error('Nav auth check failed:', e); }
+
+  } catch (e) { console.error('Auth check failed:', e); }
+});
+
+/* ── 4. Navbar dropdown toggle (for unauthenticated users) ── */
+document.addEventListener('DOMContentLoaded', () => {
+  const toggle = document.getElementById('navToggle');
+  const dropdown = document.getElementById('navDropdown');
+  if (toggle && dropdown) {
+    toggle.addEventListener('click', e => { e.stopPropagation(); dropdown.classList.toggle('is-open'); toggle.classList.toggle('is-active'); });
+    document.addEventListener('click', e => { if (!dropdown.contains(e.target) && !toggle.contains(e.target)) { dropdown.classList.remove('is-open'); toggle.classList.remove('is-active'); } });
+  }
 });
 </script>
 
