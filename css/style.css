@@ -1273,7 +1273,7 @@ body.has-bottom-nav .footer {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
   transform: rotate(-20deg);
-  translateY: (150px);
+  transform: translateY(150px);
   transform-origin: top left;
   display: block;
 }
