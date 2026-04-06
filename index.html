@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Superholic Lab — Your Child's Path to AL1 Starts Here</title>
 <meta name="description" content="Singapore's AI-powered study system for P1–P6. MOE-aligned question bank, WA/EOY/PSLE practice papers, AL1–AL8 live tracking, Plan Quest, and Miss Wena AI Tutor. 7-day free trial.">
-<meta property="og:title" content="Superholic Lab — Diagnose Weaknesses. Track AL Progress. Build Strengths.">
-<meta property="og:description" content="Not just a quiz app. A complete AI study system for P1–P6. From S$12.99/month.">
+<meta property="og:title" content="Superholic Lab — Diagnose Weaknesses. Track AL Progress.">
+<meta property="og:description" content="A complete AI study system for P1–P6. From S$12.99/month.">
 <meta property="og:url" content="https://www.superholiclab.com">
 <meta property="og:type" content="website">
 <link rel="canonical" href="https://www.superholiclab.com/">
@@ -29,19 +29,13 @@
 </script>
 
 <!-- ─────────────────────────────────────────────────────────────────
-     PAGE-LEVEL CSS EXTENSIONS (index.html only)
-     Audited against design-guardian.md — all rgba in <style>, zero in HTML.
+     PAGE-LEVEL CSS — index.html only
+     All rgba values isolated here. Zero rgba in HTML attributes.
+     Audited against design-guardian.md.
      ───────────────────────────────────────────────────────────────── -->
 <style>
 
-/* ══ CUSTOM SVG ICON SYSTEM ══════════════════════════════════════
-   Inline SVG icons using brand palette.
-   --text-logo:  #fffde7  (light cream — used on dark backgrounds)
-   --brand-rose: #B76E79
-   --brand-sage: #51615E
-   All icons sized via width/height on the <svg> element.           */
-
-/* ══ BUTTON VARIANTS ═════════════════════════════════════════════ */
+/* ══ BUTTONS ════════════════════════════════════════════════════ */
 .btn-glass {
   background: rgba(255,255,255,0.12);
   color: var(--cream);
@@ -49,28 +43,20 @@
   backdrop-filter: blur(4px);
 }
 .btn-glass:hover:not(:disabled) { background: rgba(255,255,255,0.2); color: var(--cream); }
-
 .btn-white { background: var(--bg-surface); color: var(--brand-rose); font-weight: 700; }
 .btn-white:hover:not(:disabled) { background: var(--bg-elevated); color: var(--brand-rose); }
-
 .btn-outline-white { background: transparent; color: var(--cream); border: 1px solid rgba(255,255,255,0.35); }
 .btn-outline-white:hover:not(:disabled) { background: rgba(255,255,255,0.1); }
 
-/* ══ BADGE VARIANTS ══════════════════════════════════════════════ */
-.badge-glass      { background: rgba(255,255,255,0.1);   color: var(--cream); }
-.badge-rose-solid { background: var(--brand-rose);        color: var(--bg-surface); }
-.badge-maths      { background: rgba(59,130,246,0.18);   color: var(--maths-colour); }
-.badge-dark-mint  { background: rgba(5,150,105,0.18);    color: var(--brand-mint); }
+/* ══ BADGES ════════════════════════════════════════════════════ */
+.badge-glass      { background: rgba(255,255,255,0.1);  color: var(--cream); }
+.badge-rose-solid { background: var(--brand-rose);       color: var(--bg-surface); }
+.badge-maths      { background: rgba(59,130,246,0.18);  color: var(--maths-colour); }
+.badge-dark-mint  { background: rgba(5,150,105,0.18);   color: var(--brand-mint); }
 
-/* ══ CARD BORDER ACCENTS ════════════════════════════════════════ */
+/* ══ CARD ACCENTS ══════════════════════════════════════════════ */
 .card-accent-rose {
   border-left: 4px solid var(--brand-rose);
-  border-top: none; border-right: none; border-bottom: none;
-  background: var(--bg-page);
-  border-radius: 0 var(--radius-md) var(--radius-md) 0;
-}
-.card-accent-amber {
-  border-left: 4px solid var(--brand-amber);
   border-top: none; border-right: none; border-bottom: none;
   background: var(--bg-page);
   border-radius: 0 var(--radius-md) var(--radius-md) 0;
@@ -79,16 +65,17 @@
 .card-rule-mint  { border-left: 4px solid var(--brand-mint); }
 .card-rule-amber { border-left: 4px solid var(--brand-amber); }
 
-/* ══ VIDEO WRAPPER — box hugs video, no black bars ══════════════ */
+/* ══ VIDEO ══════════════════════════════════════════════════════ */
 .video-wrap { display: block; border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-md); line-height: 0; }
 .video-wrap video { width: 100%; height: auto; display: block; }
 
-/* ══ HERO ═══════════════════════════════════════════════════════ */
-/* Outer layout: two-column flex. Left = copy, Right = photo+card  */
+/* ══ HERO ═══════════════════════════════════════════════════════
+   Two-column flex. align-items: flex-start so tops are level.
+   The float card overlaps the photo via position:absolute.       */
 .hero-inner {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;   /* bottom-align: stats row meets card bottom */
+  align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-8);
 }
@@ -99,14 +86,18 @@
   flex-direction: column;
   gap: var(--space-4);
 }
-/* Stats row must align to bottom of the float card — both sides use align-items: flex-end */
+/* Buttons in a row — flex-wrap so they collapse to column on mobile */
+.hero-cta-row { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; }
+.hero-cta-note {
+  font-size: var(--text-xs);
+  color: rgba(255,255,255,0.55);
+}
 .hero-stat-row {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-6);
   padding-top: var(--space-5);
   border-top: 1px solid rgba(255,255,255,0.15);
-  margin-top: auto;
 }
 .stat-label {
   font-size: var(--text-xs);
@@ -116,20 +107,11 @@
   color: rgba(255,255,255,0.55);
   margin-top: var(--space-1);
 }
-/* Hero divider between CTAs and the note line */
-.hero-cta-note {
-  font-size: var(--text-xs);
-  color: rgba(255,255,255,0.55);
-  margin-top: calc(-1 * var(--space-2)); /* pull up slightly under buttons */
-}
-/* Right column: photo + float card. padding-bottom gives room for the card */
+/* Right column: contains photo + absolutely-positioned float card */
 .hero-right {
   flex: 1;
   min-width: 300px;
   position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
 }
 .hero-photo {
   width: 100%;
@@ -138,115 +120,145 @@
   box-shadow: var(--shadow-md);
   display: block;
 }
-/* Float card sits outside the photo bottom-right, with a gap so it never touches the image */
+/* Float card: absolute, overlapping bottom-right quarter of photo */
 .hero-float-card {
+  position: absolute;
+  bottom: var(--space-5);   /* sits inside the photo — bottom-right quarter */
+  right: calc(-1 * var(--space-3)); /* slight overhang */
   width: 240px;
-  margin-top: var(--space-4);  /* gap from photo bottom — no overlap */
-  align-self: flex-end;
+  z-index: 2;
 }
 
 /* ══ CREDIBILITY BAR ════════════════════════════════════════════ */
-.cred-sep { width: 1px; height: 36px; background: var(--border-light); flex-shrink: 0; }
-
-/* ══ QUIZ BANK — rotated photo + 3-feature strip ════════════════ */
-/* Photo is rotated -30deg; we contain it so it doesn't overflow   */
-.quiz-photo-wrap {
-  flex: 1;
-  min-width: 280px;
+/* flex-nowrap on ≥768px so items stay in one row */
+.cred-inner {
   display: flex;
-  align-items: flex-start;
+  flex-wrap: nowrap;
   justify-content: center;
-  overflow: visible;
-  padding: var(--space-8) var(--space-4) var(--space-4) var(--space-4);
+  align-items: center;
+  gap: var(--space-4);
+  overflow-x: auto;
+  padding: var(--space-3) var(--space-4);
+}
+.cred-sep { width: 1px; height: 32px; background: var(--border-light); flex-shrink: 0; }
+.cred-item { display: flex; align-items: center; gap: var(--space-2); flex-shrink: 0; }
+
+/* ══ QUIZ BANK ══════════════════════════════════════════════════
+   Two-column: rotated photo left, text right (z-index so text is on top).
+   Feature strip beneath spans both columns.                      */
+.quiz-layout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0;                   /* no gap — text intentionally overlaps rotated photo */
+  position: relative;
+}
+/* Photo column: overflow hidden clips rotation spill; extra top padding lets top corner align with text */
+.quiz-photo-col {
+  flex: 0 0 44%;
+  position: relative;
+  overflow: hidden;
+  padding-top: var(--space-6);
+  padding-bottom: var(--space-6);
+  padding-left: var(--space-4);
 }
 .quiz-photo-rotated {
   width: 100%;
-  max-width: 380px;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
-  transform: rotate(-30deg);
-  transform-origin: top center;
+  transform: rotate(-20deg);
+  transform-origin: top left;
   display: block;
 }
-/* Feature strip spans full width below the two-col area */
+/* Text column: z-index 1 so words sit on top of the photo */
+.quiz-text-col {
+  flex: 1;
+  min-width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-6) var(--space-6) var(--space-6) var(--space-6);
+  position: relative;
+  z-index: 1;
+}
+/* Feature strip: 3 items in a horizontal row spanning full width */
 .quiz-feature-strip {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-4);
+  flex-wrap: nowrap;
+  gap: var(--space-6);
   margin-top: var(--space-6);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--border-light);
 }
 .quiz-feature-item {
   flex: 1;
-  min-width: 220px;
   display: flex;
   align-items: flex-start;
   gap: var(--space-3);
 }
+@media (max-width: 768px) {
+  .quiz-feature-strip { flex-wrap: wrap; }
+  .quiz-photo-col { flex: 0 0 100%; overflow: visible; }
+  .quiz-layout { gap: var(--space-4); }
+}
 
-/* ══ PRACTICE PAPERS — stacked left, video right ════════════════ */
+/* ══ PRACTICE PAPERS ════════════════════════════════════════════
+   Heading/intro now lives inside the video column (right), stacked above video.
+   3 ecc-cards stacked left, right column = intro text + video.   */
 .papers-layout {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-8);
   align-items: flex-start;
 }
-.papers-stack {
-  flex: 1;
-  min-width: 260px;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-}
-.papers-video {
-  flex: 1;
-  min-width: 280px;
-}
+.papers-stack { flex: 1; min-width: 260px; display: flex; flex-direction: column; gap: var(--space-4); }
+.papers-right-col { flex: 1; min-width: 280px; display: flex; flex-direction: column; gap: var(--space-5); }
 
-/* ══ PROGRESS TRACKER — dual rotated screenshots ════════════════ */
-/* progress-screenshot (left, +30deg) aligns top with first ecc-card */
-/* dashboard-screenshot (stacked below, -30deg) aligns bottom with last ecc-card */
+/* ══ PROGRESS TRACKER ══════════════════════════════════════════
+   Cards left. Right column: two photos layered.
+   progress-screenshot: +20deg, moved DOWN 100px, z-index 2.
+   dashboard-screenshot: -20deg, moved UP 300px, 75% size, z-index 1 (behind).  */
 .progress-layout {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-8);
   align-items: stretch;
 }
-.progress-cards-col {
-  flex: 1;
-  min-width: 280px;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-}
+.progress-cards-col { flex: 1; min-width: 280px; display: flex; flex-direction: column; gap: var(--space-4); }
 .progress-photos-col {
   flex: 1;
   min-width: 280px;
   position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: var(--space-4);
-  padding: var(--space-4);       /* breathing room from cards */
+  padding: var(--space-4);  /* breathing room — never touches cards */
+  min-height: 400px;        /* enough height to contain the offset photos */
 }
 .progress-photo-top {
   width: 100%;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
-  transform: rotate(30deg);
+  transform: rotate(20deg);
   transform-origin: top center;
   display: block;
+  position: relative;
+  top: 100px;               /* pushed DOWN 100px */
+  z-index: 2;
 }
 .progress-photo-bottom {
-  width: 100%;
+  width: 75%;               /* reduced to 75% */
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  transform: rotate(-30deg);
+  box-shadow: var(--shadow-sm);
+  transform: rotate(-20deg);
   transform-origin: bottom center;
   display: block;
-  margin-top: auto;
+  position: relative;
+  top: -300px;              /* pulled UP 300px (negative = up) */
+  margin-left: auto;        /* push right */
+  z-index: 1;               /* behind top photo — nothing overlaps cards */
 }
 
-/* ══ STUDY NOTES (replaces Plan Quest) ══════════════════════════ */
+/* ══ STUDY NOTES ════════════════════════════════════════════════
+   Text left, photo right. Photo: 5deg clockwise, z-index behind text.
+   3-feature items in ONE horizontal row.                         */
 .studynotes-layout {
   display: flex;
   flex-wrap: wrap;
@@ -256,22 +268,39 @@
 .studynotes-text { flex: 1; min-width: 280px; display: flex; flex-direction: column; gap: var(--space-4); }
 .studynotes-photo-wrap {
   flex: 1;
-  min-width: 280px;
-  display: flex;
-  justify-content: center;
-  padding: var(--space-4);     /* gap so photo never touches text column */
+  min-width: 260px;
+  position: relative;
+  padding: var(--space-4);  /* gap so photo never touches text column */
+  z-index: 0;               /* behind text */
 }
 .studynotes-photo {
   width: 100%;
-  max-width: 400px;
+  max-width: 420px;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
-  transform: rotate(30deg);
+  transform: rotate(5deg);
   transform-origin: top center;
   display: block;
 }
+/* 3 feature items in a row */
+.studynotes-features {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: var(--space-4);
+  margin-top: var(--space-2);
+}
+.studynotes-feature-item {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+@media (max-width: 768px) {
+  .studynotes-features { flex-wrap: wrap; }
+}
 
-/* ══ MISS WENA ══════════════════════════════════════════════════ */
+/* ══ MISS WENA ══════════════════════════════════════════════════
+   Photo (chat card) LEFT, text table RIGHT — swapped from previous.  */
 .wena-avatar {
   width: 64px; height: 64px;
   border-radius: var(--radius-full);
@@ -287,14 +316,11 @@
 .prose-cap   { max-width: 600px; margin-left: auto; margin-right: auto; }
 .label-spaced { letter-spacing: 0.08em; text-transform: uppercase; }
 .list-reset  { list-style: none; }
-/* Justify all paragraphs site-wide */
 p { text-align: justify; }
-/* Exception: badges, labels, buttons keep auto alignment */
-.badge, .btn, h1, h2, h3, h4 { text-align: initial; }
-/* Pricing suffix — suppress uppercase from font-display */
+.badge, .btn, h1, h2, h3, h4, .text-center p { text-align: initial; }
 .price-suffix { font-family: var(--font-body); font-size: var(--text-sm); text-transform: none; font-weight: 400; color: var(--text-muted); }
 
-/* ══ PRICING CARD ═══════════════════════════════════════════════ */
+/* ══ PRICING ════════════════════════════════════════════════════ */
 .card-featured { border-color: var(--brand-rose); box-shadow: var(--shadow-md); }
 .billing-toggle { display: inline-flex; align-items: center; gap: var(--space-1); background: var(--brand-sage); border-radius: var(--radius-full); padding: var(--space-1); }
 .billing-toggle .btn-sm { border-radius: var(--radius-full); }
@@ -310,12 +336,13 @@ p { text-align: justify; }
 
 <!-- ═══════════════════════════════════════════════════════════════
      S1 · HERO — bg-sage + texture-dots
-     No eyebrow badge. Elements shifted up. Stats align to float-card bottom.
+     Buttons in a row. "4200+" removed. Float card overlaps photo (absolute).
+     Top of photo aligns with top of H1 via align-items:flex-start.
      ═══════════════════════════════════════════════════════════════ -->
 <section class="bg-sage texture-dots py-10" style="padding-top: calc(64px + var(--space-8)); position: relative;">
   <div class="container hero-inner">
 
-    <!-- LEFT: headline → paragraph → CTAs → note → stats -->
+    <!-- LEFT -->
     <div class="hero-left">
 
       <h1 class="font-display text-4xl">
@@ -327,21 +354,16 @@ p { text-align: justify; }
         Superholic Lab diagnoses your child's weaknesses, builds a personalised Plan Quest, and puts Miss Wena — an AI tutor — on call 24/7. For the price of a single Michelin dining experience a month, your child gets unlimited AI-powered learning.
       </p>
 
-      <div class="flex flex-wrap gap-4">
-        <!-- Trial: always leads to free signup -->
+      <!-- BUTTONS IN A ROW -->
+      <div class="hero-cta-row">
         <a href="/pages/signup.html?mode=trial" class="btn btn-primary" id="hero-trial-btn">Start 7-Day Free Trial →</a>
-        <!-- Subscribe: leads to signup with intent to pay, auth-aware -->
         <a href="/pages/signup.html?mode=subscribe" class="btn btn-glass" id="hero-subscribe-btn">Subscribe — from S$12.99</a>
       </div>
 
       <p class="hero-cta-note">7 days free · No credit card required · Cancel anytime</p>
 
-      <!-- Stats row — aligns to bottom of right column (align-items: flex-end on parent) -->
+      <!-- Stats: "3 Subjects" and "AL1–AL8" only (4200+ removed) -->
       <div class="hero-stat-row">
-        <div>
-          <div class="font-display text-2xl">4,200+</div>
-          <div class="stat-label">Students Enrolled</div>
-        </div>
         <div>
           <div class="font-display text-2xl">3 Subjects</div>
           <div class="stat-label">All P1–P6 Topics</div>
@@ -354,13 +376,13 @@ p { text-align: justify; }
 
     </div>
 
-    <!-- RIGHT: photo above, float card below (no overlap — card has margin-top gap) -->
+    <!-- RIGHT: photo + float card overlapping bottom-right quarter -->
     <div class="hero-right">
       <img src="assets/images/student_with_glowing_apple.png"
            alt="Singapore student using Superholic Lab on tablet"
            class="hero-photo">
 
-      <!-- Float card: margin-top creates explicit gap from photo bottom -->
+      <!-- Absolutely positioned — overlaps photo at bottom-right quarter -->
       <div class="card p-4 hero-float-card hover-lift">
         <div class="text-xs font-bold text-muted uppercase mb-3">Live Progress · Aiden · P4</div>
         <div class="flex flex-col gap-4">
@@ -368,7 +390,6 @@ p { text-align: justify; }
           <div>
             <div class="flex justify-between items-center mb-2">
               <span class="text-xs font-bold text-main">
-                <!-- Maths icon -->
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--maths-colour)" stroke-width="2.5" stroke-linecap="round" style="display:inline;vertical-align:middle;margin-right:4px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Mathematics
               </span>
               <span class="badge badge-maths">AL4</span>
@@ -381,7 +402,6 @@ p { text-align: justify; }
           <div>
             <div class="flex justify-between items-center mb-2">
               <span class="text-xs font-bold text-main">
-                <!-- Science icon -->
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--science-colour)" stroke-width="2.5" stroke-linecap="round" style="display:inline;vertical-align:middle;margin-right:4px;"><path d="M9 3h6v7l3 10H6L9 10V3z"/><line x1="6" y1="7" x2="18" y2="7"/></svg>Science
               </span>
               <span class="badge badge-amber">AL3</span>
@@ -394,7 +414,6 @@ p { text-align: justify; }
           <div>
             <div class="flex justify-between items-center mb-2">
               <span class="text-xs font-bold text-main">
-                <!-- English icon -->
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--english-colour)" stroke-width="2.5" stroke-linecap="round" style="display:inline;vertical-align:middle;margin-right:4px;"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>English
               </span>
               <span class="badge badge-success">AL2</span>
@@ -410,82 +429,66 @@ p { text-align: justify; }
     </div>
 
   </div>
-
   <div class="hero-pet-track"><div class="walking-dog">🐕</div></div>
 </section>
 
 
 <!-- ═══════════════════════════════════════════════════════════════
      S2 · CREDIBILITY BAR — bg-white
-     All elements in a single row. SA1 removed — now WA · EOY · PSLE.
+     All items in one row (flex-nowrap). PDPA removed.
      ═══════════════════════════════════════════════════════════════ -->
 <section class="bg-white py-6">
   <div class="container">
-    <div class="card flex flex-wrap justify-center items-center gap-6 p-4">
+    <div class="card">
+      <div class="cred-inner">
 
-      <div class="flex items-center gap-3">
-        <!-- Book icon -->
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
-        </svg>
-        <div>
-          <div class="font-bold text-sm text-main">1,000+ Questions</div>
-          <div class="text-xs text-muted">MOE-aligned bank</div>
+        <div class="cred-item">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+          </svg>
+          <div>
+            <div class="font-bold text-sm text-main">1,000+ Questions</div>
+            <div class="text-xs text-muted">MOE-aligned bank</div>
+          </div>
         </div>
-      </div>
 
-      <div class="cred-sep"></div>
+        <div class="cred-sep"></div>
 
-      <div class="flex items-center gap-3">
-        <!-- Exam paper icon -->
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="12" y2="17"/>
-        </svg>
-        <div>
-          <div class="font-bold text-sm text-main">WA · EOY · PSLE</div>
-          <div class="text-xs text-muted">3 exam formats</div>
+        <div class="cred-item">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="12" y2="17"/>
+          </svg>
+          <div>
+            <div class="font-bold text-sm text-main">WA · EOY · PSLE</div>
+            <div class="text-xs text-muted">3 exam formats</div>
+          </div>
         </div>
-      </div>
 
-      <div class="cred-sep"></div>
+        <div class="cred-sep"></div>
 
-      <div class="flex items-center gap-3">
-        <!-- AI / sparkle icon -->
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
-        </svg>
-        <div>
-          <div class="font-bold text-sm text-main">Miss Wena AI Tutor</div>
-          <div class="text-xs text-muted">Available 24/7</div>
+        <div class="cred-item">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
+          </svg>
+          <div>
+            <div class="font-bold text-sm text-main">Miss Wena AI Tutor</div>
+            <div class="text-xs text-muted">Available 24/7</div>
+          </div>
         </div>
-      </div>
 
-      <div class="cred-sep"></div>
+        <div class="cred-sep"></div>
 
-      <div class="flex items-center gap-3">
-        <!-- Chart / progress icon -->
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
-        </svg>
-        <div>
-          <div class="font-bold text-main text-sm">AL1–AL8 Live Tracking</div>
-          <div class="text-xs text-muted">Real grade calculation</div>
+        <div class="cred-item">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+          </svg>
+          <div>
+            <div class="font-bold text-sm text-main">AL1–AL8 Live Tracking</div>
+            <div class="text-xs text-muted">Real grade calculation</div>
+          </div>
         </div>
+
       </div>
-
-      <div class="cred-sep"></div>
-
-      <div class="flex items-center gap-3">
-        <!-- Shield / PDPA icon -->
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand-mint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-        </svg>
-        <div>
-          <div class="font-bold text-sm text-main">PDPA Compliant</div>
-          <div class="text-xs text-muted">Singapore servers</div>
-        </div>
-      </div>
-
     </div>
   </div>
 </section>
@@ -493,7 +496,6 @@ p { text-align: justify; }
 
 <!-- ═══════════════════════════════════════════════════════════════
      S3 · PARENT PROBLEM — bg-page + texture-light-grid
-     Updated: $100/hour tutor cost, upmarket comparison, no hawker.
      ═══════════════════════════════════════════════════════════════ -->
 <section class="bg-page texture-light-grid py-10">
   <div class="container">
@@ -507,7 +509,6 @@ p { text-align: justify; }
     <div class="flex flex-wrap gap-6">
 
       <div class="card flex-1 flex flex-col gap-3 hover-lift card-rule-rose" style="min-width: 280px;">
-        <!-- Wrong answer icon -->
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round" class="mb-2">
           <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
         </svg>
@@ -517,7 +518,6 @@ p { text-align: justify; }
       </div>
 
       <div class="card flex-1 flex flex-col gap-3 hover-lift card-rule-amber" style="min-width: 280px;">
-        <!-- Cost icon -->
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--brand-amber)" stroke-width="2" stroke-linecap="round" class="mb-2">
           <circle cx="12" cy="12" r="10"/><path d="M12 6v12m-3-3c0 1.66 1.34 3 3 3s3-1.34 3-3-1.34-3-3-3-3-1.34-3-3 1.34-3 3-3 3 1.34 3 3"/>
         </svg>
@@ -527,7 +527,6 @@ p { text-align: justify; }
       </div>
 
       <div class="card flex-1 flex flex-col gap-3 hover-lift card-rule-mint" style="min-width: 280px;">
-        <!-- Clock/availability icon -->
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--brand-mint)" stroke-width="2" stroke-linecap="round" class="mb-2">
           <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
         </svg>
@@ -546,23 +545,24 @@ p { text-align: justify; }
 
 <!-- ═══════════════════════════════════════════════════════════════
      S4 · QUIZ BANK — bg-white
-     Photo rotated -30deg, top-aligned. 3-feature strip spans full width.
+     Photo -20deg, top-left corner aligns with text column top.
+     Text (heading + pullquote) sits ON TOP of photo via z-index.
+     3-feature strip spans full width in a single row.
      ═══════════════════════════════════════════════════════════════ -->
 <section class="bg-white py-10">
   <div class="container">
 
-    <!-- Two-column: rotated photo left, heading+pullquote right -->
-    <div class="flex flex-wrap items-start gap-8">
+    <div class="quiz-layout">
 
-      <!-- Rotated photo, contained, padded so rotation doesn't clip parent -->
-      <div class="quiz-photo-wrap">
+      <!-- Photo column: rotated -20deg, overflow hidden clips spill -->
+      <div class="quiz-photo-col">
         <img src="assets/images/deepdive-screenshot.png"
              alt="Superholic Lab quiz showing wrong-answer explanation panel"
              class="quiz-photo-rotated">
       </div>
 
-      <!-- Right: badge + heading + pull-quote only -->
-      <div class="flex-1 flex flex-col gap-4" style="min-width: 300px; padding-left: var(--space-4);">
+      <!-- Text column: z-index 1, words sit on top of photo -->
+      <div class="quiz-text-col">
         <div class="badge badge-info">The Question Bank</div>
         <h2 class="font-display text-3xl text-main">Practise Until It Clicks.</h2>
         <p class="text-muted text-lg">1,000+ MOE-aligned questions across Mathematics, Science, and English — every P1 to P6 topic. AI-generated and educator-verified.</p>
@@ -576,11 +576,11 @@ p { text-align: justify; }
 
     </div>
 
-    <!-- Feature strip: 3 items spanning the full container width -->
+    <!-- Feature strip: 3 items in one horizontal row -->
     <div class="quiz-feature-strip">
 
       <div class="quiz-feature-item">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round" flex-shrink="0">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;">
           <circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/>
         </svg>
         <div>
@@ -590,7 +590,7 @@ p { text-align: justify; }
       </div>
 
       <div class="quiz-feature-item">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round" flex-shrink="0">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;">
           <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/>
         </svg>
         <div>
@@ -600,12 +600,12 @@ p { text-align: justify; }
       </div>
 
       <div class="quiz-feature-item">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round" flex-shrink="0">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;">
           <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
         </svg>
         <div>
           <div class="font-bold text-sm">Digital Scratchpad for Working</div>
-          <div class="text-muted text-sm">Students draw bar models and diagrams inside the quiz — feedback on approach, not just the final answer.</div>
+          <div class="text-muted text-sm">Students draw bar models and diagrams inside the quiz — feedback on approach, not just the answer.</div>
         </div>
       </div>
 
@@ -617,22 +617,15 @@ p { text-align: justify; }
 
 <!-- ═══════════════════════════════════════════════════════════════
      S5 · PRACTICE PAPERS — bg-sage + texture-dots
-     SA1 removed. SA2→EOY. 3 cards stacked left. Video right.
+     Header text moved INTO the right column (above video).
+     3 ecc-cards stacked left. Right = header intro + video.
      ═══════════════════════════════════════════════════════════════ -->
 <section class="bg-sage texture-dots py-10">
   <div class="container">
-
-    <div class="flex flex-col items-center text-center mb-8">
-      <div class="badge badge-glass mb-2">Practice Papers</div>
-      <h2 class="font-display text-3xl mb-2">Exam-Ready. Not Just Quiz-Ready.</h2>
-      <p class="text-muted text-lg prose-cap">Individual questions are only half the battle. Superholic Lab prepares your child for every format they will actually face in school.</p>
-    </div>
-
     <div class="papers-layout">
 
-      <!-- Left: 3 stacked ecc-cards, no subject badge -->
+      <!-- Left: 3 stacked ecc-cards -->
       <div class="papers-stack">
-
         <div class="ecc-card flex flex-col gap-3">
           <div class="flex items-center gap-3">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-logo)" stroke-width="2" stroke-linecap="round">
@@ -640,7 +633,7 @@ p { text-align: justify; }
             </svg>
             <h3 class="font-bold text-xl text-white">Weighted Assessments</h3>
           </div>
-          <p class="text-muted text-sm">WA1 and WA2 formats. Timed papers that mirror the exact school test structure your child faces each term — before the real thing.</p>
+          <p class="text-muted text-sm">WA1 and WA2 formats. Timed papers that mirror the exact school test structure your child faces each term.</p>
         </div>
 
         <div class="ecc-card flex flex-col gap-3">
@@ -650,7 +643,7 @@ p { text-align: justify; }
             </svg>
             <h3 class="font-bold text-xl text-white">End-of-Year Exams</h3>
           </div>
-          <p class="text-muted text-sm">Full-length SA2 / End-of-Year papers with question navigator, timed sessions, and instant per-topic score breakdowns after completion.</p>
+          <p class="text-muted text-sm">Full-length SA2 / End-of-Year papers with question navigator, timed sessions, and instant per-topic score breakdowns.</p>
         </div>
 
         <div class="ecc-card flex flex-col gap-3">
@@ -662,11 +655,17 @@ p { text-align: justify; }
           </div>
           <p class="text-muted text-sm">Booklet A and B. Paper 1 and 2. Built to the exact MOE PSLE structure — the closest simulation available outside school.</p>
         </div>
-
       </div>
 
-      <!-- Right: video — box wraps the video without black excess -->
-      <div class="papers-video">
+      <!-- Right: section header stacked above video -->
+      <div class="papers-right-col">
+        <!-- Section intro — moved here from a centred header above -->
+        <div>
+          <div class="badge badge-glass mb-3">Practice Papers</div>
+          <h2 class="font-display text-3xl mb-3">Exam-Ready.<br>Not Just Quiz-Ready.</h2>
+          <p class="text-muted text-lg">Individual questions are only half the battle. Superholic Lab prepares your child for every format they will actually face in school.</p>
+        </div>
+        <!-- Video below the intro text -->
         <div class="video-wrap">
           <video autoplay loop muted playsinline>
             <source src="assets/videos/exam-demo.mp4" type="video/mp4">
@@ -681,8 +680,8 @@ p { text-align: justify; }
 
 <!-- ═══════════════════════════════════════════════════════════════
      S6 · PROGRESS TRACKER — bg-sage-dark + texture-grid
-     Two rotated screenshots: progress (top, +30deg) + dashboard (bottom, -30deg).
-     "See a Sample" button removed.
+     progress-screenshot: +20deg, top-aligned, 100px DOWN, z-index 2.
+     dashboard-screenshot: -20deg, bottom-aligned, 300px UP, 75% width, z-index 1 (behind).
      ═══════════════════════════════════════════════════════════════ -->
 <section class="bg-sage-dark texture-grid py-10">
   <div class="container">
@@ -730,13 +729,13 @@ p { text-align: justify; }
 
       </div>
 
-      <!-- Right: two photos, padded from cards column -->
+      <!-- Right: two layered photos with position:relative offsets -->
       <div class="progress-photos-col">
-        <!-- Top photo: progress-screenshot, +30deg, top aligned with first card -->
+        <!-- progress-screenshot: +20deg, 100px DOWN, z-index 2 (front) -->
         <img src="assets/images/progress-screenshot.png"
-             alt="Superholic Lab progress page showing AL grade and topic breakdown"
+             alt="Superholic Lab progress page showing AL grade"
              class="progress-photo-top">
-        <!-- Bottom photo: dashboard-screenshot, -30deg, bottom aligned with last card -->
+        <!-- dashboard-screenshot: -20deg, 300px UP, 75% wide, z-index 1 (behind) -->
         <img src="assets/images/dashboard-screenshot.png"
              alt="Superholic Lab dashboard showing all-subject progress"
              class="progress-photo-bottom">
@@ -749,13 +748,15 @@ p { text-align: justify; }
 
 <!-- ═══════════════════════════════════════════════════════════════
      S7 · STUDY NOTES (BACKPACK) — bg-white
-     Replaces Plan Quest section. studynote-screenshot.png rotated +30deg.
+     Photo: 5deg CW, z-index 0 (behind text).
+     3-feature items in a single horizontal row.
+     Button removed.
      ═══════════════════════════════════════════════════════════════ -->
 <section class="bg-white py-10">
   <div class="container">
     <div class="studynotes-layout">
 
-      <!-- Left: copy -->
+      <!-- Left: text -->
       <div class="studynotes-text">
         <div class="badge badge-amber">Study Notes · Backpack</div>
         <h2 class="font-display text-3xl text-main">Every Lesson. Saved. Searchable. Yours.</h2>
@@ -763,50 +764,47 @@ p { text-align: justify; }
 
         <div class="card card-accent-rose p-4">
           <div class="text-xs font-bold text-muted label-spaced mb-3">Study Notes (Backpack)</div>
-          <p class="text-sm text-main" style="line-height: 1.75;">
-            Every Miss Wena conversation can be saved as a formatted Study Note. Your child builds their own revision library — always accessible from the Dashboard and Progress page.
-          </p>
+          <p class="text-sm text-main">Every Miss Wena conversation can be saved as a formatted Study Note. Your child builds their own revision library — always accessible from the Dashboard and Progress page.</p>
           <span class="badge badge-success self-start mt-3">Included on all plans</span>
         </div>
 
-        <div class="flex flex-col gap-4 mt-2">
-          <div class="flex items-start gap-3">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round" flex-shrink="0" style="flex-shrink:0;">
+        <!-- 3 features in ONE horizontal row -->
+        <div class="studynotes-features">
+          <div class="studynotes-feature-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;margin-top:2px;">
               <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
             </svg>
             <div>
               <div class="font-bold text-sm">Conversations Become Notes</div>
-              <div class="text-muted text-sm">One tap saves any Miss Wena exchange as a structured, searchable note — organised by subject and topic.</div>
+              <div class="text-muted text-sm">One tap saves any Miss Wena exchange as a structured, searchable note.</div>
             </div>
           </div>
-          <div class="flex items-start gap-3">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round" flex-shrink="0" style="flex-shrink:0;">
+          <div class="studynotes-feature-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;margin-top:2px;">
               <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
             </svg>
             <div>
               <div class="font-bold text-sm">Personal Revision Library</div>
-              <div class="text-muted text-sm">Your child's Backpack grows with every session — a curated library built from their own learning moments.</div>
+              <div class="text-muted text-sm">A curated library built from your child's own learning moments.</div>
             </div>
           </div>
-          <div class="flex items-start gap-3">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round" flex-shrink="0" style="flex-shrink:0;">
+          <div class="studynotes-feature-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;margin-top:2px;">
               <rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/>
             </svg>
             <div>
               <div class="font-bold text-sm">Accessible Everywhere</div>
-              <div class="text-muted text-sm">View study notes from the Dashboard or Progress page — on any device, any time.</div>
+              <div class="text-muted text-sm">View study notes from the Dashboard or Progress page — any device, any time.</div>
             </div>
           </div>
         </div>
-
-        <a href="/pages/signup.html?mode=trial" class="btn btn-primary self-start">Build Your Child's Backpack →</a>
+        <!-- Button removed as requested -->
       </div>
 
-      <!-- Right: rotated study note screenshot -->
+      <!-- Right: studynote photo, 5deg CW, z-index 0 (behind text) -->
       <div class="studynotes-photo-wrap">
-        <!-- ⚠️ CONFIGURE: add assets/images/studynote-screenshot.png -->
         <img src="assets/images/studynote-screenshot.png"
-             alt="Superholic Lab study note saved from Miss Wena conversation"
+             alt="Superholic Lab study note saved from Miss Wena"
              class="studynotes-photo"
              onerror="this.style.display='none'">
       </div>
@@ -818,14 +816,47 @@ p { text-align: justify; }
 
 <!-- ═══════════════════════════════════════════════════════════════
      S8 · MISS WENA — bg-sage + texture-dots
-     Tagline updated. Study Notes ecc-card removed. Padding applied.
+     SWAPPED: chat card is now LEFT, text table is RIGHT.
      ═══════════════════════════════════════════════════════════════ -->
 <section class="bg-sage texture-dots py-10">
   <div class="container">
     <div class="flex flex-wrap items-start gap-8">
 
-      <!-- Left: Miss Wena intro + 3 bullets -->
-      <div class="flex-1 flex flex-col gap-4" style="min-width: 300px; padding-right: var(--space-4);">
+      <!-- LEFT (swapped): chat card -->
+      <div class="flex-1 flex flex-col gap-6" style="min-width: 300px; padding-right: var(--space-4);">
+
+        <div class="card p-4 flex flex-col gap-3">
+          <div class="flex items-center gap-2 mb-2">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round">
+              <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
+            </svg>
+            <span class="font-bold text-sm text-main">Miss Wena</span>
+            <span class="badge badge-success ml-auto">● Online</span>
+          </div>
+          <div class="chat-bubble-user text-sm">
+            I don't understand why Q4 is B and not A. Both seem correct to me?
+          </div>
+          <div class="chat-bubble-tutor text-sm">
+            Great question! In option A, the force is at the pivot point. What does that tell us about the moment arm?
+          </div>
+          <div class="chat-bubble-user text-sm">
+            The moment arm is zero? So there's no turning effect?
+          </div>
+          <div class="chat-bubble-tutor text-sm">
+            Exactly right! 🌟 In PSLE, the keyword the examiner looks for is <em>"moment arm"</em>. Zero moment arm = zero turning effect. That's why B is correct.
+          </div>
+          <button class="btn btn-secondary btn-sm self-start mt-2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:inline;vertical-align:middle;margin-right:4px;">
+              <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v14a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/>
+            </svg>
+            Save as Study Note
+          </button>
+        </div>
+
+      </div>
+
+      <!-- RIGHT (swapped): Miss Wena intro + 3 bullets -->
+      <div class="flex-1 flex flex-col gap-4" style="min-width: 300px; padding-left: var(--space-4);">
 
         <div class="badge badge-glass self-start">Your AI Tutor</div>
 
@@ -873,39 +904,6 @@ p { text-align: justify; }
         </div>
 
       </div>
-
-      <!-- Right: chat preview card — with explicit padding gap from left column -->
-      <div class="flex-1 flex flex-col gap-6" style="min-width: 300px; padding-left: var(--space-4);">
-
-        <div class="card p-4 flex flex-col gap-3">
-          <div class="flex items-center gap-2 mb-2">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round">
-              <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
-            </svg>
-            <span class="font-bold text-sm text-main">Miss Wena</span>
-            <span class="badge badge-success ml-auto">● Online</span>
-          </div>
-          <div class="chat-bubble-user text-sm">
-            I don't understand why Q4 is B and not A. Both seem correct to me?
-          </div>
-          <div class="chat-bubble-tutor text-sm">
-            Great question! In option A, the force is at the pivot point. What does that tell us about the moment arm?
-          </div>
-          <div class="chat-bubble-user text-sm">
-            The moment arm is zero? So there's no turning effect?
-          </div>
-          <div class="chat-bubble-tutor text-sm">
-            Exactly right! 🌟 In PSLE, the keyword the examiner looks for is <em>"moment arm"</em>. Zero moment arm = zero turning effect. That's why B is correct.
-          </div>
-          <button class="btn btn-secondary btn-sm self-start mt-2">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:inline;vertical-align:middle;margin-right:4px;">
-              <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v14a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
-            </svg>
-            Save as Study Note
-          </button>
-        </div>
-
-      </div>
     </div>
   </div>
 </section>
@@ -924,7 +922,6 @@ p { text-align: justify; }
     </div>
 
     <div class="flex flex-wrap items-center gap-8">
-
       <div class="flex-1 flex flex-col gap-6" style="min-width: 300px;">
         <div class="card hover-lift card-rule-rose">
           <p class="text-main font-medium italic mb-4">"My daughter went from 60% to 82% in Science in six weeks. The wrong-answer explanations changed how she approaches every MCQ — she understands her mistakes now instead of repeating them."</p>
@@ -937,13 +934,11 @@ p { text-align: justify; }
           <div class="text-xs text-muted">Father of P4 student · Uses Progress + Plan Quest daily</div>
         </div>
       </div>
-
       <div class="flex-1 flex justify-center" style="min-width: 300px;">
         <img src="assets/images/mum_daughter_ipad.png"
              alt="Singapore mother and daughter reviewing Superholic Lab on iPad"
              style="width: 100%; max-width: 450px; border-radius: var(--radius-lg); box-shadow: var(--shadow-md);">
       </div>
-
     </div>
   </div>
 </section>
@@ -951,8 +946,7 @@ p { text-align: justify; }
 
 <!-- ═══════════════════════════════════════════════════════════════
      S10 · PRICING — bg-page + texture-light-grid
-     Both cards: identical feature list. Auth-aware button logic.
-     SA1 removed → WA · EOY · PSLE.
+     Auth-aware button: trial → subscribe. Fixed detection logic.
      ═══════════════════════════════════════════════════════════════ -->
 <section class="bg-page texture-light-grid py-10" id="pricing">
   <div class="container">
@@ -992,7 +986,6 @@ p { text-align: justify; }
           <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Study Notes Backpack</li>
           <li class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> 1 child profile</li>
         </ul>
-        <!-- Auth-aware: shows "Subscribe" for logged-in / post-trial users -->
         <a href="/pages/signup.html?plan=all_subjects&mode=trial" class="btn btn-primary w-full" id="btn-sub-all" data-plan="all_subjects">Start 7-Day Free Trial</a>
         <div class="text-xs text-muted mt-2">7 days free · No credit card</div>
       </div>
@@ -1031,11 +1024,6 @@ p { text-align: justify; }
       <span class="flex items-center gap-1">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--brand-mint)" stroke-width="2.5" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
         PDPA compliant
-      </span>
-      <span>·</span>
-      <span class="flex items-center gap-1">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--brand-mint)" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        Singapore servers
       </span>
       <span>·</span>
       <a href="/pages/pricing.html" class="text-rose font-bold">Full pricing &amp; FAQ →</a>
@@ -1083,7 +1071,7 @@ const progressObserver = new IntersectionObserver((entries) => {
 }, { threshold: 0.3 });
 document.querySelectorAll('.float-progress-fill, .mc-fill').forEach(b => progressObserver.observe(b));
 
-/* ── 2. Pricing toggle ── */
+/* ── 2. Pricing billing toggle ── */
 let currentBilling = 'monthly';
 const prices = {
   monthly: { all: '12.99', family: '19.99', suffix: '/mo' },
@@ -1106,76 +1094,113 @@ function setBilling(mode) {
 document.getElementById('toggleMonthly')?.addEventListener('click', () => setBilling('monthly'));
 document.getElementById('toggleYearly')?.addEventListener('click',  () => setBilling('yearly'));
 
-/* ── 3. Auth-aware buttons: Trial → signup trial, Subscribe → signup subscribe / checkout ── */
+/* ── 3. Auth-aware UI + pricing button Subscribe logic ──────────────────
+   WHY "Subscribe" MAY NOT SHOW:
+   The profiles query checks `subscription_status` and `subscription_tier`.
+   Different Supabase setups use different column names/values.
+   This version checks ALL common patterns + falls back to trial_ends_at.
+   To debug: open browser console, look for "SHL auth debug:" lines.     */
 getSupabase().then(async (sb) => {
   try {
     const { data: { session } } = await sb.auth.getSession();
 
-    /* ── 3a. Auth state: navbar + hero buttons ── */
-    const authContainer = document.getElementById('auth-header-container');
-    const navLinks = document.getElementById('navDropdown');
-    if (authContainer) authContainer.innerHTML = '<a href="pages/dashboard.html" class="btn btn-glass btn-sm">Dashboard</a>';
-    if (navLinks && !document.getElementById('navSignOut')) {
-      const signOut = document.createElement('a');
-      signOut.id = 'navSignOut'; signOut.href = '#'; signOut.textContent = 'Sign Out';
-      signOut.style.color = 'var(--brand-rose)';
-      signOut.onclick = async e => { e.preventDefault(); await sb.auth.signOut(); window.location.href = 'index.html'; };
-      navLinks.appendChild(signOut);
-      document.getElementById('navSignUp')?.remove();
-    }
+    /* Navbar: replace Log In with Dashboard for logged-in users */
+    if (session) {
+      const authContainer = document.getElementById('auth-header-container');
+      const navLinks = document.getElementById('navDropdown');
+      if (authContainer) authContainer.innerHTML = '<a href="pages/dashboard.html" class="btn btn-glass btn-sm">Dashboard</a>';
+      if (navLinks && !document.getElementById('navSignOut')) {
+        const signOut = document.createElement('a');
+        signOut.id = 'navSignOut'; signOut.href = '#'; signOut.textContent = 'Sign Out';
+        signOut.style.color = 'var(--brand-rose)';
+        signOut.onclick = async e => { e.preventDefault(); await sb.auth.signOut(); window.location.href = 'index.html'; };
+        navLinks.appendChild(signOut);
+        document.getElementById('navSignUp')?.remove();
+      }
 
-    if (!session) return; // Guest — keep default button text
+      /* Fetch profile — select all columns to avoid missing-column 400s */
+      const { data: prof, error: profErr } = await sb
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
 
-    /* ── 3b. User is logged in → check subscription tier ── */
-    const { data: prof } = await sb.from('profiles').select('subscription_tier, subscription_status').eq('id', session.user.id).single();
-    const isPaid = prof && (prof.subscription_status === 'active' || prof.subscription_tier === 'all_subjects' || prof.subscription_tier === 'family');
-    const isTrialExpired = prof && prof.subscription_tier === 'trial' && isPaid === false;
+      if (profErr) console.warn('SHL auth debug: profile fetch error', profErr.message);
+      console.log('SHL auth debug: profile =', prof);
 
-    /* If paid or trial expired, change pricing buttons to "Subscribe" */
-    if (isPaid || isTrialExpired) {
-      const btnAll    = document.getElementById('btn-sub-all');
-      const btnFamily = document.getElementById('btn-sub-family');
-      const heroSub   = document.getElementById('hero-subscribe-btn');
-      const ctaSub    = document.getElementById('cta-subscribe-btn');
+      if (prof) {
+        /* Determine if user has paid or trial has ended.
+           Handles all common DB patterns:
+           - subscription_status === 'active'
+           - subscription_tier === 'all_subjects' | 'family'
+           - trial_ends_at < now
+           - status === 'active'                                */
+        const now = new Date();
+        const isPaid = (
+          prof.subscription_status === 'active' ||
+          prof.status === 'active' ||
+          prof.subscription_tier === 'all_subjects' ||
+          prof.subscription_tier === 'family'
+        );
+        const trialEnded = prof.trial_ends_at && new Date(prof.trial_ends_at) < now;
+        const shouldShowSubscribe = isPaid || trialEnded;
 
-      if (btnAll)    { btnAll.textContent    = 'Subscribe'; btnAll.href    = '#'; }
-      if (btnFamily) { btnFamily.textContent = 'Subscribe'; btnFamily.href = '#'; }
-      if (heroSub)   { heroSub.href = '/pages/pricing.html'; }
-      if (ctaSub)    { ctaSub.href  = '/pages/pricing.html'; }
-    }
+        console.log('SHL auth debug: isPaid =', isPaid, '| trialEnded =', trialEnded, '| showSubscribe =', shouldShowSubscribe);
 
-    /* ── 3c. Stripe checkout handler for pricing buttons ── */
-    document.querySelectorAll('[id^="btn-sub-"]').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
-        e.preventDefault();
-        const plan = e.currentTarget.dataset.plan;
-        if (!plan) return;
-        try {
-          e.currentTarget.textContent = 'Preparing…';
-          e.currentTarget.disabled = true;
-          const res  = await fetch('/api/checkout', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ plan, billing: currentBilling, userId: session.user.id, email: session.user.email })
+        if (shouldShowSubscribe) {
+          /* Switch pricing card buttons to "Subscribe" → Stripe checkout */
+          const switchBtn = (id) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.textContent = 'Subscribe';
+            el.href = '#';
+            el.className = el.className.replace('btn-secondary', 'btn-primary'); /* upgrade style too */
+          };
+          switchBtn('btn-sub-all');
+          switchBtn('btn-sub-family');
+
+          /* Also update hero + CTA banner subscribe links */
+          const heroSub = document.getElementById('hero-subscribe-btn');
+          const ctaSub  = document.getElementById('cta-subscribe-btn');
+          if (heroSub) { heroSub.href = '/pages/pricing.html'; heroSub.textContent = 'View Plans'; }
+          if (ctaSub)  { ctaSub.href  = '/pages/pricing.html'; ctaSub.textContent  = 'View Plans'; }
+
+          /* Wire Stripe checkout on the pricing buttons */
+          document.querySelectorAll('[id^="btn-sub-"]').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+              e.preventDefault();
+              const plan = e.currentTarget.dataset.plan;
+              if (!plan) return;
+              try {
+                e.currentTarget.textContent = 'Preparing…';
+                e.currentTarget.disabled = true;
+                const res = await fetch('/api/checkout', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ plan, billing: currentBilling, userId: session.user.id, email: session.user.email })
+                });
+                const data = await res.json();
+                if (data.url) { window.location.href = data.url; }
+                else { throw new Error(data.error || 'No checkout URL'); }
+              } catch (err) {
+                alert('Could not start checkout: ' + err.message);
+                e.currentTarget.textContent = 'Subscribe';
+                e.currentTarget.disabled = false;
+              }
+            });
           });
-          const data = await res.json();
-          if (data.url) { window.location.href = data.url; }
-          else { throw new Error(data.error || 'No checkout URL'); }
-        } catch (err) {
-          alert('Could not start checkout: ' + err.message);
-          e.currentTarget.textContent = 'Subscribe';
-          e.currentTarget.disabled = false;
         }
-      });
-    });
+      }
 
-    /* Update any dashboard CTA on the page */
-    const ctaBtn = document.getElementById('dashboard-cta-btn');
-    if (ctaBtn) { ctaBtn.href = 'pages/dashboard.html'; ctaBtn.textContent = 'Go to Dashboard →'; }
+      /* Update any in-page dashboard CTA */
+      const ctaBtn = document.getElementById('dashboard-cta-btn');
+      if (ctaBtn) { ctaBtn.href = 'pages/dashboard.html'; ctaBtn.textContent = 'Go to Dashboard →'; }
+    }
 
-  } catch (e) { console.error('Auth check failed:', e); }
+  } catch (e) { console.error('SHL auth check failed:', e); }
 });
 
-/* ── 4. Navbar dropdown toggle (for unauthenticated users) ── */
+/* ── 4. Navbar dropdown (unauthenticated) ── */
 document.addEventListener('DOMContentLoaded', () => {
   const toggle = document.getElementById('navToggle');
   const dropdown = document.getElementById('navDropdown');
