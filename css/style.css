@@ -1292,8 +1292,8 @@ body.has-bottom-nav .footer {
   display: flex;
   flex-wrap: nowrap;
   gap: var(--space-6);
-  margin-top: var(--space-6);
-  padding-top: var(--space-6);
+  margin-top: var(--space-1);
+  padding-top: var(--space-1);
   border-top: 1px solid var(--border-light);
 }
 .quiz-feature-item {
