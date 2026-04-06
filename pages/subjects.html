@@ -302,42 +302,48 @@ window.initSubjectsEngine = function() {
       if (!profile) return;
       
       const sb = await getSupabase();
+      
+      // --- UNIFIED STATE RESOLVER ---
       const urlParams = new URLSearchParams(window.location.search);
-      const urlStudentId = urlParams.get('student');
+      let activeStudentId = urlParams.get('student') || localStorage.getItem('shl_active_student_id');
       
-      let query = sb.from('students').select('id, level, selected_subject').eq('parent_id', profile.id);
-      if (urlStudentId) {
-        query = query.eq('id', urlStudentId);
+      // Fetch all children for this parent
+      const { data: students } = await sb.from('students').select('id, level, selected_subject').eq('parent_id', profile.id);
+      
+      // Find the specific student, or fallback to the first one
+      let student = (students || []).find(s => s.id === activeStudentId) || (students || [])[0];
+      
+      if (!student) {
+        app.innerHTML = `<div class="card p-8 text-center text-amber font-bold">No learners found. Please set up a profile.</div>`;
+        return;
       }
-      
-      const { data: student } = await query.limit(1).single();
 
-      state.level = student?.level || 'Primary 4';
+      // Persist the truth
+      state.studentId = student.id;
+      localStorage.setItem('shl_active_student_id', student.id);
+      // ------------------------------
+
+      state.level = student.level || 'Primary 4';
       state.tier = profile.subscription_tier || 'trial';
-      state.studentId = student?.id || null;
 
-      if (state.studentId) {
-        const isJunior = state.level.toLowerCase().includes('primary 1') || state.level.toLowerCase().includes('primary 2');
+      const isJunior = state.level.toLowerCase().includes('primary 1') || state.level.toLowerCase().includes('primary 2');
+      
+      document.querySelectorAll('.bottom-nav-item').forEach(link => {
+        const url = new URL(link.href, window.location.origin);
+        url.searchParams.set('student', state.studentId);
+        link.href = url.pathname + url.search;
         
-        document.querySelectorAll('.bottom-nav-item').forEach(link => {
-          const url = new URL(link.href, window.location.origin);
-          url.searchParams.set('student', state.studentId);
-          link.href = url.pathname + url.search;
-          
-          // Hide Exam tab for P1 and P2
-          if (isJunior && link.getAttribute('href').includes('exam.html')) {
-            link.style.display = 'none';
-          }
-        });
-        
-        // Rebalance the nav items if one is hidden
-        if (isJunior) {
-          const nav = document.getElementById('bottomNav');
-          if (nav) nav.style.justifyContent = 'space-evenly';
+        if (isJunior && link.getAttribute('href').includes('exam.html')) {
+          link.style.display = 'none';
         }
+      });
+      
+      if (isJunior) {
+        const nav = document.getElementById('bottomNav');
+        if (nav) nav.style.justifyContent = 'space-evenly';
       }
 
-      if (state.tier === 'single_subject' && student?.selected_subject) {
+      if (state.tier === 'single_subject' && student.selected_subject) {
         state.subject = student.selected_subject.toLowerCase();
         state.phase = 'TOPIC';
       } else {

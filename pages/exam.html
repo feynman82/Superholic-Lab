@@ -188,8 +188,22 @@ window.initExamEngine = function () {
       const sb = await getSupabase();
       
       // FIX: Use .limit(1) to avoid 406 Not Acceptable error when parent has multiple children
-      const { data: students } = await sb.from('students').select('id,level,selected_subject').eq('parent_id', profile.id).limit(1);
-      const student = students && students.length > 0 ? students[0] : null;
+      // --- UNIFIED STATE RESOLVER ---
+      const urlParams = new URLSearchParams(window.location.search);
+      let activeStudentId = urlParams.get('student') || localStorage.getItem('shl_active_student_id');
+
+      const { data: students } = await sb.from('students').select('id,level,selected_subject').eq('parent_id', profile.id);
+      
+      const student = (students || []).find(s => s.id === activeStudentId) || (students || [])[0];
+      
+      if (!student) {
+        app.innerHTML = `<div class="card p-8 text-center font-bold text-amber">No student profile found. Please set one up.</div>`;
+        return;
+      }
+
+      state.studentId = student.id;
+      localStorage.setItem('shl_active_student_id', student.id);
+      // ------------------------------
 
       const tier = profile.subscription_tier || 'trial';
       const level = student?.level || 'Primary 4';

@@ -64,7 +64,13 @@ async function init() {
       return;
     }
 
-    const student = students.find(s => s.id === urlStudentId) || students[0];
+    // --- UNIFIED STATE RESOLVER ---
+    let activeStudentId = urlStudentId || localStorage.getItem('shl_active_student_id');
+    const student = students.find(s => s.id === activeStudentId) || students[0];
+    
+    // Persist the truth
+    localStorage.setItem('shl_active_student_id', student.id);
+    // ------------------------------
 
     if (students.length > 1) {
       populateStudentSelector(students, student.id);
@@ -676,6 +682,9 @@ function populateStudentSelector(students, activeId) {
   });
 
   selectEl.addEventListener('change', function() {
+    // Force the new truth immediately 
+    localStorage.setItem('shl_active_student_id', selectEl.value);
+    
     const params = new URLSearchParams(window.location.search);
     params.set('student', selectEl.value);
     window.location.search = params.toString();

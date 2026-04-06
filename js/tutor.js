@@ -264,11 +264,24 @@ async function processBatchQueue() {
       const sb = await window.getSupabase();
       const { data: { session } } = await sb.auth.getSession();
       if (!session) return;
-      const { data: students } = await sb.from('students').select('id').eq('parent_id', session.user.id).limit(1);
-      if (students?.length) {
-        currentStudentId = students[0].id;
+
+      // --- UNIFIED STATE RESOLVER ---
+      const urlParams = new URLSearchParams(window.location.search);
+      let activeStudentId = urlParams.get('student') || localStorage.getItem('shl_active_student_id');
+
+      const { data: students } = await sb.from('students').select('id').eq('parent_id', session.user.id);
+      
+      let student = (students || []).find(s => s.id === activeStudentId) || (students || [])[0];
+      
+      if (student) {
+        currentStudentId = student.id;
+        localStorage.setItem('shl_active_student_id', currentStudentId);
       }
-    } catch (e) {}
+      // ------------------------------
+
+    } catch (e) {
+      console.error("Tutor state resolution failed:", e);
+    }
   }
 
   function handleRemedialIntent() {
