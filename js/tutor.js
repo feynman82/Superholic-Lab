@@ -4,10 +4,6 @@
  * Connects to /api/summarize-chat to build persistent Study Notes.
  */
 
-let messageQueue = [];
-let batchTimeout = null;
-const BATCH_DELAY_MS = 1500; // Wait 1.5 seconds after last message before sending
-
 (() => {
   const TRIAL_AI_LIMIT = 10;
   let history = [];
@@ -15,7 +11,11 @@ const BATCH_DELAY_MS = 1500; // Wait 1.5 seconds after last message before sendi
   let currentStudentId = null;
   let currentSubjectContext = 'general';
   let currentTopicContext = 'mixed';
-  
+  let messageQueue = [];
+  let batchTimeout = null;
+  const BATCH_DELAY_MS = 1500; // Wait 1.5 seconds after last message before sending
+
+
   // Canvas State
   let isDrawMode = false;
   let ctx = null;
@@ -114,32 +114,31 @@ const BATCH_DELAY_MS = 1500; // Wait 1.5 seconds after last message before sendi
   sendBtn.addEventListener('click', handleSend);
   chatInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } });
 
-  async function handleSend() {
+  let currentTypingEl = null; 
+
+// 2. Replace your handleSend and processBatchQueue with this:
+async function handleSend() {
   if (isLoading) return;
   const text = chatInput.value.trim();
   const hasImage = isDrawMode && canvasHasContent;
   
   if (!text && !hasImage) return;
 
-  // 1. Immediately show the user's message in the UI
   const imageData = hasImage ? canvas.toDataURL('image/png') : null;
   appendBubble('user', text, imageData);
   
-  // 2. Add to our silent queue
   messageQueue.push({ text, image: imageData });
   
   chatInput.value = '';
   if (hasImage) window.clearCanvas();
 
-  // 3. Clear any existing timer and start a new one
   if (batchTimeout) clearTimeout(batchTimeout);
   
-  // Show typing indicator immediately so the UI feels alive
-  if (!document.querySelector('.chat-typing')) {
-      appendTyping(); 
+  // Create the typing dots globally so the queue can delete them later
+  if (!currentTypingEl) {
+      currentTypingEl = appendTyping(); 
   }
 
-  // 4. Wait for the user to finish their thought
   batchTimeout = setTimeout(() => {
     processBatchQueue();
   }, BATCH_DELAY_MS);
@@ -152,15 +151,11 @@ async function processBatchQueue() {
   chatInput.disabled = true;
   sendBtn.disabled = true;
 
-  // Combine all queued text messages into one prompt with line breaks
   const combinedText = messageQueue.map(m => m.text).filter(Boolean).join('\n');
-  // Grab the last image if they sent multiple
   const lastImage = messageQueue.reverse().find(m => m.image)?.image || null;
   
-  // Clear the queue
   messageQueue = [];
 
-  // Strip old images to prevent payload crashes, push the combined message
   history.forEach(msg => msg.image = null);
   history.push({ role: 'user', content: combinedText, image: lastImage });
 
@@ -171,36 +166,47 @@ async function processBatchQueue() {
       body:    JSON.stringify({ messages: history }),
     });
 
-      const data = await res.json();
-      typingEl.remove();
+    const data = await res.json();
 
-      if (!res.ok || data.error) {
-        appendBubble('tutor', data.error || 'Sorry, something went wrong. Please try again.');
-        history.pop(); // Remove failed user message
-        chatInput.value = text; // Restore the user's text!
-      } else {
-        appendBubble('tutor', data.reply);
-        history.push({ role: 'assistant', content: data.reply });
-        
-        // Expose Save Note button once an actual conversation exists
-        if (saveBtn && history.filter(m => m.role === 'user').length >= 1) {
-          saveBtn.classList.remove('hidden');
-        }
-        
-        // FIX: Removed the undefined 'incrementDailyUsage' function that was causing the ReferenceError crash
-      }
-    } catch (err) {
-      typingEl.remove();
-      appendBubble('tutor', 'Could not reach the tutor. Please check your connection.');
-      history.pop();
-      chatInput.value = text; // FIX: Restore the text if API completely fails!
-    } finally {
-      isLoading = false;
-      chatInput.disabled = false;
-      sendBtn.disabled = false;
-      chatInput.focus();
+    // Safely remove the typing element!
+    if (currentTypingEl) {
+        currentTypingEl.remove();
+        currentTypingEl = null;
     }
+
+    if (!res.ok || data.error) {
+      // Gracefully handle the 15 RPM limit 500 error
+      if ((data.error && data.error.includes("temporarily unavailable")) || res.status === 500) {
+          appendBubble('tutor', 'Miss Wena is thinking a bit too fast! 😅 Give me about 30 seconds to catch my breath before we continue.');
+      } else {
+          appendBubble('tutor', data.error || 'Sorry, something went wrong. Please try again.');
+      }
+      history.pop(); 
+      chatInput.value = combinedText; // Give the student their text back!
+    } else {
+      appendBubble('tutor', data.reply);
+      history.push({ role: 'assistant', content: data.reply });
+      
+      if (saveBtn && history.filter(m => m.role === 'user').length >= 1) {
+        saveBtn.classList.remove('hidden');
+      }
+    }
+  } catch (err) {
+    // Safely remove the typing element on a hard network crash
+    if (currentTypingEl) {
+        currentTypingEl.remove();
+        currentTypingEl = null;
+    }
+    appendBubble('tutor', 'Could not reach the tutor. Please check your connection.');
+    history.pop();
+    chatInput.value = combinedText; 
+  } finally {
+    isLoading = false;
+    chatInput.disabled = false;
+    sendBtn.disabled = false;
+    chatInput.focus();
   }
+}
 
   // ── DOM Helpers ──
   function formatMessage(text) {
