@@ -1,4 +1,3 @@
-
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -6,7 +5,6 @@
   <title>Pricing — Superholic Lab</title>
   <meta name="description" content="Simple, transparent pricing for Singapore's best AI tutor. Start your 7-day free trial today.">
   
-  <!-- Fonts & Styles -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="../css/style.css" />
@@ -25,10 +23,8 @@
 
 <global-header></global-header>
 
-<!-- ═══════════════════ HERO (Sage + Dots) ═══════════════════ -->
 <section class="bg-sage texture-dots py-10" style="padding-top: calc(64px + var(--space-8)); text-align: center;">
   <div class="container flex flex-col items-center gap-4">
-    <!-- Fixed Badge Contrast -->
     <div class="badge" style="background: rgba(0, 0, 0, 0.25); color: var(--brand-rose); backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.1);">Transparent Pricing</div>
     <h1 class="font-display text-4xl text-white mt-2 mb-2" style="font-size: 3.5rem; line-height: 1.1;">
       Invest in Understanding.<br><span class="text-rose">Not Just Practice.</span>
@@ -37,7 +33,6 @@
       Choose the plan that fits your family. Every plan starts with a completely free 7-day trial. Cancel easily at any time.
     </p>
 
-    <!-- Billing Toggle (Fixed text wrapping & width) -->
     <div class="flex items-center gap-2 p-1 rounded" style="background: rgba(0,0,0,0.2); backdrop-filter: blur(8px); border-radius: var(--radius-full);">
       <button id="toggleMonthly" class="btn btn-sm" style="background: var(--bg-surface); color: var(--text-main); border-radius: var(--radius-full); width: auto; min-width: 100px; white-space: nowrap;">Monthly</button>
       <button id="toggleYearly" class="btn btn-sm btn-ghost" style="color: rgba(255,255,255,0.9); border-radius: var(--radius-full); width: auto; min-width: 140px; white-space: nowrap;">Annually <span class="text-xs text-rose ml-1 font-bold">Save 17%</span></button>
@@ -45,49 +40,29 @@
   </div>
 </section>
 
-<!-- ═══════════════════ PRICING CARDS (Off-White) ═══════════════════ -->
 <section class="py-10 bg-page">
   <div class="container">
-    <!-- Changed gap-6 to gap-4 to ensure all 3 fit gracefully -->
     <div class="flex flex-wrap gap-4 items-start justify-center">
       
-      <!-- Single Subject -->
-      <div class="card pricing-card-hover flex-1 flex flex-col gap-4 p-6" style="min-width: 260px; max-width: 320px; margin-top: 16px;">
-        <div class="text-center mb-2">
-          <h2 class="font-display text-2xl text-main">Single Subject</h2>
-          <div class="font-display text-4xl text-main mt-2">S$<span id="price-single">9.99</span><span class="text-sm text-muted font-body" style="text-transform: none;">/mo</span></div>
-          <p class="text-sm text-muted">Perfect for focused PSLE prep in one subject.</p>
-        </div>
-        
-        <div class="flex-1 flex flex-col gap-3 text-sm text-main mb-6">
-          <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> 1 subject of your choice</div>
-          <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Unlimited MOE-aligned questions</div>
-          <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Full worked solutions & explanations</div>
-          <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Full AI Tutor chat access</div>
-          <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Custom mock exam generator</div>
-          <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> 1 child profile</div>
-        </div>
-        
-        <button id="btn-sub-single" class="btn btn-secondary w-full" data-plan="single_subject">Start Free Trial</button>
-        <div class="text-xs text-center text-muted mt-2">7 days free · Cancel anytime</div>
-      </div>
-      
-      <!-- All Subjects (Featured) -->
-      <div class="card pricing-card-hover flex-1 flex flex-col gap-4 p-6" style="min-width: 260px; max-width: 320px; border-color: var(--brand-rose); border-width: 2px; box-shadow: var(--shadow-md); position: relative; transform: translateY(-10px);">
+      <div class="card pricing-card-hover flex-1 flex flex-col gap-4 p-6" style="min-width: 300px; max-width: 380px; border-color: var(--brand-rose); border-width: 2px; box-shadow: var(--shadow-md); position: relative; transform: translateY(-10px);">
         <div class="badge self-center absolute" style="top: -12px; background: var(--brand-rose); color: white;">Most Popular</div>
         
         <div class="text-center mb-2 mt-2">
           <h2 class="font-display text-2xl text-main">All Subjects</h2>
-          <div class="font-display text-4xl text-rose mt-2">S$<span id="price-all">19.99</span><span class="text-sm text-muted font-body" style="text-transform: none;">/mo</span></div>
-          <p class="text-sm text-muted">The complete PSLE toolkit — Maths, Science & English.</p>
+          <div class="font-display text-4xl text-rose mt-2">S$<span id="price-all">12.99</span><span class="text-sm text-muted font-body" style="text-transform: none;">/mo</span></div>
+          <div id="annual-note-all" class="text-xs text-muted mt-2" style="display: none;">Billed S$129.90/year · 2 months free</div>
+          <p class="text-sm text-muted mt-3">The complete P1–P6 toolkit — Maths, Science & English.</p>
         </div>
         
         <div class="flex-1 flex flex-col gap-3 text-sm text-main mb-6">
-          <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> All 3 subjects</div>
+          <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> All 3 subjects (Maths, Science, English)</div>
           <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Unlimited MOE-aligned questions</div>
-          <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Wrong-answer explanations</div>
-          <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Full AI Tutor chat access</div>
-          <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Custom mock exam generator</div>
+          <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Wrong-answer explanations, every option</div>
+          <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> WA · EOY Exam · PSLE practice papers</div>
+          <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> AL1–AL8 live progress tracking</div>
+          <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Plan Quest (AI action plan)</div>
+          <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Miss Wena AI Tutor — all subjects</div>
+          <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Study Notes Backpack</div>
           <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> 1 child profile</div>
         </div>
         
@@ -95,21 +70,24 @@
         <div class="text-xs text-center text-muted mt-2">7 days free · Cancel anytime</div>
       </div>
       
-      <!-- Family -->
-      <div class="card pricing-card-hover flex-1 flex flex-col gap-4 p-6" style="min-width: 260px; max-width: 320px; margin-top: 16px;">
+      <div class="card pricing-card-hover flex-1 flex flex-col gap-4 p-6" style="min-width: 300px; max-width: 380px; margin-top: 16px;">
         <div class="text-center mb-2">
           <h2 class="font-display text-2xl text-main">Family Plan</h2>
-          <div class="font-display text-4xl text-main mt-2">S$<span id="price-family">29.99</span><span class="text-sm text-muted font-body" style="text-transform: none;">/mo</span></div>
-          <p class="text-sm text-muted">For families with multiple children preparing for exams.</p>
+          <div class="font-display text-4xl text-main mt-2">S$<span id="price-family">19.99</span><span class="text-sm text-muted font-body" style="text-transform: none;">/mo</span></div>
+          <div id="annual-note-family" class="text-xs text-muted mt-2" style="display: none;">Billed S$199.90/year · 2 months free</div>
+          <p class="text-sm text-muted mt-3">Everything in All Subjects — for up to 3 children, with a parent dashboard for all.</p>
         </div>
         
         <div class="flex-1 flex flex-col gap-3 text-sm text-main mb-6">
-          <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> All 3 subjects</div>
-          <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Up to 3 independent child profiles</div>
-          <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Parent Mission Control dashboard</div>
-          <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Full AI Tutor chat access</div>
-          <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Custom mock exam generator</div>
-          <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Priority email support</div>
+          <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> All 3 subjects (Maths, Science, English)</div>
+          <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Unlimited MOE-aligned questions</div>
+          <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Wrong-answer explanations, every option</div>
+          <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> WA · EOY Exam · PSLE practice papers</div>
+          <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> AL1–AL8 live progress tracking</div>
+          <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Plan Quest (AI action plan)</div>
+          <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Miss Wena AI Tutor — all subjects</div>
+          <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Study Notes Backpack</div>
+          <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> 3 child profiles + parent dashboard</div>
         </div>
         
         <button id="btn-sub-family" class="btn btn-secondary w-full" data-plan="family">Start Free Trial</button>
@@ -120,7 +98,6 @@
   </div>
 </section>
 
-<!-- ═══════════════════ FAQ SECTION (White) ═══════════════════ -->
 <section class="py-10 bg-white">
   <div class="container" style="max-width: 800px;">
     <div class="flex flex-col items-center text-center mb-8">
@@ -160,21 +137,10 @@
         </div>
       </div>
 
-      <div class="card hover-lift cursor-pointer faq-item" style="padding: var(--space-4);">
-        <div class="flex justify-between items-center font-bold text-main">
-          How many subjects are included in the Single plan?
-          <span class="text-rose text-xl transition-transform duration-300 faq-icon">+</span>
-        </div>
-        <div class="text-muted text-sm mt-2 hidden faq-answer">
-          The Single plan allows you to choose exactly one subject (Mathematics, Science, or English) for your child. You can switch the chosen subject at the start of your billing cycle.
-        </div>
-      </div>
-
     </div>
   </div>
 </section>
 
-<!-- ═══════════════════ CTA BANNER (Rose) ═══════════════════ -->
 <section class="bg-rose py-10">
   <div class="container flex flex-col items-center text-center gap-4">
     <h2 class="font-display text-4xl text-white">Ready to boost those AL scores?</h2>
@@ -258,8 +224,8 @@
   /* ── 2. Billing Toggle Logic ── */
   let currentBilling = 'monthly';
   const prices = {
-    monthly: { single: '9.99', all: '19.99', family: '29.99', suffix: '/mo' },
-    yearly:  { single: '99.99', all: '199.99', family: '299.99', suffix: '/yr' }
+    monthly: { all: '12.99', family: '19.99', suffix: '/mo' },
+    yearly:  { all: '129.90', family: '199.90', suffix: '/yr' }
   };
 
   const tglMo = document.getElementById('toggleMonthly');
@@ -267,6 +233,7 @@
 
   function setBilling(mode) {
     currentBilling = mode;
+    const isYearly = mode === 'yearly';
     
     // Update UI Toggle Buttons
     if (mode === 'monthly') {
@@ -288,9 +255,14 @@
     }
 
     // Update Prices
-    document.getElementById('price-single').textContent = prices[mode].single;
     document.getElementById('price-all').textContent = prices[mode].all;
     document.getElementById('price-family').textContent = prices[mode].family;
+    
+    // Show/Hide Annual Disclaimer Note
+    const noteAll = document.getElementById('annual-note-all');
+    const noteFam = document.getElementById('annual-note-family');
+    if(noteAll) noteAll.style.display = isYearly ? 'block' : 'none';
+    if(noteFam) noteFam.style.display = isYearly ? 'block' : 'none';
     
     // Update suffix
     document.querySelectorAll('.font-display .text-sm.font-body').forEach(el => {
@@ -306,22 +278,19 @@
     if (!profileData) return;
     
     const tier = profileData.subscription_tier || 'trial';
-    // Robust check for active status depending on your DB schema
     const isPaid = profileData.subscription_status === 'active' || profileData.status === 'active';
 
-    ['single_subject', 'all_subjects', 'family'].forEach(plan => {
-      const idMap = { 'single_subject': 'btn-sub-single', 'all_subjects': 'btn-sub-all', 'family': 'btn-sub-family' };
+    ['all_subjects', 'family'].forEach(plan => {
+      const idMap = { 'all_subjects': 'btn-sub-all', 'family': 'btn-sub-family' };
       const btn = document.getElementById(idMap[plan]);
       if (!btn) return;
 
       if (isPaid && plan === tier) {
-        // They are already paying for this specific plan
         btn.textContent = '✓ Current Plan';
         btn.disabled = true;
         btn.classList.add('btn-secondary');
         btn.classList.remove('btn-primary');
       } else if (session) {
-        // They are logged in (on trial or looking to upgrade)
         btn.textContent = 'Subscribe';
       }
     });
@@ -332,12 +301,10 @@
       const plan = e.target.dataset.plan;
       
       if (!session) {
-        // Redirect to signup with intent
         window.location.href = `signup.html?plan=${plan}&billing=${currentBilling}`;
         return;
       }
 
-      // Already logged in - start checkout
       e.target.textContent = 'Preparing...';
       e.target.disabled = true;
 
@@ -375,7 +342,6 @@
       
       const isOpen = !answer.classList.contains('hidden');
       
-      // Close all others first
       document.querySelectorAll('.faq-answer').forEach(a => a.classList.add('hidden'));
       document.querySelectorAll('.faq-icon').forEach(i => { i.textContent = '+'; i.style.transform = 'rotate(0deg)'; });
       

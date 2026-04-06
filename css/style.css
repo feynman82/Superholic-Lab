@@ -1368,7 +1368,7 @@ body.has-bottom-nav .footer {
   transform-origin: bottom center;
   display: block;
   position: relative;
-  top: -100px;              /* pulled UP 300px (negative = up) */
+  top: -110px;              /* pulled UP 110px (negative = up) */
   margin-left: auto;        /* push right */
   z-index: 1;               /* behind top photo — nothing overlaps cards */
 }
