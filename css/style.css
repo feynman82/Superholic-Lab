@@ -1272,8 +1272,7 @@ body.has-bottom-nav .footer {
   width: 100%;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
-  transform: rotate(-20deg); 
-  transform: translateY(100px);
+  transform: translateY(150px) rotate(-10deg); 
   transform-origin: top left;
   display: block;
 }
