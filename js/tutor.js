@@ -4,6 +4,10 @@
  * Connects to /api/summarize-chat to build persistent Study Notes.
  */
 
+let messageQueue = [];
+let batchTimeout = null;
+const BATCH_DELAY_MS = 1500; // Wait 1.5 seconds after last message before sending
+
 (() => {
   const TRIAL_AI_LIMIT = 10;
   let history = [];
@@ -111,40 +115,61 @@
   chatInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } });
 
   async function handleSend() {
-    if (isLoading) return;
-    const text = chatInput.value.trim();
-    const hasImage = isDrawMode && canvasHasContent;
-    
-    if (!text && !hasImage) return;
+  if (isLoading) return;
+  const text = chatInput.value.trim();
+  const hasImage = isDrawMode && canvasHasContent;
+  
+  if (!text && !hasImage) return;
 
-    // Fast fail for limits
-    if (limitBanner && !limitBanner.classList.contains('hidden')) return;
+  // 1. Immediately show the user's message in the UI
+  const imageData = hasImage ? canvas.toDataURL('image/png') : null;
+  appendBubble('user', text, imageData);
+  
+  // 2. Add to our silent queue
+  messageQueue.push({ text, image: imageData });
+  
+  chatInput.value = '';
+  if (hasImage) window.clearCanvas();
 
-    isLoading = true;
-    chatInput.disabled = true;
-    sendBtn.disabled = true;
+  // 3. Clear any existing timer and start a new one
+  if (batchTimeout) clearTimeout(batchTimeout);
+  
+  // Show typing indicator immediately so the UI feels alive
+  if (!document.querySelector('.chat-typing')) {
+      appendTyping(); 
+  }
 
-    // Grab image data if present
-    const imageData = hasImage ? canvas.toDataURL('image/png') : null;
+  // 4. Wait for the user to finish their thought
+  batchTimeout = setTimeout(() => {
+    processBatchQueue();
+  }, BATCH_DELAY_MS);
+}
 
-    // UI Updates
-    appendBubble('user', text, imageData);
-    
-    // Fix 500 Error: Strip old images from history to prevent Vercel 4.5MB payload crashes
-    history.forEach(msg => msg.image = null);
-    history.push({ role: 'user', content: text, image: imageData });
-    
-    chatInput.value = '';
-    if (hasImage) window.clearCanvas(); // reset for next turn
-    
-    const typingEl = appendTyping();
+async function processBatchQueue() {
+  if (messageQueue.length === 0) return;
+  
+  isLoading = true;
+  chatInput.disabled = true;
+  sendBtn.disabled = true;
 
-    try {
-      const res = await fetch('/api/chat', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ messages: history }),
-      });
+  // Combine all queued text messages into one prompt with line breaks
+  const combinedText = messageQueue.map(m => m.text).filter(Boolean).join('\n');
+  // Grab the last image if they sent multiple
+  const lastImage = messageQueue.reverse().find(m => m.image)?.image || null;
+  
+  // Clear the queue
+  messageQueue = [];
+
+  // Strip old images to prevent payload crashes, push the combined message
+  history.forEach(msg => msg.image = null);
+  history.push({ role: 'user', content: combinedText, image: lastImage });
+
+  try {
+    const res = await fetch('/api/chat', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ messages: history }),
+    });
 
       const data = await res.json();
       typingEl.remove();
