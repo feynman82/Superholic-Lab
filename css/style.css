@@ -1261,10 +1261,10 @@ body.has-bottom-nav .footer {
 }
 /* Photo column: overflow hidden clips rotation spill; extra top padding lets top corner align with text */
 .quiz-photo-col {
-  flex: 0 0 44%;
   position: relative;
   overflow: hidden;
   padding-top: var(--space-10);
+  padding-bottom: var(--space-1);
   padding-left: var(--space-4);
 }
 .quiz-photo-rotated {
