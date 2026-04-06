@@ -1173,7 +1173,12 @@ body.has-bottom-nav .footer {
 
 /* ══ VIDEO ══════════════════════════════════════════════════════ */
 .video-wrap { display: block; border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-md); line-height: 0; }
-.video-wrap video { width: 100%; height: auto; display: block; }
+.video-wrap video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* 🔥 removes black bars */
+  display: block;
+}
 
 /* ══ HERO ═══════════════════════════════════════════════════════
    Two-column flex. align-items: flex-start so tops are level.
