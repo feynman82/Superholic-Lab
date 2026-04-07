@@ -14,28 +14,19 @@
   <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js"></script>
   <script src="/js/footer.js" defer></script>
   <script type="module">
-    import { guardPage } from '/js/auth.js';
-    import { initAppShell } from '/js/app-shell.js';
+  import { guardPage } from '/js/auth.js';
+  import { initAppShell } from '/js/app-shell.js';
+  
+  async function boot() {
+    const profile = await guardPage(true);
     
-    async function boot() {
-      try {
-        window.userProfile = await guardPage(true); 
-        const runInit = () => {
-          if (typeof initAppShell === 'function') initAppShell(window.userProfile); 
-          if (typeof window.initSubjectsEngine === 'function') window.initSubjectsEngine();
-        };
-
-        if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', runInit);
-        } else {
-          runInit();
-        }
-      } catch (err) {
-        console.error('Boot sequence failed:', err);
-      }
-    }
-    boot();
-  </script>
+    // This single line now perfectly formats the navbar, checks the URL, 
+    // sets localStorage, AND routes juniors away from danger.
+    await initAppShell(profile); 
+  }
+  
+  boot();
+</script>
 </head>
 
 <body id="mainBody" class="has-bottom-nav bg-page texture-light-grid">

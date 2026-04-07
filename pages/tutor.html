@@ -15,12 +15,19 @@
   <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js"></script>
   
   <script type="module">
-    import { guardPage } from '/js/auth.js';
-    import { initAppShell } from '/js/app-shell.js';
+  import { guardPage } from '/js/auth.js';
+  import { initAppShell } from '/js/app-shell.js';
+  
+  async function boot() {
     const profile = await guardPage(true);
-    initAppShell(profile);
-  </script>
-
+    
+    // This single line now perfectly formats the navbar, checks the URL, 
+    // sets localStorage, AND routes juniors away from danger.
+    await initAppShell(profile); 
+  }
+  
+  boot();
+</script>
   <style>
     /* ── Tutor 3.0 Specific Chat Styles ── */
     .chat-scroll-area { scroll-behavior: smooth; }

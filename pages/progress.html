@@ -16,11 +16,19 @@
   <script src="/js/footer.js" defer></script>
   <!-- Auth guard: redirects to login if no active session -->
   <script type="module">
-    import { guardPage }    from '/js/auth.js';
-    import { initAppShell } from '/js/app-shell.js';
+  import { guardPage } from '/js/auth.js';
+  import { initAppShell } from '/js/app-shell.js';
+  
+  async function boot() {
     const profile = await guardPage(true);
-    initAppShell(profile);
-  </script>
+    
+    // This single line now perfectly formats the navbar, checks the URL, 
+    // sets localStorage, AND routes juniors away from danger.
+    await initAppShell(profile); 
+  }
+  
+  boot();
+</script>
 </head>
 
 <body id="mainBody" class="has-bottom-nav bg-page texture-light-grid">
