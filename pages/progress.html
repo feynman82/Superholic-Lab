@@ -16,19 +16,30 @@
   <script src="/js/footer.js" defer></script>
   <!-- Auth guard: redirects to login if no active session -->
   <script type="module">
-  import { guardPage } from '/js/auth.js';
-  import { initAppShell } from '/js/app-shell.js';
-  
-  async function boot() {
-    const profile = await guardPage(true);
+    import { guardPage } from '/js/auth.js';
+    import { initAppShell } from '/js/app-shell.js';
     
-    // This single line now perfectly formats the navbar, checks the URL, 
-    // sets localStorage, AND routes juniors away from danger.
-    await initAppShell(profile); 
-  }
-  
-  boot();
-</script>
+    // Boot sequence: Ensure profile loads BEFORE we trigger DOM manipulations
+    async function boot() {
+      try {
+        window.userProfile = await guardPage(true); 
+        
+        const runInit = () => {
+          if (typeof initAppShell === 'function') initAppShell(window.userProfile); 
+          if (typeof window.initExamEngine === 'function') window.initExamEngine();
+        };
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', runInit);
+        } else {
+          runInit();
+        }
+      } catch (err) {
+        console.error('Boot sequence failed:', err);
+      }
+    }
+    boot();
+  </script>
 </head>
 
 <body id="mainBody" class="has-bottom-nav bg-page texture-light-grid">
@@ -46,7 +57,7 @@
     
     <div class="container relative z-10 text-center">
       <div class="badge mb-2" style="background: rgba(0, 0, 0, 0.25); color: var(--brand-rose); backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.1);">Mission Report</div>
-      <h1 class="font-display text-4xl text-white mb-2" style="font-size: 3rem;">
+      <h1 class="font-display text-4xl text- mb-2" style="font-size: 3rem; text-align: center;">
         <span id="student-name"></span>'s Progress
       </h1>
     </div>
