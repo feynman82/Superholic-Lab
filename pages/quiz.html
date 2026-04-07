@@ -9,9 +9,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="icon" href="../assets/favicon.ico" />
+  
   <script src="/js/header.js" defer></script>
   <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js"></script>
   <script src="/js/footer.js" defer></script>
+  
   <script type="module">
     import { guardPage } from '/js/auth.js';
     import { initAppShell } from '/js/app-shell.js';
@@ -35,11 +37,187 @@
     }
     boot();
   </script>
+
+  <style>
+    /* ── Dojo Specific UI ── */
+    .mcq-opt {
+      display: flex;
+      align-items: center;
+      padding: var(--space-4);
+      margin-bottom: var(--space-3);
+      border: 2px solid var(--border-light);
+      border-radius: var(--radius-md);
+      background: var(--bg-surface);
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .mcq-opt:hover { border-color: var(--border-dark); background: var(--bg-elevated); transform: scale(1.01); }
+    .mcq-opt.is-sel {
+      border-color: var(--brand-mint);
+      background: rgba(5, 150, 105, 0.05);
+      transform: scale(0.98); 
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .mcq-badge {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-full);
+      background: var(--bg-elevated);
+      font-weight: bold;
+      margin-right: var(--space-4);
+      transition: all 0.2s ease;
+    }
+    .mcq-opt.is-sel .mcq-badge { background: var(--brand-mint); color: white; }
+
+    .scratchpad-container {
+      border: 2px solid var(--border-light);
+      border-radius: var(--radius-md);
+      background: #FFFFFF;
+      position: relative;
+      overflow: hidden;
+      margin-top: var(--space-4);
+    }
+    .scratchpad-canvas {
+      width: 100%;
+      height: 300px;
+      cursor: crosshair;
+      touch-action: none;
+    }
+    
+    .feedback-panel {
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease, opacity 0.4s ease, margin 0.4s ease;
+    }
+    .feedback-panel.is-open {
+      max-height: 500px;
+      opacity: 1;
+      margin-top: var(--space-4);
+    }
+
+    @keyframes flameFlicker {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.1) rotate(-3deg); opacity: 0.9; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .streak-fire { display: inline-block; animation: flameFlicker 1.5s ease-in-out infinite; }
+
+    /* ── Masterclass UI for Cloze & Editing ── */
+    .cloze-passage {
+      line-height: 2.6; /* Generous room for dropdowns so lines don't crash */
+    }
+    .cloze-select {
+      display: inline-block;
+      appearance: none;
+      -webkit-appearance: none;
+      background-color: var(--bg-surface);
+      border: 2px solid var(--border-dark);
+      border-radius: var(--radius-sm);
+      padding: 4px 24px 4px 10px;
+      font-family: var(--font-body);
+      font-size: var(--text-sm);
+      font-weight: 700;
+      color: var(--brand-rose);
+      cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23B76E79' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 6px center;
+      background-size: 14px;
+      margin: 0 4px;
+      vertical-align: middle;
+      transition: all 0.2s ease;
+    }
+    .cloze-select:focus {
+      outline: none;
+      border-color: var(--brand-rose);
+      box-shadow: 0 0 0 3px rgba(183, 110, 121, 0.2);
+    }
+    .cloze-select:disabled {
+      cursor: default;
+      background-image: none;
+      padding-right: 10px;
+    }
+    .cloze-select.is-correct {
+      border-color: var(--brand-mint);
+      color: var(--brand-mint);
+      background-color: rgba(5, 150, 105, 0.1);
+    }
+    .cloze-select.is-wrong {
+      border-color: var(--brand-error);
+      color: var(--brand-error);
+      background-color: rgba(220, 38, 38, 0.1);
+    }
+
+    .editing-line {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3) 0;
+      border-bottom: 1px solid var(--border-light);
+    }
+    .editing-line:last-child {
+      border-bottom: none;
+    }
+    .editing-input {
+      border: 2px solid var(--border-dark);
+      border-radius: var(--radius-sm);
+      padding: 6px 10px;
+      width: 120px;
+      text-align: center;
+      font-family: var(--font-body);
+      font-size: var(--text-sm);
+      font-weight: 700;
+      color: var(--brand-rose);
+      background: var(--bg-surface);
+      transition: all 0.2s ease;
+    }
+    .editing-input:focus {
+      outline: none;
+      border-color: var(--brand-rose);
+      box-shadow: 0 0 0 3px rgba(183, 110, 121, 0.2);
+    }
+    .editing-input:disabled {
+      cursor: default;
+    }
+    .editing-input.is-correct {
+      border-color: var(--brand-mint);
+      color: var(--brand-mint);
+      background-color: rgba(5, 150, 105, 0.1);
+    }
+    .editing-input.is-wrong {
+      border-color: var(--brand-error);
+      color: var(--brand-error);
+      background-color: rgba(220, 38, 38, 0.1);
+    }
+  </style>
 </head>
 
 <body id="mainBody" class="has-bottom-nav bg-page texture-light-grid">
 
-<global-header></global-header>
+<!-- ═══════════════════ GLOBAL NAVBAR (Darker Sage) ═══════════════════ -->
+<header class="navbar justify-between bg-sage-dark" id="navbar">
+  <a href="../index.html" class="flex items-center gap-2 font-display text-2xl text-white" style="text-decoration: none;">
+    <img src="../assets/logo.svg" width="32" height="32" alt="" aria-hidden="true" style="border-radius: var(--radius-sm); flex-shrink:0;">
+    Superholic Lab
+  </a>
+  <div class="navbar-actions flex items-center gap-4">
+    <div id="auth-header-container"></div>
+    <button class="navbar-toggle" id="navToggle" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+  <div class="navbar-mobile" id="navDropdown">
+    <a href="../index.html">Home</a>
+    <a href="about.html">About Us</a>
+    <a href="pricing.html">Pricing</a>
+    <a href="contact.html">Contact Support</a>
+    <a href="#" id="navSignOut" style="color: var(--brand-rose);">Sign Out</a>
+  </div>
+</header>
 
 <!-- ═══════════════════ MAIN APP ═══════════════════ -->
 <main id="app" class="container py-10 flex flex-col items-center" style="padding-top: calc(64px + var(--space-10)); min-height: 80vh; max-width: 800px;"></main>
@@ -71,7 +249,6 @@ document.addEventListener('click', (e) => {
   const toggleBtn = e.target.closest('#navToggle');
   const dropdown = document.getElementById('navDropdown');
   
-  // Toggle Mobile Menu
   if (toggleBtn && dropdown) {
     e.stopPropagation();
     dropdown.classList.toggle('is-open');
@@ -79,14 +256,12 @@ document.addEventListener('click', (e) => {
     return;
   }
 
-  // Close Mobile Menu on outside click
   if (dropdown && dropdown.classList.contains('is-open') && !dropdown.contains(e.target)) {
     dropdown.classList.remove('is-open');
     const actualToggle = document.getElementById('navToggle');
     if (actualToggle) actualToggle.classList.remove('is-active');
   }
 
-  // Handle Sign Out
   const signOutBtn = e.target.closest('#navSignOut');
   if (signOutBtn) {
     e.preventDefault();
@@ -118,9 +293,9 @@ window.initQuizEngine = function() {
     streak: 0,
     maxStreak: 0,
     score: 0,
-    answers: {},        // string for MCQ/short_ans; object {num: val} for cloze/editing
-    drawings: {},
-    isAnswered: false,
+    answers: {},       
+    drawings: {},      
+    isAnswered: false, 
     feedback: null,
     currentType: null,
     quizStartTime: null
@@ -139,14 +314,11 @@ window.initQuizEngine = function() {
   }
 
   function renderLoading() {
-    app.innerHTML = `<div class="card p-10 flex flex-col items-center w-full max-w-[600px]"><div class="spinner-sm mb-4"></div><h2 class="font-display text-2xl text-main">Preparing Training Lab...</h2><p class="text-sm text-muted mt-2">Loading MOE-aligned questions</p></div>`;
+    app.innerHTML = `<div class="card flex flex-col items-center w-full" style="padding: var(--space-8); max-width: 600px;"><div class="spinner-sm mb-4"></div><h2 class="font-display text-2xl text-main">Preparing Training Lab...</h2><p class="text-sm text-muted mt-2">Loading MOE-aligned questions</p></div>`;
   }
 
   // ── BUILD INPUT UI BY TYPE ──
 
-  /**
-   * Builds MCQ option buttons with correct/wrong highlight states.
-   */
   function buildMCQOptions(q) {
     const letters = ['A','B','C','D'];
     const savedAns = state.answers[state.currentIndex] || '';
@@ -165,9 +337,6 @@ window.initQuizEngine = function() {
     }).join('');
   }
 
-  /**
-   * Builds short-answer textarea + optional draw tool.
-   */
   function buildTextAreaUI(q) {
     const savedAns = String(state.answers[state.currentIndex] || '');
     const isDrawMode = state.drawings[state.currentIndex] && state.drawings[state.currentIndex] !== 'text';
@@ -177,34 +346,30 @@ window.initQuizEngine = function() {
         <button class="btn btn-sm ${isDrawMode?'btn-secondary bg-sage-dark text-white':'btn-ghost'}" onclick="window.setMode('draw')" ${state.isAnswered?'disabled':''}>✏️ Pen Tool</button>
       </div>
       ${!isDrawMode
-        ? `<textarea id="qInput" class="form-input w-full p-4" rows="4" placeholder="Your answer..." ${state.isAnswered?'disabled':''}>${esc(savedAns)}</textarea>`
+        ? `<textarea id="qInput" class="form-input w-full p-4" rows="4" placeholder="Your answer..." style="height: auto; resize: vertical;" ${state.isAnswered?'disabled':''}>${esc(savedAns)}</textarea>`
         : `<div class="scratchpad-container">
              <canvas id="scratchpadCanvas" class="scratchpad-canvas" ${state.isAnswered?'style="pointer-events:none;"':''}></canvas>
-             ${!state.isAnswered?`<div class="scratchpad-tools"><button class="btn btn-sm btn-ghost bg-surface" onclick="window.clearCanvas()">🗑️ Clear</button></div>`:''}
+             ${!state.isAnswered?`<div class="scratchpad-tools"><button class="btn btn-sm btn-ghost bg-surface hover-lift border border-light" onclick="window.clearCanvas()">🗑️ Clear</button></div>`:''}
            </div>
            <input type="text" id="qInput" class="form-input mt-4" placeholder="Final Answer" value="${esc(savedAns)}" ${state.isAnswered?'disabled':''}>`
       }`;
   }
 
-  /**
-   * Builds word problem UI: scenario text + each part with label, marks, textarea.
-   * Not auto-graded — shows model answer on button click.
-   */
   function buildWordProblemUI(q) {
     const savedModelShown = state.isAnswered;
     const parts = (q.parts || []).map(p => {
       const savedWorking = (state.answers[state.currentIndex] || {})[p.label] || '';
       return `
-        <div class="card p-5 mb-4" style="background:var(--bg-elevated);border:1.5px solid var(--border-light);">
+        <div class="card mb-4" style="background:var(--bg-elevated); border:1.5px solid var(--border-light); padding: var(--space-4);">
           <div class="flex items-center gap-3 mb-3">
             <span class="font-display text-lg text-main font-bold">${esc(p.label)}</span>
             <span class="badge badge-info text-xs">${p.marks} mark${p.marks!==1?'s':''}</span>
             ${p.question_text ? `<span class="text-sm text-main">${esc(p.question_text)}</span>` : ''}
           </div>
-          <textarea id="wp-${esc(p.label)}" class="form-input w-full p-3" rows="3" placeholder="Show your working here..." ${savedModelShown?'disabled':''}>${esc(savedWorking)}</textarea>
+          <textarea id="wp-${esc(p.label)}" class="form-input w-full p-3" rows="3" style="height:auto;" placeholder="Show your working here..." ${savedModelShown?'disabled':''}>${esc(savedWorking)}</textarea>
           ${savedModelShown ? `
-            <div class="mt-3 p-3 rounded" style="background:rgba(57,255,179,0.07);border-left:3px solid var(--brand-mint);">
-              <div class="text-xs font-bold text-mint mb-1">Model Answer</div>
+            <div class="mt-3 p-4 rounded" style="background:rgba(57,255,179,0.07);border-left:3px solid var(--brand-mint);">
+              <div class="text-xs font-bold text-mint mb-1" style="color: var(--brand-mint);">Model Answer</div>
               <div class="text-sm text-main font-mono whitespace-pre-wrap">${esc(p.model_answer || p.correct_answer || '')}</div>
               ${p.marking_scheme ? `<div class="text-xs text-muted mt-2 whitespace-pre-wrap">${esc(p.marking_scheme)}</div>` : ''}
             </div>` : ''}
@@ -213,21 +378,17 @@ window.initQuizEngine = function() {
     return parts;
   }
 
-  /**
-   * Builds cloze UI: word bank box at top + passage with inline select dropdowns.
-   */
+  // ── MASTERCLASS CLOZE FIX ──
   function buildClozeUI(q) {
     const savedAns = state.answers[state.currentIndex] || {};
     const blanks = q.blanks || [];
 
-    // Collect ALL unique options across all blanks for the word bank
     const allWords = new Set();
     blanks.forEach(b => (b.options || []).forEach(w => allWords.add(w)));
     const wordBankList = [...allWords].sort().map((w, i) =>
-      `<span class="badge badge-info mr-1 mb-1" style="font-size:0.78rem;">(${i+1}) ${esc(w)}</span>`
+      `<span class="badge badge-info" style="font-size:0.8rem; padding: 4px 10px;">(${i+1}) ${esc(w)}</span>`
     ).join('');
 
-    // Replace [1], [2] etc in passage with inline selects
     let passage = esc(q.passage || '');
     blanks.forEach(b => {
       const num = b.id || b.number;
@@ -239,81 +400,74 @@ window.initQuizEngine = function() {
       let selectEl;
       if (state.isAnswered) {
         const isCorrect = (savedAns[num] || '').toLowerCase() === (b.correct_answer || '').toLowerCase();
-        const colour = isCorrect ? 'var(--brand-mint)' : 'var(--brand-error)';
-        selectEl = `<select id="cloze-blank-${num}" disabled style="border-color:${colour};background:${isCorrect?'rgba(5,150,105,0.15)':'rgba(220,38,38,0.15)'};font-weight:600;color:${colour};border-radius:6px;padding:2px 4px;">
+        const stateClass = isCorrect ? 'is-correct' : 'is-wrong';
+        selectEl = `<select id="cloze-blank-${num}" class="cloze-select ${stateClass}" disabled>
           <option value="${esc(savedAns[num]||'')}">${esc(savedAns[num]||'—')}</option></select>`;
       } else {
-        selectEl = `<select id="cloze-blank-${num}" class="cloze-blank" style="border:1.5px solid var(--border-light);border-radius:6px;padding:2px 4px;background:var(--bg-surface);">
+        selectEl = `<select id="cloze-blank-${num}" class="cloze-select" onchange="window.saveInputState()">
           <option value="">— pick —</option>${opts}</select>`;
       }
       passage = passage.replace(`[${num}]`, selectEl);
     });
 
-    // Per-blank feedback after answered
     let blankFeedback = '';
     if (state.isAnswered && state.feedback && state.feedback.blankResults) {
       const rows = blanks.map(b => {
         const num = b.id || b.number;
         const res = state.feedback.blankResults[num] || {};
         const icon = res.isCorrect ? '✅' : '❌';
-        return `<div class="flex gap-3 items-start text-sm py-2 border-b border-light">
+        return `<div class="flex gap-3 items-start text-sm py-2" style="border-bottom: 1px solid var(--border-light);">
           <span class="font-bold" style="min-width:24px;">[${num}]</span>
-          <span>${icon} <strong>${esc(res.selected||'—')}</strong> ${!res.isCorrect?`→ <strong style="color:var(--brand-mint)">${esc(b.correct_answer)}</strong>`:''}</span>
-          ${!res.isCorrect && b.explanation ? `<span class="text-muted text-xs ml-auto" style="max-width:60%;">${esc(b.explanation)}</span>` : ''}
+          <span>${icon} <strong style="color:var(--text-main);">${esc(res.selected||'—')}</strong> ${!res.isCorrect?`→ <strong style="color:var(--brand-mint)">${esc(b.correct_answer)}</strong>`:''}</span>
+          ${!res.isCorrect && b.explanation ? `<span class="text-muted text-xs ml-auto" style="max-width:60%; text-align:right;">${esc(b.explanation)}</span>` : ''}
         </div>`;
       }).join('');
-      blankFeedback = `<div class="mt-4 p-4 rounded-lg" style="background:var(--bg-elevated);border:1px solid var(--border-light);">${rows}</div>`;
+      blankFeedback = `<div class="mt-4 p-4" style="background:var(--bg-elevated); border:1px solid var(--border-light); border-radius: var(--radius-md);">${rows}</div>`;
     }
 
     return `
-      <div class="p-4 rounded-lg mb-4" style="background:var(--bg-elevated);border:1.5px solid var(--border-light);">
-        <div class="text-xs font-bold text-muted uppercase mb-2">Word Bank</div>
-        <div>${wordBankList}</div>
+      <div class="p-4 mb-4" style="background:var(--bg-elevated); border:1px solid var(--border-light); border-radius: var(--radius-md);">
+        <div class="text-xs font-bold text-muted uppercase mb-3">Word Bank</div>
+        <div class="flex flex-wrap gap-2">${wordBankList}</div>
       </div>
       <p class="text-sm text-muted mb-4">Read the passage carefully. Choose the best word from the box to fill in each blank.</p>
-      <div class="cloze-passage text-base text-main leading-loose p-4 rounded-lg" style="background:var(--bg-surface);">${passage}</div>
+      <div class="cloze-passage text-base text-main p-6" style="background:var(--bg-surface); border: 1px solid var(--border-light); border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">${passage}</div>
       ${blankFeedback}`;
   }
 
-  /**
-   * Builds editing UI: passage with underlined words + text inputs per line.
-   */
+  // ── MASTERCLASS EDITING FIX ──
   function buildEditingUI(q) {
     const savedAns = state.answers[state.currentIndex] || {};
     const lines = (q.passage_lines || []).map(line => {
       const saved = savedAns[line.line_number] || '';
-      // Underline the target word in the line text
       const rawText = line.text || '';
       const underlined = line.underlined_word || '';
-      // Replace only the first exact match of underlined_word with a <u> tag
+      
       const escapedLine = esc(rawText).replace(
         esc(underlined),
-        `<u style="text-decoration-color:var(--brand-rose);text-decoration-thickness:2px;font-weight:600;">${esc(underlined)}</u>`
+        `<u style="text-decoration-color:var(--brand-rose);text-decoration-thickness:2px;font-weight:700;">${esc(underlined)}</u>`
       );
 
       let inputEl;
       if (state.isAnswered) {
         const res = (state.feedback && state.feedback.lineResults && state.feedback.lineResults[line.line_number]) || {};
         const isCorrect = res.isCorrect;
-        const colour = isCorrect ? 'var(--brand-mint)' : 'var(--brand-error)';
-        inputEl = `<input type="text" value="${esc(saved)}" disabled
-          style="border-color:${colour};background:${isCorrect?'rgba(5,150,105,0.1)':'rgba(220,38,38,0.1)'};color:${colour};font-weight:600;border-radius:6px;padding:4px 8px;width:90px;text-align:center;">
-          ${!isCorrect && line.correct_word ? `<span class="text-xs font-bold" style="color:var(--brand-mint);">→ ${esc(line.correct_word)}</span>` : ''}`;
+        const stateClass = isCorrect ? 'is-correct' : 'is-wrong';
+        inputEl = `<input type="text" value="${esc(saved)}" disabled class="editing-input ${stateClass}">
+          ${!isCorrect && line.correct_word ? `<span class="text-xs font-bold" style="color:var(--brand-mint); position:absolute; bottom:-18px; left:0; right:0;">→ ${esc(line.correct_word)}</span>` : ''}`;
       } else {
         inputEl = `<input type="text" id="edit-line-${line.line_number}" value="${esc(saved)}"
-          placeholder="${esc(underlined)}" autocomplete="off"
-          style="border:1.5px solid var(--border-light);border-radius:6px;padding:4px 8px;width:90px;text-align:center;background:var(--bg-surface);"
-          oninput="window.saveEditingInput()">`;
+          placeholder="${esc(underlined)}" autocomplete="off" class="editing-input"
+          oninput="window.saveInputState()">`;
       }
 
-      return `<div class="flex items-center gap-3 py-3 border-b border-light">
-        <span class="text-xs font-bold text-muted" style="min-width:20px;">${line.line_number}.</span>
-        <span class="text-sm text-main flex-1">${escapedLine}</span>
-        <div class="flex items-center gap-2">${inputEl}</div>
+      return `<div class="editing-line">
+        <span class="text-xs font-bold text-muted" style="min-width:24px;">${line.line_number}.</span>
+        <span class="text-sm text-main flex-1" style="line-height: 1.6;">${escapedLine}</span>
+        <div class="flex items-center gap-2" style="position:relative;">${inputEl}</div>
       </div>`;
     }).join('');
 
-    // Per-line explanation feedback after answered
     let editFeedback = '';
     if (state.isAnswered && state.feedback && state.feedback.lineResults) {
       const wrongLines = (q.passage_lines || []).filter(l => {
@@ -321,23 +475,23 @@ window.initQuizEngine = function() {
         return res && !res.isCorrect;
       });
       if (wrongLines.length > 0) {
-        editFeedback = `<div class="mt-4 p-4 rounded-lg" style="background:var(--bg-elevated);border:1px solid var(--border-light);">
+        editFeedback = `<div class="mt-4 p-4" style="background:var(--bg-elevated); border:1px solid var(--border-light); border-radius: var(--radius-md);">
           <div class="text-xs font-bold text-muted uppercase mb-2">Explanations</div>
-          ${wrongLines.map(l => `<div class="text-sm text-main py-2 border-b border-light">
-            <span class="font-bold">[${l.line_number}] ${esc(l.underlined_word)} → ${esc(l.correct_word)}:</span> ${esc(l.explanation)}
+          ${wrongLines.map(l => `<div class="text-sm text-main py-2" style="border-bottom: 1px solid var(--border-light);">
+            <span class="font-bold">[${l.line_number}] ${esc(l.underlined_word)} → <span style="color:var(--brand-mint);">${esc(l.correct_word)}</span>:</span> ${esc(l.explanation)}
           </div>`).join('')}
         </div>`;
       }
     }
 
     return `
-      <div class="editing-passage p-4 rounded-lg" style="background:var(--bg-surface);">${lines}</div>
+      <div class="p-6" style="background:var(--bg-surface); border: 1px solid var(--border-light); border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">${lines}</div>
       ${editFeedback}`;
   }
 
   function renderQuiz() {
     if (state.questions.length === 0) {
-      app.innerHTML = `<div class="card p-10 text-center max-w-[600px] w-full hover-lift"><div class="text-4xl mb-4">🕵️</div><h2 class="font-display text-2xl text-main">No questions found!</h2><p class="text-muted text-sm my-4">Miss Wena hasn't added questions for this specific combination yet. Check back soon!</p><button class="btn btn-primary hover-lift" onclick="window.location.href='subjects.html'">Return to Subjects</button></div>`;
+      app.innerHTML = `<div class="card text-center w-full hover-lift" style="padding: var(--space-8); max-width: 600px;"><div class="text-4xl mb-4">🕵️</div><h2 class="font-display text-2xl text-main">No questions found!</h2><p class="text-muted text-sm my-4">Miss Wena hasn't added questions for this specific combination yet. Check back soon!</p><button class="btn btn-primary hover-lift" onclick="window.location.href='subjects.html'">Return to Subjects</button></div>`;
       return;
     }
 
@@ -346,35 +500,31 @@ window.initQuizEngine = function() {
     const isLast = state.currentIndex === state.questions.length - 1;
     const isModelType = q.type === 'word_problem' || q.type === 'open_ended';
 
-    // Build input area by type
     let inputUi = '';
     if (q.type === 'mcq')           inputUi = buildMCQOptions(q);
     else if (q.type === 'word_problem') inputUi = buildWordProblemUI(q);
     else if (q.type === 'cloze')    inputUi = buildClozeUI(q);
     else if (q.type === 'editing')  inputUi = buildEditingUI(q);
-    else                            inputUi = buildTextAreaUI(q);   // short_ans, open_ended
+    else                            inputUi = buildTextAreaUI(q);   
 
-    // Build feedback panel
     let feedbackHtml = '';
     if (state.isAnswered && state.feedback) {
       const fb = state.feedback;
       if (fb.isModel) {
-        // Word problem / open-ended: show full worked solution
-        feedbackHtml = `<div class="mt-4 p-5 rounded-lg" style="background:rgba(57,255,179,0.07);border-left:4px solid var(--brand-mint);">
+        feedbackHtml = `<div class="mt-4 p-5" style="background:rgba(57,255,179,0.07); border-left:4px solid var(--brand-mint); border-radius: var(--radius-md);">
           <div class="font-bold text-sm mb-2" style="color:var(--brand-mint);">Worked Solution</div>
-          <pre class="text-sm text-main whitespace-pre-wrap leading-relaxed">${esc(q.worked_solution || q.model_answer || '')}</pre>
+          <pre class="text-sm text-main whitespace-pre-wrap leading-relaxed" style="font-family: inherit;">${esc(q.worked_solution || q.model_answer || '')}</pre>
         </div>`;
       } else if (fb.status === 'correct') {
-        feedbackHtml = `<div class="mt-4 p-5 rounded-lg" style="background:rgba(5,150,105,0.1);border-left:4px solid var(--brand-mint);">
+        feedbackHtml = `<div class="mt-4 p-5" style="background:rgba(5,150,105,0.1); border-left:4px solid var(--brand-mint); border-radius: var(--radius-md);">
           <div class="font-bold mb-2" style="color:var(--brand-mint);">🎉 Spot on!</div>
           <p class="text-sm text-main leading-relaxed">${esc(fb.text)}</p>
           ${q.examiner_note ? `<p class="text-xs text-muted mt-2 italic">${esc(q.examiner_note)}</p>` : ''}
         </div>`;
       } else {
-        // Wrong / partial
         const colour = fb.status === 'partial' ? 'var(--brand-amber)' : 'var(--brand-error)';
         const bg = fb.status === 'partial' ? 'rgba(255,184,48,0.08)' : 'rgba(220,38,38,0.1)';
-        feedbackHtml = `<div class="mt-4 p-5 rounded-lg" style="background:${bg};border-left:4px solid ${colour};">
+        feedbackHtml = `<div class="mt-4 p-5" style="background:${bg}; border-left:4px solid ${colour}; border-radius: var(--radius-md);">
           <div class="font-bold mb-2" style="color:${colour};">💡 Miss Wena says:</div>
           <p class="text-sm text-main leading-relaxed">${esc(fb.text)}</p>
           ${fb.correctAnswer ? `<div class="mt-3 text-sm font-bold text-main">Correct Answer: <span style="color:var(--brand-mint);">${esc(fb.correctAnswer)}</span></div>` : ''}
@@ -382,25 +532,17 @@ window.initQuizEngine = function() {
       }
     }
 
-    // Build action button
     let actionBtn = '';
     if (!state.isAnswered) {
-      if (isModelType) {
-        actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">Reveal Model Answer</button>`;
-      } else if (q.type === 'cloze') {
-        actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">Check Answers</button>`;
-      } else if (q.type === 'editing') {
-        actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">Check Answers</button>`;
-      } else if (q.type !== 'mcq') {
-        actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">Check Answer</button>`;
-      }
-      // MCQ: no explicit button — clicking option auto-checks
+      if (isModelType) actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">Reveal Model Answer</button>`;
+      else if (q.type === 'cloze' || q.type === 'editing') actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">Check Answers</button>`;
+      else if (q.type !== 'mcq') actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">Check Answer</button>`;
     } else {
       actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.navQuiz(1)">${isLast ? 'Finish Lab →' : 'Next Question →'}</button>`;
     }
 
     app.innerHTML = `
-      <div class="w-full max-w-[680px]">
+      <div class="w-full" style="max-width: 680px;">
         <!-- Progress & Streak -->
         <div class="flex justify-between items-center mb-6">
           <div class="flex flex-col gap-1">
@@ -441,34 +583,20 @@ window.initQuizEngine = function() {
 
   // ── INTERACTIONS ──
 
-  /** Select an MCQ option — auto-checks immediately */
   window.selectMcq = (letter) => {
     if (state.isAnswered) return;
     state.answers[state.currentIndex] = letter;
-    // Auto-check on selection
     window.checkAnswer();
   };
 
   window.setMode = (mode) => {
     if (state.isAnswered) return;
-    saveInputState();
+    window.saveInputState();
     state.drawings[state.currentIndex] = mode === 'draw' ? 'init' : 'text';
     render();
   };
 
-  /** Save per-blank/per-line state for cloze and editing without closing inputs */
-  window.saveEditingInput = () => {
-    const q = state.questions[state.currentIndex];
-    if (q.type !== 'editing') return;
-    const ans = {};
-    (q.passage_lines || []).forEach(l => {
-      const el = document.getElementById(`edit-line-${l.line_number}`);
-      if (el) ans[l.line_number] = el.value;
-    });
-    state.answers[state.currentIndex] = ans;
-  };
-
-  function saveInputState() {
+  window.saveInputState = () => {
     const q = state.questions[state.currentIndex];
     if (q.type === 'cloze') {
       const ans = {};
@@ -498,13 +626,13 @@ window.initQuizEngine = function() {
     }
     const canvas = document.getElementById('scratchpadCanvas');
     if (canvas) state.drawings[state.currentIndex] = canvas.toDataURL();
-  }
+  };
 
   window.navQuiz = (dir) => {
     if (!state.isAnswered && dir > 0) return;
 
     if (dir < 0) {
-      saveInputState();
+      window.saveInputState();
       state.currentIndex--;
       state.isAnswered = true;
       state.feedback = null;
@@ -518,7 +646,7 @@ window.initQuizEngine = function() {
       return;
     }
 
-    saveInputState();
+    window.saveInputState();
     state.currentIndex++;
     state.isAnswered = !!state.answers[state.currentIndex];
     state.feedback = null;
@@ -526,7 +654,7 @@ window.initQuizEngine = function() {
   };
 
   window.checkAnswer = () => {
-    saveInputState();
+    window.saveInputState();
     const q = state.questions[state.currentIndex];
 
     // ── MCQ ──
@@ -622,32 +750,32 @@ window.initQuizEngine = function() {
     
     const pct = Math.round((state.score / state.questions.length) * 100);
     app.innerHTML = `
-      <div class="card p-10 flex flex-col items-center text-center max-w-[600px] w-full hover-lift border-t-4 border-mint" style="border-top: 4px solid var(--brand-mint);">
+      <div class="card flex flex-col items-center text-center w-full hover-lift" style="padding: var(--space-8); max-width: 600px; border-top: 4px solid var(--brand-mint);">
         <h1 class="font-display text-4xl text-main mb-2">Training Complete!</h1>
         <p class="text-muted text-lg mb-6">You've successfully completed the lab session.</p>
         
-        <div class="flex gap-6 mb-8 w-full justify-center">
-          <div class="card p-6 flex-1 max-w-[200px]" style="background: var(--bg-elevated); border: none;">
+        <div class="flex flex-wrap gap-6 mb-8 w-full justify-center">
+          <div class="card p-6 flex-1" style="background: var(--bg-elevated); border: none; max-width: 200px;">
             <div class="text-sm font-bold text-muted uppercase">Score</div>
             <div class="font-display text-5xl text-success mt-2">${pct}%</div>
             <div class="text-sm text-main mt-1">${state.score} / ${state.questions.length} Correct</div>
           </div>
-          <div class="card p-6 flex-1 max-w-[200px]" style="background: rgba(217, 119, 6, 0.1); border: none;">
+          <div class="card p-6 flex-1" style="background: rgba(217, 119, 6, 0.1); border: none; max-width: 200px;">
             <div class="text-sm font-bold text-amber uppercase">Best Streak</div>
             <div class="font-display text-5xl text-amber mt-2">🔥 ${state.maxStreak}</div>
             <div class="text-sm text-amber mt-1">In a row!</div>
           </div>
         </div>
 
-        <div class="flex gap-4">
-          <button class="btn btn-primary" onclick="window.location.href='subjects.html'">Train Another Topic</button>
-          <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'">Mission Control</button>
+        <div class="flex flex-wrap gap-4 justify-center">
+          <button class="btn btn-primary hover-lift" onclick="window.location.href='subjects.html'">Train Another Topic</button>
+          <button class="btn btn-secondary hover-lift" onclick="window.location.href='dashboard.html'">Mission Control</button>
         </div>
       </div>
     `;
   }
 
-  // ── DATA ENGINE (Restored static file logic) ──
+  // ── DATA ENGINE ──
   function resolveFile(subject, level, topic) {
     const broadMap = {
       'primary-1:mathematics': '../data/questions/p1-mathematics-whole-numbers.json',
@@ -695,14 +823,12 @@ window.initQuizEngine = function() {
     try {
       const sb = await getSupabase();
       
-      // 1. Determine primary topic for the quiz attempt record
       const topicCounts = {};
       state.questions.forEach(q => {
         if (q.topic) topicCounts[q.topic] = (topicCounts[q.topic] || 0) + 1;
       });
       const primaryTopic = Object.entries(topicCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || params.get('topic') || 'Mixed';
 
-      // 2. Insert into quiz_attempts (This powers the Progress Dashboard)
       const { data: attempt, error: attErr } = await sb
         .from('quiz_attempts')
         .insert({
@@ -721,7 +847,6 @@ window.initQuizEngine = function() {
 
       if (attErr) throw attErr;
 
-      // 3. Log individual question attempts for deep dive analytics
       const qAttempts = state.questions.map((q, i) => {
          const ans = state.answers[i];
          let isCorrect = false;
@@ -749,7 +874,6 @@ window.initQuizEngine = function() {
         await sb.from('question_attempts').insert(qAttempts);
       }
 
-      // 4. Update daily_usage table for today's streaks and limits
       const today = new Date().toISOString().slice(0, 10);
       const { data: existingUsage } = await sb
         .from('daily_usage')
@@ -839,7 +963,6 @@ window.initQuizEngine = function() {
       
       state.currentType = type;
 
-      // Propagate student state and hide exam for P1/P2
       if (studentId) {
         const isJunior = levelSlug.includes('primary-1') || levelSlug.includes('primary-2') || levelSlug === 'p1' || levelSlug === 'p2';
         
@@ -879,7 +1002,6 @@ window.initQuizEngine = function() {
       render();
     } catch (err) {
       console.warn("Local fetch failed:", err);
-      // FIXED: Removed dummy fallback and correctly transition phase so spinner stops
       state.questions = [];
       state.phase = 'QUIZ';
       render();
