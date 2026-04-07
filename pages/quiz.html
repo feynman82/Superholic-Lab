@@ -540,9 +540,17 @@ window.initQuizEngine = function() {
       actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.navQuiz(1)">${isLast ? 'Finish Lab →' : 'Next Question →'}</button>`;
     }
 
+    // --- SMART INSTRUCTION OVERRIDE ---
+    let displayInstruction = esc(q.question_text);
+    if (q.type === 'cloze') {
+      displayInstruction = 'Fill in each blank with the correct word from the Word Bank.';
+    } else if (q.type === 'editing') {
+      displayInstruction = 'Read the passage and correct each underlined spelling or grammatical error.';
+    }
+    // ----------------------------------
+
     app.innerHTML = `
       <div class="w-full" style="max-width: 680px;">
-        <!-- Progress & Streak -->
         <div class="flex justify-between items-center mb-6">
           <div class="flex flex-col gap-1">
             <div class="text-xs font-bold text-muted uppercase">Question ${state.currentIndex + 1} of ${state.questions.length}</div>
@@ -555,18 +563,16 @@ window.initQuizEngine = function() {
           </div>
         </div>
 
-        <!-- Main Card -->
         <div class="card p-8 hover-lift w-full relative">
           <div class="badge badge-info absolute top-0 left-8" style="transform:translateY(-50%);">${esc(titleCase(q.topic || 'Mixed'))}</div>
           ${q.difficulty ? `<div class="badge badge-${q.difficulty.toLowerCase()} absolute top-0 right-8" style="transform:translateY(-50%);">${esc(q.difficulty)}</div>` : ''}
 
-          <h3 class="text-xl font-bold text-main mb-6 mt-2 leading-relaxed" style="white-space:pre-line;">${esc(q.question_text)}</h3>
+          <h3 class="text-xl font-bold text-main mb-6 mt-2 leading-relaxed" style="white-space:pre-line;">${displayInstruction}</h3>
 
           <div class="w-full">${inputUi}</div>
 
           ${feedbackHtml}
 
-          <!-- Action Bar -->
           <div class="flex justify-between items-center mt-8 pt-6 border-t border-light">
             <button class="btn btn-ghost" onclick="window.navQuiz(-1)" ${isFirst ? 'style="visibility:hidden;"' : ''}>← Previous</button>
             ${actionBtn}
