@@ -199,25 +199,8 @@
 <body id="mainBody" class="has-bottom-nav bg-page texture-light-grid">
 
 <!-- ═══════════════════ GLOBAL NAVBAR (Darker Sage) ═══════════════════ -->
-<header class="navbar justify-between bg-sage-dark" id="navbar">
-  <a href="../index.html" class="flex items-center gap-2 font-display text-2xl text-white" style="text-decoration: none;">
-    <img src="../assets/logo.svg" width="32" height="32" alt="" aria-hidden="true" style="border-radius: var(--radius-sm); flex-shrink:0;">
-    Superholic Lab
-  </a>
-  <div class="navbar-actions flex items-center gap-4">
-    <div id="auth-header-container"></div>
-    <button class="navbar-toggle" id="navToggle" aria-label="Open menu">
-      <span></span><span></span><span></span>
-    </button>
-  </div>
-  <div class="navbar-mobile" id="navDropdown">
-    <a href="../index.html">Home</a>
-    <a href="about.html">About Us</a>
-    <a href="pricing.html">Pricing</a>
-    <a href="contact.html">Contact Support</a>
-    <a href="#" id="navSignOut" style="color: var(--brand-rose);">Sign Out</a>
-  </div>
-</header>
+<global-header></global-header>
+
 
 <!-- ═══════════════════ MAIN APP ═══════════════════ -->
 <main id="app" class="container py-10 flex flex-col items-center" style="padding-top: calc(64px + var(--space-10)); min-height: 80vh; max-width: 800px;"></main>
