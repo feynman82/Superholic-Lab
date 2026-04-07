@@ -1,192 +1,562 @@
-import { getCurrentUser, enforcePaywall, checkDailyUsage } from '/js/auth.js';
+// ── ROBUST EVENT DELEGATION FOR NAVBAR ──
+document.addEventListener('click', (e) => {
+  const toggleBtn = e.target.closest('#navToggle');
+  const dropdown = document.getElementById('navDropdown');
+  
+  if (toggleBtn && dropdown) {
+    e.stopPropagation();
+    dropdown.classList.toggle('is-open');
+    toggleBtn.classList.toggle('is-active'); 
+    return;
+  }
 
-/**
- * quiz.js
- * Quiz engine: reads ?subject=&level=&topic= URL params → loads JSON →
- ...
- /**
- * quiz.js
- * Quiz engine: reads ?subject=&level=&topic= URL params → loads JSON →
- * picks up to 10 random questions → renders one at a time →
- * shows worked solution + wrong-answer explanation on answer →
- * score screen at end → saves results to Supabase.
- *
- * Paywall: checks trial status and daily usage before loading questions.
- *
- * Supports 6 question types (MOE/PSLE aligned):
- *   mcq          — 4 options A/B/C/D, auto-graded
- *   short_ans    — text input, auto-graded (with accept_also aliases)
- *   word_problem — multi-part, model answer reveal, NOT auto-graded
- *   open_ended   — textarea, model answer reveal, NOT auto-graded
- *   cloze        — passage with numbered blanks + dropdowns, auto-graded
- *   editing      — passage with underlined words + inputs, auto-graded
- *
- * TEST: Open pages/quiz.html?subject=mathematics&level=primary-4
- *       and verify a question card appears with MCQ options A-D, no True/False.
- *       Open with &topic=fractions to load topic-specific file.
- */
+  if (dropdown && dropdown.classList.contains('is-open') && !dropdown.contains(e.target)) {
+    dropdown.classList.remove('is-open');
+    const actualToggle = document.getElementById('navToggle');
+    if (actualToggle) actualToggle.classList.remove('is-active');
+  }
 
-(() => {
-  // ── DOM refs ──────────────────────────────────────────────────
-  const loadingEl        = document.getElementById('quiz-loading');
-  const errorEl          = document.getElementById('quiz-error');
-  const quizArea         = document.getElementById('quiz-area');
-  const progressFill     = document.getElementById('quiz-progress-fill');
-  const progressLabel    = document.getElementById('quiz-progress-label');
-  const quizMeta         = document.getElementById('quiz-meta');
-  const questionText     = document.getElementById('quiz-question-text');
-  const optionsEl        = document.getElementById('quiz-options');
-  const explanationEl    = document.getElementById('quiz-explanation');
-  const nextBtn          = document.getElementById('quiz-next');
-  const scoreScreen      = document.getElementById('quiz-score-screen');
+  const signOutBtn = e.target.closest('#navSignOut');
+  if (signOutBtn) {
+    e.preventDefault();
+    getSupabase().then(async (sb) => {
+      await sb.auth.signOut();
+      window.location.href = '../index.html';
+    });
+  }
+});
 
-  // Short answer refs (replaces old fill_blank)
-  const shortAnsArea     = document.getElementById('quiz-short-ans-area');
-  const shortAnsInput    = document.getElementById('quiz-short-ans-input');
-  const shortAnsSubmit   = document.getElementById('quiz-short-ans-submit');
-
-  // Word problem refs
-  const wordProblemArea  = document.getElementById('quiz-word-problem-area');
-  const wpParts          = document.getElementById('quiz-wp-parts');
-  const wpReveal         = document.getElementById('quiz-wp-reveal');
-  const wpModel          = document.getElementById('quiz-wp-model');
-
-  // Open-ended refs
-  const openEndedArea    = document.getElementById('quiz-open-ended-area');
-  const oeInput          = document.getElementById('quiz-oe-input');
-  const oeReveal         = document.getElementById('quiz-oe-reveal');
-  const oeModel          = document.getElementById('quiz-oe-model');
-
-  // Cloze refs
-  const clozeArea        = document.getElementById('quiz-cloze-area');
-  const clozePassage     = document.getElementById('quiz-cloze-passage');
-  const clozeCheck       = document.getElementById('quiz-cloze-check');
-
-  // Editing refs
-  const editingArea      = document.getElementById('quiz-editing-area');
-  const editingPassage   = document.getElementById('quiz-editing-passage');
-  const editingCheck     = document.getElementById('quiz-editing-check');
-
-  // ── State ─────────────────────────────────────────────────────
-  const QUIZ_SIZE = 10;
-  let questions        = [];
-  let current          = 0;
-  let score            = 0;
-  let gradedTotal      = 0; // count of auto-graded questions shown
-  let answered         = false;
-  let answers          = []; // per-question answer log for Supabase
-  let currentStudentId = null;
-  let currentSubject   = '';
-  let currentLevel     = '';
-  let currentTopic     = '';
-  let currentType      = ''; // optional ?type= param to filter question type
-  let quizStartTime    = null; // set when questions load, used for time_taken_seconds
-
-  // ── Boot ──────────────────────────────────────────────────────
-  init();
-
-  async function init() {
-    const params   = new URLSearchParams(window.location.search);
-    currentSubject = (params.get('subject') || '').toLowerCase().trim();
-    currentLevel   = (params.get('level')   || '').toLowerCase().trim();
-    currentTopic   = (params.get('topic')   || '').toLowerCase().trim();
-    currentType    = (params.get('type')    || '').toLowerCase().trim();
-
-    const filePath = resolveFile(currentSubject, currentLevel, currentTopic);
-    if (!filePath) {
-      showError('Invalid subject or level. Please go back and choose a topic.');
-      return;
+// Auto-Light Up Active Nav Icon
+(function() {
+  const currentPath = window.location.pathname;
+  document.querySelectorAll('.bottom-nav-item').forEach(link => {
+    const href = link.getAttribute('href');
+    if (href && currentPath.includes(href)) {
+      link.classList.add('is-active');
     }
+  });
+})();
 
-    const topicLabel = currentTopic
-      ? ` — ${currentTopic.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}`
-      : '';
-    document.title = `${capitalise(currentSubject)} ${labelLevel(currentLevel)}${topicLabel} Quiz — Superholic Lab`;
-    const breadcrumb = document.getElementById('quiz-breadcrumb');
-    if (breadcrumb) {
-      breadcrumb.textContent = `${labelLevel(currentLevel)} ${capitalise(currentSubject)}${topicLabel}`;
-    }
+window.initQuizEngine = function() {
+  'use strict';
 
-    // Load student ID for paywall + usage tracking
-    try {
-      const user = await getCurrentUser();
-      if (user) {
-        const db = await getSupabase();
-        const { data: students } = await db
-          .from('students')
-          .select('id')
-          .eq('parent_id', user.id)
-          .limit(1);
-        if (students?.length) currentStudentId = students[0].id;
-      }
-    } catch { /* non-blocking — quiz can still run */ }
+  const state = {
+    phase: 'LOAD',
+    questions: [],
+    currentIndex: 0,
+    streak: 0,
+    maxStreak: 0,
+    score: 0,
+    answers: {},       
+    drawings: {},      
+    isAnswered: false, 
+    feedback: null,
+    currentType: null,
+    quizStartTime: null
+  };
 
-    // Paywall check before loading questions
-    const wall = await enforcePaywall(currentStudentId); 
-    if (!wall.allowed) {
-      loadingEl.hidden = true;
-      alert("Paywall limit reached: " + wall.reason); // Or trigger your custom modal
-      return;
-    }
+  const app = document.getElementById('app');
+  function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function titleCase(s) { return s.replace(/-/g,' ').replace(/\b\w/g, c => c.toUpperCase()); }
 
-    // Load question bank
-    try {
-      const res = await fetch(filePath);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const all = await res.json();
-      // If a type filter is set, restrict to that question type before sampling
-      const pool = currentType ? all.filter(q => q.type === currentType) : all;
-      questions = shuffle(pool).slice(0, QUIZ_SIZE);
-      if (pool.length === 0) throw new Error(`No questions found${currentType ? ` of type '${currentType}'` : ''} in file.`);
-      quizStartTime    = Date.now(); // start the clock when quiz begins
-      answers          = [];
-      loadingEl.hidden = true;
-      quizArea.hidden  = false;
-      renderQuestion();
-    } catch (err) {
-      showError('Could not load questions. Please try again later.');
-      console.error('[quiz]', err);
+  function render() {
+    switch(state.phase) {
+      case 'LOAD': renderLoading(); break;
+      case 'QUIZ': renderQuiz(); break;
+      case 'DONE': renderResults(); break;
     }
   }
 
-  // ── File resolution ───────────────────────────────────────────
-  /**
-   * Resolves the question bank JSON path from subject, level, and optional topic.
-   * Tries topic-specific file first (e.g. p4-mathematics-fractions.json),
-   * falls back to broad file (e.g. p4-mathematics.json).
-   */
+  function renderLoading() {
+    app.innerHTML = `<div class="card flex flex-col items-center w-full" style="padding: var(--space-8); max-width: 600px;"><div class="spinner-sm mb-4"></div><h2 class="font-display text-2xl text-main">Preparing Training Lab...</h2><p class="text-sm text-muted mt-2">Loading MOE-aligned questions</p></div>`;
+  }
+
+  // ── BUILD INPUT UI BY TYPE ──
+
+  function buildMCQOptions(q) {
+    const letters = ['A','B','C','D'];
+    const savedAns = state.answers[state.currentIndex] || '';
+    return (q.options || []).map((opt, i) => {
+      const letter = letters[i];
+      const isSel = savedAns === letter;
+      let extraStyle = '';
+      if (state.isAnswered) {
+        if (letter === q.correct_answer) extraStyle = 'border-color:var(--brand-mint);background:rgba(5,150,105,0.1);';
+        else if (isSel)                  extraStyle = 'border-color:var(--brand-error);background:rgba(220,38,38,0.1);opacity:0.8;';
+        else                             extraStyle = 'opacity:0.45;pointer-events:none;';
+      }
+      return `<div class="mcq-opt${isSel?' is-sel':''}" style="${extraStyle}${state.isAnswered?'pointer-events:none;':''}" onclick="window.selectMcq('${letter}')">
+        <span class="mcq-badge">${letter}</span><span class="font-medium text-main">${esc(opt)}</span>
+      </div>`;
+    }).join('');
+  }
+
+  function buildTextAreaUI(q) {
+    const savedAns = String(state.answers[state.currentIndex] || '');
+    const isDrawMode = state.drawings[state.currentIndex] && state.drawings[state.currentIndex] !== 'text';
+    return `
+      <div class="flex justify-end gap-2 mb-2">
+        <button class="btn btn-sm ${!isDrawMode?'btn-secondary bg-sage-dark text-white':'btn-ghost'}" onclick="window.setMode('text')" ${state.isAnswered?'disabled':''}>⌨️ Type</button>
+        <button class="btn btn-sm ${isDrawMode?'btn-secondary bg-sage-dark text-white':'btn-ghost'}" onclick="window.setMode('draw')" ${state.isAnswered?'disabled':''}>✏️ Pen Tool</button>
+      </div>
+      ${!isDrawMode
+        ? `<textarea id="qInput" class="form-input w-full p-4" rows="4" placeholder="Your answer..." style="height: auto; resize: vertical;" ${state.isAnswered?'disabled':''}>${esc(savedAns)}</textarea>`
+        : `<div class="scratchpad-container">
+             <canvas id="scratchpadCanvas" class="scratchpad-canvas" ${state.isAnswered?'style="pointer-events:none;"':''}></canvas>
+             ${!state.isAnswered?`<div class="scratchpad-tools"><button class="btn btn-sm btn-ghost bg-surface hover-lift border border-light" onclick="window.clearCanvas()">🗑️ Clear</button></div>`:''}
+           </div>
+           <input type="text" id="qInput" class="form-input mt-4" placeholder="Final Answer" value="${esc(savedAns)}" ${state.isAnswered?'disabled':''}>`
+      }`;
+  }
+
+  function buildWordProblemUI(q) {
+    const savedModelShown = state.isAnswered;
+    const parts = (q.parts || []).map(p => {
+      const savedWorking = (state.answers[state.currentIndex] || {})[p.label] || '';
+      return `
+        <div class="card mb-4" style="background:var(--bg-elevated); border:1.5px solid var(--border-light); padding: var(--space-4);">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="font-display text-lg text-main font-bold">${esc(p.label)}</span>
+            <span class="badge badge-info text-xs">${p.marks} mark${p.marks!==1?'s':''}</span>
+            ${p.question_text ? `<span class="text-sm text-main">${esc(p.question_text)}</span>` : ''}
+          </div>
+          <textarea id="wp-${esc(p.label)}" class="form-input w-full p-3" rows="3" style="height:auto;" placeholder="Show your working here..." ${savedModelShown?'disabled':''}>${esc(savedWorking)}</textarea>
+          ${savedModelShown ? `
+            <div class="mt-3 p-4 rounded" style="background:rgba(57,255,179,0.07);border-left:3px solid var(--brand-mint);">
+              <div class="text-xs font-bold text-mint mb-1" style="color: var(--brand-mint);">Model Answer</div>
+              <div class="text-sm text-main font-mono whitespace-pre-wrap">${esc(p.model_answer || p.correct_answer || '')}</div>
+              ${p.marking_scheme ? `<div class="text-xs text-muted mt-2 whitespace-pre-wrap">${esc(p.marking_scheme)}</div>` : ''}
+            </div>` : ''}
+        </div>`;
+    }).join('');
+    return parts;
+  }
+
+  // ── MASTERCLASS CLOZE FIX ──
+  function buildClozeUI(q) {
+    const savedAns = state.answers[state.currentIndex] || {};
+    const blanks = q.blanks || [];
+
+    const allWords = new Set();
+    blanks.forEach(b => (b.options || []).forEach(w => allWords.add(w)));
+    const wordBankList = [...allWords].sort().map((w, i) =>
+      `<span class="badge badge-info" style="font-size:0.8rem; padding: 4px 10px;">(${i+1}) ${esc(w)}</span>`
+    ).join('');
+
+    let passage = esc(q.passage || '');
+    blanks.forEach(b => {
+      const num = b.id || b.number;
+      const saved = savedAns[num] || '';
+      const opts = (b.options || []).map(o =>
+        `<option value="${esc(o)}" ${saved === o ? 'selected' : ''}>${esc(o)}</option>`
+      ).join('');
+
+      let selectEl;
+      if (state.isAnswered) {
+        const isCorrect = (savedAns[num] || '').toLowerCase() === (b.correct_answer || '').toLowerCase();
+        const stateClass = isCorrect ? 'is-correct' : 'is-wrong';
+        selectEl = `<select id="cloze-blank-${num}" class="cloze-select ${stateClass}" disabled>
+          <option value="${esc(savedAns[num]||'')}">${esc(savedAns[num]||'—')}</option></select>`;
+      } else {
+        selectEl = `<select id="cloze-blank-${num}" class="cloze-select" onchange="window.saveInputState()">
+          <option value="">— pick —</option>${opts}</select>`;
+      }
+      passage = passage.replace(`[${num}]`, selectEl);
+    });
+
+    let blankFeedback = '';
+    if (state.isAnswered && state.feedback && state.feedback.blankResults) {
+      const rows = blanks.map(b => {
+        const num = b.id || b.number;
+        const res = state.feedback.blankResults[num] || {};
+        const icon = res.isCorrect ? '✅' : '❌';
+        return `<div class="flex gap-3 items-start text-sm py-2" style="border-bottom: 1px solid var(--border-light);">
+          <span class="font-bold" style="min-width:24px;">[${num}]</span>
+          <span>${icon} <strong style="color:var(--text-main);">${esc(res.selected||'—')}</strong> ${!res.isCorrect?`→ <strong style="color:var(--brand-mint)">${esc(b.correct_answer)}</strong>`:''}</span>
+          ${!res.isCorrect && b.explanation ? `<span class="text-muted text-xs ml-auto" style="max-width:60%; text-align:right;">${esc(b.explanation)}</span>` : ''}
+        </div>`;
+      }).join('');
+      blankFeedback = `<div class="mt-4 p-4" style="background:var(--bg-elevated); border:1px solid var(--border-light); border-radius: var(--radius-md);">${rows}</div>`;
+    }
+
+    return `
+      <div class="p-4 mb-4" style="background:var(--bg-elevated); border:1px solid var(--border-light); border-radius: var(--radius-md);">
+        <div class="text-xs font-bold text-muted uppercase mb-3">Word Bank</div>
+        <div class="flex flex-wrap gap-2">${wordBankList}</div>
+      </div>
+      <div class="cloze-passage text-base text-main p-6" style="background:var(--bg-surface); border: 1px solid var(--border-light); border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">${passage}</div>
+      ${blankFeedback}`;
+  }
+
+  // ── MASTERCLASS EDITING FIX ──
+  function buildEditingUI(q) {
+    const savedAns = state.answers[state.currentIndex] || {};
+    const lines = (q.passage_lines || []).map(line => {
+      const saved = savedAns[line.line_number] || '';
+      const rawText = line.text || '';
+      const underlined = line.underlined_word || '';
+      
+      const escapedLine = esc(rawText).replace(
+        esc(underlined),
+        `<u style="text-decoration-color:var(--brand-rose);text-decoration-thickness:2px;font-weight:700;">${esc(underlined)}</u>`
+      );
+
+      let inputEl;
+      if (state.isAnswered) {
+        const res = (state.feedback && state.feedback.lineResults && state.feedback.lineResults[line.line_number]) || {};
+        const isCorrect = res.isCorrect;
+        const stateClass = isCorrect ? 'is-correct' : 'is-wrong';
+        inputEl = `<input type="text" value="${esc(saved)}" disabled class="editing-input ${stateClass}">
+          ${!isCorrect && line.correct_word ? `<span class="text-xs font-bold" style="color:var(--brand-mint); position:absolute; bottom:-18px; left:0; right:0;">→ ${esc(line.correct_word)}</span>` : ''}`;
+      } else {
+        inputEl = `<input type="text" id="edit-line-${line.line_number}" value="${esc(saved)}"
+          placeholder="${esc(underlined)}" autocomplete="off" class="editing-input"
+          oninput="window.saveInputState()">`;
+      }
+
+      return `<div class="editing-line">
+        <span class="text-xs font-bold text-muted" style="min-width:24px;">${line.line_number}.</span>
+        <span class="text-sm text-main flex-1" style="line-height: 1.6;">${escapedLine}</span>
+        <div class="flex items-center gap-2" style="position:relative;">${inputEl}</div>
+      </div>`;
+    }).join('');
+
+    let editFeedback = '';
+    if (state.isAnswered && state.feedback && state.feedback.lineResults) {
+      const wrongLines = (q.passage_lines || []).filter(l => {
+        const res = state.feedback.lineResults[l.line_number];
+        return res && !res.isCorrect;
+      });
+      if (wrongLines.length > 0) {
+        editFeedback = `<div class="mt-4 p-4" style="background:var(--bg-elevated); border:1px solid var(--border-light); border-radius: var(--radius-md);">
+          <div class="text-xs font-bold text-muted uppercase mb-2">Explanations</div>
+          ${wrongLines.map(l => `<div class="text-sm text-main py-2" style="border-bottom: 1px solid var(--border-light);">
+            <span class="font-bold">[${l.line_number}] ${esc(l.underlined_word)} → <span style="color:var(--brand-mint);">${esc(l.correct_word)}</span>:</span> ${esc(l.explanation)}
+          </div>`).join('')}
+        </div>`;
+      }
+    }
+
+    return `
+      <div class="p-6" style="background:var(--bg-surface); border: 1px solid var(--border-light); border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">${lines}</div>
+      ${editFeedback}`;
+  }
+
+  function renderQuiz() {
+    if (state.questions.length === 0) {
+      app.innerHTML = `<div class="card text-center w-full hover-lift" style="padding: var(--space-8); max-width: 600px;"><div class="text-4xl mb-4">🕵️</div><h2 class="font-display text-2xl text-main">No questions found!</h2><p class="text-muted text-sm my-4">Miss Wena hasn't added questions for this specific combination yet. Check back soon!</p><button class="btn btn-primary hover-lift" onclick="window.location.href='subjects.html'">Return to Subjects</button></div>`;
+      return;
+    }
+
+    const q = state.questions[state.currentIndex];
+    const isFirst = state.currentIndex === 0;
+    const isLast = state.currentIndex === state.questions.length - 1;
+    const isModelType = q.type === 'word_problem' || q.type === 'open_ended';
+
+    let inputUi = '';
+    if (q.type === 'mcq')           inputUi = buildMCQOptions(q);
+    else if (q.type === 'word_problem') inputUi = buildWordProblemUI(q);
+    else if (q.type === 'cloze')    inputUi = buildClozeUI(q);
+    else if (q.type === 'editing')  inputUi = buildEditingUI(q);
+    else                            inputUi = buildTextAreaUI(q);   
+
+    let feedbackHtml = '';
+    if (state.isAnswered && state.feedback) {
+      const fb = state.feedback;
+      if (fb.isModel) {
+        feedbackHtml = `<div class="mt-4 p-5" style="background:rgba(57,255,179,0.07); border-left:4px solid var(--brand-mint); border-radius: var(--radius-md);">
+          <div class="font-bold text-sm mb-2" style="color:var(--brand-mint);">Worked Solution</div>
+          <pre class="text-sm text-main whitespace-pre-wrap leading-relaxed" style="font-family: inherit;">${esc(q.worked_solution || q.model_answer || '')}</pre>
+        </div>`;
+      } else if (fb.status === 'correct') {
+        feedbackHtml = `<div class="mt-4 p-5" style="background:rgba(5,150,105,0.1); border-left:4px solid var(--brand-mint); border-radius: var(--radius-md);">
+          <div class="font-bold mb-2" style="color:var(--brand-mint);">🎉 Spot on!</div>
+          <p class="text-sm text-main leading-relaxed">${esc(fb.text)}</p>
+          ${q.examiner_note ? `<p class="text-xs text-muted mt-2 italic">${esc(q.examiner_note)}</p>` : ''}
+        </div>`;
+      } else {
+        const colour = fb.status === 'partial' ? 'var(--brand-amber)' : 'var(--brand-error)';
+        const bg = fb.status === 'partial' ? 'rgba(255,184,48,0.08)' : 'rgba(220,38,38,0.1)';
+        feedbackHtml = `<div class="mt-4 p-5" style="background:${bg}; border-left:4px solid ${colour}; border-radius: var(--radius-md);">
+          <div class="font-bold mb-2" style="color:${colour};">💡 Miss Wena says:</div>
+          <p class="text-sm text-main leading-relaxed">${esc(fb.text)}</p>
+          ${fb.correctAnswer ? `<div class="mt-3 text-sm font-bold text-main">Correct Answer: <span style="color:var(--brand-mint);">${esc(fb.correctAnswer)}</span></div>` : ''}
+        </div>`;
+      }
+    }
+
+    let actionBtn = '';
+    if (!state.isAnswered) {
+      if (isModelType) actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">Reveal Model Answer</button>`;
+      else if (q.type === 'cloze' || q.type === 'editing') actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">Check Answers</button>`;
+      else if (q.type !== 'mcq') actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">Check Answer</button>`;
+    } else {
+      actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.navQuiz(1)">${isLast ? 'Finish Lab →' : 'Next Question →'}</button>`;
+    }
+
+    // --- SMART INSTRUCTION OVERRIDE ---
+    let displayInstruction = esc(q.question_text);
+    if (q.type === 'cloze') {
+      displayInstruction = 'Fill in each blank with the correct word from the Word Bank.';
+    } else if (q.type === 'editing') {
+      displayInstruction = 'Read the passage and correct each underlined spelling or grammatical error.';
+    }
+    // ----------------------------------
+
+    app.innerHTML = `
+      <div class="w-full" style="max-width: 680px;">
+        <div class="flex justify-between items-center mb-6">
+          <div class="flex flex-col gap-1">
+            <div class="text-xs font-bold text-muted uppercase">Question ${state.currentIndex + 1} of ${state.questions.length}</div>
+            <div class="quiz-progress-bar" style="width:120px;height:6px;">
+              <div class="quiz-progress-fill" style="width:${((state.currentIndex)/state.questions.length)*100}%;background:var(--brand-rose);"></div>
+            </div>
+          </div>
+          <div class="badge ${state.streak >= 3 ? 'badge-amber' : 'badge-info'}" style="font-size:1rem;padding:6px 12px;">
+            <span class="${state.streak > 0 ? 'streak-fire' : ''} mr-1">🔥</span> Streak: ${state.streak}
+          </div>
+        </div>
+
+        <div class="card p-8 hover-lift w-full relative">
+          <div class="badge badge-info absolute top-0 left-8" style="transform:translateY(-50%);">${esc(titleCase(q.topic || 'Mixed'))}</div>
+          ${q.difficulty ? `<div class="badge badge-${q.difficulty.toLowerCase()} absolute top-0 right-8" style="transform:translateY(-50%);">${esc(q.difficulty)}</div>` : ''}
+
+          <h3 class="text-xl font-bold text-main mb-6 mt-2 leading-relaxed" style="white-space:pre-line;">${displayInstruction}</h3>
+
+          <div class="w-full">${inputUi}</div>
+
+          ${feedbackHtml}
+
+          <div class="flex justify-between items-center mt-8 pt-6 border-t border-light">
+            <button class="btn btn-ghost" onclick="window.navQuiz(-1)" ${isFirst ? 'style="visibility:hidden;"' : ''}>← Previous</button>
+            ${actionBtn}
+          </div>
+        </div>
+      </div>
+    `;
+
+    if (document.getElementById('scratchpadCanvas')) {
+      initCanvas(state.currentIndex);
+    }
+  }
+
+  // ── INTERACTIONS ──
+
+  window.selectMcq = (letter) => {
+    if (state.isAnswered) return;
+    state.answers[state.currentIndex] = letter;
+    window.checkAnswer();
+  };
+
+  window.setMode = (mode) => {
+    if (state.isAnswered) return;
+    window.saveInputState();
+    state.drawings[state.currentIndex] = mode === 'draw' ? 'init' : 'text';
+    render();
+  };
+
+  window.saveInputState = () => {
+    const q = state.questions[state.currentIndex];
+    if (q.type === 'cloze') {
+      const ans = {};
+      (q.blanks || []).forEach(b => {
+        const num = b.id || b.number;
+        const el = document.getElementById(`cloze-blank-${num}`);
+        if (el) ans[num] = el.value;
+      });
+      state.answers[state.currentIndex] = ans;
+    } else if (q.type === 'editing') {
+      const ans = {};
+      (q.passage_lines || []).forEach(l => {
+        const el = document.getElementById(`edit-line-${l.line_number}`);
+        if (el) ans[l.line_number] = el.value;
+      });
+      state.answers[state.currentIndex] = ans;
+    } else if (q.type === 'word_problem') {
+      const ans = {};
+      (q.parts || []).forEach(p => {
+        const el = document.getElementById(`wp-${p.label}`);
+        if (el) ans[p.label] = el.value;
+      });
+      state.answers[state.currentIndex] = ans;
+    } else if (q.type !== 'mcq' && q.type !== 'open_ended') {
+      const inp = document.getElementById('qInput');
+      if (inp) state.answers[state.currentIndex] = inp.value;
+    }
+    const canvas = document.getElementById('scratchpadCanvas');
+    if (canvas) state.drawings[state.currentIndex] = canvas.toDataURL();
+  };
+
+  window.navQuiz = (dir) => {
+    if (!state.isAnswered && dir > 0) return;
+
+    if (dir < 0) {
+      window.saveInputState();
+      state.currentIndex--;
+      state.isAnswered = true;
+      state.feedback = null;
+      render();
+      return;
+    }
+
+    if (state.currentIndex === state.questions.length - 1) {
+      state.phase = 'DONE';
+      render();
+      return;
+    }
+
+    window.saveInputState();
+    state.currentIndex++;
+    state.isAnswered = !!state.answers[state.currentIndex];
+    state.feedback = null;
+    render();
+  };
+
+  window.checkAnswer = () => {
+    window.saveInputState();
+    const q = state.questions[state.currentIndex];
+
+    // ── MCQ ──
+    if (q.type === 'mcq') {
+      const ans = state.answers[state.currentIndex];
+      if (!ans) { alert('Please select an answer!'); return; }
+      const isCorrect = ans === q.correct_answer;
+      const fbText = isCorrect
+        ? (q.worked_solution ? `Correct! ${q.worked_solution.split('\n')[0]}` : 'Perfectly executed!')
+        : (q.wrong_explanations?.[ans] || `The correct answer is ${q.correct_answer}.`);
+      if (isCorrect) { state.score++; state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak; }
+      else state.streak = 0;
+      state.isAnswered = true;
+      state.feedback = { status: isCorrect ? 'correct' : 'wrong', text: fbText, correctAnswer: isCorrect ? null : q.correct_answer };
+      render();
+      return;
+    }
+
+    // ── CLOZE ──
+    if (q.type === 'cloze') {
+      const ans = state.answers[state.currentIndex] || {};
+      const blanks = q.blanks || [];
+      let correctCount = 0;
+      const blankResults = {};
+      blanks.forEach(b => {
+        const num = b.id || b.number;
+        const selected = (ans[num] || '').trim();
+        const isCorrect = selected.toLowerCase() === (b.correct_answer || '').toLowerCase();
+        if (isCorrect) correctCount++;
+        blankResults[num] = { selected, isCorrect };
+      });
+      const allCorrect = correctCount === blanks.length;
+      if (allCorrect) { state.score++; state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak; }
+      else state.streak = 0;
+      state.isAnswered = true;
+      state.feedback = {
+        status: allCorrect ? 'correct' : 'partial',
+        text: allCorrect ? `All ${blanks.length} blanks correct!` : `${correctCount} of ${blanks.length} blanks correct. Review the highlighted answers below.`,
+        blankResults
+      };
+      render();
+      return;
+    }
+
+    // ── EDITING ──
+    if (q.type === 'editing') {
+      const ans = state.answers[state.currentIndex] || {};
+      const lines = q.passage_lines || [];
+      let correctCount = 0;
+      const lineResults = {};
+      lines.forEach(l => {
+        const userAns = (ans[l.line_number] || '').trim();
+        const isCorrect = userAns.toLowerCase() === (l.correct_word || '').toLowerCase();
+        if (isCorrect) correctCount++;
+        lineResults[l.line_number] = { userAns, isCorrect };
+      });
+      const allCorrect = correctCount === lines.length;
+      if (allCorrect) { state.score++; state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak; }
+      else state.streak = 0;
+      state.isAnswered = true;
+      state.feedback = {
+        status: allCorrect ? 'correct' : 'partial',
+        text: allCorrect ? `All ${lines.length} corrections right!` : `${correctCount} of ${lines.length} corrections correct.`,
+        lineResults
+      };
+      render();
+      return;
+    }
+
+    // ── WORD PROBLEM / OPEN-ENDED: reveal model answer ──
+    if (q.type === 'word_problem' || q.type === 'open_ended') {
+      state.isAnswered = true;
+      state.feedback = { status: 'model', text: '', isModel: true };
+      render();
+      return;
+    }
+
+    // ── SHORT ANSWER ──
+    const ans = String(state.answers[state.currentIndex] || '').trim();
+    const norm = (s) => String(s || '').toLowerCase().replace(/\s+/g, '');
+    const correct = norm(ans) === norm(q.correct_answer) ||
+      (q.accept_also || []).some(a => norm(ans) === norm(a));
+    const fbText = correct ? 'Excellent!' : `Expected: ${q.correct_answer}. ${q.worked_solution ? '\n' + q.worked_solution : ''}`;
+    if (correct) { state.score++; state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak; }
+    else state.streak = 0;
+    state.isAnswered = true;
+    state.feedback = { status: correct ? 'correct' : 'wrong', text: fbText };
+    render();
+  };
+
+  function renderResults() {
+    saveQuizResult(); 
+    
+    const pct = Math.round((state.score / state.questions.length) * 100);
+    app.innerHTML = `
+      <div class="card flex flex-col items-center text-center w-full hover-lift" style="padding: var(--space-8); max-width: 600px; border-top: 4px solid var(--brand-mint);">
+        <h1 class="font-display text-4xl text-main mb-2">Training Complete!</h1>
+        <p class="text-muted text-lg mb-6">You've successfully completed the lab session.</p>
+        
+        <div class="flex flex-wrap gap-6 mb-8 w-full justify-center">
+          <div class="card p-6 flex-1" style="background: var(--bg-elevated); border: none; max-width: 200px;">
+            <div class="text-sm font-bold text-muted uppercase">Score</div>
+            <div class="font-display text-5xl text-success mt-2">${pct}%</div>
+            <div class="text-sm text-main mt-1">${state.score} / ${state.questions.length} Correct</div>
+          </div>
+          <div class="card p-6 flex-1" style="background: rgba(217, 119, 6, 0.1); border: none; max-width: 200px;">
+            <div class="text-sm font-bold text-amber uppercase">Best Streak</div>
+            <div class="font-display text-5xl text-amber mt-2">🔥 ${state.maxStreak}</div>
+            <div class="text-sm text-amber mt-1">In a row!</div>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap gap-4 justify-center">
+          <button class="btn btn-primary hover-lift" onclick="window.location.href='subjects.html'">Train Another Topic</button>
+          <button class="btn btn-secondary hover-lift" onclick="window.location.href='dashboard.html'">Mission Control</button>
+        </div>
+      </div>
+    `;
+  }
+
+  // ── DATA ENGINE ──
   function resolveFile(subject, level, topic) {
     const broadMap = {
       'primary-1:mathematics': '../data/questions/p1-mathematics-whole-numbers.json',
       'primary-2:mathematics': '../data/questions/p2-mathematics.json',
       'primary-2:english':     '../data/questions/p2-english.json',
-      'primary-2:science':     null, // not yet available
-      'primary-3:mathematics': null,
-      'primary-3:english':     null,
-      'primary-3:science':     null,
       'primary-4:mathematics': '../data/questions/p4-mathematics.json',
       'primary-4:science':     '../data/questions/p4-science.json',
       'primary-4:english':     '../data/questions/p4-english.json',
       'primary-5:mathematics': '../data/questions/p5-mathematics.json',
       'primary-5:science':     '../data/questions/p5-science.json',
-      'primary-5:english':     null, // not yet available
-      'primary-6:mathematics': null,
-      'primary-6:science':     null,
-      'primary-6:english':     null,
     };
 
-    // English cloze/editing type has dedicated files rather than topic slugs
-    if (subject === 'english' && currentType && ['cloze', 'editing'].includes(currentType)) {
+    if (subject === 'english' && state.currentType && ['cloze', 'editing'].includes(state.currentType)) {
       const levelShort = level.replace('primary-', 'p');
-      return `../data/questions/${levelShort}-english-${currentType}.json`;
+      return `../data/questions/${levelShort}-english-${state.currentType}.json`;
     }
 
     const key = `${level}:${subject}`;
     const broadPath = broadMap[key];
     if (!broadPath) return null;
 
-    // If topic provided, derive topic-specific path; JS will fall back via fetch error handling
-    if (topic) {
+    if (topic && topic !== 'all') {
       const levelShort = level.replace('primary-', 'p');
       return `../data/questions/${levelShort}-${subject}-${topic}.json`;
     }
@@ -194,732 +564,6 @@ import { getCurrentUser, enforcePaywall, checkDailyUsage } from '/js/auth.js';
     return broadPath;
   }
 
-  // ── Render one question ───────────────────────────────────────
-  /**
-   * Renders the current question based on its type, hiding all other type areas.
-   */
-  function renderQuestion() {
-    answered = false;
-    const q = questions[current];
-
-    const pct = Math.round((current / questions.length) * 100);
-    progressFill.style.width  = pct + '%';
-    progressLabel.textContent = `${current + 1} / ${questions.length}`;
-
-    // Build meta badges using DOM (no innerHTML with external content)
-    quizMeta.innerHTML = '';
-
-    const topicBadge = document.createElement('span');
-    topicBadge.className   = 'badge badge-info';
-    topicBadge.textContent = q.topic;
-    quizMeta.appendChild(topicBadge);
-
-    const diffBadgeEl = document.createElement('span');
-    diffBadgeEl.className   = `badge badge-${diffBadge(q.difficulty)}`;
-    diffBadgeEl.textContent = capitalise(q.difficulty);
-    quizMeta.appendChild(diffBadgeEl);
-
-    if (q.marks) {
-      const marksBadge = document.createElement('span');
-      marksBadge.className   = 'badge-marks';
-      marksBadge.textContent = `${q.marks} mark${q.marks !== 1 ? 's' : ''}`;
-      quizMeta.appendChild(marksBadge);
-    }
-
-    questionText.textContent = q.question_text;
-
-    // Hide ALL type areas first
-    optionsEl.innerHTML     = '';
-    optionsEl.hidden        = true;
-    shortAnsArea.hidden     = true;
-    wordProblemArea.hidden  = true;
-    openEndedArea.hidden    = true;
-    clozeArea.hidden        = true;
-    editingArea.hidden      = true;
-
-    // Reset shared UI state
-    explanationEl.hidden    = true;
-    nextBtn.hidden          = true;
-    shortAnsInput.value     = '';
-    shortAnsInput.disabled  = false;
-    shortAnsSubmit.disabled = false;
-    shortAnsInput.style.borderColor = '';
-    oeInput.value           = '';
-    wpModel.hidden          = true;
-    oeModel.hidden          = true;
-    wpReveal.hidden         = false;
-    oeReveal.hidden         = false;
-    wpReveal.disabled       = false;
-    oeReveal.disabled       = false;
-
-    // Render the correct type
-    switch (q.type) {
-      case 'mcq':
-        optionsEl.hidden = false;
-        renderMCQ(q);
-        break;
-      case 'short_ans':
-        shortAnsArea.hidden = false;
-        shortAnsInput.focus();
-        break;
-      case 'word_problem':
-        wordProblemArea.hidden = false;
-        renderWordProblem(q);
-        break;
-      case 'open_ended':
-        openEndedArea.hidden = false;
-        renderOpenEnded(q);
-        break;
-      case 'cloze':
-        clozeArea.hidden = false;
-        renderCloze(q);
-        break;
-      case 'editing':
-        editingArea.hidden = false;
-        renderEditing(q);
-        break;
-      default:
-        // Unknown type — show next button so user can continue
-        nextBtn.hidden = false;
-        console.warn('[quiz] Unknown question type:', q.type);
-    }
-  }
-
-  // ── MCQ renderer ──────────────────────────────────────────────
-  /**
-   * Renders A/B/C/D option buttons for an MCQ question.
-   * Badges are hardcoded from array index — never parsed from option text.
-   */
-  function renderMCQ(q) {
-    q.options.forEach((opt, idx) => {
-      const key = String.fromCharCode(65 + idx); // 0→A, 1→B, 2→C, 3→D
-
-      const btn = document.createElement('button');
-      btn.className   = 'quiz-option';
-      btn.dataset.key = key;
-
-      const keySpan = document.createElement('span');
-      keySpan.className   = 'quiz-option-key';
-      keySpan.textContent = key;
-
-      const textSpan = document.createElement('span');
-      textSpan.textContent = opt;
-
-      btn.append(keySpan, textSpan);
-      btn.addEventListener('click', () => handleMCQ(q, key));
-      optionsEl.appendChild(btn);
-    });
-  }
-
-  // ── Word problem renderer ─────────────────────────────────────
-  /**
-   * Renders multi-part word problem. Each part has a label, marks badge,
-   * question text, and a textarea for working. Reveal shows model answers.
-   * NOT auto-graded — does not affect score.
-   */
-  function renderWordProblem(q) {
-    wpParts.innerHTML = '';
-    const parts = q.parts || [];
-
-    parts.forEach((part, idx) => {
-      const partDiv = document.createElement('div');
-      partDiv.className = 'quiz-wp-part';
-
-      const header = document.createElement('div');
-      header.className = 'quiz-wp-part-header';
-
-      const label = document.createElement('span');
-      label.className   = 'quiz-wp-part-label';
-      label.textContent = `(${String.fromCharCode(97 + idx)})`; // a, b, c…
-
-      header.appendChild(label);
-
-      if (part.marks) {
-        const marks = document.createElement('span');
-        marks.className   = 'badge-marks';
-        marks.textContent = `${part.marks} mark${part.marks !== 1 ? 's' : ''}`;
-        header.appendChild(marks);
-      }
-
-      partDiv.appendChild(header);
-
-      const partQ = document.createElement('p');
-      partQ.className   = 'quiz-wp-part-question';
-      partQ.textContent = part.question_text || part.text || '';
-      partDiv.appendChild(partQ);
-
-      const ta = document.createElement('textarea');
-      ta.className   = 'form-input quiz-wp-part-textarea';
-      ta.rows        = 3;
-      ta.placeholder = 'Show your working here…';
-      partDiv.appendChild(ta);
-
-      wpParts.appendChild(partDiv);
-    });
-
-    wpReveal.onclick = () => {
-      wpModel.hidden  = false;
-      wpReveal.hidden = true;
-      wpModel.innerHTML = '';
-
-      const heading = document.createElement('p');
-      heading.className   = 'quiz-wp-model-heading';
-      heading.textContent = 'Model Answers';
-      wpModel.appendChild(heading);
-
-      parts.forEach((part, idx) => {
-        const row = document.createElement('div');
-        row.className = 'quiz-wp-model-answer';
-
-        const lbl = document.createElement('span');
-        lbl.className   = 'quiz-wp-part-label';
-        lbl.textContent = `(${String.fromCharCode(97 + idx)})`;
-
-        const ans = document.createElement('span');
-        ans.textContent = part.model_answer || part.answer || '';
-
-        row.append(lbl, ans);
-        wpModel.appendChild(row);
-      });
-
-      nextBtn.hidden = false;
-    };
-  }
-
-  // ── Open-ended renderer ───────────────────────────────────────
-  /**
-   * Reveals model answer with keywords highlighted in accent color.
-   * Uses DOM API — no raw innerHTML with user/external content.
-   * NOT auto-graded — does not affect score.
-   */
-  function renderOpenEnded(q) {
-    oeReveal.onclick = () => {
-      oeModel.hidden  = false;
-      oeReveal.hidden = true;
-      oeModel.innerHTML = '';
-
-      const heading = document.createElement('p');
-      heading.className   = 'quiz-wp-model-heading';
-      heading.textContent = 'Model Answer';
-      oeModel.appendChild(heading);
-
-      const modelText = String(q.model_answer || q.worked_solution || '');
-      const keywords  = Array.isArray(q.keywords) ? q.keywords : [];
-      const answerP   = buildHighlightedText(modelText, keywords);
-      oeModel.appendChild(answerP);
-
-      nextBtn.hidden = false;
-    };
-  }
-
-  /**
-   * Safely builds a paragraph with keywords bolded using DOM text nodes.
-   * Never sets innerHTML from keyword or model answer content.
-   */
-  function buildHighlightedText(text, keywords) {
-    const p = document.createElement('p');
-    p.className = 'quiz-oe-answer';
-
-    if (keywords.length === 0) {
-      p.textContent = text;
-      return p;
-    }
-
-    const escaped  = keywords.map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
-    const pattern  = new RegExp(`(${escaped.join('|')})`, 'gi');
-    const segments = text.split(pattern);
-
-    segments.forEach(seg => {
-      // Test each segment individually (reset lastIndex)
-      const testPattern = new RegExp(`^(${escaped.join('|')})$`, 'i');
-      if (testPattern.test(seg)) {
-        const strong = document.createElement('strong');
-        strong.className   = 'quiz-oe-keyword';
-        strong.textContent = seg;
-        p.appendChild(strong);
-      } else {
-        p.appendChild(document.createTextNode(seg));
-      }
-    });
-
-    return p;
-  }
-
-  // ── Cloze renderer ────────────────────────────────────────────
-  /**
-   * Renders cloze passage replacing [1],[2]… with inline <select> dropdowns.
-   * Check Answers grades each blank and shows per-blank feedback.
-   * Auto-graded proportionally (≥50% blanks correct = 1 score point).
-   */
-  function renderCloze(q) {
-    clozePassage.innerHTML = '';
-    const blanks  = q.blanks || [];
-    const passage = String(q.passage || q.question_text || '');
-    const parts   = passage.split(/(\[\d+\])/);
-    const selects = [];
-
-    parts.forEach(part => {
-      const match = part.match(/^\[(\d+)\]$/);
-      if (match) {
-        const blankIdx = parseInt(match[1], 10) - 1; // convert [1] → index 0
-        const blank    = blanks[blankIdx] || {};
-        const options  = blank.options || [];
-
-        const select = document.createElement('select');
-        select.className       = 'quiz-cloze-select';
-        select.dataset.blank   = blankIdx;
-        select.dataset.correct = blank.correct_answer || '';
-
-        const placeholder = document.createElement('option');
-        placeholder.value       = '';
-        placeholder.textContent = '— select —';
-        select.appendChild(placeholder);
-
-        options.forEach(opt => {
-          const o = document.createElement('option');
-          o.value       = opt;
-          o.textContent = opt;
-          select.appendChild(o);
-        });
-
-        selects.push(select);
-        clozePassage.appendChild(select);
-      } else {
-        clozePassage.appendChild(document.createTextNode(part));
-      }
-    });
-
-    clozeCheck.disabled = false;
-    clozeCheck.onclick = () => {
-      clozeCheck.disabled = true;
-      let correct = 0;
-
-      selects.forEach(sel => {
-        const chosen  = sel.value.trim().toLowerCase();
-        const isRight = chosen === sel.dataset.correct.trim().toLowerCase();
-        if (isRight) correct++;
-        sel.disabled = true;
-        sel.classList.add(isRight ? 'quiz-cloze-correct' : 'quiz-cloze-wrong');
-
-        if (!isRight && sel.dataset.correct) {
-          const hint = document.createElement('span');
-          hint.className   = 'quiz-cloze-hint';
-          hint.textContent = ` ✓ ${sel.dataset.correct}`;
-          sel.after(hint);
-        }
-      });
-
-      const fraction = selects.length > 0 ? correct / selects.length : 0;
-      if (fraction >= 0.5) score++;
-      gradedTotal++;
-
-      answers.push({
-        question_text:  (q.question_text || 'Cloze').slice(0, 500),
-        topic:          q.topic,
-        difficulty:     q.difficulty,
-        correct:        fraction >= 0.5,
-        answer_chosen:  `${correct}/${selects.length} blanks correct`,
-        correct_answer: 'See passage',
-      });
-
-      showExplanation(fraction >= 0.5, q.worked_solution || null);
-      nextBtn.hidden = false;
-    };
-  }
-
-  // ── Editing renderer ──────────────────────────────────────────
-  /**
-   * Renders editing exercise: each line shows passage with underlined word
-   * and an input for the correction. Auto-graded proportionally per line.
-   */
-  function renderEditing(q) {
-    editingPassage.innerHTML = '';
-    const lines  = q.passage_lines || [];
-    const inputs = [];
-
-    lines.forEach((line, idx) => {
-      const lineDiv = document.createElement('div');
-      lineDiv.className = 'quiz-editing-line';
-
-      const num = document.createElement('span');
-      num.className   = 'quiz-editing-line-num';
-      num.textContent = `${idx + 1}.`;
-      lineDiv.appendChild(num);
-
-      // Render passage text, wrapping the underlined_word in a span
-      const text   = String(line.text || '');
-      const target = String(line.underlined_word || '');
-      const textWrap = document.createElement('span');
-      textWrap.className = 'quiz-editing-text';
-
-      if (target && text.includes(target)) {
-        const splitIdx = text.indexOf(target);
-        textWrap.appendChild(document.createTextNode(text.slice(0, splitIdx)));
-        const underlined = document.createElement('span');
-        underlined.className   = 'quiz-editing-underline';
-        underlined.textContent = target;
-        textWrap.appendChild(underlined);
-        textWrap.appendChild(document.createTextNode(text.slice(splitIdx + target.length)));
-      } else {
-        textWrap.textContent = text;
-      }
-
-      lineDiv.appendChild(textWrap);
-
-      const input = document.createElement('input');
-      input.type         = 'text';
-      input.className    = 'form-input quiz-editing-input';
-      input.placeholder  = 'Correction…';
-      input.autocomplete = 'off';
-      input.dataset.line    = idx;
-      input.dataset.correct = line.correct_word || '';
-      inputs.push(input);
-      lineDiv.appendChild(input);
-
-      editingPassage.appendChild(lineDiv);
-    });
-
-    editingCheck.disabled = false;
-    editingCheck.onclick = () => {
-      editingCheck.disabled = true;
-      let correct = 0;
-
-      inputs.forEach(inp => {
-        const chosen  = inp.value.trim().toLowerCase();
-        const isRight = chosen === inp.dataset.correct.trim().toLowerCase();
-        if (isRight) correct++;
-        inp.disabled = true;
-
-        const feedback = document.createElement('span');
-        if (isRight) {
-          feedback.className   = 'quiz-editing-correct';
-          feedback.textContent = ' ✓';
-        } else {
-          feedback.className   = 'quiz-editing-wrong';
-          feedback.textContent = ` ✗ → ${inp.dataset.correct}`;
-        }
-        inp.after(feedback);
-
-        const lineData = lines[parseInt(inp.dataset.line, 10)];
-        if (!isRight && lineData?.explanation) {
-          const expSpan = document.createElement('span');
-          expSpan.className   = 'quiz-editing-explanation';
-          expSpan.textContent = ` (${lineData.explanation})`;
-          feedback.after(expSpan);
-        }
-      });
-
-      const fraction = inputs.length > 0 ? correct / inputs.length : 0;
-      if (fraction >= 0.5) score++;
-      gradedTotal++;
-
-      answers.push({
-        question_text:  (q.question_text || 'Editing').slice(0, 500),
-        topic:          q.topic,
-        difficulty:     q.difficulty,
-        correct:        fraction >= 0.5,
-        answer_chosen:  `${correct}/${inputs.length} lines correct`,
-        correct_answer: 'See passage',
-      });
-
-      showExplanation(fraction >= 0.5, q.worked_solution || null);
-      nextBtn.hidden = false;
-    };
-  }
-
-  // ── MCQ answer handler ────────────────────────────────────────
-  function handleMCQ(q, chosen) {
-    if (answered) return;
-    answered = true;
-
-    const correct = q.correct_answer;
-    const isRight = chosen === correct;
-    if (isRight) score++;
-    gradedTotal++;
-
-    answers.push({
-      question_text:  q.question_text.slice(0, 500),
-      topic:          q.topic,
-      difficulty:     q.difficulty,
-      correct:        isRight,
-      answer_chosen:  chosen,
-      correct_answer: correct,
-    });
-
-    optionsEl.querySelectorAll('.quiz-option').forEach(btn => {
-      const k = btn.dataset.key;
-      btn.disabled = true;
-      if (k === correct)     btn.classList.add('is-correct');
-      else if (k === chosen) btn.classList.add('is-wrong');
-      else                   btn.classList.add('is-dimmed');
-    });
-
-    const wrongExp = (!isRight && q.wrong_explanations) ? q.wrong_explanations[chosen] : null;
-    showExplanation(isRight, q.worked_solution, wrongExp);
-    nextBtn.hidden = false;
-  }
-
-  // ── Short answer handler ──────────────────────────────────────
-  shortAnsSubmit.addEventListener('click', () => {
-    if (answered) return;
-    const val = shortAnsInput.value.trim();
-    if (!val) { shortAnsInput.focus(); return; }
-    handleShortAns(val);
-  });
-
-  shortAnsInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter') shortAnsSubmit.click();
-  });
-
-  /**
-   * Checks short answer against correct_answer and accept_also aliases.
-   * All comparisons are case-insensitive and trimmed.
-   */
-  function handleShortAns(val) {
-    answered = true;
-    const q = questions[current];
-    const normalise = s => String(s).toLowerCase().trim();
-
-    const accepted = [q.correct_answer, ...(q.accept_also || [])].map(normalise);
-    const isRight  = accepted.includes(normalise(val));
-
-    if (isRight) score++;
-    gradedTotal++;
-
-    answers.push({
-      question_text:  q.question_text.slice(0, 500),
-      topic:          q.topic,
-      difficulty:     q.difficulty,
-      correct:        isRight,
-      answer_chosen:  val.slice(0, 200),
-      correct_answer: String(q.correct_answer),
-    });
-
-    shortAnsInput.disabled  = true;
-    shortAnsSubmit.disabled = true;
-    shortAnsInput.style.borderColor = isRight ? 'var(--success)' : 'var(--danger)';
-
-    showExplanation(isRight, q.worked_solution, null, q.correct_answer);
-    nextBtn.hidden = false;
-  }
-
-  // ── Explanation panel ─────────────────────────────────────────
-  /**
-   * Shows the feedback panel with result and worked solution.
-   * Uses DOM API — no raw innerHTML with external content.
-   */
-  function showExplanation(isRight, solution, wrongExp, correctAnswer) {
-    explanationEl.hidden    = false;
-    explanationEl.className = `quiz-explanation ${isRight ? 'is-correct-explanation' : 'is-wrong-explanation'}`;
-    explanationEl.innerHTML = '';
-
-    const title = document.createElement('p');
-    title.className   = 'quiz-explanation-title';
-    title.textContent = isRight ? '✓ Correct!' : '✗ Not quite';
-    explanationEl.appendChild(title);
-
-    if (!isRight && correctAnswer !== undefined) {
-      const ca = document.createElement('p');
-      const bold = document.createElement('strong');
-      bold.textContent = 'Correct answer: ';
-      ca.appendChild(bold);
-      ca.appendChild(document.createTextNode(String(correctAnswer)));
-      explanationEl.appendChild(ca);
-    }
-
-    if (!isRight && wrongExp) {
-      const we = document.createElement('p');
-      we.style.marginTop = 'var(--space-2)';
-      const bold = document.createElement('strong');
-      bold.textContent = 'Why that was wrong: ';
-      we.appendChild(bold);
-      we.appendChild(document.createTextNode(wrongExp));
-      explanationEl.appendChild(we);
-    }
-
-    if (solution) {
-      const sol = document.createElement('p');
-      sol.style.marginTop = 'var(--space-2)';
-      const bold = document.createElement('strong');
-      bold.textContent = 'Worked solution: ';
-      sol.appendChild(bold);
-      sol.appendChild(document.createTextNode(solution));
-      explanationEl.appendChild(sol);
-    }
-  }
-
-  // ── Next question ─────────────────────────────────────────────
-  nextBtn.addEventListener('click', () => {
-    current++;
-    if (current >= questions.length) {
-      showScore();
-    } else {
-      renderQuestion();
-      const card = document.getElementById('quiz-card');
-      if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  });
-
-  // ── Score screen ──────────────────────────────────────────────
-  /**
-   * Renders end-of-quiz score screen.
-   * Only auto-graded types (mcq, short_ans, cloze, editing) count toward score.
-   * word_problem and open_ended are excluded from scoring.
-   */
-  function showScore() {
-    quizArea.hidden    = true;
-    scoreScreen.hidden = false;
-
-    progressFill.style.width  = '100%';
-    progressLabel.textContent = `${questions.length} / ${questions.length}`;
-
-    const total    = gradedTotal || 1;
-    const pct      = Math.round((score / total) * 100);
-    const numColor = pct >= 80 ? 'var(--success)' : pct >= 60 ? 'var(--accent)' : 'var(--danger)';
-    const msg      = pct >= 80 ? 'Excellent work! Keep it up!'
-                   : pct >= 60 ? 'Good effort! Review the ones you missed.'
-                   : "Keep practising — you'll get there!";
-
-    const ungradedCount = questions.length - gradedTotal;
-
-    scoreScreen.innerHTML = '';
-    const scoreDiv = document.createElement('div');
-    scoreDiv.className = 'quiz-score';
-
-    const num = document.createElement('div');
-    num.className   = 'quiz-score-number';
-    num.style.color = numColor;
-    num.textContent = `${score}/${total}`;
-    scoreDiv.appendChild(num);
-
-    const label = document.createElement('p');
-    label.className   = 'quiz-score-label';
-    label.textContent = msg;
-    scoreDiv.appendChild(label);
-
-    const pctP = document.createElement('p');
-    pctP.style.cssText = 'color:var(--text-secondary);margin-top:var(--space-1);';
-    pctP.textContent   = `You scored ${pct}% on auto-graded questions`;
-    scoreDiv.appendChild(pctP);
-
-    if (ungradedCount > 0) {
-      const note = document.createElement('p');
-      note.style.cssText = 'color:var(--text-secondary);margin-top:var(--space-1);font-size:0.875rem;';
-      note.textContent   = `(${ungradedCount} question${ungradedCount !== 1 ? 's' : ''} used model answers — not included in score)`;
-      scoreDiv.appendChild(note);
-    }
-
-    const btnRow = document.createElement('div');
-    btnRow.className     = 'flex gap-4 mt-8';
-    btnRow.style.cssText = 'justify-content:center;flex-wrap:wrap;';
-
-    const retryBtn = document.createElement('button');
-    retryBtn.className   = 'btn btn-primary';
-    retryBtn.textContent = 'Try Again';
-    retryBtn.addEventListener('click', () => {
-      current       = 0;
-      score         = 0;
-      gradedTotal   = 0;
-      answered      = false;
-      answers       = [];
-      quizStartTime = Date.now(); // reset timer on retry
-      questions     = shuffle(questions);
-      scoreScreen.hidden = true;
-      quizArea.hidden    = false;
-      renderQuestion();
-    });
-
-    const changeBtn = document.createElement('a');
-    changeBtn.className   = 'btn btn-secondary';
-    changeBtn.href        = 'subjects.html';
-    changeBtn.textContent = 'Choose Another Topic';
-
-    btnRow.append(retryBtn, changeBtn);
-    scoreDiv.appendChild(btnRow);
-    scoreScreen.appendChild(scoreDiv);
-
-    saveResults().catch(err => console.error('[quiz] saveResults:', err));
-  }
-
-  // ── Supabase save ─────────────────────────────────────────────
-  /**
-   * Saves quiz attempt and per-question results to Supabase.
-   * Only fires if a student ID is available (logged-in user).
-   */
-  async function saveResults() {
-    if (!currentStudentId) return;
-
-    const db = await getSupabase();
-
-    const topicCounts = {};
-    answers.forEach(a => {
-      if (a.topic) topicCounts[a.topic] = (topicCounts[a.topic] || 0) + 1;
-    });
-    const primaryTopic = Object.entries(topicCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Mixed';
-
-    const { data: attempt, error: attErr } = await db
-      .from('quiz_attempts')
-      .insert({
-        student_id:         currentStudentId,
-        subject:            currentSubject,
-        level:              currentLevel,
-        topic:              primaryTopic,
-        difficulty:         'Mixed',
-        score:              score,
-        total_questions:    gradedTotal,
-        time_taken_seconds: quizStartTime ? Math.round((Date.now() - quizStartTime) / 1000) : null,
-        completed_at:       new Date().toISOString(),
-      })
-      .select('id')
-      .single();
-
-    if (attErr) throw attErr;
-
-    if (answers.length > 0) {
-      const rows = answers.map(a => ({
-        quiz_attempt_id: attempt.id,
-        student_id:      currentStudentId,
-        question_text:   a.question_text,
-        topic:           a.topic,
-        difficulty:      a.difficulty,
-        correct:         a.correct,
-        answer_chosen:   a.answer_chosen,
-        correct_answer:  a.correct_answer,
-      }));
-      await db.from('question_attempts').insert(rows);
-    }
-
-    // Increment daily usage counter
-    const db2   = await getSupabase();
-    const today = new Date().toISOString().slice(0, 10);
-    
-    // 1. Safely check the database directly to see if a row exists for today
-    const { data: existingUsage } = await db2
-      .from('daily_usage')
-      .select('id, questions_attempted')
-      .eq('student_id', currentStudentId)
-      .eq('date', today)
-      .maybeSingle();
-
-    const newCount = (existingUsage?.questions_attempted || 0) + answers.length;
-
-    // 2. Insert or Update based on actual database state
-    if (!existingUsage) {
-      // No record today, safely insert
-      await db2.from('daily_usage').insert({
-        student_id:          currentStudentId,
-        date:                today,
-        questions_attempted: newCount,
-      });
-    } else {
-      // Record exists, update it using its exact ID
-      await db2.from('daily_usage')
-        .update({ questions_attempted: newCount })
-        .eq('id', existingUsage.id);
-    }
-  }
-
-  // ── Utilities ─────────────────────────────────────────────────
   function shuffle(arr) {
     const a = [...arr];
     for (let i = a.length - 1; i > 0; i--) {
@@ -929,19 +573,199 @@ import { getCurrentUser, enforcePaywall, checkDailyUsage } from '/js/auth.js';
     return a;
   }
 
-  function capitalise(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
-  function labelLevel(l)  { return l.replace('primary-', 'Primary '); }
-  function diffBadge(d) {
-    const lower = (d || '').toLowerCase();
-    if (lower === 'foundation') return 'foundation';
-    if (lower === 'advanced')   return 'advanced';
-    if (lower === 'hots')       return 'hots';
-    return 'standard';
+  // ── SAVE RESULTS ──
+  async function saveQuizResult() {
+    const params = new URLSearchParams(window.location.search);
+    const studentId = params.get('student');
+    if (!studentId) return;
+
+    try {
+      const sb = await getSupabase();
+      
+      const topicCounts = {};
+      state.questions.forEach(q => {
+        if (q.topic) topicCounts[q.topic] = (topicCounts[q.topic] || 0) + 1;
+      });
+      const primaryTopic = Object.entries(topicCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || params.get('topic') || 'Mixed';
+
+      const { data: attempt, error: attErr } = await sb
+        .from('quiz_attempts')
+        .insert({
+          student_id:         studentId,
+          subject:            params.get('subject') || 'mathematics',
+          level:              params.get('level') || 'primary-4',
+          topic:              primaryTopic,
+          difficulty:         'Mixed',
+          score:              state.score,
+          total_questions:    state.questions.length,
+          time_taken_seconds: state.quizStartTime ? Math.round((Date.now() - state.quizStartTime) / 1000) : null,
+          completed_at:       new Date().toISOString(),
+        })
+        .select('id')
+        .single();
+
+      if (attErr) throw attErr;
+
+      const qAttempts = state.questions.map((q, i) => {
+         const ans = state.answers[i];
+         let isCorrect = false;
+         
+         if (q.type === 'mcq') {
+           isCorrect = (ans === q.correct_answer);
+         } else {
+           const norm = (s) => String(s || '').toLowerCase().replace(/\s/g,'');
+           isCorrect = (norm(ans) === norm(q.correct_answer));
+         }
+         
+         return {
+           quiz_attempt_id: attempt.id,
+           student_id:      studentId,
+           question_text:   (q.question_text || '').slice(0, 500),
+           topic:           q.topic || primaryTopic,
+           difficulty:      q.difficulty || 'standard',
+           correct:         isCorrect,
+           answer_chosen:   String(ans || '').slice(0, 200),
+           correct_answer:  String(q.correct_answer || ''),
+         };
+      });
+
+      if (qAttempts.length > 0) {
+        await sb.from('question_attempts').insert(qAttempts);
+      }
+
+      const today = new Date().toISOString().slice(0, 10);
+      const { data: existingUsage } = await sb
+        .from('daily_usage')
+        .select('id, questions_attempted')
+        .eq('student_id', studentId)
+        .eq('date', today)
+        .maybeSingle();
+
+      const newCount = (existingUsage?.questions_attempted || 0) + state.questions.length;
+
+      if (!existingUsage) {
+        await sb.from('daily_usage').insert({
+          student_id:          studentId,
+          date:                today,
+          questions_attempted: newCount,
+        });
+      } else {
+        await sb.from('daily_usage')
+          .update({ questions_attempted: newCount })
+          .eq('id', existingUsage.id);
+      }
+      
+    } catch (e) {
+      console.error('Failed to save quiz result:', e);
+    }
   }
 
-  function showError(msg) {
-    loadingEl.hidden    = true;
-    errorEl.hidden      = false;
-    errorEl.textContent = msg;
+  // ── CANVAS LOGIC ──
+  let ctx, isDrawing = false;
+  function initCanvas(qid) {
+    const canvas = document.getElementById('scratchpadCanvas');
+    if (!canvas) return;
+    
+    const rect = canvas.parentElement.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = 300;
+    
+    ctx = canvas.getContext('2d');
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#2C3E3A';
+
+    if (state.drawings[qid] && state.drawings[qid] !== 'init' && state.drawings[qid] !== 'text') {
+      let img = new Image();
+      img.onload = () => ctx.drawImage(img, 0, 0);
+      img.src = state.drawings[qid];
+    }
+
+    if (state.isAnswered) return; 
+
+    const getPos = (e) => {
+      const r = canvas.getBoundingClientRect();
+      const x = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
+      const y = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
+      return { x, y };
+    };
+
+    const start = (e) => { isDrawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); e.preventDefault(); };
+    const draw = (e) => { if (!isDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); e.preventDefault(); };
+    const stop = () => { if(isDrawing) { isDrawing = false; state.drawings[qid] = canvas.toDataURL(); } };
+
+    canvas.addEventListener('mousedown', start);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stop);
+    canvas.addEventListener('mouseout', stop);
+    canvas.addEventListener('touchstart', start, {passive: false});
+    canvas.addEventListener('touchmove', draw, {passive: false});
+    canvas.addEventListener('touchend', stop);
   }
-})();
+
+  window.clearCanvas = () => {
+    if(ctx && !state.isAnswered) {
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      state.drawings[state.currentIndex] = ctx.canvas.toDataURL();
+    }
+  };
+
+  // ── DATA FETCHING ──
+  async function init() {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const subject = params.get('subject') || 'mathematics';
+      const levelSlug = params.get('level') || 'primary-4';
+      const topic = params.get('topic');
+      const type = params.get('type');
+      const studentId = params.get('student');
+      
+      state.currentType = type;
+
+      if (studentId) {
+        const isJunior = levelSlug.includes('primary-1') || levelSlug.includes('primary-2') || levelSlug === 'p1' || levelSlug === 'p2';
+        
+        document.querySelectorAll('.bottom-nav-item').forEach(link => {
+          const url = new URL(link.href, window.location.origin);
+          url.searchParams.set('student', studentId);
+          link.href = url.pathname + url.search;
+          
+          if (isJunior && link.getAttribute('href').includes('exam.html')) {
+            link.style.display = 'none';
+          }
+        });
+        
+        if (isJunior) {
+          const nav = document.getElementById('bottomNav');
+          if (nav) nav.style.justifyContent = 'space-evenly';
+        }
+      }
+      
+      const filePath = resolveFile(subject, levelSlug, topic);
+      if (!filePath) {
+        state.questions = [];
+        state.phase = 'QUIZ';
+        render();
+        return;
+      }
+
+      const res = await fetch(filePath);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const all = await res.json();
+      
+      const pool = type && type !== 'mixed' ? all.filter(q => q.type === type) : all;
+      
+      state.questions = shuffle(pool).slice(0, 10);
+      state.quizStartTime = Date.now();
+      state.phase = 'QUIZ';
+      render();
+    } catch (err) {
+      console.warn("Local fetch failed:", err);
+      state.questions = [];
+      state.phase = 'QUIZ';
+      render();
+    }
+  }
+
+  setTimeout(init, 100);
+};
