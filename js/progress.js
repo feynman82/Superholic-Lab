@@ -72,6 +72,24 @@ async function init() {
     localStorage.setItem('shl_active_student_id', student.id);
     // ------------------------------
 
+    // --- JUNIOR GUARDRAIL: Hide Exam Tab for P1 & P2 ---
+    const isJunior = student.level.toLowerCase().includes('primary 1') || student.level.toLowerCase().includes('primary 2');
+    
+    document.querySelectorAll('.bottom-nav-item').forEach(link => {
+      const url = new URL(link.href, window.location.origin);
+      url.searchParams.set('student', student.id);
+      link.href = url.pathname + url.search;
+      
+      if (isJunior && link.getAttribute('href').includes('exam.html')) {
+        link.style.display = 'none';
+      }
+    });
+    
+    if (isJunior) {
+      const nav = document.getElementById('bottomNav');
+      if (nav) nav.style.justifyContent = 'space-evenly';
+    }
+
     if (students.length > 1) {
       populateStudentSelector(students, student.id);
     }
@@ -225,7 +243,6 @@ async function init() {
     if (activeQuest) renderQuestMap(activeQuest, db);
     renderRecentHistory(attempts.slice(0, 10));
     
-    const isJunior = student.level.toLowerCase().includes('primary 1') || student.level.toLowerCase().includes('primary 2');
     if (!isJunior) renderExamHistory(examResults || []);
 
     loadingEl.hidden = true;
@@ -1200,18 +1217,5 @@ window.toggleDeepDive = async function(studentId, subject, btnEl, quizCount) {
   } catch (err) {
     container.innerHTML = `<div style="text-align:center; padding:var(--space-2); color:var(--brand-error);">Failed to load analysis. ${err.message}</div>`;
     container.dataset.loaded = ""; // Allow retry
-  }
-};
-
-// ── Global Helper for + Plan Quest Button ──
-window.handlePlanQuest = async function(btnEl, studentId, studentLevel, topic, subject, score, attemptId) {
-  try {
-    // FIXED: Safely await the database client before reading the session
-    const db = await window.getSupabase();
-    const { data: { session } } = await db.auth.getSession();
-    const student = { id: studentId, level: studentLevel };
-    await generateQuest(db, session, student, topic, subject, score, attemptId || null, btnEl);
-  } catch (err) {
-    console.error("Plan Quest Trigger Error:", err);
   }
 };

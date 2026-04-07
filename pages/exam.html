@@ -210,6 +210,13 @@ window.initExamEngine = function () {
       const levelKey = level.toLowerCase().replace(' ', '-');
       const studentId = student?.id || null;
 
+      // --- JUNIOR GUARDRAIL: Reroute P1 & P2 to Practice Lab ---
+      const isJunior = levelKey === 'primary-1' || levelKey === 'primary-2';
+      if (isJunior) {
+        window.location.href = `quiz.html?student=${student.id}`;
+        return; // Stop rendering the exam page
+      }
+
       if (tier === 'single_subject') {
         const sub = student?.selected_subject || 'Mathematics';
         setState({ phase: 'TYPE', tier, level, levelKey, subject: sub, subjectKey: sub.toLowerCase(), studentId });
