@@ -7,12 +7,12 @@
     "sub_topic": "Present Perfect Tense",
     "difficulty": "Standard",
     "type": "mcq",
-    "question_text": "Ahmad rushed home from school and told his mother excitedly, 'I ______ already finished my Mathematics homework! Can I go and play football at the void deck?'\n\nWhich word correctly completes Ahmad's sentence?",
+    "question_text": "Ahmad rushed home from school and told his mother excitedly, 'I ______ already finished my Mathematics homework! Can I go and play football at the void deck?'\n\nWhich word or words correctly complete Ahmad's sentence?",
     "options": [
-      "Ahmad should say 'has already finished' because when speaking about a recently completed action, 'has' is used with all subjects including 'I'.",
-      "Ahmad should say 'have already finished' because the subject 'I' always takes 'have', not 'has', in the present perfect tense.",
-      "Ahmad should say 'had already finished' because the homework was completed before he arrived home, so the past perfect tense is needed.",
-      "Ahmad should say 'having already finished' because 'having + past participle' is the correct modern form for showing a recently completed action."
+      "has already finished",
+      "have already finished",
+      "had already finished",
+      "having already finished"
     ],
     "correct_answer": "B",
     "worked_solution": "Step 1: Identify the tense needed. The action (finishing homework) was completed recently and is relevant now (Ahmad wants to go play). This calls for the PRESENT PERFECT tense.\nStep 2: Present perfect = have/has + past participle.\nStep 3: Choose 'have' or 'has'.\n  I → have (first person singular uses 'have')\n  He/She/It → has\nStep 4: 'I have already finished my homework.' ✓\n\nThe answer is B.",
@@ -33,14 +33,9 @@
     "difficulty": "Standard",
     "type": "mcq",
     "question_text": "MeiLing revised all her notes every night for two weeks before the Mathematics examination, ______ she scored full marks on the day of the test.\n\nWhich word best connects these two ideas?",
-    "options": [
-      "MeiLing revised all her notes every night but she scored full marks, because 'but' is used to connect two events that happen in sequence.",
-      "MeiLing revised all her notes every night so she scored full marks, because 'so' shows that the full marks was the result of her revision.",
-      "MeiLing revised all her notes every night although she scored full marks, because 'although' links a cause to its expected effect.",
-      "MeiLing revised all her notes every night yet she scored full marks, because 'yet' shows that two related events happened one after the other."
-    ],
+    "options": ["but", "so", "although", "yet"],
     "correct_answer": "B",
-    "worked_solution": "Step 1: Understand the relationship between the two ideas.\n  Idea 1: MeiLing revised thoroughly.\n  Idea 2: MeiLing scored full marks.\n  Relationship: Idea 1 CAUSED Idea 2. Revising led to scoring full marks.\nStep 2: Choose the connector that shows RESULT or CONSEQUENCE.\n  'So' = shows result/consequence → 'She revised, so she scored full marks.' ✓\nStep 3: Eliminate incorrect options.\n  'But' = contrast/contradiction (studying hard and scoring full marks is NOT a contradiction).\n  'Although' = concession/unexpected contrast ('Although she revised, she failed' would make sense, not 'Although she revised, she scored full marks').\n  'Yet' = similar to 'but', implies something unexpected.\n\nThe answer is B.",
+    "worked_solution": "Step 1: Understand the relationship between the two ideas.\n  Idea 1: MeiLing revised thoroughly.\n  Idea 2: MeiLing scored full marks.\n  Relationship: Idea 1 CAUSED Idea 2. Revising led to scoring full marks.\nStep 2: Choose the connector that shows RESULT or CONSEQUENCE.\n  'So' = shows result/consequence → 'She revised, so she scored full marks.' ✓\nStep 3: Eliminate incorrect options.\n  'But' = contrast/contradiction (studying hard and scoring full marks is NOT a contradiction).\n  'Although' = concession/unexpected contrast.\n  'Yet' = similar to 'but', implies something unexpected.\n\nThe answer is B.",
     "wrong_explanations": {
       "A": "'But' shows CONTRAST or CONTRADICTION between two ideas (e.g., 'She studied hard but still failed'). Scoring full marks AFTER thorough revision is the expected, logical result — not a contradiction. Using 'but' here implies the full marks was surprising or went against the revision, which does not make sense.",
       "C": "'Although' introduces a CONCESSION — it means 'in spite of the fact that' (e.g., 'Although she was tired, she kept studying'). Using 'although' before 'she scored full marks' implies that scoring full marks was unexpected given the revision, which reverses the logical cause-and-effect relationship.",
@@ -58,12 +53,7 @@
     "difficulty": "Standard",
     "type": "mcq",
     "question_text": "The school rules at Ahmad's school clearly state that all students ______ wear their school uniform on weekdays. Wearing a school uniform is compulsory — not optional.\n\nWhich modal verb correctly completes the sentence?",
-    "options": [
-      "All students can wear their school uniform on weekdays, because 'can' is used to show that something is allowed or possible.",
-      "All students must wear their school uniform on weekdays, because 'must' expresses a rule, obligation, or requirement that cannot be avoided.",
-      "All students might wear their school uniform on weekdays, because 'might' is used to describe an action that is expected to happen most of the time.",
-      "All students should wear their school uniform on weekdays, because 'should' shows a strong requirement that comes from school authority."
-    ],
+    "options": ["can", "must", "might", "should"],
     "correct_answer": "B",
     "worked_solution": "Step 1: Understand the meaning — wearing a uniform is COMPULSORY. This is an obligation, not a choice.\nStep 2: Match the meaning to the correct modal verb.\n  'Must' = obligation/necessity/rule (no choice)\n  'Can' = ability/permission (optional or possible)\n  'Might' = weak possibility (maybe, perhaps)\n  'Should' = advice/recommendation (a good idea, but not a strict rule)\nStep 3: Since the uniform is a school RULE, 'must' is the only modal that expresses compulsory obligation.\n\nThe answer is B.",
     "wrong_explanations": {
@@ -84,10 +74,10 @@
     "type": "mcq",
     "question_text": "Siti baked a delicious pandan cake and brought it to school to share with her classmates. By the end of recess, all the cake had been eaten.\n\nWhich sentence correctly expresses this in the passive voice?",
     "options": [
-      "The pandan cake was ate by Siti's classmates during recess, forming the correct passive voice with 'was' followed by the base form of the verb.",
-      "The pandan cake was eaten by Siti's classmates during recess, because the passive voice uses 'was/were' followed by the past participle of the verb.",
-      "The pandan cake was eating by Siti's classmates during recess, because 'eating' is the continuous form used after 'was' to show an ongoing action.",
-      "The pandan cake was eat by Siti's classmates during recess, because in passive voice, the base form of the verb always follows 'was'."
+      "The pandan cake was ate by Siti's classmates during recess.",
+      "The pandan cake was eaten by Siti's classmates during recess.",
+      "The pandan cake was eating by Siti's classmates during recess.",
+      "The pandan cake was eat by Siti's classmates during recess."
     ],
     "correct_answer": "B",
     "worked_solution": "Step 1: Passive voice structure = subject + was/were + PAST PARTICIPLE + (by + agent).\nStep 2: Find the past participle of 'eat'.\n  Base form: eat\n  Simple past: ate\n  Past participle: eaten\nStep 3: Apply the formula.\n  'The pandan cake was eaten by Siti's classmates.' ✓\n\nThe answer is B.",
@@ -108,12 +98,7 @@
     "difficulty": "Standard",
     "type": "mcq",
     "question_text": "Ahmad's school held an inter-school spelling competition. The boy ______ won first place and received the gold trophy is Ahmad's best friend Ravi.\n\nWhich relative pronoun correctly completes the sentence?",
-    "options": [
-      "The boy which won first place is Ahmad's best friend, because 'which' is used to give information about a person or thing in a relative clause.",
-      "The boy who won first place is Ahmad's best friend, because 'who' refers to a person and is used as the subject of the relative clause.",
-      "The boy whom won first place is Ahmad's best friend, because 'whom' is used whenever you are talking about a person who has done something.",
-      "The boy whose won first place is Ahmad's best friend, because 'whose' shows that the action belongs to the person being described."
-    ],
+    "options": ["which", "who", "whom", "whose"],
     "correct_answer": "B",
     "worked_solution": "Step 1: Identify what the relative pronoun refers to — 'the boy' (a person).\nStep 2: Identify the grammatical role in the relative clause.\n  'The boy ______ won first place' — the boy is the SUBJECT doing the winning.\nStep 3: Choose the correct relative pronoun.\n  WHO = refers to a person, used as the SUBJECT (the person is doing the action).\n  WHOM = refers to a person, used as the OBJECT (the person is receiving the action).\n  WHICH = refers to things, not people.\n  WHOSE = shows possession (the boy whose book was lost).\n\nThe answer is B: 'who' (person, subject).",
     "wrong_explanations": {
@@ -133,12 +118,7 @@
     "difficulty": "Standard",
     "type": "mcq",
     "question_text": "Siti was planning an outdoor birthday party at East Coast Park. She told her friends, 'If it ______ heavily tomorrow, we will have to cancel the party.'\n\nWhich form of the verb correctly completes Siti's sentence?",
-    "options": [
-      "If it rain heavily tomorrow, we will cancel the party — because 'rain' is the correct base form used in all conditional sentences.",
-      "If it rains heavily tomorrow, we will cancel the party — because in a Type 1 conditional, the 'if' clause uses the present simple tense, and 'it' requires 'rains' (with -s).",
-      "If it rained heavily tomorrow, we will cancel the party — because 'rained' is the past tense, and talking about tomorrow requires a past perspective in English.",
-      "If it is raining heavily tomorrow, we will cancel the party — because 'is raining' is used to describe weather conditions that exist in the future."
-    ],
+    "options": ["rain", "rains", "rained", "is raining"],
     "correct_answer": "B",
     "worked_solution": "Step 1: This is a Type 1 (real/possible) conditional sentence.\n  Structure: If + present simple, will + base verb.\nStep 2: The 'if' clause: If it ______ heavily tomorrow.\n  Subject: 'it' (third person singular)\n  Tense: present simple\n  Third person singular present → add -s to the verb.\n  'rain' → 'rains'\nStep 3: Full sentence: 'If it rains heavily tomorrow, we will cancel the party.' ✓\n\nThe answer is B.",
     "wrong_explanations": {
@@ -158,12 +138,7 @@
     "difficulty": "Standard",
     "type": "mcq",
     "question_text": "Priya performed a traditional Indian dance at the school's Cultural Harmony celebration. She danced so ______ that the entire audience applauded loudly at the end of her performance.\n\nWhich word correctly completes the sentence?",
-    "options": [
-      "Priya danced so beautiful that the audience applauded, because 'beautiful' is a strong describing word that shows the quality of her dancing.",
-      "Priya danced so beauty that the audience applauded, because 'beauty' describes the appearance of something done in an elegant way.",
-      "Priya danced so beautifully that the audience applauded, because an adverb is needed here to describe HOW she danced, and 'beautifully' is the adverb form of 'beautiful'.",
-      "Priya danced so beautify that the audience applauded, because 'beautify' is the word form that connects the action of dancing to looking beautiful."
-    ],
+    "options": ["beautiful", "beauty", "beautifully", "beautify"],
     "correct_answer": "C",
     "worked_solution": "Step 1: Identify what kind of word is needed.\n  'She danced so ______' — the blank describes HOW she danced. A word that describes a verb (danced) must be an ADVERB.\nStep 2: Identify the correct word form.\n  Beautiful → adjective (describes nouns)\n  Beautifully → adverb (describes verbs, adjectives, other adverbs)\n  Beauty → noun\n  Beautify → verb\nStep 3: We need the ADVERB form: 'beautifully'.\n  'She danced so beautifully.' ✓\n\nThe answer is C.",
     "wrong_explanations": {

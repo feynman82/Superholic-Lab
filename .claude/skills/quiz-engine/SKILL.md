@@ -107,21 +107,21 @@ CRITICAL: There is NO true/false area. The `true_false` type is retired.
 
 ### MCQ Rendering
 ```js
-function renderMCQ(q) {
-  q.options.forEach((opt, idx) => {
-    const key = String.fromCharCode(65 + idx); // 0→A, 1→B, 2→C, 3→D
-    // Create button with:
-    //   <span class="quiz-option-key">A</span>  ← circle badge
-    //   <span>option text</span>                ← full text, never truncated
-    // Badge letter is ALWAYS from index, NEVER from option text
-  });
+function buildMCQOptions(q) {
+  // options[0]→A, options[1]→B, options[2]→C, options[3]→D
+  // Badge letter always from index, NEVER from option text
+  // Option text = the word/phrase/sentence from JSON options array (no embedded "because...")
+  // Clicking an option auto-submits via selectMcq() → checkAnswer()
 }
 ```
 
-Answer states:
-- `.is-correct` — green border + checkmark (correct option)
-- `.is-wrong` — red border + X (wrong chosen option)
-- `.is-dimmed` — faded out (other options)
+Answer states (applied via inline style on `.mcq-opt` divs):
+- Correct: `border-color: var(--brand-mint); background: rgba(5,150,105,0.1)`
+- Wrong (selected): `border-color: var(--brand-error); background: rgba(220,38,38,0.1)`
+- Dimmed (others): `opacity: 0.45; pointer-events: none`
+
+**English Grammar fill-in-the-blank**: options are WORDS or SHORT PHRASES (e.g. "cook", "cooks"). Render identically to any other MCQ — the option text is simply shorter.
+**Comprehension MCQ**: options are concise answer phrases without explanations.
 
 ### Short Answer Rendering
 ```js
@@ -136,45 +136,54 @@ function renderShortAns(q) {
 
 ### Word Problem Rendering
 ```js
-function renderWordProblem(q) {
-  // For each q.parts:
-  //   Show label "(a)", question text, marks badge "2 marks"
-  //   Show textarea for student working
-  // "Show Model Answer" reveals all part solutions
-  // NOT auto-graded — does not affect score
+function buildWordProblemUI(q) {
+  // Show q.question_text (the scenario setup — no question in it, just context)
+  // For each part in q.parts:
+  //   Card with: label "(a)", marks badge, part.question_text
+  //   Textarea id="wp-(a)" for student working
+  // "Reveal Model Answer" button → checkAnswer() → sets isAnswered = true
+  // On reveal: show part.model_answer + part.marking_scheme per part
+  // NOT auto-graded — does not increment state.score
 }
 ```
 
 ### Open-Ended Rendering
 ```js
-function renderOpenEnded(q) {
-  // Show textarea for student's written answer
-  // "See Model Answer" reveals q.model_answer
-  // Highlight words from q.keywords array in accent color
-  // NOT auto-graded — does not affect score
-}
+// Uses buildTextAreaUI() + "Reveal Model Answer" button
+// checkAnswer() sets feedback.isModel = true
+// Feedback panel shows q.worked_solution or q.model_answer
+// NOT auto-graded — does not affect score
 ```
 
 ### Cloze Rendering
 ```js
-function renderCloze(q) {
-  // Parse q.passage — replace [1], [2] with inline selects
-  // Each select built from blank.options (4 choices)
-  // "Check Answers" compares each selection to blank.correct_answer
-  // Show per-blank result: green (correct) or red + explanation
-  // Score: count correct blanks / total blanks
+function buildClozeUI(q) {
+  // 1. Word Bank box: collect all unique words from ALL blanks.options arrays
+  //    Sort alphabetically, display as numbered badge list
+  // 2. Instruction: "Read the passage carefully. Choose the best word..."
+  // 3. Parse q.passage: replace [1], [2], ... with inline <select> dropdowns
+  //    Each select id="cloze-blank-{num}", options from blank.options array
+  // 4. "Check Answers" button → checkAnswer()
+  // On check: compare each select.value to blank.correct_answer (string comparison)
+  //    Show per-blank result inline (mint=correct, red=wrong + correct_answer shown)
+  //    Show explanation panel for wrong blanks
+  // Score: ALL correct → +1 point; partial → +0
 }
 ```
 
 ### Editing Rendering
 ```js
-function renderEditing(q) {
-  // For each q.passage_lines:
-  //   Show text with underlined_word visually underlined
-  //   Show text input next to underlined word
-  //   Student types correction or ticks "correct"
-  // "Check" compares input to correct_word
-  // Score: count correct responses / total lines
+function buildEditingUI(q) {
+  // Show q.question_text as instructions ("The passage below contains 5 errors...")
+  // For each passage_line in q.passage_lines:
+  //   Line number | sentence text (underlined_word shown with <u> tag) | input[type=text]
+  //   Input id="edit-line-{line_number}", width 90px
+  // "Check Answers" button → checkAnswer()
+  // On check: compare input.value to line.correct_word (case-insensitive)
+  //    Inline feedback per line: mint=correct, red=wrong + correct_word shown
+  //    Explanation panel for wrong lines (line.explanation)
+  // Score: ALL correct → +1 point; partial → +0
+  // NOTE: q.passage_lines must have distinct sentence texts — no duplicate sentences
 }
 ```
 

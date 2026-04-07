@@ -19,7 +19,7 @@
       },
       {
         "line_number": 2,
-        "text": "Yesterday, they goes to East Coast Park to played football.",
+        "text": "Yesterday, they goes to East Coast Park to play football.",
         "underlined_word": "goes",
         "has_error": true,
         "correct_word": "went",
@@ -27,11 +27,11 @@
       },
       {
         "line_number": 3,
-        "text": "Yesterday, they goes to East Coast Park to played football.",
+        "text": "They decided to played until the sun set behind the trees.",
         "underlined_word": "played",
         "has_error": true,
         "correct_word": "play",
-        "explanation": "After 'to' (infinitive marker), always use the base form of the verb: 'to play', not 'to played'. The past tense is already indicated by 'went' earlier in the sentence."
+        "explanation": "After 'to' (the infinitive marker), always use the BASE FORM of the verb: 'to play', not 'to played'. The infinitive is always: to + base verb (to run, to eat, to play)."
       },
       {
         "line_number": 4,

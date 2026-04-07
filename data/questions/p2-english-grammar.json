@@ -8,12 +8,7 @@
     "difficulty": "Standard",
     "type": "mcq",
     "question_text": "Ahmad and his brother were at the playground near their HDB flat. Choose the correct word to complete the sentence.\n\nThe two ______ are playing on the slide.",
-    "options": [
-      "The two child are playing on the slide, because 'child' can be used for any number of children in a sentence.",
-      "The two childs are playing on the slide, because adding -s to a noun always makes it plural.",
-      "The two children are playing on the slide, because 'children' is the correct irregular plural form of 'child'.",
-      "The two childrens are playing on the slide, because 'children' already refers to more than one, so adding -s makes it even more plural."
-    ],
+    "options": ["child", "childs", "children", "childrens"],
     "correct_answer": "C",
     "worked_solution": "Step 1: 'The two ______' → we need the PLURAL form because 'two' indicates more than one.\nStep 2: The plural of 'child' is irregular — it does not simply add -s.\n  child → children (irregular plural)\nStep 3: 'The two children are playing on the slide.' ✓\n\nThe answer is 'children'.",
     "wrong_explanations": {
@@ -33,12 +28,7 @@
     "difficulty": "Standard",
     "type": "mcq",
     "question_text": "Siti told her friend about what she did on Sunday. Choose the correct word to complete the sentence.\n\nYesterday, Siti ______ to the library to borrow some books.",
-    "options": [
-      "Yesterday, Siti go to the library, because 'go' is the correct action word to use with 'yesterday'.",
-      "Yesterday, Siti goes to the library, because 'Siti' is one person and one person uses 'goes'.",
-      "Yesterday, Siti went to the library, because 'yesterday' shows past time and 'went' is the past tense of 'go'.",
-      "Yesterday, Siti going to the library, because 'going' describes a continuous action that was happening yesterday."
-    ],
+    "options": ["go", "goes", "went", "going"],
     "correct_answer": "C",
     "worked_solution": "Step 1: 'Yesterday' is a time word that signals the PAST tense.\nStep 2: The past tense of 'go' is 'went' (an irregular verb — it does not add -ed).\nStep 3: 'Yesterday, Siti went to the library.' ✓\n\nThe answer is 'went'.",
     "wrong_explanations": {
@@ -58,12 +48,7 @@
     "difficulty": "Standard",
     "type": "mcq",
     "question_text": "MeiLing visited the zoo with her family. Choose the correct word to complete the sentence.\n\nShe was excited to see ______ elephant for the very first time.",
-    "options": [
-      "She was excited to see a elephant for the very first time, because 'a' is used before any singular noun.",
-      "She was excited to see an elephant for the very first time, because 'an' is used before nouns that begin with a vowel sound.",
-      "She was excited to see the elephant for the very first time, because 'the' is used when referring to a specific, known animal.",
-      "She was excited to see some elephant for the very first time, because 'some' shows that she saw part of an elephant."
-    ],
+    "options": ["a", "an", "the", "some"],
     "correct_answer": "B",
     "worked_solution": "Step 1: We need an article before 'elephant'.\nStep 2: 'Elephant' starts with the vowel sound 'e' (sounds like 'EH-luh-funt').\nStep 3: Use 'AN' before words that start with a VOWEL SOUND (a, e, i, o, u sounds).\n  'A' is used before words starting with a CONSONANT sound.\nStep 4: 'An elephant' ✓\n\nThe answer is 'an'.",
     "wrong_explanations": {
@@ -83,12 +68,7 @@
     "difficulty": "Standard",
     "type": "mcq",
     "question_text": "Ahmad loves the food his mother cooks at home. Choose the correct word to complete the sentence.\n\nHis mother ______ delicious chicken rice every Saturday morning.",
-    "options": [
-      "His mother cook delicious chicken rice every Saturday morning, because 'cook' is the base form used for all subjects.",
-      "His mother cooks delicious chicken rice every Saturday morning, because 'his mother' is singular (she/her) and the present tense adds -s for singular subjects.",
-      "His mother cooking delicious chicken rice every Saturday morning, because 'cooking' shows she is in the process of making food.",
-      "His mother cooked delicious chicken rice every Saturday morning, because the cooking happened before the sentence was written."
-    ],
+    "options": ["cook", "cooks", "cooking", "cooked"],
     "correct_answer": "B",
     "worked_solution": "Step 1: 'His mother' is singular (she).\nStep 2: 'Every Saturday' = habitual present → present simple tense.\nStep 3: For present simple with he/she/it, add -s to the verb.\n  cook → cooks\nStep 4: 'His mother cooks delicious chicken rice every Saturday.' ✓\n\nThe answer is 'cooks'.",
     "wrong_explanations": {
@@ -108,12 +88,7 @@
     "difficulty": "Standard",
     "type": "mcq",
     "question_text": "Ravi accidentally dropped his bag at the MRT station. Choose the correct word to complete the sentence.\n\nRavi lost ______ wallet at the MRT station near his home.",
-    "options": [
-      "Ravi lost he wallet at the MRT station, because 'he' refers to Ravi and shows the wallet belongs to him.",
-      "Ravi lost him wallet at the MRT station, because 'him' is used when the person is the one affected by the action.",
-      "Ravi lost his wallet at the MRT station, because 'his' is the possessive pronoun for a male, showing the wallet belongs to Ravi.",
-      "Ravi lost her wallet at the MRT station, because 'her' is used when the wallet belongs to the person mentioned."
-    ],
+    "options": ["he", "him", "his", "her"],
     "correct_answer": "C",
     "worked_solution": "Step 1: 'Ravi' is a boy → use MALE pronouns.\nStep 2: The wallet BELONGS to Ravi → we need a POSSESSIVE pronoun.\nStep 3: Possessive pronoun for a male = HIS.\n  'Ravi lost HIS wallet.' ✓\n\nThe answer is 'his'.",
     "wrong_explanations": {
@@ -133,12 +108,7 @@
     "difficulty": "Standard",
     "type": "mcq",
     "question_text": "Siti planned to play at the park with her friends after school. Choose the correct word to complete the sentence.\n\nSiti wanted to play at the park, ______ it started to rain heavily.",
-    "options": [
-      "Siti wanted to play at the park and it started to rain heavily, because 'and' joins two ideas that happen together.",
-      "Siti wanted to play at the park but it started to rain heavily, because 'but' shows a contrast between what Siti wanted and what happened.",
-      "Siti wanted to play at the park because it started to rain heavily, because 'because' explains that rain was the reason she wanted to play.",
-      "Siti wanted to play at the park so it started to rain heavily, because 'so' shows that her wanting to play caused the rain."
-    ],
+    "options": ["and", "but", "because", "so"],
     "correct_answer": "B",
     "worked_solution": "Step 1: Identify the relationship between the two ideas.\n  Idea 1: Siti WANTED to play at the park (her wish).\n  Idea 2: It started to RAIN (what actually happened).\n  Relationship: The rain PREVENTED her from playing → CONTRAST.\nStep 2: 'But' shows contrast between two opposing ideas.\n  'She wanted to play, BUT it rained.' ✓\n\nThe answer is 'but'.",
     "wrong_explanations": {

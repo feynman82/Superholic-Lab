@@ -247,11 +247,32 @@ Ahmad → Mei Ling → Siti → Ravi → Priya → Wei Hao → Nurul → Jun Jie
 
 ### Step 3: Write options (MCQ only)
 
-- Write all 4 options as FULL SENTENCES — no single-word or single-number options
+Option format depends on the question type and subject:
+
+**English Grammar / Vocabulary fill-in-the-blank MCQ:**
+- Options are the WORD or PHRASE being tested ONLY — no full sentences
+- Example: blank = "cook/cooks/cooking/cooked", not a full sentence with "because..."
+- Exception: "choose the correct sentence" format → options ARE full sentences (no explanations)
+- For multi-word phrases: include the full phrase, e.g. "have already finished"
+
+**English Comprehension MCQ:**
+- Options are concise complete phrases or sentences (the answer choices)
+- Do NOT append "because..." explanations to the options — explanations go in wrong_explanations only
+- Options should be clearly different ideas, roughly equal in length
+
+**Mathematics MCQ:**
+- Options are the numerical/algebraic answer only (e.g. "$72", "3/4", "48 cm²")
+- No explanations embedded in the option text
+
+**Science MCQ:**
+- Options are complete statements (full sentences)
+- No embedded "because..." reasoning in the option text
+
+Universal rules for all MCQ options:
 - Each wrong option must represent a REAL student misconception
-- Options should be roughly equal in length
+- Options should be roughly equal in length — avoid telegraphing the answer
 - Distribute correct answer positions: vary A/B/C/D across questions in a batch
-- Do NOT make one option obviously longer or more detailed than others
+- Do NOT embed "because...", "as...", or reasoning in option text — that belongs in wrong_explanations
 
 ### Step 4: Write worked_solution
 

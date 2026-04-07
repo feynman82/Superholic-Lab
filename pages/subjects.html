@@ -203,6 +203,16 @@ window.initSubjectsEngine = function() {
     state.subject = subj; state.topic = ''; state.qtype = ''; state.phase = 'TOPIC'; render();
   };
 
+  // Topics that map directly to one question type — skip the TYPE step entirely.
+  // Key = topic slug, value = type param to pass to quiz URL.
+  const TOPIC_TYPE_BYPASS = {
+    'cloze':         'cloze',
+    'editing':       'editing',
+    'comprehension': 'mcq',   // comprehension questions are always MCQ format
+    'grammar':       'mcq',   // grammar questions are always MCQ format
+    'vocabulary':    'mcq',   // vocabulary questions are always MCQ format
+  };
+
   function renderTopic() {
     const key = state.level.toLowerCase().replace(' ','-') + ':' + state.subject;
     const activeTopics = TOPIC_MAP[key] || [];
@@ -225,6 +235,8 @@ window.initSubjectsEngine = function() {
       return buildCard(slug, t, isLocked ? 'Coming soon' : 'Focused topic practice', state.topic === slug, isLocked);
     }).join('');
 
+    // Show "Choose Question Type" button only when the selected topic is NOT auto-bypassed
+    const selectedHasBypass = state.topic && TOPIC_TYPE_BYPASS[state.topic];
     app.innerHTML = `
       <div class="text-center mb-8 w-full">
         <div class="badge badge-info mb-2">${stepText}</div>
@@ -235,12 +247,21 @@ window.initSubjectsEngine = function() {
         ${allBtn} ${topicBtns}
       </div>
       <div class="w-full flex flex-col items-center gap-4" style="max-width: 400px;">
-        <button class="btn btn-primary btn-lg w-full hover-lift" ${!state.topic ? 'disabled' : ''} onclick="window.goToType()">Choose Question Type →</button>
+        ${!selectedHasBypass ? `<button class="btn btn-primary btn-lg w-full hover-lift" ${!state.topic ? 'disabled' : ''} onclick="window.goToType()">Choose Question Type →</button>` : ''}
         ${state.tier !== 'single_subject' ? `<button class="btn btn-ghost" onclick="window.goBack('SUBJECT')">← Back to Subjects</button>` : ''}
       </div>`;
   }
 
-  window.pickTopic = (t) => { state.topic = t; render(); };
+  window.pickTopic = (t) => {
+    state.topic = t;
+    // If the topic maps directly to a single type, bypass step 3 and launch immediately
+    if (TOPIC_TYPE_BYPASS[t]) {
+      state.qtype = TOPIC_TYPE_BYPASS[t];
+      window.launchQuiz();
+    } else {
+      render();
+    }
+  };
   window.goToType = () => { if (state.topic) { state.qtype = ''; state.phase = 'TYPE'; render(); } };
 
   function renderType() {

@@ -118,9 +118,9 @@ window.initQuizEngine = function() {
     streak: 0,
     maxStreak: 0,
     score: 0,
-    answers: {},       
-    drawings: {},      
-    isAnswered: false, 
+    answers: {},        // string for MCQ/short_ans; object {num: val} for cloze/editing
+    drawings: {},
+    isAnswered: false,
     feedback: null,
     currentType: null,
     quizStartTime: null
@@ -142,6 +142,199 @@ window.initQuizEngine = function() {
     app.innerHTML = `<div class="card p-10 flex flex-col items-center w-full max-w-[600px]"><div class="spinner-sm mb-4"></div><h2 class="font-display text-2xl text-main">Preparing Training Lab...</h2><p class="text-sm text-muted mt-2">Loading MOE-aligned questions</p></div>`;
   }
 
+  // ── BUILD INPUT UI BY TYPE ──
+
+  /**
+   * Builds MCQ option buttons with correct/wrong highlight states.
+   */
+  function buildMCQOptions(q) {
+    const letters = ['A','B','C','D'];
+    const savedAns = state.answers[state.currentIndex] || '';
+    return (q.options || []).map((opt, i) => {
+      const letter = letters[i];
+      const isSel = savedAns === letter;
+      let extraStyle = '';
+      if (state.isAnswered) {
+        if (letter === q.correct_answer) extraStyle = 'border-color:var(--brand-mint);background:rgba(5,150,105,0.1);';
+        else if (isSel)                  extraStyle = 'border-color:var(--brand-error);background:rgba(220,38,38,0.1);opacity:0.8;';
+        else                             extraStyle = 'opacity:0.45;pointer-events:none;';
+      }
+      return `<div class="mcq-opt${isSel?' is-sel':''}" style="${extraStyle}${state.isAnswered?'pointer-events:none;':''}" onclick="window.selectMcq('${letter}')">
+        <span class="mcq-badge">${letter}</span><span class="font-medium text-main">${esc(opt)}</span>
+      </div>`;
+    }).join('');
+  }
+
+  /**
+   * Builds short-answer textarea + optional draw tool.
+   */
+  function buildTextAreaUI(q) {
+    const savedAns = String(state.answers[state.currentIndex] || '');
+    const isDrawMode = state.drawings[state.currentIndex] && state.drawings[state.currentIndex] !== 'text';
+    return `
+      <div class="flex justify-end gap-2 mb-2">
+        <button class="btn btn-sm ${!isDrawMode?'btn-secondary bg-sage-dark text-white':'btn-ghost'}" onclick="window.setMode('text')" ${state.isAnswered?'disabled':''}>⌨️ Type</button>
+        <button class="btn btn-sm ${isDrawMode?'btn-secondary bg-sage-dark text-white':'btn-ghost'}" onclick="window.setMode('draw')" ${state.isAnswered?'disabled':''}>✏️ Pen Tool</button>
+      </div>
+      ${!isDrawMode
+        ? `<textarea id="qInput" class="form-input w-full p-4" rows="4" placeholder="Your answer..." ${state.isAnswered?'disabled':''}>${esc(savedAns)}</textarea>`
+        : `<div class="scratchpad-container">
+             <canvas id="scratchpadCanvas" class="scratchpad-canvas" ${state.isAnswered?'style="pointer-events:none;"':''}></canvas>
+             ${!state.isAnswered?`<div class="scratchpad-tools"><button class="btn btn-sm btn-ghost bg-surface" onclick="window.clearCanvas()">🗑️ Clear</button></div>`:''}
+           </div>
+           <input type="text" id="qInput" class="form-input mt-4" placeholder="Final Answer" value="${esc(savedAns)}" ${state.isAnswered?'disabled':''}>`
+      }`;
+  }
+
+  /**
+   * Builds word problem UI: scenario text + each part with label, marks, textarea.
+   * Not auto-graded — shows model answer on button click.
+   */
+  function buildWordProblemUI(q) {
+    const savedModelShown = state.isAnswered;
+    const parts = (q.parts || []).map(p => {
+      const savedWorking = (state.answers[state.currentIndex] || {})[p.label] || '';
+      return `
+        <div class="card p-5 mb-4" style="background:var(--bg-elevated);border:1.5px solid var(--border-light);">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="font-display text-lg text-main font-bold">${esc(p.label)}</span>
+            <span class="badge badge-info text-xs">${p.marks} mark${p.marks!==1?'s':''}</span>
+            ${p.question_text ? `<span class="text-sm text-main">${esc(p.question_text)}</span>` : ''}
+          </div>
+          <textarea id="wp-${esc(p.label)}" class="form-input w-full p-3" rows="3" placeholder="Show your working here..." ${savedModelShown?'disabled':''}>${esc(savedWorking)}</textarea>
+          ${savedModelShown ? `
+            <div class="mt-3 p-3 rounded" style="background:rgba(57,255,179,0.07);border-left:3px solid var(--brand-mint);">
+              <div class="text-xs font-bold text-mint mb-1">Model Answer</div>
+              <div class="text-sm text-main font-mono whitespace-pre-wrap">${esc(p.model_answer || p.correct_answer || '')}</div>
+              ${p.marking_scheme ? `<div class="text-xs text-muted mt-2 whitespace-pre-wrap">${esc(p.marking_scheme)}</div>` : ''}
+            </div>` : ''}
+        </div>`;
+    }).join('');
+    return parts;
+  }
+
+  /**
+   * Builds cloze UI: word bank box at top + passage with inline select dropdowns.
+   */
+  function buildClozeUI(q) {
+    const savedAns = state.answers[state.currentIndex] || {};
+    const blanks = q.blanks || [];
+
+    // Collect ALL unique options across all blanks for the word bank
+    const allWords = new Set();
+    blanks.forEach(b => (b.options || []).forEach(w => allWords.add(w)));
+    const wordBankList = [...allWords].sort().map((w, i) =>
+      `<span class="badge badge-info mr-1 mb-1" style="font-size:0.78rem;">(${i+1}) ${esc(w)}</span>`
+    ).join('');
+
+    // Replace [1], [2] etc in passage with inline selects
+    let passage = esc(q.passage || '');
+    blanks.forEach(b => {
+      const num = b.id || b.number;
+      const saved = savedAns[num] || '';
+      const opts = (b.options || []).map(o =>
+        `<option value="${esc(o)}" ${saved === o ? 'selected' : ''}>${esc(o)}</option>`
+      ).join('');
+
+      let selectEl;
+      if (state.isAnswered) {
+        const isCorrect = (savedAns[num] || '').toLowerCase() === (b.correct_answer || '').toLowerCase();
+        const colour = isCorrect ? 'var(--brand-mint)' : 'var(--brand-error)';
+        selectEl = `<select id="cloze-blank-${num}" disabled style="border-color:${colour};background:${isCorrect?'rgba(5,150,105,0.15)':'rgba(220,38,38,0.15)'};font-weight:600;color:${colour};border-radius:6px;padding:2px 4px;">
+          <option value="${esc(savedAns[num]||'')}">${esc(savedAns[num]||'—')}</option></select>`;
+      } else {
+        selectEl = `<select id="cloze-blank-${num}" class="cloze-blank" style="border:1.5px solid var(--border-light);border-radius:6px;padding:2px 4px;background:var(--bg-surface);">
+          <option value="">— pick —</option>${opts}</select>`;
+      }
+      passage = passage.replace(`[${num}]`, selectEl);
+    });
+
+    // Per-blank feedback after answered
+    let blankFeedback = '';
+    if (state.isAnswered && state.feedback && state.feedback.blankResults) {
+      const rows = blanks.map(b => {
+        const num = b.id || b.number;
+        const res = state.feedback.blankResults[num] || {};
+        const icon = res.isCorrect ? '✅' : '❌';
+        return `<div class="flex gap-3 items-start text-sm py-2 border-b border-light">
+          <span class="font-bold" style="min-width:24px;">[${num}]</span>
+          <span>${icon} <strong>${esc(res.selected||'—')}</strong> ${!res.isCorrect?`→ <strong style="color:var(--brand-mint)">${esc(b.correct_answer)}</strong>`:''}</span>
+          ${!res.isCorrect && b.explanation ? `<span class="text-muted text-xs ml-auto" style="max-width:60%;">${esc(b.explanation)}</span>` : ''}
+        </div>`;
+      }).join('');
+      blankFeedback = `<div class="mt-4 p-4 rounded-lg" style="background:var(--bg-elevated);border:1px solid var(--border-light);">${rows}</div>`;
+    }
+
+    return `
+      <div class="p-4 rounded-lg mb-4" style="background:var(--bg-elevated);border:1.5px solid var(--border-light);">
+        <div class="text-xs font-bold text-muted uppercase mb-2">Word Bank</div>
+        <div>${wordBankList}</div>
+      </div>
+      <p class="text-sm text-muted mb-4">Read the passage carefully. Choose the best word from the box to fill in each blank.</p>
+      <div class="cloze-passage text-base text-main leading-loose p-4 rounded-lg" style="background:var(--bg-surface);">${passage}</div>
+      ${blankFeedback}`;
+  }
+
+  /**
+   * Builds editing UI: passage with underlined words + text inputs per line.
+   */
+  function buildEditingUI(q) {
+    const savedAns = state.answers[state.currentIndex] || {};
+    const lines = (q.passage_lines || []).map(line => {
+      const saved = savedAns[line.line_number] || '';
+      // Underline the target word in the line text
+      const rawText = line.text || '';
+      const underlined = line.underlined_word || '';
+      // Replace only the first exact match of underlined_word with a <u> tag
+      const escapedLine = esc(rawText).replace(
+        esc(underlined),
+        `<u style="text-decoration-color:var(--brand-rose);text-decoration-thickness:2px;font-weight:600;">${esc(underlined)}</u>`
+      );
+
+      let inputEl;
+      if (state.isAnswered) {
+        const res = (state.feedback && state.feedback.lineResults && state.feedback.lineResults[line.line_number]) || {};
+        const isCorrect = res.isCorrect;
+        const colour = isCorrect ? 'var(--brand-mint)' : 'var(--brand-error)';
+        inputEl = `<input type="text" value="${esc(saved)}" disabled
+          style="border-color:${colour};background:${isCorrect?'rgba(5,150,105,0.1)':'rgba(220,38,38,0.1)'};color:${colour};font-weight:600;border-radius:6px;padding:4px 8px;width:90px;text-align:center;">
+          ${!isCorrect && line.correct_word ? `<span class="text-xs font-bold" style="color:var(--brand-mint);">→ ${esc(line.correct_word)}</span>` : ''}`;
+      } else {
+        inputEl = `<input type="text" id="edit-line-${line.line_number}" value="${esc(saved)}"
+          placeholder="${esc(underlined)}" autocomplete="off"
+          style="border:1.5px solid var(--border-light);border-radius:6px;padding:4px 8px;width:90px;text-align:center;background:var(--bg-surface);"
+          oninput="window.saveEditingInput()">`;
+      }
+
+      return `<div class="flex items-center gap-3 py-3 border-b border-light">
+        <span class="text-xs font-bold text-muted" style="min-width:20px;">${line.line_number}.</span>
+        <span class="text-sm text-main flex-1">${escapedLine}</span>
+        <div class="flex items-center gap-2">${inputEl}</div>
+      </div>`;
+    }).join('');
+
+    // Per-line explanation feedback after answered
+    let editFeedback = '';
+    if (state.isAnswered && state.feedback && state.feedback.lineResults) {
+      const wrongLines = (q.passage_lines || []).filter(l => {
+        const res = state.feedback.lineResults[l.line_number];
+        return res && !res.isCorrect;
+      });
+      if (wrongLines.length > 0) {
+        editFeedback = `<div class="mt-4 p-4 rounded-lg" style="background:var(--bg-elevated);border:1px solid var(--border-light);">
+          <div class="text-xs font-bold text-muted uppercase mb-2">Explanations</div>
+          ${wrongLines.map(l => `<div class="text-sm text-main py-2 border-b border-light">
+            <span class="font-bold">[${l.line_number}] ${esc(l.underlined_word)} → ${esc(l.correct_word)}:</span> ${esc(l.explanation)}
+          </div>`).join('')}
+        </div>`;
+      }
+    }
+
+    return `
+      <div class="editing-passage p-4 rounded-lg" style="background:var(--bg-surface);">${lines}</div>
+      ${editFeedback}`;
+  }
+
   function renderQuiz() {
     if (state.questions.length === 0) {
       app.innerHTML = `<div class="card p-10 text-center max-w-[600px] w-full hover-lift"><div class="text-4xl mb-4">🕵️</div><h2 class="font-display text-2xl text-main">No questions found!</h2><p class="text-muted text-sm my-4">Miss Wena hasn't added questions for this specific combination yet. Check back soon!</p><button class="btn btn-primary hover-lift" onclick="window.location.href='subjects.html'">Return to Subjects</button></div>`;
@@ -151,92 +344,91 @@ window.initQuizEngine = function() {
     const q = state.questions[state.currentIndex];
     const isFirst = state.currentIndex === 0;
     const isLast = state.currentIndex === state.questions.length - 1;
-    
+    const isModelType = q.type === 'word_problem' || q.type === 'open_ended';
+
+    // Build input area by type
     let inputUi = '';
-    const savedAns = state.answers[state.currentIndex] || '';
+    if (q.type === 'mcq')           inputUi = buildMCQOptions(q);
+    else if (q.type === 'word_problem') inputUi = buildWordProblemUI(q);
+    else if (q.type === 'cloze')    inputUi = buildClozeUI(q);
+    else if (q.type === 'editing')  inputUi = buildEditingUI(q);
+    else                            inputUi = buildTextAreaUI(q);   // short_ans, open_ended
 
-    if (q.type === 'mcq') {
-      const letters = ['A','B','C','D'];
-      inputUi = q.options.map((opt, i) => {
-        const isSel = savedAns === letters[i];
-        let extraStyles = '';
-        if (state.isAnswered) {
-           if (letters[i] === q.correct_answer) extraStyles = 'border-color: var(--brand-mint); background: rgba(5,150,105,0.1);';
-           else if (isSel) extraStyles = 'border-color: var(--brand-error); background: rgba(220,38,38,0.1); opacity: 0.8;';
-           else extraStyles = 'opacity: 0.5; pointer-events: none;';
-        }
-        return `
-          <div class="mcq-opt ${isSel ? 'is-sel' : ''}" style="${extraStyles} ${state.isAnswered ? 'pointer-events:none;' : ''}" onclick="window.selectMcq('${letters[i]}')">
-            <span class="mcq-badge">${letters[i]}</span><span class="font-medium text-main">${esc(opt)}</span>
-          </div>`;
-      }).join('');
-    } else {
-      const isDrawMode = state.drawings[state.currentIndex] && state.drawings[state.currentIndex] !== 'text';
-      inputUi = `
-        <div class="flex justify-end gap-2 mb-2">
-          <button class="btn btn-sm ${!isDrawMode ? 'btn-secondary bg-sage-dark text-white' : 'btn-ghost'}" onclick="window.setMode('text')" ${state.isAnswered ? 'disabled' : ''}>⌨️ Type</button>
-          <button class="btn btn-sm ${isDrawMode ? 'btn-secondary bg-sage-dark text-white' : 'btn-ghost'}" onclick="window.setMode('draw')" ${state.isAnswered ? 'disabled' : ''}>✏️ Pen Tool</button>
-        </div>
-        ${!isDrawMode 
-          ? `<textarea id="qInput" class="form-input w-full p-4" rows="4" placeholder="Your answer..." ${state.isAnswered ? 'disabled' : ''}>${esc(savedAns)}</textarea>`
-          : `<div class="scratchpad-container">
-               <canvas id="scratchpadCanvas" class="scratchpad-canvas" ${state.isAnswered ? 'style="pointer-events:none;"' : ''}></canvas>
-               ${!state.isAnswered ? `<div class="scratchpad-tools"><button class="btn btn-sm btn-ghost bg-surface" onclick="window.clearCanvas()">🗑️ Clear</button></div>` : ''}
-             </div>
-             <input type="text" id="qInput" class="form-input mt-4" placeholder="Final Answer" value="${esc(savedAns)}" ${state.isAnswered ? 'disabled' : ''}>`
-        }
-      `;
-    }
-
+    // Build feedback panel
     let feedbackHtml = '';
     if (state.isAnswered && state.feedback) {
-      const isCorrect = state.feedback.status === 'correct';
-      const fbColor = isCorrect ? 'var(--brand-mint)' : 'var(--brand-error)';
-      const fbBg = isCorrect ? 'rgba(5,150,105,0.1)' : 'rgba(220,38,38,0.1)';
-      const title = isCorrect ? '🎉 Spot on!' : '💡 Miss Wena says:';
-      
-      feedbackHtml = `
-        <div class="feedback-panel is-open p-6 rounded-lg" style="background: ${fbBg}; border-left: 4px solid ${fbColor};">
-          <h4 class="font-bold text-lg mb-2" style="color: ${fbColor};">${title}</h4>
-          <p class="text-sm text-main leading-relaxed">
-            ${esc(state.feedback.text)}
-          </p>
-          ${!isCorrect && q.correct_answer ? `<div class="mt-4 text-sm font-bold text-main">Correct Answer: ${esc(q.correct_answer)}</div>` : ''}
-        </div>
-      `;
+      const fb = state.feedback;
+      if (fb.isModel) {
+        // Word problem / open-ended: show full worked solution
+        feedbackHtml = `<div class="mt-4 p-5 rounded-lg" style="background:rgba(57,255,179,0.07);border-left:4px solid var(--brand-mint);">
+          <div class="font-bold text-sm mb-2" style="color:var(--brand-mint);">Worked Solution</div>
+          <pre class="text-sm text-main whitespace-pre-wrap leading-relaxed">${esc(q.worked_solution || q.model_answer || '')}</pre>
+        </div>`;
+      } else if (fb.status === 'correct') {
+        feedbackHtml = `<div class="mt-4 p-5 rounded-lg" style="background:rgba(5,150,105,0.1);border-left:4px solid var(--brand-mint);">
+          <div class="font-bold mb-2" style="color:var(--brand-mint);">🎉 Spot on!</div>
+          <p class="text-sm text-main leading-relaxed">${esc(fb.text)}</p>
+          ${q.examiner_note ? `<p class="text-xs text-muted mt-2 italic">${esc(q.examiner_note)}</p>` : ''}
+        </div>`;
+      } else {
+        // Wrong / partial
+        const colour = fb.status === 'partial' ? 'var(--brand-amber)' : 'var(--brand-error)';
+        const bg = fb.status === 'partial' ? 'rgba(255,184,48,0.08)' : 'rgba(220,38,38,0.1)';
+        feedbackHtml = `<div class="mt-4 p-5 rounded-lg" style="background:${bg};border-left:4px solid ${colour};">
+          <div class="font-bold mb-2" style="color:${colour};">💡 Miss Wena says:</div>
+          <p class="text-sm text-main leading-relaxed">${esc(fb.text)}</p>
+          ${fb.correctAnswer ? `<div class="mt-3 text-sm font-bold text-main">Correct Answer: <span style="color:var(--brand-mint);">${esc(fb.correctAnswer)}</span></div>` : ''}
+        </div>`;
+      }
+    }
+
+    // Build action button
+    let actionBtn = '';
+    if (!state.isAnswered) {
+      if (isModelType) {
+        actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">Reveal Model Answer</button>`;
+      } else if (q.type === 'cloze') {
+        actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">Check Answers</button>`;
+      } else if (q.type === 'editing') {
+        actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">Check Answers</button>`;
+      } else if (q.type !== 'mcq') {
+        actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">Check Answer</button>`;
+      }
+      // MCQ: no explicit button — clicking option auto-checks
+    } else {
+      actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.navQuiz(1)">${isLast ? 'Finish Lab →' : 'Next Question →'}</button>`;
     }
 
     app.innerHTML = `
       <div class="w-full max-w-[680px]">
-        <!-- Top Bar: Progress & Streak -->
+        <!-- Progress & Streak -->
         <div class="flex justify-between items-center mb-6">
           <div class="flex flex-col gap-1">
             <div class="text-xs font-bold text-muted uppercase">Question ${state.currentIndex + 1} of ${state.questions.length}</div>
-            <div class="quiz-progress-bar" style="width: 120px; height: 6px;"><div class="quiz-progress-fill" style="width: ${((state.currentIndex)/state.questions.length)*100}%; background: var(--brand-rose);"></div></div>
+            <div class="quiz-progress-bar" style="width:120px;height:6px;">
+              <div class="quiz-progress-fill" style="width:${((state.currentIndex)/state.questions.length)*100}%;background:var(--brand-rose);"></div>
+            </div>
           </div>
-          <div class="badge ${state.streak >= 3 ? 'badge-amber' : 'badge-info'}" style="font-size: 1rem; padding: 6px 12px;">
+          <div class="badge ${state.streak >= 3 ? 'badge-amber' : 'badge-info'}" style="font-size:1rem;padding:6px 12px;">
             <span class="${state.streak > 0 ? 'streak-fire' : ''} mr-1">🔥</span> Streak: ${state.streak}
           </div>
         </div>
 
         <!-- Main Card -->
         <div class="card p-8 hover-lift w-full relative">
-          <div class="badge badge-info absolute top-0 left-8" style="transform: translateY(-50%);">${esc(titleCase(q.topic || 'Mixed'))}</div>
-          
-          <h3 class="text-xl font-bold text-main mb-6 mt-2 leading-relaxed">${esc(q.question_text)}</h3>
-          
+          <div class="badge badge-info absolute top-0 left-8" style="transform:translateY(-50%);">${esc(titleCase(q.topic || 'Mixed'))}</div>
+          ${q.difficulty ? `<div class="badge badge-${q.difficulty.toLowerCase()} absolute top-0 right-8" style="transform:translateY(-50%);">${esc(q.difficulty)}</div>` : ''}
+
+          <h3 class="text-xl font-bold text-main mb-6 mt-2 leading-relaxed" style="white-space:pre-line;">${esc(q.question_text)}</h3>
+
           <div class="w-full">${inputUi}</div>
-          
+
           ${feedbackHtml}
 
           <!-- Action Bar -->
           <div class="flex justify-between items-center mt-8 pt-6 border-t border-light">
             <button class="btn btn-ghost" onclick="window.navQuiz(-1)" ${isFirst ? 'style="visibility:hidden;"' : ''}>← Previous</button>
-            
-            ${!state.isAnswered 
-              ? `<button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">Check Answer</button>`
-              : `<button class="btn btn-primary hover-lift" onclick="window.navQuiz(1)">${isLast ? 'Finish Lab →' : 'Next Question →'}</button>`
-            }
+            ${actionBtn}
           </div>
         </div>
       </div>
@@ -248,10 +440,13 @@ window.initQuizEngine = function() {
   }
 
   // ── INTERACTIONS ──
+
+  /** Select an MCQ option — auto-checks immediately */
   window.selectMcq = (letter) => {
     if (state.isAnswered) return;
     state.answers[state.currentIndex] = letter;
-    render();
+    // Auto-check on selection
+    window.checkAnswer();
   };
 
   window.setMode = (mode) => {
@@ -261,9 +456,43 @@ window.initQuizEngine = function() {
     render();
   };
 
+  /** Save per-blank/per-line state for cloze and editing without closing inputs */
+  window.saveEditingInput = () => {
+    const q = state.questions[state.currentIndex];
+    if (q.type !== 'editing') return;
+    const ans = {};
+    (q.passage_lines || []).forEach(l => {
+      const el = document.getElementById(`edit-line-${l.line_number}`);
+      if (el) ans[l.line_number] = el.value;
+    });
+    state.answers[state.currentIndex] = ans;
+  };
+
   function saveInputState() {
     const q = state.questions[state.currentIndex];
-    if (q.type !== 'mcq') {
+    if (q.type === 'cloze') {
+      const ans = {};
+      (q.blanks || []).forEach(b => {
+        const num = b.id || b.number;
+        const el = document.getElementById(`cloze-blank-${num}`);
+        if (el) ans[num] = el.value;
+      });
+      state.answers[state.currentIndex] = ans;
+    } else if (q.type === 'editing') {
+      const ans = {};
+      (q.passage_lines || []).forEach(l => {
+        const el = document.getElementById(`edit-line-${l.line_number}`);
+        if (el) ans[l.line_number] = el.value;
+      });
+      state.answers[state.currentIndex] = ans;
+    } else if (q.type === 'word_problem') {
+      const ans = {};
+      (q.parts || []).forEach(p => {
+        const el = document.getElementById(`wp-${p.label}`);
+        if (el) ans[p.label] = el.value;
+      });
+      state.answers[state.currentIndex] = ans;
+    } else if (q.type !== 'mcq' && q.type !== 'open_ended') {
       const inp = document.getElementById('qInput');
       if (inp) state.answers[state.currentIndex] = inp.value;
     }
@@ -272,15 +501,15 @@ window.initQuizEngine = function() {
   }
 
   window.navQuiz = (dir) => {
-    if (!state.isAnswered && dir > 0) return; 
-    
+    if (!state.isAnswered && dir > 0) return;
+
     if (dir < 0) {
-       saveInputState();
-       state.currentIndex--;
-       state.isAnswered = true; 
-       state.feedback = null; 
-       render();
-       return;
+      saveInputState();
+      state.currentIndex--;
+      state.isAnswered = true;
+      state.feedback = null;
+      render();
+      return;
     }
 
     if (state.currentIndex === state.questions.length - 1) {
@@ -291,7 +520,7 @@ window.initQuizEngine = function() {
 
     saveInputState();
     state.currentIndex++;
-    state.isAnswered = !!state.answers[state.currentIndex]; 
+    state.isAnswered = !!state.answers[state.currentIndex];
     state.feedback = null;
     render();
   };
@@ -299,35 +528,92 @@ window.initQuizEngine = function() {
   window.checkAnswer = () => {
     saveInputState();
     const q = state.questions[state.currentIndex];
-    const ans = state.answers[state.currentIndex];
-    
-    if (!ans && q.type === 'mcq') {
-      alert("Please select an answer!");
+
+    // ── MCQ ──
+    if (q.type === 'mcq') {
+      const ans = state.answers[state.currentIndex];
+      if (!ans) { alert('Please select an answer!'); return; }
+      const isCorrect = ans === q.correct_answer;
+      const fbText = isCorrect
+        ? (q.worked_solution ? `Correct! ${q.worked_solution.split('\n')[0]}` : 'Perfectly executed!')
+        : (q.wrong_explanations?.[ans] || `The correct answer is ${q.correct_answer}.`);
+      if (isCorrect) { state.score++; state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak; }
+      else state.streak = 0;
+      state.isAnswered = true;
+      state.feedback = { status: isCorrect ? 'correct' : 'wrong', text: fbText, correctAnswer: isCorrect ? null : q.correct_answer };
+      render();
       return;
     }
 
-    let isCorrect = false;
-    let fbText = "";
-
-    if (q.type === 'mcq') {
-      isCorrect = ans === q.correct_answer;
-      fbText = isCorrect ? "Perfectly executed!" : (q.wrong_explanations?.[ans] || `The correct answer was ${q.correct_answer}.`);
-    } else {
-      const norm = (s) => String(s || '').toLowerCase().replace(/\s/g,'');
-      isCorrect = norm(ans) === norm(q.correct_answer);
-      fbText = isCorrect ? "Excellent logic!" : (q.model_answer || `The expected answer is ${q.correct_answer}. Please review your working steps.`);
+    // ── CLOZE ──
+    if (q.type === 'cloze') {
+      const ans = state.answers[state.currentIndex] || {};
+      const blanks = q.blanks || [];
+      let correctCount = 0;
+      const blankResults = {};
+      blanks.forEach(b => {
+        const num = b.id || b.number;
+        const selected = (ans[num] || '').trim();
+        const isCorrect = selected.toLowerCase() === (b.correct_answer || '').toLowerCase();
+        if (isCorrect) correctCount++;
+        blankResults[num] = { selected, isCorrect };
+      });
+      const allCorrect = correctCount === blanks.length;
+      if (allCorrect) { state.score++; state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak; }
+      else state.streak = 0;
+      state.isAnswered = true;
+      state.feedback = {
+        status: allCorrect ? 'correct' : 'partial',
+        text: allCorrect ? `All ${blanks.length} blanks correct!` : `${correctCount} of ${blanks.length} blanks correct. Review the highlighted answers below.`,
+        blankResults
+      };
+      render();
+      return;
     }
 
-    if (isCorrect) {
-      state.score++;
-      state.streak++;
-      if (state.streak > state.maxStreak) state.maxStreak = state.streak;
-    } else {
-      state.streak = 0; 
+    // ── EDITING ──
+    if (q.type === 'editing') {
+      const ans = state.answers[state.currentIndex] || {};
+      const lines = q.passage_lines || [];
+      let correctCount = 0;
+      const lineResults = {};
+      lines.forEach(l => {
+        const userAns = (ans[l.line_number] || '').trim();
+        const isCorrect = userAns.toLowerCase() === (l.correct_word || '').toLowerCase();
+        if (isCorrect) correctCount++;
+        lineResults[l.line_number] = { userAns, isCorrect };
+      });
+      const allCorrect = correctCount === lines.length;
+      if (allCorrect) { state.score++; state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak; }
+      else state.streak = 0;
+      state.isAnswered = true;
+      state.feedback = {
+        status: allCorrect ? 'correct' : 'partial',
+        text: allCorrect ? `All ${lines.length} corrections right!` : `${correctCount} of ${lines.length} corrections correct.`,
+        lineResults
+      };
+      render();
+      return;
     }
 
+    // ── WORD PROBLEM / OPEN-ENDED: reveal model answer ──
+    if (q.type === 'word_problem' || q.type === 'open_ended') {
+      state.isAnswered = true;
+      state.feedback = { status: 'model', text: '', isModel: true };
+      render();
+      return;
+    }
+
+    // ── SHORT ANSWER ──
+    const ans = String(state.answers[state.currentIndex] || '').trim();
+    const norm = (s) => String(s || '').toLowerCase().replace(/\s+/g, '');
+    const correct = norm(ans) === norm(q.correct_answer) ||
+      (q.accept_also || []).some(a => norm(ans) === norm(a));
+    const fbText = correct ? 'Excellent!' : `Expected: ${q.correct_answer}. ${q.worked_solution ? '\n' + q.worked_solution : ''}`;
+    if (correct) { state.score++; state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak; }
+    else state.streak = 0;
     state.isAnswered = true;
-    state.feedback = { status: isCorrect ? 'correct' : 'wrong', text: fbText };
+    state.feedback = { status: correct ? 'correct' : 'wrong', text: fbText };
     render();
   };
 
@@ -398,39 +684,6 @@ window.initQuizEngine = function() {
       [a[i], a[j]] = [a[j], a[i]];
     }
     return a;
-  }
-
-  async function init() {
-    try {
-      const params = new URLSearchParams(window.location.search);
-      const subject = params.get('subject') || 'mathematics';
-      const levelSlug = params.get('level') || 'primary-4';
-      const topic = params.get('topic');
-      const type = params.get('type');
-      
-      state.currentType = type;
-      
-      const filePath = resolveFile(subject, levelSlug, topic);
-      if (!filePath) {
-        state.questions = [];
-        render();
-        return;
-      }
-
-      const res = await fetch(filePath);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const all = await res.json();
-      
-      const pool = type && type !== 'mixed' ? all.filter(q => q.type === type) : all;
-      
-      state.questions = shuffle(pool).slice(0, 10);
-      state.quizStartTime = Date.now();
-      render();
-    } catch (err) {
-      console.warn("Local fetch failed:", err);
-      state.questions = [];
-      render();
-    }
   }
 
   // ── SAVE RESULTS ──
