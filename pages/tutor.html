@@ -200,4 +200,229 @@
   <script src="../js/supabase-client.js"></script>
   <script src="../js/tutor.js"></script>
 </body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Tutor — Superholic Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="icon" href="../assets/favicon.ico" />
+  <meta name="robots" content="noindex, nofollow" />
+  
+  <script src="/js/header.js" defer></script>
+  <script src="/js/footer.js" defer></script>
+  <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js"></script>
+  
+  <script type="module">
+    import { guardPage } from '/js/auth.js';
+    import { initAppShell } from '/js/app-shell.js';
+    
+    async function boot() {
+      try {
+        const profile = await guardPage(true);
+        initAppShell(profile);
+        
+        // --- JUNIOR GUARDRAIL & UNIFIED STATE RESOLVER ---
+        const sb = await window.getSupabase();
+        const urlParams = new URLSearchParams(window.location.search);
+        let activeStudentId = urlParams.get('student') || localStorage.getItem('shl_active_student_id');
+        
+        const { data: students } = await sb.from('students').select('id, level').eq('parent_id', profile.id);
+        const student = (students || []).find(s => s.id === activeStudentId) || (students || [])[0];
+        
+        if (student) {
+          localStorage.setItem('shl_active_student_id', student.id);
+          const isJunior = student.level.toLowerCase().includes('primary 1') || student.level.toLowerCase().includes('primary 2');
+          
+          document.querySelectorAll('.bottom-nav-item').forEach(link => {
+            const url = new URL(link.href, window.location.origin);
+            url.searchParams.set('student', student.id);
+            link.href = url.pathname + url.search;
+            
+            if (isJunior && link.getAttribute('href').includes('exam.html')) {
+              link.style.display = 'none';
+            }
+          });
+          
+          if (isJunior) {
+            const nav = document.getElementById('bottomNav');
+            if (nav) nav.style.justifyContent = 'space-evenly';
+          }
+        }
+      } catch (err) {
+        console.error('Boot sequence failed:', err);
+      }
+    }
+    
+    boot();
+  </script>
+
+  <style>
+    /* ── Tutor 3.0 Specific Chat Styles ── */
+    .chat-scroll-area { scroll-behavior: smooth; }
+    
+    /* CRITICAL FLEXBOX FIX: Removed width: fit-content; so the max-width: 85% rule is correctly enforced. */
+    .chat-bubble-user, .chat-bubble-tutor {
+      min-width: 0; 
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+
+    .chat-bubble-user {
+      background-color: var(--sage-dark);
+      color: var(--cream);
+      align-self: flex-end;
+      border-radius: 16px 16px 0 16px;
+      padding: 12px 16px;
+      max-width: 85%;
+      box-shadow: var(--shadow-sm);
+      flex-shrink: 0;
+    }
+    
+    .chat-bubble-tutor {
+      background-color: var(--bg-elevated);
+      color: var(--text-main);
+      align-self: flex-start;
+      border-radius: 16px 16px 16px 0;
+      padding: 16px;
+      max-width: 85%;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-light);
+      line-height: 1.6;
+      flex-shrink: 0;
+    }
+    
+    .chat-typing { align-self: flex-start; padding: 12px 16px; flex-shrink: 0; }
+    .chat-typing span {
+      display: inline-block; width: 6px; height: 6px;
+      background-color: var(--brand-rose); border-radius: 50%;
+      margin: 0 2px; animation: typing 1.4s infinite both;
+    }
+    .chat-typing span:nth-child(1) { animation-delay: 0s; }
+    .chat-typing span:nth-child(2) { animation-delay: 0.2s; }
+    .chat-typing span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typing { 0%, 80%, 100% { transform: scale(0); opacity: 0.5; } 40% { transform: scale(1); opacity: 1; } }
+
+    /* Canvas Area */
+    .scratchpad-container { 
+      border: 2px solid var(--border-light); 
+      border-radius: var(--radius-md); 
+      background: #FFFFFF; 
+      position: relative; 
+      overflow: hidden; 
+      margin-bottom: var(--space-4); 
+      display: none; 
+    }
+    .scratchpad-container.is-open { display: block; }
+    .scratchpad-canvas { width: 100%; height: 200px; cursor: crosshair; touch-action: none; }
+    
+    /* ── The Masterclass Mobile Overflow Fix ── */
+    .chat-main-card {
+      height: calc(100dvh - 240px);
+      min-height: 350px;
+      max-height: 800px;
+      border: 1px solid var(--border-dark);
+      display: flex;
+      flex-direction: column;
+    }
+  </style>
+</head>
+
+<body id="mainBody" class="has-bottom-nav bg-page texture-light-grid">
+
+  <global-header></global-header>
+
+  <main class="container py-8 flex flex-col" style="padding-top: calc(64px + var(--space-8)); max-width: 800px; min-height: 85vh;">
+    
+    <div id="tutor-limit-banner" class="p-4 mb-4 rounded-lg hidden" style="background: rgba(217, 119, 6, 0.1); border: 1px solid rgba(217, 119, 6, 0.2); color: var(--brand-amber);">
+      <strong>Daily Limit Reached:</strong> You've used your 10 free AI tutor messages today. <a href="pricing.html" style="text-decoration: underline; font-weight: bold;">Upgrade to continue</a>.
+    </div>
+
+    <div id="remedial-banner" class="hidden flex items-center justify-between flex-wrap gap-4 mb-4 p-4 rounded-lg" style="background: rgba(57,255,179,0.07); border: 1.5px solid var(--border-light); border-left: 3px solid var(--brand-mint); backdrop-filter: blur(12px);">
+      <p class="m-0 text-sm text-main">
+        🗺️ <strong class="text-success">Remedial Quest Active</strong> — Ask Miss Wena about <strong id="quest-topic-name" style="text-transform: capitalize;"></strong>
+      </p>
+      <a href="progress.html" class="btn btn-ghost btn-sm flex-shrink-0">← Quest Map</a>
+    </div>
+
+    <div class="card p-0 overflow-hidden mb-6 chat-main-card">
+      
+      <div class="p-4 flex items-center justify-between" style="background: #F9F6F0; border-bottom: 3px solid var(--brand-rose); z-index: 10;">
+         <div class="flex items-center gap-3">
+            <img src="../assets/images/miss_wena.png" alt="Miss Wena" style="width: 48px; height: 48px; object-fit: cover; border-radius: 50%; border: 2px solid var(--brand-rose); background: #f0c090;" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 52 52%22><rect width=%2252%22 height=%2252%22 fill=%22%23B76E79%22/><circle cx=%2226%22 cy=%2222%22 r=%2211%22 fill=%22%23f0c090%22/></svg>'">
+            <div>
+               <div class="font-display text-xl text-main tracking-wide">Miss Wena</div>
+               <div class="text-xs font-bold flex items-center gap-1" style="color: var(--brand-mint);">✨ Verified MOE-Aligned Superholic Tutor</div>
+            </div>
+         </div>
+         <div class="flex items-center gap-2">
+            <button id="saveChatBtn" class="btn btn-sm hover-lift hidden" style="background: rgba(183,110,121,0.1); color: var(--brand-rose); border: 1px solid rgba(183,110,121,0.3); font-size: 0.75rem; padding: 0 10px;">💾 Save Notes</button>
+            <span class="badge badge-success hidden sm:inline-flex" style="background: rgba(5,150,105,0.15);">Online</span>
+         </div>
+      </div>
+
+      <div id="chat-messages" class="flex-1 p-4 md:p-6 chat-scroll-area flex flex-col gap-4 overflow-y-auto bg-page" style="min-height: 0; overflow-y: auto;">
+         </div>
+
+      <div class="p-4 bg-surface relative" style="border-top: 1px solid var(--border-light); flex-shrink: 0; z-index: 10;">
+         
+         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+            <span class="text-xs font-bold text-muted uppercase tracking-wider">💡 Tip: Draw your working to get better help!</span>
+            <div class="flex gap-2 w-full sm:w-auto">
+               <button id="modeTextBtn" class="btn btn-sm flex-1 sm:flex-none" style="background: var(--sage-dark); color: white;">⌨️ Type</button>
+               <button id="modeDrawBtn" class="btn btn-sm btn-ghost flex-1 sm:flex-none">✏️ Pen Tool</button>
+            </div>
+         </div>
+         
+         <div id="drawArea" class="scratchpad-container">
+            <canvas id="tutorCanvas" class="scratchpad-canvas"></canvas>
+            <div style="position: absolute; top: 8px; right: 8px;">
+               <button class="btn btn-sm btn-ghost bg-surface hover-lift border border-light" onclick="window.clearCanvas()">🗑️ Clear</button>
+            </div>
+         </div>
+
+         <div class="flex gap-2 sm:gap-3 mt-2 w-full">
+            <input type="text" id="chat-input" class="form-input flex-1" placeholder="Ask your tutor anything..." autocomplete="off" style="height: 48px; padding: 0 16px; min-width: 0;">
+            <button id="chat-send" class="btn btn-primary hover-lift px-4 sm:px-6" style="height: 48px; flex-shrink: 0;">Send</button>
+         </div>
+      </div>
+    </div>
+
+    <div class="mb-8" style="flex-shrink: 0;">
+      <p class="text-xs font-bold text-muted uppercase tracking-wider mb-3">Try asking about any subject:</p>
+      <div class="flex flex-wrap gap-2 md:gap-3" id="starter-prompts">
+        <button class="btn btn-secondary btn-sm starter-prompt hover-lift">How do I draw a before-after bar model?</button>
+        <button class="btn btn-secondary btn-sm starter-prompt hover-lift">Test my Science Claim-Evidence-Reasoning!</button>
+        <button class="btn btn-secondary btn-sm starter-prompt hover-lift">Check my grammar for this sentence.</button>
+      </div>
+    </div>
+  </main>
+
+  <global-footer></global-footer>
+
+  <nav class="bottom-nav" id="bottomNav" aria-label="Mobile navigation">
+    <a href="subjects.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      Practise
+    </a>
+    <a href="tutor.html" class="bottom-nav-item is-active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      AI Tutor
+    </a>
+    <a href="exam.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="M9 12h6M9 16h4"/></svg>
+      Exam
+    </a>
+    <a href="progress.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Progress
+    </a>
+  </nav>
+
+  <script src="../js/supabase-client.js"></script>
+  <script src="../js/tutor.js"></script>
+</body>
 </html>
