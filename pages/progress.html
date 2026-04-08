@@ -53,17 +53,19 @@
 
   <main id="app" class="container py-10 flex flex-col items-center" style="max-width:800px; min-height: 80vh;">
     
-    <div id="progress-loading" class="card flex flex-col items-center justify-center w-full py-10" style="max-width: 600px;">
-      <div class="spinner-sm mb-4"></div>
+    <div id="progress-loading" class="w-full text-center py-10">
+      <div class="spinner-sm mx-auto mb-4"></div>
       <h2 class="font-display text-2xl text-main">Crunching Data...</h2>
       <p class="text-sm text-muted mt-2">Loading your latest mission report</p>
     </div>
 
-    <div id="progress-empty" class="card p-10 text-center hover-lift flex flex-col items-center w-full" style="max-width: 600px;" hidden>
-      <div class="text-4xl mb-4">🚀</div>
-      <h2 class="font-display text-2xl text-main mb-2">Ready for Liftoff!</h2>
-      <p class="text-muted text-sm mb-6">Complete your first practice paper or quiz to unlock your personalized Action Plan.</p>
-      <a href="subjects.html" class="btn btn-primary hover-lift">Start Practising</a>
+    <div id="progress-empty" class="w-full" hidden>
+      <div class="card p-10 text-center hover-lift" style="max-width: 600px; margin: 0 auto;">
+        <div class="text-4xl mb-4">🚀</div>
+        <h2 class="font-display text-2xl text-main mb-2">Ready for Liftoff!</h2>
+        <p class="text-muted text-sm mb-6">Complete your first practice paper or quiz to unlock your personalized Action Plan.</p>
+        <a href="subjects.html" class="btn btn-primary hover-lift">Start Practising</a>
+      </div>
     </div>
 
     <div id="progress-content" class="w-full" hidden>
