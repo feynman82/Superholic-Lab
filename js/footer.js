@@ -6,7 +6,7 @@ class GlobalFooter extends HTMLElement {
         <div class="container" style="position: relative; z-index: 10;">
           
           <!-- TOP SECTION: Logo & Useful Links Dropdown -->
-          <div class="flex flex-wrap items-center justify-between gap-4 mt-4" style="margin-bottom: var(--space-1);">
+          <div class="flex flex-wrap items-center justify-between gap-4 mt-4" style="margin-bottom: var(--space-4);">
             
             <!-- Brand (Left) -->
             <div class="flex items-center gap-3 font-display text-2xl text-white">
@@ -42,7 +42,7 @@ class GlobalFooter extends HTMLElement {
           </div>
 
           <!-- MIDDLE SECTION: Trust Badges, Socials, Back to Top -->
-          <div class="flex flex-wrap justify-between items-center footer-mid-row" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: var(--space-1); gap: 20px;">
+          <div class="flex flex-wrap justify-between items-center footer-mid-row" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: var(--space-4); gap: 20px;">
             
             <!-- Trust Badges (Image Logos) -->
             <div class="flex flex-wrap items-center gap-4">
