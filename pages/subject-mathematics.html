@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Primary Mathematics — MOE Syllabus P1–P6 | Superholic Lab</title>
+<meta name="description" content="Understand the MOE Primary Mathematics syllabus — 3 strands, 6 levels, and how Superholic Lab builds mastery from P1 to PSLE.">
+<link rel="canonical" href="https://www.superholiclab.com/pages/subject-mathematics.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../css/style.css">
+<link rel="icon" href="../assets/favicon.ico">
+<script src="/js/header.js" defer></script>
+<script src="/js/footer.js" defer></script>
+<style>
+/* ── buttons / badges ──────────────────────────────────────────── */
+.btn-glass { background: rgba(255,255,255,0.12); color: var(--cream); border: 1px solid rgba(255,255,255,0.22); backdrop-filter: blur(4px); }
+.btn-glass:hover:not(:disabled) { background: rgba(255,255,255,0.2); color: var(--cream); }
+.btn-white { background: var(--bg-surface); color: var(--brand-rose); font-weight: 700; }
+.btn-white:hover:not(:disabled) { background: var(--bg-elevated); }
+.btn-outline-white { background: transparent; color: var(--cream); border: 1px solid rgba(255,255,255,0.35); }
+.badge-glass     { background: rgba(255,255,255,0.1);  color: var(--cream); }
+.badge-dark-mint { background: rgba(5,150,105,0.18);   color: var(--brand-mint); }
+.badge-maths-bg  { background: rgba(59,130,246,0.15);  color: var(--maths-colour); }
+.card-rule-rose  { border-left: 4px solid var(--brand-rose); }
+/* ── helpers ────────────────────────────────────────────────────── */
+p { text-align: justify; }
+.badge, .btn, h1, h2, h3, h4, .text-center p { text-align: initial; }
+.self-start { align-self: flex-start; }
+.list-reset { list-style: none; }
+.prose-cap  { max-width: 600px; margin-left: auto; margin-right: auto; }
+.label-spaced { letter-spacing: 0.08em; text-transform: uppercase; }
+/* ── subject breadcrumb ─────────────────────────────────────────── */
+.subject-nav { display: flex; gap: var(--space-3); flex-wrap: wrap; align-items: center; margin-bottom: var(--space-6); }
+.subject-nav a { font-size: var(--text-sm); color: rgba(255,255,255,0.65); text-decoration: none; }
+.subject-nav a:hover { color: var(--cream); }
+.subject-nav-sep { color: rgba(255,255,255,0.35); font-size: var(--text-sm); }
+.subject-nav .active { color: var(--brand-rose); font-weight: 700; }
+/* ── strand cards ───────────────────────────────────────────────── */
+.strand-card { flex: 1; min-width: 220px; border-radius: var(--radius-lg); padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-3); }
+.strand-na  { background: rgba(59,130,246,0.07);  border: 1.5px solid rgba(59,130,246,0.25); }
+.strand-mg  { background: rgba(183,110,121,0.07); border: 1.5px solid rgba(183,110,121,0.25); }
+.strand-st  { background: rgba(5,150,105,0.07);   border: 1.5px solid rgba(5,150,105,0.25); }
+/* ── CPA row ────────────────────────────────────────────────────── */
+.cpa-row   { display: flex; flex-wrap: wrap; align-items: stretch; gap: 0; justify-content: center; }
+.cpa-step  { flex: 1; min-width: 160px; display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-4); border-radius: var(--radius-lg); text-align: center; }
+.cpa-arrow { display: flex; align-items: center; padding: 0 var(--space-2); color: var(--border-dark); font-size: var(--text-xl); flex-shrink: 0; }
+/* ── level tabs ─────────────────────────────────────────────────── */
+.level-tabs { display: inline-flex; flex-wrap: wrap; gap: var(--space-1); background: var(--brand-sage); border-radius: var(--radius-full); padding: var(--space-1); }
+.level-tab  { border-radius: var(--radius-full); padding: var(--space-1) var(--space-4); font-size: var(--text-sm); font-weight: 700; cursor: pointer; border: none; font-family: var(--font-body); }
+.tab-active   { background: var(--bg-surface); color: var(--text-main); }
+.tab-inactive { background: transparent; color: var(--cream); }
+.level-panel  { display: none; }
+.level-panel.is-active { display: block; }
+.level-alert  { border-left: 4px solid var(--brand-amber); background: rgba(217,119,6,0.07); border-radius: 0 var(--radius-md) var(--radius-md) 0; padding: var(--space-3) var(--space-4); margin-bottom: var(--space-4); }
+/* ── topic chips ────────────────────────────────────────────────── */
+.topic-grid { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-3); }
+.chip     { font-size: var(--text-xs); font-weight: 600; padding: 3px var(--space-3); border-radius: var(--radius-full); }
+.chip-na  { background: rgba(59,130,246,0.12); color: var(--maths-colour); border: 1px solid rgba(59,130,246,0.25); }
+.chip-mg  { background: rgba(183,110,121,0.12); color: var(--brand-rose); border: 1px solid rgba(183,110,121,0.25); }
+.chip-st  { background: rgba(5,150,105,0.12); color: var(--brand-mint); border: 1px solid rgba(5,150,105,0.25); }
+/* ── question type cards on dark ───────────────────────────────── */
+.qtype-card { flex: 1; min-width: 220px; border-radius: var(--radius-lg); padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-3); background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); }
+/* ── mistake cards ──────────────────────────────────────────────── */
+.mistake-card { background: var(--bg-page); border-radius: var(--radius-lg); padding: var(--space-5); flex: 1; min-width: 260px; display: flex; flex-direction: column; gap: var(--space-3); }
+.tag-wrong { display: inline-flex; align-items: center; gap: 4px; background: rgba(239,68,68,0.1); color: #DC2626; border-radius: var(--radius-full); padding: 2px var(--space-3); font-size: var(--text-xs); font-weight: 700; }
+.tag-right { display: inline-flex; align-items: center; gap: 4px; background: rgba(5,150,105,0.1); color: var(--brand-mint); border-radius: var(--radius-full); padding: 2px var(--space-3); font-size: var(--text-xs); font-weight: 700; }
+.ans-wrong { background: rgba(239,68,68,0.04); border: 1px solid rgba(239,68,68,0.2); border-radius: var(--radius-md); padding: var(--space-3); }
+.ans-right { background: rgba(5,150,105,0.04); border: 1px solid rgba(5,150,105,0.2); border-radius: var(--radius-md); padding: var(--space-3); }
+/* ── extra badge variants to avoid rgba in HTML ────────────────── */
+.badge-mg-bg { background: rgba(183,110,121,0.12); color: var(--brand-rose); }
+.badge-st-bg { background: rgba(5,150,105,0.12); color: var(--brand-mint); }
+/* ── CPA step backgrounds ─────────────────────────────────────── */
+.cpa-na { background: rgba(59,130,246,0.06); }
+.cpa-mg { background: rgba(183,110,121,0.06); }
+.cpa-st { background: rgba(5,150,105,0.06); }
+/* ── P6 alert (rose variant) ──────────────────────────────────── */
+.level-alert-rose { border-left: 4px solid var(--brand-rose); background: rgba(183,110,121,0.07); border-radius: 0 var(--radius-md) var(--radius-md) 0; padding: var(--space-3) var(--space-4); margin-bottom: var(--space-4); }
+</style>
+</head>
+<body class="has-bottom-nav">
+<global-header></global-header>
+
+
+<!-- S1 · HERO ═══════════════════════════════════════════════════ -->
+<section class="bg-sage texture-dots py-10" style="padding-top: calc(64px + var(--space-8)); position: relative;">
+  <div class="container">
+    <div class="subject-nav">
+      <a href="/index.html">Home</a><span class="subject-nav-sep">›</span>
+      <a href="/pages/subjects.html">Subjects</a><span class="subject-nav-sep">›</span>
+      <span class="active">Mathematics</span>
+      <span class="subject-nav-sep">·</span>
+      <a href="subject-science.html">Science</a>
+      <span class="subject-nav-sep">·</span>
+      <a href="subject-english.html">English</a>
+    </div>
+    <div class="flex flex-wrap items-start gap-8">
+      <div class="flex-1 flex flex-col gap-4" style="min-width: 300px;">
+        <div class="badge badge-maths-bg">Primary Mathematics · P1–P6 · MOE 2021 Syllabus</div>
+        <h1 class="font-display text-4xl">
+          Singapore Maths —<br>
+          <span class="text-rose">Built on Reasoning, Not Repetition.</span>
+        </h1>
+        <p class="text-muted text-lg" style="max-width: 480px;">
+          Singapore Primary Mathematics is consistently the world's highest-ranking primary curriculum. Your child is not memorising formulas — they are building a structured reasoning system across three content strands, from concrete manipulation in P1 to algebraic thinking in P6. Superholic Lab reinforces every concept at every level, with instant wrong-answer explanations and a digital bar-model scratchpad.
+        </p>
+        <div class="flex flex-wrap gap-3">
+          <div class="badge badge-glass">Concrete–Pictorial–Abstract Method</div>
+          <div class="badge badge-glass">Spiral Curriculum P1→P6</div>
+          <div class="badge badge-glass">Bar Model Method</div>
+        </div>
+        <div class="flex flex-wrap gap-4">
+          <a href="/pages/signup.html?subject=mathematics&mode=trial" class="btn btn-primary">Start Free Maths Practice →</a>
+          <a href="#topic-map" class="btn btn-glass">See Full Syllabus</a>
+        </div>
+      </div>
+      <div class="flex-1" style="min-width: 280px; max-width: 440px;">
+        <img src="../assets/images/kid_studying.png"
+             alt="Singapore student practising mathematics"
+             style="width:100%; border-radius:var(--radius-lg); box-shadow:var(--shadow-md);">
+      </div>
+    </div>
+  </div>
+  <div class="hero-pet-track"><div class="walking-dog">🐕</div></div>
+</section>
+
+
+<!-- S2 · THE 3 STRANDS ══════════════════════════════════════════ -->
+<section class="bg-white py-10">
+  <div class="container">
+    <div class="flex flex-col items-center text-center mb-8">
+      <div class="badge badge-info mb-2">MOE Curriculum Framework</div>
+      <h2 class="font-display text-3xl mb-2 text-main">Three Strands. Six Years. One Coherent System.</h2>
+      <p class="text-muted text-lg prose-cap">MOE organises all P1–P6 content across three strands. A child can score well in one strand and poorly in another — which is exactly why Superholic Lab tracks progress per strand, not just by total percentage.</p>
+    </div>
+    <div class="flex flex-wrap gap-5 mb-8">
+      <div class="strand-card strand-na">
+        <div class="flex items-center gap-3">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--maths-colour)" stroke-width="2" stroke-linecap="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          <div class="font-display text-xl" style="color:var(--maths-colour);">Number &amp; Algebra</div>
+        </div>
+        <p class="text-muted text-sm">Whole numbers, fractions, decimals, percentages, ratio, rate, speed, and algebraic expressions. This is the largest strand — and where most PSLE Paper 2 marks live. The spiral curriculum revisits these concepts at every level with increasing complexity.</p>
+        <div class="badge badge-maths-bg self-start">P1–P6 · Largest strand · Most PSLE marks</div>
+      </div>
+      <div class="strand-card strand-mg">
+        <div class="flex items-center gap-3">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round">
+            <polygon points="12 2 22 20 2 20"/>
+          </svg>
+          <div class="font-display text-xl" style="color:var(--brand-rose);">Measurement &amp; Geometry</div>
+        </div>
+        <p class="text-muted text-sm">Length, mass, volume, area, perimeter, angles, shapes, symmetry, and circles. Spatial reasoning and diagram reading are essential here. Children who cannot visualise problems lose marks even when they know the calculation — bar models and diagrams close this gap.</p>
+        <div class="badge badge-mg-bg self-start">P1–P6 · Visual reasoning · Circle geometry at P6</div>
+      </div>
+      <div class="strand-card strand-st">
+        <div class="flex items-center gap-3">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--brand-mint)" stroke-width="2" stroke-linecap="round">
+            <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+          </svg>
+          <div class="font-display text-xl" style="color:var(--brand-mint);">Statistics</div>
+        </div>
+        <p class="text-muted text-sm">Picture graphs at P1, bar graphs at P2, line graphs at P4, and pie charts at P6. Data interpretation questions appear in every WA and PSLE paper. Often underestimated by parents, these questions test reading accuracy as much as maths knowledge.</p>
+        <div class="badge badge-st-bg self-start">P1–P6 · Grows every level · Pie charts at P6</div>
+      </div>
+    </div>
+
+    <!-- CPA Diagram -->
+    <div class="card p-6">
+      <div class="text-xs font-bold text-muted label-spaced mb-4 text-center">Singapore's Concrete–Pictorial–Abstract Teaching Approach</div>
+      <div class="cpa-row">
+        <div class="cpa-step cpa-na">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--maths-colour)" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="14" width="5" height="5"/><rect x="10" y="9" width="5" height="10"/><rect x="17" y="5" width="5" height="14"/></svg>
+          <div class="font-bold text-sm" style="color:var(--maths-colour);">Concrete</div>
+          <div class="text-xs text-muted">Manipulatives, counting objects, hands-on learning</div>
+        </div>
+        <div class="cpa-arrow">→</div>
+        <div class="cpa-step cpa-mg">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="10" width="8" height="4"/><rect x="14" y="10" width="8" height="4"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+          <div class="font-bold text-sm" style="color:var(--brand-rose);">Pictorial</div>
+          <div class="text-xs text-muted">Bar models, diagrams — Superholic Lab's digital scratchpad</div>
+        </div>
+        <div class="cpa-arrow">→</div>
+        <div class="cpa-step cpa-st">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--brand-mint)" stroke-width="1.5" stroke-linecap="round"><line x1="4" y1="19" x2="10" y2="13"/><line x1="14" y1="13" x2="20" y2="7"/><circle cx="4" cy="19" r="1" fill="var(--brand-mint)"/><circle cx="12" cy="15" r="1" fill="var(--brand-mint)"/><circle cx="20" cy="7" r="1" fill="var(--brand-mint)"/></svg>
+          <div class="font-bold text-sm" style="color:var(--brand-mint);">Abstract</div>
+          <div class="text-xs text-muted">Equations, symbols, algebraic thinking</div>
+        </div>
+      </div>
+      <p class="text-muted text-sm text-center mt-4">Superholic Lab's bar model scratchpad keeps the Pictorial stage alive inside every question — so students never skip from concrete to abstract without building the bridge between them.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- S3 · LEVEL TOPIC MAP ════════════════════════════════════════ -->
+<section class="bg-page texture-light-grid py-10" id="topic-map">
+  <div class="container">
+    <div class="flex flex-col items-center text-center mb-8">
+      <div class="badge badge-amber mb-2">Full Syllabus Map</div>
+      <h2 class="font-display text-3xl mb-2 text-main">What Your Child Learns at Every Level.</h2>
+      <p class="text-muted text-lg prose-cap">Select your child's level. Topic colours indicate strand:
+        <span style="color:var(--maths-colour); font-weight:700;">blue = Number &amp; Algebra</span> ·
+        <span style="color:var(--brand-rose); font-weight:700;">rose = Measurement &amp; Geometry</span> ·
+        <span style="color:var(--brand-mint); font-weight:700;">green = Statistics</span>.
+      </p>
+    </div>
+    <div class="flex justify-center mb-6">
+      <div class="level-tabs">
+        <button class="level-tab tab-inactive" data-level="p1" onclick="setLevel('p1')">P1</button>
+        <button class="level-tab tab-inactive" data-level="p2" onclick="setLevel('p2')">P2</button>
+        <button class="level-tab tab-inactive" data-level="p3" onclick="setLevel('p3')">P3</button>
+        <button class="level-tab tab-active"   data-level="p4" onclick="setLevel('p4')">P4</button>
+        <button class="level-tab tab-inactive" data-level="p5" onclick="setLevel('p5')">P5</button>
+        <button class="level-tab tab-inactive" data-level="p6" onclick="setLevel('p6')">P6</button>
+      </div>
+    </div>
+    <div class="card p-6">
+      <!-- P1 -->
+      <div class="level-panel" id="panel-p1">
+        <div class="flex items-center gap-3 mb-3"><div class="font-display text-2xl text-main">Primary 1</div><div class="badge badge-info">Foundation Year · No formal exams</div></div>
+        <p class="text-muted text-sm mb-3">P1 is where a love of — or fear of — mathematics is formed. No WAs or exams, but the counting, ordering, and pattern skills built here underpin everything through P6. Daily practice matters even at this stage.</p>
+        <div class="topic-grid">
+          <span class="chip chip-na">Whole numbers to 100</span><span class="chip chip-na">Addition within 100</span><span class="chip chip-na">Subtraction within 100</span><span class="chip chip-na">Ordinal numbers (1st–10th)</span><span class="chip chip-na">Number patterns</span>
+          <span class="chip chip-mg">Shapes (rectangle, square, circle, triangle)</span><span class="chip chip-mg">Length (comparing, non-standard units)</span><span class="chip chip-mg">Mass (heavier/lighter)</span>
+          <span class="chip chip-st">Picture graphs (reading)</span>
+        </div>
+      </div>
+      <!-- P2 -->
+      <div class="level-panel" id="panel-p2">
+        <div class="flex items-center gap-3 mb-3"><div class="font-display text-2xl text-main">Primary 2</div><div class="badge badge-info">First Multiplication Tables</div></div>
+        <p class="text-muted text-sm mb-3">Multiplication arrives at P2 — one of the biggest cognitive leaps in primary maths. Times tables for 2, 3, 4, 5, and 10 must become automatic before P3. Money and time also debut here.</p>
+        <div class="topic-grid">
+          <span class="chip chip-na">Whole numbers to 1,000</span><span class="chip chip-na">Addition & subtraction (3 digits)</span><span class="chip chip-na">Multiplication (×2, ×3, ×4, ×5, ×10)</span><span class="chip chip-na">Division (÷2, ÷3, ÷4, ÷5, ÷10)</span><span class="chip chip-na">Fractions (½, ¼, ¾)</span><span class="chip chip-na">Mental calculation strategies</span>
+          <span class="chip chip-mg">Money (coins and notes, $-and-cents)</span><span class="chip chip-mg">Time (hours and minutes, a.m./p.m.)</span><span class="chip chip-mg">2D shapes (sides, corners)</span><span class="chip chip-mg">3D shapes (cube, cuboid, cone, cylinder, sphere)</span>
+          <span class="chip chip-st">Picture graphs</span><span class="chip chip-st">Bar graphs (introduction, scale 1)</span>
+        </div>
+      </div>
+      <!-- P3 -->
+      <div class="level-panel" id="panel-p3">
+        <div class="flex items-center gap-3 mb-3"><div class="font-display text-2xl text-main">Primary 3</div><div class="badge badge-amber">WA1 and WA2 Begin</div></div>
+        <div class="level-alert"><div class="font-bold text-sm text-main mb-1">Formal assessment begins at P3.</div><div class="text-xs text-muted">Weighted Assessments now carry marks. Compound measurements and fractions with denominators up to 12 are the biggest new challenges. The bar model method for word problems becomes essential.</div></div>
+        <div class="topic-grid">
+          <span class="chip chip-na">Whole numbers to 10,000</span><span class="chip chip-na">All 4 operations (×6 to ×9 tables)</span><span class="chip chip-na">Fractions (denominators up to 12)</span><span class="chip chip-na">Equivalent fractions</span>
+          <span class="chip chip-mg">Length, mass, volume (compound units: km/m, kg/g, l/ml)</span><span class="chip chip-mg">Angles (right, acute, obtuse — identifying)</span><span class="chip chip-mg">Perpendicular and parallel lines</span><span class="chip chip-mg">Area and perimeter of rectangles and squares</span>
+          <span class="chip chip-st">Bar graphs (scaled, reading and creating)</span>
+        </div>
+      </div>
+      <!-- P4 -->
+      <div class="level-panel is-active" id="panel-p4">
+        <div class="flex items-center gap-3 mb-3"><div class="font-display text-2xl text-main">Primary 4</div><div class="badge badge-amber">Critical Plateau Year</div></div>
+        <div class="level-alert"><div class="font-bold text-sm text-main mb-1">P4 is where many children plateau — and where Superholic Lab has the most impact.</div><div class="text-xs text-muted">Factors, mixed number fractions, and decimals arrive simultaneously. Word problems require multi-step bar models. Students who struggle at P4 without correction fall progressively behind at P5 and P6.</div></div>
+        <div class="topic-grid">
+          <span class="chip chip-na">Whole numbers to 100,000</span><span class="chip chip-na">Factors and multiples (including HCF, LCM)</span><span class="chip chip-na">Fractions — mixed numbers and improper fractions</span><span class="chip chip-na">Fractions × whole number</span><span class="chip chip-na">Decimals to 2 decimal places</span><span class="chip chip-na">Decimals × and ÷ whole number</span>
+          <span class="chip chip-mg">Area and perimeter of composite figures</span><span class="chip chip-mg">Angles — measuring, calculating, in shapes</span><span class="chip chip-mg">Symmetry (line of symmetry)</span><span class="chip chip-mg">Parallelogram, rhombus, trapezoid</span>
+          <span class="chip chip-st">Tables and line graphs</span>
+        </div>
+      </div>
+      <!-- P5 -->
+      <div class="level-panel" id="panel-p5">
+        <div class="flex items-center gap-3 mb-3"><div class="font-display text-2xl text-main">Primary 5</div><div class="badge badge-amber">Heaviest Content Year</div></div>
+        <div class="level-alert"><div class="font-bold text-sm text-main mb-1">Ratio, percentage, and rate all arrive together at P5.</div><div class="text-xs text-muted">P5 is consistently cited by parents as the year marks drop. Three major new concepts (ratio, percentage, rate) compound existing fraction difficulty. Volume of 3D shapes and triangle geometry are added to Measurement & Geometry. This is the year to build strong daily practice habits.</div></div>
+        <div class="topic-grid">
+          <span class="chip chip-na">Whole numbers to 10,000,000</span><span class="chip chip-na">Fractions (÷ by fractions, complex 4-operation)</span><span class="chip chip-na">Ratio (2 and 3 quantities)</span><span class="chip chip-na">Percentage (finding %, % change)</span><span class="chip chip-na">Decimals to 3 decimal places</span><span class="chip chip-na">Average (mean)</span><span class="chip chip-na">Rate</span>
+          <span class="chip chip-mg">Area of triangle</span><span class="chip chip-mg">Volume of cube and cuboid</span><span class="chip chip-mg">Angles in triangles (angle sum = 180°)</span><span class="chip chip-mg">Isosceles, equilateral, right-angled triangles</span><span class="chip chip-mg">Angles on a straight line / at a point</span>
+          <span class="chip chip-st">Average and interpretation in context</span>
+        </div>
+      </div>
+      <!-- P6 -->
+      <div class="level-panel" id="panel-p6">
+        <div class="flex items-center gap-3 mb-3"><div class="font-display text-2xl text-main">Primary 6</div><div class="badge badge-rose">PSLE Year</div></div>
+        <div class="level-alert-rose"><div class="font-bold text-sm text-main mb-1">P6 introduces Algebra and Circles — and synthesises P1–P5 into PSLE problems.</div><div class="text-xs text-muted">PSLE Paper 2 problems can draw on any P3–P6 topic. Algebra (using letters for unknowns) is entirely new. Speed problems are PSLE favourites. Circle geometry is high-yield. Past-paper practice is essential — and every question Superholic Lab generates reflects current PSLE formats.</div></div>
+        <div class="topic-grid">
+          <span class="chip chip-na">Algebra — expressions, equations, substitution</span><span class="chip chip-na">Speed (distance, time, rate)</span><span class="chip chip-na">Fractions/Decimals/Percentage (advanced, combined)</span><span class="chip chip-na">Ratio (before-and-after problems)</span>
+          <span class="chip chip-mg">Circles — circumference and area</span><span class="chip chip-mg">Composite figures with circles</span><span class="chip chip-mg">Volume of complex solid figures</span><span class="chip chip-mg">Nets of 3D shapes</span><span class="chip chip-mg">Angles in shapes — all types combined</span>
+          <span class="chip chip-st">Pie charts — reading and calculating</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- S4 · HOW WE TEST MATHS ═════════════════════════════════════ -->
+<section class="bg-sage-dark texture-grid py-10">
+  <div class="container">
+    <div class="flex flex-col items-center text-center mb-8">
+      <div class="badge badge-dark-mint mb-2">Superholic Lab Question Types</div>
+      <h2 class="font-display text-3xl mb-2">We Test Maths the Way PSLE Does.</h2>
+      <p class="text-muted text-lg prose-cap">Superholic Lab uses four question formats — mirroring exactly what your child faces in WA, EOY, and PSLE papers. Format familiarity reduces exam anxiety and improves performance.</p>
+    </div>
+    <div class="flex flex-wrap gap-5">
+      <div class="qtype-card">
+        <div class="flex items-center gap-3">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--maths-colour)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <div class="font-bold text-white">MCQ — Booklet A</div>
+        </div>
+        <p class="text-muted text-sm">Four options. One correct answer. PSLE Booklet A: 15 MCQs × 1 mark each. Superholic Lab explains why each wrong option traps students — not just which is right.</p>
+        <div class="badge badge-glass self-start">P1–P6 · 1 mark each</div>
+      </div>
+      <div class="qtype-card">
+        <div class="flex items-center gap-3">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
+          <div class="font-bold text-white">Short Answer — Booklet B</div>
+        </div>
+        <p class="text-muted text-sm">Numeric answer with no options to choose from. PSLE Booklet B: 15 questions worth 1–2 marks. Superholic Lab shows full worked solutions in MOE M1/A1 marking format.</p>
+        <div class="badge badge-glass self-start">P1–P6 · 1–2 marks each</div>
+      </div>
+      <div class="qtype-card">
+        <div class="flex items-center gap-3">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--brand-amber)" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+          <div class="font-bold text-white">Word Problem — Paper 2</div>
+        </div>
+        <p class="text-muted text-sm">Multi-step problems requiring full working. PSLE Paper 2: 5–6 word problems worth 3–5 marks each — the section that decides AL grades. Full method marks require correct bar model or equation approach, not just the right final number.</p>
+        <div class="badge badge-glass self-start">P3–P6 · 3–5 marks each</div>
+      </div>
+      <div class="qtype-card">
+        <div class="flex items-center gap-3">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--brand-mint)" stroke-width="2" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          <div class="font-bold text-white">Digital Scratchpad</div>
+        </div>
+        <p class="text-muted text-sm">Students draw bar models and working directly on-screen. Miss Wena evaluates the approach — not just the answer. This is the only platform in Singapore where your child's method is assessed, not just their final number.</p>
+        <div class="badge badge-glass self-start">All levels · Bar model feedback</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- S5 · COMMON MISTAKES ════════════════════════════════════════ -->
+<section class="bg-white py-10">
+  <div class="container">
+    <div class="flex flex-col items-center text-center mb-8">
+      <div class="badge badge-rose mb-2">Why Children Lose Marks</div>
+      <h2 class="font-display text-3xl mb-2 text-main">Three Mistakes. Thousands of Lost Marks. One Fix.</h2>
+      <p class="text-muted text-lg prose-cap">These errors cost Singapore students marks in every WA and PSLE. Superholic Lab names the exact misconception in every wrong-answer explanation — so the pattern breaks immediately.</p>
+    </div>
+    <div class="flex flex-wrap gap-6">
+      <div class="mistake-card">
+        <div class="flex items-center gap-3"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg><div class="font-bold text-main">Fraction Addition Error</div></div>
+        <div class="tag-wrong">Common wrong answer</div>
+        <div class="ans-wrong"><div class="font-bold text-sm">⅓ + ¼ = 2/7</div><div class="text-xs text-muted">Adding numerators AND denominators separately</div></div>
+        <div class="tag-right">What the examiner expects</div>
+        <div class="ans-right"><div class="font-bold text-sm">⅓ + ¼ = 4/12 + 3/12 = 7/12</div><div class="text-xs text-muted">Convert to common denominator first</div></div>
+        <p class="text-muted text-sm">Superholic Lab: "The denominator tells you what type of fraction you have — you cannot add different types without converting. This is why ⅓ + ¼ cannot equal 2/7."</p>
+      </div>
+      <div class="mistake-card">
+        <div class="flex items-center gap-3"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--brand-amber)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v12"/></svg><div class="font-bold text-main">Percentage Reversal</div></div>
+        <div class="tag-wrong">Common wrong answer</div>
+        <div class="ans-wrong"><div class="font-bold text-sm">$80 after 20% discount → original = $80 × 1.2 = $96</div><div class="text-xs text-muted">Treating $80 as 120% instead of 80%</div></div>
+        <div class="tag-right">What the examiner expects</div>
+        <div class="ans-right"><div class="font-bold text-sm">80% → $80, so 100% → $80 ÷ 0.8 = $100</div><div class="text-xs text-muted">$80 is 80% of the original price</div></div>
+        <p class="text-muted text-sm">Superholic Lab: "The $80 is what you pay after the discount — it represents 80% of the original, not 120%. To find 100%, divide by 0.8, not multiply by 1.2."</p>
+      </div>
+      <div class="mistake-card">
+        <div class="flex items-center gap-3"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--brand-mint)" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><div class="font-bold text-main">Word Problem Misread</div></div>
+        <div class="tag-wrong">Common error</div>
+        <div class="ans-wrong"><div class="font-bold text-sm">"Ali has 30 more stickers than Ben" → student finds Ali's total</div><div class="text-xs text-muted">Question asked for Ben — wrong person answered</div></div>
+        <div class="tag-right">What the examiner expects</div>
+        <div class="ans-right"><div class="font-bold text-sm">Draw bar model first. Underline "How many does Ben have?" Solve for Ben = total − 30</div><div class="text-xs text-muted">Always identify WHO you are finding before calculating</div></div>
+        <p class="text-muted text-sm">Superholic Lab: "Before writing a single number, underline what the question asks you to find. Draw the bar model — it makes clear who has more and who you need to calculate."</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- S6 · PROGRESS ═══════════════════════════════════════════════ -->
+<section class="bg-page py-10">
+  <div class="container">
+    <div class="flex flex-wrap items-start gap-8">
+      <div class="flex-1" style="min-width: 280px;">
+        <div class="badge badge-info mb-3">Live AL Tracking by Strand</div>
+        <h2 class="font-display text-3xl mb-3 text-main">Know Exactly Which Strand Needs Work.</h2>
+        <p class="text-muted text-lg">Most platforms give a single percentage. Superholic Lab gives an AL grade per strand — so you know immediately whether the weakness is Number &amp; Algebra, Measurement &amp; Geometry, or Statistics. The Plan Quest then targets that strand specifically.</p>
+        <div class="flex flex-col gap-4 mt-5">
+          <div>
+            <div class="flex justify-between mb-1"><span class="text-sm font-bold text-main">Number &amp; Algebra</span><span class="badge badge-info">AL3</span></div>
+            <div class="quiz-progress-bar"><div class="quiz-progress-fill" style="width:68%; background:var(--maths-colour);"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between mb-1"><span class="text-sm font-bold text-main">Measurement &amp; Geometry</span><span class="badge badge-amber">AL5</span></div>
+            <div class="quiz-progress-bar"><div class="quiz-progress-fill" style="width:44%; background:var(--brand-rose);"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between mb-1"><span class="text-sm font-bold text-main">Statistics</span><span class="badge badge-success">AL2</span></div>
+            <div class="quiz-progress-bar"><div class="quiz-progress-fill" style="width:81%; background:var(--brand-mint);"></div></div>
+          </div>
+        </div>
+        <p class="text-xs text-muted mt-3">Example: Aiden · P4 Mathematics · Last 14 days</p>
+      </div>
+      <div class="flex-1 flex flex-col gap-4" style="min-width: 280px;">
+        <div class="card card-rule-rose p-5">
+          <div class="font-bold text-sm mb-2">What Superholic Lab does with this data:</div>
+          <p class="text-muted text-sm">Aiden's Measurement &amp; Geometry is at AL5. Miss Wena immediately assigns a Plan Quest: 3× area and perimeter problems, 2× angle calculation drills, and walks Aiden through composite figure bar models — until his AL improves. Parents can track each step from the dashboard.</p>
+        </div>
+        <img src="../assets/images/sibling_studying.png"
+             alt="Children practising maths together"
+             style="width:100%; border-radius:var(--radius-lg); box-shadow:var(--shadow-md);"
+             onerror="this.style.display='none'">
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- S7 · CTA ════════════════════════════════════════════════════ -->
+<section class="bg-rose py-10">
+  <div class="container flex flex-col items-center text-center gap-4">
+    <h2 class="font-display text-4xl text-white">Start Building Your Child's Maths AL Today.</h2>
+    <p class="text-muted text-lg mb-4" style="max-width: 520px;">P1 to P6. All three strands. Wrong-answer explanations. Bar model scratchpad. Miss Wena on call. 7-day free trial — no credit card required.</p>
+    <div class="flex flex-wrap gap-4 justify-center">
+      <a href="/pages/signup.html?subject=mathematics&mode=trial" class="btn btn-white">Start 7-Day Free Trial →</a>
+      <a href="subject-science.html" class="btn btn-outline-white">Explore Science →</a>
+    </div>
+  </div>
+</section>
+
+<global-footer></global-footer>
+
+<script>
+function setLevel(level) {
+  document.querySelectorAll('.level-panel').forEach(p => p.classList.remove('is-active'));
+  document.querySelectorAll('.level-tab').forEach(t => { t.classList.remove('tab-active'); t.classList.add('tab-inactive'); });
+  const panel = document.getElementById('panel-' + level);
+  const tab   = document.querySelector('[data-level="' + level + '"]');
+  if (panel) panel.classList.add('is-active');
+  if (tab)   { tab.classList.remove('tab-inactive'); tab.classList.add('tab-active'); }
+}
+</script>
+</body>
+</html>

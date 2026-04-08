@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Primary Science — MOE Syllabus P3–P6 | Superholic Lab</title>
+<meta name="description" content="Understand the MOE Primary Science syllabus — 5 themes across P3–P6, the CER method, and how Superholic Lab's AI question bank and Miss Wena build PSLE Science mastery.">
+<link rel="canonical" href="https://www.superholiclab.com/pages/subject-science.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../css/style.css">
+<link rel="icon" href="../assets/favicon.ico">
+<script src="/js/header.js" defer></script>
+<script src="/js/footer.js" defer></script>
+<style>
+/* ── buttons/badges ───────────────────────────────────────────── */
+.btn-glass { background: rgba(255,255,255,0.12); color: var(--cream); border: 1px solid rgba(255,255,255,0.22); backdrop-filter: blur(4px); }
+.btn-glass:hover:not(:disabled) { background: rgba(255,255,255,0.2); color: var(--cream); }
+.btn-white { background: var(--bg-surface); color: var(--brand-rose); font-weight: 700; }
+.btn-white:hover:not(:disabled) { background: var(--bg-elevated); }
+.btn-outline-white { background: transparent; color: var(--cream); border: 1px solid rgba(255,255,255,0.35); }
+.badge-glass     { background: rgba(255,255,255,0.1);  color: var(--cream); }
+.badge-dark-mint { background: rgba(5,150,105,0.18);   color: var(--brand-mint); }
+.badge-sci-bg    { background: rgba(5,150,105,0.14);   color: var(--science-colour); }
+.card-rule-rose  { border-left: 4px solid var(--brand-rose); }
+.card-rule-mint  { border-left: 4px solid var(--brand-mint); }
+/* ── helpers ──────────────────────────────────────────────────── */
+p { text-align: justify; }
+.badge, .btn, h1, h2, h3, h4, .text-center p { text-align: initial; }
+.self-start { align-self: flex-start; }
+.list-reset { list-style: none; }
+.prose-cap  { max-width: 600px; margin-left: auto; margin-right: auto; }
+.label-spaced { letter-spacing: 0.08em; text-transform: uppercase; }
+/* ── subject breadcrumb ──────────────────────────────────────── */
+.subject-nav { display: flex; gap: var(--space-3); flex-wrap: wrap; align-items: center; margin-bottom: var(--space-6); }
+.subject-nav a { font-size: var(--text-sm); color: rgba(255,255,255,0.65); text-decoration: none; }
+.subject-nav a:hover { color: var(--cream); }
+.subject-nav-sep { color: rgba(255,255,255,0.35); font-size: var(--text-sm); }
+.subject-nav .active { color: var(--science-colour); font-weight: 700; }
+/* ── 5-theme grid ──────────────────────────────────────────────── */
+.theme-grid { display: flex; flex-wrap: wrap; gap: var(--space-4); }
+.theme-card { flex: 1; min-width: 180px; border-radius: var(--radius-lg); padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-3); border: 1.5px solid rgba(5,150,105,0.2); background: rgba(5,150,105,0.05); }
+/* ── level cards ────────────────────────────────────────────────── */
+.level-band { display: flex; flex-wrap: wrap; gap: var(--space-5); }
+.level-block { flex: 1; min-width: 220px; border-radius: var(--radius-lg); padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-3); }
+.lv-p3 { background: rgba(59,130,246,0.06);  border: 1.5px solid rgba(59,130,246,0.2); }
+.lv-p4 { background: rgba(183,110,121,0.06); border: 1.5px solid rgba(183,110,121,0.2); }
+.lv-p5 { background: rgba(217,119,6,0.06);   border: 1.5px solid rgba(217,119,6,0.2); }
+.lv-p6 { background: rgba(5,150,105,0.06);   border: 1.5px solid rgba(5,150,105,0.2); }
+/* ── CER method ─────────────────────────────────────────────────── */
+.cer-step { flex: 1; min-width: 180px; border-radius: var(--radius-lg); padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-3); }
+.cer-c { background: rgba(59,130,246,0.1); border: 1.5px solid rgba(59,130,246,0.3); }
+.cer-e { background: rgba(217,119,6,0.1);  border: 1.5px solid rgba(217,119,6,0.3); }
+.cer-r { background: rgba(5,150,105,0.1);  border: 1.5px solid rgba(5,150,105,0.3); }
+/* ── answer comparison ──────────────────────────────────────────── */
+.ans-weak   { background: rgba(239,68,68,0.05); border: 1.5px solid rgba(239,68,68,0.2); border-radius: var(--radius-lg); padding: var(--space-4); }
+.ans-strong { background: rgba(5,150,105,0.05); border: 1.5px solid rgba(5,150,105,0.2); border-radius: var(--radius-lg); padding: var(--space-4); }
+.ans-label-weak   { display: inline-block; background: rgba(239,68,68,0.1); color: #DC2626; border-radius: var(--radius-full); padding: 2px var(--space-3); font-size: var(--text-xs); font-weight: 700; margin-bottom: var(--space-2); }
+.ans-label-strong { display: inline-block; background: rgba(5,150,105,0.1); color: var(--brand-mint); border-radius: var(--radius-full); padding: 2px var(--space-3); font-size: var(--text-xs); font-weight: 700; margin-bottom: var(--space-2); }
+/* ── question type cards ────────────────────────────────────────── */
+.qtype-card { flex: 1; min-width: 260px; border-radius: var(--radius-lg); padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-3); background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); }
+/* ── topic chips ─────────────────────────────────────────────────── */
+.topic-grid { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2); }
+.chip { font-size: var(--text-xs); font-weight: 600; padding: 3px var(--space-3); border-radius: var(--radius-full); background: rgba(5,150,105,0.1); color: var(--science-colour); border: 1px solid rgba(5,150,105,0.2); }
+/* ── dark-bg card (for cards on bg-sage-dark sections) ──────────── */
+.card-dark { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); }
+.card-dark-xs { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); }
+</style>
+</head>
+<body class="has-bottom-nav">
+<global-header></global-header>
+
+
+<!-- S1 · HERO ═══════════════════════════════════════════════════ -->
+<section class="bg-sage texture-dots py-10" style="padding-top: calc(64px + var(--space-8)); position: relative;">
+  <div class="container">
+    <div class="subject-nav">
+      <a href="/index.html">Home</a><span class="subject-nav-sep">›</span>
+      <a href="/pages/subjects.html">Subjects</a><span class="subject-nav-sep">›</span>
+      <span class="active">Science</span>
+      <span class="subject-nav-sep">·</span>
+      <a href="subject-mathematics.html">Mathematics</a>
+      <span class="subject-nav-sep">·</span>
+      <a href="subject-english.html">English</a>
+    </div>
+    <div class="flex flex-wrap items-start gap-8">
+      <div class="flex-1 flex flex-col gap-4" style="min-width: 300px;">
+        <div class="badge badge-sci-bg">Primary Science · P3–P6 · MOE 2023 Syllabus</div>
+        <h1 class="font-display text-4xl">
+          Science Begins at P3.<br>
+          <span class="text-rose">And It Demands Precision From Day One.</span>
+        </h1>
+        <p class="text-muted text-lg" style="max-width: 480px;">
+          Your child spends P1 and P2 building language and number foundations. Then P3 arrives — and suddenly there is a new subject, five themes, a marking scheme, and a way of writing answers that school simply does not have time to drill. Science at PSLE is not just about knowing facts. It is about using them precisely, in the language examiners are trained to reward. That is what Superholic Lab teaches.
+        </p>
+        <div class="flex flex-wrap gap-3">
+          <div class="badge badge-glass">5 Themes · P3–P6</div>
+          <div class="badge badge-glass">CER Method</div>
+          <div class="badge badge-glass">MOE 2023 Updated Syllabus</div>
+        </div>
+        <div class="flex flex-wrap gap-4">
+          <a href="/pages/signup.html?subject=science&mode=trial" class="btn btn-primary">Start Free Science Practice →</a>
+          <a href="#themes" class="btn btn-glass">Explore the 5 Themes</a>
+        </div>
+      </div>
+      <div class="flex-1" style="min-width: 280px; max-width: 440px;">
+        <img src="../assets/images/kid_studying.png"
+             alt="Singapore student studying Primary Science"
+             style="width:100%; border-radius:var(--radius-lg); box-shadow:var(--shadow-md);">
+      </div>
+    </div>
+  </div>
+  <div class="hero-pet-track"><div class="walking-dog">🐕</div></div>
+</section>
+
+
+<!-- S2 · THE 5 THEMES ═══════════════════════════════════════════ -->
+<section class="bg-white py-10" id="themes">
+  <div class="container">
+    <div class="flex flex-col items-center text-center mb-8">
+      <div class="badge badge-info mb-2">MOE Science Curriculum Framework</div>
+      <h2 class="font-display text-3xl mb-2 text-main">Five Themes. Every Topic in Primary Science Belongs to One.</h2>
+      <p class="text-muted text-lg prose-cap">MOE organises the entire P3–P6 Science curriculum across five themes. Understanding the theme behind each topic helps children connect ideas across years — a key skill that PSLE open-ended questions test explicitly.</p>
+    </div>
+    <div class="theme-grid">
+      <div class="theme-card">
+        <div class="flex items-center gap-3">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--science-colour)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8"/><line x1="12" y1="4" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="20"/><line x1="4" y1="12" x2="2" y2="12"/><line x1="22" y1="12" x2="20" y2="12"/></svg>
+          <div class="font-bold text-main">Diversity</div>
+        </div>
+        <p class="text-muted text-sm">Living vs non-living things, types of animals and plants, classification, and diversity of materials. Builds the ability to observe, classify, and compare systematically.</p>
+        <div class="badge badge-sci-bg self-start">P3 · Foundation theme</div>
+      </div>
+      <div class="theme-card">
+        <div class="flex items-center gap-3">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--science-colour)" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 11-6.219-8.56"/><polyline points="21 3 21 9 15 9"/></svg>
+          <div class="font-bold text-main">Cycles</div>
+        </div>
+        <p class="text-muted text-sm">Life cycles of animals and plants, the water cycle, states of matter, and reproduction. Understanding that patterns of change repeat helps students predict and explain natural events — a core PSLE skill.</p>
+        <div class="badge badge-sci-bg self-start">P3–P5 · Spans 3 levels</div>
+      </div>
+      <div class="theme-card">
+        <div class="flex items-center gap-3">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--science-colour)" stroke-width="2" stroke-linecap="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3l-4 4-4-4"/></svg>
+          <div class="font-bold text-main">Systems</div>
+        </div>
+        <p class="text-muted text-sm">Plant systems, human digestive, respiratory, and circulatory systems, and electrical systems. A "system" is a set of parts that work together — questions always ask how each part's function contributes to the whole.</p>
+        <div class="badge badge-sci-bg self-start">P4–P5 · High mark weightage</div>
+      </div>
+      <div class="theme-card">
+        <div class="flex items-center gap-3">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--science-colour)" stroke-width="2" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          <div class="font-bold text-main">Interactions</div>
+        </div>
+        <p class="text-muted text-sm">Forces (magnets at P3, frictional/gravitational/elastic spring forces at P6), food chains and webs, adaptation, and man's impact on the environment. Connects physics concepts to ecological understanding.</p>
+        <div class="badge badge-sci-bg self-start">P3 + P6 · Forces are PSLE favourites</div>
+      </div>
+      <div class="theme-card">
+        <div class="flex items-center gap-3">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--science-colour)" stroke-width="2" stroke-linecap="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+          <div class="font-bold text-main">Energy</div>
+        </div>
+        <p class="text-muted text-sm">Forms and uses of light and heat at P4, photosynthesis and energy conversion at P5. Energy questions require students to trace how energy transforms — from sunlight to chemical energy to movement.</p>
+        <div class="badge badge-sci-bg self-start">P4–P5 · Energy conversion</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- S3 · TOPIC MAP BY LEVEL ════════════════════════════════════ -->
+<section class="bg-page texture-light-grid py-10">
+  <div class="container">
+    <div class="flex flex-col items-center text-center mb-8">
+      <div class="badge badge-amber mb-2">Level-by-Level Syllabus</div>
+      <h2 class="font-display text-3xl mb-2 text-main">What Changes at Every Level.</h2>
+      <p class="text-muted text-lg prose-cap">From 2024, each primary level has its own dedicated Science syllabus — there is no longer a shared "lower block." Every school teaches the same topics in the same sequence.</p>
+    </div>
+    <div class="level-band">
+      <div class="level-block lv-p3">
+        <div class="flex items-center gap-2 mb-2">
+          <div class="font-display text-xl" style="color:var(--maths-colour);">P3</div>
+          <div class="badge badge-info">First Year of Science</div>
+        </div>
+        <p class="text-muted text-sm">Science is a new subject at P3 — and with it comes a new way of thinking and writing answers. The vocabulary of classification, characteristics, and functions must be learnt from the start.</p>
+        <div class="topic-grid">
+          <span class="chip">Diversity of living &amp; non-living things</span>
+          <span class="chip">Characteristics of living things</span>
+          <span class="chip">Diversity of animals (vertebrates/invertebrates)</span>
+          <span class="chip">Diversity of plants</span>
+          <span class="chip">Diversity of materials</span>
+          <span class="chip">Life cycles of animals (frogs, butterflies, mosquitoes, cockroaches)</span>
+          <span class="chip">Life cycles of plants (flowering plants)</span>
+          <span class="chip">Magnets — properties and uses</span>
+        </div>
+      </div>
+      <div class="level-block lv-p4">
+        <div class="flex items-center gap-2 mb-2">
+          <div class="font-display text-xl" style="color:var(--brand-rose);">P4</div>
+          <div class="badge badge-amber">Systems Introduced</div>
+        </div>
+        <p class="text-muted text-sm">P4 introduces the first "systems" — plant parts and human digestion — which require students to name parts, describe functions, AND explain how they work together. This is where CER writing becomes essential.</p>
+        <div class="topic-grid">
+          <span class="chip">Plant system — parts and functions</span>
+          <span class="chip">Parts of a flower (sepals, petals, stamens, pistil)</span>
+          <span class="chip">Human digestive system — organs and functions</span>
+          <span class="chip">Matter — solid, liquid, gas (properties and changes)</span>
+          <span class="chip">Water cycle (evaporation, condensation, precipitation)</span>
+          <span class="chip">Light — sources, shadows, reflection</span>
+          <span class="chip">Heat — transfer, temperature, expansion</span>
+        </div>
+      </div>
+      <div class="level-block lv-p5">
+        <div class="flex items-center gap-2 mb-2">
+          <div class="font-display text-xl" style="color:var(--brand-amber);">P5</div>
+          <div class="badge badge-amber">Heaviest Content Year</div>
+        </div>
+        <p class="text-muted text-sm">P5 is the most content-dense Science year. Reproduction, water cycle details, two body systems, electrical systems, and photosynthesis all arrive at once. Note: 'Cells' was removed from P5 in 2023 — it is no longer tested.</p>
+        <div class="topic-grid">
+          <span class="chip">Reproduction in plants (pollination, fertilisation, seed dispersal)</span>
+          <span class="chip">Reproduction in animals</span>
+          <span class="chip">Water cycle — detailed (transpiration, groundwater)</span>
+          <span class="chip">Plant respiratory &amp; circulatory systems</span>
+          <span class="chip">Human respiratory system</span>
+          <span class="chip">Human circulatory system</span>
+          <span class="chip">Electrical system — circuits, switches, conductors/insulators</span>
+          <span class="chip">Photosynthesis — conditions, reactants, products</span>
+          <span class="chip">Energy conversion — forms and transformation</span>
+        </div>
+      </div>
+      <div class="level-block lv-p6">
+        <div class="flex items-center gap-2 mb-2">
+          <div class="font-display text-xl" style="color:var(--science-colour);">P6</div>
+          <div class="badge badge-rose">PSLE Year</div>
+        </div>
+        <p class="text-muted text-sm">P6 Science is dominated by forces and ecology. PSLE open-ended questions on forces, food webs, and adaptation require precise vocabulary and the CER structure. "Air resistance" and "water resistance" as specific terms are de-emphasised from 2023 — the focus is on explaining effects of forces, not naming them.</p>
+        <div class="topic-grid">
+          <span class="chip">Frictional force — effects and applications</span>
+          <span class="chip">Gravitational force — weight vs mass</span>
+          <span class="chip">Elastic spring force — compression and extension</span>
+          <span class="chip">Interactions within the environment</span>
+          <span class="chip">Adaptation — structural and behavioural</span>
+          <span class="chip">Food chains and food webs</span>
+          <span class="chip">Man's impact on the environment</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- S4 · THE CER METHOD ═════════════════════════════════════════ -->
+<section class="bg-sage-dark texture-grid py-10">
+  <div class="container">
+    <div class="flex flex-col items-center text-center mb-8">
+      <div class="badge badge-dark-mint mb-2">Superholic Lab's Science Differentiator</div>
+      <h2 class="font-display text-3xl mb-2">The CER Method — What Examiners Are Looking For.</h2>
+      <p class="text-muted text-lg prose-cap">Most students know the content. The ones who lose marks write the right idea in the wrong structure. PSLE Science open-ended answers must follow Claim → Evidence → Reasoning to score full marks. Superholic Lab teaches this explicitly in every open-ended question.</p>
+    </div>
+
+    <div class="flex flex-wrap gap-5 mb-8">
+      <div class="cer-step cer-c">
+        <div class="flex items-center gap-3">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--maths-colour)" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><line x1="8" y1="13" x2="16" y2="13"/></svg>
+          <div class="font-bold text-white">C — Claim</div>
+        </div>
+        <p class="text-muted text-sm">A direct answer to the question. No hedging. No "I think." One clear statement of what happened or why.</p>
+        <div class="card p-3 mt-2" style="background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1);">
+          <div class="text-xs text-muted">Example:</div>
+          <div class="text-sm text-white italic">"The plant in Pot A grew taller than the plant in Pot B."</div>
+        </div>
+      </div>
+      <div class="cer-step cer-e">
+        <div class="flex items-center gap-3">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--brand-amber)" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <div class="font-bold text-white">E — Evidence</div>
+        </div>
+        <p class="text-muted text-sm">Data or observations from the question that support the claim. Must reference the specific information provided — not general knowledge.</p>
+        <div class="card p-3 mt-2" style="background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1);">
+          <div class="text-xs text-muted">Example:</div>
+          <div class="text-sm text-white italic">"This is shown by the table — Pot A reached 24 cm while Pot B only reached 15 cm after 4 weeks."</div>
+        </div>
+      </div>
+      <div class="cer-step cer-r">
+        <div class="flex items-center gap-3">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--brand-mint)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>
+          <div class="font-bold text-white">R — Reasoning</div>
+        </div>
+        <p class="text-muted text-sm">The science concept that explains WHY the evidence supports the claim. This is where PSLE marks are won or lost — and where most students leave marks on the table.</p>
+        <div class="card p-3 mt-2" style="background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1);">
+          <div class="text-xs text-muted">Example:</div>
+          <div class="text-sm text-white italic">"Pot A received more sunlight, which provided the energy needed for photosynthesis. More photosynthesis produced more glucose for growth."</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Before/After answer comparison -->
+    <div class="card p-6" style="background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08);">
+      <div class="text-xs font-bold label-spaced mb-4" style="color:var(--brand-mint);">Question: Why did the plant in Pot A grow taller than the plant in Pot B?</div>
+      <div class="flex flex-wrap gap-5">
+        <div class="flex-1" style="min-width: 240px;">
+          <div class="ans-label-weak">❌ 0 marks — Common student answer</div>
+          <div class="ans-weak">
+            <p class="text-sm text-main">"Because Pot A had more sunlight and sunlight helps plants grow."</p>
+          </div>
+          <p class="text-xs text-muted mt-2">No evidence from the table. No mechanism explained. Examiner cannot award marks — even though the idea is correct.</p>
+        </div>
+        <div class="flex-1" style="min-width: 240px;">
+          <div class="ans-label-strong">✓ 3 marks — CER structure</div>
+          <div class="ans-strong">
+            <p class="text-sm text-main">"Plant A grew taller because it received more sunlight. The table shows Pot A reached 24 cm while Pot B reached only 15 cm. Sunlight provides the energy for photosynthesis, which produces glucose for the plant to grow. With more sunlight, Pot A could carry out more photosynthesis and produce more glucose, resulting in greater growth."</p>
+          </div>
+          <p class="text-xs text-muted mt-2">Claim stated clearly. Evidence cited from the table. Reasoning links sunlight → photosynthesis → glucose → growth.</p>
+        </div>
+      </div>
+    </div>
+    <p class="text-muted text-sm text-center mt-5">Superholic Lab teaches this CER structure in every open-ended Science question — and Miss Wena provides real-time Socratic guidance to help students build the reasoning themselves, rather than copying a model answer.</p>
+  </div>
+</section>
+
+
+<!-- S5 · QUESTION TYPES ═════════════════════════════════════════ -->
+<section class="bg-white py-10">
+  <div class="container">
+    <div class="flex flex-col items-center text-center mb-8">
+      <div class="badge badge-info mb-2">Superholic Lab Question Formats</div>
+      <h2 class="font-display text-3xl mb-2 text-main">We Test Science the Way PSLE Does.</h2>
+      <p class="text-muted text-lg prose-cap">PSLE Science is split into two booklets. Superholic Lab practices both — MCQ for speed and elimination, open-ended for CER precision.</p>
+    </div>
+    <div class="flex flex-wrap gap-6">
+      <div class="flex-1 flex flex-col gap-4" style="min-width: 280px;">
+        <div class="card p-5">
+          <div class="flex items-center gap-3 mb-3">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--science-colour)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <div>
+              <div class="font-bold text-main">MCQ — Booklet A</div>
+              <div class="text-xs text-muted">28 questions · 2 marks each · 56 marks total</div>
+            </div>
+          </div>
+          <p class="text-muted text-sm">Four options. Two marks per question. Booklet A rewards fast, accurate concept recall — and the ability to eliminate clearly wrong options. Superholic Lab explains why each distractor was designed to trap a specific misconception.</p>
+          <div class="card p-3 mt-3" style="background: var(--bg-page);">
+            <div class="text-xs font-bold text-muted label-spaced mb-2">Sample MCQ — P4 Light</div>
+            <p class="text-sm text-main">Which of the following best describes a shadow?</p>
+            <p class="text-xs text-muted mt-1">A) Light reflected off an object &nbsp; B) A dark area formed when light is blocked &nbsp; C) Light that passes through an object &nbsp; D) The colour of an object when lit</p>
+            <p class="text-xs font-bold mt-2" style="color:var(--science-colour);">Correct: B. Explanation: A shadow forms because light cannot pass through opaque objects — not because it reflects, which would produce a bright area, not a dark one.</p>
+          </div>
+        </div>
+      </div>
+      <div class="flex-1 flex flex-col gap-4" style="min-width: 280px;">
+        <div class="card p-5">
+          <div class="flex items-center gap-3 mb-3">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
+            <div>
+              <div class="font-bold text-main">Open-Ended — Booklet B</div>
+              <div class="text-xs text-muted">12–14 questions · 2–4 marks each · 44 marks total</div>
+            </div>
+          </div>
+          <p class="text-muted text-sm">Written answers using CER structure. These questions separate AL1 from AL3 — because knowledge alone is not enough. The answer must be structured, precise, and use MOE keyword language. Superholic Lab's marking scheme identifies missing Claim, missing Evidence, and missing Reasoning separately.</p>
+          <div class="card p-3 mt-3" style="background: var(--bg-page);">
+            <div class="text-xs font-bold text-muted label-spaced mb-2">Sample Open-Ended — P6 Forces</div>
+            <p class="text-sm text-main">Explain why a car slows down more quickly on a rough road than on a smooth road. (3 marks)</p>
+            <p class="text-xs font-bold mt-2" style="color:var(--science-colour);">CER answer required: Claim (car slows faster on rough road), Evidence (rough surface texture), Reasoning (rough surface creates more frictional force opposing motion → car decelerates faster).</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- S6 · 2023 SYLLABUS CHANGES ═════════════════════════════════ -->
+<section class="bg-page py-10">
+  <div class="container">
+    <div class="flex flex-col items-center text-center mb-8">
+      <div class="badge badge-amber mb-2">MOE 2023 Syllabus Update</div>
+      <h2 class="font-display text-3xl mb-2 text-main">Three Changes Parents Need to Know.</h2>
+      <p class="text-muted text-lg prose-cap">The current Primary Science Syllabus (implemented from 2023) introduced significant changes. Superholic Lab's question bank reflects the updated syllabus — not older content that is no longer tested.</p>
+    </div>
+    <div class="flex flex-wrap gap-5">
+      <div class="change-card">
+        <div class="flex items-center gap-3">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+          <div class="font-bold text-main">'Cells' Removed from P5</div>
+        </div>
+        <p class="text-muted text-sm">The Cells topic has been removed from the Primary 5 Science syllabus. This was intentional — MOE wants students to focus on applying scientific concepts rather than memorising complex biological terminology. Any assessment book or resource that includes Cells at P5 is using an outdated syllabus.</p>
+        <div class="badge badge-rose self-start">No longer tested from 2023</div>
+      </div>
+      <div class="change-card">
+        <div class="flex items-center gap-3">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand-mint)" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          <div class="font-bold text-main">Level-by-Level Syllabus Structure</div>
+        </div>
+        <p class="text-muted text-sm">Previously, P3 and P4 shared a "lower block" — schools could teach topics in any order. From 2024, every level has its own dedicated syllabus. All P4 students in Singapore now learn the same topics in the same sequence, regardless of school. This is better for revision preparation.</p>
+        <div class="badge badge-success self-start">Standardised from 2024</div>
+      </div>
+      <div class="change-card">
+        <div class="flex items-center gap-3">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand-amber)" stroke-width="2" stroke-linecap="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
+          <div class="font-bold text-main">Forces Terminology Simplified</div>
+        </div>
+        <p class="text-muted text-sm">P6 students no longer need to use the specific terms "air resistance" and "water resistance" when explaining force interactions. The focus has shifted to explaining the effects of forces — how they affect motion, direction, and speed — rather than naming force types. Superholic Lab's P6 questions reflect this updated emphasis.</p>
+        <div class="badge badge-amber self-start">Keyword language updated</div>
+      </div>
+    </div>
+    <div class="card card-rule-mint p-4 mt-6">
+      <div class="font-bold text-sm mb-2">Superholic Lab's commitment on syllabus accuracy:</div>
+      <p class="text-muted text-sm">Every Science question in Superholic Lab is tagged by level, theme, and topic, and cross-referenced against the 2023 MOE Primary Science Syllabus (updated January 2026). Questions on removed or de-emphasised topics are excluded. When MOE updates the syllabus, Superholic Lab's question bank updates with it.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- S7 · CTA ════════════════════════════════════════════════════ -->
+<section class="bg-rose py-10">
+  <div class="container flex flex-col items-center text-center gap-4">
+    <h2 class="font-display text-4xl text-white">Build PSLE Science Confidence — Topic by Topic.</h2>
+    <p class="text-muted text-lg mb-4" style="max-width: 520px;">MCQ with wrong-answer explanations. Open-ended with CER coaching. Miss Wena as your child's personal Science tutor. 7-day free trial — no credit card required.</p>
+    <div class="flex flex-wrap gap-4 justify-center">
+      <a href="/pages/signup.html?subject=science&mode=trial" class="btn btn-white">Start 7-Day Free Trial →</a>
+      <a href="subject-english.html" class="btn btn-outline-white">Explore English →</a>
+    </div>
+  </div>
+</section>
+
+<global-footer></global-footer>
+</body>
+</html>

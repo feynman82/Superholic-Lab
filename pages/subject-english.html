@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Primary English — MOE Syllabus P1–P6 | Superholic Lab</title>
+<meta name="description" content="English has 7 exam components. Superholic Lab systematically builds 6 of them — and Miss Wena guides Composition. See how each component is tested and what examiners look for.">
+<link rel="canonical" href="https://www.superholiclab.com/pages/subject-english.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../css/style.css">
+<link rel="icon" href="../assets/favicon.ico">
+<script src="/js/header.js" defer></script>
+<script src="/js/footer.js" defer></script>
+<style>
+/* ── buttons/badges ───────────────────────────────────────────── */
+.btn-glass { background: rgba(255,255,255,0.12); color: var(--cream); border: 1px solid rgba(255,255,255,0.22); backdrop-filter: blur(4px); }
+.btn-glass:hover:not(:disabled) { background: rgba(255,255,255,0.2); color: var(--cream); }
+.btn-white { background: var(--bg-surface); color: var(--brand-rose); font-weight: 700; }
+.btn-white:hover:not(:disabled) { background: var(--bg-elevated); }
+.btn-outline-white { background: transparent; color: var(--cream); border: 1px solid rgba(255,255,255,0.35); }
+.badge-glass     { background: rgba(255,255,255,0.1);  color: var(--cream); }
+.badge-dark-mint { background: rgba(5,150,105,0.18);   color: var(--brand-mint); }
+.badge-eng-bg    { background: rgba(139,92,246,0.14);  color: var(--english-colour); }
+.card-rule-rose  { border-left: 4px solid var(--brand-rose); }
+.card-rule-mint  { border-left: 4px solid var(--brand-mint); }
+.card-rule-amber { border-left: 4px solid var(--brand-amber); }
+/* ── helpers ──────────────────────────────────────────────────── */
+p { text-align: justify; }
+.badge, .btn, h1, h2, h3, h4, .text-center p { text-align: initial; }
+.self-start { align-self: flex-start; }
+.list-reset { list-style: none; }
+.prose-cap  { max-width: 600px; margin-left: auto; margin-right: auto; }
+.label-spaced { letter-spacing: 0.08em; text-transform: uppercase; }
+/* ── subject breadcrumb ──────────────────────────────────────── */
+.subject-nav { display: flex; gap: var(--space-3); flex-wrap: wrap; align-items: center; margin-bottom: var(--space-6); }
+.subject-nav a { font-size: var(--text-sm); color: rgba(255,255,255,0.65); text-decoration: none; }
+.subject-nav a:hover { color: var(--cream); }
+.subject-nav-sep { color: rgba(255,255,255,0.35); font-size: var(--text-sm); }
+.subject-nav .active { color: var(--english-colour); font-weight: 700; }
+/* ── paper map ──────────────────────────────────────────────────── */
+.paper-map { display: flex; flex-wrap: wrap; gap: var(--space-5); }
+.paper-col { flex: 1; min-width: 260px; border-radius: var(--radius-lg); padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-3); }
+.paper-1-col { background: rgba(139,92,246,0.06); border: 1.5px solid rgba(139,92,246,0.2); }
+.paper-2-col { background: rgba(183,110,121,0.06); border: 1.5px solid rgba(183,110,121,0.2); }
+.comp-row  { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) 0; border-bottom: 1px solid var(--border-light); }
+.comp-row:last-child { border-bottom: none; }
+.comp-marks { font-size: var(--text-xs); font-weight: 700; color: var(--text-muted); min-width: 48px; text-align: right; }
+.comp-covered   { display: inline-block; background: rgba(5,150,105,0.12); color: var(--brand-mint); border-radius: var(--radius-full); padding: 1px var(--space-2); font-size: 10px; font-weight: 700; }
+.comp-miss-wena { display: inline-block; background: rgba(183,110,121,0.12); color: var(--brand-rose); border-radius: var(--radius-full); padding: 1px var(--space-2); font-size: 10px; font-weight: 700; }
+/* ── component cards ────────────────────────────────────────────── */
+.comp-card { flex: 1; min-width: 260px; border-radius: var(--radius-lg); padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-3); background: var(--bg-page); border: 1.5px solid var(--border-light); }
+.comp-card-covered { border-color: rgba(5,150,105,0.3); background: rgba(5,150,105,0.03); }
+/* ── level tier cards ───────────────────────────────────────────── */
+.level-tier { flex: 1; min-width: 240px; border-radius: var(--radius-lg); padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-3); }
+.tier-lower  { background: rgba(59,130,246,0.06); border: 1.5px solid rgba(59,130,246,0.2); }
+.tier-middle { background: rgba(183,110,121,0.06); border: 1.5px solid rgba(183,110,121,0.2); }
+.tier-upper  { background: rgba(139,92,246,0.06); border: 1.5px solid rgba(139,92,246,0.2); }
+/* ── answer comparison ──────────────────────────────────────────── */
+.ans-weak   { background: rgba(239,68,68,0.05); border: 1.5px solid rgba(239,68,68,0.2); border-radius: var(--radius-lg); padding: var(--space-4); }
+.ans-strong { background: rgba(5,150,105,0.05); border: 1.5px solid rgba(5,150,105,0.2); border-radius: var(--radius-lg); padding: var(--space-4); }
+.ans-label-weak   { display: inline-block; background: rgba(239,68,68,0.1); color: #DC2626; border-radius: var(--radius-full); padding: 2px var(--space-3); font-size: var(--text-xs); font-weight: 700; margin-bottom: var(--space-2); }
+.ans-label-strong { display: inline-block; background: rgba(5,150,105,0.1); color: var(--brand-mint); border-radius: var(--radius-full); padding: 2px var(--space-3); font-size: var(--text-xs); font-weight: 700; margin-bottom: var(--space-2); }
+/* ── topic chips ────────────────────────────────────────────────── */
+.topic-grid { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2); }
+.chip-eng { font-size: var(--text-xs); font-weight: 600; padding: 3px var(--space-3); border-radius: var(--radius-full); background: rgba(139,92,246,0.1); color: var(--english-colour); border: 1px solid rgba(139,92,246,0.2); }
+</style>
+</head>
+<body class="has-bottom-nav">
+<global-header></global-header>
+
+
+<!-- S1 · HERO ═══════════════════════════════════════════════════ -->
+<section class="bg-sage texture-dots py-10" style="padding-top: calc(64px + var(--space-8)); position: relative;">
+  <div class="container">
+    <div class="subject-nav">
+      <a href="/index.html">Home</a><span class="subject-nav-sep">›</span>
+      <a href="/pages/subjects.html">Subjects</a><span class="subject-nav-sep">›</span>
+      <span class="active">English</span>
+      <span class="subject-nav-sep">·</span>
+      <a href="subject-mathematics.html">Mathematics</a>
+      <span class="subject-nav-sep">·</span>
+      <a href="subject-science.html">Science</a>
+    </div>
+    <div class="flex flex-wrap items-start gap-8">
+      <div class="flex-1 flex flex-col gap-4" style="min-width: 300px;">
+        <div class="badge badge-eng-bg">Primary English · P1–P6 · MOE EL Syllabus 2020</div>
+        <h1 class="font-display text-4xl">
+          English Is 7 Skills.<br>
+          <span class="text-rose">We Systematically Build 6.</span>
+        </h1>
+        <p class="text-muted text-lg" style="max-width: 480px;">
+          Most parents think of Primary English as "comprehension and composition." But the PSLE English paper tests seven distinct skills — and most children only practise one or two. Superholic Lab is transparent about what it does: we systematically build 6 Paper 2 components through structured question practice, while Miss Wena guides Composition as an AI writing coach. If your child loses marks in English, Superholic Lab will tell you exactly which component — and fix it.
+        </p>
+        <div class="flex flex-wrap gap-3">
+          <div class="badge badge-glass">6 Paper 2 Components · Fully Covered</div>
+          <div class="badge badge-glass">Miss Wena for Composition</div>
+          <div class="badge badge-glass">Inference · The AL1 Skill</div>
+        </div>
+        <div class="flex flex-wrap gap-4">
+          <a href="/pages/signup.html?subject=english&mode=trial" class="btn btn-primary">Start Free English Practice →</a>
+          <a href="#components" class="btn btn-glass">See All 6 Components</a>
+        </div>
+      </div>
+      <div class="flex-1" style="min-width: 280px; max-width: 440px;">
+        <img src="../assets/images/mum_daughter_ipad.png"
+             alt="Parent and child reviewing English practice together"
+             style="width:100%; border-radius:var(--radius-lg); box-shadow:var(--shadow-md);">
+      </div>
+    </div>
+  </div>
+  <div class="hero-pet-track"><div class="walking-dog">🐕</div></div>
+</section>
+
+
+<!-- S2 · THE PAPER MAP ══════════════════════════════════════════ -->
+<section class="bg-white py-10">
+  <div class="container">
+    <div class="flex flex-col items-center text-center mb-8">
+      <div class="badge badge-info mb-2">PSLE English Paper Structure</div>
+      <h2 class="font-display text-3xl mb-2 text-main">Understanding What PSLE English Actually Tests.</h2>
+      <p class="text-muted text-lg prose-cap">PSLE English is divided into Paper 1 (writing) and Paper 2 (language and reading). Each paper tests different skills. Being clear about this is the first step to improving the right things.</p>
+    </div>
+    <div class="paper-map">
+
+      <div class="paper-col paper-1-col">
+        <div class="font-display text-xl mb-1" style="color:var(--english-colour);">Paper 1 — Writing</div>
+        <div class="text-xs text-muted mb-3">55 marks · 1 hour 10 minutes</div>
+        <div class="comp-row">
+          <div class="flex-1">
+            <div class="font-bold text-sm">Situational Writing</div>
+            <div class="text-xs text-muted">Email, report, speech, notice, journal</div>
+          </div>
+          <div class="comp-marks">15 marks</div>
+          <div class="comp-covered">✓ Covered</div>
+        </div>
+        <div class="comp-row">
+          <div class="flex-1">
+            <div class="font-bold text-sm">Composition (Continuous Writing)</div>
+            <div class="text-xs text-muted">Narrative or personal recount, 150+ words</div>
+          </div>
+          <div class="comp-marks">40 marks</div>
+          <div class="comp-miss-wena">Miss Wena</div>
+        </div>
+        <div class="card p-3 mt-2" style="background: rgba(183,110,121,0.06); border-color: rgba(183,110,121,0.15);">
+          <p class="text-xs text-muted">Composition (40 marks) is guided by Miss Wena as an AI writing coach — not auto-marked. Miss Wena reviews planning, structure, and language — and asks guiding questions to help students improve their own writing.</p>
+        </div>
+      </div>
+
+      <div class="paper-col paper-2-col">
+        <div class="font-display text-xl mb-1" style="color:var(--brand-rose);">Paper 2 — Language &amp; Comprehension</div>
+        <div class="text-xs text-muted mb-3">95 marks · 1 hour 50 minutes</div>
+        <div class="comp-row">
+          <div class="flex-1"><div class="font-bold text-sm">Grammar MCQ</div><div class="text-xs text-muted">Select correct grammar option</div></div>
+          <div class="comp-marks">10 marks</div><div class="comp-covered">✓ Covered</div>
+        </div>
+        <div class="comp-row">
+          <div class="flex-1"><div class="font-bold text-sm">Vocabulary MCQ</div><div class="text-xs text-muted">Synonyms, antonyms, word meaning in context</div></div>
+          <div class="comp-marks">5 marks</div><div class="comp-covered">✓ Covered</div>
+        </div>
+        <div class="comp-row">
+          <div class="flex-1"><div class="font-bold text-sm">Grammar Cloze</div><div class="text-xs text-muted">Fill blanks in a passage with correct forms</div></div>
+          <div class="comp-marks">10 marks</div><div class="comp-covered">✓ Covered</div>
+        </div>
+        <div class="comp-row">
+          <div class="flex-1"><div class="font-bold text-sm">Editing</div><div class="text-xs text-muted">Identify and correct 10 errors in a passage</div></div>
+          <div class="comp-marks">12 marks</div><div class="comp-covered">✓ Covered</div>
+        </div>
+        <div class="comp-row">
+          <div class="flex-1"><div class="font-bold text-sm">Comprehension (OE)</div><div class="text-xs text-muted">Literal + inferential + evaluative questions</div></div>
+          <div class="comp-marks">20 marks</div><div class="comp-covered">✓ Covered</div>
+        </div>
+        <div class="comp-row">
+          <div class="flex-1"><div class="font-bold text-sm">Synthesis &amp; Transformation</div><div class="text-xs text-muted">Rewrite sentences with the same meaning</div></div>
+          <div class="comp-marks">10 marks</div><div class="comp-covered">✓ Covered</div>
+        </div>
+        <div class="comp-row">
+          <div class="flex-1"><div class="font-bold text-sm">Comprehension Cloze</div><div class="text-xs text-muted">Fill blanks based on passage meaning</div></div>
+          <div class="comp-marks">15 marks</div><div class="comp-covered">✓ Covered</div>
+        </div>
+      </div>
+
+    </div>
+    <div class="card card-rule-rose p-4 mt-5">
+      <div class="font-bold text-sm mb-2">Why Composition gets special treatment:</div>
+      <p class="text-muted text-sm">Composition is the single highest-scoring component at 40 marks — but it cannot be reliably auto-marked. Good writing requires voice, structure, and craft. Miss Wena acts as a writing coach: asking students to plan before writing, reviewing paragraphs, suggesting vocabulary, and pointing out where the narrative loses clarity. She never writes for the student — she guides them to write better themselves.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- S3 · THE 6 COMPONENTS ══════════════════════════════════════ -->
+<section class="bg-page texture-light-grid py-10" id="components">
+  <div class="container">
+    <div class="flex flex-col items-center text-center mb-8">
+      <div class="badge badge-amber mb-2">How We Build Each Component</div>
+      <h2 class="font-display text-3xl mb-2 text-main">Six Components. Systematic Practice. Every Level.</h2>
+      <p class="text-muted text-lg prose-cap">Each component requires different skills and different exam techniques. Superholic Lab builds all six with dedicated question types — not a generic "English quiz."</p>
+    </div>
+    <div class="flex flex-wrap gap-5">
+
+      <div class="comp-card comp-card-covered">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand-mint)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>
+            <div class="font-bold text-main">Grammar MCQ</div>
+          </div>
+          <div class="badge badge-success">10 marks</div>
+        </div>
+        <p class="text-muted text-sm">Tests tenses, articles, prepositions, subject-verb agreement, pronouns, and connectors. Questions present a sentence with one underlined word — students choose the correct replacement. Superholic Lab explains why the other 3 options are wrong, naming the specific grammar rule each distractor violates.</p>
+        <div class="topic-grid">
+          <span class="chip-eng">Tenses (simple, continuous, perfect)</span><span class="chip-eng">Subject-verb agreement</span><span class="chip-eng">Articles (a, an, the)</span><span class="chip-eng">Prepositions</span><span class="chip-eng">Pronouns</span><span class="chip-eng">Connectors</span>
+        </div>
+      </div>
+
+      <div class="comp-card comp-card-covered">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand-mint)" stroke-width="2" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+            <div class="font-bold text-main">Vocabulary MCQ</div>
+          </div>
+          <div class="badge badge-success">5 marks</div>
+        </div>
+        <p class="text-muted text-sm">Tests understanding of word meanings in context, synonyms, and antonyms. The correct answer depends not on knowing a definition in isolation, but understanding which word fits the tone and context of the sentence. Superholic Lab questions include context-dependent distractors that test this precision.</p>
+        <div class="topic-grid">
+          <span class="chip-eng">Synonyms in context</span><span class="chip-eng">Antonyms</span><span class="chip-eng">Word connotation (positive/negative)</span><span class="chip-eng">Idiomatic phrases</span>
+        </div>
+      </div>
+
+      <div class="comp-card comp-card-covered">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand-mint)" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><line x1="8" y1="13" x2="16" y2="13"/></svg>
+            <div class="font-bold text-main">Grammar Cloze</div>
+          </div>
+          <div class="badge badge-success">10 marks</div>
+        </div>
+        <p class="text-muted text-sm">A passage with 15 blanks, each requiring a single correct word. Unlike MCQ, there is no list to choose from — students must supply the word from their grammar knowledge. This tests grammar in a real reading context: tenses must match the passage narrative, articles must fit the nouns.</p>
+        <div class="topic-grid">
+          <span class="chip-eng">Verb forms (all tenses)</span><span class="chip-eng">Passive voice</span><span class="chip-eng">Conjunctions</span><span class="chip-eng">Relative clauses</span><span class="chip-eng">Articles and determiners</span>
+        </div>
+      </div>
+
+      <div class="comp-card comp-card-covered">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand-mint)" stroke-width="2" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            <div class="font-bold text-main">Editing</div>
+          </div>
+          <div class="badge badge-success">12 marks</div>
+        </div>
+        <p class="text-muted text-sm">A passage with 12–15 lines, containing 10 grammar errors — one per line, except two lines which are error-free. Students must identify the error and provide the correction. Editing is one of the most trainable components: the same grammar rules appear repeatedly, and pattern recognition improves rapidly with practice.</p>
+        <div class="topic-grid">
+          <span class="chip-eng">Tense errors</span><span class="chip-eng">Subject-verb disagreement</span><span class="chip-eng">Wrong pronoun</span><span class="chip-eng">Missing/wrong article</span><span class="chip-eng">Wrong preposition</span><span class="chip-eng">Singular/plural errors</span>
+        </div>
+      </div>
+
+      <div class="comp-card comp-card-covered">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand-mint)" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <div class="font-bold text-main">Comprehension (Open-Ended)</div>
+          </div>
+          <div class="badge badge-success">20 marks</div>
+        </div>
+        <p class="text-muted text-sm">Passage-based questions at three levels: literal (find the answer in the text), inferential (read between the lines), and evaluative (make a judgment using the text). Literal answers are findable — but inferential answers require students to state evidence and explain the implication. This is where AL1 is earned. Superholic Lab teaches inference technique in every comprehension question.</p>
+        <div class="topic-grid">
+          <span class="chip-eng">Literal understanding</span><span class="chip-eng">Inferential reading</span><span class="chip-eng">Evaluative questions</span><span class="chip-eng">Vocabulary in context</span><span class="chip-eng">Evidence-based answers</span>
+        </div>
+      </div>
+
+      <div class="comp-card comp-card-covered">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand-mint)" stroke-width="2" stroke-linecap="round"><path d="M17 3a2.828 2.828 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+            <div class="font-bold text-main">Synthesis &amp; Transformation</div>
+          </div>
+          <div class="badge badge-success">10 marks</div>
+        </div>
+        <p class="text-muted text-sm">Rewrite two sentences into one using a given word or structure — without changing the meaning. Tests conditional forms, reported speech, active/passive voice, and relative clauses. Students lose marks by changing the meaning even slightly. Superholic Lab provides worked examples comparing near-correct and fully correct answers, explaining what changed the meaning and why.</p>
+        <div class="topic-grid">
+          <span class="chip-eng">Conditional clauses (If/Unless/When)</span><span class="chip-eng">Reported speech</span><span class="chip-eng">Active and passive voice</span><span class="chip-eng">Relative clauses (who/which/that)</span><span class="chip-eng">Cause and effect (so/because/since)</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- S4 · MISS WENA AND COMPOSITION ═════════════════════════════ -->
+<section class="bg-sage-dark texture-grid py-10">
+  <div class="container">
+    <div class="flex flex-wrap items-start gap-8">
+      <div class="flex-1 flex flex-col gap-4" style="min-width: 280px;">
+        <div class="badge badge-glass self-start">Miss Wena for Composition</div>
+        <h2 class="font-display text-3xl">Composition Is 40 Marks. Miss Wena Guides Every Word.</h2>
+        <p class="text-muted text-lg">Good composition cannot be auto-marked — but it can be systematically coached. Miss Wena works with your child through the same process a good writing tutor uses: planning, drafting, evaluating, and refining. She never writes for the student. She asks questions that lead the student to write better.</p>
+        <div class="flex flex-col gap-4 mt-2">
+          <div class="flex items-start gap-3">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            <div>
+              <div class="font-bold text-sm text-white">Planning Before Writing</div>
+              <div class="text-muted text-sm">Miss Wena asks your child to name 3 events, describe the main character's feelings, and identify the turning point — before a single sentence is written. This prevents the most common composition failure: wandering without a structure.</div>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            <div>
+              <div class="font-bold text-sm text-white">Paragraph-by-Paragraph Review</div>
+              <div class="text-muted text-sm">After each paragraph, Miss Wena asks: "Does this move the story forward? Could you show the character's emotion more specifically than 'he felt sad'?" She uses Socratic questioning — never rewriting for the student.</div>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+            <div>
+              <div class="font-bold text-sm text-white">Language and Vocabulary Coaching</div>
+              <div class="text-muted text-sm">Miss Wena suggests three alternatives for a weak word choice and asks the student to pick the most precise one — teaching vocabulary selection in the context of real writing, not flashcard drilling.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="flex-1 flex flex-col gap-5" style="min-width: 280px;">
+        <!-- Mock chat demonstrating Miss Wena composition coaching -->
+        <div class="card p-4 flex flex-col gap-3">
+          <div class="flex items-center gap-2 mb-1">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
+            <span class="font-bold text-sm text-main">Miss Wena</span>
+            <span class="badge badge-success" style="margin-left:auto;">● Composition Mode</span>
+          </div>
+          <div class="chat-bubble-tutor text-sm">
+            You have chosen the topic "A Day Everything Went Wrong." Before we write, let's plan. What are three things that could go wrong for your character?
+          </div>
+          <div class="chat-bubble-user text-sm">
+            He missed the bus, he forgot his homework, and he fell in the rain.
+          </div>
+          <div class="chat-bubble-tutor text-sm">
+            Good start! Now — how does your character feel when he falls in the rain? Instead of "he felt bad," can you describe the feeling more specifically? What does his face look like? What does he do next?
+          </div>
+          <div class="chat-bubble-user text-sm">
+            He felt embarrassed because everyone was looking at him. His cheeks turned red.
+          </div>
+          <div class="chat-bubble-tutor text-sm">
+            Much better — "His cheeks turned red" is showing, not telling. That is exactly the language PSLE markers reward. Now let us write your opening paragraph with this level of detail.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- S5 · INFERENCE — THE AL1 SKILL ════════════════════════════ -->
+<section class="bg-white py-10">
+  <div class="container">
+    <div class="flex flex-col items-center text-center mb-8">
+      <div class="badge badge-rose mb-2">The Skill That Separates AL1 from AL3</div>
+      <h2 class="font-display text-3xl mb-2 text-main">Inference. The Most Undercoached English Skill.</h2>
+      <p class="text-muted text-lg prose-cap">Literal comprehension — finding the answer in the text — earns basic marks. Inference — reading what the author implies but does not state — is where AL1 is earned. Most children are never explicitly taught how to construct an inference answer. Superholic Lab does.</p>
+    </div>
+
+    <div class="flex flex-wrap gap-6 mb-6">
+      <div class="flex-1" style="min-width: 280px;">
+        <div class="card p-5" style="background: var(--bg-page);">
+          <div class="text-xs font-bold text-muted label-spaced mb-3">Passage Extract</div>
+          <p class="text-sm text-main">"When Mrs Tan walked in, the classroom fell silent. Students straightened in their seats, quickly sliding their phones beneath their textbooks."</p>
+        </div>
+      </div>
+      <div class="flex-1" style="min-width: 280px;">
+        <div class="card p-5" style="background: var(--bg-page);">
+          <div class="text-xs font-bold text-muted label-spaced mb-3">Question</div>
+          <p class="text-sm text-main font-bold">"What does the author suggest about the students' feelings when Mrs Tan entered?" (2 marks)</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex flex-wrap gap-5">
+      <div class="flex-1" style="min-width: 260px;">
+        <div class="ans-label-weak">❌ 0 marks — Literal answer</div>
+        <div class="ans-weak">
+          <p class="text-sm text-main">"The students felt quiet and sat up straight."</p>
+        </div>
+        <p class="text-xs text-muted mt-2">This copies from the text — it describes what the students did, not what they felt. "Felt quiet" is not an emotion. No inference, no marks.</p>
+      </div>
+      <div class="flex-1" style="min-width: 260px;">
+        <div class="ans-label-strong">✓ 2 marks — Inference answer</div>
+        <div class="ans-strong">
+          <p class="text-sm text-main">"The author suggests that the students felt anxious and feared being in trouble. This is shown by them quickly hiding their phones — they did not want Mrs Tan to see them, suggesting they knew they were not allowed to use phones in class."</p>
+        </div>
+        <p class="text-xs text-muted mt-2">States the inferred emotion (anxious, feared). Provides specific evidence (hiding phones). Explains the implication (they knew the rule). This is the structure PSLE markers award full marks for.</p>
+      </div>
+    </div>
+    <div class="card card-rule-rose p-4 mt-6">
+      <p class="text-muted text-sm">Superholic Lab teaches inference structure in every comprehension open-ended question: state the implied meaning, cite the specific evidence from the text, and explain the connection between evidence and implication. Miss Wena reinforces this using Socratic questioning — "Why would a student hide their phone? What does that suggest about how they felt?"</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- S6 · LEVEL PROGRESSION ══════════════════════════════════════ -->
+<section class="bg-page py-10">
+  <div class="container">
+    <div class="flex flex-col items-center text-center mb-8">
+      <div class="badge badge-info mb-2">What We Build at Each Stage</div>
+      <h2 class="font-display text-3xl mb-2 text-main">English Grows in Complexity at Every Level.</h2>
+      <p class="text-muted text-lg prose-cap">The same 6 components are tested from P3 onwards — but the grammar tested, the vocabulary expected, and the sophistication of comprehension passages all increase year by year.</p>
+    </div>
+    <div class="flex flex-wrap gap-5">
+      <div class="level-tier tier-lower">
+        <div class="font-display text-xl mb-2" style="color:var(--maths-colour);">Lower Primary — P1 &amp; P2</div>
+        <p class="text-muted text-sm">Foundation stage. No Paper 2 format yet — but the grammar and vocabulary learnt now are the raw material for all Paper 2 components. Superholic Lab builds basic sentence accuracy and reading confidence through MCQ grammar and vocabulary practice.</p>
+        <div class="topic-grid">
+          <span class="chip-eng">Nouns, verbs, adjectives</span><span class="chip-eng">Articles (a, an, the)</span><span class="chip-eng">Prepositions (in, on, under, beside)</span><span class="chip-eng">Simple past and present tense</span><span class="chip-eng">Basic sentence construction</span><span class="chip-eng">Vocabulary — word meaning and matching</span>
+        </div>
+      </div>
+      <div class="level-tier tier-middle">
+        <div class="font-display text-xl mb-2" style="color:var(--brand-rose);">Middle Primary — P3 &amp; P4</div>
+        <p class="text-muted text-sm">All 6 Paper 2 components are formally introduced at P3. Editing has 5 errors (vs 10 at P5/P6). Comprehension passages are shorter and more literal. Synthesis & Transformation begins with simpler structures. This is the critical window where habits are formed — children who develop systematic component habits at P3–P4 outperform at PSLE.</p>
+        <div class="topic-grid">
+          <span class="chip-eng">All tenses (simple, continuous, perfect)</span><span class="chip-eng">Conditional clauses (basic If...)</span><span class="chip-eng">Connectors (although, however, therefore)</span><span class="chip-eng">Editing — 5 errors per passage</span><span class="chip-eng">Cloze — shorter passages, familiar vocabulary</span><span class="chip-eng">Inference — introduced with scaffolding</span>
+        </div>
+      </div>
+      <div class="level-tier tier-upper">
+        <div class="font-display text-xl mb-2" style="color:var(--english-colour);">Upper Primary — P5 &amp; P6</div>
+        <p class="text-muted text-sm">Full PSLE difficulty. Editing increases to 10 errors. Comprehension passages are longer, more complex, and require evaluative responses. Synthesis & Transformation includes reported speech, passive voice, and multi-clause transformations. Comprehension Cloze requires nuanced vocabulary selection based on tone. This is when every component must function at full precision.</p>
+        <div class="topic-grid">
+          <span class="chip-eng">Reported speech (direct to indirect)</span><span class="chip-eng">Active and passive voice</span><span class="chip-eng">Conditionals (real, unreal, past unreal)</span><span class="chip-eng">Editing — 10 errors, subtle error types</span><span class="chip-eng">Evaluative comprehension questions</span><span class="chip-eng">Complex cloze — tone-dependent word choice</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- S7 · CTA ════════════════════════════════════════════════════ -->
+<section class="bg-rose py-10">
+  <div class="container flex flex-col items-center text-center gap-4">
+    <h2 class="font-display text-4xl text-white">Build All 6 English Components. Start Today.</h2>
+    <p class="text-muted text-lg mb-4" style="max-width: 520px;">Grammar, Vocabulary, Cloze, Editing, Comprehension, Synthesis &amp; Transformation — systematic practice for every Paper 2 component. Plus Miss Wena for Composition coaching. 7-day free trial, no credit card.</p>
+    <div class="flex flex-wrap gap-4 justify-center">
+      <a href="/pages/signup.html?subject=english&mode=trial" class="btn btn-white">Start 7-Day Free Trial →</a>
+      <a href="subject-mathematics.html" class="btn btn-outline-white">Explore Mathematics →</a>
+    </div>
+  </div>
+</section>
+
+<global-footer></global-footer>
+</body>
+</html>
