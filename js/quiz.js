@@ -1,41 +1,4 @@
-// ── ROBUST EVENT DELEGATION FOR NAVBAR ──
-document.addEventListener('click', (e) => {
-  const toggleBtn = e.target.closest('#navToggle');
-  const dropdown = document.getElementById('navDropdown');
-  
-  if (toggleBtn && dropdown) {
-    e.stopPropagation();
-    dropdown.classList.toggle('is-open');
-    toggleBtn.classList.toggle('is-active'); 
-    return;
-  }
 
-  if (dropdown && dropdown.classList.contains('is-open') && !dropdown.contains(e.target)) {
-    dropdown.classList.remove('is-open');
-    const actualToggle = document.getElementById('navToggle');
-    if (actualToggle) actualToggle.classList.remove('is-active');
-  }
-
-  const signOutBtn = e.target.closest('#navSignOut');
-  if (signOutBtn) {
-    e.preventDefault();
-    getSupabase().then(async (sb) => {
-      await sb.auth.signOut();
-      window.location.href = '../index.html';
-    });
-  }
-});
-
-// Auto-Light Up Active Nav Icon
-(function() {
-  const currentPath = window.location.pathname;
-  document.querySelectorAll('.bottom-nav-item').forEach(link => {
-    const href = link.getAttribute('href');
-    if (href && currentPath.includes(href)) {
-      link.classList.add('is-active');
-    }
-  });
-})();
 
 window.initQuizEngine = function() {
   'use strict';

@@ -21,15 +21,9 @@
     async function boot() {
       try {
         window.userProfile = await guardPage(true); 
-        const runInit = () => {
-          if (typeof initAppShell === 'function') initAppShell(window.userProfile); 
-          if (typeof window.initQuizEngine === 'function') window.initQuizEngine();
-        };
-
-        if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', runInit);
-        } else {
-          runInit();
+        await initAppShell(window.userProfile); 
+        if (typeof window.initQuizEngine === 'function') {
+          window.initQuizEngine();
         }
       } catch (err) {
         console.error('Boot sequence failed:', err);
@@ -228,11 +222,5 @@
 </nav>
 
 <script src="../js/supabase-client.js"></script>
-<script src="../js/quiz.js"></script> <script>
-    // Just a tiny trigger to start the engine when the app shell is ready
-    if (typeof window.initQuizEngine === 'function') {
-      window.initQuizEngine();
-    }
-  </script>
 </body>
 </html>
