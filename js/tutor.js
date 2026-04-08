@@ -9,6 +9,7 @@
   let history = [];
   let isLoading = false;
   let currentStudentId = null;
+  let currentStudentPhoto = '../assets/images/kid_studying.png'; // Default fallback
   let currentSubjectContext = 'general';
   let currentTopicContext = 'mixed';
   let messageQueue = [];
@@ -48,8 +49,8 @@
       });
     });
 
-    // Check student usage & Remedial intent
-    checkStudentLimits();
+    // Check student usage, fetch avatar, & check Remedial intent FIRST
+    await checkStudentLimits();
     handleRemedialIntent();
 
     // Event Listeners
@@ -67,7 +68,7 @@
 
     if (saveBtn) saveBtn.addEventListener('click', generateStudyNote);
 
-    // Welcome message
+    // Welcome message (Fires after avatar is loaded)
     appendBubble('tutor', "Hello! I'm Miss Wena. 😊 I'm your Superholic Tutor, so you can ask me about Mathematics, Science, or English all in one place! Need help with a bar model, a science experiment, or grammar? Let's figure it out together!");
   }
 
@@ -229,9 +230,7 @@
   function formatMessage(text) {
     let safe = String(text).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     
-    // Convert LaTeX fractions \frac{1}{2} to 1/2
     safe = safe.replace(/\\frac\s*\{([^{}]+)\}\s*\{([^{}]+)\}/g, '$1/$2');
-    // Clean up annoying $ delimiters wrapped around equations or fractions
     safe = safe.replace(/\$([^$]*?[/+\-=][^$]*?)\$/g, '$1');
     safe = safe.replace(/\$\s*([0-9a-zA-Z])\s*\$/g, '$1');
     
@@ -241,24 +240,28 @@
   function appendBubble(role, text, imageBase64 = null) {
     const isUser = role === 'user';
     
-    // Standard 3.0 Flex container
+    // Outer wrap controls left/right alignment
     const wrap = document.createElement('div');
-    wrap.className = `flex gap-4 w-full ${isUser ? 'justify-end' : 'justify-start'}`;
+    wrap.className = `flex w-full ${isUser ? 'justify-end' : 'justify-start'}`;
 
+    // Inner flex container (CRITICAL FIX: Removed w-full so justify-end actually works)
     const innerFlex = document.createElement('div');
-    innerFlex.className = `flex gap-4 w-full ${isUser ? 'flex-row-reverse' : 'flex-row'}`;
+    innerFlex.className = `flex gap-4`;
     innerFlex.style.maxWidth = '85%';
 
-    // Avatar
+    // Avatar configuration
     const avatar = document.createElement('img');
-    avatar.src = isUser ? '../assets/images/kid_studying.png' : '../assets/images/miss_wena.png';
+    avatar.src = isUser ? currentStudentPhoto : '../assets/images/miss_wena.png';
     avatar.alt = isUser ? 'You' : 'Miss Wena';
     avatar.className = 'wena-avatar';
     avatar.style.width = '40px';
     avatar.style.height = '40px';
     avatar.style.borderWidth = '2px';
+    avatar.style.borderRadius = '50%';
+    avatar.style.objectFit = 'cover';
+    avatar.style.flexShrink = '0';
 
-    // Bubble
+    // Chat Bubble
     const bubble = document.createElement('div');
     bubble.className = isUser ? 'chat-bubble-user text-sm' : 'chat-bubble-tutor text-sm';
     
@@ -279,8 +282,15 @@
       bubble.appendChild(textContainer);
     }
 
-    innerFlex.appendChild(avatar);
-    innerFlex.appendChild(bubble);
+    // DOM Ordering (Guarantees avatar placement without relying on flex-row-reverse CSS)
+    if (isUser) {
+      innerFlex.appendChild(bubble);
+      innerFlex.appendChild(avatar);
+    } else {
+      innerFlex.appendChild(avatar);
+      innerFlex.appendChild(bubble);
+    }
+
     wrap.appendChild(innerFlex);
     chatMessages.appendChild(wrap);
     chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -289,10 +299,10 @@
 
   function appendTyping() {
     const wrap = document.createElement('div');
-    wrap.className = 'flex gap-4 self-start w-full';
+    wrap.className = 'flex justify-start w-full';
     
     const innerFlex = document.createElement('div');
-    innerFlex.className = 'flex gap-4 w-full flex-row';
+    innerFlex.className = 'flex gap-4 flex-row';
     innerFlex.style.maxWidth = '85%';
 
     const avatar = document.createElement('img');
@@ -302,13 +312,15 @@
     avatar.style.width = '40px';
     avatar.style.height = '40px';
     avatar.style.borderWidth = '2px';
+    avatar.style.borderRadius = '50%';
+    avatar.style.objectFit = 'cover';
+    avatar.style.flexShrink = '0';
 
     const bubble = document.createElement('div');
     bubble.className = 'chat-bubble-tutor text-sm flex items-center justify-center';
     bubble.style.minWidth = '60px';
     bubble.style.height = '40px';
     
-    // Using global 3.0 spinner component
     const spinner = document.createElement('div');
     spinner.className = 'spinner-sm';
     spinner.style.width = '16px';
@@ -335,11 +347,14 @@
       const urlParams = new URLSearchParams(window.location.search);
       let activeStudentId = urlParams.get('student') || localStorage.getItem('shl_active_student_id');
 
-      const { data: students } = await sb.from('students').select('id').eq('parent_id', session.user.id);
+      // Fetch student data INCLUDING photo_url
+      const { data: students } = await sb.from('students').select('id, photo_url').eq('parent_id', session.user.id);
       let student = (students || []).find(s => s.id === activeStudentId) || (students || [])[0];
       
       if (student) {
         currentStudentId = student.id;
+        // Dynamically update the photo fallback
+        currentStudentPhoto = student.photo_url || '../assets/images/kid_studying.png';
         localStorage.setItem('shl_active_student_id', currentStudentId);
       }
 
