@@ -61,10 +61,10 @@ class GlobalFooter extends HTMLElement {
           background: rgba(255,255,255,0.1); 
           color: var(--brand-rose) !important; 
         }
+        global-footer { display: block; width: 100%; }
       </style>
 
-      <footer class="footer bg-sage-dark texture-whimsical pt-10 pb-1" style="position: relative; z-index: 100;">
-        <div class="container" style="position: relative; z-index: 10;">
+      <footer class="footer bg-sage-dark texture-whimsical pt-10 pb-1" style="position: relative; z-index: 100; display: flow-root; margin-top: -1px;">        <div class="container" style="position: relative; z-index: 10;">
           
           <div class="flex flex-wrap items-center justify-between gap-4 mt-4" style="margin-bottom: var(--space-4);">
             
