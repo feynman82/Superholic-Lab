@@ -55,7 +55,7 @@ this.innerHTML = `
 
         <!-- Subjects dropdown — desktop only -->
         <nav class="navbar-actions flex items-center gap-4">
-          <div id="wc-auth-container" style="display: flex;" class="subjects-wrap">
+          <div class="subjects-wrap">
             <button class="btn btn-sm hover-lift" id="subjectsToggle" aria-haspopup="true" aria-expanded="false">
               Subjects
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
