@@ -26,28 +26,44 @@ class GlobalFooter extends HTMLElement {
         
         /* Menu drops UPWARDS so it never gets cut off by the bottom of the screen */
         .useful-links-menu {
-          display: none; position: absolute; bottom: calc(100% + 8px); left: 0;
-          background: var(--sage-dark); border: 1px solid rgba(255,255,255,0.12);
-          border-radius: var(--radius-md); padding: 6px;
-          min-width: 180px; box-shadow: 0 8px 24px rgba(0,0,0,0.25);
-          z-index: 200;
+          display: none; 
+          position: absolute; 
+          right: 0; 
+          bottom: calc(100% + 8px); 
+          background: var(--sage-dark);
+          border: 1px solid rgba(255,255,255,0.15); 
+          border-radius: var(--radius-md); 
+          box-shadow: 0 -10px 25px rgba(0,0,0,0.3);
+          min-width: 200px; 
+          flex-direction: column; 
+          padding: var(--space-2); 
+          z-index: 999;
+          animation: fadeUp 0.2s ease;
         }
-        @keyframes fadeDown { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
         
         .useful-links-menu.is-open { display: flex; flex-direction: column; gap: 4px; }
         
         .useful-links-menu a {
-          display: flex; align-items: center; gap: 8px;
-          padding: 9px 12px; border-radius: var(--radius-sm);
-          color: var(--cream); text-decoration: none;
-          font-size: var(--text-sm); font-weight: 600;
-          transition: background 0.15s;
+          padding: 10px 12px; 
+          color: var(--cream) !important; 
+          text-decoration: none;
+          font-size: var(--text-sm); 
+          font-weight: 500; 
+          border-radius: var(--radius-sm);
+          transition: background 0.2s, color 0.2s; 
+          text-align: left;
+          display: flex;
+          align-items: center;
+          gap: 8px;
         }
-        .useful-links-menu a:hover { background: rgba(255,255,255,0.1); }
+        .useful-links-menu a:hover { 
+          background: rgba(255,255,255,0.1); 
+          color: var(--brand-rose) !important; 
         }
       </style>
 
-      <footer class="footer bg-sage-dark texture-whimsical pt-10 pb-1" style="position: relative; overflow: hidden;">
+      <footer class="footer bg-sage-dark texture-whimsical pt-10 pb-1" style="position: relative; z-index: 100;">
         <div class="container" style="position: relative; z-index: 10;">
           
           <div class="flex flex-wrap items-center justify-between gap-4 mt-4" style="margin-bottom: var(--space-4);">
