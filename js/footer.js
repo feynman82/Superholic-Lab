@@ -2,7 +2,7 @@ class GlobalFooter extends HTMLElement {
   connectedCallback() {
     this.innerHTML = `
 
-      <footer class="footer bg-sage-dark texture-whimsical pt-10 pb-8" style="position: relative; overflow: hidden;">
+      <footer class="footer bg-sage-dark texture-whimsical pt-10 pb-1" style="position: relative; overflow: hidden;">
         <div class="container" style="position: relative; z-index: 10;">
           
           <!-- TOP SECTION: Logo & Useful Links Dropdown -->
