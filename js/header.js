@@ -54,15 +54,13 @@ this.innerHTML = `
         <div id="nav-timer-container" class="hidden sm:flex"></div>
 
         <!-- Subjects dropdown — desktop only -->
-<div class="navbar-actions flex items-center gap-3">
-    
-    <div class="subjects-nav">
-      <div class="subjects-wrap" tabindex="0">
-        <button class="btn btn-sm flex items-center gap-1 hover-lift" aria-haspopup="true" aria-expanded="false" style="background: transparent; color: var(--cream); font-weight: 700; border: none !important;">
-          Subjects
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-        </button>
-        <div class="subjects-menu" id="subjectsMenu" role="menu">
+        <nav class="flex items-center gap-4">
+          <div class="subjects-wrap navbar-actions" >
+            <button class="btn btn-sm hover-lift" id="subjectsToggle" aria-haspopup="true" aria-expanded="false">
+              Subjects
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="subjects-menu" id="subjectsMenu" role="menu">
               <a href="/pages/subject-mathematics.html" role="menuitem">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--maths-colour)" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 Mathematics
@@ -76,8 +74,8 @@ this.innerHTML = `
                 English
               </a>
             </div>
-      </div>
-    </div>
+          </div>
+        </nav>
 
         <div class="navbar-actions flex items-center gap-4">
           <!-- Dynamic Plan Badge (e.g., Trial, Admin) -->
