@@ -95,7 +95,7 @@ window.initExamEngine = function () {
   };
 
   const app = document.getElementById('app');
-  const TYPE_LABELS = { WA1: 'WA 1', WA2: 'WA 2', WA3: 'WA 3', EOY: 'End-of-Year', PRELIM: 'PSLE Prelim' };
+  const TYPE_LABELS = { WA1: 'WA 1', WA2: 'WA 2', WA3: 'WA 3', EOY: 'End-of-Year', PSLE: 'PSLE/Prelim' };
 
   // ── UTILITIES ────────────────────────────────────────────────────────────
   function esc(str) {
@@ -257,7 +257,7 @@ window.initExamEngine = function () {
       { id: 'WA2', label: 'WA 2', sub: 'Weighted Assessment 2' }
     ];
     if (state.levelKey === 'primary-6') {
-      types.push({ id: 'PRELIM', label: 'PSLE Prelim', sub: 'Full PSLE simulation' });
+      types.push({ id: 'PRELIM', label: 'PSLE/Prelim', sub: 'Full PSLE simulation' });
     } else {
       types.push({ id: 'WA3', label: 'WA 3', sub: 'Weighted Assessment 3' });
       types.push({ id: 'EOY', label: 'End of Year', sub: 'End-of-Year examination' });
