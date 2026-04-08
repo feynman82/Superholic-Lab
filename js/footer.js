@@ -26,7 +26,7 @@ class GlobalFooter extends HTMLElement {
         
         /* Menu drops UPWARDS so it never gets cut off by the bottom of the screen */
         .useful-links-menu {
-          display: none; position: absolute; top: calc(100% + 8px); left: 0;
+          display: none; position: absolute; bottom: calc(100% + 8px); left: 0;
           background: var(--sage-dark); border: 1px solid rgba(255,255,255,0.12);
           border-radius: var(--radius-md); padding: 6px;
           min-width: 180px; box-shadow: 0 8px 24px rgba(0,0,0,0.25);
