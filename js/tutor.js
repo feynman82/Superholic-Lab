@@ -243,10 +243,16 @@
     // Outer wrap controls left/right alignment
     const wrap = document.createElement('div');
     wrap.className = `flex w-full ${isUser ? 'justify-end' : 'justify-start'}`;
+    
+    // CRITICAL FIX: Hardcode layout rules to bypass missing utility classes and force the avatar right
+    wrap.style.display = 'flex';
+    wrap.style.width = '100%';
+    wrap.style.justifyContent = isUser ? 'flex-end' : 'flex-start';
 
-    // Inner flex container (CRITICAL FIX: Removed w-full so justify-end actually works)
+    // Inner flex container
     const innerFlex = document.createElement('div');
     innerFlex.className = `flex gap-4`;
+    innerFlex.style.display = 'flex';
     innerFlex.style.maxWidth = '85%';
 
     // Avatar configuration
@@ -282,7 +288,7 @@
       bubble.appendChild(textContainer);
     }
 
-    // DOM Ordering (Guarantees avatar placement without relying on flex-row-reverse CSS)
+    // DOM Ordering (Guarantees avatar placement)
     if (isUser) {
       innerFlex.appendChild(bubble);
       innerFlex.appendChild(avatar);
@@ -301,8 +307,14 @@
     const wrap = document.createElement('div');
     wrap.className = 'flex justify-start w-full';
     
+    // CRITICAL FIX: Hardcode layout rules for typing indicator
+    wrap.style.display = 'flex';
+    wrap.style.width = '100%';
+    wrap.style.justifyContent = 'flex-start';
+    
     const innerFlex = document.createElement('div');
     innerFlex.className = 'flex gap-4 flex-row';
+    innerFlex.style.display = 'flex';
     innerFlex.style.maxWidth = '85%';
 
     const avatar = document.createElement('img');
@@ -321,6 +333,7 @@
     bubble.style.minWidth = '60px';
     bubble.style.height = '40px';
     
+    // Using global 3.0 spinner component
     const spinner = document.createElement('div');
     spinner.className = 'spinner-sm';
     spinner.style.width = '16px';
