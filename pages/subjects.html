@@ -123,13 +123,82 @@ window.initSubjectsEngine = function() {
     'primary-6:english':     ['grammar','cloze','editing'],
   };
 
+  // ── SYLLABUS_MAP ─────────────────────────────────────────────────────────
+  // Verified against MOE Primary Mathematics Syllabus (2021, updated Oct 2025).
+  // Topic names must match subject-mathematics.html panel chips.
+  // Slugs derived as: name.toLowerCase().replace(/ /g, '-')
+  // ─────────────────────────────────────────────────────────────────────────
   const SYLLABUS_MAP = {
-    'primary-1:mathematics': ['Whole Numbers', 'Addition and Subtraction', 'Length', 'Time', 'Money', 'Picture Graphs'],
-    'primary-2:mathematics': ['Whole Numbers', 'Addition and Subtraction', 'Multiplication and Division', 'Length', 'Mass', 'Volume', 'Time', 'Money', 'Fractions', 'Picture Graphs'],
-    'primary-3:mathematics': ['Whole Numbers', 'Addition and Subtraction', 'Multiplication and Division', 'Money', 'Length, Mass and Volume', 'Bar Graphs', 'Fractions', 'Time', 'Geometry', 'Area and Perimeter'],
-    'primary-4:mathematics': ['Whole Numbers', 'Fractions', 'Decimals', 'Measurement', 'Geometry', 'Data Analysis'],
-    'primary-5:mathematics': ['Whole Numbers', 'Fractions', 'Decimals', 'Percentage', 'Ratio', 'Geometry', 'Measurement', 'Volume', 'Data Analysis'],
-    'primary-6:mathematics': ['Fractions', 'Percentage', 'Ratio', 'Speed', 'Measurement', 'Geometry', 'Algebra', 'Data Analysis', 'Pie Charts'],
+    // Mathematics — P1 to P6 (MOE 2021, Oct 2025 update)
+    // P1: No formal WA/EOY. Times tables not yet introduced (concepts only).
+    'primary-1:mathematics': [
+      'Whole Numbers',
+      'Addition and Subtraction',
+      'Multiplication and Division',
+      'Money',
+      'Length and Mass',
+      'Shapes and Patterns',
+      'Picture Graphs'
+    ],
+    // P2: Times tables introduced (×2,×3,×4,×5,×10). Fractions (½,¼,¾).
+    //     Standard units of measurement. 3D shapes. No formal WA/EOY.
+    'primary-2:mathematics': [
+      'Whole Numbers',
+      'Multiplication Tables',
+      'Fractions',
+      'Money',
+      'Time',
+      'Length, Mass and Volume',
+      'Shapes',
+      'Picture Graphs'
+    ],
+    // P3: WAs begin. 24-hour clock, angles, perpendicular/parallel lines added.
+    'primary-3:mathematics': [
+      'Whole Numbers',
+      'Fractions',
+      'Length, Mass and Volume',
+      'Time',
+      'Angles',
+      'Area and Perimeter',
+      'Bar Graphs'
+    ],
+    // P4: Factors/multiples, mixed number fractions, decimals, angles (measuring).
+    'primary-4:mathematics': [
+      'Whole Numbers',
+      'Factors and Multiples',
+      'Fractions',
+      'Decimals',
+      'Angles',
+      'Area and Perimeter',
+      'Symmetry',
+      'Data Analysis'
+    ],
+    // P5: Most content-dense year. Ratio, Percentage, Rate all new.
+    //     Triangle area, volume of solids, parallelogram/rhombus/trapezium.
+    'primary-5:mathematics': [
+      'Whole Numbers',
+      'Fractions',
+      'Decimals',
+      'Percentage',
+      'Ratio',
+      'Rate',
+      'Area of Triangle',
+      'Volume',
+      'Angles and Geometry',
+      'Average'
+    ],
+    // P6: PSLE year. Algebra and Circles new. Speed, complex Ratio, Percentage.
+    'primary-6:mathematics': [
+      'Fractions',
+      'Percentage',
+      'Ratio',
+      'Speed',
+      'Algebra',
+      'Circles',
+      'Volume',
+      'Geometry',
+      'Pie Charts'
+    ],
     
     'primary-3:science': ['Diversity', 'Systems', 'Interactions'],
     'primary-4:science': ['Cycles', 'Energy', 'Heat', 'Light', 'Magnets', 'Matter'],
