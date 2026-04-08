@@ -1593,4 +1593,40 @@ p { text-align: justify; }
 .billing-toggle .btn-active   { background: var(--bg-surface); color: var(--text-main); }
 .billing-toggle .btn-inactive { background: transparent; color: var(--cream); }
 
-
+/* ── Subjects desktop dropdown ── */
+        .subjects-nav { display: none; }
+        @media (min-width: 768px) { .subjects-nav { display: flex; align-items: center; } }
+        .subjects-wrap { position: relative; }
+        .subjects-btn {
+          display: flex; align-items: center; gap: 6px;
+          background: transparent; border: none; cursor: pointer;
+          color: var(--cream); font-family: var(--font-body);
+          font-size: var(--text-sm); font-weight: 700;
+          padding: 6px 12px; border-radius: var(--radius-full);
+          transition: background 0.15s;
+        }
+        .subjects-btn:hover { background: rgba(255,255,255,0.1); }
+        .subjects-menu {
+          display: none; position: absolute; top: calc(100% + 8px); left: 0;
+          background: var(--sage-dark); border: 1px solid rgba(255,255,255,0.12);
+          border-radius: var(--radius-md); padding: 6px;
+          min-width: 180px; box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+          z-index: 200;
+        }
+        .subjects-menu.is-open { display: block; animation: fadeDown 0.2s ease; }
+        @keyframes fadeDown { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+        .subjects-menu a {
+          display: flex; align-items: center; gap: 8px;
+          padding: 9px 12px; border-radius: var(--radius-sm);
+          color: var(--cream); text-decoration: none;
+          font-size: var(--text-sm); font-weight: 600;
+          transition: background 0.15s;
+        }
+        .subjects-menu a:hover { background: rgba(255,255,255,0.1); }
+        /* ── Mobile nav group label ── */
+        .nav-group-label {
+          font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em;
+          text-transform: uppercase; color: rgba(255,255,255,0.4);
+          padding: 12px 16px 4px; pointer-events: none;
+        }
+        .nav-sub-link { padding-left: 28px !important; font-size: var(--text-logo) !important; }

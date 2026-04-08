@@ -2,45 +2,7 @@ class GlobalHeader extends HTMLElement {
   connectedCallback() {
     // ── TEMPLATE ──
 this.innerHTML = `
-      <style>
-        /* ── Subjects desktop dropdown ── */
-        .subjects-nav { display: none; }
-        @media (min-width: 768px) { .subjects-nav { display: flex; align-items: center; } }
-        .subjects-wrap { position: relative; }
-        .subjects-btn {
-          display: flex; align-items: center; gap: 6px;
-          background: transparent; border: none; cursor: pointer;
-          color: var(--cream); font-family: var(--font-body);
-          font-size: var(--text-sm); font-weight: 700;
-          padding: 6px 12px; border-radius: var(--radius-full);
-          transition: background 0.15s;
-        }
-        .subjects-btn:hover { background: rgba(255,255,255,0.1); }
-        .subjects-menu {
-          display: none; position: absolute; top: calc(100% + 8px); left: 0;
-          background: var(--sage-dark); border: 1px solid rgba(255,255,255,0.12);
-          border-radius: var(--radius-md); padding: 6px;
-          min-width: 180px; box-shadow: 0 8px 24px rgba(0,0,0,0.25);
-          z-index: 200;
-        }
-        .subjects-menu.is-open { display: block; animation: fadeDown 0.2s ease; }
-        @keyframes fadeDown { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
-        .subjects-menu a {
-          display: flex; align-items: center; gap: 8px;
-          padding: 9px 12px; border-radius: var(--radius-sm);
-          color: var(--cream); text-decoration: none;
-          font-size: var(--text-sm); font-weight: 600;
-          transition: background 0.15s;
-        }
-        .subjects-menu a:hover { background: rgba(255,255,255,0.1); }
-        /* ── Mobile nav group label ── */
-        .nav-group-label {
-          font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em;
-          text-transform: uppercase; color: rgba(255,255,255,0.4);
-          padding: 12px 16px 4px; pointer-events: none;
-        }
-        .nav-sub-link { padding-left: 28px !important; font-size: var(--text-logo) !important; }
-      </style>
+
 
       <header class="navbar justify-between bg-sage-dark" id="navbar">      <header class="navbar justify-between bg-sage-dark" id="navbar">
         
@@ -52,30 +14,6 @@ this.innerHTML = `
 
         <!-- Timer injects here during EXAM phase -->
         <div id="nav-timer-container" class="hidden sm:flex"></div>
-
-        <!-- Subjects dropdown — desktop only -->
-        <nav class="flex items-center gap-4">
-          <div class="subjects-wrap navbar-actions" >
-            <button class="btn btn-sm hover-lift" id="subjectsToggle" aria-haspopup="true" aria-expanded="false">
-              Subjects
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
-            </button>
-            <div class="subjects-menu" id="subjectsMenu" role="menu">
-              <a href="/pages/subject-mathematics.html" role="menuitem">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--maths-colour)" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                Mathematics
-              </a>
-              <a href="/pages/subject-science.html" role="menuitem">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--science-colour)" stroke-width="2.5" stroke-linecap="round"><path d="M9 3h6v7l3 10H6L9 10V3z"/><line x1="6" y1="7" x2="18" y2="7"/></svg>
-                Science
-              </a>
-              <a href="/pages/subject-english.html" role="menuitem">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--english-colour)" stroke-width="2.5" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
-                English
-              </a>
-            </div>
-          </div>
-        </nav>
 
         <div class="navbar-actions flex items-center gap-4">
           <!-- Dynamic Plan Badge (e.g., Trial, Admin) -->
