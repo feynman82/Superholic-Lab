@@ -34,7 +34,7 @@ class GlobalFooter extends HTMLElement {
         }
         @keyframes fadeDown { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
         
-        .useful-links-menu.is-open { display: flex; }
+        .useful-links-menu.is-open { display: flex; flex-direction: column; gap: 4px; }
         
         .useful-links-menu a {
           display: flex; align-items: center; gap: 8px;
