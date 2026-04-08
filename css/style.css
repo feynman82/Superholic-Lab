@@ -319,6 +319,84 @@ img {
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
+   4.5 SUBJECT PAGE & EDUCATIONAL COMPONENTS (Unified 3.0)
+   ────────────────────────────────────────────────────────────────────────── */
+
+/* ── SEMANTIC BACKGROUND TINTS ── 
+   Replaces hardcoded inline rgba() styles for level cards and strands */
+.bg-maths-tint   { background: rgba(59,130,246,0.06); border: 1.5px solid rgba(59,130,246,0.2); }
+.bg-science-tint { background: rgba(5,150,105,0.05); border: 1.5px solid rgba(5,150,105,0.2); }
+.bg-english-tint { background: rgba(139,92,246,0.06); border: 1.5px solid rgba(139,92,246,0.2); }
+.bg-rose-tint    { background: rgba(183,110,121,0.06); border: 1.5px solid rgba(183,110,121,0.2); }
+.bg-amber-tint   { background: rgba(217,119,6,0.06); border: 1.5px solid rgba(217,119,6,0.2); }
+
+/* ── TOPIC CHIPS ── 
+   Unifies .chip, .chip-eng, .chip-na, .chip-mg */
+.topic-grid { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-3); }
+.topic-chip {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  padding: 3px var(--space-3);
+  border-radius: var(--radius-full);
+}
+.topic-chip.maths   { background: rgba(59,130,246,0.1); color: var(--maths-colour); border: 1px solid rgba(59,130,246,0.2); }
+.topic-chip.science { background: rgba(5,150,105,0.1); color: var(--science-colour); border: 1px solid rgba(5,150,105,0.2); }
+.topic-chip.english { background: rgba(139,92,246,0.1); color: var(--english-colour); border: 1px solid rgba(139,92,246,0.2); }
+.topic-chip.rose    { background: rgba(183,110,121,0.1); color: var(--brand-rose); border: 1px solid rgba(183,110,121,0.2); }
+.topic-chip.mint    { background: rgba(5,150,105,0.1); color: var(--brand-mint); border: 1px solid rgba(5,150,105,0.2); }
+
+/* ── ANSWER COMPARISONS (CER & Common Mistakes) ── 
+   Unifies .ans-weak, .ans-strong, .ans-right, .ans-wrong */
+.ans-block { border-radius: var(--radius-lg); padding: var(--space-4); margin-top: var(--space-2); }
+.ans-block.weak   { background: rgba(239,68,68,0.05); border: 1.5px solid rgba(239,68,68,0.2); }
+.ans-block.strong { background: rgba(5,150,105,0.05); border: 1.5px solid rgba(5,150,105,0.2); }
+
+.ans-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  border-radius: var(--radius-full); padding: 2px var(--space-3);
+  font-size: var(--text-xs); font-weight: 700;
+}
+.ans-tag.weak   { background: rgba(239,68,68,0.1); color: var(--brand-error); }
+.ans-tag.strong { background: rgba(5,150,105,0.1); color: var(--brand-mint); }
+
+/* ── ALERTS / CALLOUTS ── 
+   Unifies .level-alert, .level-alert-rose */
+.callout {
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+}
+.callout.amber { border-left: 4px solid var(--brand-amber); background: rgba(217,119,6,0.07); }
+.callout.rose  { border-left: 4px solid var(--brand-rose); background: rgba(183,110,121,0.07); }
+
+/* ── MATHS SPECIFIC: CPA METHOD & LEVEL TABS ── */
+.cpa-row { 
+  display: flex; flex-wrap: wrap; align-items: stretch; 
+  gap: var(--space-4); /* Masterclass fix: Solves touching divs on mobile */
+  justify-content: center; 
+}
+.cpa-step { 
+  flex: 1; min-width: 160px; display: flex; flex-direction: column; 
+  align-items: center; gap: var(--space-2); padding: var(--space-4); 
+  border-radius: var(--radius-lg); text-align: center; 
+}
+.cpa-arrow { 
+  display: flex; align-items: center; padding: 0 var(--space-2); 
+  color: var(--border-dark); font-size: var(--text-xl); flex-shrink: 0; 
+}
+@media (max-width: 768px) {
+  /* Hides the arrows when cards stack on top of each other */
+  .cpa-arrow { display: none; } 
+}
+
+.level-tabs { display: inline-flex; flex-wrap: wrap; gap: var(--space-1); background: var(--brand-sage); border-radius: var(--radius-full); padding: var(--space-1); }
+.level-tab  { border-radius: var(--radius-full); padding: var(--space-1) var(--space-4); font-size: var(--text-sm); font-weight: 700; cursor: pointer; border: none; font-family: var(--font-body); }
+.level-tab.tab-active   { background: var(--bg-surface); color: var(--text-main); }
+.level-tab.tab-inactive { background: transparent; color: var(--cream); }
+.level-panel  { display: none; }
+.level-panel.is-active { display: block; }
+
+/* ──────────────────────────────────────────────────────────────────────────
    5. APP LAYOUT SHELL
    ────────────────────────────────────────────────────────────────────────── */
 
