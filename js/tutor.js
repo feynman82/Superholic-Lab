@@ -13,8 +13,7 @@
   let currentTopicContext = 'mixed';
   let messageQueue = [];
   let batchTimeout = null;
-  const BATCH_DELAY_MS = 1500; // Wait 1.5 seconds after last message before sending
-
+  const BATCH_DELAY_MS = 1500;
 
   // Canvas State
   let isDrawMode = false;
@@ -26,7 +25,7 @@
   const chatMessages = document.getElementById('chat-messages');
   const chatInput = document.getElementById('chat-input');
   const sendBtn = document.getElementById('chat-send');
-  const saveBtn = document.getElementById('saveChatBtn'); // Study Note Button
+  const saveBtn = document.getElementById('saveChatBtn'); 
   const modeTextBtn = document.getElementById('modeTextBtn');
   const modeDrawBtn = document.getElementById('modeDrawBtn');
   const drawArea = document.getElementById('drawArea');
@@ -44,6 +43,7 @@
         if (!chatInput.disabled) {
           chatInput.value = btn.textContent;
           chatInput.focus();
+          adjustTextareaHeight();
         }
       });
     });
@@ -52,11 +52,28 @@
     checkStudentLimits();
     handleRemedialIntent();
 
-    // Study Note save action
+    // Event Listeners
+    sendBtn.addEventListener('click', handleSend);
+    chatInput.addEventListener('keydown', e => { 
+      if (e.key === 'Enter' && !e.shiftKey) { 
+        e.preventDefault(); 
+        handleSend(); 
+      } 
+    });
+    chatInput.addEventListener('input', adjustTextareaHeight);
+
+    modeTextBtn.addEventListener('click', () => setMode('text'));
+    modeDrawBtn.addEventListener('click', () => setMode('draw'));
+
     if (saveBtn) saveBtn.addEventListener('click', generateStudyNote);
 
     // Welcome message
     appendBubble('tutor', "Hello! I'm Miss Wena. 😊 I'm your Superholic Tutor, so you can ask me about Mathematics, Science, or English all in one place! Need help with a bar model, a science experiment, or grammar? Let's figure it out together!");
+  }
+
+  function adjustTextareaHeight() {
+    chatInput.style.height = 'auto';
+    chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + 'px';
   }
 
   // ── Canvas Pen Tool Logic ──
@@ -87,126 +104,126 @@
   };
 
   // ── Mode Toggles ──
-  modeTextBtn.addEventListener('click', () => {
-    isDrawMode = false;
-    drawArea.classList.remove('is-open');
-    modeTextBtn.style.background = 'var(--sage-dark)'; modeTextBtn.style.color = 'white';
-    modeDrawBtn.style.background = 'transparent'; modeDrawBtn.style.color = 'var(--text-muted)';
-  });
-
-  modeDrawBtn.addEventListener('click', () => {
-    isDrawMode = true;
-    drawArea.classList.add('is-open');
-    modeDrawBtn.style.background = 'var(--sage-dark)'; modeDrawBtn.style.color = 'white';
-    modeTextBtn.style.background = 'transparent'; modeTextBtn.style.color = 'var(--text-muted)';
-    
-    // Resize canvas safely after display block
-    const rect = canvas.parentElement.getBoundingClientRect();
-    canvas.width = rect.width;
-    canvas.height = 200;
-    ctx = canvas.getContext('2d');
-    ctx.lineWidth = 2.5; 
-    ctx.lineCap = 'round'; 
-    ctx.strokeStyle = '#2C3E3A';
-  });
+  function setMode(mode) {
+    isDrawMode = (mode === 'draw');
+    if (isDrawMode) {
+      modeDrawBtn.className = 'btn btn-sm bg-sage-dark text-white';
+      modeTextBtn.className = 'btn btn-sm btn-ghost';
+      drawArea.style.display = 'block';
+      
+      // Resize canvas safely after display block
+      setTimeout(() => {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        if (canvas.width !== rect.width) {
+          const imgData = ctx ? ctx.getImageData(0, 0, canvas.width, canvas.height) : null;
+          canvas.width = rect.width;
+          canvas.height = 200;
+          ctx = canvas.getContext('2d');
+          ctx.lineWidth = 2.5; 
+          ctx.lineCap = 'round'; 
+          ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--border-dark').trim() || '#2C3E3A';
+          if (imgData) ctx.putImageData(imgData, 0, 0);
+        }
+      }, 50);
+    } else {
+      modeTextBtn.className = 'btn btn-sm bg-sage-dark text-white';
+      modeDrawBtn.className = 'btn btn-sm btn-ghost';
+      drawArea.style.display = 'none';
+    }
+  }
 
   // ── Chat Logic ──
-  sendBtn.addEventListener('click', handleSend);
-  chatInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } });
-
   let currentTypingEl = null; 
 
-// 2. Replace your handleSend and processBatchQueue with this:
-async function handleSend() {
-  if (isLoading) return;
-  const text = chatInput.value.trim();
-  const hasImage = isDrawMode && canvasHasContent;
-  
-  if (!text && !hasImage) return;
+  async function handleSend() {
+    if (isLoading) return;
+    const text = chatInput.value.trim();
+    const hasImage = isDrawMode && canvasHasContent;
+    
+    if (!text && !hasImage) return;
 
-  const imageData = hasImage ? canvas.toDataURL('image/png') : null;
-  appendBubble('user', text, imageData);
-  
-  messageQueue.push({ text, image: imageData });
-  
-  chatInput.value = '';
-  if (hasImage) window.clearCanvas();
+    const imageData = hasImage ? canvas.toDataURL('image/png') : null;
+    appendBubble('user', text, imageData);
+    
+    messageQueue.push({ text, image: imageData });
+    
+    chatInput.value = '';
+    chatInput.style.height = 'auto';
+    if (hasImage) window.clearCanvas();
 
-  if (batchTimeout) clearTimeout(batchTimeout);
-  
-  // Create the typing dots globally so the queue can delete them later
-  if (!currentTypingEl) {
-      currentTypingEl = appendTyping(); 
-  }
-
-  batchTimeout = setTimeout(() => {
-    processBatchQueue();
-  }, BATCH_DELAY_MS);
-}
-
-async function processBatchQueue() {
-  if (messageQueue.length === 0) return;
-  
-  isLoading = true;
-  chatInput.disabled = true;
-  sendBtn.disabled = true;
-
-  const combinedText = messageQueue.map(m => m.text).filter(Boolean).join('\n');
-  const lastImage = messageQueue.reverse().find(m => m.image)?.image || null;
-  
-  messageQueue = [];
-
-  history.forEach(msg => msg.image = null);
-  history.push({ role: 'user', content: combinedText, image: lastImage });
-
-  try {
-    const res = await fetch('/api/chat', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ messages: history }),
-    });
-
-    const data = await res.json();
-
-    // Safely remove the typing element!
-    if (currentTypingEl) {
-        currentTypingEl.remove();
-        currentTypingEl = null;
+    if (batchTimeout) clearTimeout(batchTimeout);
+    
+    if (!currentTypingEl) {
+        currentTypingEl = appendTyping(); 
     }
 
-    if (!res.ok || data.error) {
-      // Gracefully handle the 15 RPM limit 500 error
-      if ((data.error && data.error.includes("temporarily unavailable")) || res.status === 500) {
-          appendBubble('tutor', 'Miss Wena is thinking a bit too fast! 😅 Give me about 30 seconds to catch my breath before we continue.');
+    batchTimeout = setTimeout(() => {
+      processBatchQueue();
+    }, BATCH_DELAY_MS);
+  }
+
+  async function processBatchQueue() {
+    if (messageQueue.length === 0) return;
+    
+    isLoading = true;
+    chatInput.disabled = true;
+    sendBtn.disabled = true;
+
+    const combinedText = messageQueue.map(m => m.text).filter(Boolean).join('\n');
+    const lastImage = messageQueue.reverse().find(m => m.image)?.image || null;
+    
+    messageQueue = [];
+
+    history.forEach(msg => msg.image = null);
+    history.push({ role: 'user', content: combinedText, image: lastImage });
+
+    try {
+      const res = await fetch('/api/chat', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ messages: history }),
+      });
+
+      const data = await res.json();
+
+      if (currentTypingEl) {
+          currentTypingEl.remove();
+          currentTypingEl = null;
+      }
+
+      if (!res.ok || data.error) {
+        if ((data.error && data.error.includes("temporarily unavailable")) || res.status === 500) {
+            appendBubble('tutor', 'Miss Wena is thinking a bit too fast! 😅 Give me about 30 seconds to catch my breath before we continue.');
+        } else {
+            appendBubble('tutor', data.error || 'Sorry, something went wrong. Please try again.');
+        }
+        history.pop(); 
+        chatInput.value = combinedText; 
+        adjustTextareaHeight();
       } else {
-          appendBubble('tutor', data.error || 'Sorry, something went wrong. Please try again.');
+        appendBubble('tutor', data.reply);
+        history.push({ role: 'assistant', content: data.reply });
+        
+        if (saveBtn && history.filter(m => m.role === 'user').length >= 1) {
+          saveBtn.classList.remove('hidden');
+        }
       }
-      history.pop(); 
-      chatInput.value = combinedText; // Give the student their text back!
-    } else {
-      appendBubble('tutor', data.reply);
-      history.push({ role: 'assistant', content: data.reply });
-      
-      if (saveBtn && history.filter(m => m.role === 'user').length >= 1) {
-        saveBtn.classList.remove('hidden');
+    } catch (err) {
+      if (currentTypingEl) {
+          currentTypingEl.remove();
+          currentTypingEl = null;
       }
+      appendBubble('tutor', 'Could not reach the tutor. Please check your connection.');
+      history.pop();
+      chatInput.value = combinedText; 
+      adjustTextareaHeight();
+    } finally {
+      isLoading = false;
+      chatInput.disabled = false;
+      sendBtn.disabled = false;
+      chatInput.focus();
     }
-  } catch (err) {
-    // Safely remove the typing element on a hard network crash
-    if (currentTypingEl) {
-        currentTypingEl.remove();
-        currentTypingEl = null;
-    }
-    appendBubble('tutor', 'Could not reach the tutor. Please check your connection.');
-    history.pop();
-    chatInput.value = combinedText; 
-  } finally {
-    isLoading = false;
-    chatInput.disabled = false;
-    sendBtn.disabled = false;
-    chatInput.focus();
   }
-}
 
   // ── DOM Helpers ──
   function formatMessage(text) {
@@ -222,40 +239,90 @@ async function processBatchQueue() {
   }
 
   function appendBubble(role, text, imageBase64 = null) {
-    const bubble = document.createElement('div');
-    bubble.className = `chat-bubble-${role}`;
+    const isUser = role === 'user';
+    
+    // Standard 3.0 Flex container
+    const wrap = document.createElement('div');
+    wrap.className = `flex gap-4 w-full ${isUser ? 'justify-end' : 'justify-start'}`;
 
-    // Add Image if present
+    const innerFlex = document.createElement('div');
+    innerFlex.className = `flex gap-4 w-full ${isUser ? 'flex-row-reverse' : 'flex-row'}`;
+    innerFlex.style.maxWidth = '85%';
+
+    // Avatar
+    const avatar = document.createElement('img');
+    avatar.src = isUser ? '../assets/images/kid_studying.png' : '../assets/images/wena.png';
+    avatar.alt = isUser ? 'You' : 'Miss Wena';
+    avatar.className = 'wena-avatar';
+    avatar.style.width = '40px';
+    avatar.style.height = '40px';
+    avatar.style.borderWidth = '2px';
+
+    // Bubble
+    const bubble = document.createElement('div');
+    bubble.className = isUser ? 'chat-bubble-user text-sm' : 'chat-bubble-tutor text-sm';
+    
     if (imageBase64) {
       const img = document.createElement('img');
       img.src = imageBase64;
       img.className = 'w-full h-auto bg-white rounded border border-light mb-2';
       bubble.appendChild(img);
     }
-
-    // Add Text with robust text wrapping
+    
     if (text) {
       const textContainer = document.createElement('div');
       textContainer.style.whiteSpace = 'pre-wrap';
       textContainer.style.wordBreak = 'break-word';
       textContainer.style.overflowWrap = 'anywhere';
-      textContainer.style.width = '100%'; // <-- ADD THIS LINE
+      textContainer.style.width = '100%';
       textContainer.innerHTML = formatMessage(text);
       bubble.appendChild(textContainer);
     }
 
-    chatMessages.appendChild(bubble);
+    innerFlex.appendChild(avatar);
+    innerFlex.appendChild(bubble);
+    wrap.appendChild(innerFlex);
+    chatMessages.appendChild(wrap);
     chatMessages.scrollTop = chatMessages.scrollHeight;
-    return bubble;
+    return wrap;
   }
 
   function appendTyping() {
-    const el = document.createElement('div');
-    el.className = 'chat-typing';
-    el.innerHTML = '<span></span><span></span><span></span>';
-    chatMessages.appendChild(el);
+    const wrap = document.createElement('div');
+    wrap.className = 'flex gap-4 self-start w-full';
+    
+    const innerFlex = document.createElement('div');
+    innerFlex.className = 'flex gap-4 w-full flex-row';
+    innerFlex.style.maxWidth = '85%';
+
+    const avatar = document.createElement('img');
+    avatar.src = '../assets/images/wena.png';
+    avatar.alt = 'Miss Wena';
+    avatar.className = 'wena-avatar';
+    avatar.style.width = '40px';
+    avatar.style.height = '40px';
+    avatar.style.borderWidth = '2px';
+
+    const bubble = document.createElement('div');
+    bubble.className = 'chat-bubble-tutor text-sm flex items-center justify-center';
+    bubble.style.minWidth = '60px';
+    bubble.style.height = '40px';
+    
+    // Using global 3.0 spinner component
+    const spinner = document.createElement('div');
+    spinner.className = 'spinner-sm';
+    spinner.style.width = '16px';
+    spinner.style.height = '16px';
+    spinner.style.borderWidth = '2px';
+
+    bubble.appendChild(spinner);
+    innerFlex.appendChild(avatar);
+    innerFlex.appendChild(bubble);
+    wrap.appendChild(innerFlex);
+    
+    chatMessages.appendChild(wrap);
     chatMessages.scrollTop = chatMessages.scrollHeight;
-    return el;
+    return wrap;
   }
 
   // ── Context & Limit Handling ──
@@ -265,20 +332,32 @@ async function processBatchQueue() {
       const { data: { session } } = await sb.auth.getSession();
       if (!session) return;
 
-      // --- UNIFIED STATE RESOLVER ---
       const urlParams = new URLSearchParams(window.location.search);
       let activeStudentId = urlParams.get('student') || localStorage.getItem('shl_active_student_id');
 
       const { data: students } = await sb.from('students').select('id').eq('parent_id', session.user.id);
-      
       let student = (students || []).find(s => s.id === activeStudentId) || (students || [])[0];
       
       if (student) {
         currentStudentId = student.id;
         localStorage.setItem('shl_active_student_id', currentStudentId);
       }
-      // ------------------------------
 
+      // Fetch Limit
+      const { data: profile } = await sb.from('users').select('subscription_tier').eq('id', session.user.id).single();
+      const isTrial = !profile || profile.subscription_tier === 'trial';
+      
+      if (isTrial && currentStudentId) {
+        const { count } = await sb.from('ai_tutor_logs').select('*', { count: 'exact', head: true }).eq('student_id', currentStudentId);
+          
+        if (count >= TRIAL_AI_LIMIT) {
+          limitBanner.hidden = false;
+          chatInput.disabled = true;
+          sendBtn.disabled = true;
+          modeDrawBtn.disabled = true;
+          chatInput.placeholder = "Free trial limit reached.";
+        }
+      }
     } catch (e) {
       console.error("Tutor state resolution failed:", e);
     }
@@ -295,7 +374,7 @@ async function processBatchQueue() {
       currentTopicContext = params.get('topic');
 
       topicEl.textContent = topic;
-      banner.classList.remove('hidden');
+      banner.hidden = false;
 
       const score = params.get('score');
       history.push({
@@ -310,7 +389,7 @@ async function processBatchQueue() {
     if (!currentStudentId || history.length < 2) return;
     
     saveBtn.disabled = true;
-    saveBtn.innerHTML = '<span class="spinner-sm" style="width:14px;height:14px;border-width:2px;display:inline-block;margin-right:6px;border-top-color:var(--brand-rose);"></span> Saving...';
+    saveBtn.innerHTML = '<span class="spinner-sm" style="width:14px;height:14px;border-width:2px;display:inline-block;margin-right:6px;border-top-color:currentColor;"></span> Saving...';
 
     try {
       const sb = await getSupabase();
@@ -330,23 +409,20 @@ async function processBatchQueue() {
       const data = await res.json();
       if(data.success) {
          saveBtn.innerHTML = '✅ Saved to Backpack';
-         saveBtn.style.color = 'var(--brand-mint)';
-         saveBtn.style.background = 'rgba(5, 150, 105, 0.1)';
-         saveBtn.style.borderColor = 'rgba(5, 150, 105, 0.3)';
+         saveBtn.className = 'btn btn-success btn-sm hover-lift';
          setTimeout(() => { 
            saveBtn.innerHTML = '💾 Save Notes'; 
            saveBtn.disabled = false; 
-           saveBtn.style.color = 'var(--brand-rose)';
-           saveBtn.style.background = 'rgba(183,110,121,0.1)';
-           saveBtn.style.borderColor = 'rgba(183,110,121,0.3)';
+           saveBtn.className = 'btn btn-secondary btn-sm hover-lift';
          }, 3000);
       } else { 
-         throw new Error(data.error); 
+         throw new Error(data.error || "Save failed"); 
       }
     } catch(e) {
       alert("Failed to save note: " + e.message);
       saveBtn.innerHTML = '💾 Save Notes';
       saveBtn.disabled = false;
+      saveBtn.className = 'btn btn-secondary btn-sm hover-lift';
     }
   }
 })();
