@@ -13,15 +13,7 @@
 <script src="/js/header.js" defer></script>
 <script src="/js/footer.js" defer></script>
 <style>
-/* ── Page-Specific Layout Helpers ── */
-p { text-align: justify; }
-.badge, .btn, h1, h2, h3, h4, .text-center p { text-align: initial; }
-.self-start { align-self: flex-start; }
-.list-reset { list-style: none; }
-.prose-cap  { max-width: 600px; margin-left: auto; margin-right: auto; }
-.label-spaced { letter-spacing: 0.08em; text-transform: uppercase; }
-
-/* ── Subject Breadcrumb ── */
+/* ── Subject Breadcrumb (Local component until globalized) ── */
 .subject-nav { display: flex; gap: var(--space-3); flex-wrap: wrap; align-items: center; margin-bottom: var(--space-6); }
 .subject-nav a { font-size: var(--text-sm); color: rgba(255,255,255,0.65); text-decoration: none; }
 .subject-nav a:hover { color: var(--cream); }
@@ -43,9 +35,9 @@ p { text-align: justify; }
       <span class="subject-nav-sep">·</span>
       <a href="subject-english.html">English</a>
     </div>
-    <div class="flex flex-wrap items-start gap-8">
+    <div class="flex flex-wrap items-start gap-6">
       <div class="flex-1 flex flex-col gap-4" style="min-width: 300px;">
-        <div class="badge" style="background: rgba(59,130,246,0.15); color: var(--maths-colour); align-self: flex-start;">Primary Mathematics · P1–P6 · MOE 2021 Syllabus</div>
+        <div class="badge badge-maths self-start">Primary Mathematics · P1–P6 · MOE 2021 Syllabus</div>
         <h1 class="font-display text-4xl">
           Singapore Maths —<br>
           <span class="text-rose">Built on Reasoning, Not Repetition.</span>
@@ -54,13 +46,13 @@ p { text-align: justify; }
           Singapore Primary Mathematics is consistently the world's highest-ranking primary curriculum. Your child is not memorising formulas — they are building a structured reasoning system across three content strands, from concrete manipulation in P1 to algebraic thinking in P6. Superholic Lab reinforces every concept at every level, with instant wrong-answer explanations and a digital bar-model scratchpad.
         </p>
         <div class="flex flex-wrap gap-3">
-          <div class="badge" style="background: rgba(255,255,255,0.1); color: var(--cream);">Concrete–Pictorial–Abstract Method</div>
-          <div class="badge" style="background: rgba(255,255,255,0.1); color: var(--cream);">Spiral Curriculum P1→P6</div>
-          <div class="badge" style="background: rgba(255,255,255,0.1); color: var(--cream);">Bar Model Method</div>
+          <div class="badge badge-glass">Concrete–Pictorial–Abstract Method</div>
+          <div class="badge badge-glass">Spiral Curriculum P1→P6</div>
+          <div class="badge badge-glass">Bar Model Method</div>
         </div>
         <div class="flex flex-wrap gap-4">
           <a href="/pages/signup.html?subject=mathematics&mode=trial" class="btn btn-primary hover-lift">Start Free Maths Practice →</a>
-          <a href="#topic-map" class="btn" style="background: rgba(255,255,255,0.12); color: var(--cream); border: 1px solid rgba(255,255,255,0.22); backdrop-filter: blur(4px);">See Full Syllabus</a>
+          <a href="#topic-map" class="btn btn-glass">See Full Syllabus</a>
         </div>
       </div>
       <div class="flex-1" style="min-width: 280px; max-width: 440px;">
@@ -78,7 +70,7 @@ p { text-align: justify; }
       <h2 class="font-display text-3xl mb-2 text-main">Three Strands. Six Years. One Coherent System.</h2>
       <p class="text-muted text-lg prose-cap">MOE organises all P1–P6 content across three strands. A child can score well in one strand and poorly in another — which is exactly why Superholic Lab tracks progress per strand, not just by total percentage.</p>
     </div>
-    <div class="flex flex-wrap gap-5 mb-8">
+    <div class="flex flex-wrap gap-6 mb-8">
       
       <div class="card flex flex-col gap-3 flex-1 p-6 bg-maths-tint" style="min-width: 220px;">
         <div class="flex items-center gap-3">
@@ -99,7 +91,7 @@ p { text-align: justify; }
           <div class="font-display text-xl" style="color:var(--brand-rose);">Measurement &amp; Geometry</div>
         </div>
         <p class="text-muted text-sm">Length, mass, volume, area, perimeter, angles, shapes, symmetry, and circles. Spatial reasoning and diagram reading are essential here.</p>
-        <div class="badge self-start" style="background: rgba(183,110,121,0.12); color: var(--brand-rose);">P1–P6 · Visual reasoning · Circle geometry at P6</div>
+        <div class="badge self-start">P1–P6 · Visual reasoning · Circle geometry at P6</div>
       </div>
       
       <div class="card flex flex-col gap-3 flex-1 p-6 bg-science-tint" style="min-width: 220px;">
@@ -181,7 +173,7 @@ p { text-align: justify; }
         </div>
       </div>
       <div class="level-panel" id="panel-p6">
-        <div class="flex items-center gap-3 mb-3"><div class="font-display text-2xl text-main">Primary 6</div><div class="badge badge-rose" style="background:var(--brand-rose); color:white;">PSLE Year</div></div>
+        <div class="flex items-center gap-3 mb-3"><div class="font-display text-2xl text-main">Primary 6</div><div class="badge badge-rose-solid">PSLE Year</div></div>
         <div class="callout rose"><div class="font-bold text-sm text-main mb-1">P6 introduces Algebra and Circles — and synthesises P1–P5 into PSLE problems.</div><div class="text-xs text-muted">PSLE Paper 2 problems can draw on any P3–P6 topic. Algebra (using letters for unknowns) is entirely new. Speed problems are PSLE favourites.</div></div>
         <div class="topic-grid">
           <span class="topic-chip maths">Algebra</span><span class="topic-chip maths">Speed (distance, time, rate)</span><span class="topic-chip maths">Ratio problems</span>
@@ -200,7 +192,7 @@ p { text-align: justify; }
       <h2 class="font-display text-3xl mb-2 text-white">We Test Maths the Way PSLE Does.</h2>
       <p class="text-muted text-lg prose-cap">Superholic Lab uses four question formats — mirroring exactly what your child faces in WA, EOY, and PSLE papers.</p>
     </div>
-    <div class="flex flex-wrap gap-5">
+    <div class="flex flex-wrap gap-6">
       <div class="ecc-card flex flex-col gap-3 flex-1" style="min-width: 220px;">
         <div class="flex items-center gap-3">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--maths-colour)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
@@ -236,7 +228,7 @@ p { text-align: justify; }
 <section class="bg-white py-10">
   <div class="container">
     <div class="flex flex-col items-center text-center mb-8">
-      <div class="badge badge-rose mb-2" style="background: rgba(183,110,121,0.1); color: var(--brand-rose);">Why Children Lose Marks</div>
+      <div class="badge mb-2">Why Children Lose Marks</div>
       <h2 class="font-display text-3xl mb-2 text-main">Three Mistakes. Thousands of Lost Marks. One Fix.</h2>
       <p class="text-muted text-lg prose-cap">These errors cost Singapore students marks in every WA and PSLE. Superholic Lab names the exact misconception in every wrong-answer explanation — so the pattern breaks immediately.</p>
     </div>
