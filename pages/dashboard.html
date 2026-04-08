@@ -5,539 +5,289 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard — Superholic Lab</title>
   
-  <!-- Fonts & Styles -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="icon" href="../assets/favicon.ico" />
+  <meta name="robots" content="noindex, nofollow" />
+
   <script src="/js/header.js" defer></script>
+  <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js"></script>
   <script src="/js/footer.js" defer></script>
   <script src="../js/supabase-client.js"></script>
+  
   <script type="module">
     import { guardPage } from '/js/auth.js';
     import { initAppShell } from '/js/app-shell.js';
     
-    // Boot sequence: Ensure profile loads BEFORE we trigger DOM manipulations
     async function boot() {
       try {
         window.userProfile = await guardPage(true); 
         
-        const runInit = () => {
-          if (typeof initAppShell === 'function') initAppShell(window.userProfile); 
-          if (typeof window.initDashboard === 'function') window.initDashboard();
-        };
+        if (typeof initAppShell === 'function') initAppShell(window.userProfile); 
+        if (typeof window.initDashboard === 'function') window.initDashboard();
 
-        // Check if DOM is already fully parsed to prevent null reference errors
-        if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', runInit);
-        } else {
-          runInit();
-        }
       } catch (err) {
         console.error('Boot sequence failed:', err);
       }
     }
-
     boot();
   </script>
-  <style>
-    /* Modal Backdrop */
-    .modal-backdrop {
-      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(44, 62, 58, 0.6);
-      backdrop-filter: blur(4px);
-      z-index: 1000; display: flex; align-items: center; justify-content: center;
-      opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
-    }
-    .modal-backdrop.is-open { opacity: 1; pointer-events: auto; }
-    
-    .modal-card {
-      transform: translateY(20px); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-      width: 100%; max-width: 400px; max-height: 90vh; overflow-y: auto;
-    }
-    .modal-backdrop.is-open .modal-card { transform: translateY(0); }
 
-    /* Backpack Viewer Specifics */
-    .note-viewer-content h3 { font-family: var(--font-display); font-size: 1.5rem; margin-top: 1rem; margin-bottom: 0.5rem; color: var(--text-main); }
-    .note-viewer-content p { font-size: 0.95rem; color: var(--text-muted); margin-bottom: 1rem; }
-    .note-viewer-content ul { padding-left: 1.5rem; margin-bottom: 1rem; }
-    .note-viewer-content li { margin-bottom: 0.5rem; font-size: 0.95rem; color: var(--text-main); }
+  <style>
+    /* ── Dashboard Specific UI (Modals & Context Menus) ── */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+      opacity: 0; visibility: hidden; transition: all 0.2s ease;
+      padding: var(--space-4);
+    }
+    .modal-overlay.is-open { opacity: 1; visibility: visible; }
+    
+    .modal-content {
+      width: 100%; max-width: 500px;
+      transform: scale(0.95); transition: transform 0.2s ease;
+      max-height: 90vh; overflow-y: auto;
+    }
+    .modal-overlay.is-open .modal-content { transform: scale(1); }
+
+    .context-menu {
+      display: none; position: absolute; right: 0; top: calc(100% + 4px);
+      background: var(--sage-dark); border: 1px solid rgba(255,255,255,0.12);
+      border-radius: var(--radius-md); padding: 6px;
+      min-width: 150px; box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      z-index: 50; flex-direction: column; gap: 4px;
+    }
+    .context-menu.is-open { display: flex; animation: fadeDown 0.2s ease; }
+    @keyframes fadeDown { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+    
+    .context-menu button {
+      text-align: left; width: 100%; color: rgba(255,255,255,0.85);
+      padding: 8px 12px; border-radius: var(--radius-sm); border: none; background: transparent;
+      font-size: var(--text-sm); font-weight: 500; cursor: pointer; transition: background 0.2s;
+    }
+    .context-menu button:hover { background: rgba(255,255,255,0.1); color: var(--cream); }
+    .context-menu button.text-danger:hover { color: var(--brand-error); }
   </style>
 </head>
 
-<body id="mainBody" class="has-bottom-nav">
+<body id="mainBody" class="bg-page texture-light-grid">
 
 <global-header></global-header>
 
-<!-- ═══════════════════ WELCOME HUB (Hero CRM) ═══════════════════ -->
-<section class="bg-sage texture-dots py-10" style="padding-top: calc(64px + var(--space-8));">
-  <div class="container flex flex-wrap items-center justify-between gap-6">
-    
-    <div class="flex-1 flex flex-col items-start gap-4" style="min-width: 300px;">
-      
-      <!-- Trial Banner explicitly styled as requested -->
-      <div id="trialBanner" class="badge badge-amber hidden mb-2" style="background: rgba(255, 179, 71, 0.15); color: #FFB347; border: 1px solid rgba(255, 179, 71, 0.3);">
-        🎁 <span id="trialDaysLeft" class="font-bold ml-1 mr-1"></span> left in free trial. 
-        <a href="pricing.html" style="color: #FFB347; text-decoration: underline; margin-left: 4px;">Upgrade</a>
-      </div>
-      
-      <h1 class="font-display text-4xl text-white" id="welcomeMsg">
-        Welcome back 👋
-      </h1>
-      <p class="text-lg mb-4" style="color: rgba(255,255,255,0.8); max-width: 500px;">
-        Mission Control is ready. Manage your learners, track their progress, and start practicing.
-      </p>
-      
-      <a href="/pages/setup.html" id="addChildBtn" class="btn btn-secondary hover-lift">＋ Add Learner</a>
-    </div>
-
-    <div class="flex-1 flex justify-center items-end hidden sm:flex relative" style="min-width: 300px; height: 200px;">
-      <!-- Friendly Asian Student Graphic -->
-      <img src="../assets/images/student_welcome.png" alt="Happy Student" style="max-height: 260px; position: absolute; bottom: -48px; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.2));" onerror="this.style.display='none'">
-    </div>
-
+<main id="app" class="container flex flex-col w-full gap-8" style="padding-top: calc(var(--navbar-h) + var(--space-8)); padding-bottom: var(--space-10); min-height: 80vh; max-width: 1000px;">
+  
+  <div class="card p-6 w-full card-rule-rose">
+    <h1 class="font-display text-3xl text-main mb-1 m-0">Mission Control</h1>
+    <p class="text-muted text-sm m-0">Manage your students, review AI Tutor notes, and track practice history.</p>
   </div>
-</section>
 
-<!-- ═══════════════════ LEARNER ROSTER (Off-White) ═══════════════════ -->
-<main class="py-10 bg-page min-h-screen">
-  <div class="container">
+  <section class="w-full">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="font-display text-2xl text-main m-0">Your Students</h2>
+      <button class="btn btn-primary btn-sm hover-lift" onclick="window.openModal('addStudentModal')">+ Add Student</button>
+    </div>
     
-    <div class="flex justify-between items-center mb-6">
-      <h2 class="font-display text-2xl text-main">Your Learners</h2>
-      
-      <!-- Admin Panel Link -->
-      <div class="admin-panel hidden" id="adminPanel">
-        <a href="/pages/admin.html" class="badge badge-info hover-lift flex items-center gap-2" style="text-decoration: none;">
-          👑 Open Admin Panel <span id="adminStats"></span>
-        </a>
-      </div>
+    <div id="studentsGrid" class="flex flex-wrap gap-6 w-full">
+      <div class="w-full text-center py-6"><div class="spinner-sm mx-auto"></div></div>
     </div>
+  </section>
 
-    <!-- The CRM Grid -->
-    <div id="cardsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; align-items: start;">
-      <div class="card w-full flex justify-center items-center p-8" style="grid-column: 1 / -1;">
-        <div class="spinner-sm"></div>
+  <div class="flex flex-wrap gap-6 items-start w-full">
+    
+    <section class="flex-1 flex flex-col" style="min-width: 300px;">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="font-display text-2xl text-main m-0">Recent AI Tutor Notes</h2>
       </div>
-    </div>
+      <div id="notesContainer" class="flex flex-col gap-4 w-full">
+        <div class="card p-6 bg-page w-full text-center text-muted text-sm">Loading notes...</div>
+      </div>
+    </section>
+
+    <section class="flex-1 flex flex-col" style="min-width: 300px;">
+      <h2 class="font-display text-2xl text-main mb-4 m-0">Recent Practice History</h2>
+      <div id="historyList" class="card bg-page w-full overflow-hidden flex flex-col">
+         <div class="p-6 text-center text-muted text-sm">Loading history...</div>
+      </div>
+    </section>
 
   </div>
 </main>
 
-<!-- ═══════════════════ MODALS ═══════════════════ -->
-
-<!-- Edit Modal -->
-<div id="editModal" class="modal-backdrop">
-  <div class="card modal-card p-6 flex flex-col gap-4">
-    <h3 class="font-display text-2xl text-main">Edit Learner</h3>
-    
-    <div class="flex flex-col gap-1">
-      <label class="text-sm font-bold text-muted">First Name</label>
-      <input type="text" id="editName" class="form-input" placeholder="e.g., Jayden">
-    </div>
-    
-    <div class="flex flex-col gap-1">
-      <label class="text-sm font-bold text-muted">Academic Level</label>
-      <select id="editLevel" class="form-input" style="cursor: pointer;">
-        <option value="Primary 1">Primary 1</option>
-        <option value="Primary 2">Primary 2</option>
-        <option value="Primary 3">Primary 3</option>
-        <option value="Primary 4">Primary 4</option>
-        <option value="Primary 5">Primary 5</option>
-        <option value="Primary 6">Primary 6</option>
-        <option value="Secondary 1">Secondary 1</option>
-        <option value="Secondary 2">Secondary 2</option>
-        <option value="Secondary 3">Secondary 3</option>
-        <option value="Secondary 4">Secondary 4</option>
-      </select>
-    </div>
-
-    <div class="flex gap-3 mt-4">
-      <button class="btn btn-secondary flex-1" onclick="closeModals()">Cancel</button>
-      <button class="btn btn-primary flex-1" id="saveEditBtn" onclick="saveEdit()">Save Changes</button>
-    </div>
-  </div>
-</div>
-
-<!-- Delete Modal -->
-<div id="deleteModal" class="modal-backdrop">
-  <div class="card modal-card p-6 flex flex-col gap-4" style="border-top: 4px solid var(--brand-error);">
-    <h3 class="font-display text-2xl text-danger">Remove Learner?</h3>
-    <p class="text-sm text-muted">
-      Are you sure you want to delete <strong id="deleteTargetName" class="text-main">this learner</strong>? 
-      This will permanently erase their profile and all practice history. This action cannot be undone.
-    </p>
-
-    <div class="flex gap-3 mt-4">
-      <button class="btn btn-secondary flex-1" onclick="closeModals()">Cancel</button>
-      <button class="btn flex-1" id="confirmDeleteBtn" onclick="confirmDelete()" style="background: var(--brand-error); color: white;">Yes, Delete</button>
-    </div>
-  </div>
-</div>
-
-<!-- Backpack Modal -->
-<div id="backpackModal" class="modal-backdrop">
-  <div class="card modal-card p-6 flex flex-col gap-4" style="max-width: 500px;">
-    <div class="flex justify-between items-center border-b border-light pb-2 mb-2">
-      <h3 class="font-display text-2xl text-main">🎒 Learner Backpack</h3>
-      <button class="btn btn-ghost btn-sm text-xl" onclick="closeModals()">×</button>
-    </div>
-    <div id="backpackContent" class="flex flex-col gap-3">
-      <!-- Notes injected here -->
-    </div>
-  </div>
-</div>
-
-<!-- Study Note Viewer Modal -->
-<div id="noteViewerModal" class="modal-backdrop">
-  <div class="card modal-card p-6 flex flex-col gap-4" style="max-width: 600px;">
-    <div class="flex justify-between items-center border-b border-light pb-2">
-      <div class="badge badge-info" id="noteSubjectBadge">Maths</div>
-      <button class="btn btn-ghost btn-sm text-xl" onclick="document.getElementById('noteViewerModal').classList.remove('is-open')">×</button>
-    </div>
-    <h2 class="font-display text-3xl text-main" id="noteTitleView"></h2>
-    <div id="noteHtmlView" class="note-viewer-content mt-2 mb-4 bg-page p-6 rounded border border-light"></div>
-    <button class="btn btn-secondary w-full" onclick="document.getElementById('noteViewerModal').classList.remove('is-open')">Close</button>
-  </div>
-</div>
-
 <global-footer></global-footer>
 
-<nav class="bottom-nav" id="bottomNav" aria-label="Mobile navigation">
-  <a href="subjects.html" class="bottom-nav-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-    Practise
-  </a>
-  <a href="tutor.html" class="bottom-nav-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-    AI Tutor
-  </a>
-  <a href="exam.html" class="bottom-nav-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="M9 12h6M9 16h4"/></svg>
-    Exam
-  </a>
-  <a href="progress.html" class="bottom-nav-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-    Progress
-  </a>
-</nav>
+<div id="addStudentModal" class="modal-overlay" onclick="window.closeModalOnBgClick(event, 'addStudentModal')">
+  <div class="card p-6 bg-surface modal-content">
+    <h2 class="font-display text-2xl text-main mb-4 m-0" id="modalTitle">Add Student</h2>
+    <form id="addStudentForm" class="flex flex-col gap-4">
+      <input type="hidden" id="editStudentId">
+      
+      <div>
+        <label class="text-sm font-bold text-main mb-1 block">Student Name</label>
+        <input type="text" id="studentName" required class="form-input w-full" placeholder="e.g. Sarah">
+      </div>
+      
+      <div>
+        <label class="text-sm font-bold text-main mb-1 block">Level</label>
+        <select id="studentLevel" class="form-select w-full">
+          <option value="Primary 1">Primary 1</option>
+          <option value="Primary 2">Primary 2</option>
+          <option value="Primary 3">Primary 3</option>
+          <option value="Primary 4" selected>Primary 4</option>
+          <option value="Primary 5">Primary 5</option>
+          <option value="Primary 6">Primary 6</option>
+        </select>
+      </div>
+      
+      <div id="singleSubjectSelector" style="display:none;">
+        <label class="text-sm font-bold text-main mb-1 block">Subject (Single Subject Plan)</label>
+        <select id="studentSubject" class="form-select w-full">
+          <option value="Mathematics">Mathematics</option>
+          <option value="Science">Science</option>
+          <option value="English">English</option>
+        </select>
+      </div>
+      
+      <div class="flex justify-end gap-3 mt-4">
+        <button type="button" class="btn btn-ghost" onclick="window.closeModal('addStudentModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary hover-lift" id="saveStudentBtn">Save Student</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="noteViewerModal" class="modal-overlay" onclick="window.closeModalOnBgClick(event, 'noteViewerModal')">
+  <div class="card p-6 bg-surface modal-content" style="max-width: 600px;">
+    <div class="flex justify-between items-start mb-4" style="border-bottom: 1px solid var(--border-light); padding-bottom: var(--space-4);">
+      <div>
+        <div id="noteSubjectBadge" class="badge badge-info mb-2 text-xs"></div>
+        <h2 id="noteTitleView" class="font-display text-2xl text-main m-0"></h2>
+      </div>
+      <button class="btn btn-sm btn-ghost p-1" onclick="window.closeModal('noteViewerModal')" style="font-size: 1.5rem; line-height: 1;">&times;</button>
+    </div>
+    <div id="noteHtmlView" class="text-sm text-main" style="line-height: 1.6;"></div>
+  </div>
+</div>
 
 <script>
-// Auto-Light Up Active Nav Icon (Run immediately)
-  (function() {
-    const currentPath = window.location.pathname;
-    document.querySelectorAll('.bottom-nav-item').forEach(link => {
-      const href = link.getAttribute('href');
-      // Highlight exact match or if current URL includes the link path
-      if (href && currentPath.includes(href)) {
-        link.classList.add('is-active');
+window.initDashboard = async function() {
+  const profile = window.userProfile;
+  const isSingleSubject = profile?.subscription_tier === 'single_subject';
+
+  const escapeHtml = (unsafe) => {
+    return (unsafe || '').replace(/[&<"']/g, (m) => {
+      switch (m) {
+        case '&': return '&amp;';
+        case '<': return '&lt;';
+        case '"': return '&quot;';
+        case "'": return '&#039;';
+        default: return m;
       }
     });
-  })();
-
-  /* ── 2. CRM Dashboard Logic & Modals ── */
-  let currentStudents = [];
-  let targetStudentId = null;
-
-  function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  }
-
-  // Globally accessible so boot sequence can call it
-  window.initDashboard = async function() {
-    const profile = window.userProfile;
-    if (!profile) return; // Guard page handles redirect
-
-    // Welcome Message (Defaults to Parent if no full name set)
-    const firstName = profile.full_name?.split(' ')[0] || 'Parent';
-    document.getElementById('welcomeMsg').textContent = `Welcome back, ${escapeHtml(firstName)} 👋`;
-
-    // Plan Badge Fix
-    const badge = document.getElementById('planBadge');
-    if (badge) {
-      const planLabels = { trial: '🎁 Free Trial', single_subject: 'Single Subject', all_subjects: 'All Subjects', family: 'Family' };
-      badge.textContent = profile.role === 'admin' ? '👑 Admin' : (planLabels[profile.subscription_tier] || profile.subscription_tier || 'Free Trial');
-    }
-
-    // Trial Countdown Fix
-    if (profile.subscription_tier === 'trial' && profile.trial_ends_at) {
-      const daysLeft = Math.ceil((new Date(profile.trial_ends_at) - new Date()) / 86400000);
-      if (daysLeft > 0) {
-        const trialBanner = document.getElementById('trialBanner');
-        trialBanner.classList.remove('hidden');
-        trialBanner.style.display = 'inline-flex'; // Ensures flex alignment displays correctly
-        document.getElementById('trialDaysLeft').textContent = `${daysLeft} day${daysLeft !== 1 ? 's' : ''}`;
-      }
-    }
-
-    // Admin Tools
-    if (profile.role === 'admin') {
-      document.getElementById('adminPanel').classList.remove('hidden');
-    }
-
-    await loadStudents();
   };
 
-  async function loadStudents() {
-    const profile = window.userProfile;
-    const sb = await getSupabase();
-    
-    const query = profile.role === 'admin'
-      ? sb.from('students').select('*').order('created_at', { ascending: true })
-      : sb.from('students').select('*').eq('parent_id', profile.id).order('created_at', { ascending: true });
-
-    const { data: students } = await query;
-    currentStudents = students || [];
-    
-    if (profile.role === 'admin') document.getElementById('adminStats').textContent = `(${currentStudents.length})`;
-
-    // Fetch unread notes counts for the backpack UI
-    const studentIds = currentStudents.map(s => s.id);
-    let unreadMap = {};
-    if (studentIds.length > 0) {
-      const { data: notes } = await sb.from('study_notes').select('student_id, is_read').in('student_id', studentIds);
-      (notes || []).forEach(n => {
-        if (!unreadMap[n.student_id]) unreadMap[n.student_id] = 0;
-        if (!n.is_read) unreadMap[n.student_id]++;
-      });
-    }
-
-    renderGrid(unreadMap);
-
-    const addBtn = document.getElementById('addChildBtn');
-    if (profile.role !== 'admin' && currentStudents.length >= (profile.max_children || 1)) addBtn.style.display = 'none';
-    else addBtn.style.display = 'inline-flex';
-  }
-
-  // ── Real Photo Upload Logic ──
-  window.handlePhotoUpload = async (event, studentId) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    // Optional: Add a visual loading state to the button
-    const dropdownBtn = document.querySelector(`#dropdown-${studentId} button`);
-    const originalText = dropdownBtn.innerHTML;
-    dropdownBtn.innerHTML = '⏳ Uploading...';
-    dropdownBtn.disabled = true;
-
-    try {
-      const sb = await getSupabase();
-      
-      // 1. Create a safe, unique file name (e.g., student_id-123456789.png)
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${studentId}-${Date.now()}.${fileExt}`;
-
-      // 2. Upload the file to our new 'avatars' bucket
-      const { error: uploadError } = await sb.storage
-        .from('avatars')
-        .upload(fileName, file, { cacheControl: '3600', upsert: true });
-
-      if (uploadError) throw uploadError;
-
-      // 3. Get the public URL of the uploaded image
-      const { data: { publicUrl } } = sb.storage
-        .from('avatars')
-        .getPublicUrl(fileName);
-
-      // 4. Save that URL into the student's database profile
-      const { error: dbError } = await sb.from('students')
-        .update({ photo_url: publicUrl })
-        .eq('id', studentId);
-
-      if (dbError) throw dbError;
-
-      // 5. Reload the UI to instantly display the new photo!
-      await loadStudents();
-      
-    } catch (err) {
-      console.error("Upload error:", err);
-      alert("Failed to upload photo: " + err.message);
-    } finally {
-      // Reset the button state
-      dropdownBtn.innerHTML = originalText;
-      dropdownBtn.disabled = false;
-    }
-  };
-
-  function renderGrid(unreadMap) {
-    const grid = document.getElementById('cardsGrid');
-    grid.innerHTML = '';
-
-    if (currentStudents.length === 0) {
-      grid.innerHTML = `<div class="card w-full text-center flex flex-col items-center justify-center p-10" style="background: transparent; border: 2px dashed var(--border-dark); box-shadow: none; grid-column: 1 / -1;"><div class="text-4xl mb-4">🚀</div><h3 class="font-bold text-lg mb-2">No learners added yet</h3><p class="text-sm text-muted">Click "+ Add Learner" above to set up a profile and start practicing.</p></div>`;
-      return;
-    }
-
-    currentStudents.forEach(student => {
-      const initials = student.name?.charAt(0).toUpperCase() || '?';
-      const unreadCount = unreadMap ? (unreadMap[student.id] || 0) : 0;
-      
-      // Avatar Logic: Use photo_url if it exists, otherwise fallback to initials
-      const avatarHtml = student.photo_url 
-        ? `<img src="${escapeHtml(student.photo_url)}" alt="${escapeHtml(student.name)}" style="width: 56px; height: 56px; border-radius: var(--radius-md); object-fit: cover;">`
-        : `<div class="flex justify-center items-center font-display text-2xl text-white bg-sage" style="width: 56px; height: 56px; border-radius: var(--radius-md); flex-shrink: 0;">${initials}</div>`;
-      
-      const card = document.createElement('div');
-      card.className = 'card hover-lift flex flex-col gap-4 p-6 relative';
-      card.innerHTML = `
-        <div style="position: absolute; top: var(--space-3); right: var(--space-3); z-index: 20;">
-           <button class="kebab-btn" onclick="toggleDropdown(event, '${student.id}')">⋮</button>
-           
-           <div id="dropdown-${student.id}" class="hidden learner-dropdown">
-              
-              <input type="file" id="photo-upload-${student.id}" class="hidden" accept="image/*" onchange="handlePhotoUpload(event, '${student.id}')">
-              
-              <button class="learner-dropdown-item" onclick="document.getElementById('photo-upload-${student.id}').click(); toggleDropdown(event, '${student.id}')">
-                 📸 Upload Photo
-              </button>
-              
-              <div class="learner-dropdown-divider"></div>
-              
-              <button class="learner-dropdown-item" onclick="openEditModal('${student.id}')">
-                 ✏️ Edit Learner
-              </button>
-              
-              <div class="learner-dropdown-divider"></div>
-              
-              <button class="learner-dropdown-item danger" onclick="openDeleteModal('${student.id}')">
-                 🗑️ Remove
-              </button>
-           </div>
-        </div>
-
-        <div class="flex items-center gap-4 mt-2">
-          ${avatarHtml}
-          <div>
-            <div class="font-bold text-xl text-main">${escapeHtml(student.name)}</div>
-            <div class="text-sm text-muted font-medium">${escapeHtml(student.level)}</div>
-          </div>
-        </div>
-
-        <button class="btn btn-ghost w-full justify-between items-center px-4" style="border: 1px solid var(--border-light); background: var(--bg-elevated);" onclick="openBackpackModal('${student.id}')">
-           <span class="flex items-center gap-2">🎒 View Backpack</span>
-           ${unreadCount > 0 ? `<span class="badge" style="background: var(--brand-rose); color: white;">${unreadCount} New</span>` : `<span class="text-xs text-muted">Notes</span>`}
-        </button>
-
-        <div class="mt-auto flex justify-center items-center w-full">
-          <a href="/pages/subjects.html?student=${student.id}" class="btn btn-primary w-full">Enter Lab →</a>
-        </div>
-      `;
-      grid.appendChild(card);
-    });
-  }
-
-  /* ── 3. Interaction Logic ── */
-
-  // Dropdown Management
-  window.toggleDropdown = (e, id) => {
-    e.stopPropagation();
-    const dropdown = document.getElementById(`dropdown-${id}`);
-    const isHidden = dropdown.classList.contains('hidden');
-    
-    // Close all other dropdowns
-    document.querySelectorAll('[id^="dropdown-"]').forEach(d => d.classList.add('hidden'));
-    
-    // Toggle targeted
-    if (isHidden) dropdown.classList.remove('hidden');
-  };
-
+  // Close context menus if clicking anywhere outside
   document.addEventListener('click', () => {
-    document.querySelectorAll('[id^="dropdown-"]').forEach(d => d.classList.add('hidden'));
+    document.querySelectorAll('.context-menu').forEach(d => d.classList.remove('is-open'));
   });
 
-  // Modal Management
-  window.closeModals = () => {
-    document.getElementById('editModal').classList.remove('is-open');
-    document.getElementById('deleteModal').classList.remove('is-open');
-    targetStudentId = null;
-  };
-
-  window.openEditModal = (id) => {
-    const student = currentStudents.find(s => s.id === id);
-    if(!student) return;
-    targetStudentId = id;
-    document.getElementById('editName').value = student.name;
-    document.getElementById('editLevel').value = student.level;
-    document.getElementById('editModal').classList.add('is-open');
-  };
-
-  window.openDeleteModal = (id) => {
-    const student = currentStudents.find(s => s.id === id);
-    if(!student) return;
-    targetStudentId = id;
-    document.getElementById('deleteTargetName').textContent = student.name;
-    document.getElementById('deleteModal').classList.add('is-open');
-  };
-
-  // Database Actions
-  window.saveEdit = async () => {
-    const name = document.getElementById('editName').value.trim();
-    const level = document.getElementById('editLevel').value;
-    if (!name || !level || !targetStudentId) return;
-
-    const btn = document.getElementById('saveEditBtn');
-    btn.disabled = true;
-    btn.textContent = 'Saving...';
-    
+  window.loadDashboardData = async () => {
     const sb = await getSupabase();
-    await sb.from('students').update({ name, level }).eq('id', targetStudentId);
     
-    await loadStudents();
-    closeModals();
-    btn.disabled = false;
-    btn.textContent = 'Save Changes';
-  };
-
-  window.confirmDelete = async () => {
-    if (!targetStudentId) return;
-
-    const btn = document.getElementById('confirmDeleteBtn');
-    btn.disabled = true;
-    btn.textContent = 'Deleting...';
+    // 1. Load Students
+    const { data: students, error: stdErr } = await sb.from('students').select('*').eq('parent_id', profile.id).order('created_at', { ascending: true });
     
-    const sb = await getSupabase();
-    await sb.from('students').delete().eq('id', targetStudentId);
-    
-    await loadStudents();
-    closeModals();
-    btn.disabled = false;
-    btn.textContent = 'Yes, Delete';
-  };
-
-  // ── STUDY NOTES / BACKPACK ENGINE ──
-  window.openBackpackModal = async (studentId) => {
-    const content = document.getElementById('backpackContent');
-    content.innerHTML = `<div class="text-center py-6"><div class="spinner-sm mx-auto mb-2"></div><p class="text-xs text-muted">Opening backpack...</p></div>`;
-    document.getElementById('backpackModal').classList.add('is-open');
-
-    try {
-      const sb = await getSupabase();
-      const { data: notes } = await sb.from('study_notes').select('*').eq('student_id', studentId).order('created_at', { ascending: false });
-      
-      if (!notes || notes.length === 0) {
-         content.innerHTML = `<div class="card bg-page border-dashed border-light text-center p-8"><span class="text-3xl mb-2 block">📚</span><p class="text-sm text-main font-bold">Backpack is empty!</p><p class="text-xs text-muted mt-1">Ask Miss Wena questions in the Tutor tab and click 'Save Notes' to build your collection.</p></div>`;
-         return;
-      }
-      
-      window.cachedNotes = notes; // Cache for immediate viewing
-      
-      content.innerHTML = notes.map(n => `
-        <div class="card hover-lift p-4 flex justify-between items-center cursor-pointer" style="${!n.is_read ? 'border-left: 3px solid var(--brand-rose); background: var(--bg-page);' : ''}" onclick="viewStudyNote('${n.id}')">
-           <div>
-             <div class="flex items-center gap-2 mb-1">
-               <span class="badge badge-info text-[10px] uppercase">${escapeHtml(n.subject)}</span>
-               ${!n.is_read ? `<span class="badge text-[10px]" style="background: var(--brand-rose); color: white;">New</span>` : ''}
-             </div>
-             <div class="font-bold text-main text-sm leading-tight">${escapeHtml(n.title)}</div>
-             <div class="text-xs text-muted mt-1">${new Date(n.created_at).toLocaleDateString('en-SG', { day: 'numeric', month: 'short' })} · ${escapeHtml(n.topic).replace(/-/g, ' ')}</div>
-           </div>
-           <span class="text-rose">→</span>
+    const grid = document.getElementById('studentsGrid');
+    if (stdErr || !students || students.length === 0) {
+      grid.innerHTML = `<div class="card p-6 bg-page w-full text-center text-muted">No students added yet. Click "+ Add Student" to begin.</div>`;
+    } else {
+      window.cachedStudents = students;
+      grid.innerHTML = students.map(student => `
+        <div class="card p-6 flex-1 hover-lift relative overflow-hidden cursor-pointer bg-page flex flex-col" style="min-width: 260px; border-top: 4px solid var(--brand-sage);" onclick="window.selectStudent('${student.id}')">
+          <div class="flex justify-between items-start mb-2">
+            <div class="font-display text-2xl text-main m-0">${escapeHtml(student.name)}</div>
+            <div class="relative" onclick="event.stopPropagation()">
+              <button class="btn btn-sm btn-ghost p-1 text-muted" onclick="window.toggleDropdown(event, '${student.id}')">⋮</button>
+              <div id="dropdown-${student.id}" class="context-menu">
+                <button onclick="window.editStudent(event, '${student.id}')">Edit Profile</button>
+                <button class="text-danger" onclick="window.deleteStudent(event, '${student.id}')">Delete</button>
+              </div>
+            </div>
+          </div>
+          <div class="flex gap-2 items-center mb-6">
+            <span class="badge badge-info">${escapeHtml(student.level)}</span>
+            ${student.selected_subject ? `<span class="badge" style="background:var(--bg-elevated);">${escapeHtml(student.selected_subject)}</span>` : ''}
+          </div>
+          <div class="mt-auto pt-4 flex justify-between items-center" style="border-top: 1px solid var(--border-light);">
+            <span class="text-sm font-bold text-main">Launch Portal</span>
+            <span class="text-rose font-bold">→</span>
+          </div>
         </div>
       `).join('');
-    } catch(e) {
-      content.innerHTML = `<p class="text-danger text-sm">Failed to load notes.</p>`;
     }
+
+    // 2. Load Recent Notes
+    const content = document.getElementById('notesContainer');
+    try {
+      const { data: notes } = await sb.from('study_notes').select('*, students(name)').in('student_id', students.map(s=>s.id)).order('created_at', { ascending: false }).limit(5);
+      window.cachedNotes = notes;
+
+      if(!notes || notes.length === 0) {
+        content.innerHTML = `<div class="card p-6 bg-page w-full text-center text-muted text-sm">No notes saved from Miss Wena yet.</div>`;
+      } else {
+        content.innerHTML = notes.map(n => `
+          <div class="card p-5 hover-lift cursor-pointer bg-page flex flex-col" onclick="window.viewStudyNote('${n.id}')">
+            <div class="flex justify-between items-start mb-2">
+              <div class="badge ${n.subject==='science'?'badge-dark-mint':n.subject==='english'?'badge-rose':'badge-info'} text-xs">${n.subject.toUpperCase()}</div>
+              ${!n.is_read ? `<div class="badge badge-rose" style="padding: 2px 6px; font-size: 10px;">NEW</div>` : ''}
+            </div>
+            <h3 class="font-bold text-main mb-3 text-sm" style="line-height: 1.4;">${escapeHtml(n.title)}</h3>
+            <div class="text-xs text-muted flex justify-between items-center">
+              <div>${escapeHtml(n.students.name)} · ${new Date(n.created_at).toLocaleDateString('en-SG', { day: 'numeric', month: 'short' })}</div>
+              <span class="text-rose font-bold">→</span>
+            </div>
+          </div>
+        `).join('');
+      }
+    } catch(e) {
+      content.innerHTML = `<div class="card p-6 bg-page w-full text-center text-danger text-sm">Failed to load notes.</div>`;
+    }
+
+    // 3. Load Recent History (Exams/Quiz)
+    const historyList = document.getElementById('historyList');
+    try {
+      const { data: history } = await sb.from('exam_results').select('*, students(name)').in('student_id', students.map(s=>s.id)).order('completed_at', { ascending: false }).limit(6);
+      
+      if(!history || history.length === 0) {
+        historyList.innerHTML = `<div class="p-6 text-center text-muted text-sm">No recent practice attempts.</div>`;
+      } else {
+        historyList.innerHTML = history.map(h => {
+          const pct = Math.round((h.score / h.total_marks) * 100);
+          return `
+          <div class="p-4 flex justify-between items-center hover-lift" style="border-bottom: 1px solid var(--border-light);">
+            <div>
+              <div class="font-bold text-main text-sm">${escapeHtml(h.students.name)} · ${h.subject.toUpperCase()}</div>
+              <div class="text-xs text-muted">${h.level} · ${new Date(h.completed_at).toLocaleDateString('en-SG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</div>
+            </div>
+            <div class="text-right">
+              <div class="font-display text-xl ${pct >= 75 ? 'text-success' : pct >= 50 ? 'text-amber' : 'text-danger'}">${pct}%</div>
+              <div class="text-xs text-muted">${h.score}/${h.total_marks}</div>
+            </div>
+          </div>`;
+        }).join('');
+      }
+    } catch(e) {
+      historyList.innerHTML = `<div class="p-6 text-center text-danger text-sm">Failed to load history.</div>`;
+    }
+  };
+
+  window.loadDashboardData();
+
+  // ── Modals & Routing ──
+  window.selectStudent = (id) => {
+    localStorage.setItem('shl_active_student_id', id);
+    window.location.href = `progress.html?student=${id}`;
   };
 
   window.viewStudyNote = async (noteId) => {
@@ -546,22 +296,95 @@
 
     document.getElementById('noteTitleView').textContent = note.title;
     document.getElementById('noteSubjectBadge').textContent = note.subject.toUpperCase();
-    document.getElementById('noteHtmlView').innerHTML = note.content_html; // Contains safe LLM HTML
+    document.getElementById('noteHtmlView').innerHTML = note.content_html; 
     
-    document.getElementById('noteViewerModal').classList.add('is-open');
+    window.openModal('noteViewerModal');
 
-    // Mark as read in background if new
     if (!note.is_read) {
       const sb = await getSupabase();
       await sb.from('study_notes').update({ is_read: true }).eq('id', noteId);
-      note.is_read = true; // update local cache
+      note.is_read = true; 
     }
   };
 
-  // ── CRM MODALS ──
-  window.toggleDropdown = (e, id) => { e.stopPropagation(); document.querySelectorAll('[id^="dropdown-"]').forEach(d => d.id === `dropdown-${id}` ? d.classList.toggle('hidden') : d.classList.add('hidden')); };
-  window.closeModals = () => { document.querySelectorAll('.modal-backdrop').forEach(m => m.classList.remove('is-open')); targetStudentId = null; loadStudents(); };
+  window.toggleDropdown = (e, id) => {
+    e.stopPropagation(); 
+    document.querySelectorAll('.context-menu').forEach(d => {
+      if (d.id !== `dropdown-${id}`) d.classList.remove('is-open');
+    });
+    document.getElementById(`dropdown-${id}`).classList.toggle('is-open');
+  };
 
-</script>  
+  window.openModal = (id) => {
+    if (id === 'addStudentModal') {
+      document.getElementById('addStudentForm').reset();
+      document.getElementById('editStudentId').value = '';
+      document.getElementById('modalTitle').textContent = 'Add Student';
+      if (isSingleSubject) document.getElementById('singleSubjectSelector').style.display = 'block';
+    }
+    document.getElementById(id).classList.add('is-open');
+  };
+
+  window.closeModal = (id) => document.getElementById(id).classList.remove('is-open');
+  
+  window.closeModalOnBgClick = (e, id) => {
+    if (e.target.id === id) window.closeModal(id);
+  };
+
+  window.editStudent = (e, id) => {
+    e.stopPropagation();
+    const student = window.cachedStudents.find(s => s.id === id);
+    if (student) {
+      document.getElementById('editStudentId').value = student.id;
+      document.getElementById('studentName').value = student.name;
+      document.getElementById('studentLevel').value = student.level;
+      if (isSingleSubject && student.selected_subject) {
+        document.getElementById('singleSubjectSelector').style.display = 'block';
+        document.getElementById('studentSubject').value = student.selected_subject;
+      }
+      document.getElementById('modalTitle').textContent = 'Edit Student';
+      window.openModal('addStudentModal');
+    }
+    document.getElementById(`dropdown-${id}`).classList.remove('is-open');
+  };
+
+  window.deleteStudent = async (e, id) => {
+    e.stopPropagation();
+    if (confirm('Are you sure you want to delete this student and all their history?')) {
+      const sb = await getSupabase();
+      await sb.from('students').delete().eq('id', id);
+      window.loadDashboardData();
+    }
+  };
+
+  document.getElementById('addStudentForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('saveStudentBtn');
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+
+    const id = document.getElementById('editStudentId').value;
+    const name = document.getElementById('studentName').value;
+    const level = document.getElementById('studentLevel').value;
+    const subject = isSingleSubject ? document.getElementById('studentSubject').value : null;
+
+    const sb = await getSupabase();
+    const payload = { parent_id: profile.id, name, level };
+    if (subject) payload.selected_subject = subject;
+
+    if (id) {
+      await sb.from('students').update(payload).eq('id', id);
+    } else {
+      await sb.from('students').insert([payload]);
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Save Student';
+    window.closeModal('addStudentModal');
+    window.loadDashboardData();
+  });
+};
+</script>
+
 </body>
 </html>
