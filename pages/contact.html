@@ -6,173 +6,156 @@
   <title>Contact Us — Superholic Lab</title>
   <meta name="description" content="Get in touch with the Superholic Lab team. We're here to help your child succeed.">
   
-  <!-- Fonts & Styles -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="icon" href="../assets/favicon.ico" />
   <script src="/js/header.js" defer></script>
+  <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js"></script>
   <script src="/js/footer.js" defer></script>
+  
   <script type="module">
     import { guardPage } from '/js/auth.js';
-    // Do not redirect guests, just check session state
-    await guardPage(false); 
+    import { initAppShell } from '/js/app-shell.js';
+    
+    async function boot() {
+      // Do not redirect guests on the contact page
+      const profile = await guardPage(false); 
+      if (profile && typeof initAppShell === 'function') {
+        initAppShell(profile);
+      }
+    }
+    boot();
   </script>
 </head>
 
-<body class="has-bottom-nav">
+<body class="has-bottom-nav bg-page texture-light-grid">
 
 <global-header></global-header>
 
-<!-- ═══════════════════ HERO (Sage + Dots) ═══════════════════ -->
 <section class="bg-sage texture-dots py-10" style="padding-top: calc(64px + var(--space-8)); text-align: center;">
-  <div class="container flex flex-col items-center gap-4">
-    <div class="badge" style="background: rgba(0, 0, 0, 0.25); color: var(--brand-rose); backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.1);">Contact Support</div>
-    <h1 class="font-display text-4xl text-white mt-2 mb-2" style="font-size: 3.5rem; line-height: 1.1;">
-      We're here to <span class="text-rose">help.</span>
-    </h1>
-    <p class="text-lg" style="color: rgba(255,255,255,0.8); max-width: 600px;">
-      Whether you have a question about our syllabus, need technical help, or just want to chat about your child's progress, our team is ready.
-    </p>
+  <div class="container flex flex-col items-center">
+    <div class="badge badge-glass mb-4">We're Here to Help</div>
+    <h1 class="font-display text-4xl text-white mb-2">Contact Superholic Lab</h1>
+    <p class="text-lg text-cream" style="max-width: 500px; margin: 0 auto;">Have questions about our methodology, pricing, or your child's progress? Reach out to us.</p>
   </div>
 </section>
 
-<!-- ═════════════════<!-- ═══════════════════ HUMAN CONNECTION & FORM (Off-White) ═══════════════════ -->
-<section class="py-10 bg-page">
-  <div class="container flex flex-col items-center gap-8" style="max-width: 964px;">
+<main class="container py-10 flex flex-wrap gap-6 items-start justify-center" style="max-width: 1000px; min-height: 50vh;">
+  
+  <div class="flex-1 flex flex-col gap-6" style="min-width: 300px; max-width: 400px;">
     
-    <!-- Top Row: Face of Trust & Contact Form -->
-    <div class="flex flex-wrap items-stretch gap-8 justify-center w-full">
-      <!-- Left Column: The Face of Trust -->
-      <div class="flex-1 flex flex-col justify-center" style="min-width: 300px; max-width: 400px;">
-        <img src="../assets/images/linzy_support.png" alt="Linzy, Superholic Lab Support" style="width: 100%; height: auto; filter: drop-shadow(0 12px 24px rgba(0,0,0,0.15)); display: block; margin: 0 auto;">
-      </div>
-
-      <!-- Right Column: The Contact Form -->
-      <div class="flex-1 card p-8 hover-lift" style="min-width: 300px; width: 100%;">
-        <h2 id="formHeader" class="font-display text-3xl text-main mb-6">Send a message</h2>
-
-        <!-- Alerts -->
-        <div id="contact-success" hidden class="mb-4 p-4 rounded" style="background: rgba(5, 150, 105, 0.1); border: 1px solid rgba(5, 150, 105, 0.2); color: var(--brand-mint);">
-          <strong class="font-bold">Message sent!</strong> Linzy will get back to you within 48 hours.
+    <div class="card p-6 card-rule-rose bg-surface">
+      <h2 class="font-display text-2xl text-main mb-4 m-0">Get in Touch</h2>
+      <p class="text-sm text-muted mb-6">Our academic team is ready to assist you with any inquiries regarding the Superholic Lab platform.</p>
+      
+      <div class="flex flex-col gap-4">
+        <div class="flex items-center gap-4">
+          <div class="flex items-center justify-center bg-rose-tint" style="width: 40px; height: 40px; border-radius: var(--radius-full); color: var(--brand-rose);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+          </div>
+          <div>
+            <div class="text-xs font-bold text-muted uppercase">Email Support</div>
+            <a href="mailto:linzy@superholiclab.com" class="text-sm font-bold text-main" style="text-decoration: none;">linzy@superholiclab.com</a>
+          </div>
         </div>
-        <div id="contact-error" hidden class="mb-4 p-4 rounded text-sm text-danger" style="background: rgba(220, 38, 38, 0.1); border: 1px solid rgba(220, 38, 38, 0.2);">
-          Error message goes here.
+        
+        <div class="flex items-center gap-4">
+          <div class="flex items-center justify-center bg-science-tint" style="width: 40px; height: 40px; border-radius: var(--radius-full); color: var(--brand-mint);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+          </div>
+          <div>
+            <div class="text-xs font-bold text-muted uppercase">WhatsApp</div>
+            <a href="https://wa.me/6591703212" class="text-sm font-bold text-main" style="text-decoration: none;" target="_blank">+65 9170 3212</a>
+          </div>
         </div>
-
-        <form id="contact-form" action="https://formspree.io/f/xdoqbqol" method="POST" class="flex flex-col gap-4">
-          
-          <!-- Hidden Fields for logged-in CRM Data Injection -->
-          <input type="hidden" id="hidden_plan" name="Plan Subscribed" value="Guest / Not Logged In">
-          <input type="hidden" id="hidden_status" name="Subscription Status" value="N/A">
-          <input type="hidden" id="hidden_end_date" name="Subscription End Date" value="N/A">
-          <input type="hidden" id="hidden_students" name="Registered Students" value="N/A">
-
-          <div class="flex flex-col gap-1">
-            <label for="name" class="text-sm font-bold text-muted">Your Name</label>
-            <input type="text" id="name" name="name" class="form-input" required placeholder="e.g., Mrs Lim" />
+        
+        <div class="flex items-center gap-4">
+          <div class="flex items-center justify-center bg-maths-tint" style="width: 40px; height: 40px; border-radius: var(--radius-full); color: var(--maths-colour);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
           </div>
-          
-          <div class="flex flex-col gap-1">
-            <label for="email" class="text-sm font-bold text-muted">Email Address</label>
-            <input type="email" id="email" name="email" class="form-input" required placeholder="name@example.com" />
+          <div>
+            <div class="text-xs font-bold text-muted uppercase">Location</div>
+            <div class="text-sm font-bold text-main">Singapore</div>
           </div>
-          
-          <div class="flex flex-col gap-1">
-            <label for="subject" class="text-sm font-bold text-muted">Subject</label>
-            <select id="subject" name="subject" class="form-input" required style="cursor: pointer;">
-              <option value="" disabled selected>Select a topic...</option>
-              <option value="Syllabus & Questions">Syllabus & Questions</option>
-              <option value="Technical Support">Technical Support</option>
-              <option value="Billing & Plans">Billing & Plans</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-          
-          <div class="flex flex-col gap-1">
-            <label for="message" class="text-sm font-bold text-muted">Message</label>
-            <textarea id="message" name="message" class="form-input" required placeholder="How can we help you today?" style="min-height: 140px; padding-top: 12px; resize: vertical;"></textarea>
-          </div>
-
-          <button type="submit" id="contact-submit" class="btn btn-primary w-full mt-2">Send Message to Linzy</button>
-
-          <div class="flex flex-wrap justify-center items-center gap-4 mt-4 text-xs font-bold text-muted">
-            <div class="flex items-center gap-1"><span class="text-success">✓</span> Real humans</div>
-            <div class="flex items-center gap-1"><span class="text-success">✓</span> 48h response</div>
-            <div class="flex items-center gap-1"><span class="text-success">✓</span> SG support</div>
-          </div>
-        </form>
+        </div>
       </div>
     </div>
 
-    <!-- Bottom Row: Operating Hours & Direct Email (Simplified & Flushed) -->
-    <div class="flex flex-wrap justify-between items-center w-full pt-8 mt-2" style="border-top: 1px solid var(--border-light); gap: 24px; text-align: center;">
-      
-      <!-- Direct Email -->
-      <div class="flex items-center gap-4 flex-1" style="min-width: 250px; text-align: center;">
-        <div>
-          <div class="text-xs font-bold uppercase mb-1 tracking-wider" style="color: var(--brand-sage);">Email Us Directly</div>
-          <a href="mailto:support@superholiclab.com" class="font-bold text-lg" style="text-decoration: none; color: var(--text-main);">support@superholiclab.com</a>
-        </div>
-      </div>
-      
-      <!-- Operating Hours -->
-      <div class="flex items-center gap-4 flex-1" style="min-width: 250px; text-align: center;">
-        <div>
-          <div class="text-xs font-bold uppercase mb-1 tracking-wider" style="color: var(--brand-sage);">Operating Hours</div>
-          <div class="font-bold text-lg" style="color: var(--text-main);">Mon – Fri, 9am – 6pm</div>
-        </div>
-      </div>
-      
+    <div class="card p-6 bg-sage-dark text-white hover-lift">
+      <h3 class="font-display text-xl mb-2 m-0">Need a quick answer?</h3>
+      <p class="text-sm mb-4" style="color: rgba(255,255,255,0.8);">Check our Frequently Asked Questions for details on pricing, methodology, and the 7-day free trial.</p>
+      <a href="/index.html#faq" class="btn btn-secondary btn-sm" style="color: var(--cream); border-color: rgba(255,255,255,0.22);">Read FAQs →</a>
     </div>
-
+    
   </div>
-</section>
+
+  <div class="flex-1 card p-6 bg-surface" style="min-width: 300px; max-width: 500px;">
+    <h2 class="font-display text-2xl text-main mb-6 m-0">Send a Message</h2>
+    
+    <div id="contact-success" hidden class="card card-rule-mint bg-science-tint p-4 mb-6">
+      <div class="font-bold text-success mb-1">Message Sent!</div>
+      <p class="text-sm text-main m-0">Thank you for reaching out. We will get back to you within 24 hours.</p>
+    </div>
+    
+    <div id="contact-error" hidden class="card card-rule-rose bg-rose-tint p-4 mb-6 text-sm text-danger font-bold">
+    </div>
+
+    <form id="contact-form" class="flex flex-col gap-4" action="https://formspree.io/f/xbjnrvwd" method="POST">
+      <input type="hidden" name="_subject" value="New Contact Form Submission">
+      <input type="hidden" id="user-email" name="user_email" value="">
+      <input type="hidden" id="user-id" name="user_id" value="">
+      
+      <div>
+        <label for="name" class="block text-sm font-bold text-main mb-1">Your Name <span class="text-danger">*</span></label>
+        <input type="text" id="name" name="name" required class="form-input w-full p-3">
+      </div>
+      
+      <div>
+        <label for="email" class="block text-sm font-bold text-main mb-1">Email Address <span class="text-danger">*</span></label>
+        <input type="email" id="email" name="email" required class="form-input w-full p-3">
+      </div>
+      
+      <div>
+        <label for="topic" class="block text-sm font-bold text-main mb-1">How can we help? <span class="text-danger">*</span></label>
+        <select id="topic" name="topic" required class="form-select w-full p-3">
+          <option value="" disabled selected>Select a topic...</option>
+          <option value="General Inquiry">General Inquiry</option>
+          <option value="Technical Support">Technical Support</option>
+          <option value="Billing & Subscription">Billing & Subscription</option>
+          <option value="Feedback / Feature Request">Feedback / Feature Request</option>
+        </select>
+      </div>
+      
+      <div>
+        <label for="message" class="block text-sm font-bold text-main mb-1">Message <span class="text-danger">*</span></label>
+        <textarea id="message" name="message" required rows="5" class="form-input w-full p-3" style="resize: vertical;"></textarea>
+      </div>
+      
+      <button type="submit" id="contact-submit" class="btn btn-primary btn-full hover-lift mt-2">Send Message</button>
+    </form>
+  </div>
+
+</main>
 
 <global-footer></global-footer>
 
-<script src="/js/supabase-client.js"></script>
 <script>
-  /* ── 1. Data Injection & Personalisation Logic ── */
-  getSupabase().then(async function(sb) {
+  /* ── 1. Inject User Context if Logged In ── */
+  document.addEventListener('DOMContentLoaded', async () => {
     try {
+      if (typeof window.getSupabase !== 'function') return;
+      const sb = await window.getSupabase();
       const { data: { session } } = await sb.auth.getSession();
-      const headerEl = document.getElementById('formHeader');
-      
-      if (session) {
-        // Fetch Parent Profile & Registered Students
-        const { data: profile } = await sb.from('profiles').select('*').eq('id', session.user.id).single();
-        const { data: students } = await sb.from('students').select('name, level').eq('parent_id', session.user.id);
-        
-        if (profile) {
-          // 1. Personalise Header
-          const firstName = profile.full_name ? profile.full_name.split(' ')[0] : 'Parent';
-          if (headerEl) headerEl.textContent = `${firstName}, how can we help?`;
-
-          // 2. Pre-fill Visible Fields
-          document.getElementById('name').value = profile.full_name || '';
-          document.getElementById('email').value = session.user.email || '';
-
-          // 3. Inject Hidden CRM Data for Formspree
-          document.getElementById('hidden_plan').value = profile.subscription_tier || 'trial';
-          
-          // Determine Active Status
-          const isTrial = profile.subscription_tier === 'trial';
-          document.getElementById('hidden_status').value = isTrial ? 'Trial' : (profile.subscription_status || 'Active');
-          
-          // Calculate End Date safely
-          const endDateRaw = profile.current_period_end || profile.trial_ends_at;
-          document.getElementById('hidden_end_date').value = endDateRaw ? new Date(endDateRaw).toLocaleDateString('en-SG') : 'Unknown';
-
-          // Compile Student Names
-          if (students && students.length > 0) {
-            const studentStr = students.map(s => `${s.name} (${s.level})`).join(', ');
-            document.getElementById('hidden_students').value = studentStr;
-          }
+      if (session && session.user) {
+        // Pre-fill email
+        const emailInput = document.getElementById('email');
+        if (emailInput && !emailInput.value) {
+          emailInput.value = session.user.email;
         }
-      } else {
-        // 4. Default for Logged Out / Guests
-        if (headerEl) headerEl.textContent = 'Send a message';
+        // Populate hidden fields
+        document.getElementById('user-email').value = session.user.email;
+        document.getElementById('user-id').value = session.user.id;
       }
     } catch (e) {
       console.error('Data injection failed:', e);
@@ -215,11 +198,11 @@
         errEl.hidden = false;
       }
     } catch {
-      errEl.textContent = 'Could not send the message. Please email support@superholiclab.com directly.';
+      errEl.textContent = 'Network error. Please try again later.';
       errEl.hidden = false;
     } finally {
-      submit.disabled    = false;
-      submit.textContent = 'Send Message to Linzy';
+      submit.disabled = false;
+      submit.textContent = 'Send Message';
     }
   });
 </script>
