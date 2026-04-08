@@ -251,7 +251,7 @@
 
     // Avatar
     const avatar = document.createElement('img');
-    avatar.src = isUser ? '../assets/images/kid_studying.png' : '../assets/images/wena.png';
+    avatar.src = isUser ? '../assets/images/kid_studying.png' : '../assets/images/miss_wena.png';
     avatar.alt = isUser ? 'You' : 'Miss Wena';
     avatar.className = 'wena-avatar';
     avatar.style.width = '40px';
@@ -296,7 +296,7 @@
     innerFlex.style.maxWidth = '85%';
 
     const avatar = document.createElement('img');
-    avatar.src = '../assets/images/wena.png';
+    avatar.src = '../assets/images/miss_wena.png';
     avatar.alt = 'Miss Wena';
     avatar.className = 'wena-avatar';
     avatar.style.width = '40px';

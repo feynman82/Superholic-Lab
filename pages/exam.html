@@ -225,21 +225,23 @@ window.initExamEngine = function () {
       { name: 'English', icon: '📖', tag: 'P1–P6' }
     ];
 
+    // Masterclass CSS Grid Alignment matching subjects.html exactly
     const cards = subjects.map(s => `
-      <div class="card flex-1 hover-lift flex flex-col items-center justify-center p-6 cursor-pointer" style="min-width: 200px;" onclick="window.selectSubject('${s.name}')">
+      <div class="card hover-lift flex flex-col items-center justify-center p-8 text-center cursor-pointer" onclick="window.selectSubject('${s.name}')">
         <div class="text-4xl mb-4">${s.icon}</div>
-        <h3 class="font-bold text-xl">${s.name}</h3>
-        <span class="badge mt-2">${s.tag}</span>
+        <h3 class="font-display text-2xl text-main">${s.name}</h3>
+        <div class="badge badge-info mt-2">${s.tag}</div>
       </div>
     `).join('');
 
     app.innerHTML = `
-      <div class="w-full" style="max-width: 800px;"> <div class="text-center mb-8">
+      <div class="w-full flex flex-col items-center" style="max-width: 800px;">
+        <div class="text-center mb-8 w-full">
           <div class="badge badge-info mb-2">Step 1 of 2</div>
           <h1 class="font-display text-4xl text-main">Choose a Subject</h1>
           <p class="text-muted text-lg mt-2">Primary ${esc(levelNum)}</p>
         </div>
-        <div class="flex flex-wrap gap-4 justify-center">
+        <div class="w-full" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-6);">
           ${cards}
         </div>
       </div>
@@ -292,13 +294,13 @@ window.initExamEngine = function () {
     }
 
     app.innerHTML = `
-      <div class="w-full">
-        <div class="text-center mb-8">
+      <div class="w-full flex flex-col items-center" style="max-width: 800px;">
+        <div class="text-center mb-8 w-full">
           <div class="badge badge-info mb-2">${state.tier === 'single_subject' ? 'Step 1 of 1' : 'Step 2 of 2'}</div>
           <h1 class="font-display text-4xl text-main">Select Paper Type</h1>
         </div>
         
-        <div class="flex flex-wrap gap-6 items-start">
+        <div class="flex flex-wrap gap-6 items-start w-full">
           <div class="flex-1 flex flex-col gap-4" style="min-width: 300px;">
             <div class="flex flex-wrap gap-4">
               ${chips}
@@ -307,7 +309,7 @@ window.initExamEngine = function () {
           </div>
           
           <div class="flex-1" style="min-width: 300px;">
-            <div class="card p-6 bg-page card-rule-mint">
+            <div class="card p-6 bg-page card-rule-mint w-full">
               ${blueprintHtml}
               <button class="btn btn-primary btn-full mt-4 hover-lift" onclick="window.triggerGen()">Generate Paper →</button>
             </div>
