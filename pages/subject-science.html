@@ -13,15 +13,7 @@
 <script src="/js/header.js" defer></script>
 <script src="/js/footer.js" defer></script>
 <style>
-/* ── Page-Specific Layout Helpers ── */
-p { text-align: justify; }
-.badge, .btn, h1, h2, h3, h4, .text-center p { text-align: initial; }
-.self-start { align-self: flex-start; }
-.list-reset { list-style: none; }
-.prose-cap  { max-width: 600px; margin-left: auto; margin-right: auto; }
-.label-spaced { letter-spacing: 0.08em; text-transform: uppercase; }
-
-/* ── Subject Breadcrumb ── */
+/* ── Subject Breadcrumb (Local component until globalized) ── */
 .subject-nav { display: flex; gap: var(--space-3); flex-wrap: wrap; align-items: center; margin-bottom: var(--space-6); }
 .subject-nav a { font-size: var(--text-sm); color: rgba(255,255,255,0.65); text-decoration: none; }
 .subject-nav a:hover { color: var(--cream); }
@@ -45,7 +37,7 @@ p { text-align: justify; }
     </div>
     <div class="flex flex-wrap items-start gap-8">
       <div class="flex-1 flex flex-col gap-4" style="min-width: 300px;">
-        <div class="badge" style="background: rgba(5,150,105,0.14); color: var(--science-colour); align-self: flex-start;">Primary Science · P3–P6 · MOE 2023 Syllabus</div>
+        <div class="badge badge-dark-mint self-start">Primary Science · P3–P6 · MOE 2023 Syllabus</div>
         <h1 class="font-display text-4xl">
           Science Begins at P3.<br>
           <span class="text-rose">And It Demands Precision From Day One.</span>
@@ -54,13 +46,13 @@ p { text-align: justify; }
           Your child spends P1 and P2 building language and number foundations. Then P3 arrives — and suddenly there is a new subject, five themes, a marking scheme, and a way of writing answers that school simply does not have time to drill. Science at PSLE is not just about knowing facts. It is about using them precisely, in the language examiners are trained to reward.
         </p>
         <div class="flex flex-wrap gap-3">
-          <div class="badge" style="background: rgba(255,255,255,0.1); color: var(--cream);">5 Themes · P3–P6</div>
-          <div class="badge" style="background: rgba(255,255,255,0.1); color: var(--cream);">CER Method</div>
-          <div class="badge" style="background: rgba(255,255,255,0.1); color: var(--cream);">MOE 2023 Updated Syllabus</div>
+          <div class="badge badge-glass">5 Themes · P3–P6</div>
+          <div class="badge badge-glass">CER Method</div>
+          <div class="badge badge-glass">MOE 2023 Updated Syllabus</div>
         </div>
         <div class="flex flex-wrap gap-4">
           <a href="/pages/signup.html?subject=science&mode=trial" class="btn btn-primary hover-lift">Start Free Science Practice →</a>
-          <a href="#themes" class="btn" style="background: rgba(255,255,255,0.12); color: var(--cream); border: 1px solid rgba(255,255,255,0.22); backdrop-filter: blur(4px);">Explore the 5 Themes</a>
+          <a href="#themes" class="btn btn-glass hover-lift">Explore the 5 Themes</a>
         </div>
       </div>
       <div class="flex-1" style="min-width: 280px; max-width: 440px;">
@@ -115,7 +107,7 @@ p { text-align: justify; }
       <h2 class="font-display text-3xl mb-2 text-main">What Changes at Every Level.</h2>
       <p class="text-muted text-lg prose-cap">From 2024, each primary level has its own dedicated Science syllabus — there is no longer a shared "lower block."</p>
     </div>
-    <div class="flex flex-wrap gap-5">
+    <div class="flex flex-wrap gap-6">
       
       <div class="card flex flex-col gap-3 flex-1 p-6 bg-maths-tint" style="min-width: 220px;">
         <div class="flex items-center gap-2 mb-2">
@@ -133,7 +125,7 @@ p { text-align: justify; }
       <div class="card flex flex-col gap-3 flex-1 p-6 bg-rose-tint" style="min-width: 220px;">
         <div class="flex items-center gap-2 mb-2">
           <div class="font-display text-xl" style="color:var(--brand-rose);">P4</div>
-          <div class="badge badge-amber" style="background: rgba(183,110,121,0.1); color: var(--brand-rose);">Systems Introduced</div>
+          <div class="badge badge-amber">Systems Introduced</div>
         </div>
         <p class="text-muted text-sm">P4 introduces the first "systems" — plant parts and human digestion — which require students to name parts and describe functions.</p>
         <div class="topic-grid">
@@ -159,7 +151,7 @@ p { text-align: justify; }
       <div class="card flex flex-col gap-3 flex-1 p-6 bg-science-tint" style="min-width: 220px;">
         <div class="flex items-center gap-2 mb-2">
           <div class="font-display text-xl" style="color:var(--science-colour);">P6</div>
-          <div class="badge badge-success" style="background:var(--brand-mint); color:white;">PSLE Year</div>
+          <div class="badge badge-dark-mint">PSLE Year</div>
         </div>
         <p class="text-muted text-sm">P6 Science is dominated by forces and ecology. PSLE open-ended questions require precise vocabulary and the CER structure.</p>
         <div class="topic-grid">
@@ -181,22 +173,22 @@ p { text-align: justify; }
       <p class="text-muted text-lg prose-cap">Most students know the content. The ones who lose marks write the right idea in the wrong structure. PSLE Science open-ended answers must follow Claim → Evidence → Reasoning to score full marks.</p>
     </div>
 
-    <div class="flex flex-wrap gap-5 mb-8">
-      <div class="ecc-card flex flex-col gap-3 flex-1" style="min-width: 180px; border-color: rgba(59,130,246,0.5);">
+    <div class="flex flex-wrap gap-6 mb-8">
+      <div class="ecc-card flex flex-col gap-3 flex-1" style="min-width: 180px;">
         <div class="flex items-center gap-3">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--maths-colour)" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><line x1="8" y1="13" x2="16" y2="13"/></svg>
           <div class="font-bold text-white">C — Claim</div>
         </div>
         <p class="text-muted text-sm">A direct answer to the question. No hedging. No "I think." One clear statement of what happened or why.</p>
       </div>
-      <div class="ecc-card flex flex-col gap-3 flex-1" style="min-width: 180px; border-color: rgba(217,119,6,0.5);">
+      <div class="ecc-card flex flex-col gap-3 flex-1" style="min-width: 180px;">
         <div class="flex items-center gap-3">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--brand-amber)" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
           <div class="font-bold text-white">E — Evidence</div>
         </div>
         <p class="text-muted text-sm">Data or observations from the question that support the claim. Must reference the specific information provided.</p>
       </div>
-      <div class="ecc-card flex flex-col gap-3 flex-1" style="min-width: 180px; border-color: rgba(5,150,105,0.5);">
+      <div class="ecc-card flex flex-col gap-3 flex-1" style="min-width: 180px;">
         <div class="flex items-center gap-3">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--brand-mint)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>
           <div class="font-bold text-white">R — Reasoning</div>
@@ -207,18 +199,18 @@ p { text-align: justify; }
 
     <div class="ecc-card p-6">
       <div class="text-xs font-bold label-spaced mb-4" style="color:var(--brand-mint);">Question: Why did the plant in Pot A grow taller than the plant in Pot B?</div>
-      <div class="flex flex-wrap gap-5">
+      <div class="flex flex-wrap gap-6">
         <div class="flex-1" style="min-width: 240px;">
           <div class="ans-tag weak">❌ 0 marks — Common student answer</div>
-          <div class="ans-block weak" style="background: rgba(255,255,255,0.1); border-color: var(--brand-error); color: white;">
-            <p class="text-sm">"Because Pot A had more sunlight and sunlight helps plants grow."</p>
+          <div class="ans-block weak">
+            <p class="text-sm text-cream">"Because Pot A had more sunlight and sunlight helps plants grow."</p>
           </div>
           <p class="text-xs text-muted mt-2">No evidence from the table. No mechanism explained.</p>
         </div>
         <div class="flex-1" style="min-width: 240px;">
           <div class="ans-tag strong">✓ 3 marks — CER structure</div>
-          <div class="ans-block strong" style="background: rgba(255,255,255,0.1); border-color: var(--brand-mint); color: white;">
-            <p class="text-sm">"Plant A grew taller because it received more sunlight. The table shows Pot A reached 24 cm while Pot B reached only 15 cm. Sunlight provides energy for photosynthesis..."</p>
+          <div class="ans-block strong">
+            <p class="text-sm text-cream">"Plant A grew taller because it received more sunlight. The table shows Pot A reached 24 cm while Pot B reached only 15 cm. Sunlight provides energy for photosynthesis..."</p>
           </div>
           <p class="text-xs text-muted mt-2">Claim stated clearly. Evidence cited. Reasoning linked.</p>
         </div>
