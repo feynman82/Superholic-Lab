@@ -1,5 +1,3 @@
-
-
 window.initQuizEngine = function() {
   'use strict';
 
@@ -31,7 +29,7 @@ window.initQuizEngine = function() {
   }
 
   function renderLoading() {
-    app.innerHTML = `<div class="card flex flex-col items-center w-full" style="padding: var(--space-8); max-width: 600px;"><div class="spinner-sm mb-4"></div><h2 class="font-display text-2xl text-main">Preparing Training Lab...</h2><p class="text-sm text-muted mt-2">Loading MOE-aligned questions</p></div>`;
+    app.innerHTML = `<div class="card flex flex-col items-center w-full p-6" style="max-width: 600px;"><div class="spinner-sm mb-4"></div><h2 class="font-display text-2xl text-main">Preparing Training Lab...</h2><p class="text-sm text-muted mt-2">Loading MOE-aligned questions</p></div>`;
   }
 
   // ── BUILD INPUT UI BY TYPE ──
@@ -77,7 +75,7 @@ window.initQuizEngine = function() {
     const parts = (q.parts || []).map(p => {
       const savedWorking = (state.answers[state.currentIndex] || {})[p.label] || '';
       return `
-        <div class="card mb-4" style="background:var(--bg-elevated); border:1.5px solid var(--border-light); padding: var(--space-4);">
+        <div class="card bg-page p-4 mb-4">
           <div class="flex items-center gap-3 mb-3">
             <span class="font-display text-lg text-main font-bold">${esc(p.label)}</span>
             <span class="badge badge-info text-xs">${p.marks} mark${p.marks!==1?'s':''}</span>
@@ -85,8 +83,8 @@ window.initQuizEngine = function() {
           </div>
           <textarea id="wp-${esc(p.label)}" class="form-input w-full p-3" rows="3" style="height:auto;" placeholder="Show your working here..." ${savedModelShown?'disabled':''}>${esc(savedWorking)}</textarea>
           ${savedModelShown ? `
-            <div class="mt-3 p-4 rounded" style="background:rgba(57,255,179,0.07);border-left:3px solid var(--brand-mint);">
-              <div class="text-xs font-bold text-mint mb-1" style="color: var(--brand-mint);">Model Answer</div>
+            <div class="ans-block strong mt-4">
+              <div class="text-xs font-bold mb-1 text-success">Model Answer</div>
               <div class="text-sm text-main font-mono whitespace-pre-wrap">${esc(p.model_answer || p.correct_answer || '')}</div>
               ${p.marking_scheme ? `<div class="text-xs text-muted mt-2 whitespace-pre-wrap">${esc(p.marking_scheme)}</div>` : ''}
             </div>` : ''}
@@ -95,7 +93,6 @@ window.initQuizEngine = function() {
     return parts;
   }
 
-  // ── MASTERCLASS CLOZE FIX ──
   function buildClozeUI(q) {
     const savedAns = state.answers[state.currentIndex] || {};
     const blanks = q.blanks || [];
@@ -135,23 +132,22 @@ window.initQuizEngine = function() {
         const icon = res.isCorrect ? '✅' : '❌';
         return `<div class="flex gap-3 items-start text-sm py-2" style="border-bottom: 1px solid var(--border-light);">
           <span class="font-bold" style="min-width:24px;">[${num}]</span>
-          <span>${icon} <strong style="color:var(--text-main);">${esc(res.selected||'—')}</strong> ${!res.isCorrect?`→ <strong style="color:var(--brand-mint)">${esc(b.correct_answer)}</strong>`:''}</span>
+          <span>${icon} <strong style="color:var(--text-main);">${esc(res.selected||'—')}</strong> ${!res.isCorrect?`→ <strong class="text-success">${esc(b.correct_answer)}</strong>`:''}</span>
           ${!res.isCorrect && b.explanation ? `<span class="text-muted text-xs ml-auto" style="max-width:60%; text-align:right;">${esc(b.explanation)}</span>` : ''}
         </div>`;
       }).join('');
-      blankFeedback = `<div class="mt-4 p-4" style="background:var(--bg-elevated); border:1px solid var(--border-light); border-radius: var(--radius-md);">${rows}</div>`;
+      blankFeedback = `<div class="card bg-page p-4 mt-4">${rows}</div>`;
     }
 
     return `
-      <div class="p-4 mb-4" style="background:var(--bg-elevated); border:1px solid var(--border-light); border-radius: var(--radius-md);">
+      <div class="card bg-page p-4 mb-4">
         <div class="text-xs font-bold text-muted uppercase mb-3">Word Bank</div>
         <div class="flex flex-wrap gap-2">${wordBankList}</div>
       </div>
-      <div class="cloze-passage text-base text-main p-6" style="background:var(--bg-surface); border: 1px solid var(--border-light); border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">${passage}</div>
+      <div class="card p-6 cloze-passage text-base text-main">${passage}</div>
       ${blankFeedback}`;
   }
 
-  // ── MASTERCLASS EDITING FIX ──
   function buildEditingUI(q) {
     const savedAns = state.answers[state.currentIndex] || {};
     const lines = (q.passage_lines || []).map(line => {
@@ -170,7 +166,7 @@ window.initQuizEngine = function() {
         const isCorrect = res.isCorrect;
         const stateClass = isCorrect ? 'is-correct' : 'is-wrong';
         inputEl = `<input type="text" value="${esc(saved)}" disabled class="editing-input ${stateClass}">
-          ${!isCorrect && line.correct_word ? `<span class="text-xs font-bold" style="color:var(--brand-mint); position:absolute; bottom:-18px; left:0; right:0;">→ ${esc(line.correct_word)}</span>` : ''}`;
+          ${!isCorrect && line.correct_word ? `<span class="text-xs font-bold text-success" style="position:absolute; bottom:-18px; left:0; right:0;">→ ${esc(line.correct_word)}</span>` : ''}`;
       } else {
         inputEl = `<input type="text" id="edit-line-${line.line_number}" value="${esc(saved)}"
           placeholder="${esc(underlined)}" autocomplete="off" class="editing-input"
@@ -191,23 +187,23 @@ window.initQuizEngine = function() {
         return res && !res.isCorrect;
       });
       if (wrongLines.length > 0) {
-        editFeedback = `<div class="mt-4 p-4" style="background:var(--bg-elevated); border:1px solid var(--border-light); border-radius: var(--radius-md);">
+        editFeedback = `<div class="card bg-page p-4 mt-4">
           <div class="text-xs font-bold text-muted uppercase mb-2">Explanations</div>
           ${wrongLines.map(l => `<div class="text-sm text-main py-2" style="border-bottom: 1px solid var(--border-light);">
-            <span class="font-bold">[${l.line_number}] ${esc(l.underlined_word)} → <span style="color:var(--brand-mint);">${esc(l.correct_word)}</span>:</span> ${esc(l.explanation)}
+            <span class="font-bold">[${l.line_number}] ${esc(l.underlined_word)} → <span class="text-success">${esc(l.correct_word)}</span>:</span> ${esc(l.explanation)}
           </div>`).join('')}
         </div>`;
       }
     }
 
     return `
-      <div class="p-6" style="background:var(--bg-surface); border: 1px solid var(--border-light); border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">${lines}</div>
+      <div class="card p-6">${lines}</div>
       ${editFeedback}`;
   }
 
   function renderQuiz() {
     if (state.questions.length === 0) {
-      app.innerHTML = `<div class="card text-center w-full hover-lift" style="padding: var(--space-8); max-width: 600px;"><div class="text-4xl mb-4">🕵️</div><h2 class="font-display text-2xl text-main">No questions found!</h2><p class="text-muted text-sm my-4">Miss Wena hasn't added questions for this specific combination yet. Check back soon!</p><button class="btn btn-primary hover-lift" onclick="window.location.href='subjects.html'">Return to Subjects</button></div>`;
+      app.innerHTML = `<div class="card text-center w-full hover-lift p-6" style="max-width: 600px;"><div class="text-4xl mb-4">🕵️</div><h2 class="font-display text-2xl text-main">No questions found!</h2><p class="text-muted text-sm my-4">Miss Wena hasn't added questions for this specific combination yet. Check back soon!</p><button class="btn btn-primary hover-lift" onclick="window.location.href='subjects.html'">Return to Subjects</button></div>`;
       return;
     }
 
@@ -227,23 +223,26 @@ window.initQuizEngine = function() {
     if (state.isAnswered && state.feedback) {
       const fb = state.feedback;
       if (fb.isModel) {
-        feedbackHtml = `<div class="mt-4 p-5" style="background:rgba(57,255,179,0.07); border-left:4px solid var(--brand-mint); border-radius: var(--radius-md);">
-          <div class="font-bold text-sm mb-2" style="color:var(--brand-mint);">Worked Solution</div>
+        feedbackHtml = `<div class="card card-rule-mint bg-science-tint p-4 mt-4">
+          <div class="font-bold text-sm mb-2 text-success">Worked Solution</div>
           <pre class="text-sm text-main whitespace-pre-wrap leading-relaxed" style="font-family: inherit;">${esc(q.worked_solution || q.model_answer || '')}</pre>
         </div>`;
       } else if (fb.status === 'correct') {
-        feedbackHtml = `<div class="mt-4 p-5" style="background:rgba(5,150,105,0.1); border-left:4px solid var(--brand-mint); border-radius: var(--radius-md);">
-          <div class="font-bold mb-2" style="color:var(--brand-mint);">🎉 Spot on!</div>
+        feedbackHtml = `<div class="card card-rule-mint bg-science-tint p-4 mt-4">
+          <div class="font-bold mb-2 text-success">🎉 Spot on!</div>
           <p class="text-sm text-main leading-relaxed">${esc(fb.text)}</p>
           ${q.examiner_note ? `<p class="text-xs text-muted mt-2 italic">${esc(q.examiner_note)}</p>` : ''}
         </div>`;
       } else {
-        const colour = fb.status === 'partial' ? 'var(--brand-amber)' : 'var(--brand-error)';
-        const bg = fb.status === 'partial' ? 'rgba(255,184,48,0.08)' : 'rgba(220,38,38,0.1)';
-        feedbackHtml = `<div class="mt-4 p-5" style="background:${bg}; border-left:4px solid ${colour}; border-radius: var(--radius-md);">
-          <div class="font-bold mb-2" style="color:${colour};">💡 Miss Wena says:</div>
+        const isPartial = fb.status === 'partial';
+        const ruleClass = isPartial ? 'card-rule-amber' : 'card-rule-rose';
+        const bgClass   = isPartial ? 'bg-amber-tint' : 'bg-rose-tint';
+        const textClass = isPartial ? 'text-amber' : 'text-danger';
+        
+        feedbackHtml = `<div class="card ${ruleClass} ${bgClass} p-4 mt-4">
+          <div class="font-bold mb-2 ${textClass}">💡 Miss Wena says:</div>
           <p class="text-sm text-main leading-relaxed">${esc(fb.text)}</p>
-          ${fb.correctAnswer ? `<div class="mt-3 text-sm font-bold text-main">Correct Answer: <span style="color:var(--brand-mint);">${esc(fb.correctAnswer)}</span></div>` : ''}
+          ${fb.correctAnswer ? `<div class="mt-3 text-sm font-bold text-main">Correct Answer: <span class="text-success">${esc(fb.correctAnswer)}</span></div>` : ''}
         </div>`;
       }
     }
@@ -275,12 +274,12 @@ window.initQuizEngine = function() {
               <div class="quiz-progress-fill" style="width:${((state.currentIndex)/state.questions.length)*100}%;background:var(--brand-rose);"></div>
             </div>
           </div>
-          <div class="badge ${state.streak >= 3 ? 'badge-amber' : 'badge-info'}" style="font-size:1rem;padding:6px 12px;">
+          <div class="badge ${state.streak >= 3 ? 'badge-amber' : 'badge-info'}" style="font-size:1rem; padding:6px 12px;">
             <span class="${state.streak > 0 ? 'streak-fire' : ''} mr-1">🔥</span> Streak: ${state.streak}
           </div>
         </div>
 
-        <div class="card p-8 hover-lift w-full relative">
+        <div class="card p-6 hover-lift w-full relative">
           <div class="badge badge-info absolute top-0 left-8" style="transform:translateY(-50%);">${esc(titleCase(q.topic || 'Mixed'))}</div>
           ${q.difficulty ? `<div class="badge badge-${q.difficulty.toLowerCase()} absolute top-0 right-8" style="transform:translateY(-50%);">${esc(q.difficulty)}</div>` : ''}
 
@@ -472,17 +471,17 @@ window.initQuizEngine = function() {
     
     const pct = Math.round((state.score / state.questions.length) * 100);
     app.innerHTML = `
-      <div class="card flex flex-col items-center text-center w-full hover-lift" style="padding: var(--space-8); max-width: 600px; border-top: 4px solid var(--brand-mint);">
+      <div class="card flex flex-col items-center text-center w-full hover-lift p-6 card-rule-mint" style="max-width: 600px;">
         <h1 class="font-display text-4xl text-main mb-2">Training Complete!</h1>
         <p class="text-muted text-lg mb-6">You've successfully completed the lab session.</p>
         
-        <div class="flex flex-wrap gap-6 mb-8 w-full justify-center">
-          <div class="card p-6 flex-1" style="background: var(--bg-elevated); border: none; max-width: 200px;">
+        <div class="flex flex-wrap gap-6 mb-6 w-full justify-center">
+          <div class="card p-6 flex-1 bg-page" style="border: none; max-width: 200px;">
             <div class="text-sm font-bold text-muted uppercase">Score</div>
             <div class="font-display text-5xl text-success mt-2">${pct}%</div>
             <div class="text-sm text-main mt-1">${state.score} / ${state.questions.length} Correct</div>
           </div>
-          <div class="card p-6 flex-1" style="background: rgba(217, 119, 6, 0.1); border: none; max-width: 200px;">
+          <div class="card p-6 flex-1 bg-amber-tint" style="border: none; max-width: 200px;">
             <div class="text-sm font-bold text-amber uppercase">Best Streak</div>
             <div class="font-display text-5xl text-amber mt-2">🔥 ${state.maxStreak}</div>
             <div class="text-sm text-amber mt-1">In a row!</div>
