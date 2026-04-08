@@ -10,11 +10,11 @@
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="icon" href="../assets/favicon.ico" />
   <meta name="robots" content="noindex, nofollow" />
-  
   <script src="/js/header.js" defer></script>
+  <!-- Analytics: configure at plausible.io -->
   <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js"></script>
   <script src="/js/footer.js" defer></script>
-  
+  <!-- Auth guard: redirects to login if no active session -->
   <script type="module">
     import { guardPage } from '/js/auth.js';
     import { initAppShell } from '/js/app-shell.js';
@@ -23,7 +23,17 @@
     async function boot() {
       try {
         window.userProfile = await guardPage(true); 
-        await initAppShell(window.userProfile); 
+        
+        const runInit = () => {
+          if (typeof initAppShell === 'function') initAppShell(window.userProfile); 
+          if (typeof window.initExamEngine === 'function') window.initExamEngine();
+        };
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', runInit);
+        } else {
+          runInit();
+        }
       } catch (err) {
         console.error('Boot sequence failed:', err);
       }
@@ -36,30 +46,32 @@
 
   <global-header></global-header>
 
-  <div class="bg-sage texture-dots py-10" style="padding-top: calc(var(--navbar-h) + var(--space-8)); position:relative; overflow:hidden;">
+  <!-- ── Hero ───────────────────────────────────────────────────────────── -->
+  <div class="bg-sage texture-dots py-10" style="padding-top: calc(64px + var(--space-8)); position:relative; overflow:hidden;">
     
-    <div id="student-selector" class="animate-in delay-2 mb-4 relative z-10" style="display:none; max-width: 240px; margin: 0 auto;">
-      <select id="student-select" class="form-select form-select-sm form-select-glass" style="font-weight: 600; text-align-last: center;">
-      </select>
-    </div>
+    <!-- Student Switcher (Only visible for Family Plans) -->
+  <div id="student-selector" class="animate-in delay-2" style="display:none; margin: 0 auto var(--space-4); max-width: 240px; position:relative; z-index:10;">
+    <select id="student-select" class="form-select form-select-sm form-select-glass" style="font-weight: 600; text-align-last: center;">
+    </select>
+  </div>
     
-    <div class="container relative z-10 text-center flex flex-col items-center">
-      <div class="badge badge-glass mb-4">Mission Report</div>
-      <h1 class="font-display text-4xl text-white mb-2" style="font-size: 3rem;">
+    <div class="container relative z-10 text-center">
+      <div class="badge mb-2" style="background: rgba(0, 0, 0, 0.25); color: var(--brand-rose); backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.1);">Mission Report</div>
+      <h1 class="font-display text-4xl text- mb-2" style="font-size: 3rem; text-align: center;">
         <span id="student-name"></span>'s Progress
       </h1>
     </div>
   </div>
 
+  <!-- ── Main content ────────────────────────────────────────────────────── -->
   <main id="app" class="container py-10" style="max-width:800px; min-height: 80vh;">
     
-    <div id="progress-loading" class="card flex flex-col items-center w-full py-10" style="max-width: 600px; margin: 0 auto;">
-      <div class="spinner-sm mb-4"></div>
-      <h2 class="font-display text-2xl text-main">Crunching Data...</h2>
-      <p class="text-sm text-muted mt-2">Loading your latest mission report</p>
+    <div id="progress-loading" class="text-center py-10">
+      <div class="spinner-sm mx-auto mb-4"></div>
+      <p class="text-muted font-bold">Crunching the latest data...</p>
     </div>
 
-    <div id="progress-empty" class="card p-10 text-center hover-lift flex flex-col items-center w-full" style="max-width: 600px; margin: 0 auto;" hidden>
+    <div id="progress-empty" class="card p-10 text-center hover-lift" hidden>
       <div class="text-4xl mb-4">🚀</div>
       <h2 class="font-display text-2xl text-main mb-2">Ready for Liftoff!</h2>
       <p class="text-muted text-sm mb-6">Complete your first practice paper or quiz to unlock your personalized Action Plan.</p>
@@ -70,23 +82,23 @@
       
       <h2 class="font-display text-2xl text-main mb-4 uppercase">Subject Proficiency</h2>
       
-      <div class="flex flex-wrap gap-4 mb-8">
-        <div class="card flex-1 p-6 text-center hover-lift bg-maths-tint" style="min-width: 200px;">
-          <div class="text-sm mb-2 uppercase font-bold tracking-wider" style="color: var(--maths-colour);">Mathematics</div>
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:var(--space-4); margin-bottom:var(--space-8);">
+        <div class="card p-6 text-center hover-lift" style="border-top: 4px solid var(--maths-colour);">
+          <div class="text-muted text-sm mb-2 uppercase font-bold tracking-wider">Mathematics</div>
           <div class="flex justify-center items-baseline gap-3">
             <div class="font-display text-4xl text-main" id="stat-mathematics-pct">-</div>
             <div id="stat-mathematics-al" class="badge text-sm">-</div>
           </div>
         </div>
-        <div class="card flex-1 p-6 text-center hover-lift bg-science-tint" style="min-width: 200px;">
-          <div class="text-sm mb-2 uppercase font-bold tracking-wider" style="color: var(--science-colour);">Science</div>
+        <div class="card p-6 text-center hover-lift" style="border-top: 4px solid var(--science-colour);">
+          <div class="text-muted text-sm mb-2 uppercase font-bold tracking-wider">Science</div>
           <div class="flex justify-center items-baseline gap-3">
             <div class="font-display text-4xl text-main" id="stat-science-pct">-</div>
             <div id="stat-science-al" class="badge text-sm">-</div>
           </div>
         </div>
-        <div class="card flex-1 p-6 text-center hover-lift bg-english-tint" style="min-width: 200px;">
-          <div class="text-sm mb-2 uppercase font-bold tracking-wider" style="color: var(--english-colour);">English</div>
+        <div class="card p-6 text-center hover-lift" style="border-top: 4px solid var(--english-colour);">
+          <div class="text-muted text-sm mb-2 uppercase font-bold tracking-wider">English</div>
           <div class="flex justify-center items-baseline gap-3">
             <div class="font-display text-4xl text-main" id="stat-english-pct">-</div>
             <div id="stat-english-al" class="badge text-sm">-</div>
@@ -94,35 +106,37 @@
         </div>
       </div>
 
+      <!-- Action Plan Containers (IDs perfectly matched to JS) -->
       <div id="quest-map-section" style="display: none;"></div>
 
       <h2 class="font-display text-2xl text-main mb-4 uppercase">Areas of Weakness</h2>
-      <div id="areas-of-weakness-list" class="flex flex-col gap-4 mb-8"></div>
+      <div id="areas-of-weakness-list" class="flex flex-col gap-3 mb-8"></div>
 
       <h2 class="font-display text-2xl text-main mb-4 uppercase">Subject Breakdown</h2>
       <div id="subject-breakdown-list" class="flex flex-col gap-4 mb-8"></div>
 
       <h2 class="font-display text-2xl text-main mb-4 uppercase">Statistics</h2>
-      <div class="flex flex-wrap gap-4 mb-8">
-        <div class="card flex-1 p-6 text-center hover-lift" id="stat-card-papers" style="min-width: 200px;">
+      <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:var(--space-4); margin-bottom:var(--space-8);">
+        <div class="card p-6 text-center hover-lift" id="stat-card-papers">
           <div class="text-muted text-sm mb-2 uppercase font-bold tracking-wider">Papers Attempted</div>
           <div id="stat-papers" class="font-display text-3xl text-main">-</div>
         </div>
-        <div class="card flex-1 p-6 text-center hover-lift" style="min-width: 200px;">
+        <div class="card p-6 text-center hover-lift">
           <div class="text-muted text-sm mb-2 uppercase font-bold tracking-wider">Questions Mastered</div>
           <div id="stat-mastered-new" class="font-display text-3xl text-success">-</div>
         </div>
-        <div class="card flex-1 p-6 text-center hover-lift" style="min-width: 200px;">
+        <div class="card p-6 text-center hover-lift">
           <div class="text-muted text-sm mb-2 uppercase font-bold tracking-wider">Total Practice Time</div>
           <div id="stat-time-new" class="font-display text-3xl text-main">-</div>
         </div>
-        <div class="card flex-1 p-6 text-center hover-lift" style="min-width: 200px;">
+        <div class="card p-6 text-center hover-lift">
           <div class="text-muted text-sm mb-2 uppercase font-bold tracking-wider">Topics Improved</div>
           <div class="font-bold text-lg text-amber"><span id="stat-improved">-</span></div>
           <div class="text-muted text-xs uppercase font-bold mt-1">vs Last Week</div>
         </div>
       </div>
 
+      <!-- Additional History Containers -->
       <div id="recent-history" hidden></div>
       <div id="exam-history-empty" hidden></div>
       <div id="exam-history-list" hidden></div>
@@ -130,8 +144,9 @@
     </div>
   </main>
 
-  <global-footer></global-footer>
+<global-footer></global-footer>
 
+  <!-- ── Bottom nav ─────────────────────────────────────────────────────── -->
   <nav class="bottom-nav" id="bottomNav" aria-label="Mobile navigation">
     <a href="subjects.html" class="bottom-nav-item">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
