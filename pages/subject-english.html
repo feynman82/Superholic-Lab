@@ -391,5 +391,44 @@ p { text-align: justify; }
 </section>
 
 <global-footer></global-footer>
+
+<script>
+    getSupabase().then(async function(sb) {
+    try {
+      const { data } = await sb.auth.getSession();
+      let session = data.session;
+      
+      if (session) {
+        const authContainer = document.getElementById('auth-header-container');
+        const navLinks = document.getElementById('navDropdown');
+        
+        // Swaps the Log In button for Dashboard
+        if (authContainer) {
+          authContainer.innerHTML = '<a href="dashboard.html" class="btn btn-secondary btn-sm" style="background: rgba(255,255,255,0.15); color: #FFFFFF; border: 1px solid rgba(255,255,255,0.1);">Dashboard</a>';
+        }
+
+        // Adds the Sign Out link to the mobile dropdown
+        if (navLinks && !document.getElementById('navSignOut')) {
+          const signOut = document.createElement('a');
+          signOut.id = "navSignOut";
+          signOut.href = "#";
+          signOut.textContent = "Sign Out";
+          signOut.style.color = "var(--brand-rose)"; 
+          signOut.onclick = async (e) => { 
+            e.preventDefault();
+            await sb.auth.signOut(); 
+            window.location.href = '../index.html'; 
+          };
+          navLinks.appendChild(signOut);
+          
+          const signUpLink = document.getElementById('navSignUp');
+          if (signUpLink) signUpLink.remove();
+        }
+      }
+    } catch (e) {
+      console.error('Auth check failed:', e);
+    }
+  });
+</script>
 </body>
 </html>
