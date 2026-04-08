@@ -12,6 +12,23 @@
 <link rel="icon" href="../assets/favicon.ico">
 <script src="/js/header.js" defer></script>
 <script src="/js/footer.js" defer></script>
+<script type="module">
+  import { guardPage } from '/js/auth.js';
+  import { initAppShell } from '/js/app-shell.js';
+  
+  async function boot() {
+    try {
+      // false = do not kick out guests, just load session if it exists
+      const profile = await guardPage(false); 
+      if (profile && typeof initAppShell === 'function') {
+        initAppShell(profile);
+      }
+    } catch (err) {
+      console.error('Boot sequence failed:', err);
+    }
+  }
+  boot();
+</script>
 <style>
 /* ── Page-Specific Layout Helpers ── */
 p { text-align: justify; }
