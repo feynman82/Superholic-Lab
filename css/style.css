@@ -197,7 +197,7 @@ img {
 .text-white { color: #FFFFFF; }
 
 /* Helpers */
-.hidden { display: none !important; }
+.hidden, [hidden] { display: none !important; }
 .w-full { width: 100%; }
 
 /* ──────────────────────────────────────────────────────────────────────────
