@@ -546,7 +546,7 @@ window.printBlankPaper = async () => {
         const num = b.id || b.number;
         const saved = savedAns[num] || '';
         const opts = (b.options || []).map(o => `<option value="${esc(o)}" ${saved === o ? 'selected' : ''}>${esc(o)}</option>`).join('');
-        let selectEl = `<select id="cloze-blank-${num}" class="cloze-select form-select" onchange="window.saveCurrentAnswerState()"><option value="">— pick —</option>${opts}</select>`;
+        let selectEl = `<select id="cloze-blank-${num}" class="cloze-select" onchange="window.saveCurrentAnswerState()"><option value="">— pick —</option>${opts}</select>`;
         passage = passage.replace(`[${num}]`, selectEl);
       });
 
@@ -566,7 +566,7 @@ window.printBlankPaper = async () => {
           esc(underlined),
           `<u style="text-decoration-color:var(--brand-rose);text-decoration-thickness:2px;font-weight:700;">${esc(underlined)}</u>`
         );
-        let inputEl = `<input type="text" id="edit-line-${line.line_number}" value="${esc(saved)}" placeholder="${esc(underlined)}" autocomplete="off" class="editing-input form-input" oninput="window.saveCurrentAnswerState()">`;
+        let inputEl = `<input type="text" id="edit-line-${line.line_number}" value="${esc(saved)}" placeholder="${esc(underlined)}" autocomplete="off" class="editing-input" oninput="window.saveCurrentAnswerState()">`;
         return `
           <div class="editing-line">
             <span class="text-xs font-bold text-muted" style="min-width:24px;">${line.line_number}.</span>
