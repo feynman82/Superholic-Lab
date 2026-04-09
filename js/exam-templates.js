@@ -446,25 +446,26 @@ Object.assign(EXAM_TEMPLATES, {
     ],
   },
 
-  'maths-p3-eoy': {
-    displayName: 'Primary 3 Mathematics — EOY Practice',
-    level: 'P3', subject: 'Maths', paperCode: 'EOY',
-    durationMinutes: 50, totalMarks: 40, calculatorAllowed: false,
-    instructions: [
-      'Do not turn over this page until you are told to do so.',
-      'Answer all questions.',
-      'Show all working clearly. Marks are awarded for correct method.',
-    ],
+  'maths-p3-wa3': {
+    displayName: 'Primary 3 Mathematics — WA3',
+    level: 'P3', subject: 'Maths', paperCode: 'WA3',
+    durationMinutes: 35, totalMarks: 28, calculatorAllowed: false,
+    instructions: ['Do not turn over this page until you are told to do so.', 'Answer all questions.'],
     sections: [
-      { label: 'Section A', title: 'Multiple Choice Questions',
-        instructions: 'Each question carries 1 mark. Choose the correct answer (A, B, C or D).',
-        questionType: 'mcq', questionCount: 10, marksPerQuestion: 1, totalMarks: 10 },
-      { label: 'Section B', title: 'Short Answer Questions',
-        instructions: 'Each question carries 1 mark. Write your answer in the space provided.',
-        questionType: 'short_ans', questionCount: 10, marksPerQuestion: 1, totalMarks: 10 },
-      { label: 'Section C', title: 'Word Problems',
-        instructions: 'Show all working clearly. Each question carries 4 marks.',
-        questionType: 'word_problem', questionCount: 5, marksPerQuestion: 4, totalMarks: 20 },
+      { id: 'sec-a', label: 'Section A', title: 'Multiple Choice Questions', instructions: 'Choose the correct answer.', questionType: 'mcq', questionCount: 8, marksPerQuestion: 1 },
+      { id: 'sec-b', label: 'Section B', title: 'Short Answer Questions', instructions: 'Write your answer in the space provided.', questionType: 'short_ans', questionCount: 8, marksPerQuestion: 1 },
+      { id: 'sec-c', label: 'Section C', title: 'Word Problems', instructions: 'Show all working clearly.', questionType: 'word_problem', questionCount: 3, marksPerQuestion: 4 },
+    ],
+  },
+  'maths-p3-eoy': {
+    displayName: 'Primary 3 Mathematics — EOY',
+    level: 'P3', subject: 'Maths', paperCode: 'EOY',
+    durationMinutes: 90, totalMarks: 80, calculatorAllowed: false,
+    instructions: ['Do not turn over this page until you are told to do so.', 'Answer all questions.'],
+    sections: [
+      { id: 'sec-a', label: 'Section A', title: 'Multiple Choice Questions', instructions: 'Choose the correct answer.', questionType: 'mcq', questionCount: 15, marksPerQuestion: 2 },
+      { id: 'sec-b', label: 'Section B', title: 'Short Answer Questions', instructions: 'Write your answer in the space provided.', questionType: 'short_ans', questionCount: 15, marksPerQuestion: 2 },
+      { id: 'sec-c', label: 'Section C', title: 'Word Problems', instructions: 'Show all working clearly.', questionType: 'word_problem', questionCount: 5, marksPerQuestion: 4 },
     ],
   },
 
@@ -750,22 +751,24 @@ Object.assign(EXAM_TEMPLATES, {
     ],
   },
 
-  'science-p3-sa2': {
-    displayName: 'Primary 3 Science — SA2 (End of Year)',
-    level: 'P3', subject: 'Science', paperCode: 'SA2',
-    durationMinutes: 50, totalMarks: 40, calculatorAllowed: false,
-    instructions: [
-      'Do not turn over this page until you are told to do so.',
-      'Answer all questions.',
-      'Write in complete sentences. Use scientific terms where appropriate.',
-    ],
+  'science-p3-wa3': {
+    displayName: 'Primary 3 Science — WA3',
+    level: 'P3', subject: 'Science', paperCode: 'WA3',
+    durationMinutes: 30, totalMarks: 20, calculatorAllowed: false,
+    instructions: ['Answer all questions.', 'Write in complete sentences where required.'],
     sections: [
-      { label: 'Section A', title: 'Multiple Choice Questions',
-        instructions: 'Each question carries 1 mark. Choose the correct answer (A, B, C or D).',
-        questionType: 'mcq', questionCount: 20, marksPerQuestion: 1, totalMarks: 20 },
-      { label: 'Section B', title: 'Open-Ended Questions',
-        instructions: 'Each question carries 4 marks. Answer in complete sentences.',
-        questionType: 'open_ended', questionCount: 5, marksPerQuestion: 4, totalMarks: 20 },
+      { id: 'sec-a', label: 'Booklet A', title: 'Multiple Choice', instructions: 'Choose the correct answer.', questionType: 'mcq', questionCount: 6, marksPerQuestion: 2 },
+      { id: 'sec-b', label: 'Booklet B', title: 'Open-Ended', instructions: 'Answer in complete sentences.', questionType: 'open_ended', questionCount: 4, marksPerQuestion: 2 },
+    ],
+  },
+  'science-p3-eoy': {
+    displayName: 'Primary 3 Science — EOY',
+    level: 'P3', subject: 'Science', paperCode: 'EOY',
+    durationMinutes: 90, totalMarks: 70, calculatorAllowed: false,
+    instructions: ['Answer all questions in BOTH booklets.', 'Write your answers using the CER framework where applicable.'],
+    sections: [
+      { id: 'sec-a', label: 'Booklet A', title: 'Multiple Choice', instructions: 'Choose the correct answer.', questionType: 'mcq', questionCount: 20, marksPerQuestion: 2 },
+      { id: 'sec-b', label: 'Booklet B', title: 'Open-Ended', instructions: 'Answer in complete sentences.', questionType: 'open_ended', questionCount: 10, marksPerQuestion: 3 },
     ],
   },
 
@@ -1024,25 +1027,31 @@ Object.assign(EXAM_TEMPLATES, {
     ],
   },
 
-  'english-p3-sa2': {
-    displayName: 'Primary 3 English — SA2 (Grammar)',
-    level: 'P3', subject: 'English', paperCode: 'SA2',
-    durationMinutes: 45, totalMarks: 35, calculatorAllowed: false,
-    instructions: [
-      'Do not turn over this page until you are told to do so.',
-      'Answer all sections.',
-      'Write your answers in the spaces provided.',
-    ],
+  'english-p3-wa3': {
+    displayName: 'Primary 3 English — WA3',
+    level: 'P3', subject: 'English', paperCode: 'WA3',
+    durationMinutes: 50, totalMarks: 30, calculatorAllowed: false,
+    instructions: ['Answer all sections.', 'Write your answers in the spaces provided.'],
     sections: [
-      { label: 'Section A', title: 'Grammar (Multiple Choice)',
-        instructions: 'Choose the most appropriate answer (A, B, C or D) to complete each sentence.',
-        questionType: 'mcq', questionCount: 10, marksPerQuestion: 1, totalMarks: 10 },
-      { label: 'Section B', title: 'Grammar Cloze',
-        instructions: 'Choose the most appropriate word to fill in each blank. (15 blanks, 1 mark each)',
-        questionType: 'cloze', questionCount: 1, marksPerQuestion: 15, totalMarks: 15, blankCount: 15 },
-      { label: 'Section C', title: 'Editing',
-        instructions: 'Each passage has one error per underlined word. Write the correct word. (2 passages × 5 errors, 1 mark each)',
-        questionType: 'editing', questionCount: 2, marksPerQuestion: 5, totalMarks: 10, errorCount: 5 },
+      { id: 'sec-a', label: 'Section A', title: 'Grammar MCQ', instructions: 'Choose the most appropriate answer.', questionType: 'mcq', questionCount: 10, marksPerQuestion: 1 },
+      { id: 'sec-b', label: 'Section B', title: 'Vocabulary MCQ', instructions: 'Choose the most appropriate answer.', questionType: 'mcq', questionCount: 5, marksPerQuestion: 1 },
+      { id: 'sec-c', label: 'Section C', title: 'Grammar Cloze', instructions: 'Choose the most appropriate word to fill in each blank.', questionType: 'cloze', questionCount: 5, marksPerQuestion: 1 },
+      { id: 'sec-d', label: 'Section D', title: 'Comprehension', instructions: 'Answer all questions in complete sentences.', questionType: 'open_ended', questionCount: 5, marksPerQuestion: 2 },
+    ],
+  },
+  'english-p3-eoy': {
+    displayName: 'Primary 3 English — EOY Paper 2',
+    level: 'P3', subject: 'English', paperCode: 'EOY',
+    durationMinutes: 75, totalMarks: 50, calculatorAllowed: false,
+    instructions: ['Answer all sections.', 'Write your answers in the spaces provided.'],
+    sections: [
+      { id: 'sec-a', label: 'Section A', title: 'Vocabulary MCQ', instructions: 'Choose the correct answer.', questionType: 'mcq', questionCount: 6, marksPerQuestion: 1 },
+      { id: 'sec-b', label: 'Section B', title: 'Grammar MCQ', instructions: 'Choose the correct answer.', questionType: 'mcq', questionCount: 8, marksPerQuestion: 1 },
+      { id: 'sec-c', label: 'Section C', title: 'Grammar Cloze', instructions: 'Fill in the blanks.', questionType: 'cloze', questionCount: 8, marksPerQuestion: 1 },
+      { id: 'sec-d', label: 'Section D', title: 'Editing', instructions: 'Correct the spelling and grammar errors.', questionType: 'editing', questionCount: 4, marksPerQuestion: 1 },
+      { id: 'sec-e', label: 'Section E', title: 'Synthesis', instructions: 'Rewrite the sentences.', questionType: 'short_ans', questionCount: 3, marksPerQuestion: 1 },
+      { id: 'sec-f', label: 'Section F', title: 'Vocabulary Cloze', instructions: 'Fill in the blanks.', questionType: 'cloze', questionCount: 5, marksPerQuestion: 1 },
+      { id: 'sec-g', label: 'Section G', title: 'Comprehension OE', instructions: 'Answer in complete sentences.', questionType: 'open_ended', questionCount: 8, marksPerQuestion: 2 },
     ],
   },
 
