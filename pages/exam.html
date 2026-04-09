@@ -340,10 +340,10 @@ window.initExamEngine = function () {
     };
 
     const strips = tpl.sections.map(sec => {
-      // 1. Unified Schema Parsing: Supports both legacy and v2 template keys natively
-      const qType = sec.questionType || sec.type;
-      const qCount = sec.questionCount || sec.count || 1;
-      const marksEach = sec.marksPerQuestion || sec.marksEach || 0;
+      // 1. Pure, harmonized schema parsing. No fallbacks needed.
+      const qType = sec.questionType;
+      const qCount = sec.questionCount;
+      const marksEach = sec.marksPerQuestion;
       const sectionMarks = sec.totalMarks || (marksEach * qCount);
       
       const colour = typeColour[qType] || 'var(--sage-light)';

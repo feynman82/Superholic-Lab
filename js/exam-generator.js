@@ -150,25 +150,24 @@ async function getCachedQuestions(filename) {
  * @param {number} count
  * @returns {Promise<Array>} array of question objects
  */
-async function pickQuestions(subject, level, type, count) {
-  const filename = resolveFilename(subject, level, type);
+async function pickQuestions(subject, level, questionType, count) {
+  // Translate the new questionType back to resolve the legacy filename
+  const filename = resolveFilename(subject, level, questionType);
   if (!filename) {
-    console.warn(`[exam-generator] No file found for ${subject}:${level}:${type} — section will be empty.`);
+    console.warn(`[exam-generator] No file found for ${subject}:${level}:${questionType} — section will be empty.`);
     return [];
   }
 
   const all = await getCachedQuestions(filename);
 
-  // Dedicated files (cloze, editing) already contain only that type.
-  // Broad files contain mixed types — filter to the requested type.
-  const pool = all.filter(function(q) { return q.type === type; });
+  // Filter the JSON database (which still uses 'type') using our modern 'questionType'
+  const pool = all.filter(function(q) { return q.type === questionType; });
 
   if (pool.length === 0) {
-    console.warn(`[exam-generator] No questions of type '${type}' in ${filename}.`);
+    console.warn(`[exam-generator] No questions of type '${questionType}' in ${filename}.`);
     return [];
   }
 
-  // Shuffle and take up to `count`; if not enough, return what we have
   return shuffleArray(pool).slice(0, count);
 }
 
@@ -195,23 +194,22 @@ async function generateExam(subject, level, examType) {
 
   // Build each section by picking questions in parallel
   const sectionPromises = template.sections.map(async function(sec) {
-    const scaledCount = Math.max(1, Math.round(sec.count * scaleFactor));
-    const questions = await pickQuestions(subject, level, sec.type, scaledCount);
+    // Harmonized Keys: reading questionCount and questionType
+    const scaledCount = Math.max(1, Math.round(sec.questionCount * scaleFactor));
+    const questions = await pickQuestions(subject, level, sec.questionType, scaledCount);
 
-    // Log a warning if bank cannot fill the section fully
     if (questions.length < scaledCount) {
       console.warn(
-        `[exam-generator] Thin bank: ${subject}:${level}:${sec.type} — ` +
-        `needed ${scaledCount}, got ${questions.length}. ` +
-        `Run @question-coder to expand this topic file.`
+        `[exam-generator] Thin bank: ${subject}:${level}:${sec.questionType} — ` +
+        `needed ${scaledCount}, got ${questions.length}. Run @question-coder to expand.`
       );
     }
 
     return {
       ...sec,
-      count:       scaledCount,
+      questionCount: scaledCount, // Update to the new key
       questions,
-      sectionMarks: questions.length * sec.marksEach,
+      sectionMarks: questions.length * sec.marksPerQuestion, // Update to the new key
     };
   });
 
