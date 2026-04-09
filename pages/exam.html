@@ -318,11 +318,8 @@ window.initExamEngine = function () {
   }
 
   // ── PHASE: TYPE ──────────────────────────────────────────────────────────
-  function renderMockPreview(tpl, examType) {
+  function renderMockPreview(tpl) {
     if (!tpl || !tpl.sections) return '';
-
-    const isWA = examType && examType.startsWith('WA');
-    const scale = isWA ? 0.5 : 1.0;
 
     const typeLabel = {
       mcq:          'MCQ',
@@ -343,10 +340,14 @@ window.initExamEngine = function () {
     };
 
     const strips = tpl.sections.map(sec => {
-      const qCount = Math.max(1, Math.round((sec.questionCount || 1) * scale));
-      const sectionMarks = Math.round((sec.totalMarks || sec.marksPerQuestion * sec.questionCount || 0) * scale);
-      const colour = typeColour[sec.questionType] || 'var(--sage-light)';
-      const label = typeLabel[sec.questionType] || sec.questionType || 'Questions';
+      // 1. Unified Schema Parsing: Supports both legacy and v2 template keys natively
+      const qType = sec.questionType || sec.type;
+      const qCount = sec.questionCount || sec.count || 1;
+      const marksEach = sec.marksPerQuestion || sec.marksEach || 0;
+      const sectionMarks = sec.totalMarks || (marksEach * qCount);
+      
+      const colour = typeColour[qType] || 'var(--sage-light)';
+      const label = typeLabel[qType] || qType || 'Questions';
 
       const pills = Array.from({ length: qCount }, (_, i) =>
         `<span class="mock-q-pill" style="border-color:${colour};color:${colour};">${i + 1}</span>`
@@ -361,9 +362,11 @@ window.initExamEngine = function () {
         </div>`;
     }).join('');
 
+    // 2. Exact Duration Parsing
+    const duration = tpl.durationMinutes || tpl.duration || 0;
     const durationText = (typeof formatDuration === 'function')
-      ? formatDuration(Math.round((tpl.durationMinutes || 0) * scale))
-      : `${Math.round((tpl.durationMinutes || 0) * scale)} min`;
+      ? formatDuration(duration)
+      : `${duration} min`;
 
     return `
       <div class="mock-preview">
@@ -406,17 +409,14 @@ window.initExamEngine = function () {
 
     let blueprintHtml = '<p class="text-muted text-sm">Loading blueprint...</p>';
     if (tpl) {
-      const isDetailedTemplate = tpl.hasOwnProperty('paperCode');
-      const scale = (!isDetailedTemplate && state.examType.startsWith('WA')) ? 0.5 : 1.0;
+      // 1. Data is the absolute source of truth. No more 0.5 multipliers.
+      const duration = tpl.durationMinutes || tpl.duration || 0;
+      const totalMarks = tpl.totalMarks || 0;
       
-      const duration = Math.round((tpl.durationMinutes || tpl.duration || 0) * scale);
-      const totalMarks = Math.round((tpl.totalMarks || 0) * scale);
-      
-      // FATAL FIX: Changed 'durationMins' to 'duration'
       const durationText = (typeof formatDuration === 'function')
         ? formatDuration(duration) : `${duration} mins`;
 
-      const mockPreviewHtml = renderMockPreview(tpl, state.examType);
+      const mockPreviewHtml = renderMockPreview(tpl);
 
       blueprintHtml = `
         <div class="flex justify-between items-center mb-4">
