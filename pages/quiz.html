@@ -9,10 +9,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="icon" href="../assets/favicon.ico" />
-  
+  <meta name="robots" content="noindex, nofollow" />
+
   <script src="/js/header.js" defer></script>
   <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js"></script>
   <script src="/js/footer.js" defer></script>
+  
+  <script src="../js/supabase-client.js"></script>
   
   <script type="module">
     import { guardPage } from '/js/auth.js';
@@ -22,6 +25,7 @@
       try {
         window.userProfile = await guardPage(true); 
         await initAppShell(window.userProfile); 
+        
         if (typeof window.initQuizEngine === 'function') {
           window.initQuizEngine();
         }
@@ -29,97 +33,38 @@
         console.error('Boot sequence failed:', err);
       }
     }
-    boot();
+    
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', boot);
+    } else {
+      boot();
+    }
   </script>
 
   <style>
-    /* ── Cloze & Editing Component Styles (Local to Quiz) ── */
-    .cloze-passage {
-      line-height: 2.6; /* Generous room for dropdowns so lines don't crash */
-    }
+    /* ── Cloze & Editing Component Styles (Harmonized with Exam 3.0) ── */
+    .cloze-passage { line-height: 2.6; }
     .cloze-select {
-      display: inline-block;
-      appearance: none;
-      -webkit-appearance: none;
-      background-color: var(--bg-surface);
-      border: 2px solid var(--border-dark);
-      border-radius: var(--radius-sm);
-      padding: 4px 24px 4px 10px;
-      font-family: var(--font-body);
-      font-size: var(--text-sm);
-      font-weight: 700;
-      color: var(--brand-rose);
-      cursor: pointer;
+      display: inline-block; appearance: none; -webkit-appearance: none;
+      background-color: var(--bg-surface); border: 2px solid var(--border-dark);
+      border-radius: var(--radius-sm); padding: 4px 24px 4px 10px;
+      font-family: var(--font-body); font-size: 1rem; font-weight: 700;
+      color: var(--brand-rose); cursor: pointer;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23B76E79' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 6px center;
-      background-size: 14px;
-      margin: 0 4px;
-      vertical-align: middle;
-      transition: all 0.2s ease;
+      background-repeat: no-repeat; background-position: right 6px center; background-size: 14px;
+      margin: 0 4px; vertical-align: middle; transition: all 0.2s ease;
     }
-    .cloze-select:focus {
-      outline: none;
-      border-color: var(--brand-rose);
-      box-shadow: 0 0 0 3px rgba(183, 110, 121, 0.2);
-    }
-    .cloze-select:disabled {
-      cursor: default;
-      background-image: none;
-      padding-right: 10px;
-    }
-    .cloze-select.is-correct {
-      border-color: var(--brand-mint);
-      color: var(--brand-mint);
-      background-color: rgba(5, 150, 105, 0.1);
-    }
-    .cloze-select.is-wrong {
-      border-color: var(--brand-error);
-      color: var(--brand-error);
-      background-color: rgba(220, 38, 38, 0.1);
-    }
-
-    .editing-line {
-      display: flex;
-      align-items: center;
-      gap: var(--space-3);
-      padding: var(--space-3) 0;
-      border-bottom: 1px solid var(--border-light);
-    }
-    .editing-line:last-child {
-      border-bottom: none;
-    }
+    .cloze-select:focus { outline: none; border-color: var(--brand-rose); box-shadow: 0 0 0 3px rgba(183, 110, 121, 0.2); }
+    
+    .editing-line { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) 0; border-bottom: 1px solid var(--border-light); }
+    .editing-line:last-child { border-bottom: none; }
     .editing-input {
-      border: 2px solid var(--border-dark);
-      border-radius: var(--radius-sm);
-      padding: 6px 10px;
-      width: 120px;
-      text-align: center;
-      font-family: var(--font-body);
-      font-size: var(--text-sm);
-      font-weight: 700;
-      color: var(--brand-rose);
-      background: var(--bg-surface);
-      transition: all 0.2s ease;
+      border: 2px solid var(--border-dark); border-radius: var(--radius-sm);
+      padding: 6px 10px; width: 120px; text-align: center; font-family: var(--font-body);
+      font-size: 1rem; font-weight: 700; color: var(--brand-rose);
+      background: var(--bg-surface); transition: all 0.2s ease;
     }
-    .editing-input:focus {
-      outline: none;
-      border-color: var(--brand-rose);
-      box-shadow: 0 0 0 3px rgba(183, 110, 121, 0.2);
-    }
-    .editing-input:disabled {
-      cursor: default;
-    }
-    .editing-input.is-correct {
-      border-color: var(--brand-mint);
-      color: var(--brand-mint);
-      background-color: rgba(5, 150, 105, 0.1);
-    }
-    .editing-input.is-wrong {
-      border-color: var(--brand-error);
-      color: var(--brand-error);
-      background-color: rgba(220, 38, 38, 0.1);
-    }
+    .editing-input:focus { outline: none; border-color: var(--brand-rose); box-shadow: 0 0 0 3px rgba(183, 110, 121, 0.2); }
   </style>
 </head>
 
@@ -127,30 +72,31 @@
 
 <global-header></global-header>
 
-<main id="app" class="container flex flex-col items-center" style="padding-top: calc(var(--navbar-h) + var(--space-8)); padding-bottom: var(--space-10); min-height: 80vh; max-width: 800px;"></main>
+<main id="app" class="container flex flex-col items-center w-full" style="padding-top: calc(var(--navbar-h) + var(--space-8)); padding-bottom: var(--space-10); min-height: 80vh; max-width: 1000px;"></main>
 
 <global-footer></global-footer>
 
 <nav class="bottom-nav" id="bottomNav" aria-label="Mobile navigation">
   <a href="subjects.html" class="bottom-nav-item is-active">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
     Practise
   </a>
   <a href="tutor.html" class="bottom-nav-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
     AI Tutor
   </a>
   <a href="exam.html" class="bottom-nav-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="M9 12h6M9 16h4"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="M9 12h6M9 16h4"/></svg>
     Exam
   </a>
   <a href="progress.html" class="bottom-nav-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
     Progress
   </a>
 </nav>
 
-<script src="/js/supabase-client.js"></script>
-<script src="/js/quiz.js"></script>
+<script src="../js/diagram-library.js"></script>
+<script src="../js/quiz.js"></script>
+
 </body>
 </html>
