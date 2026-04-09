@@ -59,6 +59,38 @@
     }
     .editing-input:focus { outline: none; border-color: var(--brand-rose); box-shadow: 0 0 0 3px rgba(183, 110, 121, 0.2); }
 
+    /* ── Exam Dossier Mock Preview ── */
+    .mock-preview {
+      margin-top: var(--space-4); background: var(--bg-page);
+      border: 1px solid var(--border-light); border-radius: var(--radius-md);
+      padding: var(--space-4);
+    }
+    .mock-preview-title {
+      font-size: var(--text-xs); font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: var(--space-3);
+      border-bottom: 1px solid var(--border-light); padding-bottom: var(--space-2);
+    }
+    .mock-section-strip {
+      display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-3);
+      padding: var(--space-2) 0; border-bottom: 1px dashed var(--border-light);
+    }
+    .mock-section-strip:last-child { border-bottom: none; }
+    .mock-section-label {
+      font-weight: 700; font-size: var(--text-sm); color: var(--text-main);
+      min-width: 80px; flex: 1 1 100%; margin-bottom: 2px;
+    }
+    .mock-section-type {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      background: var(--bg-surface); padding: 2px 6px; border-radius: 4px;
+    }
+    .mock-q-pills { display: flex; flex-wrap: wrap; gap: 4px; flex: 1; }
+    .mock-q-pill {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 20px; height: 20px; border: 1px solid; border-radius: 50%;
+      font-size: 10px; font-weight: 700; background: var(--bg-surface);
+    }
+    .mock-section-marks { font-weight: 700; font-size: var(--text-sm); color: var(--text-main); }
+
     /* ── Print Styles ── */
     @media print {
       body { background: white !important; }
@@ -261,7 +293,6 @@ window.initExamEngine = function () {
       { name: 'English', icon: '📖', tag: 'P1–P6' }
     ];
 
-    // Masterclass CSS Grid Alignment matching subjects.html exactly
     const cards = subjects.map(s => `
       <div class="card hover-lift flex flex-col items-center justify-center p-8 text-center cursor-pointer" onclick="window.selectSubject('${s.name}')">
         <div class="text-4xl mb-4">${s.icon}</div>
@@ -287,14 +318,6 @@ window.initExamEngine = function () {
   }
 
   // ── PHASE: TYPE ──────────────────────────────────────────────────────────
-  /**
-   * Renders a mock paper format preview for a template, showing section strips
-   * and Q-pills so the user can see the paper structure before generating.
-   *
-   * @param {object} tpl  - Template object from getTemplate()
-   * @param {string} examType  - Selected exam type (e.g. 'WA1', 'SA2')
-   * @returns {string}  HTML string for insertion into renderType()
-   */
   function renderMockPreview(tpl, examType) {
     if (!tpl || !tpl.sections) return '';
 
@@ -372,33 +395,26 @@ window.initExamEngine = function () {
       </div>
     `).join('');
 
-    // Resolve template — try new-format key first (e.g. 'maths-p5-sa2'),
-    // then fall back to legacy two-arg lookup (subjectKey:levelKey).
-    const examTypeCode = state.examType.toLowerCase();  // wa1, wa2, sa2, psle-prelim, eoy
-    const subjectSlug  = { mathematics: 'maths', science: 'science', english: 'english' }[state.subjectKey] || state.subjectKey;
-    const levelSlug    = state.levelKey.replace('primary-', 'p');  // 'primary-5' → 'p5'
-    const newKey       = `${subjectSlug}-${levelSlug}-${examTypeCode}`;
-    // 1. Construct the specific 2025 template key (e.g., 'maths-p6-psle')
     let tpl = null;
     if (typeof getTemplate !== 'undefined') {
       const shortSubj = state.subjectKey === 'mathematics' ? 'maths' : state.subjectKey;
       const shortLvl = state.levelKey.replace('primary-', 'p');
       const specificKey = `${shortSubj}-${shortLvl}-${state.examType.toLowerCase()}`;
       
-      // Try the highly-detailed template first, fallback to the generic legacy one
       tpl = getTemplate(specificKey) || getTemplate(state.subjectKey, state.levelKey);
     }
 
     let blueprintHtml = '<p class="text-muted text-sm">Loading blueprint...</p>';
     if (tpl) {
-      // 2. The newer detailed templates are already sized perfectly, so we only apply math scaling to legacy templates
       const isDetailedTemplate = tpl.hasOwnProperty('paperCode');
       const scale = (!isDetailedTemplate && state.examType.startsWith('WA')) ? 0.5 : 1.0;
       
       const duration = Math.round((tpl.durationMinutes || tpl.duration || 0) * scale);
       const totalMarks = Math.round((tpl.totalMarks || 0) * scale);
+      
+      // FATAL FIX: Changed 'durationMins' to 'duration'
       const durationText = (typeof formatDuration === 'function')
-        ? formatDuration(durationMins) : `${durationMins} mins`;
+        ? formatDuration(duration) : `${duration} mins`;
 
       const mockPreviewHtml = renderMockPreview(tpl, state.examType);
 
@@ -437,7 +453,7 @@ window.initExamEngine = function () {
           <div class="flex-1" style="min-width: 300px;">
             <div class="card p-6 bg-page card-rule-mint w-full">
               ${blueprintHtml}
-              <button id="printPaperBtn" class="btn btn-secondary btn-full mt-4 hover-lift" onclick="window.printBlankPaper()"> Print Paper</button>
+              <button id="printPaperBtn" class="btn btn-secondary btn-full mt-4 hover-lift" onclick="window.printBlankPaper()">🖨️ Print Paper</button>
               <button class="btn btn-primary btn-full mt-4 hover-lift" onclick="window.triggerGen()">Generate Paper →</button>
             </div>
           </div>
@@ -450,7 +466,7 @@ window.initExamEngine = function () {
     window.triggerGen = () => setState({ phase: 'GEN' });
   }
 
-window.printBlankPaper = async () => {
+  window.printBlankPaper = async () => {
     const btn = document.getElementById('printPaperBtn');
     const originalText = btn.innerHTML;
     btn.disabled = true;
@@ -530,7 +546,6 @@ window.printBlankPaper = async () => {
     const ansKey = state.currentQIdx; 
     const savedAns = state.answers[ansKey] || '';
 
-    // PROPERLY ORDERED IF / ELSE IF CHAIN
     if (q.type === 'mcq') {
       const letters = ['A','B','C','D'];
       uiHtml = q.options.map((opt, i) => {
@@ -545,24 +560,40 @@ window.printBlankPaper = async () => {
       const blanks = q.blanks || [];
       const allWords = new Set();
       blanks.forEach(b => (b.options || []).forEach(w => allWords.add(w)));
-      const wordBankList = [...allWords].sort().map((w, i) =>
-        `<span class="badge badge-info" style="font-size:0.8rem; padding: 4px 10px;">(${i+1}) ${esc(w)}</span>`
-      ).join('');
+      
+      // UPGRADE: Only show Word Bank if words exist
+      let wordBankHtml = '';
+      if (allWords.size > 0) {
+        const wordBankList = [...allWords].sort().map((w, i) =>
+          `<span class="badge badge-info" style="font-size:0.8rem; padding: 4px 10px;">(${i+1}) ${esc(w)}</span>`
+        ).join('');
+        wordBankHtml = `
+          <div class="card bg-page p-4 mb-4">
+            <div class="text-xs font-bold text-muted uppercase mb-3">Word Bank</div>
+            <div class="flex flex-wrap gap-2">${wordBankList}</div>
+          </div>`;
+      }
 
-      let passage = esc(q.passage || '');
+      // UPGRADE: Support newlines in passage
+      let passage = esc(q.passage || '').replace(/\n/g, '<br>');
+      
       blanks.forEach(b => {
         const num = b.id || b.number;
         const saved = savedAns[num] || '';
-        const opts = (b.options || []).map(o => `<option value="${esc(o)}" ${saved === o ? 'selected' : ''}>${esc(o)}</option>`).join('');
-        let selectEl = `<select id="cloze-blank-${num}" class="cloze-select" onchange="window.saveCurrentAnswerState()"><option value="">— pick —</option>${opts}</select>`;
-        passage = passage.replace(`[${num}]`, selectEl);
+        let inputHtml = '';
+        
+        // UPGRADE: Use text inputs for empty comprehension cloze
+        if (b.options && b.options.length > 0) {
+          const opts = b.options.map(o => `<option value="${esc(o)}" ${saved === o ? 'selected' : ''}>${esc(o)}</option>`).join('');
+          inputHtml = `<select id="cloze-blank-${num}" class="cloze-select" onchange="window.saveCurrentAnswerState()"><option value="">— pick —</option>${opts}</select>`;
+        } else {
+          inputHtml = `<input type="text" id="cloze-blank-${num}" class="editing-input" value="${esc(saved)}" placeholder="type here" autocomplete="off" oninput="window.saveCurrentAnswerState()" style="width: 120px; display: inline-block; margin: 0 4px;">`;
+        }
+        passage = passage.replace(`[${num}]`, inputHtml);
       });
 
       uiHtml = `
-        <div class="card bg-page p-4 mb-4">
-          <div class="text-xs font-bold text-muted uppercase mb-3">Word Bank</div>
-          <div class="flex flex-wrap gap-2">${wordBankList}</div>
-        </div>
+        ${wordBankHtml}
         <div class="card p-6 cloze-passage text-lg text-main font-medium" style="line-height: 2;">${passage}</div>
       `;
     } else if (q.type === 'editing') {
