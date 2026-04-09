@@ -41,7 +41,7 @@
       display: inline-block; appearance: none; -webkit-appearance: none;
       background-color: var(--bg-surface); border: 2px solid var(--border-dark);
       border-radius: var(--radius-sm); padding: 4px 24px 4px 10px;
-      font-family: var(--font-body); font-size: var(--text-sm); font-weight: 700;
+      font-family: var(--font-body); font-size: 1rem; font-weight: 700;
       color: var(--brand-rose); cursor: pointer;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23B76E79' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
       background-repeat: no-repeat; background-position: right 6px center; background-size: 14px;
@@ -54,7 +54,7 @@
     .editing-input {
       border: 2px solid var(--border-dark); border-radius: var(--radius-sm);
       padding: 6px 10px; width: 120px; text-align: center; font-family: var(--font-body);
-      font-size: var(--text-sm); font-weight: 700; color: var(--brand-rose);
+      font-size: 1rem; font-weight: 700; color: var(--brand-rose);
       background: var(--bg-surface); transition: all 0.2s ease;
     }
     .editing-input:focus { outline: none; border-color: var(--brand-rose); box-shadow: 0 0 0 3px rgba(183, 110, 121, 0.2); }
@@ -555,7 +555,7 @@ window.printBlankPaper = async () => {
           <div class="text-xs font-bold text-muted uppercase mb-3">Word Bank</div>
           <div class="flex flex-wrap gap-2">${wordBankList}</div>
         </div>
-        <div class="card p-6 cloze-passage text-base text-main">${passage}</div>
+        <div class="card p-6 cloze-passage text-lg text-main font-medium" style="line-height: 2;">${passage}</div>
       `;
     } else if (q.type === 'editing') {
       const lines = (q.passage_lines || []).map(line => {
@@ -568,9 +568,9 @@ window.printBlankPaper = async () => {
         );
         let inputEl = `<input type="text" id="edit-line-${line.line_number}" value="${esc(saved)}" placeholder="${esc(underlined)}" autocomplete="off" class="editing-input" oninput="window.saveCurrentAnswerState()">`;
         return `
-          <div class="editing-line">
-            <span class="text-xs font-bold text-muted" style="min-width:24px;">${line.line_number}.</span>
-            <span class="text-sm text-main flex-1" style="line-height: 1.6;">${escapedLine}</span>
+          <div class="editing-line" style="padding: var(--space-4) 0;">
+            <span class="text-base font-bold text-muted" style="min-width:32px;">${line.line_number}.</span>
+            <span class="text-lg text-main font-medium flex-1" style="line-height: 1.8;">${escapedLine}</span>
             <div class="flex items-center gap-2" style="position:relative;">${inputEl}</div>
           </div>`;
       }).join('');
