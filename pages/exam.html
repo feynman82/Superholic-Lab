@@ -368,7 +368,7 @@ window.initExamEngine = function () {
            style="min-width: 140px; border: 2px solid ${t.id === state.examType ? 'var(--brand-mint)' : 'var(--border-light)'};"
            onclick="window.selectType('${t.id}')">
         <div class="font-bold text-lg" style="color: inherit;">${esc(t.label)}</div>
-        <div class="text-xs mt-1" style="color: ${t.id === state.examType ? 'var(--cream-dim)' : 'var(--text-muted)'};">${esc(t.sub)}</div>
+        <div class="text-xs mt-2" style="color: ${t.id === state.examType ? 'var(--sage-dark)' : 'var(--text-muted)'};">${esc(t.sub)}</div>
       </div>
     `).join('');
 

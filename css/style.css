@@ -1777,7 +1777,7 @@ p { text-align: justify; }
 .mock-section-label {
   font-size: 0.8rem;
   font-weight: 700;
-  color: var(--cream);
+  color: var(--sage-dark);
   white-space: nowrap;
   min-width: 80px;
 }
