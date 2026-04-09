@@ -537,44 +537,18 @@ window.printBlankPaper = async () => {
       const blanks = q.blanks || [];
       const allWords = new Set();
       blanks.forEach(b => (b.options || []).forEach(w => allWords.add(w)));
-      
-      // 1. Only show the Word Bank box if options actually exist
-      let wordBankHtml = '';
-      if (allWords.size > 0) {
-        const wordBankList = [...allWords].sort().map((w, i) =>
-          `<span class="badge badge-info" style="font-size:0.8rem; padding: 4px 10px;">(${i+1}) ${esc(w)}</span>`
-        ).join('');
-        wordBankHtml = `
-          <div class="card bg-page p-4 mb-4">
-            <div class="text-xs font-bold text-muted uppercase mb-3">Word Bank</div>
-            <div class="flex flex-wrap gap-2">${wordBankList}</div>
-          </div>`;
-      }
+      const wordBankList = [...allWords].sort().map((w, i) =>
+        `<span class="badge badge-info" style="font-size:0.8rem; padding: 4px 10px;">(${i+1}) ${esc(w)}</span>`
+      ).join('');
 
-      // 2. Preserve paragraph breaks using <br> tags
-      let passage = esc(q.passage || '').replace(/\n/g, '<br>');
-      
+      let passage = esc(q.passage || '');
       blanks.forEach(b => {
         const num = b.id || b.number;
         const saved = savedAns[num] || '';
-        let inputHtml = '';
-        
-        // 3. Render Dropdown for Vocab Cloze, Text Input for Comprehension Cloze
-        if (b.options && b.options.length > 0) {
-          const opts = b.options.map(o => `<option value="${esc(o)}" ${saved === o ? 'selected' : ''}>${esc(o)}</option>`).join('');
-          inputHtml = `<select id="cloze-blank-${num}" class="cloze-select form-select" onchange="window.saveCurrentAnswerState()"><option value="">— pick —</option>${opts}</select>`;
-        } else {
-          // Reuses the .editing-input CSS for a clean, inline text box
-          inputHtml = `<input type="text" id="cloze-blank-${num}" class="editing-input form-input" value="${esc(saved)}" placeholder="type here" autocomplete="off" oninput="window.saveCurrentAnswerState()" style="width: 120px; display: inline-block; margin: 0 4px;">`;
-        }
-        
-        passage = passage.replace(`[${num}]`, inputHtml);
+        const opts = (b.options || []).map(o => `<option value="${esc(o)}" ${saved === o ? 'selected' : ''}>${esc(o)}</option>`).join('');
+        let selectEl = `<select id="cloze-blank-${num}" class="cloze-select form-select" onchange="window.saveCurrentAnswerState()"><option value="">— pick —</option>${opts}</select>`;
+        passage = passage.replace(`[${num}]`, selectEl);
       });
-
-      uiHtml = `
-        ${wordBankHtml}
-        <div class="card p-6 cloze-passage text-base text-main">${passage}</div>
-      `;
 
       uiHtml = `
         <div class="card bg-page p-4 mb-4">
