@@ -616,7 +616,7 @@ window.printBlankPaper = async () => {
             </div>
             
             ${q.sectionInstr ? `<p class="text-sm text-muted italic mb-4">${esc(q.sectionInstr)}</p>` : ''}
-            <p class="text-lg text-main font-medium mb-6" style="line-height: 1.6;">${esc(q.question_text)}</p>
+            ${['cloze', 'editing'].includes(q.type) ? '' : `<p class="text-lg text-main font-medium mb-6" style="line-height: 1.6;">${esc(q.question_text)}</p>`}
             
             <div class="question-ui">${uiHtml}</div>
           </div>
