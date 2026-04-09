@@ -735,7 +735,7 @@ Object.assign(EXAM_TEMPLATES, {
   'science-p3-wa2': {
     displayName: 'Primary 3 Science — WA2',
     level: 'P3', subject: 'Science', paperCode: 'WA2',
-    durationMinutes: 35, totalMarks: 28, calculatorAllowed: false,
+    durationMinutes: 30, totalMarks: 24, calculatorAllowed: false,
     instructions: [
       'Do not turn over this page until you are told to do so.',
       'Answer all questions.',
@@ -744,7 +744,7 @@ Object.assign(EXAM_TEMPLATES, {
     sections: [
       { label: 'Section A', title: 'Multiple Choice Questions',
         instructions: 'Each question carries 1 mark. Choose the correct answer (A, B, C or D).',
-        questionType: 'mcq', questionCount: 16, marksPerQuestion: 1, totalMarks: 16 },
+        questionType: 'mcq', questionCount: 12, marksPerQuestion: 1, totalMarks: 12 },
       { label: 'Section B', title: 'Open-Ended Questions',
         instructions: 'Each question carries 4 marks. Answer in complete sentences.',
         questionType: 'open_ended', questionCount: 3, marksPerQuestion: 4, totalMarks: 12 },
@@ -754,11 +754,11 @@ Object.assign(EXAM_TEMPLATES, {
   'science-p3-wa3': {
     displayName: 'Primary 3 Science — WA3',
     level: 'P3', subject: 'Science', paperCode: 'WA3',
-    durationMinutes: 30, totalMarks: 20, calculatorAllowed: false,
+    durationMinutes: 34, totalMarks: 28, calculatorAllowed: false,
     instructions: ['Answer all questions.', 'Write in complete sentences where required.'],
     sections: [
-      { id: 'sec-a', label: 'Booklet A', title: 'Multiple Choice', instructions: 'Choose the correct answer.', questionType: 'mcq', questionCount: 6, marksPerQuestion: 2 },
-      { id: 'sec-b', label: 'Booklet B', title: 'Open-Ended', instructions: 'Answer in complete sentences.', questionType: 'open_ended', questionCount: 4, marksPerQuestion: 2 },
+      { id: 'sec-a', label: 'Booklet A', title: 'Multiple Choice', instructions: 'Choose the correct answer.', questionType: 'mcq', questionCount: 12, marksPerQuestion: 1 },
+      { id: 'sec-b', label: 'Booklet B', title: 'Open-Ended', instructions: 'Answer in complete sentences.', questionType: 'open_ended', questionCount: 4, marksPerQuestion: 4 },
     ],
   },
   'science-p3-eoy': {
