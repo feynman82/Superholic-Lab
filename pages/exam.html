@@ -378,17 +378,25 @@ window.initExamEngine = function () {
     const subjectSlug  = { mathematics: 'maths', science: 'science', english: 'english' }[state.subjectKey] || state.subjectKey;
     const levelSlug    = state.levelKey.replace('primary-', 'p');  // 'primary-5' → 'p5'
     const newKey       = `${subjectSlug}-${levelSlug}-${examTypeCode}`;
-    const tpl = (typeof getTemplate !== 'undefined')
-      ? (getTemplate(newKey) || getTemplate(state.subjectKey, state.levelKey))
-      : null;
+    // 1. Construct the specific 2025 template key (e.g., 'maths-p6-psle')
+    let tpl = null;
+    if (typeof getTemplate !== 'undefined') {
+      const shortSubj = state.subjectKey === 'mathematics' ? 'maths' : state.subjectKey;
+      const shortLvl = state.levelKey.replace('primary-', 'p');
+      const specificKey = `${shortSubj}-${shortLvl}-${state.examType.toLowerCase()}`;
+      
+      // Try the highly-detailed template first, fallback to the generic legacy one
+      tpl = getTemplate(specificKey) || getTemplate(state.subjectKey, state.levelKey);
+    }
 
     let blueprintHtml = '<p class="text-muted text-sm">Loading blueprint...</p>';
     if (tpl) {
-      const isWA = state.examType.startsWith('WA');
-      const scale = isWA ? 0.5 : 1.0;
-      // Support both old (tpl.duration) and new (tpl.durationMinutes) template shapes
-      const durationMins = Math.round((tpl.durationMinutes || tpl.duration || 0) * scale);
-      const totalMarks   = Math.round((tpl.totalMarks || 0) * scale);
+      // 2. The newer detailed templates are already sized perfectly, so we only apply math scaling to legacy templates
+      const isDetailedTemplate = tpl.hasOwnProperty('paperCode');
+      const scale = (!isDetailedTemplate && state.examType.startsWith('WA')) ? 0.5 : 1.0;
+      
+      const duration = Math.round((tpl.durationMinutes || tpl.duration || 0) * scale);
+      const totalMarks = Math.round((tpl.totalMarks || 0) * scale);
       const durationText = (typeof formatDuration === 'function')
         ? formatDuration(durationMins) : `${durationMins} mins`;
 

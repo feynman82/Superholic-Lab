@@ -1775,11 +1775,12 @@ p { text-align: justify; }
   margin-bottom: var(--space-2);
 }
 .mock-section-label {
-  font-size: 0.8rem;
   font-weight: 700;
-  color: var(--sage-dark);
-  white-space: nowrap;
+  font-size: var(--text-sm);
+  color: var(--text-main);
   min-width: 80px;
+  flex: 1 1 100%; /* Forces long labels like "Paper 1 - Booklet A" onto their own line */
+  margin-bottom: 2px;
 }
 .mock-section-type {
   font-size: 0.72rem;
