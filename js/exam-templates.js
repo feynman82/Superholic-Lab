@@ -187,7 +187,7 @@ const EXAM_TEMPLATES = {
     sections: [
       {
         id:           'sec-a',
-        label:        'Section A — Multiple Choice',
+        label:        'Section A',
         instructions: 'Choose the correct answer (A, B, C or D) for each question.',
         questionType: 'mcq',
         questionCount: 10,
@@ -195,7 +195,7 @@ const EXAM_TEMPLATES = {
       },
       {
         id:           'sec-b',
-        label:        'Section B — Short Answer',
+        label:        'Section B',
         instructions: 'Write your answer in the space provided. No marks for method in this section.',
         questionType: 'short_ans',
         questionCount: 10,
@@ -203,7 +203,7 @@ const EXAM_TEMPLATES = {
       },
       {
         id:           'sec-c',
-        label:        'Section C — Word Problems',
+        label:        'Section C',
         instructions: 'Show all working clearly. Marks are awarded for correct method.',
         questionType: 'word_problem',
         questionCount: 5,
@@ -270,7 +270,7 @@ const EXAM_TEMPLATES = {
     sections: [
       {
         id:           'sec-a',
-        label:        'Section A — Multiple Choice',
+        label:        'Section A',
         instructions: 'Choose the correct answer (A, B, C or D) for each question.',
         questionType: 'mcq',
         questionCount: 20,
@@ -278,7 +278,7 @@ const EXAM_TEMPLATES = {
       },
       {
         id:           'sec-b',
-        label:        'Section B — Open-Ended Questions',
+        label:        'Section B',
         instructions: 'Answer in complete sentences. Use scientific terms where appropriate.',
         questionType: 'open_ended',
         questionCount: 5,
@@ -361,7 +361,7 @@ const EXAM_TEMPLATES = {
     sections: [
       {
         id:           'sec-a',
-        label:        'Section A — Grammar MCQ',
+        label:        'Section A',
         instructions: 'Choose the most appropriate answer (A, B, C or D) to complete each sentence.',
         questionType: 'mcq',
         questionCount: 15,
@@ -369,7 +369,7 @@ const EXAM_TEMPLATES = {
       },
       {
         id:           'sec-b',
-        label:        'Section B — Grammar Cloze',
+        label:        'Section B',
         instructions: 'Choose the best word to fill in each blank.',
         questionType: 'cloze',
         questionCount: 2,
@@ -377,7 +377,7 @@ const EXAM_TEMPLATES = {
       },
       {
         id:           'sec-c',
-        label:        'Section C — Editing',
+        label:        'Section C',
         instructions: 'Each passage has one error per line. Write the correct word for each underlined error.',
         questionType: 'editing',
         questionCount: 5,
