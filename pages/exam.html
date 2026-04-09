@@ -65,6 +65,8 @@
 <script src="../js/supabase-client.js"></script>
 <script src="../js/exam-templates.js"></script>
 <script src="../js/exam-generator.js"></script>
+<script src="../js/diagram-library.js"></script>
+<script src="../js/exam-renderer.js"></script>
 
 <script>
 /* ─────────────────────────────────────────────────────────────────────────
@@ -251,6 +253,68 @@ window.initExamEngine = function () {
   }
 
   // ── PHASE: TYPE ──────────────────────────────────────────────────────────
+  /**
+   * Renders a mock paper format preview for a template, showing section strips
+   * and Q-pills so the user can see the paper structure before generating.
+   *
+   * @param {object} tpl  - Template object from getTemplate()
+   * @param {string} examType  - Selected exam type (e.g. 'WA1', 'SA2')
+   * @returns {string}  HTML string for insertion into renderType()
+   */
+  function renderMockPreview(tpl, examType) {
+    if (!tpl || !tpl.sections) return '';
+
+    const isWA = examType && examType.startsWith('WA');
+    const scale = isWA ? 0.5 : 1.0;
+
+    const typeLabel = {
+      mcq:          'MCQ',
+      short_ans:    'Short Ans',
+      word_problem: 'Word Problem',
+      open_ended:   'Open-Ended',
+      cloze:        'Cloze',
+      editing:      'Editing',
+    };
+
+    const typeColour = {
+      mcq:          'var(--brand-rose)',
+      short_ans:    'var(--maths-colour)',
+      word_problem: 'var(--success)',
+      open_ended:   'var(--english-colour)',
+      cloze:        'var(--amber)',
+      editing:      'var(--danger)',
+    };
+
+    const strips = tpl.sections.map(sec => {
+      const qCount = Math.max(1, Math.round((sec.questionCount || 1) * scale));
+      const sectionMarks = Math.round((sec.totalMarks || sec.marksPerQuestion * sec.questionCount || 0) * scale);
+      const colour = typeColour[sec.questionType] || 'var(--sage-light)';
+      const label = typeLabel[sec.questionType] || sec.questionType || 'Questions';
+
+      const pills = Array.from({ length: qCount }, (_, i) =>
+        `<span class="mock-q-pill" style="border-color:${colour};color:${colour};">${i + 1}</span>`
+      ).join('');
+
+      return `
+        <div class="mock-section-strip">
+          <span class="mock-section-label">${esc(sec.label || '')}</span>
+          <span class="mock-section-type" style="color:${colour};">${label}</span>
+          <div class="mock-q-pills">${pills}</div>
+          <span class="mock-section-marks">${sectionMarks}M</span>
+        </div>`;
+    }).join('');
+
+    const durationText = (typeof formatDuration === 'function')
+      ? formatDuration(Math.round((tpl.durationMinutes || 0) * scale))
+      : `${Math.round((tpl.durationMinutes || 0) * scale)} min`;
+
+    return `
+      <div class="mock-preview">
+        <div class="mock-preview-title">Paper Format Preview — ${esc(durationText)}</div>
+        ${strips}
+      </div>`;
+  }
+
   function renderType() {
     let types = [
       { id: 'WA1', label: 'WA 1', sub: 'Weighted Assessment 1' },
@@ -274,22 +338,42 @@ window.initExamEngine = function () {
       </div>
     `).join('');
 
-    const tpl = (typeof getTemplate !== 'undefined') ? getTemplate(state.subjectKey, state.levelKey) : null;
+    // Resolve template — try new-format key first (e.g. 'maths-p5-sa2'),
+    // then fall back to legacy two-arg lookup (subjectKey:levelKey).
+    const examTypeCode = state.examType.toLowerCase();  // wa1, wa2, sa2, psle-prelim, eoy
+    const subjectSlug  = { mathematics: 'maths', science: 'science', english: 'english' }[state.subjectKey] || state.subjectKey;
+    const levelSlug    = state.levelKey.replace('primary-', 'p');  // 'primary-5' → 'p5'
+    const newKey       = `${subjectSlug}-${levelSlug}-${examTypeCode}`;
+    const tpl = (typeof getTemplate !== 'undefined')
+      ? (getTemplate(newKey) || getTemplate(state.subjectKey, state.levelKey))
+      : null;
+
     let blueprintHtml = '<p class="text-muted text-sm">Loading blueprint...</p>';
     if (tpl) {
       const isWA = state.examType.startsWith('WA');
       const scale = isWA ? 0.5 : 1.0;
-      const duration = Math.round(tpl.duration * scale);
-      const totalMarks = Math.round(tpl.totalMarks * scale);
+      // Support both old (tpl.duration) and new (tpl.durationMinutes) template shapes
+      const durationMins = Math.round((tpl.durationMinutes || tpl.duration || 0) * scale);
+      const totalMarks   = Math.round((tpl.totalMarks || 0) * scale);
+      const durationText = (typeof formatDuration === 'function')
+        ? formatDuration(durationMins) : `${durationMins} mins`;
+
+      const mockPreviewHtml = renderMockPreview(tpl, state.examType);
+
       blueprintHtml = `
         <div class="flex justify-between items-center mb-4">
           <h2 class="font-display text-2xl text-main m-0">Exam Dossier</h2>
           <div class="badge badge-info">DRAFT</div>
         </div>
         <ul class="flex flex-col gap-2 text-sm text-main mb-4 list-reset">
-          <li class="flex justify-between" style="border-bottom: 1px solid var(--border-light); padding-bottom: var(--space-2);"><span>Total Duration</span> <span class="font-bold">⏱ ${duration} mins</span></li>
-          <li class="flex justify-between" style="border-bottom: 1px solid var(--border-light); padding-bottom: var(--space-2);"><span>Total Marks</span> <span class="font-bold">${totalMarks} M</span></li>
+          <li class="flex justify-between" style="border-bottom: 1px solid var(--border-light); padding-bottom: var(--space-2);">
+            <span>Total Duration</span> <span class="font-bold">⏱ ${esc(durationText)}</span>
+          </li>
+          <li class="flex justify-between" style="border-bottom: 1px solid var(--border-light); padding-bottom: var(--space-2);">
+            <span>Total Marks</span> <span class="font-bold">${totalMarks} M</span>
+          </li>
         </ul>
+        ${mockPreviewHtml}
       `;
     }
 

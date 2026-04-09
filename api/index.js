@@ -18,6 +18,7 @@ import {
   handleWebhook,
   handleGenerate,
   handleGenerateQuestion,
+  handleGenerateExam,
   handleGradeAnswer,
   handleSaveExamResult,
   handleGenerateQuest,
@@ -72,6 +73,7 @@ export default async function handler(req, res) {
     case 'checkout':           return handleCheckout(req, res);
     case 'generate':           return handleGenerate(req, res);
     case 'generate-question':  return handleGenerateQuestion(req, res);
+    case 'generate-exam':      return handleGenerateExam(req, res);
     case 'grade-answer':       return handleGradeAnswer(req, res);
     case 'save-exam-result':   return handleSaveExamResult(req, res);
     case 'generate-quest':     return handleGenerateQuest(req, res);

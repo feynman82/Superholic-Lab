@@ -243,3 +243,137 @@ function clearExamCache() {
 //       should log [10, 10, 5] (MCQ, short_ans, word_problem)
 // TEST: generateExam('english', 'primary-4').then(p => console.log(p.sections.map(s => s.type)))
 //       should log ['mcq', 'cloze', 'editing']
+
+/* ─────────────────────────────────────────────────────────────────────────
+   ExamGenerator — OO wrapper around generateExam() for the Exam Engine v2.
+   Adds support for new template keys (e.g. 'maths-p5-sa2') introduced in
+   exam-templates.js alongside the legacy two-arg subject:level format.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/**
+ * Normalises a new-format template key (e.g. 'maths-p5-sa2') into the
+ * subject and level strings expected by the legacy generateExam() function.
+ *
+ * @param {string} templateKey  - e.g. 'maths-p5-sa2' or 'science-p4-wa2'
+ * @returns {{ subject: string, level: string } | null}
+ */
+function _parseTemplateKey(templateKey) {
+  // subject segment is everything before the first '-p' (e.g. 'maths', 'science', 'english')
+  const match = templateKey.match(/^(maths|science|english)-(p[3-6])-/i);
+  if (!match) return null;
+
+  const subjectMap = {
+    maths:   'mathematics',
+    science: 'science',
+    english: 'english',
+  };
+  const levelMap = {
+    p3: 'primary-3',
+    p4: 'primary-4',
+    p5: 'primary-5',
+    p6: 'primary-6',
+  };
+
+  const subject = subjectMap[match[1].toLowerCase()];
+  const level   = levelMap[match[2].toLowerCase()];
+  return subject && level ? { subject, level } : null;
+}
+
+/**
+ * ExamGenerator — high-level class used by exam.html and exam-renderer.js.
+ *
+ * Usage:
+ *   const paper = await ExamGenerator.generate('maths-p5-sa2');
+ *   const paper = await ExamGenerator.generate('maths-p5-sa2', { scaleFactor: 0.5 });
+ */
+const ExamGenerator = {
+
+  /**
+   * Generates an exam paper from a template key.
+   *
+   * @param {string} templateKey      - New-format key (e.g. 'maths-p5-sa2') or
+   *                                    legacy key (e.g. 'mathematics:primary-4')
+   * @param {object} [options={}]     - Optional overrides
+   * @param {number} [options.scaleFactor=1]  - Fraction of questions to include (0–1)
+   * @param {string} [options.examType]       - Override paper type label
+   * @returns {Promise<ExamPaper>}
+   */
+  async generate(templateKey, options = {}) {
+    // Resolve template object
+    const template = (typeof getTemplate === 'function')
+      ? getTemplate(templateKey)
+      : (typeof EXAM_TEMPLATES !== 'undefined' ? EXAM_TEMPLATES[templateKey] : null);
+
+    if (!template) {
+      throw new Error(`ExamGenerator: unknown template key "${templateKey}"`);
+    }
+
+    // Map new-format key → subject/level for legacy generateExam()
+    const parsed = _parseTemplateKey(templateKey);
+    if (!parsed) {
+      throw new Error(`ExamGenerator: cannot parse template key "${templateKey}" into subject/level`);
+    }
+
+    const { subject, level } = parsed;
+    const examType = options.examType || template.paperCode || 'PRACTICE';
+
+    // Delegate to the existing functional API
+    const paper = await generateExam(subject, level, examType, options);
+
+    // Augment with template metadata from the new schema
+    return {
+      ...paper,
+      templateKey,
+      template,
+      displayName: template.displayName || paper.template?.label || templateKey,
+      instructions: template.instructions || [],
+    };
+  },
+
+  /**
+   * Returns all template keys available for a given level.
+   * Delegates to getTemplatesForLevel() from exam-templates.js.
+   *
+   * @param {string} level  - e.g. 'P5' or 'Primary 5'
+   * @returns {string[]} Array of template keys
+   */
+  listForLevel(level) {
+    const normalised = level.replace(/primary\s*/i, 'P').toUpperCase(); // 'Primary 5' → 'P5'
+    if (typeof getTemplatesForLevel === 'function') {
+      return Object.keys(getTemplatesForLevel(normalised));
+    }
+    return [];
+  },
+
+  /**
+   * Returns all template keys available for a given subject.
+   * Delegates to getTemplatesForSubject() from exam-templates.js.
+   *
+   * @param {string} subject  - e.g. 'Maths', 'Science', 'English'
+   * @returns {string[]} Array of template keys
+   */
+  listForSubject(subject) {
+    if (typeof getTemplatesForSubject === 'function') {
+      return Object.keys(getTemplatesForSubject(subject));
+    }
+    return [];
+  },
+
+  /** Clears the question cache. Delegates to module-level clearExamCache(). */
+  clearCache() {
+    clearExamCache();
+  },
+};
+
+// Expose on window (browser) and globalThis (Node.js ESM test context)
+if (typeof window !== 'undefined') {
+  window.ExamGenerator = ExamGenerator;
+}
+if (typeof globalThis !== 'undefined') {
+  globalThis.ExamGenerator = ExamGenerator;
+}
+
+// TEST: In browser console, open pages/exam.html then run:
+//   ExamGenerator.generate('maths-p5-sa2').then(p => console.log(p.displayName, p.totalMarks))
+//   → should log "Primary 5 Mathematics — Semestral Assessment 2 (SA2)" 100
+//   ExamGenerator.listForLevel('P5') → should include 'maths-p5-sa2', 'science-p5-sa2', 'english-p5-sa2'
