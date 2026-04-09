@@ -313,14 +313,45 @@ window.initExamEngine = function () {
       const scale = isWA ? 0.5 : 1.0;
       const duration = Math.round(tpl.duration * scale);
       const totalMarks = Math.round(tpl.totalMarks * scale);
+
+      // RESTORED: Loop to generate the section breakdown for the dossier
+      let sectionsHtml = '';
+      if (tpl.sections) {
+        sectionsHtml = tpl.sections.map(sec => {
+          const count = Math.round(sec.count * scale);
+          const marks = count * sec.marksEach;
+          return `
+            <li class="flex justify-between items-start gap-4 py-2" style="border-bottom: 1px dashed var(--border-light);">
+              <div class="flex flex-col">
+                <span class="font-bold text-sm text-main">${esc(sec.label)}</span>
+                <span class="text-xs text-muted">${count} questions × ${sec.marksEach}m</span>
+              </div>
+              <span class="font-bold text-sm text-main whitespace-nowrap">${marks} M</span>
+            </li>
+          `;
+        }).join('');
+      }
+
       blueprintHtml = `
         <div class="flex justify-between items-center mb-4">
           <h2 class="font-display text-2xl text-main m-0">Exam Dossier</h2>
           <div class="badge badge-info">DRAFT</div>
         </div>
-        <ul class="flex flex-col gap-2 text-sm text-main mb-4 list-reset">
-          <li class="flex justify-between" style="border-bottom: 1px solid var(--border-light); padding-bottom: var(--space-2);"><span>Total Duration</span> <span class="font-bold">⏱ ${duration} mins</span></li>
-          <li class="flex justify-between" style="border-bottom: 1px solid var(--border-light); padding-bottom: var(--space-2);"><span>Total Marks</span> <span class="font-bold">${totalMarks} M</span></li>
+        
+        <div class="flex justify-between items-center mb-4 p-3 rounded bg-surface border border-light">
+          <div class="flex flex-col">
+            <span class="text-xs text-muted font-bold uppercase tracking-wider">Duration</span>
+            <span class="font-bold text-main">⏱ ${duration} mins</span>
+          </div>
+          <div class="flex flex-col text-right">
+            <span class="text-xs text-muted font-bold uppercase tracking-wider">Total</span>
+            <span class="font-bold text-main">${totalMarks} Marks</span>
+          </div>
+        </div>
+        
+        <h3 class="font-bold text-sm text-muted uppercase tracking-wider mb-2">Paper Format</h3>
+        <ul class="flex flex-col text-sm text-main list-reset m-0 p-0">
+          ${sectionsHtml}
         </ul>
       `;
     }
