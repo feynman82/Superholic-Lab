@@ -93,35 +93,58 @@ window.initQuizEngine = function() {
     return parts;
   }
 
-  function buildClozeUI(q) {
+function buildClozeUI(q) {
     const savedAns = state.answers[state.currentIndex] || {};
     const blanks = q.blanks || [];
 
     const allWords = new Set();
     blanks.forEach(b => (b.options || []).forEach(w => allWords.add(w)));
-    const wordBankList = [...allWords].sort().map((w, i) =>
-      `<span class="badge badge-info" style="font-size:0.8rem; padding: 4px 10px;">(${i+1}) ${esc(w)}</span>`
-    ).join('');
+    
+    // 3.0 UPGRADE: Smart Word Bank (Hides if empty)
+    let wordBankHtml = '';
+    if (allWords.size > 0) {
+      const wordBankList = [...allWords].sort().map((w, i) =>
+        `<span class="badge badge-info" style="font-size:0.8rem; padding: 4px 10px;">(${i+1}) ${esc(w)}</span>`
+      ).join('');
+      wordBankHtml = `
+        <div class="card bg-page p-4 mb-4">
+          <div class="text-xs font-bold text-muted uppercase mb-3">Word Bank</div>
+          <div class="flex flex-wrap gap-2">${wordBankList}</div>
+        </div>`;
+    }
 
-    let passage = esc(q.passage || '');
+    // 3.0 UPGRADE: Line breaks support
+    let passage = esc(q.passage || '').replace(/\n/g, '<br>');
+    
     blanks.forEach(b => {
       const num = b.id || b.number;
       const saved = savedAns[num] || '';
-      const opts = (b.options || []).map(o =>
-        `<option value="${esc(o)}" ${saved === o ? 'selected' : ''}>${esc(o)}</option>`
-      ).join('');
-
-      let selectEl;
+      let inputHtml = '';
+      
       if (state.isAnswered) {
         const isCorrect = (savedAns[num] || '').toLowerCase() === (b.correct_answer || '').toLowerCase();
         const stateClass = isCorrect ? 'is-correct' : 'is-wrong';
-        selectEl = `<select id="cloze-blank-${num}" class="cloze-select ${stateClass}" disabled>
-          <option value="${esc(savedAns[num]||'')}">${esc(savedAns[num]||'—')}</option></select>`;
+        
+        // 3.0 UPGRADE: Smart Disabled Inputs
+        if (b.options && b.options.length > 0) {
+          inputHtml = `<select id="cloze-blank-${num}" class="cloze-select ${stateClass}" disabled>
+            <option value="${esc(saved)}">${esc(saved||'—')}</option></select>`;
+        } else {
+          inputHtml = `<input type="text" id="cloze-blank-${num}" class="editing-input ${stateClass}" value="${esc(saved)}" disabled style="width: 120px; display: inline-block; margin: 0 4px;">`;
+        }
       } else {
-        selectEl = `<select id="cloze-blank-${num}" class="cloze-select" onchange="window.saveInputState()">
-          <option value="">— pick —</option>${opts}</select>`;
+        // 3.0 UPGRADE: Smart Active Inputs (Dropdown vs Text Box)
+        if (b.options && b.options.length > 0) {
+          const opts = (b.options || []).map(o =>
+            `<option value="${esc(o)}" ${saved === o ? 'selected' : ''}>${esc(o)}</option>`
+          ).join('');
+          inputHtml = `<select id="cloze-blank-${num}" class="cloze-select" onchange="window.saveInputState()">
+            <option value="">— pick —</option>${opts}</select>`;
+        } else {
+          inputHtml = `<input type="text" id="cloze-blank-${num}" class="editing-input" value="${esc(saved)}" placeholder="type here" autocomplete="off" oninput="window.saveInputState()" style="width: 120px; display: inline-block; margin: 0 4px;">`;
+        }
       }
-      passage = passage.replace(`[${num}]`, selectEl);
+      passage = passage.replace(`[${num}]`, inputHtml);
     });
 
     let blankFeedback = '';
@@ -139,12 +162,10 @@ window.initQuizEngine = function() {
       blankFeedback = `<div class="card bg-page p-4 mt-4">${rows}</div>`;
     }
 
+    // 3.0 UPGRADE: Typography & Line Height
     return `
-      <div class="card bg-page p-4 mb-4">
-        <div class="text-xs font-bold text-muted uppercase mb-3">Word Bank</div>
-        <div class="flex flex-wrap gap-2">${wordBankList}</div>
-      </div>
-      <div class="card p-6 cloze-passage text-base text-main">${passage}</div>
+      ${wordBankHtml}
+      <div class="card p-6 cloze-passage text-lg text-main font-medium" style="line-height: 2;">${passage}</div>
       ${blankFeedback}`;
   }
 
@@ -173,11 +194,13 @@ window.initQuizEngine = function() {
           oninput="window.saveInputState()">`;
       }
 
-      return `<div class="editing-line">
-        <span class="text-xs font-bold text-muted" style="min-width:24px;">${line.line_number}.</span>
-        <span class="text-sm text-main flex-1" style="line-height: 1.6;">${escapedLine}</span>
-        <div class="flex items-center gap-2" style="position:relative;">${inputEl}</div>
-      </div>`;
+      // 3.0 UPGRADE: Larger typography, min-widths, and padding
+      return `
+        <div class="editing-line" style="padding: var(--space-4) 0;">
+          <span class="text-base font-bold text-muted" style="min-width:32px;">${line.line_number}.</span>
+          <span class="text-lg text-main font-medium flex-1" style="line-height: 1.8;">${escapedLine}</span>
+          <div class="flex items-center gap-2" style="position:relative;">${inputEl}</div>
+        </div>`;
     }).join('');
 
     let editFeedback = '';
