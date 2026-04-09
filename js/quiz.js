@@ -8,6 +8,7 @@ window.initQuizEngine = function() {
     streak: 0,
     maxStreak: 0,
     score: 0,
+    totalPossibleScore: 0, // NEW: Tracks max possible marks
     answers: {},       
     drawings: {},      
     isAnswered: false, 
@@ -431,7 +432,11 @@ function buildClozeUI(q) {
         blankResults[num] = { selected, isCorrect };
       });
       const allCorrect = correctCount === blanks.length;
-      if (allCorrect) { state.score++; state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak; }
+      
+      // UPGRADE: Award 1 mark for every correct blank!
+      state.score += correctCount;
+      
+      if (allCorrect) { state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak; }
       else state.streak = 0;
       state.isAnswered = true;
       state.feedback = {
@@ -456,7 +461,11 @@ function buildClozeUI(q) {
         lineResults[l.line_number] = { userAns, isCorrect };
       });
       const allCorrect = correctCount === lines.length;
-      if (allCorrect) { state.score++; state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak; }
+      
+      // UPGRADE: Award 1 mark for every correct line edit!
+      state.score += correctCount;
+      
+      if (allCorrect) { state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak; }
       else state.streak = 0;
       state.isAnswered = true;
       state.feedback = {
@@ -492,7 +501,10 @@ function buildClozeUI(q) {
   function renderResults() {
     saveQuizResult(); 
     
-    const pct = Math.round((state.score / state.questions.length) * 100);
+    // UPGRADE: Use total possible marks for percentage
+    const maxScore = state.totalPossibleScore > 0 ? state.totalPossibleScore : 1;
+    const pct = Math.round((state.score / maxScore) * 100);
+    
     app.innerHTML = `
       <div class="card flex flex-col items-center text-center w-full hover-lift p-6 card-rule-mint" style="max-width: 600px;">
         <h1 class="font-display text-4xl text-main mb-2">Training Complete!</h1>
@@ -502,7 +514,7 @@ function buildClozeUI(q) {
           <div class="card p-6 flex-1 bg-page" style="border: none; max-width: 200px;">
             <div class="text-sm font-bold text-muted uppercase">Score</div>
             <div class="font-display text-5xl text-success mt-2">${pct}%</div>
-            <div class="text-sm text-main mt-1">${state.score} / ${state.questions.length} Correct</div>
+            <div class="text-sm text-main mt-1">${state.score} / ${maxScore} Marks</div>
           </div>
           <div class="card p-6 flex-1 bg-amber-tint" style="border: none; max-width: 200px;">
             <div class="text-sm font-bold text-amber uppercase">Best Streak</div>
@@ -582,6 +594,8 @@ function buildClozeUI(q) {
           topic:              primaryTopic,
           difficulty:         'Mixed',
           score:              state.score,
+          // Sends the Max Marks so the Dashboard calculates percentages correctly
+          total_questions:    state.totalPossibleScore > 0 ? state.totalPossibleScore : state.questions.length,
           total_questions:    state.questions.length,
           time_taken_seconds: state.quizStartTime ? Math.round((Date.now() - state.quizStartTime) / 1000) : null,
           completed_at:       new Date().toISOString(),
@@ -741,6 +755,15 @@ function buildClozeUI(q) {
       const pool = type && type !== 'mixed' ? all.filter(q => q.type === type) : all;
       
       state.questions = shuffle(pool).slice(0, 10);
+      
+      // UPGRADE: Calculate accurate total possible marks for multi-part questions
+      state.totalPossibleScore = state.questions.reduce((sum, q) => {
+        if (q.type === 'cloze') return sum + (q.blanks?.length || 1);
+        if (q.type === 'editing') return sum + (q.passage_lines?.length || 1);
+        if (q.type === 'word_problem' || q.type === 'open_ended') return sum + 0; // Self-graded types
+        return sum + 1; // Standard MCQ & Short Answer
+      }, 0);
+
       state.quizStartTime = Date.now();
       state.phase = 'QUIZ';
       render();
