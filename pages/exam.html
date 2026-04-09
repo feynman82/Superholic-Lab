@@ -33,7 +33,6 @@
     }
     boot();
   </script>
-  <script src="../js/exam-renderer.js" defer></script>
   <style>
     /* ── Cloze & Editing Component Styles ── */
     .cloze-passage { line-height: 2.6; }
@@ -477,7 +476,7 @@ window.initExamEngine = function () {
       const pc = document.getElementById('print-container');
       if (pc && typeof ExamRenderer !== 'undefined') {
         pc.innerHTML = '';
-        ExamRenderer.renderToDOM(paper, pc);
+        ExamRenderer.render(paper, pc);
         setTimeout(() => { 
           window.print(); 
           btn.disabled = false; 
