@@ -1,0 +1,47 @@
+{
+  "generated": "2026-04-09T09:35:25.750044",
+  "levels": [
+    {
+      "level": "P1",
+      "found": 50,
+      "downloaded": 50,
+      "skipped": 0,
+      "failed": 0
+    },
+    {
+      "level": "P2",
+      "found": 50,
+      "downloaded": 25,
+      "skipped": 25,
+      "failed": 0
+    },
+    {
+      "level": "P3",
+      "found": 75,
+      "downloaded": 50,
+      "skipped": 25,
+      "failed": 0
+    },
+    {
+      "level": "P4",
+      "found": 75,
+      "downloaded": 75,
+      "skipped": 0,
+      "failed": 0
+    },
+    {
+      "level": "P5",
+      "found": 75,
+      "downloaded": 74,
+      "skipped": 1,
+      "failed": 0
+    },
+    {
+      "level": "P6",
+      "found": 75,
+      "downloaded": 50,
+      "skipped": 25,
+      "failed": 0
+    }
+  ]
+}

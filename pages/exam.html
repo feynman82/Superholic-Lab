@@ -15,6 +15,8 @@
   <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js"></script>
   <script src="/js/footer.js" defer></script>
   
+  <script src="../js/exam-renderer.js" defer></script>
+  
   <script type="module">
     import { guardPage } from '/js/auth.js';
     import { initAppShell } from '/js/app-shell.js';
@@ -33,6 +35,40 @@
     }
     boot();
   </script>
+
+  <style>
+    /* ── Cloze & Editing Component Styles (Ported from Quiz) ── */
+    .cloze-passage { line-height: 2.6; }
+    .cloze-select {
+      display: inline-block; appearance: none; -webkit-appearance: none;
+      background-color: var(--bg-surface); border: 2px solid var(--border-dark);
+      border-radius: var(--radius-sm); padding: 4px 24px 4px 10px;
+      font-family: var(--font-body); font-size: var(--text-sm); font-weight: 700;
+      color: var(--brand-rose); cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23B76E79' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 6px center; background-size: 14px;
+      margin: 0 4px; vertical-align: middle; transition: all 0.2s ease;
+    }
+    .cloze-select:focus { outline: none; border-color: var(--brand-rose); box-shadow: 0 0 0 3px rgba(183, 110, 121, 0.2); }
+    
+    .editing-line { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) 0; border-bottom: 1px solid var(--border-light); }
+    .editing-line:last-child { border-bottom: none; }
+    .editing-input {
+      border: 2px solid var(--border-dark); border-radius: var(--radius-sm);
+      padding: 6px 10px; width: 120px; text-align: center; font-family: var(--font-body);
+      font-size: var(--text-sm); font-weight: 700; color: var(--brand-rose);
+      background: var(--bg-surface); transition: all 0.2s ease;
+    }
+    .editing-input:focus { outline: none; border-color: var(--brand-rose); box-shadow: 0 0 0 3px rgba(183, 110, 121, 0.2); }
+
+    /* ── Print Styles for Exam Renderer ── */
+    @media print {
+      body { background: white !important; }
+      global-header, global-footer, .bottom-nav, #app { display: none !important; }
+      #print-container { display: block !important; position: absolute; left: 0; top: 0; width: 100%; padding: 20px; }
+    }
+    #print-container { display: none; }
+  </style>
 </head>
 
 <body id="mainBody" class="has-bottom-nav bg-page texture-light-grid">
@@ -40,6 +76,8 @@
 <global-header></global-header>
 
 <main id="app" class="container flex flex-col items-center w-full" style="padding-top: calc(var(--navbar-h) + var(--space-8)); padding-bottom: var(--space-10); min-height: 80vh; max-width: 1000px;"></main>
+
+<div id="print-container"></div>
 
 <global-footer></global-footer>
 
@@ -65,8 +103,6 @@
 <script src="../js/supabase-client.js"></script>
 <script src="../js/exam-templates.js"></script>
 <script src="../js/exam-generator.js"></script>
-<script src="../js/diagram-library.js"></script>
-<script src="../js/exam-renderer.js"></script>
 
 <script>
 /* ─────────────────────────────────────────────────────────────────────────
@@ -75,7 +111,6 @@
 window.initExamEngine = function () {
   'use strict';
 
-  // ── STATE ────────────────────────────────────────────────────────────────
   const state = {
     phase:      'INIT',
     level:      '',      
@@ -97,9 +132,7 @@ window.initExamEngine = function () {
   };
 
   const app = document.getElementById('app');
-  const TYPE_LABELS = { WA1: 'WA 1', WA2: 'WA 2', WA3: 'WA 3', EOY: 'End-of-Year', PSLE: 'PSLE/Prelim' };
 
-  // ── UTILITIES ────────────────────────────────────────────────────────────
   function esc(str) {
     if (str == null) return '';
     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
@@ -218,7 +251,6 @@ window.initExamEngine = function () {
     }
   }
 
-  // ── PHASE: SUBJECT ───────────────────────────────────────────────────────
   function renderSubject() {
     const levelNum = state.level.replace('Primary ', '');
     const subjects = [
@@ -227,7 +259,6 @@ window.initExamEngine = function () {
       { name: 'English', icon: '📖', tag: 'P1–P6' }
     ];
 
-    // Masterclass CSS Grid Alignment matching subjects.html exactly
     const cards = subjects.map(s => `
       <div class="card hover-lift flex flex-col items-center justify-center p-8 text-center cursor-pointer" onclick="window.selectSubject('${s.name}')">
         <div class="text-4xl mb-4">${s.icon}</div>
@@ -252,76 +283,13 @@ window.initExamEngine = function () {
     window.selectSubject = (sub) => setState({ subject: sub, subjectKey: sub.toLowerCase(), phase: 'TYPE', examType: '' });
   }
 
-  // ── PHASE: TYPE ──────────────────────────────────────────────────────────
-  /**
-   * Renders a mock paper format preview for a template, showing section strips
-   * and Q-pills so the user can see the paper structure before generating.
-   *
-   * @param {object} tpl  - Template object from getTemplate()
-   * @param {string} examType  - Selected exam type (e.g. 'WA1', 'SA2')
-   * @returns {string}  HTML string for insertion into renderType()
-   */
-  function renderMockPreview(tpl, examType) {
-    if (!tpl || !tpl.sections) return '';
-
-    const isWA = examType && examType.startsWith('WA');
-    const scale = isWA ? 0.5 : 1.0;
-
-    const typeLabel = {
-      mcq:          'MCQ',
-      short_ans:    'Short Ans',
-      word_problem: 'Word Problem',
-      open_ended:   'Open-Ended',
-      cloze:        'Cloze',
-      editing:      'Editing',
-    };
-
-    const typeColour = {
-      mcq:          'var(--brand-rose)',
-      short_ans:    'var(--maths-colour)',
-      word_problem: 'var(--success)',
-      open_ended:   'var(--english-colour)',
-      cloze:        'var(--amber)',
-      editing:      'var(--danger)',
-    };
-
-    const strips = tpl.sections.map(sec => {
-      const qCount = Math.max(1, Math.round((sec.questionCount || 1) * scale));
-      const sectionMarks = Math.round((sec.totalMarks || sec.marksPerQuestion * sec.questionCount || 0) * scale);
-      const colour = typeColour[sec.questionType] || 'var(--sage-light)';
-      const label = typeLabel[sec.questionType] || sec.questionType || 'Questions';
-
-      const pills = Array.from({ length: qCount }, (_, i) =>
-        `<span class="mock-q-pill" style="border-color:${colour};color:${colour};">${i + 1}</span>`
-      ).join('');
-
-      return `
-        <div class="mock-section-strip">
-          <span class="mock-section-label">${esc(sec.label || '')}</span>
-          <span class="mock-section-type" style="color:${colour};">${label}</span>
-          <div class="mock-q-pills">${pills}</div>
-          <span class="mock-section-marks">${sectionMarks}M</span>
-        </div>`;
-    }).join('');
-
-    const durationText = (typeof formatDuration === 'function')
-      ? formatDuration(Math.round((tpl.durationMinutes || 0) * scale))
-      : `${Math.round((tpl.durationMinutes || 0) * scale)} min`;
-
-    return `
-      <div class="mock-preview">
-        <div class="mock-preview-title">Paper Format Preview — ${esc(durationText)}</div>
-        ${strips}
-      </div>`;
-  }
-
   function renderType() {
     let types = [
       { id: 'WA1', label: 'WA 1', sub: 'Weighted Assessment 1' },
       { id: 'WA2', label: 'WA 2', sub: 'Weighted Assessment 2' }
     ];
     if (state.levelKey === 'primary-6') {
-      types.push({ id: 'PRELIM', label: 'PSLE/Prelim', sub: 'Full PSLE simulation' });
+      types.push({ id: 'PRELIM', label: 'PSLE Prelim', sub: 'Full PSLE simulation' });
     } else {
       types.push({ id: 'WA3', label: 'WA 3', sub: 'Weighted Assessment 3' });
       types.push({ id: 'EOY', label: 'End of Year', sub: 'End-of-Year examination' });
@@ -338,42 +306,22 @@ window.initExamEngine = function () {
       </div>
     `).join('');
 
-    // Resolve template — try new-format key first (e.g. 'maths-p5-sa2'),
-    // then fall back to legacy two-arg lookup (subjectKey:levelKey).
-    const examTypeCode = state.examType.toLowerCase();  // wa1, wa2, sa2, psle-prelim, eoy
-    const subjectSlug  = { mathematics: 'maths', science: 'science', english: 'english' }[state.subjectKey] || state.subjectKey;
-    const levelSlug    = state.levelKey.replace('primary-', 'p');  // 'primary-5' → 'p5'
-    const newKey       = `${subjectSlug}-${levelSlug}-${examTypeCode}`;
-    const tpl = (typeof getTemplate !== 'undefined')
-      ? (getTemplate(newKey) || getTemplate(state.subjectKey, state.levelKey))
-      : null;
-
+    const tpl = (typeof getTemplate !== 'undefined') ? getTemplate(state.subjectKey, state.levelKey) : null;
     let blueprintHtml = '<p class="text-muted text-sm">Loading blueprint...</p>';
     if (tpl) {
       const isWA = state.examType.startsWith('WA');
       const scale = isWA ? 0.5 : 1.0;
-      // Support both old (tpl.duration) and new (tpl.durationMinutes) template shapes
-      const durationMins = Math.round((tpl.durationMinutes || tpl.duration || 0) * scale);
-      const totalMarks   = Math.round((tpl.totalMarks || 0) * scale);
-      const durationText = (typeof formatDuration === 'function')
-        ? formatDuration(durationMins) : `${durationMins} mins`;
-
-      const mockPreviewHtml = renderMockPreview(tpl, state.examType);
-
+      const duration = Math.round(tpl.duration * scale);
+      const totalMarks = Math.round(tpl.totalMarks * scale);
       blueprintHtml = `
         <div class="flex justify-between items-center mb-4">
           <h2 class="font-display text-2xl text-main m-0">Exam Dossier</h2>
           <div class="badge badge-info">DRAFT</div>
         </div>
         <ul class="flex flex-col gap-2 text-sm text-main mb-4 list-reset">
-          <li class="flex justify-between" style="border-bottom: 1px solid var(--border-light); padding-bottom: var(--space-2);">
-            <span>Total Duration</span> <span class="font-bold">⏱ ${esc(durationText)}</span>
-          </li>
-          <li class="flex justify-between" style="border-bottom: 1px solid var(--border-light); padding-bottom: var(--space-2);">
-            <span>Total Marks</span> <span class="font-bold">${totalMarks} M</span>
-          </li>
+          <li class="flex justify-between" style="border-bottom: 1px solid var(--border-light); padding-bottom: var(--space-2);"><span>Total Duration</span> <span class="font-bold">⏱ ${duration} mins</span></li>
+          <li class="flex justify-between" style="border-bottom: 1px solid var(--border-light); padding-bottom: var(--space-2);"><span>Total Marks</span> <span class="font-bold">${totalMarks} M</span></li>
         </ul>
-        ${mockPreviewHtml}
       `;
     }
 
@@ -407,7 +355,6 @@ window.initExamEngine = function () {
     window.triggerGen = () => setState({ phase: 'GEN' });
   }
 
-  // ── PHASE: GENERATING ────────────────────────────────────────────────────
   function renderGenerating() {
     app.innerHTML = `
       <div class="card flex flex-col items-center justify-center text-center w-full" style="padding: var(--space-8); max-width: 600px;">
@@ -458,6 +405,7 @@ window.initExamEngine = function () {
     const ansKey = state.currentQIdx; 
     const savedAns = state.answers[ansKey] || '';
 
+    // Ported UI Logic from quiz.js
     if (q.type === 'mcq') {
       const letters = ['A','B','C','D'];
       uiHtml = q.options.map((opt, i) => {
@@ -468,13 +416,57 @@ window.initExamEngine = function () {
             <span class="font-medium">${esc(opt)}</span>
           </div>`;
       }).join('');
+    } else if (q.type === 'cloze') {
+      const blanks = q.blanks || [];
+      const allWords = new Set();
+      blanks.forEach(b => (b.options || []).forEach(w => allWords.add(w)));
+      const wordBankList = [...allWords].sort().map((w, i) =>
+        `<span class="badge badge-info" style="font-size:0.8rem; padding: 4px 10px;">(${i+1}) ${esc(w)}</span>`
+      ).join('');
+
+      let passage = esc(q.passage || '');
+      blanks.forEach(b => {
+        const num = b.id || b.number;
+        const saved = savedAns[num] || '';
+        const opts = (b.options || []).map(o => `<option value="${esc(o)}" ${saved === o ? 'selected' : ''}>${esc(o)}</option>`).join('');
+        let selectEl = `<select id="cloze-blank-${num}" class="cloze-select form-select" onchange="window.saveCurrentAnswerState()"><option value="">— pick —</option>${opts}</select>`;
+        passage = passage.replace(`[${num}]`, selectEl);
+      });
+
+      uiHtml = `
+        <div class="card bg-page p-4 mb-4">
+          <div class="text-xs font-bold text-muted uppercase mb-3">Word Bank</div>
+          <div class="flex flex-wrap gap-2">${wordBankList}</div>
+        </div>
+        <div class="card p-6 cloze-passage text-base text-main">${passage}</div>
+      `;
+    } else if (q.type === 'editing') {
+      const lines = (q.passage_lines || []).map(line => {
+        const saved = savedAns[line.line_number] || '';
+        const rawText = line.text || '';
+        const underlined = line.underlined_word || '';
+        const escapedLine = esc(rawText).replace(
+          esc(underlined),
+          `<u style="text-decoration-color:var(--brand-rose);text-decoration-thickness:2px;font-weight:700;">${esc(underlined)}</u>`
+        );
+        let inputEl = `<input type="text" id="edit-line-${line.line_number}" value="${esc(saved)}" placeholder="${esc(underlined)}" autocomplete="off" class="editing-input form-input" oninput="window.saveCurrentAnswerState()">`;
+        return `
+          <div class="editing-line">
+            <span class="text-xs font-bold text-muted" style="min-width:24px;">${line.line_number}.</span>
+            <span class="text-sm text-main flex-1" style="line-height: 1.6;">${escapedLine}</span>
+            <div class="flex items-center gap-2" style="position:relative;">${inputEl}</div>
+          </div>`;
+      }).join('');
+
+      uiHtml = `<div class="card p-6">${lines}</div>`;
     } else if (q.type === 'short_ans') {
       uiHtml = `<input type="text" id="qInput" class="form-input mt-4" placeholder="Type your final answer..." value="${esc(savedAns)}" autocomplete="off">`;
     } else if (['open_ended', 'word_problem'].includes(q.type)) {
       const isDrawingMode = !!state.drawings[ansKey];
       uiHtml = `
         <div class="flex justify-between gap-2 mb-2">
-          <div></div> <div class="flex gap-2">
+          <div></div>
+          <div class="flex gap-2">
             <button class="btn btn-sm ${!isDrawingMode ? 'bg-sage-dark text-white' : 'btn-ghost'}" onclick="window.setMode('text')">⌨️ Type</button>
             <button class="btn btn-sm ${isDrawingMode ? 'bg-sage-dark text-white' : 'btn-ghost'}" onclick="window.setMode('draw')">✏️ Pen Tool</button>
           </div>
@@ -529,10 +521,17 @@ window.initExamEngine = function () {
           <div class="card p-6" style="position: sticky; top: 100px;">
             <h3 class="font-bold text-main mb-4 m-0">Exam Navigator</h3>
             <div class="exam-navigator">${navPips}</div>
+            
             <div class="flex flex-col gap-2 mt-4 pt-4 text-xs text-muted font-medium" style="border-top: 1px solid var(--border-light);">
               <div class="flex items-center gap-2"><div style="width: 12px; height: 12px; border-radius: 4px; background: var(--bg-elevated);"></div> Unanswered</div>
               <div class="flex items-center gap-2"><div style="width: 12px; height: 12px; border-radius: 4px; background: rgba(5, 150, 105, 0.2);"></div> Answered</div>
               <div class="flex items-center gap-2"><div style="width: 12px; height: 12px; border-radius: 4px; background: rgba(217, 119, 6, 0.2);"></div> Flagged</div>
+            </div>
+
+            <div class="mt-6 pt-4 text-center" style="border-top: 1px solid var(--border-light);">
+              <button class="btn btn-secondary btn-sm hover-lift w-full flex justify-center items-center gap-2" onclick="window.printPaper()">
+                🖨️ Print Blank Paper
+              </button>
             </div>
           </div>
         </div>
@@ -546,10 +545,25 @@ window.initExamEngine = function () {
 
   // ── EXAM INTERACTIONS ────────────────────────────────────────────────────
   window.saveCurrentAnswerState = () => {
-    const qType = state.allQs[state.currentQIdx].type;
+    const q = state.allQs[state.currentQIdx];
     const ansKey = state.currentQIdx;
     
-    if (qType !== 'mcq') {
+    if (q.type === 'cloze') {
+      const ans = {};
+      (q.blanks || []).forEach(b => {
+        const num = b.id || b.number;
+        const el = document.getElementById(`cloze-blank-${num}`);
+        if (el) ans[num] = el.value;
+      });
+      state.answers[ansKey] = ans;
+    } else if (q.type === 'editing') {
+      const ans = {};
+      (q.passage_lines || []).forEach(l => {
+        const el = document.getElementById(`edit-line-${l.line_number}`);
+        if (el) ans[l.line_number] = el.value;
+      });
+      state.answers[ansKey] = ans;
+    } else if (q.type !== 'mcq') {
       const inp = document.getElementById('qInput');
       if (inp) state.answers[ansKey] = inp.value;
     }
@@ -598,6 +612,20 @@ window.initExamEngine = function () {
     window.saveCurrentAnswerState();
     if (confirm("Are you sure you want to submit your paper?")) {
       submitExam();
+    }
+  };
+
+  window.printPaper = () => {
+    const pc = document.getElementById('print-container');
+    if (pc) {
+      pc.innerHTML = '';
+      if (typeof ExamRenderer !== 'undefined') {
+        ExamRenderer.renderToDOM(state.paper, pc);
+        // Wait a tiny bit for the renderer to stamp the DOM
+        setTimeout(() => window.print(), 100);
+      } else {
+        alert('Print engine not loaded.');
+      }
     }
   };
 
@@ -674,6 +702,43 @@ window.initExamEngine = function () {
         r.fb = r.status === 'wrong' && sa ? (q.wrong_explanations?.[sa] || '') : '';
         graded.push(r);
       } 
+      else if (q.type === 'cloze') {
+        const blanks = q.blanks || [];
+        let correctCount = 0;
+        let fbArr = [];
+        blanks.forEach(b => {
+          const num = b.id || b.number;
+          const selected = (sa[num] || '').trim();
+          if (selected.toLowerCase() === (b.correct_answer || '').toLowerCase()) {
+            correctCount++;
+          } else {
+            fbArr.push(`Blank [${num}]: Correct is "${b.correct_answer}"`);
+          }
+        });
+        const pct = blanks.length > 0 ? correctCount / blanks.length : 0;
+        r.earned = Math.round(pct * q.marks);
+        r.status = correctCount === blanks.length ? 'correct' : correctCount > 0 ? 'partial' : 'wrong';
+        r.fb = fbArr.length > 0 ? fbArr.join('<br>') : 'All blanks correct!';
+        graded.push(r);
+      }
+      else if (q.type === 'editing') {
+        const lines = q.passage_lines || [];
+        let correctCount = 0;
+        let fbArr = [];
+        lines.forEach(l => {
+          const userAns = (sa[l.line_number] || '').trim();
+          if (userAns.toLowerCase() === (l.correct_word || '').toLowerCase()) {
+            correctCount++;
+          } else {
+            fbArr.push(`Line ${l.line_number}: Correct is "${l.correct_word}"`);
+          }
+        });
+        const pct = lines.length > 0 ? correctCount / lines.length : 0;
+        r.earned = Math.round(pct * q.marks);
+        r.status = correctCount === lines.length ? 'correct' : correctCount > 0 ? 'partial' : 'wrong';
+        r.fb = fbArr.length > 0 ? fbArr.join('<br>') : 'All edits correct!';
+        graded.push(r);
+      }
       else if (q.type === 'short_ans') {
         const normSa = normalizeAnswer(sa);
         const accepted = [q.correct_answer, ...(q.accept_also||[])].map(normalizeAnswer);
@@ -760,7 +825,28 @@ window.initExamEngine = function () {
         const yourLbl = r.sa ? `${r.sa}: ${esc(r.q.options[letters.indexOf(r.sa)]||'')}` : '(no answer)';
         const corrLbl = `${r.q.correct_answer}: ${esc(r.q.options[letters.indexOf(r.q.correct_answer)]||'')}`;
         ansHtml = `<div class="bg-page p-3 mt-2 text-sm" style="border-radius: var(--radius-sm);"><span class="font-bold">Yours:</span> ${yourLbl}<br><span class="font-bold text-success">Correct:</span> ${corrLbl}</div>`;
-      } else {
+      } 
+      else if (r.q.type === 'cloze') {
+        const blanks = r.q.blanks || [];
+        const rows = blanks.map(b => {
+          const num = b.id || b.number;
+          const selected = (r.sa[num] || '—');
+          const isCor = selected.toLowerCase() === b.correct_answer.toLowerCase();
+          return `[${num}] You: ${esc(selected)} ${isCor ? '✅' : `❌ (Correct: ${esc(b.correct_answer)})`}`;
+        }).join('<br>');
+        ansHtml = `<div class="bg-page p-3 mt-2 text-sm" style="border-radius: var(--radius-sm);">${rows}</div>`;
+      } 
+      else if (r.q.type === 'editing') {
+        const lines = r.q.passage_lines || [];
+        const rows = lines.map(l => {
+          const num = l.line_number;
+          const selected = (r.sa[num] || '—');
+          const isCor = selected.toLowerCase() === l.correct_word.toLowerCase();
+          return `Line ${num}: You: ${esc(selected)} ${isCor ? '✅' : `❌ (Correct: ${esc(l.correct_word)})`}`;
+        }).join('<br>');
+        ansHtml = `<div class="bg-page p-3 mt-2 text-sm" style="border-radius: var(--radius-sm);">${rows}</div>`;
+      } 
+      else {
         const modelAns = r.q.model_answer || r.q.correct_answer || r.q.worked_solution || '';
         ansHtml = `<div class="bg-page p-3 mt-2 text-sm" style="border-radius: var(--radius-sm);"><span class="font-bold">Yours:</span> ${esc(r.sa || '(blank)')}<br><span class="font-bold text-success">Model:</span> ${esc(modelAns)}</div>`;
       }
