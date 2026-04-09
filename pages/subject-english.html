@@ -12,73 +12,35 @@
 <link rel="icon" href="../assets/favicon.ico">
 <script src="/js/header.js" defer></script>
 <script src="/js/footer.js" defer></script>
+<script src="../js/supabase-client.js"></script>
+
 <script type="module">
   import { guardPage } from '/js/auth.js';
   import { initAppShell } from '/js/app-shell.js';
   
   async function boot() {
     try {
-      // 1. Check session (false = allow guests to browse)
+      // 2. Fetch session (false = let guests browse safely)
       window.userProfile = await guardPage(false); 
       
-      const runInit = async () => {
-        // Run standard shell behaviors (like the bottom nav)
-        if (typeof initAppShell === 'function') {
-          initAppShell(window.userProfile);
-        }
-        
-        // 2. If logged in, aggressively hunt for the header to update it
-        if (window.userProfile) {
-          
-          // Check the DOM every 50ms until the header actually paints
-          const checkHeader = setInterval(async () => {
-            const authContainer = document.getElementById('auth-header-container');
-            const navLinks = document.getElementById('navDropdown');
-            
-            // The moment it exists, make the swap!
-            if (authContainer) {
-              clearInterval(checkHeader); // Stop searching
-              
-              // Swap Log In for Dashboard
-              authContainer.innerHTML = '<a href="dashboard.html" class="btn btn-secondary btn-sm" style="background: rgba(255,255,255,0.15); color: #FFFFFF; border: 1px solid rgba(255,255,255,0.1);">Dashboard</a>';
-              
-              // Add Sign Out to mobile menu
-              if (navLinks && !document.getElementById('navSignOut')) {
-                const signOut = document.createElement('a');
-                signOut.id = "navSignOut";
-                signOut.href = "#";
-                signOut.textContent = "Sign Out";
-                signOut.style.color = "var(--brand-rose)"; 
-                signOut.onclick = async (e) => { 
-                  e.preventDefault();
-                  const sb = await window.getSupabase();
-                  await sb.auth.signOut(); 
-                  window.location.href = '../index.html'; 
-                };
-                navLinks.appendChild(signOut);
-                
-                // Remove Sign Up from mobile menu
-                const signUpLink = document.getElementById('navSignUp');
-                if (signUpLink) signUpLink.remove();
-              }
-            }
-          }, 50);
-          
-          // Safety fallback: Stop checking after 3 seconds so it doesn't loop forever
-          setTimeout(() => clearInterval(checkHeader), 3000); 
-        }
-      };
-
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', runInit);
-      } else {
-        runInit();
+      // 3. Initialize the Bottom Navigation and global shell UI
+      if (typeof initAppShell === 'function') {
+        initAppShell(window.userProfile);
       }
+      
+      // Note: We no longer need to manually swap the "Log In" button here 
+      // because your global <global-header> Web Component handles it automatically!
+      
     } catch (err) {
       console.error('Boot sequence failed:', err);
     }
   }
-  boot();
+  
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
 </script>
 <style>
 /* ── Page-Specific Layout Helpers ── */
@@ -443,66 +405,5 @@ p { text-align: justify; }
 
 <global-footer></global-footer>
 
-<script>
-  /* ── 1. Dropdown Toggle Logic ── */
-  document.addEventListener('DOMContentLoaded', () => {
-    const toggle = document.getElementById('navToggle');
-    const dropdown = document.getElementById('navDropdown');
-    
-    if (toggle && dropdown) {
-      toggle.addEventListener('click', (e) => {
-        e.stopPropagation();
-        dropdown.classList.toggle('is-open');
-        toggle.classList.toggle('is-active'); 
-      });
-
-      document.addEventListener('click', (e) => {
-        if (!dropdown.contains(e.target) && !toggle.contains(e.target)) {
-          dropdown.classList.remove('is-open');
-          toggle.classList.remove('is-active');
-        }
-      });
-    }
-  });
-
-  /* ── 2. Auth-aware Navbar Logic ── */
-  getSupabase().then(async function(sb) {
-    try {
-      const { data: { session } } = await sb.auth.getSession();
-      
-      if (!session) return; 
-      
-      const authContainer = document.getElementById('auth-header-container');
-      const navLinks = document.getElementById('navDropdown');
-      
-      // Replace "Log In" button with "Dashboard"
-      if (authContainer) {
-        authContainer.innerHTML = '<a href="dashboard.html" class="btn btn-secondary btn-sm" style="background: rgba(255,255,255,0.15); color: #FFFFFF; border: 1px solid rgba(255,255,255,0.1);">Dashboard</a>';
-      }
-
-      // Add "Sign Out" to the bottom of the dropdown tray
-      if (navLinks && !document.getElementById('navSignOut')) {
-        const signOut = document.createElement('a');
-        signOut.id = "navSignOut";
-        signOut.href = "#";
-        signOut.textContent = "Sign Out";
-        signOut.style.color = "var(--brand-rose)"; 
-        signOut.onclick = async (e) => { 
-          e.preventDefault();
-          await sb.auth.signOut(); 
-          window.location.href = '../index.html'; 
-        };
-        navLinks.appendChild(signOut);
-        
-        // Remove the "Start Free Trial" link from the dropdown
-        const signUpLink = document.getElementById('navSignUp');
-        if (signUpLink) signUpLink.remove();
-      }
-
-    } catch (e) {
-      console.error('Nav auth check failed:', e);
-    }
-  });
-</script>
 </body>
 </html>
