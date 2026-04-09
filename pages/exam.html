@@ -33,6 +33,40 @@
     }
     boot();
   </script>
+  <script src="../js/exam-renderer.js" defer></script>
+  <style>
+    /* ── Cloze & Editing Component Styles ── */
+    .cloze-passage { line-height: 2.6; }
+    .cloze-select {
+      display: inline-block; appearance: none; -webkit-appearance: none;
+      background-color: var(--bg-surface); border: 2px solid var(--border-dark);
+      border-radius: var(--radius-sm); padding: 4px 24px 4px 10px;
+      font-family: var(--font-body); font-size: var(--text-sm); font-weight: 700;
+      color: var(--brand-rose); cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23B76E79' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 6px center; background-size: 14px;
+      margin: 0 4px; vertical-align: middle; transition: all 0.2s ease;
+    }
+    .cloze-select:focus { outline: none; border-color: var(--brand-rose); box-shadow: 0 0 0 3px rgba(183, 110, 121, 0.2); }
+    
+    .editing-line { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) 0; border-bottom: 1px solid var(--border-light); }
+    .editing-line:last-child { border-bottom: none; }
+    .editing-input {
+      border: 2px solid var(--border-dark); border-radius: var(--radius-sm);
+      padding: 6px 10px; width: 120px; text-align: center; font-family: var(--font-body);
+      font-size: var(--text-sm); font-weight: 700; color: var(--brand-rose);
+      background: var(--bg-surface); transition: all 0.2s ease;
+    }
+    .editing-input:focus { outline: none; border-color: var(--brand-rose); box-shadow: 0 0 0 3px rgba(183, 110, 121, 0.2); }
+
+    /* ── Print Styles ── */
+    @media print {
+      body { background: white !important; }
+      global-header, global-footer, .bottom-nav, #app { display: none !important; }
+      #print-container { display: block !important; position: absolute; left: 0; top: 0; width: 100%; padding: 20px; }
+    }
+    #print-container { display: none; }
+  </style>
 </head>
 
 <body id="mainBody" class="has-bottom-nav bg-page texture-light-grid">
@@ -40,7 +74,7 @@
 <global-header></global-header>
 
 <main id="app" class="container flex flex-col items-center w-full" style="padding-top: calc(var(--navbar-h) + var(--space-8)); padding-bottom: var(--space-10); min-height: 80vh; max-width: 1000px;"></main>
-
+<div id="print-container"></div>
 <global-footer></global-footer>
 
 <nav class="bottom-nav" id="bottomNav" aria-label="Mobile navigation">
@@ -395,6 +429,7 @@ window.initExamEngine = function () {
           <div class="flex-1" style="min-width: 300px;">
             <div class="card p-6 bg-page card-rule-mint w-full">
               ${blueprintHtml}
+              <button id="printPaperBtn" class="btn btn-secondary btn-full mt-4 hover-lift" onclick="window.printBlankPaper()"> Print Paper</button>
               <button class="btn btn-primary btn-full mt-4 hover-lift" onclick="window.triggerGen()">Generate Paper →</button>
             </div>
           </div>
@@ -406,6 +441,35 @@ window.initExamEngine = function () {
     window.backToSubject = () => setState({ phase: 'SUBJECT', examType: '' });
     window.triggerGen = () => setState({ phase: 'GEN' });
   }
+
+window.printBlankPaper = async () => {
+    const btn = document.getElementById('printPaperBtn');
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-sm" style="width:14px;height:14px;border-width:2px;display:inline-block;margin-right:6px;border-top-color:currentColor;"></span> Assembling...';
+    
+    try {
+      const paper = await generateExam(state.subjectKey, state.levelKey, state.examType);
+      const pc = document.getElementById('print-container');
+      if (pc && typeof ExamRenderer !== 'undefined') {
+        pc.innerHTML = '';
+        ExamRenderer.renderToDOM(paper, pc);
+        setTimeout(() => { 
+          window.print(); 
+          btn.disabled = false; 
+          btn.innerHTML = originalText;
+        }, 150);
+      } else {
+        alert('Print engine not loaded.');
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    } catch (err) {
+      alert('Failed to generate paper: ' + err.message);
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+    }
+  };
 
   // ── PHASE: GENERATING ────────────────────────────────────────────────────
   function renderGenerating() {
@@ -458,6 +522,7 @@ window.initExamEngine = function () {
     const ansKey = state.currentQIdx; 
     const savedAns = state.answers[ansKey] || '';
 
+    // PROPERLY ORDERED IF / ELSE IF CHAIN
     if (q.type === 'mcq') {
       const letters = ['A','B','C','D'];
       uiHtml = q.options.map((opt, i) => {
@@ -468,6 +533,49 @@ window.initExamEngine = function () {
             <span class="font-medium">${esc(opt)}</span>
           </div>`;
       }).join('');
+    } else if (q.type === 'cloze') {
+      const blanks = q.blanks || [];
+      const allWords = new Set();
+      blanks.forEach(b => (b.options || []).forEach(w => allWords.add(w)));
+      const wordBankList = [...allWords].sort().map((w, i) =>
+        `<span class="badge badge-info" style="font-size:0.8rem; padding: 4px 10px;">(${i+1}) ${esc(w)}</span>`
+      ).join('');
+
+      let passage = esc(q.passage || '');
+      blanks.forEach(b => {
+        const num = b.id || b.number;
+        const saved = savedAns[num] || '';
+        const opts = (b.options || []).map(o => `<option value="${esc(o)}" ${saved === o ? 'selected' : ''}>${esc(o)}</option>`).join('');
+        let selectEl = `<select id="cloze-blank-${num}" class="cloze-select form-select" onchange="window.saveCurrentAnswerState()"><option value="">— pick —</option>${opts}</select>`;
+        passage = passage.replace(`[${num}]`, selectEl);
+      });
+
+      uiHtml = `
+        <div class="card bg-page p-4 mb-4">
+          <div class="text-xs font-bold text-muted uppercase mb-3">Word Bank</div>
+          <div class="flex flex-wrap gap-2">${wordBankList}</div>
+        </div>
+        <div class="card p-6 cloze-passage text-base text-main">${passage}</div>
+      `;
+    } else if (q.type === 'editing') {
+      const lines = (q.passage_lines || []).map(line => {
+        const saved = savedAns[line.line_number] || '';
+        const rawText = line.text || '';
+        const underlined = line.underlined_word || '';
+        const escapedLine = esc(rawText).replace(
+          esc(underlined),
+          `<u style="text-decoration-color:var(--brand-rose);text-decoration-thickness:2px;font-weight:700;">${esc(underlined)}</u>`
+        );
+        let inputEl = `<input type="text" id="edit-line-${line.line_number}" value="${esc(saved)}" placeholder="${esc(underlined)}" autocomplete="off" class="editing-input form-input" oninput="window.saveCurrentAnswerState()">`;
+        return `
+          <div class="editing-line">
+            <span class="text-xs font-bold text-muted" style="min-width:24px;">${line.line_number}.</span>
+            <span class="text-sm text-main flex-1" style="line-height: 1.6;">${escapedLine}</span>
+            <div class="flex items-center gap-2" style="position:relative;">${inputEl}</div>
+          </div>`;
+      }).join('');
+
+      uiHtml = `<div class="card p-6">${lines}</div>`;
     } else if (q.type === 'short_ans') {
       uiHtml = `<input type="text" id="qInput" class="form-input mt-4" placeholder="Type your final answer..." value="${esc(savedAns)}" autocomplete="off">`;
     } else if (['open_ended', 'word_problem'].includes(q.type)) {
@@ -492,7 +600,7 @@ window.initExamEngine = function () {
           `
         }
       `;
-    } else {
+    } else { // THE FINAL FALLBACK MUST BE LAST
       uiHtml = `<textarea id="qInput" class="form-input w-full p-4" rows="4" style="height:auto;">${esc(savedAns)}</textarea>`;
     }
 
@@ -546,10 +654,25 @@ window.initExamEngine = function () {
 
   // ── EXAM INTERACTIONS ────────────────────────────────────────────────────
   window.saveCurrentAnswerState = () => {
-    const qType = state.allQs[state.currentQIdx].type;
+    const q = state.allQs[state.currentQIdx];
     const ansKey = state.currentQIdx;
     
-    if (qType !== 'mcq') {
+    if (q.type === 'cloze') {
+      const ans = {};
+      (q.blanks || []).forEach(b => {
+        const num = b.id || b.number;
+        const el = document.getElementById(`cloze-blank-${num}`);
+        if (el) ans[num] = el.value;
+      });
+      state.answers[ansKey] = ans;
+    } else if (q.type === 'editing') {
+      const ans = {};
+      (q.passage_lines || []).forEach(l => {
+        const el = document.getElementById(`edit-line-${l.line_number}`);
+        if (el) ans[l.line_number] = el.value;
+      });
+      state.answers[ansKey] = ans;
+    } else if (q.type !== 'mcq') {
       const inp = document.getElementById('qInput');
       if (inp) state.answers[ansKey] = inp.value;
     }
@@ -674,6 +797,43 @@ window.initExamEngine = function () {
         r.fb = r.status === 'wrong' && sa ? (q.wrong_explanations?.[sa] || '') : '';
         graded.push(r);
       } 
+      else if (q.type === 'cloze') {
+        const blanks = q.blanks || [];
+        let correctCount = 0;
+        let fbArr = [];
+        blanks.forEach(b => {
+          const num = b.id || b.number;
+          const selected = (sa[num] || '').trim();
+          if (selected.toLowerCase() === (b.correct_answer || '').toLowerCase()) {
+            correctCount++;
+          } else {
+            fbArr.push(`Blank [${num}]: Correct is "${b.correct_answer}"`);
+          }
+        });
+        const pct = blanks.length > 0 ? correctCount / blanks.length : 0;
+        r.earned = Math.round(pct * q.marks);
+        r.status = correctCount === blanks.length ? 'correct' : correctCount > 0 ? 'partial' : 'wrong';
+        r.fb = fbArr.length > 0 ? fbArr.join('<br>') : 'All blanks correct!';
+        graded.push(r);
+      }
+      else if (q.type === 'editing') {
+        const lines = q.passage_lines || [];
+        let correctCount = 0;
+        let fbArr = [];
+        lines.forEach(l => {
+          const userAns = (sa[l.line_number] || '').trim();
+          if (userAns.toLowerCase() === (l.correct_word || '').toLowerCase()) {
+            correctCount++;
+          } else {
+            fbArr.push(`Line ${l.line_number}: Correct is "${l.correct_word}"`);
+          }
+        });
+        const pct = lines.length > 0 ? correctCount / lines.length : 0;
+        r.earned = Math.round(pct * q.marks);
+        r.status = correctCount === lines.length ? 'correct' : correctCount > 0 ? 'partial' : 'wrong';
+        r.fb = fbArr.length > 0 ? fbArr.join('<br>') : 'All edits correct!';
+        graded.push(r);
+      }
       else if (q.type === 'short_ans') {
         const normSa = normalizeAnswer(sa);
         const accepted = [q.correct_answer, ...(q.accept_also||[])].map(normalizeAnswer);
@@ -682,7 +842,7 @@ window.initExamEngine = function () {
         r.status = correct ? 'correct' : 'wrong';
         graded.push(r);
       }
-      else {
+      else { // THE FINAL FALLBACK MUST BE LAST
         r.status = 'pending';
         graded.push(r);
         const idx = graded.length - 1;
@@ -760,7 +920,28 @@ window.initExamEngine = function () {
         const yourLbl = r.sa ? `${r.sa}: ${esc(r.q.options[letters.indexOf(r.sa)]||'')}` : '(no answer)';
         const corrLbl = `${r.q.correct_answer}: ${esc(r.q.options[letters.indexOf(r.q.correct_answer)]||'')}`;
         ansHtml = `<div class="bg-page p-3 mt-2 text-sm" style="border-radius: var(--radius-sm);"><span class="font-bold">Yours:</span> ${yourLbl}<br><span class="font-bold text-success">Correct:</span> ${corrLbl}</div>`;
-      } else {
+      } 
+      else if (r.q.type === 'cloze') {
+        const blanks = r.q.blanks || [];
+        const rows = blanks.map(b => {
+          const num = b.id || b.number;
+          const selected = (r.sa[num] || '—');
+          const isCor = selected.toLowerCase() === b.correct_answer.toLowerCase();
+          return `[${num}] You: ${esc(selected)} ${isCor ? '✅' : `❌ (Correct: ${esc(b.correct_answer)})`}`;
+        }).join('<br>');
+        ansHtml = `<div class="bg-page p-3 mt-2 text-sm" style="border-radius: var(--radius-sm);">${rows}</div>`;
+      } 
+      else if (r.q.type === 'editing') {
+        const lines = r.q.passage_lines || [];
+        const rows = lines.map(l => {
+          const num = l.line_number;
+          const selected = (r.sa[num] || '—');
+          const isCor = selected.toLowerCase() === l.correct_word.toLowerCase();
+          return `Line ${num}: You: ${esc(selected)} ${isCor ? '✅' : `❌ (Correct: ${esc(l.correct_word)})`}`;
+        }).join('<br>');
+        ansHtml = `<div class="bg-page p-3 mt-2 text-sm" style="border-radius: var(--radius-sm);">${rows}</div>`;
+      } 
+      else { // THE FINAL FALLBACK MUST BE LAST
         const modelAns = r.q.model_answer || r.q.correct_answer || r.q.worked_solution || '';
         ansHtml = `<div class="bg-page p-3 mt-2 text-sm" style="border-radius: var(--radius-sm);"><span class="font-bold">Yours:</span> ${esc(r.sa || '(blank)')}<br><span class="font-bold text-success">Model:</span> ${esc(modelAns)}</div>`;
       }
