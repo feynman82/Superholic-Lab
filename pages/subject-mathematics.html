@@ -384,5 +384,46 @@
 
 <global-footer></global-footer>
 
+<script>
+  // ── SYLLABUS MAP TAB LOGIC ──
+  window.setLevel = function(selectedLevel) {
+    // 1. Reset all tabs to inactive, then activate the clicked one
+    const tabs = document.querySelectorAll('.level-tab');
+    tabs.forEach(tab => {
+      if (tab.dataset.level === selectedLevel) {
+        tab.classList.remove('tab-inactive');
+        tab.classList.add('tab-active');
+      } else {
+        tab.classList.remove('tab-active');
+        tab.classList.add('tab-inactive');
+      }
+    });
+
+    // 2. Hide all panels, then show the one matching the selected level
+    const panels = document.querySelectorAll('.level-panel');
+    panels.forEach(panel => {
+      if (panel.id === 'panel-' + selectedLevel) {
+        // Add active class and ensure it displays
+        panel.classList.add('is-active');
+        panel.style.display = 'block'; 
+      } else {
+        // Remove active class and hide
+        panel.classList.remove('is-active');
+        panel.style.display = 'none';
+      }
+    });
+  };
+
+  // Optional: Run once on load to ensure the default tab (P4) is displayed correctly
+  document.addEventListener('DOMContentLoaded', () => {
+    // Hide panels that aren't P4 initially just in case CSS doesn't catch them
+    const panels = document.querySelectorAll('.level-panel');
+    panels.forEach(panel => {
+      if (!panel.classList.contains('is-active')) {
+        panel.style.display = 'none';
+      }
+    });
+  });
+</script>
 </body>
 </html>
