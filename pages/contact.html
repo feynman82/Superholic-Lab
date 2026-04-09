@@ -16,6 +16,8 @@
   
   <script src="../js/supabase-client.js"></script>
 
+<script src="../js/supabase-client.js"></script>
+
 <script type="module">
   import { guardPage } from '/js/auth.js';
   import { initAppShell } from '/js/app-shell.js';
@@ -156,132 +158,6 @@
 </main>
 
 <global-footer></global-footer>
-<script>
-  /* ── 1. Dropdown Toggle Logic ── */
-  document.addEventListener('DOMContentLoaded', () => {
-    const toggle = document.getElementById('navToggle');
-    const dropdown = document.getElementById('navDropdown');
-    
-    if (toggle && dropdown) {
-      toggle.addEventListener('click', (e) => {
-        e.stopPropagation();
-        dropdown.classList.toggle('is-open');
-        toggle.classList.toggle('is-active'); 
-      });
 
-      document.addEventListener('click', (e) => {
-        if (!dropdown.contains(e.target) && !toggle.contains(e.target)) {
-          dropdown.classList.remove('is-open');
-          toggle.classList.remove('is-active');
-        }
-      });
-    }
-  });
-
-  /* ── 2. Auth-aware Navbar Logic ── */
-  getSupabase().then(async function(sb) {
-    try {
-      const { data: { session } } = await sb.auth.getSession();
-      
-      if (!session) return; 
-      
-      const authContainer = document.getElementById('auth-header-container');
-      const navLinks = document.getElementById('navDropdown');
-      
-      // Replace "Log In" button with "Dashboard"
-      if (authContainer) {
-        authContainer.innerHTML = '<a href="dashboard.html" class="btn btn-secondary btn-sm" style="background: rgba(255,255,255,0.15); color: #FFFFFF; border: 1px solid rgba(255,255,255,0.1);">Dashboard</a>';
-      }
-
-      // Add "Sign Out" to the bottom of the dropdown tray
-      if (navLinks && !document.getElementById('navSignOut')) {
-        const signOut = document.createElement('a');
-        signOut.id = "navSignOut";
-        signOut.href = "#";
-        signOut.textContent = "Sign Out";
-        signOut.style.color = "var(--brand-rose)"; 
-        signOut.onclick = async (e) => { 
-          e.preventDefault();
-          await sb.auth.signOut(); 
-          window.location.href = '../index.html'; 
-        };
-        navLinks.appendChild(signOut);
-        
-        // Remove the "Start Free Trial" link from the dropdown
-        const signUpLink = document.getElementById('navSignUp');
-        if (signUpLink) signUpLink.remove();
-      }
-
-    } catch (e) {
-      console.error('Nav auth check failed:', e);
-    }
-  });
-</script>
-<script>
-  /* ── 1. Inject User Context if Logged In ── */
-  document.addEventListener('DOMContentLoaded', async () => {
-    try {
-      if (typeof window.getSupabase !== 'function') return;
-      const sb = await window.getSupabase();
-      const { data: { session } } = await sb.auth.getSession();
-      if (session && session.user) {
-        // Pre-fill email
-        const emailInput = document.getElementById('email');
-        if (emailInput && !emailInput.value) {
-          emailInput.value = session.user.email;
-        }
-        // Populate hidden fields
-        document.getElementById('user-email').value = session.user.email;
-        document.getElementById('user-id').value = session.user.id;
-      }
-    } catch (e) {
-      console.error('Data injection failed:', e);
-    }
-  });
-
-  /* ── 2. Form Submission Logic ── */
-  const form   = document.getElementById('contact-form');
-  const submit = document.getElementById('contact-submit');
-  const errEl  = document.getElementById('contact-error');
-  const succEl = document.getElementById('contact-success');
-
-  form.addEventListener('submit', async function (e) {
-    e.preventDefault();
-    errEl.hidden  = true;
-    succEl.hidden = true;
-
-    if (!form.checkValidity()) {
-      form.reportValidity();
-      return;
-    }
-
-    submit.disabled     = true;
-    submit.textContent  = 'Sending to Linzy...';
-
-    try {
-      const res = await fetch(form.action, {
-        method:  'POST',
-        body:    new FormData(form),
-        headers: { 'Accept': 'application/json' },
-      });
-
-      if (res.ok) {
-        form.reset();
-        succEl.hidden = false;
-        succEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      } else {
-        const data = await res.json().catch(() => ({}));
-        errEl.textContent = data?.errors?.[0]?.message || 'Something went wrong. Please email us directly.';
-        errEl.hidden = false;
-      }
-    } catch {
-      errEl.textContent = 'Network error. Please try again later.';
-      errEl.hidden = false;
-    } finally {
-      submit.disabled = false;
-      submit.textContent = 'Send Message';
-    }
-  });
-</script>
 </body>
 </html>
