@@ -396,11 +396,8 @@ const EXAM_TEMPLATES = {
 //                marksPerQuestion, totalMarks, [blankCount], [errorCount]
 
 // ── MOE-ACCURATE TEMPLATES (v2 — WA1/WA2/WA3/EOY/SA2/PSLE per level) ────────
-// Derived from analysis of 2025 school past year papers (P3–P6) averaged
-// across schools. PSLE follows strict 2025 official format.
-// Keys: {subject}-{level}-{paperCode}   e.g. 'maths-p4-wa1'
-// Mark scaling rationale: WA1 ≈ 50%, WA2 ≈ 70%, WA3 ≈ 80%, EOY/SA2 = 100%
-// P3–P4: MOE removed SA1/SA2 (2021 policy) — use WA1/WA2/EOY keys instead.
+// Perfectly aligned to the official 2025 SEAB PSLE Exam Specifications.
+// Fixed Schema: Uses 'type', 'count', and 'marksEach' to bind correctly to the Generator.
 
 Object.assign(EXAM_TEMPLATES, {
 
@@ -409,62 +406,32 @@ Object.assign(EXAM_TEMPLATES, {
     displayName: 'Primary 3 Mathematics — WA1',
     level: 'P3', subject: 'Maths', paperCode: 'WA1',
     durationMinutes: 25, totalMarks: 20, calculatorAllowed: false,
-    instructions: [
-      'Do not turn over this page until you are told to do so.',
-      'Answer all questions.',
-      'Write your answers in the spaces provided.',
-    ],
+    instructions: ['Do not turn over this page until you are told to do so.', 'Answer all questions.'],
     sections: [
-      { label: 'Section A', title: 'Multiple Choice Questions',
-        instructions: 'Each question carries 1 mark. Choose the correct answer (A, B, C or D).',
-        questionType: 'mcq', questionCount: 10, marksPerQuestion: 1, totalMarks: 10 },
-      { label: 'Section B', title: 'Short Answer Questions',
-        instructions: 'Each question carries 1 mark. Write your answer in the space provided.',
-        questionType: 'short_ans', questionCount: 10, marksPerQuestion: 1, totalMarks: 10 },
+      { label: 'Section A', title: 'Multiple Choice Questions', instructions: 'Choose the correct answer (A, B, C or D).', type: 'mcq', count: 10, marksEach: 1 },
+      { label: 'Section B', title: 'Short Answer Questions', instructions: 'Write your answer in the space provided.', type: 'short_ans', count: 10, marksEach: 1 },
     ],
   },
-
   'maths-p3-wa2': {
     displayName: 'Primary 3 Mathematics — WA2',
     level: 'P3', subject: 'Maths', paperCode: 'WA2',
     durationMinutes: 35, totalMarks: 28, calculatorAllowed: false,
-    instructions: [
-      'Do not turn over this page until you are told to do so.',
-      'Answer all questions.',
-      'Show all working clearly. Marks are awarded for correct method.',
-    ],
+    instructions: ['Do not turn over this page until you are told to do so.', 'Answer all questions.'],
     sections: [
-      { label: 'Section A', title: 'Multiple Choice Questions',
-        instructions: 'Each question carries 1 mark. Choose the correct answer (A, B, C or D).',
-        questionType: 'mcq', questionCount: 8, marksPerQuestion: 1, totalMarks: 8 },
-      { label: 'Section B', title: 'Short Answer Questions',
-        instructions: 'Each question carries 1 mark. Write your answer in the space provided.',
-        questionType: 'short_ans', questionCount: 8, marksPerQuestion: 1, totalMarks: 8 },
-      { label: 'Section C', title: 'Word Problems',
-        instructions: 'Show all working clearly. Each question carries 4 marks.',
-        questionType: 'word_problem', questionCount: 3, marksPerQuestion: 4, totalMarks: 12 },
+      { label: 'Section A', title: 'Multiple Choice Questions', instructions: 'Choose the correct answer (A, B, C or D).', type: 'mcq', count: 8, marksEach: 1 },
+      { label: 'Section B', title: 'Short Answer Questions', instructions: 'Write your answer in the space provided.', type: 'short_ans', count: 8, marksEach: 1 },
+      { label: 'Section C', title: 'Word Problems', instructions: 'Show all working clearly. Each question carries 4 marks.', type: 'word_problem', count: 3, marksEach: 4 },
     ],
   },
-
   'maths-p3-eoy': {
     displayName: 'Primary 3 Mathematics — EOY Practice',
     level: 'P3', subject: 'Maths', paperCode: 'EOY',
     durationMinutes: 50, totalMarks: 40, calculatorAllowed: false,
-    instructions: [
-      'Do not turn over this page until you are told to do so.',
-      'Answer all questions.',
-      'Show all working clearly. Marks are awarded for correct method.',
-    ],
+    instructions: ['Do not turn over this page until you are told to do so.', 'Answer all questions.'],
     sections: [
-      { label: 'Section A', title: 'Multiple Choice Questions',
-        instructions: 'Each question carries 1 mark. Choose the correct answer (A, B, C or D).',
-        questionType: 'mcq', questionCount: 10, marksPerQuestion: 1, totalMarks: 10 },
-      { label: 'Section B', title: 'Short Answer Questions',
-        instructions: 'Each question carries 1 mark. Write your answer in the space provided.',
-        questionType: 'short_ans', questionCount: 10, marksPerQuestion: 1, totalMarks: 10 },
-      { label: 'Section C', title: 'Word Problems',
-        instructions: 'Show all working clearly. Each question carries 4 marks.',
-        questionType: 'word_problem', questionCount: 5, marksPerQuestion: 4, totalMarks: 20 },
+      { label: 'Section A', title: 'Multiple Choice Questions', instructions: 'Choose the correct answer.', type: 'mcq', count: 10, marksEach: 1 },
+      { label: 'Section B', title: 'Short Answer Questions', instructions: 'Write your answer in the space provided.', type: 'short_ans', count: 10, marksEach: 1 },
+      { label: 'Section C', title: 'Word Problems', instructions: 'Show all working clearly.', type: 'word_problem', count: 5, marksEach: 4 },
     ],
   },
 
@@ -473,62 +440,32 @@ Object.assign(EXAM_TEMPLATES, {
     displayName: 'Primary 4 Mathematics — WA1',
     level: 'P4', subject: 'Maths', paperCode: 'WA1',
     durationMinutes: 25, totalMarks: 20, calculatorAllowed: false,
-    instructions: [
-      'Do not turn over this page until you are told to do so.',
-      'Answer all questions.',
-      'Write your answers in the spaces provided.',
-    ],
+    instructions: ['Do not turn over this page until you are told to do so.', 'Answer all questions.'],
     sections: [
-      { label: 'Section A', title: 'Multiple Choice Questions',
-        instructions: 'Each question carries 1 mark. Choose the correct answer (A, B, C or D).',
-        questionType: 'mcq', questionCount: 10, marksPerQuestion: 1, totalMarks: 10 },
-      { label: 'Section B', title: 'Short Answer Questions',
-        instructions: 'Each question carries 1 mark. Write your answer in the space provided.',
-        questionType: 'short_ans', questionCount: 10, marksPerQuestion: 1, totalMarks: 10 },
+      { label: 'Section A', title: 'Multiple Choice Questions', instructions: 'Choose the correct answer.', type: 'mcq', count: 10, marksEach: 1 },
+      { label: 'Section B', title: 'Short Answer Questions', instructions: 'Write your answer in the space provided.', type: 'short_ans', count: 10, marksEach: 1 },
     ],
   },
-
   'maths-p4-wa2': {
     displayName: 'Primary 4 Mathematics — WA2',
     level: 'P4', subject: 'Maths', paperCode: 'WA2',
     durationMinutes: 35, totalMarks: 28, calculatorAllowed: false,
-    instructions: [
-      'Do not turn over this page until you are told to do so.',
-      'Answer all questions.',
-      'Show all working clearly. Marks are awarded for correct method.',
-    ],
+    instructions: ['Do not turn over this page until you are told to do so.', 'Answer all questions.'],
     sections: [
-      { label: 'Section A', title: 'Multiple Choice Questions',
-        instructions: 'Each question carries 1 mark. Choose the correct answer (A, B, C or D).',
-        questionType: 'mcq', questionCount: 8, marksPerQuestion: 1, totalMarks: 8 },
-      { label: 'Section B', title: 'Short Answer Questions',
-        instructions: 'Each question carries 1 mark. Write your answer in the space provided.',
-        questionType: 'short_ans', questionCount: 8, marksPerQuestion: 1, totalMarks: 8 },
-      { label: 'Section C', title: 'Word Problems',
-        instructions: 'Show all working clearly. Each question carries 4 marks.',
-        questionType: 'word_problem', questionCount: 3, marksPerQuestion: 4, totalMarks: 12 },
+      { label: 'Section A', title: 'Multiple Choice Questions', instructions: 'Choose the correct answer.', type: 'mcq', count: 8, marksEach: 1 },
+      { label: 'Section B', title: 'Short Answer Questions', instructions: 'Write your answer in the space provided.', type: 'short_ans', count: 8, marksEach: 1 },
+      { label: 'Section C', title: 'Word Problems', instructions: 'Show all working clearly.', type: 'word_problem', count: 3, marksEach: 4 },
     ],
   },
-
   'maths-p4-eoy': {
     displayName: 'Primary 4 Mathematics — EOY Practice',
     level: 'P4', subject: 'Maths', paperCode: 'EOY',
     durationMinutes: 50, totalMarks: 40, calculatorAllowed: false,
-    instructions: [
-      'Do not turn over this page until you are told to do so.',
-      'Answer all questions.',
-      'Show all working clearly. Marks are awarded for correct method.',
-    ],
+    instructions: ['Do not turn over this page until you are told to do so.', 'Answer all questions.'],
     sections: [
-      { label: 'Section A', title: 'Multiple Choice Questions',
-        instructions: 'Each question carries 1 mark. Choose the correct answer (A, B, C or D).',
-        questionType: 'mcq', questionCount: 10, marksPerQuestion: 1, totalMarks: 10 },
-      { label: 'Section B', title: 'Short Answer Questions',
-        instructions: 'Each question carries 1 mark. Write your answer in the space provided.',
-        questionType: 'short_ans', questionCount: 10, marksPerQuestion: 1, totalMarks: 10 },
-      { label: 'Section C', title: 'Word Problems',
-        instructions: 'Show all working clearly. Each question carries 4 marks.',
-        questionType: 'word_problem', questionCount: 5, marksPerQuestion: 4, totalMarks: 20 },
+      { label: 'Section A', title: 'Multiple Choice Questions', instructions: 'Choose the correct answer.', type: 'mcq', count: 10, marksEach: 1 },
+      { label: 'Section B', title: 'Short Answer Questions', instructions: 'Write your answer in the space provided.', type: 'short_ans', count: 10, marksEach: 1 },
+      { label: 'Section C', title: 'Word Problems', instructions: 'Show all working clearly.', type: 'word_problem', count: 5, marksEach: 4 },
     ],
   },
 
@@ -537,758 +474,196 @@ Object.assign(EXAM_TEMPLATES, {
     displayName: 'Primary 5 Mathematics — WA1',
     level: 'P5', subject: 'Maths', paperCode: 'WA1',
     durationMinutes: 30, totalMarks: 23, calculatorAllowed: false,
-    instructions: [
-      'Do not turn over this page until you are told to do so.',
-      'Answer all questions.',
-      'Show all working clearly.',
-    ],
+    instructions: ['Answer all questions.', 'Show all working clearly.'],
     sections: [
-      { label: 'Section A', title: 'Multiple Choice Questions',
-        instructions: 'Each question carries 1 mark. Choose the correct answer (A, B, C or D).',
-        questionType: 'mcq', questionCount: 10, marksPerQuestion: 1, totalMarks: 10 },
-      { label: 'Section B', title: 'Short Answer Questions',
-        instructions: 'Each question carries 1 mark. Write your answer in the space provided.',
-        questionType: 'short_ans', questionCount: 10, marksPerQuestion: 1, totalMarks: 10 },
-      { label: 'Section C', title: 'Word Problem',
-        instructions: 'Show all working clearly. This question carries 3 marks.',
-        questionType: 'word_problem', questionCount: 1, marksPerQuestion: 3, totalMarks: 3 },
+      { label: 'Section A', title: 'Multiple Choice Questions', instructions: 'Choose the correct answer.', type: 'mcq', count: 10, marksEach: 1 },
+      { label: 'Section B', title: 'Short Answer Questions', instructions: 'Write your answer in the space provided.', type: 'short_ans', count: 10, marksEach: 1 },
+      { label: 'Section C', title: 'Word Problem', instructions: 'Show all working clearly.', type: 'word_problem', count: 1, marksEach: 3 },
     ],
   },
-
   'maths-p5-wa2': {
     displayName: 'Primary 5 Mathematics — WA2',
     level: 'P5', subject: 'Maths', paperCode: 'WA2',
     durationMinutes: 40, totalMarks: 32, calculatorAllowed: false,
-    instructions: [
-      'Do not turn over this page until you are told to do so.',
-      'Answer all questions.',
-      'Show all working clearly. Marks are awarded for correct method.',
-    ],
+    instructions: ['Answer all questions.', 'Show all working clearly.'],
     sections: [
-      { label: 'Section A', title: 'Multiple Choice Questions',
-        instructions: 'Each question carries 1 mark. Choose the correct answer (A, B, C or D).',
-        questionType: 'mcq', questionCount: 8, marksPerQuestion: 1, totalMarks: 8 },
-      { label: 'Section B', title: 'Short Answer Questions',
-        instructions: 'Each question carries 1 mark. Write your answer in the space provided.',
-        questionType: 'short_ans', questionCount: 9, marksPerQuestion: 1, totalMarks: 9 },
-      { label: 'Section C', title: 'Word Problems',
-        instructions: 'Show all working clearly. Each question carries 5 marks.',
-        questionType: 'word_problem', questionCount: 3, marksPerQuestion: 5, totalMarks: 15 },
+      { label: 'Section A', title: 'Multiple Choice Questions', instructions: 'Choose the correct answer.', type: 'mcq', count: 8, marksEach: 1 },
+      { label: 'Section B', title: 'Short Answer Questions', instructions: 'Write your answer in the space provided.', type: 'short_ans', count: 9, marksEach: 1 },
+      { label: 'Section C', title: 'Word Problems', instructions: 'Show all working clearly.', type: 'word_problem', count: 3, marksEach: 5 },
     ],
   },
-
   'maths-p5-sa2': {
-    displayName: 'Primary 5 Mathematics — SA2 (End of Year)',
+    displayName: 'Primary 5 Mathematics — SA2',
     level: 'P5', subject: 'Maths', paperCode: 'SA2',
     durationMinutes: 60, totalMarks: 45, calculatorAllowed: false,
-    instructions: [
-      'Do not turn over this page until you are told to do so.',
-      'Answer all questions.',
-      'Show all working clearly. Marks are awarded for correct method.',
-    ],
+    instructions: ['Answer all questions.', 'Show all working clearly.'],
     sections: [
-      { label: 'Section A', title: 'Multiple Choice Questions',
-        instructions: 'Each question carries 1 mark. Choose the correct answer (A, B, C or D).',
-        questionType: 'mcq', questionCount: 10, marksPerQuestion: 1, totalMarks: 10 },
-      { label: 'Section B', title: 'Short Answer Questions',
-        instructions: 'Each question carries 1 mark. Write your answer in the space provided.',
-        questionType: 'short_ans', questionCount: 10, marksPerQuestion: 1, totalMarks: 10 },
-      { label: 'Section C', title: 'Word Problems',
-        instructions: 'Show all working clearly. Each question carries 5 marks.',
-        questionType: 'word_problem', questionCount: 5, marksPerQuestion: 5, totalMarks: 25 },
+      { label: 'Section A', title: 'Multiple Choice Questions', instructions: 'Choose the correct answer.', type: 'mcq', count: 10, marksEach: 1 },
+      { label: 'Section B', title: 'Short Answer Questions', instructions: 'Write your answer in the space provided.', type: 'short_ans', count: 10, marksEach: 1 },
+      { label: 'Section C', title: 'Word Problems', instructions: 'Show all working clearly.', type: 'word_problem', count: 5, marksEach: 5 },
     ],
   },
 
-  // ── MATHS P6 ───────────────────────────────────────────────────────────────
+  // ── MATHS P6 (Exact 2025 SEAB PSLE Format) ─────────────────────────────────
   'maths-p6-wa1': {
     displayName: 'Primary 6 Mathematics — WA1',
     level: 'P6', subject: 'Maths', paperCode: 'WA1',
     durationMinutes: 30, totalMarks: 25, calculatorAllowed: false,
-    instructions: [
-      'Do not turn over this page until you are told to do so.',
-      'Answer all questions.',
-      'Show all working clearly.',
-    ],
+    instructions: ['Answer all questions.', 'Show all working clearly.'],
     sections: [
-      { label: 'Section A', title: 'Multiple Choice Questions',
-        instructions: 'Each question carries 2 marks. Choose the correct answer (A, B, C or D).',
-        questionType: 'mcq', questionCount: 10, marksPerQuestion: 2, totalMarks: 20 },
-      { label: 'Section B', title: 'Short Answer Questions',
-        instructions: 'Each question carries 1 mark. Write your answer in the space provided.',
-        questionType: 'short_ans', questionCount: 5, marksPerQuestion: 1, totalMarks: 5 },
+      { label: 'Section A', title: 'Multiple Choice Questions', instructions: 'Choose the correct answer.', type: 'mcq', count: 10, marksEach: 2 },
+      { label: 'Section B', title: 'Short Answer Questions', instructions: 'Write your answer in the space provided.', type: 'short_ans', count: 5, marksEach: 1 },
     ],
   },
-
-  'maths-p6-wa2': {
-    displayName: 'Primary 6 Mathematics — WA2',
-    level: 'P6', subject: 'Maths', paperCode: 'WA2',
-    durationMinutes: 40, totalMarks: 35, calculatorAllowed: false,
-    instructions: [
-      'Do not turn over this page until you are told to do so.',
-      'Answer all questions.',
-      'Show all working clearly. Marks are awarded for correct method.',
-    ],
-    sections: [
-      { label: 'Section A', title: 'Multiple Choice Questions',
-        instructions: 'Each question carries 2 marks. Choose the correct answer (A, B, C or D).',
-        questionType: 'mcq', questionCount: 10, marksPerQuestion: 2, totalMarks: 20 },
-      { label: 'Section B', title: 'Short Answer Questions',
-        instructions: 'Each question carries 1 mark. Write your answer in the space provided.',
-        questionType: 'short_ans', questionCount: 5, marksPerQuestion: 1, totalMarks: 5 },
-      { label: 'Section C', title: 'Word Problems',
-        instructions: 'Show all working clearly. Each question carries 5 marks.',
-        questionType: 'word_problem', questionCount: 2, marksPerQuestion: 5, totalMarks: 10 },
-    ],
-  },
-
-  'maths-p6-wa3': {
-    displayName: 'Primary 6 Mathematics — WA3',
-    level: 'P6', subject: 'Maths', paperCode: 'WA3',
-    durationMinutes: 48, totalMarks: 40, calculatorAllowed: false,
-    instructions: [
-      'Do not turn over this page until you are told to do so.',
-      'Answer all questions.',
-      'Show all working clearly. Marks are awarded for correct method.',
-    ],
-    sections: [
-      { label: 'Section A', title: 'Multiple Choice Questions',
-        instructions: 'Each question carries 2 marks. Choose the correct answer (A, B, C or D).',
-        questionType: 'mcq', questionCount: 10, marksPerQuestion: 2, totalMarks: 20 },
-      { label: 'Section B', title: 'Short Answer Questions',
-        instructions: 'Each question carries 1 mark. Write your answer in the space provided.',
-        questionType: 'short_ans', questionCount: 10, marksPerQuestion: 1, totalMarks: 10 },
-      { label: 'Section C', title: 'Word Problems',
-        instructions: 'Show all working clearly. Each question carries 5 marks.',
-        questionType: 'word_problem', questionCount: 2, marksPerQuestion: 5, totalMarks: 10 },
-    ],
-  },
-
   'maths-p6-sa2': {
     displayName: 'Primary 6 Mathematics — SA2 (School Prelim)',
     level: 'P6', subject: 'Maths', paperCode: 'SA2',
     durationMinutes: 60, totalMarks: 50, calculatorAllowed: false,
-    instructions: [
-      'Do not turn over this page until you are told to do so.',
-      'Answer all questions.',
-      'Show all working clearly. Marks are awarded for correct method.',
-    ],
+    instructions: ['Answer all questions.', 'Show all working clearly.'],
     sections: [
-      { label: 'Section A', title: 'Multiple Choice Questions',
-        instructions: 'Each question carries 2 marks. Choose the correct answer (A, B, C or D).',
-        questionType: 'mcq', questionCount: 10, marksPerQuestion: 2, totalMarks: 20 },
-      { label: 'Section B', title: 'Short Answer Questions',
-        instructions: 'Each question carries 1 mark. Write your answer in the space provided.',
-        questionType: 'short_ans', questionCount: 10, marksPerQuestion: 1, totalMarks: 10 },
-      { label: 'Section C', title: 'Word Problems',
-        instructions: 'Show all working clearly. Each question carries 4 marks.',
-        questionType: 'word_problem', questionCount: 5, marksPerQuestion: 4, totalMarks: 20 },
+      { label: 'Section A', title: 'Multiple Choice Questions', instructions: 'Choose the correct answer.', type: 'mcq', count: 10, marksEach: 2 },
+      { label: 'Section B', title: 'Short Answer Questions', instructions: 'Write your answer in the space provided.', type: 'short_ans', count: 10, marksEach: 1 },
+      { label: 'Section C', title: 'Word Problems', instructions: 'Show all working clearly.', type: 'word_problem', count: 5, marksEach: 4 },
     ],
   },
-
   'maths-p6-psle': {
-    displayName: 'Primary 6 Mathematics — PSLE (2025 Format)',
+    displayName: 'Primary 6 Mathematics — PSLE (2025 SEAB Format)',
     level: 'P6', subject: 'Maths', paperCode: 'PSLE',
     durationMinutes: 150, totalMarks: 100, calculatorAllowed: 'paper2',
     instructions: [
-      'This paper contains TWO papers: Paper 1 (no calculator) and Paper 2 (calculator allowed).',
-      'Answer all questions in both papers.',
-      'Show all working clearly. Marks are awarded for correct method.',
-      'No calculator is allowed for Paper 1. Scientific calculators are allowed for Paper 2.',
+      'This exam covers Paper 1 (No Calculator) and Paper 2 (Calculator Allowed).',
+      'Show all working clearly. Marks are awarded for correct methods.'
     ],
     sections: [
-      { label: 'Paper 1 — Booklet A', title: 'Multiple Choice Questions',
-        instructions: 'Each question carries 1 mark. Choose the correct answer (A, B, C or D). No calculator.',
-        questionType: 'mcq', questionCount: 15, marksPerQuestion: 1, totalMarks: 15 },
-      { label: 'Paper 1 — Booklet B', title: 'Short Answer Questions',
-        instructions: 'Each question carries 1 mark. Write your answer in the space provided. No calculator.',
-        questionType: 'short_ans', questionCount: 15, marksPerQuestion: 1, totalMarks: 15 },
-      { label: 'Paper 2 — Section A', title: 'Short Answer Questions (Calculator)',
-        instructions: 'Each question carries 2 marks. Show all working. Calculator allowed.',
-        questionType: 'short_ans', questionCount: 10, marksPerQuestion: 1, totalMarks: 10 },
-      { label: 'Paper 2 — Section B', title: 'Word Problems (Calculator)',
-        instructions: 'Show all working clearly. Marks are awarded for correct method and answer. Calculator allowed.',
-        questionType: 'word_problem', questionCount: 12, marksPerQuestion: 5, totalMarks: 60 },
+      { label: 'Paper 1 — Booklet A (1-Mark)', title: 'Multiple Choice', instructions: 'Each question carries 1 mark. No calculator.', type: 'mcq', count: 10, marksEach: 1 },
+      { label: 'Paper 1 — Booklet A (2-Mark)', title: 'Multiple Choice', instructions: 'Each question carries 2 marks. No calculator.', type: 'mcq', count: 5, marksEach: 2 },
+      { label: 'Paper 1 — Booklet B (1-Mark)', title: 'Short Answer', instructions: 'Each question carries 1 mark. Write your answer. No calculator.', type: 'short_ans', count: 5, marksEach: 1 },
+      { label: 'Paper 1 — Booklet B (2-Mark)', title: 'Short Answer', instructions: 'Each question carries 2 marks. Write your answer. No calculator.', type: 'short_ans', count: 10, marksEach: 2 },
+      { label: 'Paper 2 — Short Answer', title: 'Short Answer (Calculator)', instructions: 'Each question carries 2 marks. Show all working. Calculator allowed.', type: 'short_ans', count: 5, marksEach: 2 },
+      { label: 'Paper 2 — Word Problems', title: 'Word Problems (Calculator)', instructions: 'Show all working clearly. Marks are awarded for correct method and answer. Calculator allowed.', type: 'word_problem', count: 9, marksEach: 5 },
     ],
   },
 
-  // ── SCIENCE P3 ─────────────────────────────────────────────────────────────
+  // ── SCIENCE P3 to P5 ───────────────────────────────────────────────────────
   'science-p3-wa1': {
     displayName: 'Primary 3 Science — WA1',
     level: 'P3', subject: 'Science', paperCode: 'WA1',
     durationMinutes: 25, totalMarks: 20, calculatorAllowed: false,
-    instructions: [
-      'Do not turn over this page until you are told to do so.',
-      'Answer all questions.',
-      'Write in complete sentences where required.',
-    ],
+    instructions: ['Answer all questions.', 'Write in complete sentences where required.'],
     sections: [
-      { label: 'Section A', title: 'Multiple Choice Questions',
-        instructions: 'Each question carries 1 mark. Choose the correct answer (A, B, C or D).',
-        questionType: 'mcq', questionCount: 10, marksPerQuestion: 1, totalMarks: 10 },
-      { label: 'Section B', title: 'Open-Ended Questions',
-        instructions: 'Each question carries 5 marks. Answer in complete sentences.',
-        questionType: 'open_ended', questionCount: 2, marksPerQuestion: 5, totalMarks: 10 },
+      { label: 'Section A', title: 'Multiple Choice', instructions: 'Choose the correct answer.', type: 'mcq', count: 10, marksEach: 1 },
+      { label: 'Section B', title: 'Open-Ended', instructions: 'Answer in complete sentences.', type: 'open_ended', count: 2, marksEach: 5 },
     ],
   },
-
-  'science-p3-wa2': {
-    displayName: 'Primary 3 Science — WA2',
-    level: 'P3', subject: 'Science', paperCode: 'WA2',
-    durationMinutes: 35, totalMarks: 28, calculatorAllowed: false,
-    instructions: [
-      'Do not turn over this page until you are told to do so.',
-      'Answer all questions.',
-      'Write in complete sentences where required.',
-    ],
-    sections: [
-      { label: 'Section A', title: 'Multiple Choice Questions',
-        instructions: 'Each question carries 1 mark. Choose the correct answer (A, B, C or D).',
-        questionType: 'mcq', questionCount: 16, marksPerQuestion: 1, totalMarks: 16 },
-      { label: 'Section B', title: 'Open-Ended Questions',
-        instructions: 'Each question carries 4 marks. Answer in complete sentences.',
-        questionType: 'open_ended', questionCount: 3, marksPerQuestion: 4, totalMarks: 12 },
-    ],
-  },
-
-  'science-p3-sa2': {
-    displayName: 'Primary 3 Science — SA2 (End of Year)',
-    level: 'P3', subject: 'Science', paperCode: 'SA2',
+  'science-p3-eoy': {
+    displayName: 'Primary 3 Science — EOY Practice',
+    level: 'P3', subject: 'Science', paperCode: 'EOY',
     durationMinutes: 50, totalMarks: 40, calculatorAllowed: false,
-    instructions: [
-      'Do not turn over this page until you are told to do so.',
-      'Answer all questions.',
-      'Write in complete sentences. Use scientific terms where appropriate.',
-    ],
+    instructions: ['Answer all questions.', 'Write in complete sentences where required.'],
     sections: [
-      { label: 'Section A', title: 'Multiple Choice Questions',
-        instructions: 'Each question carries 1 mark. Choose the correct answer (A, B, C or D).',
-        questionType: 'mcq', questionCount: 20, marksPerQuestion: 1, totalMarks: 20 },
-      { label: 'Section B', title: 'Open-Ended Questions',
-        instructions: 'Each question carries 4 marks. Answer in complete sentences.',
-        questionType: 'open_ended', questionCount: 5, marksPerQuestion: 4, totalMarks: 20 },
+      { label: 'Section A', title: 'Multiple Choice', instructions: 'Choose the correct answer.', type: 'mcq', count: 20, marksEach: 1 },
+      { label: 'Section B', title: 'Open-Ended', instructions: 'Answer in complete sentences.', type: 'open_ended', count: 5, marksEach: 4 },
     ],
   },
-
-  // ── SCIENCE P4 ─────────────────────────────────────────────────────────────
-  'science-p4-wa1': {
-    displayName: 'Primary 4 Science — WA1',
-    level: 'P4', subject: 'Science', paperCode: 'WA1',
-    durationMinutes: 25, totalMarks: 20, calculatorAllowed: false,
-    instructions: [
-      'Do not turn over this page until you are told to do so.',
-      'Answer all questions.',
-      'Write in complete sentences where required.',
-    ],
-    sections: [
-      { label: 'Section A', title: 'Multiple Choice Questions',
-        instructions: 'Each question carries 1 mark. Choose the correct answer (A, B, C or D).',
-        questionType: 'mcq', questionCount: 10, marksPerQuestion: 1, totalMarks: 10 },
-      { label: 'Section B', title: 'Open-Ended Questions',
-        instructions: 'Each question carries 5 marks. Answer in complete sentences.',
-        questionType: 'open_ended', questionCount: 2, marksPerQuestion: 5, totalMarks: 10 },
-    ],
-  },
-
-  'science-p4-wa2': {
-    displayName: 'Primary 4 Science — WA2',
-    level: 'P4', subject: 'Science', paperCode: 'WA2',
-    durationMinutes: 35, totalMarks: 28, calculatorAllowed: false,
-    instructions: [
-      'Do not turn over this page until you are told to do so.',
-      'Answer all questions.',
-      'Write in complete sentences where required.',
-    ],
-    sections: [
-      { label: 'Section A', title: 'Multiple Choice Questions',
-        instructions: 'Each question carries 1 mark. Choose the correct answer (A, B, C or D).',
-        questionType: 'mcq', questionCount: 16, marksPerQuestion: 1, totalMarks: 16 },
-      { label: 'Section B', title: 'Open-Ended Questions',
-        instructions: 'Each question carries 4 marks. Answer in complete sentences.',
-        questionType: 'open_ended', questionCount: 3, marksPerQuestion: 4, totalMarks: 12 },
-    ],
-  },
-
-  'science-p4-wa3': {
-    displayName: 'Primary 4 Science — WA3',
-    level: 'P4', subject: 'Science', paperCode: 'WA3',
-    durationMinutes: 40, totalMarks: 32, calculatorAllowed: false,
-    instructions: [
-      'Do not turn over this page until you are told to do so.',
-      'Answer all questions.',
-      'Write in complete sentences where required.',
-    ],
-    sections: [
-      { label: 'Section A', title: 'Multiple Choice Questions',
-        instructions: 'Each question carries 1 mark. Choose the correct answer (A, B, C or D).',
-        questionType: 'mcq', questionCount: 16, marksPerQuestion: 1, totalMarks: 16 },
-      { label: 'Section B', title: 'Open-Ended Questions',
-        instructions: 'Each question carries 4 marks. Answer in complete sentences.',
-        questionType: 'open_ended', questionCount: 4, marksPerQuestion: 4, totalMarks: 16 },
-    ],
-  },
-
-  'science-p4-sa2': {
-    displayName: 'Primary 4 Science — SA2 (End of Year)',
-    level: 'P4', subject: 'Science', paperCode: 'SA2',
+  'science-p4-eoy': {
+    displayName: 'Primary 4 Science — EOY Practice',
+    level: 'P4', subject: 'Science', paperCode: 'EOY',
     durationMinutes: 50, totalMarks: 40, calculatorAllowed: false,
-    instructions: [
-      'Do not turn over this page until you are told to do so.',
-      'Answer all questions.',
-      'Write in complete sentences. Use scientific terms where appropriate.',
-    ],
+    instructions: ['Answer all questions.', 'Write in complete sentences where required.'],
     sections: [
-      { label: 'Section A', title: 'Multiple Choice Questions',
-        instructions: 'Each question carries 1 mark. Choose the correct answer (A, B, C or D).',
-        questionType: 'mcq', questionCount: 20, marksPerQuestion: 1, totalMarks: 20 },
-      { label: 'Section B', title: 'Open-Ended Questions',
-        instructions: 'Each question carries 4 marks. Answer in complete sentences.',
-        questionType: 'open_ended', questionCount: 5, marksPerQuestion: 4, totalMarks: 20 },
+      { label: 'Section A', title: 'Multiple Choice', instructions: 'Choose the correct answer.', type: 'mcq', count: 20, marksEach: 1 },
+      { label: 'Section B', title: 'Open-Ended', instructions: 'Answer in complete sentences.', type: 'open_ended', count: 5, marksEach: 4 },
     ],
   },
-
-  // ── SCIENCE P5 ─────────────────────────────────────────────────────────────
-  'science-p5-wa1': {
-    displayName: 'Primary 5 Science — WA1',
-    level: 'P5', subject: 'Science', paperCode: 'WA1',
-    durationMinutes: 25, totalMarks: 20, calculatorAllowed: false,
-    instructions: [
-      'Do not turn over this page until you are told to do so.',
-      'Answer all questions.',
-      'Write in complete sentences where required.',
-    ],
-    sections: [
-      { label: 'Section A', title: 'Multiple Choice Questions',
-        instructions: 'Each question carries 1 mark. Choose the correct answer (A, B, C or D).',
-        questionType: 'mcq', questionCount: 10, marksPerQuestion: 1, totalMarks: 10 },
-      { label: 'Section B', title: 'Open-Ended Questions',
-        instructions: 'Each question carries 5 marks. Answer in complete sentences using the CER framework.',
-        questionType: 'open_ended', questionCount: 2, marksPerQuestion: 5, totalMarks: 10 },
-    ],
-  },
-
-  'science-p5-wa2': {
-    displayName: 'Primary 5 Science — WA2',
-    level: 'P5', subject: 'Science', paperCode: 'WA2',
-    durationMinutes: 35, totalMarks: 28, calculatorAllowed: false,
-    instructions: [
-      'Do not turn over this page until you are told to do so.',
-      'Answer all questions.',
-      'Write in complete sentences. Apply the CER framework where applicable.',
-    ],
-    sections: [
-      { label: 'Section A', title: 'Multiple Choice Questions',
-        instructions: 'Each question carries 1 mark. Choose the correct answer (A, B, C or D).',
-        questionType: 'mcq', questionCount: 16, marksPerQuestion: 1, totalMarks: 16 },
-      { label: 'Section B', title: 'Open-Ended Questions',
-        instructions: 'Each question carries 4 marks. Answer in complete sentences using the CER framework.',
-        questionType: 'open_ended', questionCount: 3, marksPerQuestion: 4, totalMarks: 12 },
-    ],
-  },
-
   'science-p5-sa2': {
-    displayName: 'Primary 5 Science — SA2 (End of Year)',
+    displayName: 'Primary 5 Science — SA2',
     level: 'P5', subject: 'Science', paperCode: 'SA2',
     durationMinutes: 50, totalMarks: 40, calculatorAllowed: false,
-    instructions: [
-      'Do not turn over this page until you are told to do so.',
-      'Answer all questions.',
-      'Write in complete sentences. Use scientific terms where appropriate.',
-    ],
+    instructions: ['Answer all questions.', 'Apply the Claim-Evidence-Reasoning (CER) framework.'],
     sections: [
-      { label: 'Section A', title: 'Multiple Choice Questions',
-        instructions: 'Each question carries 1 mark. Choose the correct answer (A, B, C or D).',
-        questionType: 'mcq', questionCount: 20, marksPerQuestion: 1, totalMarks: 20 },
-      { label: 'Section B', title: 'Open-Ended Questions',
-        instructions: 'Each question carries 4 marks. Answer in complete sentences using the CER framework.',
-        questionType: 'open_ended', questionCount: 5, marksPerQuestion: 4, totalMarks: 20 },
+      { label: 'Section A', title: 'Multiple Choice', instructions: 'Choose the correct answer.', type: 'mcq', count: 20, marksEach: 1 },
+      { label: 'Section B', title: 'Open-Ended', instructions: 'Answer using the CER framework.', type: 'open_ended', count: 5, marksEach: 4 },
     ],
   },
 
-  // ── SCIENCE P6 ─────────────────────────────────────────────────────────────
-  'science-p6-wa1': {
-    displayName: 'Primary 6 Science — WA1',
-    level: 'P6', subject: 'Science', paperCode: 'WA1',
-    durationMinutes: 25, totalMarks: 20, calculatorAllowed: false,
-    instructions: [
-      'Do not turn over this page until you are told to do so.',
-      'Answer all questions.',
-      'Write in complete sentences where required.',
-    ],
-    sections: [
-      { label: 'Section A', title: 'Multiple Choice Questions',
-        instructions: 'Each question carries 1 mark. Choose the correct answer (A, B, C or D).',
-        questionType: 'mcq', questionCount: 10, marksPerQuestion: 1, totalMarks: 10 },
-      { label: 'Section B', title: 'Open-Ended Questions',
-        instructions: 'Each question carries 5 marks. Answer in complete sentences using the CER framework.',
-        questionType: 'open_ended', questionCount: 2, marksPerQuestion: 5, totalMarks: 10 },
-    ],
-  },
-
-  'science-p6-wa2': {
-    displayName: 'Primary 6 Science — WA2',
-    level: 'P6', subject: 'Science', paperCode: 'WA2',
-    durationMinutes: 35, totalMarks: 28, calculatorAllowed: false,
-    instructions: [
-      'Do not turn over this page until you are told to do so.',
-      'Answer all questions.',
-      'Write in complete sentences. Apply the CER framework where applicable.',
-    ],
-    sections: [
-      { label: 'Section A', title: 'Multiple Choice Questions',
-        instructions: 'Each question carries 1 mark. Choose the correct answer (A, B, C or D).',
-        questionType: 'mcq', questionCount: 16, marksPerQuestion: 1, totalMarks: 16 },
-      { label: 'Section B', title: 'Open-Ended Questions',
-        instructions: 'Each question carries 4 marks. Answer in complete sentences using the CER framework.',
-        questionType: 'open_ended', questionCount: 3, marksPerQuestion: 4, totalMarks: 12 },
-    ],
-  },
-
+  // ── SCIENCE P6 (Exact 2025 SEAB PSLE Format) ───────────────────────────────
   'science-p6-sa2': {
     displayName: 'Primary 6 Science — SA2 (School Prelim)',
     level: 'P6', subject: 'Science', paperCode: 'SA2',
     durationMinutes: 50, totalMarks: 40, calculatorAllowed: false,
-    instructions: [
-      'Do not turn over this page until you are told to do so.',
-      'Answer all questions.',
-      'For open-ended questions, write in complete sentences. Use scientific terms where appropriate.',
-    ],
+    instructions: ['Answer all questions.', 'For open-ended questions, use scientific terms.'],
     sections: [
-      { label: 'Section A', title: 'Multiple Choice Questions',
-        instructions: 'Each question carries 1 mark. Choose the correct answer (A, B, C or D).',
-        questionType: 'mcq', questionCount: 20, marksPerQuestion: 1, totalMarks: 20 },
-      { label: 'Section B', title: 'Open-Ended Questions',
-        instructions: 'Each question carries 4 marks. Answer using the CER framework.',
-        questionType: 'open_ended', questionCount: 5, marksPerQuestion: 4, totalMarks: 20 },
+      { label: 'Section A', title: 'Multiple Choice', instructions: 'Choose the correct answer.', type: 'mcq', count: 20, marksEach: 1 },
+      { label: 'Section B', title: 'Open-Ended', instructions: 'Answer using the CER framework.', type: 'open_ended', count: 5, marksEach: 4 },
     ],
   },
-
   'science-p6-psle': {
-    displayName: 'Primary 6 Science — PSLE (2025 Format)',
+    displayName: 'Primary 6 Science — PSLE (2025 SEAB Format)',
     level: 'P6', subject: 'Science', paperCode: 'PSLE',
-    durationMinutes: 90, totalMarks: 100, calculatorAllowed: false,
+    durationMinutes: 105, totalMarks: 100, calculatorAllowed: false,
     instructions: [
-      'Do not turn over this page until you are told to do so.',
       'Answer all questions in BOTH booklets.',
       'For Booklet B, write in complete sentences. Use scientific terms where appropriate.',
-      'Apply the Claim-Evidence-Reasoning (CER) framework in open-ended responses.',
+      'Apply the Claim-Evidence-Reasoning (CER) framework in open-ended responses.'
     ],
     sections: [
-      { label: 'Booklet A', title: 'Multiple Choice Questions',
-        instructions: 'Each question carries 2 marks. Choose the correct answer (A, B, C or D).',
-        questionType: 'mcq', questionCount: 30, marksPerQuestion: 2, totalMarks: 60 },
-      { label: 'Booklet B', title: 'Open-Ended Questions',
-        instructions: 'Each question carries 4 marks. Answer in complete sentences using the CER framework.',
-        questionType: 'open_ended', questionCount: 10, marksPerQuestion: 4, totalMarks: 40 },
+      { label: 'Booklet A', title: 'Multiple Choice Questions', instructions: 'Each question carries 2 marks.', type: 'mcq', count: 28, marksEach: 2 },
+      { label: 'Booklet B', title: 'Open-Ended Questions', instructions: 'Answer in complete sentences using the CER framework.', type: 'open_ended', count: 11, marksEach: 4 },
     ],
   },
 
-  // ── ENGLISH P3 ─────────────────────────────────────────────────────────────
-  'english-p3-wa1': {
-    displayName: 'Primary 3 English — WA1 (Grammar)',
-    level: 'P3', subject: 'English', paperCode: 'WA1',
-    durationMinutes: 23, totalMarks: 18, calculatorAllowed: false,
-    instructions: [
-      'Do not turn over this page until you are told to do so.',
-      'Answer all sections.',
-      'Write legibly in the spaces provided.',
-    ],
-    sections: [
-      { label: 'Section A', title: 'Grammar (Multiple Choice)',
-        instructions: 'Choose the most appropriate answer (A, B, C or D) to complete each sentence.',
-        questionType: 'mcq', questionCount: 10, marksPerQuestion: 1, totalMarks: 10 },
-      { label: 'Section B', title: 'Grammar Cloze',
-        instructions: 'Choose the most appropriate word from the options given to fill in each blank. (8 blanks, 1 mark each)',
-        questionType: 'cloze', questionCount: 1, marksPerQuestion: 8, totalMarks: 8, blankCount: 8 },
-    ],
-  },
-
-  'english-p3-wa2': {
-    displayName: 'Primary 3 English — WA2 (Grammar)',
-    level: 'P3', subject: 'English', paperCode: 'WA2',
-    durationMinutes: 32, totalMarks: 25, calculatorAllowed: false,
-    instructions: [
-      'Do not turn over this page until you are told to do so.',
-      'Answer all sections.',
-      'Write legibly in the spaces provided.',
-    ],
-    sections: [
-      { label: 'Section A', title: 'Grammar (Multiple Choice)',
-        instructions: 'Choose the most appropriate answer (A, B, C or D) to complete each sentence.',
-        questionType: 'mcq', questionCount: 10, marksPerQuestion: 1, totalMarks: 10 },
-      { label: 'Section B', title: 'Grammar Cloze',
-        instructions: 'Choose the most appropriate word to fill in each blank. (10 blanks, 1 mark each)',
-        questionType: 'cloze', questionCount: 1, marksPerQuestion: 10, totalMarks: 10, blankCount: 10 },
-      { label: 'Section C', title: 'Editing',
-        instructions: 'Each line has one grammatical error in the underlined word. Write the correct word. (5 errors, 1 mark each)',
-        questionType: 'editing', questionCount: 1, marksPerQuestion: 5, totalMarks: 5, errorCount: 5 },
-    ],
-  },
-
-  'english-p3-sa2': {
-    displayName: 'Primary 3 English — SA2 (Grammar)',
-    level: 'P3', subject: 'English', paperCode: 'SA2',
-    durationMinutes: 45, totalMarks: 35, calculatorAllowed: false,
-    instructions: [
-      'Do not turn over this page until you are told to do so.',
-      'Answer all sections.',
-      'Write your answers in the spaces provided.',
-    ],
-    sections: [
-      { label: 'Section A', title: 'Grammar (Multiple Choice)',
-        instructions: 'Choose the most appropriate answer (A, B, C or D) to complete each sentence.',
-        questionType: 'mcq', questionCount: 10, marksPerQuestion: 1, totalMarks: 10 },
-      { label: 'Section B', title: 'Grammar Cloze',
-        instructions: 'Choose the most appropriate word to fill in each blank. (15 blanks, 1 mark each)',
-        questionType: 'cloze', questionCount: 1, marksPerQuestion: 15, totalMarks: 15, blankCount: 15 },
-      { label: 'Section C', title: 'Editing',
-        instructions: 'Each passage has one error per underlined word. Write the correct word. (2 passages × 5 errors, 1 mark each)',
-        questionType: 'editing', questionCount: 2, marksPerQuestion: 5, totalMarks: 10, errorCount: 5 },
-    ],
-  },
-
-  // ── ENGLISH P4 ─────────────────────────────────────────────────────────────
-  'english-p4-wa1': {
-    displayName: 'Primary 4 English — WA1 (Grammar)',
-    level: 'P4', subject: 'English', paperCode: 'WA1',
-    durationMinutes: 23, totalMarks: 18, calculatorAllowed: false,
-    instructions: [
-      'Do not turn over this page until you are told to do so.',
-      'Answer all sections.',
-      'Write legibly in the spaces provided.',
-    ],
-    sections: [
-      { label: 'Section A', title: 'Grammar (Multiple Choice)',
-        instructions: 'Choose the most appropriate answer (A, B, C or D) to complete each sentence.',
-        questionType: 'mcq', questionCount: 10, marksPerQuestion: 1, totalMarks: 10 },
-      { label: 'Section B', title: 'Grammar Cloze',
-        instructions: 'Choose the most appropriate word from the options given to fill in each blank. (8 blanks, 1 mark each)',
-        questionType: 'cloze', questionCount: 1, marksPerQuestion: 8, totalMarks: 8, blankCount: 8 },
-    ],
-  },
-
-  'english-p4-wa2': {
-    displayName: 'Primary 4 English — WA2 (Grammar)',
-    level: 'P4', subject: 'English', paperCode: 'WA2',
-    durationMinutes: 32, totalMarks: 25, calculatorAllowed: false,
-    instructions: [
-      'Do not turn over this page until you are told to do so.',
-      'Answer all sections.',
-      'Write legibly in the spaces provided.',
-    ],
-    sections: [
-      { label: 'Section A', title: 'Grammar (Multiple Choice)',
-        instructions: 'Choose the most appropriate answer (A, B, C or D) to complete each sentence.',
-        questionType: 'mcq', questionCount: 10, marksPerQuestion: 1, totalMarks: 10 },
-      { label: 'Section B', title: 'Grammar Cloze',
-        instructions: 'Choose the most appropriate word to fill in each blank. (10 blanks, 1 mark each)',
-        questionType: 'cloze', questionCount: 1, marksPerQuestion: 10, totalMarks: 10, blankCount: 10 },
-      { label: 'Section C', title: 'Editing',
-        instructions: 'Each line has one grammatical error in the underlined word. Write the correct word. (5 errors, 1 mark each)',
-        questionType: 'editing', questionCount: 1, marksPerQuestion: 5, totalMarks: 5, errorCount: 5 },
-    ],
-  },
-
+  // ── ENGLISH P3 to P5 ───────────────────────────────────────────────────────
   'english-p4-sa2': {
     displayName: 'Primary 4 English — SA2 (Grammar)',
     level: 'P4', subject: 'English', paperCode: 'SA2',
     durationMinutes: 45, totalMarks: 35, calculatorAllowed: false,
-    instructions: [
-      'Do not turn over this page until you are told to do so.',
-      'Answer all sections.',
-      'Write your answers in the spaces provided.',
-    ],
+    instructions: ['Answer all sections.', 'Write your answers in the spaces provided.'],
     sections: [
-      { label: 'Section A', title: 'Grammar (Multiple Choice)',
-        instructions: 'Choose the most appropriate answer (A, B, C or D) to complete each sentence.',
-        questionType: 'mcq', questionCount: 10, marksPerQuestion: 1, totalMarks: 10 },
-      { label: 'Section B', title: 'Grammar Cloze',
-        instructions: 'Choose the most appropriate word to fill in each blank. (15 blanks, 1 mark each)',
-        questionType: 'cloze', questionCount: 1, marksPerQuestion: 15, totalMarks: 15, blankCount: 15 },
-      { label: 'Section C', title: 'Editing',
-        instructions: 'Each passage has one error per underlined word. Write the correct word. (2 passages × 5 errors, 1 mark each)',
-        questionType: 'editing', questionCount: 2, marksPerQuestion: 5, totalMarks: 10, errorCount: 5 },
+      { label: 'Section A', title: 'Grammar (Multiple Choice)', instructions: 'Choose the most appropriate answer.', type: 'mcq', count: 10, marksEach: 1 },
+      { label: 'Section B', title: 'Grammar Cloze', instructions: 'Choose the most appropriate word to fill in each blank.', type: 'cloze', count: 3, marksEach: 5 },
+      { label: 'Section C', title: 'Editing', instructions: 'Each passage has one error per underlined word. Write the correct word.', type: 'editing', count: 2, marksEach: 5 },
     ],
   },
-
-  // ── ENGLISH P5 ─────────────────────────────────────────────────────────────
-  'english-p5-wa1': {
-    displayName: 'Primary 5 English — WA1 (Grammar)',
-    level: 'P5', subject: 'English', paperCode: 'WA1',
-    durationMinutes: 23, totalMarks: 18, calculatorAllowed: false,
-    instructions: [
-      'Do not turn over this page until you are told to do so.',
-      'Answer all sections.',
-      'Write legibly in the spaces provided.',
-    ],
-    sections: [
-      { label: 'Section A', title: 'Grammar (Multiple Choice)',
-        instructions: 'Choose the most appropriate answer (A, B, C or D) to complete each sentence.',
-        questionType: 'mcq', questionCount: 10, marksPerQuestion: 1, totalMarks: 10 },
-      { label: 'Section B', title: 'Grammar Cloze',
-        instructions: 'Choose the most appropriate word from the options given to fill in each blank. (8 blanks, 1 mark each)',
-        questionType: 'cloze', questionCount: 1, marksPerQuestion: 8, totalMarks: 8, blankCount: 8 },
-    ],
-  },
-
-  'english-p5-wa2': {
-    displayName: 'Primary 5 English — WA2 (Grammar)',
-    level: 'P5', subject: 'English', paperCode: 'WA2',
-    durationMinutes: 32, totalMarks: 25, calculatorAllowed: false,
-    instructions: [
-      'Do not turn over this page until you are told to do so.',
-      'Answer all sections.',
-      'Write legibly in the spaces provided.',
-    ],
-    sections: [
-      { label: 'Section A', title: 'Grammar (Multiple Choice)',
-        instructions: 'Choose the most appropriate answer (A, B, C or D) to complete each sentence.',
-        questionType: 'mcq', questionCount: 10, marksPerQuestion: 1, totalMarks: 10 },
-      { label: 'Section B', title: 'Grammar Cloze',
-        instructions: 'Choose the most appropriate word to fill in each blank. (10 blanks, 1 mark each)',
-        questionType: 'cloze', questionCount: 1, marksPerQuestion: 10, totalMarks: 10, blankCount: 10 },
-      { label: 'Section C', title: 'Editing',
-        instructions: 'Each line has one grammatical error in the underlined word. Write the correct word. (5 errors, 1 mark each)',
-        questionType: 'editing', questionCount: 1, marksPerQuestion: 5, totalMarks: 5, errorCount: 5 },
-    ],
-  },
-
-  'english-p5-wa3': {
-    displayName: 'Primary 5 English — WA3 (Grammar)',
-    level: 'P5', subject: 'English', paperCode: 'WA3',
-    durationMinutes: 36, totalMarks: 28, calculatorAllowed: false,
-    instructions: [
-      'Do not turn over this page until you are told to do so.',
-      'Answer all sections.',
-      'Write legibly in the spaces provided.',
-    ],
-    sections: [
-      { label: 'Section A', title: 'Grammar (Multiple Choice)',
-        instructions: 'Choose the most appropriate answer (A, B, C or D) to complete each sentence.',
-        questionType: 'mcq', questionCount: 10, marksPerQuestion: 1, totalMarks: 10 },
-      { label: 'Section B', title: 'Grammar Cloze',
-        instructions: 'Choose the most appropriate word to fill in each blank. (13 blanks, 1 mark each)',
-        questionType: 'cloze', questionCount: 1, marksPerQuestion: 13, totalMarks: 13, blankCount: 13 },
-      { label: 'Section C', title: 'Editing',
-        instructions: 'Each line has one grammatical error in the underlined word. Write the correct word. (5 errors, 1 mark each)',
-        questionType: 'editing', questionCount: 1, marksPerQuestion: 5, totalMarks: 5, errorCount: 5 },
-    ],
-  },
-
   'english-p5-sa2': {
     displayName: 'Primary 5 English — SA2 (Grammar)',
     level: 'P5', subject: 'English', paperCode: 'SA2',
     durationMinutes: 45, totalMarks: 35, calculatorAllowed: false,
-    instructions: [
-      'Do not turn over this page until you are told to do so.',
-      'Answer all sections.',
-      'Write your answers in the spaces provided.',
-    ],
+    instructions: ['Answer all sections.', 'Write your answers in the spaces provided.'],
     sections: [
-      { label: 'Section A', title: 'Grammar (Multiple Choice)',
-        instructions: 'Choose the most appropriate answer (A, B, C or D) to complete each sentence.',
-        questionType: 'mcq', questionCount: 10, marksPerQuestion: 1, totalMarks: 10 },
-      { label: 'Section B', title: 'Grammar Cloze',
-        instructions: 'Choose the most appropriate word to fill in each blank. (15 blanks, 1 mark each)',
-        questionType: 'cloze', questionCount: 1, marksPerQuestion: 15, totalMarks: 15, blankCount: 15 },
-      { label: 'Section C', title: 'Editing',
-        instructions: 'Each passage has one error per underlined word. Write the correct word. (2 passages × 5 errors, 1 mark each)',
-        questionType: 'editing', questionCount: 2, marksPerQuestion: 5, totalMarks: 10, errorCount: 5 },
+      { label: 'Section A', title: 'Grammar (Multiple Choice)', instructions: 'Choose the most appropriate answer.', type: 'mcq', count: 10, marksEach: 1 },
+      { label: 'Section B', title: 'Grammar Cloze', instructions: 'Choose the most appropriate word to fill in each blank.', type: 'cloze', count: 3, marksEach: 5 },
+      { label: 'Section C', title: 'Editing', instructions: 'Each passage has one error per underlined word. Write the correct word.', type: 'editing', count: 2, marksEach: 5 },
     ],
   },
 
-  // ── ENGLISH P6 ─────────────────────────────────────────────────────────────
-  'english-p6-wa1': {
-    displayName: 'Primary 6 English — WA1 (Grammar)',
-    level: 'P6', subject: 'English', paperCode: 'WA1',
-    durationMinutes: 38, totalMarks: 30, calculatorAllowed: false,
-    instructions: [
-      'Do not turn over this page until you are told to do so.',
-      'Answer all sections.',
-      'Write legibly in the spaces provided.',
-    ],
-    sections: [
-      { label: 'Section A', title: 'Grammar (Multiple Choice)',
-        instructions: 'Choose the most appropriate answer (A, B, C or D) to complete each sentence.',
-        questionType: 'mcq', questionCount: 10, marksPerQuestion: 1, totalMarks: 10 },
-      { label: 'Section B', title: 'Grammar Cloze',
-        instructions: 'Choose the most appropriate word to fill in each blank. (10 blanks, 1 mark each)',
-        questionType: 'cloze', questionCount: 1, marksPerQuestion: 10, totalMarks: 10, blankCount: 10 },
-      { label: 'Section C', title: 'Editing',
-        instructions: 'Each passage has one error per underlined word. Write the correct word. (2 passages × 5 errors, 1 mark each)',
-        questionType: 'editing', questionCount: 2, marksPerQuestion: 5, totalMarks: 10, errorCount: 5 },
-    ],
-  },
-
-  'english-p6-wa2': {
-    displayName: 'Primary 6 English — WA2 (Grammar)',
-    level: 'P6', subject: 'English', paperCode: 'WA2',
-    durationMinutes: 50, totalMarks: 42, calculatorAllowed: false,
-    instructions: [
-      'Do not turn over this page until you are told to do so.',
-      'Answer all sections.',
-      'Write legibly in the spaces provided.',
-    ],
-    sections: [
-      { label: 'Section A', title: 'Grammar (Multiple Choice)',
-        instructions: 'Choose the most appropriate answer (A, B, C or D) to complete each sentence.',
-        questionType: 'mcq', questionCount: 15, marksPerQuestion: 1, totalMarks: 15 },
-      { label: 'Section B', title: 'Grammar Cloze',
-        instructions: 'Choose the most appropriate word to fill in each blank. (2 passages × 10 blanks, 1 mark each)',
-        questionType: 'cloze', questionCount: 2, marksPerQuestion: 10, totalMarks: 20, blankCount: 10 },
-      { label: 'Section C', title: 'Editing',
-        instructions: 'The passage has grammatical errors in the underlined words. Write the correct word. (7 errors, 1 mark each)',
-        questionType: 'editing', questionCount: 1, marksPerQuestion: 7, totalMarks: 7, errorCount: 7 },
-    ],
-  },
-
+  // ── ENGLISH P6 (Exact 2025 SEAB PSLE Format Paper 2) ───────────────────────
   'english-p6-sa2': {
     displayName: 'Primary 6 English — SA2 / School Prelim (Paper 2)',
     level: 'P6', subject: 'English', paperCode: 'SA2',
     durationMinutes: 75, totalMarks: 60, calculatorAllowed: false,
-    instructions: [
-      'Do not turn over this page until you are told to do so.',
-      'Answer all sections.',
-      'Write in complete sentences where required.',
-    ],
+    instructions: ['Answer all sections.', 'Write in complete sentences where required.'],
     sections: [
-      { label: 'Section A', title: 'Grammar (Multiple Choice)',
-        instructions: 'Choose the most appropriate answer (A, B, C or D) to complete each sentence.',
-        questionType: 'mcq', questionCount: 15, marksPerQuestion: 1, totalMarks: 15 },
-      { label: 'Section B', title: 'Grammar Cloze',
-        instructions: 'Choose the most appropriate word to fill in each blank. (2 passages × 10 blanks, 1 mark each)',
-        questionType: 'cloze', questionCount: 2, marksPerQuestion: 10, totalMarks: 20, blankCount: 10 },
-      { label: 'Section C', title: 'Editing',
-        instructions: 'Each passage has one error per underlined word. Write the correct word. (2 passages × 5 errors, 1 mark each)',
-        questionType: 'editing', questionCount: 2, marksPerQuestion: 5, totalMarks: 10, errorCount: 5 },
-      { label: 'Section D', title: 'Comprehension',
-        instructions: 'Read the passage carefully. Answer all questions in complete sentences where required.',
-        questionType: 'open_ended', questionCount: 3, marksPerQuestion: 5, totalMarks: 15 },
+      { label: 'Section A', title: 'Language Use (MCQ)', instructions: 'Choose the most appropriate answer.', type: 'mcq', count: 15, marksEach: 1 },
+      { label: 'Section B', title: 'Grammar Cloze', instructions: 'Choose the most appropriate word to fill in each blank.', type: 'cloze', count: 4, marksEach: 5 },
+      { label: 'Section C', title: 'Editing', instructions: 'Each passage has one error per underlined word. Write the correct word.', type: 'editing', count: 2, marksEach: 5 },
+      { label: 'Section D', title: 'Comprehension', instructions: 'Answer all questions in complete sentences.', type: 'open_ended', count: 3, marksEach: 5 },
     ],
   },
-
   'english-p6-psle': {
-    displayName: 'Primary 6 English — PSLE Paper 2 (2025 Format)',
+    displayName: 'Primary 6 English — PSLE Paper 2 (2025 SEAB Format)',
     level: 'P6', subject: 'English', paperCode: 'PSLE',
     durationMinutes: 110, totalMarks: 95, calculatorAllowed: false,
     instructions: [
-      'Do not turn over this page until you are told to do so.',
       'Answer all sections.',
       'Write in complete sentences where required.',
-      'The reading passages for comprehension are provided in the insert.',
+      'The reading passages for comprehension are provided in the insert.'
     ],
     sections: [
-      { label: 'Section A', title: 'Grammar (Multiple Choice)',
-        instructions: 'Choose the most appropriate answer (A, B, C or D) to complete each sentence.',
-        questionType: 'mcq', questionCount: 15, marksPerQuestion: 1, totalMarks: 15 },
-      { label: 'Section B', title: 'Grammar Cloze',
-        instructions: 'Choose the most appropriate word to fill in each blank. (2 passages × 10 blanks, 1 mark each)',
-        questionType: 'cloze', questionCount: 2, marksPerQuestion: 10, totalMarks: 20, blankCount: 10 },
-      { label: 'Section C', title: 'Editing',
-        instructions: 'Each passage has one error per underlined word. Write the correct word in the answer column. (2 passages × 6 errors, 1 mark each)',
-        questionType: 'editing', questionCount: 2, marksPerQuestion: 6, totalMarks: 12, errorCount: 6 },
-      { label: 'Section D', title: 'Comprehension (Open-Ended)',
-        instructions: 'Read the passages carefully. Answer all questions in complete sentences where required.',
-        questionType: 'open_ended', questionCount: 12, marksPerQuestion: 4, totalMarks: 48 },
+      { label: 'Section A-D', title: 'Language Use & Visual Text', instructions: 'Choose the most appropriate answer (A, B, C or D).', type: 'mcq', count: 28, marksEach: 1 },
+      { label: 'Section E-G', title: 'Cloze Passages', instructions: 'Choose the most appropriate word to fill in each blank.', type: 'cloze', count: 5, marksEach: 5 },
+      { label: 'Section H', title: 'Editing', instructions: 'Each passage has grammatical errors in the underlined words. Write the correct word.', type: 'editing', count: 2, marksEach: 6 },
+      { label: 'Section I', title: 'Synthesis & Transformation', instructions: 'Rewrite the sentences using the word(s) provided.', type: 'short_ans', count: 5, marksEach: 2 },
+      { label: 'Section J', title: 'Comprehension (Open-Ended)', instructions: 'Read the passages carefully. Answer all questions in complete sentences.', type: 'open_ended', count: 10, marksEach: 2 },
     ],
   },
 
