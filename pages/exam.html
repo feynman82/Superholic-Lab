@@ -496,6 +496,7 @@ window.initExamEngine = function () {
   };
 
   // ── PHASE: GENERATING ────────────────────────────────────────────────────
+ // ── PHASE: GENERATING ────────────────────────────────────────────────────
   function renderGenerating() {
     app.innerHTML = `
       <div class="card flex flex-col items-center justify-center text-center w-full" style="padding: var(--space-8); max-width: 600px;">
@@ -509,17 +510,53 @@ window.initExamEngine = function () {
     let m = 0;
     const int = setInterval(() => { m = (m+1)%msgs.length; const el = document.getElementById('genMsg'); if(el) el.textContent = msgs[m]; }, 1000);
 
+    // ── MASTERCLASS INTERCEPT ──
+    // Temporarily hijack the global getTemplate function so the external generator 
+    // is forced to use your highly-detailed WA/PSLE formats instead of generic fallbacks.
+    const originalGetTemplate = window.getTemplate;
+    const shortSubj = state.subjectKey === 'mathematics' ? 'maths' : state.subjectKey;
+    const shortLvl = state.levelKey.replace('primary-', 'p');
+    const specificKey = `${shortSubj}-${shortLvl}-${state.examType.toLowerCase()}`;
+    
+    let activeTpl = null;
+    if (typeof originalGetTemplate === 'function') {
+      activeTpl = originalGetTemplate(specificKey) || originalGetTemplate(state.subjectKey, state.levelKey);
+      window.getTemplate = function() { return activeTpl; };
+    }
+
     generateExam(state.subjectKey, state.levelKey, state.examType).then(paper => {
       clearInterval(int);
+      if (typeof originalGetTemplate === 'function') window.getTemplate = originalGetTemplate; // Restore normal function
+      
       let flat = [];
-      paper.sections.forEach(sec => {
-        sec.questions.forEach(q => {
-          flat.push({ ...q, sectionLabel: sec.label, sectionInstr: sec.instructions });
+      if (paper && paper.sections) {
+        paper.sections.forEach(sec => {
+          if (sec.questions) {
+            sec.questions.forEach(q => {
+              // Filter out phantom questions
+              if (q) flat.push({ ...q, sectionLabel: sec.label, sectionInstr: sec.instructions });
+            });
+          }
         });
-      });
+      }
+      
+      // ── EMPTY PAPER SHIELD ──
+      // If the generator couldn't find enough questions, show a friendly UI instead of crashing
+      if (flat.length === 0) {
+        app.innerHTML = `
+          <div class="card p-8 text-center w-full hover-lift" style="max-width: 600px;">
+            <div class="text-4xl mb-4">🗂️</div>
+            <h2 class="text-danger font-display text-2xl mb-2">Insufficient Questions</h2>
+            <p class="text-muted mb-6">Miss Wena's database doesn't have enough questions to assemble a full <strong>${esc(state.examType)}</strong> paper for this subject yet.</p>
+            <button class="btn btn-primary hover-lift" onclick="location.reload()">Return to Menu</button>
+          </div>`;
+        return;
+      }
+
       setState({ phase: 'EXAM', paper, allQs: flat, currentQIdx: 0, answers: {}, drawings: {}, flagged: {} });
     }).catch(err => {
       clearInterval(int);
+      if (typeof originalGetTemplate === 'function') window.getTemplate = originalGetTemplate; // Restore normal function
       app.innerHTML = `<div class="card p-8 text-center w-full" style="max-width: 600px;"><p class="text-danger font-bold mb-4">Error: ${err.message}</p><button class="btn btn-primary hover-lift" onclick="location.reload()">Try Again</button></div>`;
     });
   }
