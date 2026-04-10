@@ -27,7 +27,7 @@ Return ONLY a valid JSON array of the 5 new question objects. Do NOT wrap in mar
 
 SEED QUESTION TO CLONE:
 `;
-
+ 
 export default async function handler(req, res) {
   // Security check: Only allow POST requests or Vercel Cron authorization
   if (req.method !== 'POST' && req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) {
