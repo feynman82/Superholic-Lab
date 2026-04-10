@@ -740,21 +740,36 @@ function buildClozeUI(q) {
         }
       }
       
-      const filePath = resolveFile(subject, levelSlug, topic);
-      if (!filePath) {
+      // --- MASTERCLASS UPGRADE: Fetch dynamically from Supabase ---
+      const db = await window.getSupabase();
+      
+      // We call the high-performance RPC function we created in SQL
+      let { data: fetchedQuestions, error } = await db.rpc('get_random_practice_questions', {
+        p_subject: subject.toLowerCase(),
+        p_level: levelSlug,
+        p_topic: topic.toLowerCase(),
+        p_limit: 50 // Pull a slightly larger pool to filter by type if needed
+      });
+
+      if (error) {
+        console.error('Database fetch error:', error);
+        throw new Error('Failed to load questions from the bank.');
+      }
+
+      if (!fetchedQuestions || fetchedQuestions.length === 0) {
         state.questions = [];
         state.phase = 'QUIZ';
         render();
         return;
       }
 
-      const res = await fetch(filePath);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const all = await res.json();
-      
-      const pool = type && type !== 'mixed' ? all.filter(q => q.type === type) : all;
-      
-      state.questions = shuffle(pool).slice(0, 10);
+      // Filter by type if the user requested a specific type (e.g., mcq only)
+      let pool = type && type !== 'mixed' 
+        ? fetchedQuestions.filter(q => q.type === type) 
+        : fetchedQuestions;
+
+      // Slice the final 10 for the session
+      state.questions = pool.slice(0, 10);
       
       // UPGRADE: Calculate accurate total possible marks for multi-part questions
       state.totalPossibleScore = state.questions.reduce((sum, q) => {

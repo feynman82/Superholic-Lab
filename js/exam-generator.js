@@ -28,8 +28,6 @@
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
-/** Base path to question bank JSON files (relative to pages/) */
-const EXAM_DATA_BASE = '../data/questions/';
 
 /**
  * File map: `subject:level:type` → JSON filename.
@@ -111,13 +109,7 @@ async function fetchQuestionFile(filename) {
  * @param {string} type
  * @returns {string|null} filename or null if not found
  */
-function resolveFilename(subject, level, type) {
-  const dedicatedKey = `${subject}:${level}:${type}`;
-  if (EXAM_FILE_MAP[dedicatedKey]) return EXAM_FILE_MAP[dedicatedKey];
 
-  const broadKey = `${subject}:${level}:broad`;
-  return EXAM_FILE_MAP[broadKey] || null;
-}
 
 // ── Question bank cache ──────────────────────────────────────────────────────
 
@@ -130,12 +122,7 @@ const _questionCache = {};
  * @param {string} filename
  * @returns {Promise<Array>}
  */
-async function getCachedQuestions(filename) {
-  if (!_questionCache[filename]) {
-    _questionCache[filename] = await fetchQuestionFile(filename);
-  }
-  return _questionCache[filename];
-}
+
 
 // ── Core exam assembly ───────────────────────────────────────────────────────
 
@@ -151,24 +138,37 @@ async function getCachedQuestions(filename) {
  * @returns {Promise<Array>} array of question objects
  */
 async function pickQuestions(subject, level, questionType, count) {
-  // Translate the new questionType back to resolve the legacy filename
-  const filename = resolveFilename(subject, level, questionType);
-  if (!filename) {
-    console.warn(`[exam-generator] No file found for ${subject}:${level}:${questionType} — section will be empty.`);
+  try {
+    // Dynamically import Supabase client (assuming it's available globally via window)
+    const db = typeof window !== 'undefined' && typeof window.getSupabase === 'function' 
+      ? await window.getSupabase() 
+      : null;
+
+    if (!db) throw new Error("Supabase client not initialized.");
+
+    // Query the database directly for the exact type and limit we need
+    const { data: questions, error } = await db
+      .from('question_bank')
+      .select('*')
+      .ilike('subject', subject)
+      .ilike('level', level.replace('primary-', 'Primary ')) // e.g. primary-4 -> Primary 4
+      .eq('type', questionType)
+      .order('random()') // NOTE: For massive scale later, we will use a different randomizing strategy, but this is perfect for now
+      .limit(count);
+
+    if (error) throw error;
+
+    if (!questions || questions.length === 0) {
+      console.warn(`[exam-generator] No questions of type '${questionType}' found in database for ${subject} ${level}.`);
+      return [];
+    }
+
+    return questions;
+
+  } catch (err) {
+    console.error(`[exam-generator] Database fetch failed:`, err);
     return [];
   }
-
-  const all = await getCachedQuestions(filename);
-
-  // Filter the JSON database (which still uses 'type') using our modern 'questionType'
-  const pool = all.filter(function(q) { return q.type === questionType; });
-
-  if (pool.length === 0) {
-    console.warn(`[exam-generator] No questions of type '${questionType}' in ${filename}.`);
-    return [];
-  }
-
-  return shuffleArray(pool).slice(0, count);
 }
 
 // ── Public API ───────────────────────────────────────────────────────────────
