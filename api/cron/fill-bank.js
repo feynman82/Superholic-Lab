@@ -111,6 +111,6 @@ export default async function handler(req, res) {
 
   } catch (err) {
     console.error('❌ Engine Error:', err);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json({ error: 'Internal Server Error' }); 
   }
 }
