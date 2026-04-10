@@ -51,9 +51,9 @@
 
     // Check student usage, fetch avatar, & check Remedial intent FIRST
     await checkStudentLimits();
-    handleRemedialIntent();
 
     // Event Listeners
+    // ... (keep your existing event listeners here) ...
     sendBtn.addEventListener('click', handleSend);
     chatInput.addEventListener('keydown', e => { 
       if (e.key === 'Enter' && !e.shiftKey) { 
@@ -62,15 +62,17 @@
       } 
     });
     chatInput.addEventListener('input', adjustTextareaHeight);
-
     modeTextBtn.addEventListener('click', () => setMode('text'));
     modeDrawBtn.addEventListener('click', () => setMode('draw'));
-
     if (saveBtn) saveBtn.addEventListener('click', generateStudyNote);
 
-    // Welcome message (Fires after avatar is loaded)
-    appendBubble('tutor', "Hello! I'm Miss Wena. 😊 I'm your Superholic Tutor, so you can ask me about Mathematics, Science, or English all in one place! Need help with a bar model, a science experiment, or grammar? Let's figure it out together!");
-  }
+    // If the student clicked "Ask Miss Wena", auto-trigger the data-driven greeting.
+    // If not, drop the standard greeting.
+    const isRemedial = await handleRemedialIntent();
+    if (!isRemedial) {
+      appendBubble('tutor', "Hello! I'm Miss Wena. 😊 I'm your Superholic Tutor, so you can ask me about Mathematics, Science, or English all in one place! Need help with a bar model, a science experiment, or grammar? Let's figure it out together!");
+    }
+   }
 
   function adjustTextareaHeight() {
     chatInput.style.height = 'auto';
@@ -391,26 +393,72 @@
     }
   }
 
-  function handleRemedialIntent() {
+  async function handleRemedialIntent() {
     const params = new URLSearchParams(window.location.search);
     if (params.get('intent') === 'remedial' && params.get('topic')) {
       const banner = document.getElementById('remedial-banner');
       const topicEl = document.getElementById('quest-topic-name');
       const topic = params.get('topic').replace(/-/g, ' ');
+      const score = params.get('score') || 0;
       
       currentSubjectContext = params.get('subject') || 'general';
       currentTopicContext = params.get('topic');
 
-      topicEl.textContent = topic;
-      banner.hidden = false;
+      if (topicEl) topicEl.textContent = topic;
+      if (banner) banner.hidden = false;
 
-      const score = params.get('score');
-      history.push({
-        role: 'user',
-        content: `SYSTEM CONTEXT: The student scored ${score}% in ${topic}. Initiate a highly-encouraging remedial session. Break down the basics step-by-step and ask a simple checking question.`
-      });
+      // Auto-trigger Miss Wena's Data-Driven Opening Hook
+      isLoading = true;
+      chatInput.disabled = true;
+      sendBtn.disabled = true;
+      const typingEl = appendTyping();
+
+      // Fetch the student's name if available
+      let sName = 'there';
+      try {
+         const sb = await window.getSupabase();
+         const { data: { session } } = await sb.auth.getSession();
+         if (session && currentStudentId) {
+           const { data: stu } = await sb.from('students').select('name').eq('id', currentStudentId).single();
+           if (stu && stu.name) sName = stu.name;
+         }
+      } catch(e) {}
+
+      const autoPrompt = `SYSTEM INSTRUCTION: The student just clicked "Ask Miss Wena" from their Progress Dashboard because they are struggling. They scored ${score}% in ${topic}. 
+      Generate your opening message. It MUST exactly follow this format: "Hi ${sName}! I saw you scored ${score}% on ${topic} recently. Don't worry, we are going to master this together. Let's start with..." and then immediately ask a foundational, easy question to start scaffolding.`;
+
+      history.push({ role: 'user', content: autoPrompt });
+
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages: history })
+        });
+        
+        const data = await res.json();
+        typingEl.remove();
+        
+        if (res.ok && !data.error) {
+           appendBubble('tutor', data.reply);
+           history.push({ role: 'assistant', content: data.reply });
+        } else {
+           appendBubble('tutor', "Hi " + sName + "! I saw you needed help with " + topic + ". Let's master it together. What's your first question?");
+        }
+      } catch (e) {
+        typingEl.remove();
+        appendBubble('tutor', "Hi " + sName + "! I'm Miss Wena. I see you want to work on " + topic + ". What's your first question?");
+      } finally {
+        isLoading = false;
+        chatInput.disabled = false;
+        sendBtn.disabled = false;
+        chatInput.focus();
+      }
+      return true; // Indicates it handled the greeting
     }
+    return false; // Indicates it was a normal visit
   }
+
 
   // ── STUDY NOTES ENGINE: Generate & Save ──
   async function generateStudyNote() {
