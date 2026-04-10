@@ -23,5 +23,11 @@
         { "key": "Permissions-Policy",      "value": "camera=(), microphone=(), geolocation=()" }
       ]
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/fill-bank",
+      "schedule": "0 * * * *"
+    }
   ]
 }
