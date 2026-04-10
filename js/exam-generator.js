@@ -147,21 +147,24 @@ async function pickQuestions(subject, level, questionType, count) {
     if (!db) throw new Error("Supabase client not initialized.");
 
     // Query the database directly for the exact type and limit we need
-    const { data: questions, error } = await db
+    // Fetch a large pool of questions without SQL random() to prevent 400 errors
+    const { data: pool, error } = await db
       .from('question_bank')
       .select('*')
       .ilike('subject', subject)
       .ilike('level', level.replace('primary-', 'Primary ')) // e.g. primary-4 -> Primary 4
       .eq('type', questionType)
-      .order('random()') // NOTE: For massive scale later, we will use a different randomizing strategy, but this is perfect for now
-      .limit(count);
+      .limit(300); // Grab up to 300 questions to choose from
 
     if (error) throw error;
 
-    if (!questions || questions.length === 0) {
+    if (!pool || pool.length === 0) {
       console.warn(`[exam-generator] No questions of type '${questionType}' found in database for ${subject} ${level}.`);
       return [];
     }
+
+    // Masterclass Fix: Shuffle the pool in JavaScript and slice the exact count needed
+    const questions = shuffleArray(pool).slice(0, count);
 
     return questions;
 

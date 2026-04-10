@@ -747,8 +747,8 @@ function buildClozeUI(q) {
       let { data: fetchedQuestions, error } = await db.rpc('get_random_practice_questions', {
         p_subject: subject.toLowerCase(),
         p_level: levelSlug,
-        p_topic: topic.toLowerCase(),
-        p_limit: 50 // Pull a slightly larger pool to filter by type if needed
+        p_topic: (topic || 'mixed').toLowerCase(), // FIX: Safely falls back to 'mixed'
+        p_limit: 50 
       });
 
       if (error) {
