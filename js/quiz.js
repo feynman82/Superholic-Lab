@@ -594,9 +594,8 @@ function buildClozeUI(q) {
           topic:              primaryTopic,
           difficulty:         'Mixed',
           score:              state.score,
-          // Sends the Max Marks so the Dashboard calculates percentages correctly
+          // FIX: Removed the duplicate total_questions key so multi-part grading works
           total_questions:    state.totalPossibleScore > 0 ? state.totalPossibleScore : state.questions.length,
-          total_questions:    state.questions.length,
           time_taken_seconds: state.quizStartTime ? Math.round((Date.now() - state.quizStartTime) / 1000) : null,
           completed_at:       new Date().toISOString(),
         })
@@ -746,8 +745,8 @@ function buildClozeUI(q) {
       // We call the high-performance RPC function we created in SQL
       let { data: fetchedQuestions, error } = await db.rpc('get_random_practice_questions', {
         p_subject: subject.toLowerCase(),
-        p_level: levelSlug,
-        p_topic: (topic || 'mixed').toLowerCase(), // FIX: Safely falls back to 'mixed'
+        p_level: levelSlug.replace('primary-', 'Primary '), // FIX: Translates URL slug to Database string
+        p_topic: (topic || 'mixed').toLowerCase(), 
         p_limit: 50 
       });
 
