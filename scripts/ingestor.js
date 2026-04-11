@@ -74,10 +74,61 @@ Return ONLY the raw JSON array. No markdown fences.
 `;
 };
 
+// ... (Keep imports, BASE_DIR, and ALLOWED_TOPICS unchanged)
+
 const delay = ms => new Promise(res => setTimeout(res, ms));
 
+// 🛟 The Salvager: Scans raw text and extracts intact JSON objects one by one
+function extractValidObjects(rawString) {
+  const results = [];
+  let depth = 0;
+  let startIdx = -1;
+  let inString = false;
+  let escape = false;
+
+  for (let i = 0; i < rawString.length; i++) {
+    const char = rawString[i];
+    
+    // Handle string escaping so we don't get tricked by braces inside quotes
+    if (escape) { escape = false; continue; }
+    if (char === '\\') { escape = true; continue; }
+    if (char === '"') { inString = !inString; continue; }
+
+    if (!inString) {
+      if (char === '{') {
+        if (depth === 0) startIdx = i; // Mark the start of a root object
+        depth++;
+      } else if (char === '}') {
+        depth--;
+        // If we close a root object, try to parse it!
+        if (depth === 0 && startIdx !== -1) {
+          const possibleJson = rawString.substring(startIdx, i + 1);
+          try {
+            const obj = JSON.parse(possibleJson);
+            // Verify it's an actual question and not a nested sub-object
+            if (obj.topic && obj.type && obj.question_text) {
+              results.push(obj);
+            }
+          } catch (e) {
+            // Silently ignore this specific corrupted question
+          }
+          startIdx = -1;
+        }
+      }
+    }
+  }
+  return results;
+}
+
+// Helper: Tries basic string cleanup first
+function sanitizeJsonString(rawString) {
+  let clean = rawString.replace(/^```(json)?\n?/, '').replace(/\n?```$/, '').trim();
+  clean = clean.replace(/(?<!\\)\n(?=[^"]*"(?:[^"\\]|\\.)*"(?:[^"\\]|\\.)*$)/g, '\\n');
+  return clean;
+}
+
 async function runIngestor(limit = 1000) {
-  console.log(`\n🏭 Waking up Smart Ingestor (Taxonomy Enforced)`);
+  console.log(`\n🏭 Waking up Smart Ingestor (With JSON Salvage Protocol)`);
 
   const { data: pendingFiles, error: fetchErr } = await supabase
     .from('processed_files')
@@ -100,49 +151,75 @@ async function runIngestor(limit = 1000) {
     try {
       if (!fs.existsSync(fullLocalPath)) throw new Error("File not found on disk");
 
-      // 1. Upload to Gemini
-      console.log(`   ⬆️ Uploading to Gemini...`);
       uploadResult = await fileManager.uploadFile(fullLocalPath, {
         mimeType: "application/pdf",
         displayName: path.basename(fullLocalPath),
       });
 
-      // 2. 🛑 THE FIX: Polling Loop. Wait for Google to process the PDF.
       process.stdout.write(`   ⏳ Processing on Google Servers`);
       let fileState = await fileManager.getFile(uploadResult.file.name);
       while (fileState.state === "PROCESSING") {
-        process.stdout.write("."); // Print a dot every 2 seconds
+        process.stdout.write(".");
         await delay(2000); 
         fileState = await fileManager.getFile(uploadResult.file.name);
       }
-      console.log(""); // Print a new line once done waiting
+      console.log(""); 
 
-      if (fileState.state === "FAILED") {
-        throw new Error("Google API rejected or failed to process this specific PDF.");
-      }
+      if (fileState.state === "FAILED") throw new Error("Google API rejected this PDF.");
 
-      // 3. Generate Content
       console.log(`   🧠 Analyzing PDF and extracting seeds...`);
       const promptText = buildPrompt(fileRecord.level, fileRecord.subject);
       
-      const result = await model.generateContent({
-        contents: [
-          { role: "user", parts: [
-              { fileData: { mimeType: uploadResult.file.mimeType, fileUri: uploadResult.file.uri } },
-              { text: promptText }
-            ]
-          }
-        ],
-        generationConfig: { 
-          responseMimeType: "application/json", 
-          temperature: 0.1,
-          maxOutputTokens: 8192 // Ensure the buffer stays maximum size
-        }
-      });
+      let seeds = null;
+      let attempt = 1;
+      const MAX_ATTEMPTS = 2; 
+      let bestRawText = "";
 
-      const cleanJson = result.response.text().replace(/^```json\n?/, '').replace(/\n?```$/, '').trim();
-      const seeds = JSON.parse(cleanJson);
-      
+      while (attempt <= MAX_ATTEMPTS && !seeds) {
+        try {
+          const result = await model.generateContent({
+            contents: [
+              { role: "user", parts: [
+                  { fileData: { mimeType: uploadResult.file.mimeType, fileUri: uploadResult.file.uri } },
+                  { text: promptText }
+                ]
+              }
+            ],
+            generationConfig: { 
+              responseMimeType: "application/json", 
+              temperature: attempt === 1 ? 0.1 : 0.4, 
+              maxOutputTokens: 8192
+            }
+          });
+
+          bestRawText = result.response.text();
+          const cleanJson = sanitizeJsonString(bestRawText);
+          seeds = JSON.parse(cleanJson); // Try standard parsing first
+
+        } catch (parseError) {
+          console.warn(`   ⚠️ Attempt ${attempt} failed perfect parsing. Proceeding...`);
+          attempt++;
+          if (attempt <= MAX_ATTEMPTS) {
+            console.log(`   🔄 Retrying generation...`);
+            await delay(3000); 
+          }
+        }
+      }
+
+      // 🛟 THE SALVAGE PROTOCOL
+      if (!seeds && bestRawText) {
+        console.log(`   🛟 Activating JSON Salvage Protocol...`);
+        const salvaged = extractValidObjects(bestRawText);
+        if (salvaged.length > 0) {
+          console.log(`   🚑 Salvaged ${salvaged.length} valid questions from the wreckage!`);
+          seeds = salvaged;
+        } else {
+          throw new Error("JSON Formatting Failure. Could not salvage any questions.");
+        }
+      }
+
+      if (!seeds || !Array.isArray(seeds)) throw new Error("AI did not return any valid questions.");
+
       const payload = seeds.map(seed => ({ 
         ...seed, 
         is_ai_cloned: false,
@@ -154,6 +231,7 @@ async function runIngestor(limit = 1000) {
       const { error: insertErr } = await supabase.from('seed_questions').insert(payload);
       if (insertErr) throw new Error(`DB Insert Error: ${insertErr.message}`);
 
+      // We mark it as COMPLETED even if it was salvaged, so we don't get stuck in a retry loop
       await supabase.from('processed_files').update({ status: 'COMPLETED', extracted_seeds: seeds.length }).eq('file_path', fileRecord.file_path);
       console.log(`   ✅ Extracted & Saved ${seeds.length} questions mapped to ${fileRecord.file_path}`);
 
@@ -165,8 +243,6 @@ async function runIngestor(limit = 1000) {
         await fileManager.deleteFile(uploadResult.file.name).catch(() => {});
       }
     }
-
-    if (i < pendingFiles.length - 1) await delay(10000);
   }
 }
 

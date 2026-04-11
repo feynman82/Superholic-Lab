@@ -15,6 +15,7 @@ window.initQuizEngine = function() {
     feedback: null,
     currentType: null,
     quizStartTime: null
+    hintLevel: 0 //
   };
 
   const app = document.getElementById('app');
@@ -225,6 +226,42 @@ function buildClozeUI(q) {
       ${editFeedback}`;
   }
 
+// 🚀 NEW: Hint Renderer
+  function buildHintsUI(q) {
+    if (!q.progressive_hints || !Array.isArray(q.progressive_hints) || q.progressive_hints.length === 0) return '';
+
+    let hintsHtml = '';
+    
+    // Show revealed hints
+    if (state.hintLevel > 0) {
+      const revealedHints = q.progressive_hints.slice(0, state.hintLevel);
+      hintsHtml += `<div class="mt-4 flex flex-col gap-3">`;
+      revealedHints.forEach((hint, index) => {
+        hintsHtml += `
+          <div class="card bg-amber-tint p-4 text-sm text-main font-medium border-l-4" style="border-left-color: var(--brand-amber); box-shadow: none;">
+            <div class="text-amber font-bold mb-1 flex items-center gap-2">
+              <span>💡</span> Miss Wena's Hint ${index + 1}
+            </div>
+            <div class="leading-relaxed whitespace-pre-wrap">${esc(hint)}</div>
+          </div>`;
+      });
+      hintsHtml += `</div>`;
+    }
+
+    // Show hint button if hints remain and question is unanswered
+    if (!state.isAnswered && state.hintLevel < q.progressive_hints.length) {
+      const btnText = state.hintLevel === 0 ? '💡 Need a hint?' : '💡 Show next hint';
+      hintsHtml += `
+        <div class="mt-4">
+          <button class="btn btn-sm" style="background: var(--bg-surface); border: 1px solid var(--border-light); color: var(--text-muted);" onclick="window.showHint()">
+            ${btnText}
+          </button>
+        </div>`;
+    }
+
+    return hintsHtml;
+  }
+
   function renderQuiz() {
     if (state.questions.length === 0) {
       app.innerHTML = `<div class="card text-center w-full hover-lift p-6" style="max-width: 600px;"><div class="text-4xl mb-4">🕵️</div><h2 class="font-display text-2xl text-main">No questions found!</h2><p class="text-muted text-sm my-4">Miss Wena hasn't added questions for this specific combination yet. Check back soon!</p><button class="btn btn-primary hover-lift" onclick="window.location.href='subjects.html'">Return to Subjects</button></div>`;
@@ -242,6 +279,8 @@ function buildClozeUI(q) {
     else if (q.type === 'cloze')    inputUi = buildClozeUI(q);
     else if (q.type === 'editing')  inputUi = buildEditingUI(q);
     else                            inputUi = buildTextAreaUI(q);   
+
+    const hintsUi = buildHintsUI(q); // 👈 ADD THIS LINE
 
     let feedbackHtml = '';
     if (state.isAnswered && state.feedback) {
@@ -311,7 +350,7 @@ function buildClozeUI(q) {
 
           <div class="w-full">${inputUi}</div>
 
-          ${feedbackHtml}
+          ${hintsUi} ${feedbackHtml}
 
           <div class="flex justify-between items-center mt-8 pt-6 border-t border-light">
             <button class="btn btn-ghost" onclick="window.navQuiz(-1)" ${isFirst ? 'style="visibility:hidden;"' : ''}>← Previous</button>
@@ -327,6 +366,13 @@ function buildClozeUI(q) {
   }
 
   // ── INTERACTIONS ──
+
+  window.showHint = () => {
+    if (state.isAnswered) return;
+    window.saveInputState(); // Save current input so it doesn't vanish on re-render
+    state.hintLevel++;
+    render();
+  };
 
   window.selectMcq = (letter) => {
     if (state.isAnswered) return;
@@ -381,6 +427,7 @@ function buildClozeUI(q) {
       state.currentIndex--;
       state.isAnswered = true;
       state.feedback = null;
+      state.hintLevel = 0;
       render();
       return;
     }
@@ -395,6 +442,7 @@ function buildClozeUI(q) {
     state.currentIndex++;
     state.isAnswered = !!state.answers[state.currentIndex];
     state.feedback = null;
+    state.hintLevel = 0;
     render();
   };
 
