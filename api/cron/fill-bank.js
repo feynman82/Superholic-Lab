@@ -41,7 +41,7 @@ export default async function handler(req, res) {
     const { data: seeds, error: seedErr } = await supabase
       .from('seed_questions')
       .select('*')
-      .limit(1); 
+      .limit(3); 
       // Note: In production, you would order by random() or target specific weak topics
 
     if (seedErr || !seeds || seeds.length === 0) throw new Error('No seeds found');
