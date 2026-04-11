@@ -39,7 +39,7 @@ async function runBulkClone(limit = 10) {
 
   if (seedErr || !seeds.length) return console.log('❌ No seeds found.');
 
-  const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+  const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite-preview" });
   let successCount = 0;
 
   for (let i = 0; i < seeds.length; i++) {
