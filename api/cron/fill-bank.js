@@ -47,7 +47,7 @@ export default async function handler(req, res) {
     if (seedErr || !seeds || seeds.length === 0) throw new Error('No seeds found');
 
     let totalCloned = 0;
-    const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" }); // Flash is perfect and fast for this
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" }); // Flash is perfect and fast for this
 
     // 2. Clone each seed
     for (const seed of seeds) {
