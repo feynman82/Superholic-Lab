@@ -319,9 +319,17 @@ function buildClozeUI(q) {
     else if (q.type === 'editing')  inputUi = buildEditingUI(q);
     else                            inputUi = buildTextAreaUI(q);   
 
-    // 🚀 NEW: Render AI-Generated visual_payload diagrams safely
+    // 🚀 HYBRID DIAGRAM RENDERING: 
+    // Prioritize the physical cropped image (Seeds), fallback to SVG Engine (Clones)
     let diagramUi = '';
-    if (q.visual_payload && typeof DiagramLibrary !== 'undefined') {
+    
+    if (q.image_url) {
+      diagramUi = `
+        <div class="quiz-diagram-container w-full flex justify-center my-6">
+          <img src="${esc(q.image_url)}" alt="Question Diagram" class="max-w-full rounded shadow-sm border border-light" style="max-height: 250px; object-fit: contain;">
+        </div>
+      `;
+    } else if (q.visual_payload && typeof DiagramLibrary !== 'undefined') {
       diagramUi = `
         <div class="quiz-diagram-container w-full flex justify-center my-6 p-4 bg-white" style="border-radius: var(--radius-md); border: 1px solid var(--border-light);">
           ${DiagramLibrary.render(q.visual_payload)}

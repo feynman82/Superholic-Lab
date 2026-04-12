@@ -116,8 +116,9 @@ async function runPedagogicalCloner(limit = 10) {
       const clones = JSON.parse(cleanJson);
 
       const payload = clones.map(c => {
-        // 🚀 THE FIX: Safely strip out seed-specific keys the AI might have copied
-        const { flag_review, id, created_at, original_id, ...cleanClone } = c;
+        // 🚀 THE FIX: We trap `source_pdf` and `image_url` here so they are destroyed
+        // instead of falling into the cleanClone bundle!
+        const { flag_review, id, created_at, original_id, source_pdf, image_url, ...cleanClone } = c;
 
         return {
           ...cleanClone, // Safely spread only the actual question data

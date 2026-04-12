@@ -23,16 +23,13 @@ const TYPE_RULES = {
   editing: `\n- Include "passage_lines" array (line_number, text, underlined_word, has_error, correct_word, explanation).`
 };
 
-// 🚀 SYNCED: Strict UI mapping rules
 const VISUAL_RULES = `
 CRITICAL VISUAL PAYLOAD RULES:
 If the seed question contains a "visual_payload", your clones MUST include an updated "visual_payload".
-You MUST map the diagram to ONE of these officially supported functions:
-1. "rectangle" | 2. "square" | 3. "rightTriangle" | 4. "circle"
-5. "fractionBar" | 6. "numberLine" | 7. "barChart" | 8. "pictogram"
-9. "compositeShape" | 10. "placeholder" (USE AS FALLBACK if no other shape fits).
-- "engine" must always be "diagram-library".
-- Update "visual_payload.params" to reflect your cloned question's math.
+1. "engine" must ALWAYS be "diagram-library".
+2. AUTONOMOUS NAMING: If the seed uses a standard chart (e.g., "barChart", "numberLine"), keep it. If the seed's diagram is a unique science/math setup, you MUST invent a highly logical, camelCase function name (e.g., "seedGerminationExperiment", "balanceScaleWeighing").
+3. PARAMETER SYNC: You MUST accurately update the values inside "visual_payload.params" to mathematically match the new narrative and numbers in your cloned question text.
+4. GRAPH READABILITY: For any graphs, charts, or number lines, axes markings and data points MUST land on easily divisible, primary-school-friendly intervals (e.g., exact multiples of 2, 5, 10, or 50). Do not use ambiguous floating-point coordinates.
 `;
 
 function buildPrompt(seedType) {
@@ -98,7 +95,7 @@ export default async function handler(req, res) {
 
       const payload = clones.map(c => {
         // 🚀 THE FIX: Safely strip out seed-specific keys the AI might have copied
-        const { flag_review, id, created_at, original_id, ...cleanClone } = c;
+        const { flag_review, id, created_at, original_id, source_pdf, image_url, ...cleanClone } = c;
 
         return {
           ...cleanClone, // Safely spread only the actual question data

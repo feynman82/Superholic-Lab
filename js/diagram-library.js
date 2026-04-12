@@ -83,10 +83,20 @@ const DiagramLibrary = {
       try { params = JSON.parse(params); } catch(e) {}
     }
 
-    // 3. Security & Validation: Only allow calling public functions
+    // 3. Security & Validation: Check if function exists
     if (!fnName || typeof this[fnName] !== 'function' || fnName.startsWith('_') || fnName === 'render') {
-      console.warn(`[DiagramLibrary] Unsupported function called: ${fnName}`);
-      return this.placeholder({ description: `Diagram type '${fnName}' not supported.` });
+      console.warn(`[DiagramLibrary] To-Do: Missing function ${fnName}`);
+      
+      // Extract the keys the AI generated so the developer knows what params to code
+      const paramKeys = Object.keys(params).length > 0 
+        ? Object.keys(params).join(', ') 
+        : 'no params';
+
+      // Render the Developer Build Loop placeholder
+      return this.placeholder({ 
+        description: `[Requires DiagramLibrary.${fnName}({ ${paramKeys} })]`, 
+        borderStyle: 'dashed' 
+      });
     }
 
     // 4. Execution & Fallback
@@ -97,7 +107,7 @@ const DiagramLibrary = {
       return this.placeholder({ description: `Error drawing ${fnName} diagram.`, borderStyle: 'solid' });
     }
   },
-  
+
   // ── GEOMETRY ───────────────────────────────────────────────────────────────
 
   /**

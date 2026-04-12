@@ -168,9 +168,16 @@ const ExamRenderer = {
     // Diagram (if present) + question text
     let bodyHtml = headerHtml + '<div class="card-body">';
 
-    // 🚀 NEW: Render AI-Generated visual_payload diagrams (Using the Master Router)
+    // 🚀 HYBRID DIAGRAM RENDERING for Exams
     let dynamicDiagramHtml = '';
-    if (question.visual_payload && typeof DiagramLibrary !== 'undefined') {
+    
+    if (question.image_url) {
+      dynamicDiagramHtml = `
+        <div class="exam-diagram-payload mb-4 flex justify-center w-full">
+          <img src="${_examEsc(question.image_url)}" alt="Diagram" style="max-height: 200px; max-width: 100%; object-fit: contain;">
+        </div>
+      `;
+    } else if (question.visual_payload && typeof DiagramLibrary !== 'undefined') {
       dynamicDiagramHtml = `
         <div class="exam-diagram-payload mb-4 flex justify-center w-full">
           ${DiagramLibrary.render(question.visual_payload)}
