@@ -933,9 +933,9 @@ function buildClozeUI(q) {
       // We call the high-performance RPC function we created in SQL
       // Note: We use .toLowerCase() here assuming your SQL RPC function uses LOWER() for case-insensitive matching
       let { data: fetchedQuestions, error } = await db.rpc('get_random_practice_questions', {
-        p_subject: dbSubject.toLowerCase(),
-        p_level: levelSlug.replace('primary-', 'primary '), 
-        p_topic: dbTopic.toLowerCase(), 
+        p_subject: dbSubject,                               // Removed .toLowerCase()
+        p_level: levelSlug.replace('primary-', 'Primary '), // Capital 'P' in Primary!
+        p_topic: dbTopic === 'mixed' ? 'mixed' : dbTopic,   // Pass exact casing for topic
         p_limit: 50 
       });
 

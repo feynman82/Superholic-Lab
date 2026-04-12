@@ -28,7 +28,7 @@ BASE_DIR = root_dir / "data" / "past_year_papers"
 from google.genai.errors import APIError # Add this to your imports at the top
 
 def free_tier_generate(contents, prompt, response_schema):
-    """A bulletproof wrapper for the Free Tier rate limits (15 RPM / 1M TPM)."""
+    """A bulletproof wrapper with exponential backoff for the Free Tier."""
     max_retries = 5
     base_sleep = 6 # Guarantees we never exceed 10 requests per minute
     
@@ -43,15 +43,18 @@ def free_tier_generate(contents, prompt, response_schema):
                     temperature=0.0,
                 ),
             )
-            time.sleep(base_sleep) # Pacing mechanism
+            time.sleep(base_sleep) # Standard pacing
             return response
             
         except APIError as e:
-            if e.code == 429: # 429 is the universal code for "Too Many Requests"
-                print(f"      [!] Free Tier limit hit. Cooling down for 60 seconds... (Attempt {attempt+1}/{max_retries})")
-                time.sleep(60) 
+            if e.code == 429: 
+                # Exponential backoff: Wait 60s, then 120s, then 240s...
+                wait_time = 60 * (2 ** attempt)
+                print(f"      [!] 429 Error: {e.message}") # Print EXACTLY why Google blocked it
+                print(f"      [!] Cooling down for {wait_time} seconds... (Attempt {attempt+1}/{max_retries})")
+                time.sleep(wait_time) 
             else:
-                raise e # If it's a different API error, raise it
+                raise e # If it's a 400 or 500 error, crash so we can see it
                 
     raise Exception("Max retries exceeded on Free Tier backoff.")
 
@@ -89,7 +92,7 @@ def run_actor_extraction(pdf_path, level, subject, valid_topics, relative_path):
     all_questions = []
     
     # Process a maximum of 15 pages per API call to avoid the 8k output token ceiling
-    CHUNK_SIZE = 15
+    CHUNK_SIZE = 5
     
     # Format valid topics into a strict, isolated string array for the prompt
     topic_string = ", ".join([f'"{t}"' for t in valid_topics])
