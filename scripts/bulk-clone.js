@@ -91,7 +91,23 @@ async function runPedagogicalCloner(limit = 100) {
         contents: [{ role: "user", parts: [{ text: dynamicPrompt + JSON.stringify(seed) }] }],
         generationConfig: { temperature: 0.6, responseMimeType: "application/json" }
       });
+       
+      const VISUAL_RULES = `
+      - PROCEDURAL DIAGRAMS: Check if the provided seed question contains a "visual_payload" object. 
+      - If it does, your cloned questions MUST also include the exact same "visual_payload" structure (keeping the same "engine" and "function_name").
+      - CRITICAL: You MUST mathematically and logically update the values inside "visual_payload.params" to perfectly match the new numbers, names, or scenarios you generated in your cloned question text.
+      - Do not invent new function names. Only modify the parameter values to sync with your new question.
+      `;
 
+      // Example of how you integrate it into your existing prompt builder:
+      function buildPrompt(type) {
+      let basePrompt = `You are an expert MOE syllabus curriculum developer...`;
+      let typeSpecificRules = TYPE_RULES[type] || '';
+  
+      // Combine them and inject the visual rules
+      return `${basePrompt}\n${typeSpecificRules}\n${VISUAL_RULES}\n\nSeed Question:\n`;
+      }
+      
       const cleanJson = sanitizeJsonString(result.response.text());
       const clones = JSON.parse(cleanJson);
 

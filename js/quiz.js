@@ -14,7 +14,7 @@ window.initQuizEngine = function() {
     isAnswered: false, 
     feedback: null,
     currentType: null,
-    quizStartTime: null
+    quizStartTime: null,
     hintLevel: 0 //
   };
 
@@ -32,6 +32,45 @@ window.initQuizEngine = function() {
 
   function renderLoading() {
     app.innerHTML = `<div class="card flex flex-col items-center w-full p-6" style="max-width: 600px;"><div class="spinner-sm mb-4"></div><h2 class="font-display text-2xl text-main">Preparing Training Lab...</h2><p class="text-sm text-muted mt-2">Loading MOE-aligned questions</p></div>`;
+  }
+
+// ── PROCEDURAL DIAGRAM RENDERER (WITH ERROR SHIELD) ──
+  function renderVisualPayload(visual_payload) {
+    if (!visual_payload) return '';
+
+    if (visual_payload.engine === 'diagram-library') {
+      try {
+        const fnName = visual_payload.function_name;
+        const params = visual_payload.params || {};
+
+        // Check if the function actually exists in your library
+        if (typeof DiagramLibrary[fnName] === 'function') {
+          return `<div class="procedural-diagram mb-4 flex justify-center">
+                    ${DiagramLibrary[fnName](params)}
+                  </div>`;
+        } else {
+          // The AI invented a function you haven't built yet! Graceful fallback.
+          console.warn(`[DiagramLibrary] Missing function requested by AI: ${fnName}`, params);
+          return `<div class="procedural-diagram mb-4 flex justify-center">
+                    ${DiagramLibrary.placeholder({ 
+                      description: `Requires DiagramLibrary.${fnName}()\nParams: ${JSON.stringify(params).substring(0,40)}...` 
+                    })}
+                  </div>`;
+        }
+      } catch (err) {
+        console.error("[DiagramLibrary] Rendering crashed:", err);
+        return `<div class="procedural-diagram mb-4 flex justify-center">
+                  ${DiagramLibrary.placeholder({ description: "Diagram Rendering Error" })}
+                </div>`;
+      }
+    }
+    
+    // Future handling for mermaid engine
+    if (visual_payload.engine === 'mermaid') {
+       return `<div class="mermaid-diagram mb-4 p-4 bg-page border border-light rounded">${esc(visual_payload.params.code || '')}</div>`;
+    }
+
+    return '';
   }
 
   // ── BUILD INPUT UI BY TYPE ──
@@ -327,7 +366,8 @@ function buildClozeUI(q) {
       displayInstruction = 'Read the passage and correct each underlined spelling or grammatical error.';
     }
     // ----------------------------------
-
+    const diagramHtml = renderVisualPayload(q.visual_payload);
+    
     app.innerHTML = `
       <div class="w-full" style="max-width: 680px;">
         <div class="flex justify-between items-center mb-6">
@@ -346,7 +386,7 @@ function buildClozeUI(q) {
           <div class="badge badge-info absolute top-0 left-8" style="transform:translateY(-50%);">${esc(titleCase(q.topic || 'Mixed'))}</div>
           ${q.difficulty ? `<div class="badge badge-${q.difficulty.toLowerCase()} absolute top-0 right-8" style="transform:translateY(-50%);">${esc(q.difficulty)}</div>` : ''}
 
-          <h3 class="text-xl font-bold text-main mb-6 mt-2 leading-relaxed" style="white-space:pre-line;">${displayInstruction}</h3>
+          ${diagramHtml}<h3 class="text-xl font-bold text-main mb-6 mt-2 leading-relaxed" style="white-space:pre-line;">${displayInstruction}</h3>
 
           <div class="w-full">${inputUi}</div>
 
