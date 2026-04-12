@@ -25,6 +25,36 @@ client = genai.Client(api_key=api_key)
 supabase: Client = create_client(supabase_url, supabase_key)
 BASE_DIR = root_dir / "data" / "past_year_papers"
 
+from google.genai.errors import APIError # Add this to your imports at the top
+
+def free_tier_generate(contents, prompt, response_schema):
+    """A bulletproof wrapper for the Free Tier rate limits (15 RPM / 1M TPM)."""
+    max_retries = 5
+    base_sleep = 6 # Guarantees we never exceed 10 requests per minute
+    
+    for attempt in range(max_retries):
+        try:
+            response = client.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=contents + [prompt],
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    response_schema=response_schema,
+                    temperature=0.0,
+                ),
+            )
+            time.sleep(base_sleep) # Pacing mechanism
+            return response
+            
+        except APIError as e:
+            if e.code == 429: # 429 is the universal code for "Too Many Requests"
+                print(f"      [!] Free Tier limit hit. Cooling down for 60 seconds... (Attempt {attempt+1}/{max_retries})")
+                time.sleep(60) 
+            else:
+                raise e # If it's a different API error, raise it
+                
+    raise Exception("Max retries exceeded on Free Tier backoff.")
+
 # THE SOURCE OF TRUTH: Strict MOE Taxonomy
 ALLOWED_TOPICS = {
   "Primary 1": { "Mathematics": ["Whole Numbers", "Addition and Subtraction", "Multiplication and Division", "Money", "Length and Mass", "Shapes and Patterns", "Picture Graphs"], "English Language": ["Grammar", "Vocabulary", "Comprehension", "Cloze"] },
@@ -103,25 +133,23 @@ def run_actor_extraction(pdf_path, level, subject, valid_topics, relative_path):
         """
 
         try:
-            response = client.models.generate_content(
-                model='gemini-2.5-flash',
-                contents=payload_parts + [prompt],
-                config=types.GenerateContentConfig(
-                    response_mime_type="application/json",
-                    response_schema=ExtractionResult,
-                    temperature=0.0,
-                ),
+            # ---> USE THE FREE TIER WRAPPER <---
+            response = free_tier_generate(
+                contents=payload_parts, 
+                prompt=prompt, 
+                response_schema=ExtractionResult
             )
             
-            # Safe text extraction to prevent NoneType errors
             raw_text = response.text
-            if not raw_text:
-                finish_reason = response.candidates[0].finish_reason if response.candidates else "Unknown"
-                raise ValueError(f"Empty response from API. Reason: {finish_reason}")
+            
+            # --- THE BULLETPROOF NONE CHECK ---
+            if raw_text is None:
+                print(f"      [!] API blocked this chunk (Safety Filter or Overload). Skipping.")
+                continue
                 
         except Exception as e:
-            print(f"      [!] API connection or safety block on chunk {i+1}-{chunk_end}: {e}")
-            continue # Skip this chunk and move to the next 15 pages
+            print(f"      [!] API connection failed on chunk {i+1}-{chunk_end}: {e}")
+            continue
             
         # --- CIRCUIT BREAKER: Auto-Heal Broken JSON ---
         try:
@@ -143,7 +171,6 @@ def run_actor_extraction(pdf_path, level, subject, valid_topics, relative_path):
                     q["visual_payload"]["params"] = {}
                     
         all_questions.extend(questions)
-        time.sleep(2) # Respect rate limits between heavy image chunks
         
     return all_questions
 
@@ -167,15 +194,15 @@ def run_critic_review(raw_questions, valid_topics):
     """
     
     try:
-        response = client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json",
-                response_schema=ExtractionResult,
-                temperature=0.0,
-            ),
+        # ---> USE THE FREE TIER WRAPPER <---
+        response = free_tier_generate(
+            contents=[], # No images for the critic
+            prompt=prompt, 
+            response_schema=ExtractionResult
         )
+        
+        # --- CIRCUIT BREAKER 2: The Critic Bypass ---
+        # ... (keep your existing try/except block for json.loads(response.text) here)
         
         # --- CIRCUIT BREAKER 2: The Critic Bypass ---
         try:
@@ -268,8 +295,7 @@ def process_batch():
             print(f"   ❌ Failed: {e}")
             update_file_status(relative_path, "ERROR", error_message=str(e))
             
-        # Optional: Sleep for 2 seconds between files to respect API rate limits
-        time.sleep(2)
+
 
     return True
 

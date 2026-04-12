@@ -921,11 +921,21 @@ function buildClozeUI(q) {
       // --- MASTERCLASS UPGRADE: Fetch dynamically from Supabase ---
       const db = await window.getSupabase();
       
+      // 🚀 THE FIX: Translate frontend URL slugs to the strict MOE Database Taxonomy
+      let dbSubject = subject;
+      if (subject === 'mathematics') dbSubject = 'Mathematics';
+      if (subject === 'science') dbSubject = 'Science';
+      if (subject === 'english') dbSubject = 'English Language'; // The critical mapping!
+
+      // Decode the topic to remove %20 URL spaces
+      let dbTopic = (topic === 'all' || !topic) ? 'mixed' : decodeURIComponent(topic);
+
       // We call the high-performance RPC function we created in SQL
+      // Note: We use .toLowerCase() here assuming your SQL RPC function uses LOWER() for case-insensitive matching
       let { data: fetchedQuestions, error } = await db.rpc('get_random_practice_questions', {
-        p_subject: subject.toLowerCase(),
-        p_level: levelSlug.replace('primary-', 'Primary '), // FIX: Translates URL slug to Database string
-        p_topic: (topic || 'mixed').toLowerCase(), 
+        p_subject: dbSubject.toLowerCase(),
+        p_level: levelSlug.replace('primary-', 'primary '), 
+        p_topic: dbTopic.toLowerCase(), 
         p_limit: 50 
       });
 
