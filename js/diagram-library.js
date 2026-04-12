@@ -24,6 +24,139 @@
 
 const DiagramLibrary = {
 
+// 🚀 AI FUNCTION 1: Right Angle Divided
+  rightAngleDivided(params) {
+    const w = 400, h = 260;
+    const cx = 200, cy = 200;
+    const r = 160;
+
+    const lines = params.lines || [];
+    const angles = params.angles || [];
+    const vertices = params.vertices || [];
+    
+    // Find the center vertex
+    const center = lines.length > 0 ? lines[0].start : 'O';
+
+    // Identify endpoints that form the straight line and right angle
+    const rayEnds = lines.map(l => l.end);
+    let baseEnds = vertices.filter(v => v !== center && !rayEnds.includes(v));
+
+    let rightVertex = baseEnds[0] || 'A';
+    let leftVertex = baseEnds[1] || 'B';
+    
+    let svg = `<line x1="${cx - r}" y1="${cy}" x2="${cx + r}" y2="${cy}" stroke="var(--border-dark, #ccc)" stroke-width="3"/>`;
+    svg += `<circle cx="${cx}" cy="${cy}" r="4" fill="var(--brand-sage, #51615E)"/>`;
+
+    // Right angle square indicator at the 90-degree mark
+    svg += `<rect x="${cx}" y="${cy - 15}" width="15" height="15" fill="none" stroke="var(--brand-sage, #51615E)" stroke-width="1.5"/>`;
+
+    let labelsHtml = `
+      <text x="${cx + r + 15}" y="${cy + 5}" font-size="16" font-weight="bold" fill="var(--text-muted)">${rightVertex}</text>
+      <text x="${cx - r - 15}" y="${cy + 5}" font-size="16" font-weight="bold" fill="var(--text-muted)">${leftVertex}</text>
+      <text x="${cx}" y="${cy + 25}" font-size="16" font-weight="bold" text-anchor="middle" fill="var(--text-muted)">${center}</text>
+    `;
+
+    // Draw the rays (e.g., D, E, C at 30, 60, 90 degrees)
+    rayEnds.forEach((endVertex, index) => {
+        const totalRays = rayEnds.length;
+        const angleDeg = (index + 1) * (90 / totalRays);
+        const rad = angleDeg * Math.PI / 180;
+        
+        const rayX = cx + r * Math.cos(rad);
+        const rayY = cy - r * Math.sin(rad);
+        
+        svg += `<line x1="${cx}" y1="${cy}" x2="${rayX}" y2="${rayY}" stroke="var(--text-main, #333)" stroke-width="2"/>`;
+        labelsHtml += `<text x="${rayX + 10}" y="${rayY - 10}" font-size="16" font-weight="bold" fill="var(--text-muted)">${endVertex}</text>`;
+    });
+
+    // Angle labels (e.g., AOD, DOE, EOC)
+    angles.forEach((ang, index) => {
+        const label = typeof ang === 'string' ? ang : (ang.label || '?');
+        const startAngle = index * (90 / rayEnds.length);
+        const endAngle = (index + 1) * (90 / rayEnds.length);
+        const midAngle = (startAngle + endAngle) / 2;
+        const midRad = midAngle * Math.PI / 180;
+        
+        const textRadius = r * 0.4;
+        const textX = cx + textRadius * Math.cos(midRad);
+        const textY = cy - textRadius * Math.sin(midRad);
+        
+        labelsHtml += `<text x="${textX}" y="${textY}" font-size="14" font-weight="bold" text-anchor="middle" fill="var(--brand-sage)">${label}</text>`;
+    });
+
+    return `
+      <svg width="100%" viewBox="0 0 ${w} ${h}" style="height: auto; max-width: 500px; display: block; margin: 0 auto;">
+        ${svg}
+        ${labelsHtml}
+      </svg>
+    `;
+  },
+
+  // 🚀 AI FUNCTION 2: Straight Line Divided
+  straightLineDividedAngles(params) {
+    const w = 400, h = 260;
+    const cx = 200, cy = 200;
+    const r = 160;
+
+    const lines = params.lines || [];
+    const angles = params.angles || [];
+    const vertices = params.vertices || [];
+    
+    // Find the center vertex
+    const center = lines.length > 0 ? lines[0].start : 'O';
+
+    // Identify endpoints that form the straight line
+    const rayEnds = lines.map(l => l.end);
+    let baseEnds = vertices.filter(v => v !== center && !rayEnds.includes(v));
+
+    let rightVertex = baseEnds[0] || 'P'; // placed at 0 degrees
+    let leftVertex = baseEnds[1] || 'R';  // placed at 180 degrees
+
+    let svg = `<line x1="${cx - r}" y1="${cy}" x2="${cx + r}" y2="${cy}" stroke="var(--border-dark, #ccc)" stroke-width="3"/>`;
+    svg += `<circle cx="${cx}" cy="${cy}" r="4" fill="var(--brand-sage, #51615E)"/>`;
+
+    let labelsHtml = `
+      <text x="${cx + r + 15}" y="${cy + 5}" font-size="16" font-weight="bold" fill="var(--text-muted)">${rightVertex}</text>
+      <text x="${cx - r - 15}" y="${cy + 5}" font-size="16" font-weight="bold" fill="var(--text-muted)">${leftVertex}</text>
+      <text x="${cx}" y="${cy + 25}" font-size="16" font-weight="bold" text-anchor="middle" fill="var(--text-muted)">${center}</text>
+    `;
+
+    // Draw the rays dynamically spaced across 180 degrees
+    const totalAngles = rayEnds.length + 1;
+    rayEnds.forEach((endVertex, index) => {
+        const angleDeg = (index + 1) * (180 / totalAngles);
+        const rad = angleDeg * Math.PI / 180;
+        
+        const rayX = cx + r * Math.cos(rad);
+        const rayY = cy - r * Math.sin(rad);
+        
+        svg += `<line x1="${cx}" y1="${cy}" x2="${rayX}" y2="${rayY}" stroke="var(--text-main, #333)" stroke-width="2"/>`;
+        labelsHtml += `<text x="${rayX + 10}" y="${rayY - 10}" font-size="16" font-weight="bold" fill="var(--text-muted)">${endVertex}</text>`;
+    });
+
+    // Angle labels
+    angles.forEach((ang, index) => {
+        const label = typeof ang === 'string' ? ang : (ang.label || '?');
+        const startAngle = index * (180 / totalAngles);
+        const endAngle = (index + 1) * (180 / totalAngles);
+        const midAngle = (startAngle + endAngle) / 2;
+        const midRad = midAngle * Math.PI / 180;
+        
+        const textRadius = r * 0.45;
+        const textX = cx + textRadius * Math.cos(midRad);
+        const textY = cy - textRadius * Math.sin(midRad);
+        
+        labelsHtml += `<text x="${textX}" y="${textY}" font-size="14" font-weight="bold" text-anchor="middle" fill="var(--brand-sage)">${label}</text>`;
+    });
+
+    return `
+      <svg width="100%" viewBox="0 0 ${w} ${h}" style="height: auto; max-width: 500px; display: block; margin: 0 auto;">
+        ${svg}
+        ${labelsHtml}
+      </svg>
+    `;
+  },
+    
 rectangleDividedRightAngle(params) {
     // Canvas sizing
     const w = 400, h = 260;
