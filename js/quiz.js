@@ -505,7 +505,7 @@ window.initQuizEngine = async function() {
         </div>
       </div>
     `;
-  }
+  } 
 
   // Kickoff
   loadQuestions();
