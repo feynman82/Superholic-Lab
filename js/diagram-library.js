@@ -68,7 +68,86 @@ drawRectangleOnGrid(params) {
     `;
     return content;
   },
-  
+
+table(params) {
+    // 🚀 FIX: Strictly enforce arrays to prevent .map() and .forEach() crashes
+    const headers = Array.isArray(params.headers) ? params.headers : [];
+    const rows = Array.isArray(params.rows) ? params.rows : [];
+    
+    let thead = headers.length > 0 ? `
+      <thead class="bg-elevated border-b border-light">
+        <tr>${headers.map(h => `<th class="p-3 text-left font-bold text-main border-r border-light last:border-r-0">${h}</th>`).join('')}</tr>
+      </thead>
+    ` : '';
+    
+    let tbody = `<tbody>`;
+    rows.forEach((row) => {
+       // Handle both array-based rows and object-based rows dynamically
+       let rData = Array.isArray(row) ? row : Object.values(row);
+       tbody += `<tr class="border-b border-light last:border-b-0 hover:bg-page transition-colors">
+          ${rData.map(cell => `<td class="p-3 text-main border-r border-light last:border-r-0">${cell}</td>`).join('')}
+       </tr>`;
+    });
+    tbody += `</tbody>`;
+
+    return `
+      <div class="w-full overflow-x-auto rounded border border-light my-4 bg-white shadow-sm">
+        <table class="w-full border-collapse text-left">
+          ${thead}
+          ${tbody}
+        </table>
+      </div>
+    `;
+  },
+
+  drawRectangleOnGrid(params) {
+    const w_cm = parseFloat(params.width_cm) || 10;
+    const l_cm = parseFloat(params.length_cm) || 5;
+    const unit = parseFloat(params.unit_grid_cm) || 1;
+
+    const w_units = w_cm / unit;
+    const h_units = l_cm / unit;
+    const cellSize = 30; 
+    const gridW = (w_units + 2) * cellSize; 
+    const gridH = (h_units + 2) * cellSize; 
+
+    // Extract exactly 4 corner labels (Default ABCD if missing)
+    const lbl = (params.labels || "ABCD").padEnd(4, ' ');
+    const TL = lbl[0], TR = lbl[1], BR = lbl[2], BL = lbl[3];
+
+    let gridLines = '';
+    for (let x = 0; x <= gridW; x += cellSize) gridLines += `<line x1="${x}" y1="0" x2="${x}" y2="${gridH}" stroke="var(--border-light)" stroke-width="1"/>`;
+    for (let y = 0; y <= gridH; y += cellSize) gridLines += `<line x1="0" y1="${y}" x2="${gridW}" y2="${y}" stroke="var(--border-light)" stroke-width="1"/>`;
+
+    const rectX = cellSize;
+    const rectY = cellSize;
+    const rectW = w_units * cellSize;
+    const rectH = h_units * cellSize;
+    const rectSvg = `<rect x="${rectX}" y="${rectY}" width="${rectW}" height="${rectH}" fill="rgba(183, 110, 121, 0.1)" stroke="var(--brand-sage)" stroke-width="3"/>`;
+
+    const padding = 12;
+    const txt = (chars, x, y, anchor, baseline) => `<text x="${x}" y="${y}" text-anchor="${anchor}" alignment-baseline="${baseline}" fill="var(--text-main)" font-size="16" font-weight="bold">${chars}</text>`;
+
+    // 🚀 THE CORNER FIX: Pin each letter to the exact vertex
+    const cornerLabels = `
+      ${txt(TL, rectX - padding, rectY - padding, 'end', 'baseline')}
+      ${txt(TR, rectX + rectW + padding, rectY - padding, 'start', 'baseline')}
+      ${txt(BR, rectX + rectW + padding, rectY + rectH + padding, 'start', 'hanging')}
+      ${txt(BL, rectX - padding, rectY + rectH + padding, 'end', 'hanging')}
+      
+      <text x="${rectX + rectW/2}" y="${rectY - 6}" text-anchor="middle" fill="var(--text-main)" font-size="14">${w_cm}cm</text>
+      <text x="${rectX - 6}" y="${rectY + rectH/2}" text-anchor="end" alignment-baseline="middle" fill="var(--text-main)" font-size="14">${l_cm}cm</text>
+    `;
+
+    return `
+      <svg width="100%" height="auto" viewBox="0 0 ${gridW} ${gridH}" style="max-width: 500px;">
+        ${gridLines}
+        ${rectSvg}
+        ${cornerLabels}
+      </svg>
+    `;
+  },
+
   /**
    * Returns an SVG wrapper string with standard attributes.
    * @param {string} content - SVG elements to place inside

@@ -1,6 +1,69 @@
 window.initQuizEngine = function() {
   'use strict';
 
+  // 🚀 GLOBAL UTILITY 1: The Vanilla JS Pen Tool Engine
+window.togglePenTool = function(canvasId) {
+  const container = document.getElementById(canvasId + '-container');
+  if (!container) return console.error('Canvas container not found:', canvasId + '-container');
+  
+  container.classList.toggle('hidden');
+  
+  const canvas = document.getElementById(canvasId);
+  if (!canvas || canvas.isInitialized) return;
+
+  // Match internal resolution to actual CSS display size to prevent warped lines
+  const rect = container.getBoundingClientRect();
+  canvas.width = rect.width || 800;
+  canvas.height = rect.height || 300;
+  
+  const ctx = canvas.getContext('2d');
+  ctx.lineWidth = 2;
+  ctx.lineCap = 'round';
+  ctx.strokeStyle = '#000000'; // Black ink
+  
+  let isDrawing = false, lastX = 0, lastY = 0;
+
+  function getPos(e) {
+    const r = canvas.getBoundingClientRect();
+    if(e.touches) return { x: e.touches[0].clientX - r.left, y: e.touches[0].clientY - r.top };
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  }
+
+  function start(e) { e.preventDefault(); isDrawing = true; const p = getPos(e); lastX = p.x; lastY = p.y; }
+  function draw(e) { if (!isDrawing) return; e.preventDefault(); const p = getPos(e); ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(p.x, p.y); ctx.stroke(); lastX = p.x; lastY = p.y; }
+  function stop() { isDrawing = false; }
+
+  canvas.addEventListener('mousedown', start); canvas.addEventListener('mousemove', draw);
+  window.addEventListener('mouseup', stop); 
+  canvas.addEventListener('touchstart', start, {passive: false});
+  canvas.addEventListener('touchmove', draw, {passive: false});
+  window.addEventListener('touchend', stop);
+  
+  canvas.isInitialized = true;
+};
+
+// 🚀 GLOBAL UTILITY 2: Smart Worked Solution Parser
+window.formatWorkedSolution = function(raw) {
+  if (!raw) return '<em>No step-by-step solution provided.</em>';
+  try {
+    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    if (typeof parsed === 'object' && parsed !== null) {
+      let html = '';
+      for (const [key, val] of Object.entries(parsed)) {
+         html += `
+          <div class="mb-4">
+            <h5 class="font-bold text-brand-dark mb-2">${esc(key)}</h5>
+            <div class="text-main leading-relaxed" style="word-wrap: break-word;">
+              ${val}
+            </div>
+          </div>`;
+      }
+      return html;
+    }
+  } catch(e) {}
+  return esc(raw).replace(/\n/g, '<br>');
+};
+
   const state = {
     phase: 'LOAD',
     questions: [],
@@ -116,7 +179,6 @@ window.initQuizEngine = function() {
     const parts = q.parts || [{ label: '', question_text: 'Solve the problem above.' }];
 
     parts.forEach((p, idx) => {
-      // 🚀 FIX: Prevent undefined warnings by safely checking properties
       const partLabel = p.label ? `${esc(p.label)}) ` : '';
       const partText = p.question_text ? esc(p.question_text) : '';
       
@@ -126,15 +188,14 @@ window.initQuizEngine = function() {
           
           <div class="flex flex-col gap-3 w-full">
             <label class="text-sm font-bold text-muted uppercase tracking-wider">Show your working & final answer:</label>
-            
             <textarea id="wp-text-${idx}" class="form-input w-full p-4 rounded border border-light" rows="4" placeholder="Type your step-by-step working and final answer here..."></textarea>
             
             <div class="mt-2 w-full">
-              <button type="button" class="btn btn-outline btn-sm mb-2" onclick="document.getElementById('wp-canvas-container-${idx}').classList.toggle('hidden')">
-                ✏️ Toggle Drawing Pad
+              <button type="button" class="btn btn-outline btn-sm mb-2" onclick="window.togglePenTool('wp-canvas-${idx}')">
+                ✏️ Pen Tool
               </button>
               
-              <div id="wp-canvas-container-${idx}" class="hidden border border-dark rounded bg-white w-full overflow-hidden shadow-sm" style="min-height: 250px;">
+              <div id="wp-canvas-${idx}-container" class="hidden border border-dark rounded bg-white w-full overflow-hidden shadow-sm" style="min-height: 250px;">
                 <canvas id="wp-canvas-${idx}" width="800" height="300" class="w-full h-full bg-white cursor-crosshair" style="touch-action: none;"></canvas>
               </div>
             </div>
@@ -351,10 +412,11 @@ function buildClozeUI(q) {
 
     const hintsUi = buildHintsUI(q); // 👈 ADD THIS LINE
 
-    // 🚀 FIX: Safe Marks Extraction (Prevent "undefined Marks")
+    // (Inside checkAnswer)
+    state.isAnswered = true;
     const displayMarks = q.marks ? q.marks : 1;
 
-    // 🚀 FIX: Consolidate to ONE Worked Solution block that wraps text safely
+    // 🚀 FIX: Pass the worked_solution through our smart formatter
     let feedbackHtml = '';
     if (state.isAnswered) {
       feedbackHtml = `
@@ -366,7 +428,7 @@ function buildClozeUI(q) {
           </div>
 
           <div class="text-main leading-relaxed text-lg font-medium">
-            ${q.worked_solution ? esc(q.worked_solution) : '<em>No step-by-step solution provided.</em>'}
+            ${window.formatWorkedSolution(q.worked_solution)}
           </div>
 
           ${q.examiner_note ? `
@@ -378,14 +440,14 @@ function buildClozeUI(q) {
         </div>
       `;
     }
+    
+    document.getElementById('feedback-container').innerHTML = feedbackHtml;
 
-    let actionBtn = '';
-    if (!state.isAnswered) {
-      if (isModelType) actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">Reveal Model Answer</button>`;
-      else if (q.type === 'cloze' || q.type === 'editing') actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">Check Answers</button>`;
-      else if (q.type !== 'mcq') actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">Check Answer</button>`;
-    } else {
-      actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.navQuiz(1)">${isLast ? 'Finish Lab →' : 'Next Question →'}</button>`;
+    // 🚀 ANTI-FREEZE SAFETY CHECK
+    const btn = document.getElementById('btn-submit');
+    if (btn) {
+      btn.textContent = 'Next Question';
+      btn.onclick = nextQuestion;
     }
 
     // --- SMART INSTRUCTION OVERRIDE ---
@@ -824,6 +886,7 @@ function buildClozeUI(q) {
     }
   };
 
+  
   // ── DATA FETCHING ──
   async function init() {
     try {
