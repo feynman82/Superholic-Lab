@@ -8,7 +8,7 @@ from google import genai
 from google.genai import types
 from supabase import create_client, Client
 from schemas import ExtractionResult
-from json_repair import repair_json  # <--- NEW IMPORT
+from json_repair import repair_json  
 
 # 1. Initialization & Configuration
 root_dir = Path(__file__).resolve().parent.parent
@@ -25,12 +25,12 @@ client = genai.Client(api_key=api_key)
 supabase: Client = create_client(supabase_url, supabase_key)
 BASE_DIR = root_dir / "data" / "past_year_papers"
 
-from google.genai.errors import APIError # Add this to your imports at the top
+from google.genai.errors import APIError
 
 def free_tier_generate(contents, prompt, response_schema):
-    """A bulletproof wrapper with exponential backoff for the Free Tier."""
-    max_retries = 5
-    base_sleep = 6 # Guarantees we never exceed 10 requests per minute
+    """A bulletproof wrapper with exponential backoff for Free Tier limits and Server Overloads."""
+    max_retries = 6 
+    base_sleep = 6 
     
     for attempt in range(max_retries):
         try:
@@ -43,20 +43,20 @@ def free_tier_generate(contents, prompt, response_schema):
                     temperature=0.0,
                 ),
             )
-            time.sleep(base_sleep) # Standard pacing
+            time.sleep(base_sleep) 
             return response
             
         except APIError as e:
-            if e.code == 429: 
-                # Exponential backoff: Wait 60s, then 120s, then 240s...
-                wait_time = 60 * (2 ** attempt)
-                print(f"      [!] 429 Error: {e.message}") # Print EXACTLY why Google blocked it
+            if e.code in [429, 503, 500]: 
+                wait_time = 30 * (2 ** attempt)
+                error_type = "Rate Limit" if e.code == 429 else "Server Overload"
+                print(f"      [!] {e.code} {error_type}: Google API is busy.")
                 print(f"      [!] Cooling down for {wait_time} seconds... (Attempt {attempt+1}/{max_retries})")
                 time.sleep(wait_time) 
             else:
-                raise e # If it's a 400 or 500 error, crash so we can see it
+                raise e 
                 
-    raise Exception("Max retries exceeded on Free Tier backoff.")
+    raise Exception(f"Max retries exceeded on Free Tier backoff. Last error: {e.code}")
 
 # THE SOURCE OF TRUTH: Strict MOE Taxonomy
 ALLOWED_TOPICS = {
@@ -91,22 +91,19 @@ def run_actor_extraction(pdf_path, level, subject, valid_topics, relative_path):
     total_pages = len(doc)
     all_questions = []
     
-    # Process a maximum of 15 pages per API call to avoid the 8k output token ceiling
-    CHUNK_SIZE = 5
+    # FIXED: Added the tracking variable here
+    had_chunk_errors = False
     
-    # Format valid topics into a strict, isolated string array for the prompt
+    CHUNK_SIZE = 5
     topic_string = ", ".join([f'"{t}"' for t in valid_topics])
     
-    # 1. Extract the last 5 pages to serve as a universal Answer Key context
     answer_key_parts = []
     start_ak = max(0, total_pages - 5)
     for page_num in range(start_ak, total_pages):
         page = doc.load_page(page_num)
-        # Reduced DPI to 150 to prevent API payload rejection
         pix = page.get_pixmap(dpi=150) 
         answer_key_parts.append(types.Part.from_bytes(data=pix.tobytes("png"), mime_type='image/png'))
 
-    # 2. Process the document in safe chunks
     for i in range(0, total_pages, CHUNK_SIZE):
         chunk_end = min(i + CHUNK_SIZE, total_pages)
         print(f"      -> Scanning pages {i+1} to {chunk_end} of {total_pages}...")
@@ -117,7 +114,6 @@ def run_actor_extraction(pdf_path, level, subject, valid_topics, relative_path):
             pix = page.get_pixmap(dpi=150) 
             image_parts.append(types.Part.from_bytes(data=pix.tobytes("png"), mime_type='image/png'))
 
-        # If the chunk already includes the end of the book, don't duplicate the answer key
         if chunk_end >= start_ak:
             payload_parts = image_parts
         else:
@@ -133,10 +129,10 @@ def run_actor_extraction(pdf_path, level, subject, valid_topics, relative_path):
         2. Cross-reference the answer key to populate correct_answer.
         3. PROCEDURAL DIAGRAMS: If a diagram is needed, populate 'visual_payload'. Use 'diagram-library' for math/science charts, and describe the params as a stringified JSON object.
         4. The source_pdf is "{relative_path}".
+        5. MULTI-PART QUESTIONS: If a question has multiple parts (e.g., 14a and 14b) that share a main preamble text or scenario, you MUST include the full preamble in the 'question_text' of EVERY part. A student must be able to answer the question without needing to see the previous parts.
         """
 
         try:
-            # ---> USE THE FREE TIER WRAPPER <---
             response = free_tier_generate(
                 contents=payload_parts, 
                 prompt=prompt, 
@@ -145,16 +141,16 @@ def run_actor_extraction(pdf_path, level, subject, valid_topics, relative_path):
             
             raw_text = response.text
             
-            # --- THE BULLETPROOF NONE CHECK ---
             if raw_text is None:
                 print(f"      [!] API blocked this chunk (Safety Filter or Overload). Skipping.")
+                had_chunk_errors = True # FIXED: Flag the error
                 continue
                 
         except Exception as e:
             print(f"      [!] API connection failed on chunk {i+1}-{chunk_end}: {e}")
+            had_chunk_errors = True # FIXED: Flag the error
             continue
             
-        # --- CIRCUIT BREAKER: Auto-Heal Broken JSON ---
         try:
             data = json.loads(raw_text)
         except Exception as e:
@@ -165,7 +161,6 @@ def run_actor_extraction(pdf_path, level, subject, valid_topics, relative_path):
                 
         questions = data.get("questions", [])
         
-        # Parse stringified visual_payload params back to dict
         for q in questions:
             if isinstance(q.get("visual_payload"), dict) and q["visual_payload"].get("params"):
                 try:
@@ -175,7 +170,8 @@ def run_actor_extraction(pdf_path, level, subject, valid_topics, relative_path):
                     
         all_questions.extend(questions)
         
-    return all_questions
+    # FIXED: Return both values
+    return all_questions, had_chunk_errors
 
 
 def run_critic_review(raw_questions, valid_topics):
@@ -183,7 +179,6 @@ def run_critic_review(raw_questions, valid_topics):
     if not raw_questions:
         return []
 
-    # Format valid topics into a strict, isolated string array for the prompt
     topic_string = ", ".join([f'"{t}"' for t in valid_topics])
 
     prompt = f"""
@@ -197,17 +192,12 @@ def run_critic_review(raw_questions, valid_topics):
     """
     
     try:
-        # ---> USE THE FREE TIER WRAPPER <---
         response = free_tier_generate(
-            contents=[], # No images for the critic
+            contents=[], 
             prompt=prompt, 
             response_schema=ExtractionResult
         )
         
-        # --- CIRCUIT BREAKER 2: The Critic Bypass ---
-        # ... (keep your existing try/except block for json.loads(response.text) here)
-        
-        # --- CIRCUIT BREAKER 2: The Critic Bypass ---
         try:
             data = json.loads(response.text)
             return data.get("questions", [])
@@ -219,8 +209,6 @@ def run_critic_review(raw_questions, valid_topics):
             raise ValueError("Repair failed.")
             
     except Exception as fallback_error:
-        # If the Critic utterly fails (or repair fails), DO NOT throw away the Actor's data!
-        # We simply bypass the critic, flag the questions so you know to check them, and push them through.
         print("      ⚠️ Critic review crashed. Bypassing Critic and salvaging Actor data...")
         for q in raw_questions:
             q["flag_review"] = True 
@@ -230,13 +218,10 @@ def push_to_supabase(questions):
     """Phase 3: Format and push the cleaned questions to the database."""
     success_count = 0
     for q in questions:
-        # --- PRE-INSERT SANITY CHECK ---
-        # If auto-repair created a 'ghost question' missing the core text, drop it.
         if not q.get("question_text") or str(q.get("question_text")).strip() == "":
             print("      [!] Dropped a ghost question (missing question_text due to API truncation).")
             continue
 
-        # Stringify nested arrays for the database schema
         for key in ["options", "blanks", "passage_lines"]:
             if q.get(key):
                 q[key] = json.dumps(q[key])
@@ -245,7 +230,6 @@ def push_to_supabase(questions):
             supabase.table("seed_questions").insert(q).execute()
             success_count += 1
         except Exception as e:
-            # We keep this try/except to catch any other unforeseen DB schema mismatches
             print(f"      [!] DB Insert Error for a question: {e}")
             
     return success_count
@@ -264,7 +248,6 @@ def process_batch():
         level = file_record["level"]
         subject = file_record["subject"]
         
-        # Clean up path matching (handle absolute vs relative data paths)
         pdf_path = BASE_DIR / relative_path.replace("past_year_papers/", "")
         
         print(f"\n📄 Processing: {pdf_path.name}")
@@ -280,7 +263,7 @@ def process_batch():
         try:
             # 1. ACTOR
             print("   -> Running Actor Extraction...")
-            raw_questions = run_actor_extraction(pdf_path, level, subject, valid_topics, relative_path)
+            raw_questions, had_chunk_errors = run_actor_extraction(pdf_path, level, subject, valid_topics, relative_path)            
             
             # 2. CRITIC
             print("   -> Running Critic Review...")
@@ -290,20 +273,21 @@ def process_batch():
             print(f"   -> Uploading {len(cleaned_questions)} questions to Supabase...")
             inserted_count = push_to_supabase(cleaned_questions)
             
-            # 4. MARK COMPLETE
-            update_file_status(relative_path, "COMPLETED", extracted_seeds=inserted_count)
-            print(f"   ✅ Done! Inserted {inserted_count} questions.")
+            # FIXED: Indentation shifted to the right so it stays inside the 'try' block
+            if had_chunk_errors:
+                update_file_status(relative_path, "PARTIAL", extracted_seeds=inserted_count, error_message="Some chunks failed.")
+                print(f"   ⚠️ Marked PARTIAL! Inserted {inserted_count} questions, but some pages were skipped.")
+            else:
+                update_file_status(relative_path, "COMPLETED", extracted_seeds=inserted_count)
+                print(f"   ✅ Done! Inserted {inserted_count} questions.")
             
         except Exception as e:
             print(f"   ❌ Failed: {e}")
             update_file_status(relative_path, "ERROR", error_message=str(e))
             
-
-
     return True
 
 if __name__ == "__main__":
-    # Wrap in a loop to continuously process batches until empty
     while True:
         has_more = process_batch()
         if not has_more:

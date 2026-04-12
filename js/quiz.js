@@ -918,30 +918,52 @@ function buildClozeUI(q) {
         }
       }
       
-      // --- MASTERCLASS UPGRADE: Fetch dynamically from Supabase ---
+      // --- MASTERCLASS UPGRADE: Transparent Database Fetching ---
       const db = await window.getSupabase();
       
-      // 🚀 THE FIX: Translate frontend URL slugs to the strict MOE Database Taxonomy
+      // 1. Map Subject
       let dbSubject = subject;
       if (subject === 'mathematics') dbSubject = 'Mathematics';
       if (subject === 'science') dbSubject = 'Science';
-      if (subject === 'english') dbSubject = 'English Language'; // The critical mapping!
+      if (subject === 'english') dbSubject = 'English Language';
 
-      // Decode the topic to remove %20 URL spaces
-      let dbTopic = (topic === 'all' || !topic) ? 'mixed' : decodeURIComponent(topic);
+      // 2. Map Level
+      let dbLevel = levelSlug.replace('primary-', 'Primary ');
 
-      // We call the high-performance RPC function we created in SQL
-      // Note: We use .toLowerCase() here assuming your SQL RPC function uses LOWER() for case-insensitive matching
-      let { data: fetchedQuestions, error } = await db.rpc('get_random_practice_questions', {
-        p_subject: dbSubject,                               // Removed .toLowerCase()
-        p_level: levelSlug.replace('primary-', 'Primary '), // Capital 'P' in Primary!
-        p_topic: dbTopic === 'mixed' ? 'mixed' : dbTopic,   // Pass exact casing for topic
-        p_limit: 50 
-      });
+      // 3. Map Topic
+      const MOE_TOPICS = [
+        'Whole Numbers', 'Addition and Subtraction', 'Multiplication and Division', 'Money', 'Length and Mass', 'Shapes and Patterns', 'Picture Graphs',
+        'Multiplication Tables', 'Fractions', 'Time', 'Length, Mass and Volume', 'Shapes',
+        'Diversity', 'Systems', 'Interactions', 'Angles', 'Area and Perimeter', 'Bar Graphs',
+        'Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing',
+        'Cycles', 'Energy', 'Heat', 'Light', 'Magnets', 'Matter', 'Factors and Multiples', 'Decimals', 'Symmetry', 'Data Analysis',
+        'Percentage', 'Ratio', 'Rate', 'Area of Triangle', 'Volume', 'Angles and Geometry', 'Average', 'Synthesis',
+        'Cells', 'Forces', 'Speed', 'Algebra', 'Circles', 'Geometry', 'Pie Charts'
+      ];
+      
+      let dbTopic = null;
+      if (topic && topic !== 'all' && topic !== 'mixed') {
+         const decoded = decodeURIComponent(topic);
+         const matched = MOE_TOPICS.find(t => t.toLowerCase().replace(/ /g, '-').replace(/,/g, '') === decoded);
+         dbTopic = matched || decoded;
+      }
+
+      // 4. Fetch the questions safely
+      let query = db.from('question_bank').select('*').eq('subject', dbSubject).eq('level', dbLevel);
+      if (dbTopic) {
+         query = query.eq('topic', dbTopic);
+      }
+
+      let { data: fetchedQuestions, error } = await query.limit(100);
 
       if (error) {
         console.error('Database fetch error:', error);
         throw new Error('Failed to load questions from the bank.');
+      }
+      
+      // 5. Shuffle questions
+      if (fetchedQuestions && fetchedQuestions.length > 0) {
+          fetchedQuestions.sort(() => 0.5 - Math.random());
       }
 
       if (!fetchedQuestions || fetchedQuestions.length === 0) {
