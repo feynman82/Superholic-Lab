@@ -130,6 +130,7 @@ def run_actor_extraction(pdf_path, level, subject, valid_topics, relative_path):
         3. PROCEDURAL DIAGRAMS: If a diagram is needed, populate 'visual_payload'. Use 'diagram-library' for math/science charts, and describe the params as a stringified JSON object.
         4. The source_pdf is "{relative_path}".
         5. MULTI-PART QUESTIONS: If a question has multiple parts (e.g., 14a and 14b) that share a main preamble text or scenario, you MUST include the full preamble in the 'question_text' of EVERY part. A student must be able to answer the question without needing to see the previous parts.
+        6. STRICT MCQ SCHEMA: For multiple-choice questions, "correct_answer" MUST be the exact string value of the correct option from the "options" array. NEVER use index letters or numbers (e.g., Do NOT output "A", "B", "1", or "2"). The keys in the "wrong_explanations" object MUST also be the exact wrong option strings.
         """
 
         try:
@@ -185,7 +186,8 @@ def run_critic_review(raw_questions, valid_topics):
     You are a strict QA bot. Review this JSON array of exam questions.
     1. Ensure the 'topic' field for EVERY question is strictly one of these: [{topic_string}]. If it is not, re-map it to the closest valid topic from that exact list.
     2. Ensure that 'flag_review' is False unless the question is truly broken.
-    3. Return the corrected JSON array in the exact same schema.
+    3. STRICT MCQ CHECK: For 'mcq' questions, verify that the "correct_answer" is the EXACT string from the options array. If the actor used an index like "A", "B", "1", or "2", you MUST rewrite it to be the exact text of that option.
+    4. Return the corrected JSON array in the exact same schema.
     
     JSON to review:
     {json.dumps(raw_questions)}

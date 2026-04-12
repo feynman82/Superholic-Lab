@@ -24,6 +24,74 @@
 
 const DiagramLibrary = {
 
+rectangleDividedRightAngle(params) {
+    // Canvas sizing
+    const w = 400, h = 260;
+    
+    // Rectangle vertices (Bottom Left is Q, Top Left is P, Bottom Right is R, Top Right is S)
+    const px = 50, py = 50;     // Top Left (P)
+    const qx = 50, qy = 210;    // Bottom Left (Q) - The Right Angle
+    const rx = 350, ry = 210;   // Bottom Right (R)
+    const sx = 350, sy = 50;    // Top Right (S)
+
+    // Extract vertices from AI params (Default to standard P, Q, R, S)
+    const v = params.vertices || ['P', 'Q', 'R', 'S', 'T1', 'T2'];
+    
+    // Draw the main rectangle
+    let svg = `<rect x="${px}" y="${py}" width="${rx - px}" height="${qy - py}" fill="none" stroke="var(--border-dark, #ccc)" stroke-width="3"/>`;
+    
+    // Draw the right-angle square indicator at Q
+    svg += `<rect x="${qx}" y="${qy - 15}" width="15" height="15" fill="none" stroke="var(--brand-sage, #51615E)" stroke-width="1.5"/>`;
+
+    // Calculate dividing lines starting from Q (Bottom Left)
+    // A right angle at Q goes from 0 degrees (towards R) to 90 degrees (towards P).
+    // We will draw two lines dividing it into roughly 30-degree thirds for visual representation.
+    const rad1 = (30 * Math.PI) / 180;
+    const rad2 = (60 * Math.PI) / 180;
+    
+    // Line lengths (reach the top or right border depending on angle)
+    const lineLen = 200; 
+    const t1x = qx + lineLen * Math.cos(rad1);
+    const t1y = qy - lineLen * Math.sin(rad1);
+    
+    const t2x = qx + lineLen * Math.cos(rad2);
+    const t2y = qy - lineLen * Math.sin(rad2);
+
+    // Draw the two dividing lines
+    svg += `<line x1="${qx}" y1="${qy}" x2="${t1x}" y2="${t1y}" stroke="var(--text-main, #333)" stroke-width="2"/>`;
+    svg += `<line x1="${qx}" y1="${qy}" x2="${t2x}" y2="${t2y}" stroke="var(--text-main, #333)" stroke-width="2"/>`;
+
+    // Extract angles from AI params (if provided)
+    const angles = params.angles || [];
+    const a1 = angles[0]?.label || '?';
+    const a2 = angles[1]?.label || '?';
+    const a3 = angles[2]?.label || '?';
+
+    // Add Angle Labels
+    svg += `
+      <text x="${qx + 35}" y="${qy - 10}" font-size="14" font-weight="bold" fill="var(--brand-sage)">${a1}</text>
+      <text x="${qx + 20}" y="${qy - 35}" font-size="14" font-weight="bold" fill="var(--brand-rose)">${a2}</text>
+      <text x="${qx + 5}" y="${qy - 50}" font-size="14" font-weight="bold" fill="var(--brand-amber)">${a3}</text>
+    `;
+
+    // Add Vertex Labels
+    svg += `
+      <text x="${px - 15}" y="${py - 10}" font-size="16" font-weight="bold" fill="var(--text-muted)">${v[0]}</text>
+      <text x="${qx - 15}" y="${qy + 20}" font-size="16" font-weight="bold" fill="var(--text-main)">${v[1]}</text>
+      <text x="${rx + 15}" y="${ry + 20}" font-size="16" font-weight="bold" fill="var(--text-muted)">${v[2]}</text>
+      <text x="${sx + 15}" y="${sy - 10}" font-size="16" font-weight="bold" fill="var(--text-muted)">${v[3]}</text>
+      
+      <text x="${t1x + 10}" y="${t1y + 10}" font-size="14" font-weight="bold" fill="var(--text-muted)">${v[4] || 'T1'}</text>
+      <text x="${t2x + 10}" y="${t2y - 10}" font-size="14" font-weight="bold" fill="var(--text-muted)">${v[5] || 'T2'}</text>
+    `;
+
+    return `
+      <svg width="100%" viewBox="0 0 ${w} ${h}" style="height: auto; max-width: 500px; display: block; margin: 0 auto;">
+        ${svg}
+      </svg>
+    `;
+  },  
+
 dividedStraightLineAngle(params) {
     const cx = 200, cy = 200;
     const r = 160;
@@ -62,7 +130,7 @@ dividedStraightLineAngle(params) {
       </svg>
     `;
   },
-    
+
   // ── HELPERS ────────────────────────────────────────────────────────────────
 drawRectangleOnGrid(params) {
     const w_cm = parseFloat(params.width_cm) || 10;
@@ -98,7 +166,7 @@ drawRectangleOnGrid(params) {
     const labelSide = `<text x="${rectX - 8}" y="${rectY + rectH/2}" text-anchor="end" alignment-baseline="middle" fill="var(--text-main)" font-size="14" font-weight="bold">${l_cm + 'cm'}</text>`;
 
     const content = `
-      <svg width="100%" height="auto" viewBox="0 0 ${gridW} ${gridH}" style="max-width: 500px;">
+      <svg width="100%" style="height: auto;" viewBox="0 0 ${gridW} ${gridH}" style="max-width: 500px;">
         ${gridLines}
         ${rectSvg}
         ${labelTop}
@@ -179,7 +247,7 @@ table(params) {
     `;
 
     return `
-      <svg width="100%" height="auto" viewBox="0 0 ${gridW} ${gridH}" style="max-width: 500px;">
+      <svg width="100%" style="height: auto;" viewBox="0 0 ${gridW} ${gridH}" style="max-width: 500px;">
         ${gridLines}
         ${rectSvg}
         ${cornerLabels}
@@ -194,7 +262,7 @@ table(params) {
    * @returns {string}
    */
   _svg(content, { viewBox = '0 0 400 260', alt = 'Diagram', maxWidth = 400 } = {}) {
-    return `<svg role="img" aria-label="${alt}" width="100%" height="auto" viewBox="${viewBox}" xmlns="http://www.w3.org/2000/svg" style="max-width:${maxWidth}px;font-family:'Plus Jakarta Sans',sans-serif;display:block;">${content}</svg>`;
+    return `<svg role="img" aria-label="${alt}" width="100%" style="height: auto;" viewBox="${viewBox}" xmlns="http://www.w3.org/2000/svg" style="max-width:${maxWidth}px;font-family:'Plus Jakarta Sans',sans-serif;display:block;">${content}</svg>`;
   },
 
   /**
