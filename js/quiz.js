@@ -121,7 +121,16 @@ window.initQuizEngine = function() {
   function buildMCQOptions(q) {
     const letters = ['A','B','C','D'];
     const savedAns = state.answers[state.currentIndex] || '';
-    return (q.options || []).map((opt, i) => {
+    
+    // 🚀 THE FIX: Safety Parser to convert the database string back into a real array
+    let safeOptions = [];
+    try {
+      safeOptions = typeof q.options === 'string' ? JSON.parse(q.options) : (q.options || []);
+    } catch(e) {
+      safeOptions = [];
+    }
+
+    return safeOptions.map((opt, i) => {
       const letter = letters[i];
       const isSel = savedAns === letter;
       let extraStyle = '';
