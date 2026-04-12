@@ -49,6 +49,55 @@ const DiagramLibrary = {
       .replace(/"/g, '&quot;');
   },
 
+  // ── MASTER ROUTER ──────────────────────────────────────────────────────────
+
+  /**
+   * Master rendering function. Parses a database visual_payload and routes it
+   * to the correct drawing function safely.
+   * @param {object|string} payload - e.g., { engine: 'diagram-library', function_name: 'circle', params: {...} }
+   * @returns {string} SVG/HTML string or a safe placeholder
+   */
+  render(payload) {
+    // 1. Safety check: Handle empty or unparsed string payloads
+    if (!payload) return '';
+    let parsedPayload = payload;
+    if (typeof payload === 'string') {
+      try {
+        parsedPayload = JSON.parse(payload);
+      } catch (e) {
+        console.warn('[DiagramLibrary] Failed to parse payload string:', payload);
+        return this.placeholder({ description: 'Invalid diagram data' });
+      }
+    }
+
+    // 2. Engine Check
+    if (parsedPayload.engine !== 'diagram-library') {
+      return ''; // Silently ignore payloads meant for other future engines (like interactive widgets)
+    }
+
+    const fnName = parsedPayload.function_name;
+    
+    // Safety check: Parse params if they were double-stringified by the database
+    let params = parsedPayload.params || {};
+    if (typeof params === 'string') {
+      try { params = JSON.parse(params); } catch(e) {}
+    }
+
+    // 3. Security & Validation: Only allow calling public functions
+    if (!fnName || typeof this[fnName] !== 'function' || fnName.startsWith('_') || fnName === 'render') {
+      console.warn(`[DiagramLibrary] Unsupported function called: ${fnName}`);
+      return this.placeholder({ description: `Diagram type '${fnName}' not supported.` });
+    }
+
+    // 4. Execution & Fallback
+    try {
+      return this[fnName](params);
+    } catch (err) {
+      console.error(`[DiagramLibrary] Crash while rendering ${fnName}:`, err);
+      return this.placeholder({ description: `Error drawing ${fnName} diagram.`, borderStyle: 'solid' });
+    }
+  },
+  
   // ── GEOMETRY ───────────────────────────────────────────────────────────────
 
   /**

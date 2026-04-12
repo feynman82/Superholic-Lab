@@ -168,24 +168,37 @@ const ExamRenderer = {
     // Diagram (if present) + question text
     let bodyHtml = headerHtml + '<div class="card-body">';
 
-    // Diagram above
+    // 🚀 NEW: Render AI-Generated visual_payload diagrams (Using the Master Router)
+    let dynamicDiagramHtml = '';
+    if (question.visual_payload && typeof DiagramLibrary !== 'undefined') {
+      dynamicDiagramHtml = `
+        <div class="exam-diagram-payload mb-4 flex justify-center w-full">
+          ${DiagramLibrary.render(question.visual_payload)}
+        </div>
+      `;
+    }
+
+    // Legacy manual diagram support (above)
     if (question.diagram && question.diagram.position === 'above') {
       bodyHtml += this._diagramHtml(question.diagram);
     }
 
-    // Question text — side-by-side layout if diagram is 'right'
+    // Question text — side-by-side layout if legacy diagram is 'right'
     if (question.diagram && question.diagram.position === 'right') {
       bodyHtml += `<div class="diagram-right-layout">
         <div class="diagram-right-text">`;
     }
 
-    bodyHtml += `<p class="exam-question-text mb-4">${_examEsc(question.question_text || '')}</p>`;
+    bodyHtml += `<p class="exam-question-text mb-4" style="white-space: pre-line;">${_examEsc(question.question_text || '')}</p>`;
+
+    // 🚀 INJECT DYNAMIC DIAGRAM HERE (Below text, above inputs)
+    bodyHtml += dynamicDiagramHtml;
 
     if (question.diagram && question.diagram.position === 'right') {
       bodyHtml += `</div><div class="diagram-right-figure">${this._diagramHtml(question.diagram)}</div></div>`;
     }
 
-    // Diagram below question text
+    // Legacy diagram below question text
     if (question.diagram && question.diagram.position === 'below') {
       bodyHtml += this._diagramHtml(question.diagram);
     }

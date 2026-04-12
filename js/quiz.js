@@ -319,6 +319,16 @@ function buildClozeUI(q) {
     else if (q.type === 'editing')  inputUi = buildEditingUI(q);
     else                            inputUi = buildTextAreaUI(q);   
 
+    // 🚀 NEW: Render AI-Generated visual_payload diagrams safely
+    let diagramUi = '';
+    if (q.visual_payload && typeof DiagramLibrary !== 'undefined') {
+      diagramUi = `
+        <div class="quiz-diagram-container w-full flex justify-center my-6 p-4 bg-white" style="border-radius: var(--radius-md); border: 1px solid var(--border-light);">
+          ${DiagramLibrary.render(q.visual_payload)}
+        </div>
+      `;
+    }
+
     const hintsUi = buildHintsUI(q); // 👈 ADD THIS LINE
 
     let feedbackHtml = '';
@@ -365,9 +375,7 @@ function buildClozeUI(q) {
     } else if (q.type === 'editing') {
       displayInstruction = 'Read the passage and correct each underlined spelling or grammatical error.';
     }
-    // ----------------------------------
-    const diagramHtml = renderVisualPayload(q.visual_payload);
-    
+        
     app.innerHTML = `
       <div class="w-full" style="max-width: 680px;">
         <div class="flex justify-between items-center mb-6">
@@ -386,9 +394,9 @@ function buildClozeUI(q) {
           <div class="badge badge-info absolute top-0 left-8" style="transform:translateY(-50%);">${esc(titleCase(q.topic || 'Mixed'))}</div>
           ${q.difficulty ? `<div class="badge badge-${q.difficulty.toLowerCase()} absolute top-0 right-8" style="transform:translateY(-50%);">${esc(q.difficulty)}</div>` : ''}
 
-          ${diagramHtml}<h3 class="text-xl font-bold text-main mb-6 mt-2 leading-relaxed" style="white-space:pre-line;">${displayInstruction}</h3>
+          <h3 class="text-xl font-bold text-main mb-6 mt-2 leading-relaxed" style="white-space:pre-line;">${displayInstruction}</h3>
 
-          <div class="w-full">${inputUi}</div>
+          ${diagramUi} <div class="w-full">${inputUi}</div>
 
           ${hintsUi} ${feedbackHtml}
 
