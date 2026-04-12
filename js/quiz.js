@@ -1,6 +1,49 @@
 window.initQuizEngine = function() {
   'use strict';
 
+  // 🚀 GLOBAL UTILITY: The Vanilla JS Pen Tool Engine
+  window.togglePenTool = function(canvasId) {
+    const container = document.getElementById(canvasId + '-container');
+    if (!container) return;
+    container.classList.toggle('hidden');
+    const canvas = document.getElementById(canvasId);
+    if (!canvas || canvas.isInitialized) return;
+    const rect = container.getBoundingClientRect();
+    canvas.width = rect.width || 800;
+    canvas.height = rect.height || 300;
+    const ctx = canvas.getContext('2d');
+    ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.strokeStyle = '#000000';
+    let isDrawing = false, lastX = 0, lastY = 0;
+    function getPos(e) {
+      const r = canvas.getBoundingClientRect();
+      if(e.touches) return { x: e.touches[0].clientX - r.left, y: e.touches[0].clientY - r.top };
+      return { x: e.clientX - r.left, y: e.clientY - r.top };
+    }
+    function start(e) { e.preventDefault(); isDrawing = true; const p = getPos(e); lastX = p.x; lastY = p.y; }
+    function draw(e) { if (!isDrawing) return; e.preventDefault(); const p = getPos(e); ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(p.x, p.y); ctx.stroke(); lastX = p.x; lastY = p.y; }
+    function stop() { isDrawing = false; }
+    canvas.addEventListener('mousedown', start); canvas.addEventListener('mousemove', draw);
+    window.addEventListener('mouseup', stop); 
+    canvas.addEventListener('touchstart', start, {passive: false}); canvas.addEventListener('touchmove', draw, {passive: false}); window.addEventListener('touchend', stop);
+    canvas.isInitialized = true;
+  };
+
+  // 🚀 GLOBAL UTILITY: Smart Rubric Formatter
+  window.formatWorkedSolution = function(raw) {
+    if (!raw) return '<em>No step-by-step solution provided.</em>';
+    try {
+      const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      if (typeof parsed === 'object' && parsed !== null) {
+        let html = '';
+        for (const [key, val] of Object.entries(parsed)) {
+           html += `<div class="mb-4"><h5 class="font-bold text-brand-dark mb-2">${esc(key)}</h5><div class="text-main leading-relaxed" style="word-wrap: break-word;">${val}</div></div>`;
+        }
+        return html;
+      }
+    } catch(e) {}
+    return esc(raw).replace(/\n/g, '<br>');
+  };
+
   const state = {
     phase: 'LOAD',
     questions: [],
@@ -123,6 +166,15 @@ window.initQuizEngine = function() {
             ${p.question_text ? `<span class="text-sm text-main">${esc(p.question_text)}</span>` : ''}
           </div>
           <textarea id="wp-${esc(p.label)}" class="form-input w-full p-3" rows="3" style="height:auto;" placeholder="Show your working here..." ${savedModelShown?'disabled':''}>${esc(savedWorking)}</textarea>
+          
+          <div class="mt-2 w-full">
+            <button type="button" class="btn btn-outline btn-sm mb-2" onclick="window.togglePenTool('wp-canvas-${idx}')">
+              ✏️ Pen Tool
+            </button>
+            <div id="wp-canvas-${idx}-container" class="hidden border border-dark rounded bg-white w-full overflow-hidden shadow-sm" style="min-height: 250px;">
+              <canvas id="wp-canvas-${idx}" width="800" height="300" class="w-full h-full bg-white cursor-crosshair" style="touch-action: none;"></canvas>
+            </div>
+          </div>
           ${savedModelShown ? `
             <div class="ans-block strong mt-4">
               <div class="text-xs font-bold mb-1 text-success">Model Answer</div>
@@ -136,7 +188,8 @@ window.initQuizEngine = function() {
 
 function buildClozeUI(q) {
     const savedAns = state.answers[state.currentIndex] || {};
-    const blanks = q.blanks || [];
+    let blanks = [];
+    try { blanks = typeof q.blanks === 'string' ? JSON.parse(q.blanks) : (q.blanks || []); } catch(e) {}
 
     const allWords = new Set();
     blanks.forEach(b => (b.options || []).forEach(w => allWords.add(w)));
@@ -212,7 +265,9 @@ function buildClozeUI(q) {
 
   function buildEditingUI(q) {
     const savedAns = state.answers[state.currentIndex] || {};
-    const lines = (q.passage_lines || []).map(line => {
+    let parsedLines = [];
+    try { parsedLines = typeof q.passage_lines === 'string' ? JSON.parse(q.passage_lines) : (q.passage_lines || []); } catch(e) {}
+    const lines = parsedLines.map(line => {
       const saved = savedAns[line.line_number] || '';
       const rawText = line.text || '';
       const underlined = line.underlined_word || '';
@@ -327,7 +382,7 @@ function buildClozeUI(q) {
       if (fb.isModel) {
         feedbackHtml = `<div class="card card-rule-mint bg-science-tint p-4 mt-4">
           <div class="font-bold text-sm mb-2 text-success">Worked Solution</div>
-          <pre class="text-sm text-main whitespace-pre-wrap leading-relaxed" style="font-family: inherit;">${esc(q.worked_solution || q.model_answer || '')}</pre>
+          <div class="text-sm text-main leading-relaxed">${window.formatWorkedSolution(q.worked_solution || q.model_answer)}</div>
         </div>`;
       } else if (fb.status === 'correct') {
         feedbackHtml = `<div class="card card-rule-mint bg-science-tint p-4 mt-4">
@@ -509,7 +564,8 @@ function buildClozeUI(q) {
     // ── CLOZE ──
     if (q.type === 'cloze') {
       const ans = state.answers[state.currentIndex] || {};
-      const blanks = q.blanks || [];
+      let blanks = [];
+      try { blanks = typeof q.blanks === 'string' ? JSON.parse(q.blanks) : (q.blanks || []); } catch(e) {}
       let correctCount = 0;
       const blankResults = {};
       blanks.forEach(b => {
@@ -539,7 +595,8 @@ function buildClozeUI(q) {
     // ── EDITING ──
     if (q.type === 'editing') {
       const ans = state.answers[state.currentIndex] || {};
-      const lines = q.passage_lines || [];
+      let lines = [];
+      try { lines = typeof q.passage_lines === 'string' ? JSON.parse(q.passage_lines) : (q.passage_lines || []); } catch(e) {}
       let correctCount = 0;
       const lineResults = {};
       lines.forEach(l => {
@@ -576,8 +633,9 @@ function buildClozeUI(q) {
     // ── SHORT ANSWER ──
     const ans = String(state.answers[state.currentIndex] || '').trim();
     const norm = (s) => String(s || '').toLowerCase().replace(/\s+/g, '');
-    const correct = norm(ans) === norm(q.correct_answer) ||
-      (q.accept_also || []).some(a => norm(ans) === norm(a));
+    let safeAccept = [];
+    try { safeAccept = typeof q.accept_also === 'string' ? JSON.parse(q.accept_also) : (q.accept_also || []); } catch(e) {}
+    const correct = norm(ans) === norm(q.correct_answer) || safeAccept.some(a => norm(ans) === norm(a));
     const fbText = correct ? 'Excellent!' : `Expected: ${q.correct_answer}. ${q.worked_solution ? '\n' + q.worked_solution : ''}`;
     if (correct) { state.score++; state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak; }
     else state.streak = 0;
@@ -830,13 +888,36 @@ function buildClozeUI(q) {
       // --- MASTERCLASS UPGRADE: Fetch dynamically from Supabase ---
       const db = await window.getSupabase();
       
-      // We call the high-performance RPC function we created in SQL
-      let { data: fetchedQuestions, error } = await db.rpc('get_random_practice_questions', {
-        p_subject: subject.toLowerCase(),
-        p_level: levelSlug.replace('primary-', 'Primary '), // FIX: Translates URL slug to Database string
-        p_topic: (topic || 'mixed').toLowerCase(), 
-        p_limit: 50 
-      });
+      // 🚀 THE FIX: Transparent Taxonomy Mapper
+      let dbSubject = subject;
+      if (subject === 'mathematics') dbSubject = 'Mathematics';
+      if (subject === 'science') dbSubject = 'Science';
+      if (subject === 'english') dbSubject = 'English Language';
+
+      let dbLevel = levelSlug ? levelSlug.replace('primary-', 'Primary ') : null;
+
+      const MOE_TOPICS = [
+        'Whole Numbers', 'Addition and Subtraction', 'Multiplication and Division', 'Money', 'Length and Mass', 'Shapes and Patterns', 'Picture Graphs',
+        'Multiplication Tables', 'Fractions', 'Time', 'Length, Mass and Volume', 'Shapes',
+        'Diversity', 'Systems', 'Interactions', 'Angles', 'Area and Perimeter', 'Bar Graphs',
+        'Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing',
+        'Cycles', 'Energy', 'Heat', 'Light', 'Magnets', 'Matter', 'Factors and Multiples', 'Decimals', 'Symmetry', 'Data Analysis',
+        'Percentage', 'Ratio', 'Rate', 'Area of Triangle', 'Volume', 'Angles and Geometry', 'Average', 'Synthesis',
+        'Cells', 'Forces', 'Speed', 'Algebra', 'Circles', 'Geometry', 'Pie Charts'
+      ];
+      
+      let dbTopic = null;
+      if (topic && topic !== 'all' && topic !== 'mixed') {
+         const decoded = decodeURIComponent(topic);
+         const matched = MOE_TOPICS.find(t => t.toLowerCase().replace(/ /g, '-').replace(/,/g, '') === decoded);
+         dbTopic = matched || decoded;
+      }
+
+      let query = db.from('question_bank').select('*').eq('subject', dbSubject);
+      if (dbLevel) query = query.eq('level', dbLevel);
+      if (dbTopic) query = query.eq('topic', dbTopic);
+
+      let { data: fetchedQuestions, error } = await query.limit(50);
 
       if (error) {
         console.error('Database fetch error:', error);
