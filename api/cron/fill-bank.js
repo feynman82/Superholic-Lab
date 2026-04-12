@@ -1,116 +1,122 @@
 /**
  * api/cron/fill-bank.js
- * The Infinite Clone Engine. 
- * Fetches Gold Standard seeds and generates variations to fill the live bank.
+ * Vercel Serverless Function: The Cloud Omni-Cloner
  */
 
 import { createClient } from '@supabase/supabase-js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// Initialize Clients
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-const CLONE_PROMPT = `
-You are an expert Singapore MOE curriculum question cloner.
-I am going to provide you with ONE "Gold Standard" seed question.
+// 🚀 FIXED: Upgraded to the correct 2.5 Flash model
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }); 
 
-YOUR TASK:
-Generate exactly 5 NEW variations of this question.
-1. Keep the exact same logical structure, difficulty, and underlying concept.
-2. Keep the exact same JSON schema structure.
-3. Change the real-world scenario, the names (use Singapore names like Ahmad, Siti, Mei Ling, Ravi), the objects, and the numerical values.
-4. For Math: Ensure the new numbers work out cleanly without recurring decimals unless the original question had them.
-5. For Science: Change the experiment setup slightly (e.g., instead of testing heat conductivity with metal/plastic spoons, use glass/ceramic cups), but test the exact same concept.
+const CLONES_PER_SEED = 4;
 
-Return ONLY a valid JSON array of the 5 new question objects. Do NOT wrap in markdown fences.
+const TYPE_RULES = {
+  mcq: `\n- Each question must have exactly 4 options (A, B, C, D).\n- Include a "wrong_explanations" object. Keys are the wrong options.\n- Include an "examiner_note" for each question.`,
+  short_ans: `\n- Answers must be concise (a number, expression, or short phrase).\n- Include an "accept_also" array for equivalent correct forms.`,
+  word_problem: `\n- Each word problem must have a "parts" array with 2–3 parts.\n- Show full step-by-step "worked_solution".\n- Include an "examiner_note".`,
+  open_ended: `\n- Write a "model_answer" using CER framework.\n- List "keywords" array.\n- Provide a marking rubric in worked solution.`,
+  cloze: `\n- "passage" must have blanks marked as [1], [2].\n- Include "blanks" array (number, options, correct_answer, explanation).`,
+  editing: `\n- Include "passage_lines" array (line_number, text, underlined_word, has_error, correct_word, explanation).`
+};
 
-SEED QUESTION TO CLONE:
+// 🚀 SYNCED: Strict UI mapping rules
+const VISUAL_RULES = `
+CRITICAL VISUAL PAYLOAD RULES:
+If the seed question contains a "visual_payload", your clones MUST include an updated "visual_payload".
+You MUST map the diagram to ONE of these officially supported functions:
+1. "rectangle" | 2. "square" | 3. "rightTriangle" | 4. "circle"
+5. "fractionBar" | 6. "numberLine" | 7. "barChart" | 8. "pictogram"
+9. "compositeShape" | 10. "placeholder" (USE AS FALLBACK if no other shape fits).
+- "engine" must always be "diagram-library".
+- Update "visual_payload.params" to reflect your cloned question's math.
 `;
- 
+
+function buildPrompt(seedType) {
+  const typeSpecificInstructions = TYPE_RULES[seedType] || TYPE_RULES.mcq;
+  return `
+You are an expert Singapore MOE curriculum designer.
+Extract the core concept and generate EXACTLY ${CLONES_PER_SEED} NEW variations.
+
+SCAFFOLDING REQUIREMENTS:
+1. "difficulty": 1 "easy", 2 "medium", 1 "hard".
+2. "cognitive_skill": Add a 2-3 word string.
+3. "progressive_hints": An array of 2 strings (nudge, clue).
+
+STRICT SCHEMA REQUIREMENTS:
+${typeSpecificInstructions}
+${VISUAL_RULES}
+
+Return ONLY a valid JSON array of the ${CLONES_PER_SEED} new question objects. Do NOT wrap in markdown fences.
+SEED QUESTION: 
+`;
+}
+
+function sanitizeJsonString(rawString) {
+  let clean = rawString.replace(/^```(json)?\n?/, '').replace(/\n?```$/, '').trim();
+  clean = clean.replace(/(?<!\\)\n(?=[^"]*"(?:[^"\\]|\\.)*"(?:[^"\\]|\\.)*$)/g, '\\n');
+  return clean;
+}
+
 export default async function handler(req, res) {
-  // Security check: Only allow POST requests or Vercel Cron authorization
-  if (req.method !== 'POST' && req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) {
+  // Optional: Secure the cron endpoint
+  if (req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  try {
-    console.log('🚀 Waking up Clone Engine...');
+  console.log(`🚀 Waking up Cloud Clone Engine...`);
 
-    // 1. Fetch 3 random seeds from the vault
-    const { data: seeds, error: seedErr } = await supabase
+  try {
+    const { data: seeds, error: fetchErr } = await supabase
       .from('seed_questions')
       .select('*')
-      .limit(3); 
-      // Note: In production, you would order by random() or target specific weak topics
+      .order('created_at', { ascending: false })
+      .limit(3); // Keep Vercel batches small to avoid timeout limits
 
-    if (seedErr || !seeds || seeds.length === 0) throw new Error('No seeds found');
+    if (fetchErr || !seeds.length) return res.status(200).json({ message: 'No seeds to clone' });
 
-    let totalCloned = 0;
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" }); // Flash is perfect and fast for this
+    let totalClones = 0;
 
-    // 2. Clone each seed
     for (const seed of seeds) {
-      console.log(`🧬 Cloning seed: ${seed.id} (${seed.subject} - ${seed.topic})`);
-      
-      const prompt = CLONE_PROMPT + JSON.stringify(seed, null, 2);
-      
+      console.log(`🧬 Cloning seed: ${seed.id} (${seed.topic} - ${seed.type})`);
+
+      let cleanSeed = { ...seed };
+      if (cleanSeed.visual_payload && typeof cleanSeed.visual_payload.params === 'string') {
+        try { cleanSeed.visual_payload.params = JSON.parse(cleanSeed.visual_payload.params); } catch(e) {}
+      }
+
+      const prompt = buildPrompt(cleanSeed.type);
       const result = await model.generateContent({
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.7, responseMimeType: "application/json" }
+        contents: [{ role: "user", parts: [{ text: prompt + JSON.stringify(cleanSeed) }] }],
+        generationConfig: { temperature: 0.6, responseMimeType: "application/json" }
       });
 
-      const rawText = result.response.text();
-      let clones = [];
-      
-      try {
-        // Strip markdown if AI misbehaves despite MIME type
-        const cleanJson = rawText.replace(/^```json\n?/, '').replace(/\n?```$/, '').trim();
-        clones = JSON.parse(cleanJson);
-      } catch (e) {
-        console.warn(`⚠️ Failed to parse clones for seed ${seed.id}. Skipping.`);
-        continue;
-      }
+      const clones = JSON.parse(sanitizeJsonString(result.response.text()));
 
-      // 3. Format clones for the live bank
-      const payload = clones.map(clone => ({
-        seed_id: seed.id,
+      const payload = clones.map(c => ({
+        ...c, 
+        seed_id: seed.id, 
         is_ai_cloned: true,
-        subject: clone.subject || seed.subject,
-        level: clone.level || seed.level,
-        topic: clone.topic || seed.topic,
-        sub_topic: clone.sub_topic || seed.sub_topic,
-        difficulty: clone.difficulty || seed.difficulty,
-        type: clone.type || seed.type,
-        marks: clone.marks || seed.marks,
-        question_text: clone.question_text,
-        options: clone.options || null,
-        correct_answer: clone.correct_answer || null,
-        wrong_explanations: clone.wrong_explanations || null,
-        worked_solution: clone.worked_solution || null,
-        parts: clone.parts || null,
-        keywords: clone.keywords || null,
-        model_answer: clone.model_answer || null,
-        passage: clone.passage || null,
-        blanks: clone.blanks || null,
-        passage_lines: clone.passage_lines || null,
-        examiner_note: clone.examiner_note || null
+        subject: seed.subject, 
+        level: seed.level,
+        topic: seed.topic, 
+        cognitive_skill: c.cognitive_skill || null,
+        progressive_hints: c.progressive_hints || null,
+        source_pdf: seed.source_pdf 
       }));
 
-      // 4. Deposit into live bank
-      const { error: insertErr } = await supabase.from('question_bank').insert(payload);
-      
-      if (insertErr) {
-        console.error(`❌ Failed to insert clones:`, insertErr.message);
-      } else {
-        totalCloned += payload.length;
-      }
+      const { error: insErr } = await supabase.from('question_bank').insert(payload);
+      if (insErr) console.error(`⚠️ DB Insert failed for ${seed.id}:`, insErr.message);
+      else totalClones += payload.length;
     }
- 
-    return res.status(200).json({ success: true, cloned: totalCloned });
 
-  } catch (err) {
-    console.error('❌ Engine Error:', err);
-    return res.status(500).json({ error: 'Internal Server Error' }); 
+    return res.status(200).json({ success: true, clonesAdded: totalClones });
+
+  } catch (error) {
+    console.error('❌ Engine Error:', error);
+    return res.status(500).json({ error: error.message });
   }
 }
