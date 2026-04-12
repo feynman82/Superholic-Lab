@@ -60,9 +60,11 @@ const TYPE_RULES = {
   short_ans: `\n- Answers must be concise (a number, expression, or short phrase).\n- Include an "accept_also" array for equivalent correct forms.`,
   word_problem: `\n- Each word problem must have a "parts" array with 2–3 parts.\n- Show full step-by-step "worked_solution".\n- Include an "examiner_note".`,
   open_ended: `\n- Write a "model_answer" using CER framework.\n- List "keywords" array.\n- Provide a marking rubric in worked solution.`,
-  cloze: `\n- "passage" must have blanks marked as [1], [2].\n- Include "blanks" array (number, options, correct_answer, explanation).`,
+  cloze: `\n- "passage" must have blanks marked as [1], [2].\n- Include "blanks" array (number, options, correct_answer, explanation). \n- question_text" MUST be a simple instruction (e.g., "Fill in each blank with the correct word.").\n- "passage" MUST contain the full text. You MUST replace every blank with a bracketed number: [1], [2], [3], etc. DO NOT put the options inside this passage string.\n- "blanks" MUST NOT BE NULL. It MUST be a valid JSON array of objects.\n- Each object in the "blanks" array MUST have: - "number": the integer matching the bracket in the passage (e.g., 1). - "correct_answer": the exact correct string. - "options": a JSON array of exactly 3 to 4 plausible string options for this specific blank.- "explanation": a string explaining why the answer is correct.`,
   editing: `\n- Include "passage_lines" array (line_number, text, underlined_word, has_error, correct_word, explanation).`
 };
+
+
 
 const VISUAL_RULES = `
 CRITICAL VISUAL PAYLOAD RULES:
@@ -72,12 +74,19 @@ If the seed question contains a "visual_payload", your clones MUST include an up
 3. PARAMETER SYNC: You MUST accurately update the values inside "visual_payload.params" to mathematically match the new narrative and numbers in your cloned question text.
 4. GRAPH READABILITY: For any graphs, charts, or number lines, axes markings and data points MUST land on easily divisible, primary-school-friendly intervals (e.g., exact multiples of 2, 5, 10, or 50). Do not use ambiguous floating-point coordinates.
 `;
+const masterTemplate = fs.readFileSync('../data/Master_Question_Template.md', 'utf8');
 
 function buildPrompt(seedType, targetTopic) {
   const typeSpecificInstructions = TYPE_RULES[seedType] || TYPE_RULES.mcq;
 
   return `
-You are an expert Singapore MOE curriculum designer.
+You are an expert Singapore MOE curriculum designer. You must strictly follow the rules defined in this Master Template:
+
+${masterTemplate}
+
+Follow the TYPE_RULES below for the specific question format:
+${TYPE_RULES[questionType]}
+
 Generate EXACTLY ${CLONES_PER_RUN} NEW variations of this seed question.
 
 SCAFFOLDING REQUIREMENTS:
