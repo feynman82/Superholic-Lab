@@ -83,18 +83,19 @@ const DiagramLibrary = {
       try { params = JSON.parse(params); } catch(e) {}
     }
 
-    // 3. Security & Validation: Check if function exists
-    if (!fnName || typeof this[fnName] !== 'function' || fnName.startsWith('_') || fnName === 'render') {
-      console.warn(`[DiagramLibrary] To-Do: Missing function ${fnName}`);
+    // 3. Security & Validation: Check if function exists or is missing
+    if (!fnName || typeof fnName !== 'string' || typeof this[fnName] !== 'function' || fnName.startsWith('_') || fnName === 'render') {
+      const missingName = fnName || 'UnknownFunction';
+      console.warn(`[DiagramLibrary] To-Do: Missing or invalid function ${missingName}`);
       
       // Extract the keys the AI generated so the developer knows what params to code
-      const paramKeys = Object.keys(params).length > 0 
+      const paramKeys = params && Object.keys(params).length > 0 
         ? Object.keys(params).join(', ') 
         : 'no params';
 
       // Render the Developer Build Loop placeholder
       return this.placeholder({ 
-        description: `[Requires DiagramLibrary.${fnName}({ ${paramKeys} })]`, 
+        description: `[Requires DiagramLibrary.${missingName}({ ${paramKeys} })]`, 
         borderStyle: 'dashed' 
       });
     }

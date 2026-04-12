@@ -14,6 +14,37 @@ const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
 const CLONES_PER_SEED = 4;
 
+// 🚀 SOURCE OF TRUTH: The official MOE Taxonomy (mirrors subjects.html)
+const MOE_SYLLABUS = [
+  // Primary 1 (No formal Science)
+  ...['Whole Numbers', 'Addition and Subtraction', 'Multiplication and Division', 'Money', 'Length and Mass', 'Shapes and Patterns', 'Picture Graphs'].map(t => ({ level: 'Primary 1', subject: 'Mathematics', topic: t })),
+  ...['Grammar', 'Vocabulary', 'Comprehension', 'Cloze'].map(t => ({ level: 'Primary 1', subject: 'English Language', topic: t })),
+
+  // Primary 2 (No formal Science)
+  ...['Whole Numbers', 'Multiplication Tables', 'Fractions', 'Money', 'Time', 'Length, Mass and Volume', 'Shapes', 'Picture Graphs'].map(t => ({ level: 'Primary 2', subject: 'Mathematics', topic: t })),
+  ...['Grammar', 'Vocabulary', 'Comprehension', 'Cloze'].map(t => ({ level: 'Primary 2', subject: 'English Language', topic: t })),
+
+  // Primary 3
+  ...['Diversity', 'Systems', 'Interactions'].map(t => ({ level: 'Primary 3', subject: 'Science', topic: t })),
+  ...['Whole Numbers', 'Fractions', 'Length, Mass and Volume', 'Time', 'Angles', 'Area and Perimeter', 'Bar Graphs'].map(t => ({ level: 'Primary 3', subject: 'Mathematics', topic: t })),
+  ...['Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing'].map(t => ({ level: 'Primary 3', subject: 'English Language', topic: t })),
+  
+  // Primary 4
+  ...['Cycles', 'Energy', 'Heat', 'Light', 'Magnets', 'Matter'].map(t => ({ level: 'Primary 4', subject: 'Science', topic: t })),
+  ...['Whole Numbers', 'Factors and Multiples', 'Fractions', 'Decimals', 'Angles', 'Area and Perimeter', 'Symmetry', 'Data Analysis'].map(t => ({ level: 'Primary 4', subject: 'Mathematics', topic: t })),
+  ...['Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing'].map(t => ({ level: 'Primary 4', subject: 'English Language', topic: t })),
+  
+  // Primary 5
+  ...['Cycles', 'Systems', 'Energy', 'Interactions'].map(t => ({ level: 'Primary 5', subject: 'Science', topic: t })),
+  ...['Whole Numbers', 'Fractions', 'Decimals', 'Percentage', 'Ratio', 'Rate', 'Area of Triangle', 'Volume', 'Angles and Geometry', 'Average'].map(t => ({ level: 'Primary 5', subject: 'Mathematics', topic: t })),
+  ...['Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing', 'Synthesis'].map(t => ({ level: 'Primary 5', subject: 'English Language', topic: t })),
+  
+  // Primary 6
+  ...['Interactions', 'Energy', 'Cells', 'Forces'].map(t => ({ level: 'Primary 6', subject: 'Science', topic: t })),
+  ...['Fractions', 'Percentage', 'Ratio', 'Speed', 'Algebra', 'Circles', 'Volume', 'Geometry', 'Pie Charts'].map(t => ({ level: 'Primary 6', subject: 'Mathematics', topic: t })),
+  ...['Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing', 'Synthesis'].map(t => ({ level: 'Primary 6', subject: 'English Language', topic: t }))
+];
+
 const TYPE_RULES = {
   mcq: `\n- Each question must have exactly 4 options (A, B, C, D).\n- Include a "wrong_explanations" object. Keys are the wrong options.\n- Include an "examiner_note" for each question.`,
   short_ans: `\n- Answers must be concise (a number, expression, or short phrase).\n- Include an "accept_also" array for equivalent correct forms.`,

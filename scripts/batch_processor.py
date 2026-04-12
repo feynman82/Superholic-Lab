@@ -25,6 +25,7 @@ client = genai.Client(api_key=api_key)
 supabase: Client = create_client(supabase_url, supabase_key)
 BASE_DIR = root_dir / "data" / "past_year_papers"
 
+# THE SOURCE OF TRUTH: Strict MOE Taxonomy
 ALLOWED_TOPICS = {
   "Primary 1": { "Mathematics": ["Whole Numbers", "Addition and Subtraction", "Multiplication and Division", "Money", "Length and Mass", "Shapes and Patterns", "Picture Graphs"], "English Language": ["Grammar", "Vocabulary", "Comprehension", "Cloze"] },
   "Primary 2": { "Mathematics": ["Whole Numbers", "Multiplication Tables", "Fractions", "Money", "Time", "Length, Mass and Volume", "Shapes", "Picture Graphs"], "English Language": ["Grammar", "Vocabulary", "Comprehension", "Cloze"] },
@@ -60,6 +61,9 @@ def run_actor_extraction(pdf_path, level, subject, valid_topics, relative_path):
     # Process a maximum of 15 pages per API call to avoid the 8k output token ceiling
     CHUNK_SIZE = 15
     
+    # Format valid topics into a strict, isolated string array for the prompt
+    topic_string = ", ".join([f'"{t}"' for t in valid_topics])
+    
     # 1. Extract the last 5 pages to serve as a universal Answer Key context
     answer_key_parts = []
     start_ak = max(0, total_pages - 5)
@@ -91,7 +95,8 @@ def run_actor_extraction(pdf_path, level, subject, valid_topics, relative_path):
         Note: The final images provided to you in this prompt are the answer key.
         
         CRITICAL INSTRUCTIONS:
-        1. TOPIC RESTRICTION: You MUST classify the 'topic' of every question using ONLY one of these exact strings: {valid_topics}. Do not invent topics.
+        1. TOPIC RESTRICTION: You MUST categorize the 'topic' of every question EXACTLY as one of these strings: [{topic_string}].
+           CRITICAL: Do NOT invent new topics. Do NOT use topics from other levels or subjects. If a question spans multiple concepts, pick the single closest match from THIS list ONLY.
         2. Cross-reference the answer key to populate correct_answer.
         3. PROCEDURAL DIAGRAMS: If a diagram is needed, populate 'visual_payload'. Use 'diagram-library' for math/science charts, and describe the params as a stringified JSON object.
         4. The source_pdf is "{relative_path}".
@@ -148,9 +153,12 @@ def run_critic_review(raw_questions, valid_topics):
     if not raw_questions:
         return []
 
+    # Format valid topics into a strict, isolated string array for the prompt
+    topic_string = ", ".join([f'"{t}"' for t in valid_topics])
+
     prompt = f"""
     You are a strict QA bot. Review this JSON array of exam questions.
-    1. Ensure the 'topic' field for EVERY question is strictly one of these: {valid_topics}. If it is not, re-map it to the closest valid topic.
+    1. Ensure the 'topic' field for EVERY question is strictly one of these: [{topic_string}]. If it is not, re-map it to the closest valid topic from that exact list.
     2. Ensure that 'flag_review' is False unless the question is truly broken.
     3. Return the corrected JSON array in the exact same schema.
     
@@ -192,6 +200,12 @@ def push_to_supabase(questions):
     """Phase 3: Format and push the cleaned questions to the database."""
     success_count = 0
     for q in questions:
+        # --- PRE-INSERT SANITY CHECK ---
+        # If auto-repair created a 'ghost question' missing the core text, drop it.
+        if not q.get("question_text") or str(q.get("question_text")).strip() == "":
+            print("      [!] Dropped a ghost question (missing question_text due to API truncation).")
+            continue
+
         # Stringify nested arrays for the database schema
         for key in ["options", "blanks", "passage_lines"]:
             if q.get(key):
@@ -201,6 +215,7 @@ def push_to_supabase(questions):
             supabase.table("seed_questions").insert(q).execute()
             success_count += 1
         except Exception as e:
+            # We keep this try/except to catch any other unforeseen DB schema mismatches
             print(f"      [!] DB Insert Error for a question: {e}")
             
     return success_count

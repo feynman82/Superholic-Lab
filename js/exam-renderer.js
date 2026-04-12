@@ -478,12 +478,16 @@ const ExamRenderer = {
 
         let answerText = '';
         if (q.type === 'mcq') {
-          answerText = `<strong>${_examEsc(q.correct_answer)}</strong>`;
-        } else if (q.type === 'short_ans') {
-          answerText = _examEsc(q.correct_answer || '');
-          if (q.accept_also && q.accept_also.length) {
-            answerText += ` <span class="text-secondary">(also: ${q.accept_also.map(_examEsc).join(', ')})</span>`;
+          // 🚀 THE FIX: Safety Parser for double-stringified database arrays
+          let safeOptions = q.options || [];
+          if (typeof safeOptions === 'string') {
+            try { safeOptions = JSON.parse(safeOptions); } catch (e) { safeOptions = []; }
           }
+
+          // Now we can safely .map() over the true array
+          answerText = safeOptions.map(opt =>
+            `<span class="text-secondary">${_examEsc(opt)}</span>`
+          ).join('');
         } else if (q.type === 'word_problem') {
           answerText = (q.parts || []).map(p =>
             `${_examEsc(p.label)} ${_examEsc(p.correct_answer)}`
