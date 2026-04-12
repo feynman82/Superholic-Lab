@@ -112,38 +112,26 @@ window.initQuizEngine = function() {
   }
 
   function buildWordProblemUI(q) {
-    let html = `<div class="flex flex-col gap-6 mt-4 w-full">`;
-    const parts = q.parts || [{ label: '', question_text: 'Solve the problem above.' }];
-
-    parts.forEach((p, idx) => {
-      // 🚀 FIX: Prevent undefined warnings by safely checking properties
-      const partLabel = p.label ? `${esc(p.label)}) ` : '';
-      const partText = p.question_text ? esc(p.question_text) : '';
-      
-      html += `
-        <div class="word-problem-part p-5 bg-elevated rounded-lg border border-light w-full">
-          ${partText ? `<p class="font-bold text-main mb-4">${partLabel}${partText}</p>` : ''}
-          
-          <div class="flex flex-col gap-3 w-full">
-            <label class="text-sm font-bold text-muted uppercase tracking-wider">Show your working & final answer:</label>
-            
-            <textarea id="wp-text-${idx}" class="form-input w-full p-4 rounded border border-light" rows="4" placeholder="Type your step-by-step working and final answer here..."></textarea>
-            
-            <div class="mt-2 w-full">
-              <button type="button" class="btn btn-outline btn-sm mb-2" onclick="document.getElementById('wp-canvas-container-${idx}').classList.toggle('hidden')">
-                ✏️ Toggle Drawing Pad
-              </button>
-              
-              <div id="wp-canvas-container-${idx}" class="hidden border border-dark rounded bg-white w-full overflow-hidden shadow-sm" style="min-height: 250px;">
-                <canvas id="wp-canvas-${idx}" width="800" height="300" class="w-full h-full bg-white cursor-crosshair" style="touch-action: none;"></canvas>
-              </div>
-            </div>
+    const savedModelShown = state.isAnswered;
+    const parts = (q.parts || []).map(p => {
+      const savedWorking = (state.answers[state.currentIndex] || {})[p.label] || '';
+      return `
+        <div class="card bg-page p-4 mb-4">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="font-display text-lg text-main font-bold">${esc(p.label)}</span>
+            <span class="badge badge-info text-xs">${p.marks} mark${p.marks!==1?'s':''}</span>
+            ${p.question_text ? `<span class="text-sm text-main">${esc(p.question_text)}</span>` : ''}
           </div>
-        </div>
-      `;
-    });
-    html += `</div>`;
-    return html;
+          <textarea id="wp-${esc(p.label)}" class="form-input w-full p-3" rows="3" style="height:auto;" placeholder="Show your working here..." ${savedModelShown?'disabled':''}>${esc(savedWorking)}</textarea>
+          ${savedModelShown ? `
+            <div class="ans-block strong mt-4">
+              <div class="text-xs font-bold mb-1 text-success">Model Answer</div>
+              <div class="text-sm text-main font-mono whitespace-pre-wrap">${esc(p.model_answer || p.correct_answer || '')}</div>
+              ${p.marking_scheme ? `<div class="text-xs text-muted mt-2 whitespace-pre-wrap">${esc(p.marking_scheme)}</div>` : ''}
+            </div>` : ''}
+        </div>`;
+    }).join('');
+    return parts;
   }
 
 function buildClozeUI(q) {
@@ -331,17 +319,9 @@ function buildClozeUI(q) {
     else if (q.type === 'editing')  inputUi = buildEditingUI(q);
     else                            inputUi = buildTextAreaUI(q);   
 
-    // 🚀 HYBRID DIAGRAM RENDERING: 
-    // Prioritize the physical cropped image (Seeds), fallback to SVG Engine (Clones)
+    // 🚀 NEW: Render AI-Generated visual_payload diagrams safely
     let diagramUi = '';
-    
-    if (q.image_url) {
-      diagramUi = `
-        <div class="quiz-diagram-container w-full flex justify-center my-6">
-          <img src="${esc(q.image_url)}" alt="Question Diagram" class="max-w-full rounded shadow-sm border border-light" style="max-height: 250px; object-fit: contain;">
-        </div>
-      `;
-    } else if (q.visual_payload && typeof DiagramLibrary !== 'undefined') {
+    if (q.visual_payload && typeof DiagramLibrary !== 'undefined') {
       diagramUi = `
         <div class="quiz-diagram-container w-full flex justify-center my-6 p-4 bg-white" style="border-radius: var(--radius-md); border: 1px solid var(--border-light);">
           ${DiagramLibrary.render(q.visual_payload)}
@@ -395,7 +375,9 @@ function buildClozeUI(q) {
     } else if (q.type === 'editing') {
       displayInstruction = 'Read the passage and correct each underlined spelling or grammatical error.';
     }
-        
+    // ----------------------------------
+    const diagramHtml = renderVisualPayload(q.visual_payload);
+    
     app.innerHTML = `
       <div class="w-full" style="max-width: 680px;">
         <div class="flex justify-between items-center mb-6">
@@ -414,7 +396,7 @@ function buildClozeUI(q) {
           <div class="badge badge-info absolute top-0 left-8" style="transform:translateY(-50%);">${esc(titleCase(q.topic || 'Mixed'))}</div>
           ${q.difficulty ? `<div class="badge badge-${q.difficulty.toLowerCase()} absolute top-0 right-8" style="transform:translateY(-50%);">${esc(q.difficulty)}</div>` : ''}
 
-          <h3 class="text-xl font-bold text-main mb-6 mt-2 leading-relaxed" style="white-space:pre-line;">${displayInstruction}</h3>
+          ${diagramHtml} <h3 class="text-xl font-bold text-main mb-6 mt-2 leading-relaxed" style="white-space:pre-line;">${displayInstruction}</h3>
 
           ${diagramUi} <div class="w-full">${inputUi}</div>
 
