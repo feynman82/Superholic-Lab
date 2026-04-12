@@ -24,6 +24,45 @@
 
 const DiagramLibrary = {
 
+dividedStraightLineAngle(params) {
+    const cx = 200, cy = 200;
+    const r = 160;
+    
+    // 1. Draw the straight horizontal base line
+    let linesHtml = `<line x1="${cx - r}" y1="${cy}" x2="${cx + r}" y2="${cy}" stroke="var(--border-dark, #ccc)" stroke-width="3"/>`;
+    
+    // 2. Draw an intersecting ray to divide the angle
+    // We use a fixed 60-degree split for visual representation, while the text labels handle the actual math values.
+    const rad = (60 * Math.PI) / 180;
+    const rayX = cx + r * Math.cos(-rad);
+    const rayY = cy + r * Math.sin(-rad);
+    linesHtml += `<line x1="${cx}" y1="${cy}" x2="${rayX}" y2="${rayY}" stroke="var(--text-main, #333)" stroke-width="3"/>`;
+
+    // 3. Draw the center vertex point
+    linesHtml += `<circle cx="${cx}" cy="${cy}" r="4" fill="var(--brand-sage, #51615E)"/>`;
+
+    // 4. Extract AI parameters (Angles and Vertices)
+    const angles = params.angles || ['?', '?'];
+    const vertices = params.vertices || ['A', 'O', 'B', 'C']; // Typical intersection points
+
+    // 5. Inject the labels
+    linesHtml += `
+      <text x="${cx + 50}" y="${cy - 20}" font-size="16" font-weight="bold" fill="var(--brand-sage)">${angles[0]}</text>
+      <text x="${cx - 60}" y="${cy - 20}" font-size="16" font-weight="bold" fill="var(--text-main)">${angles[1]}</text>
+      
+      <text x="${cx}" y="${cy + 25}" font-size="16" font-weight="bold" text-anchor="middle" fill="var(--text-muted)">${vertices[1] || 'O'}</text>
+      <text x="${cx + r + 15}" y="${cy + 5}" font-size="16" font-weight="bold" fill="var(--text-muted)">${vertices[2] || 'B'}</text>
+      <text x="${cx - r - 15}" y="${cy + 5}" font-size="16" font-weight="bold" fill="var(--text-muted)">${vertices[0] || 'A'}</text>
+      <text x="${rayX + 10}" y="${rayY - 10}" font-size="16" font-weight="bold" fill="var(--text-muted)">${vertices[3] || 'C'}</text>
+    `;
+
+    return `
+      <svg width="100%" viewBox="0 0 400 260" style="height: auto; max-width: 500px; display: block; margin: 0 auto;">
+        ${linesHtml}
+      </svg>
+    `;
+  },
+    
   // ── HELPERS ────────────────────────────────────────────────────────────────
 drawRectangleOnGrid(params) {
     const w_cm = parseFloat(params.width_cm) || 10;
