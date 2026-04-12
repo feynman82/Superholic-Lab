@@ -56,7 +56,7 @@ const MOE_SYLLABUS = [
 ];
 
 const TYPE_RULES = {
-  mcq: `\n- Each question must have exactly 4 options (A, B, C, D).\n- Include a "wrong_explanations" object. Keys are the wrong options.\n- Include an "examiner_note" for each question.`,
+  mcq: `\n- Each question must have an "options" array with exactly 4 string values.\n- "correct_answer" MUST be the exact string value of the correct option from the array. Do NOT use "A", "B", "C", or "D".\n- Include a "wrong_explanations" object where the keys are the exact wrong option strings.\n- Include an "examiner_note".`,  
   short_ans: `\n- Answers must be concise (a number, expression, or short phrase).\n- Include an "accept_also" array for equivalent correct forms.`,
   word_problem: `\n- Each word problem must have a "parts" array with 2–3 parts.\n- Show full step-by-step "worked_solution".\n- Include an "examiner_note".`,
   open_ended: `\n- Write a "model_answer" using CER framework.\n- List "keywords" array.\n- Provide a marking rubric in worked solution.`,

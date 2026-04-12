@@ -120,26 +120,28 @@ window.initQuizEngine = function() {
 
   function buildMCQOptions(q) {
     const letters = ['A','B','C','D'];
-    const savedAns = state.answers[state.currentIndex] || '';
+    const savedAns = state.answers[state.currentIndex] || ''; 
     
-    // 🚀 THE FIX: Safety Parser to convert the database string back into a real array
     let safeOptions = [];
-    try {
-      safeOptions = typeof q.options === 'string' ? JSON.parse(q.options) : (q.options || []);
-    } catch(e) {
-      safeOptions = [];
-    }
+    try { safeOptions = typeof q.options === 'string' ? JSON.parse(q.options) : (q.options || []); } catch(e) {}
 
     return safeOptions.map((opt, i) => {
       const letter = letters[i];
-      const isSel = savedAns === letter;
+      const isSel = savedAns === opt; // Compare exact string
+      
       let extraStyle = '';
       if (state.isAnswered) {
-        if (letter === q.correct_answer) extraStyle = 'border-color:var(--brand-mint);background:rgba(5,150,105,0.1);';
-        else if (isSel)                  extraStyle = 'border-color:var(--brand-error);background:rgba(220,38,38,0.1);opacity:0.8;';
-        else                             extraStyle = 'opacity:0.45;pointer-events:none;';
+        // Safe string normalization
+        const normOpt = String(opt).trim().toLowerCase();
+        const normAns = String(q.correct_answer).trim().toLowerCase();
+
+        if (normOpt === normAns) extraStyle = 'border-color:var(--brand-mint);background:rgba(5,150,105,0.1);';
+        else if (isSel)          extraStyle = 'border-color:var(--brand-error);background:rgba(220,38,38,0.1);opacity:0.8;';
+        else                     extraStyle = 'opacity:0.45;pointer-events:none;';
       }
-      return `<div class="mcq-opt${isSel?' is-sel':''}" style="${extraStyle}${state.isAnswered?'pointer-events:none;':''}" onclick="window.selectMcq('${letter}')">
+      
+      // Pass the array index to avoid quotation-mark escaping crashes in HTML
+      return `<div class="mcq-opt${isSel?' is-sel':''}" style="${extraStyle}${state.isAnswered?'pointer-events:none;':''}" onclick="window.selectMcq(${i})">
         <span class="mcq-badge">${letter}</span><span class="font-medium text-main">${esc(opt)}</span>
       </div>`;
     }).join('');
@@ -478,9 +480,14 @@ function buildClozeUI(q) {
     render();
   };
 
-  window.selectMcq = (letter) => {
+  window.selectMcq = (idx) => {
     if (state.isAnswered) return;
-    state.answers[state.currentIndex] = letter;
+    const q = state.questions[state.currentIndex];
+    let safeOptions = [];
+    try { safeOptions = typeof q.options === 'string' ? JSON.parse(q.options) : (q.options || []); } catch(e) {}
+    
+    // Save the exact string value of the clicked option, not 'A' or 'B'
+    state.answers[state.currentIndex] = safeOptions[idx];
     window.checkAnswer();
   };
 
@@ -558,12 +565,22 @@ function buildClozeUI(q) {
     if (q.type === 'mcq') {
       const ans = state.answers[state.currentIndex];
       if (!ans) { alert('Please select an answer!'); return; }
-      const isCorrect = ans === q.correct_answer;
+      
+      const normAns = String(ans).trim().toLowerCase();
+      const normCorrect = String(q.correct_answer).trim().toLowerCase();
+      const isCorrect = normAns === normCorrect;
+
+      // Safely parse the wrong explanations JSON from the database
+      let safeWrongExpl = {};
+      try { safeWrongExpl = typeof q.wrong_explanations === 'string' ? JSON.parse(q.wrong_explanations) : (q.wrong_explanations || {}); } catch(e) {}
+
       const fbText = isCorrect
         ? (q.worked_solution ? `Correct! ${q.worked_solution.split('\n')[0]}` : 'Perfectly executed!')
-        : (q.wrong_explanations?.[ans] || `The correct answer is ${q.correct_answer}.`);
+        : (safeWrongExpl[ans] || `The correct answer is ${q.correct_answer}.`);
+        
       if (isCorrect) { state.score++; state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak; }
       else state.streak = 0;
+      
       state.isAnswered = true;
       state.feedback = { status: isCorrect ? 'correct' : 'wrong', text: fbText, correctAnswer: isCorrect ? null : q.correct_answer };
       render();
