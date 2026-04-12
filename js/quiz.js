@@ -1,6 +1,6 @@
 /**
  * quiz.js - Superholic Lab V3 (Master Build)
- * A resilient, taxonomy-aligned Quiz Engine with interactive Pen Tools.
+ * Features: Taxonomy Router, Pen Tool, Progressive Hints, Auto-Container, Supabase Telemetry
  */
 
 window.initQuizEngine = async function() {
@@ -77,16 +77,24 @@ window.initQuizEngine = async function() {
   }
 
   // ==========================================
-  // 2. STATE MANAGEMENT & INIT
+  // 2. STATE MANAGEMENT & AUTO-CONTAINER
   // ==========================================
 
-  const app = document.getElementById('quiz-app');
-  if (!app) return console.error('Missing #quiz-app container.');
+  // 🚀 ANTI-CRASH: Auto-detect or build the container if the HTML is missing it
+  let app = document.getElementById('quiz-app') || document.getElementById('app');
+  if (!app) {
+    console.warn("[QuizEngine] #quiz-app missing. Auto-generating container.");
+    app = document.createElement('div');
+    app.id = 'quiz-app';
+    app.className = 'w-full max-w-4xl mx-auto px-4 py-8';
+    document.body.appendChild(app);
+  }
 
   const state = {
     phase: 'LOAD', // LOAD, QUIZ, RESULT
     questions: [],
     currentIndex: 0,
+    hintIndex: 0, // 🚀 Tracks how many hints have been revealed
     score: 0,
     isAnswered: false,
     studentId: localStorage.getItem('sh_student_id') || null,
@@ -141,7 +149,7 @@ window.initQuizEngine = async function() {
       
       if (!fetched || fetched.length === 0) {
         state.questions = [];
-        state.phase = 'QUIZ'; // Let render handle the empty state
+        state.phase = 'QUIZ'; 
         render();
         return;
       }
@@ -177,6 +185,29 @@ window.initQuizEngine = async function() {
     app.innerHTML = `<div class="card flex flex-col items-center p-8"><div class="spinner-sm mb-4"></div><h2 class="text-xl">Building Quiz...</h2></div>`;
   }
 
+  // 🚀 PROGRESSIVE HINT REVEALER
+  window.showNextHint = function() {
+    const q = state.questions[state.currentIndex];
+    let hintsArray = [];
+    try { hintsArray = typeof q.progressive_hints === 'string' ? JSON.parse(q.progressive_hints) : (q.progressive_hints || []); } catch(e) {}
+    
+    if (state.hintIndex < hintsArray.length) {
+      const container = document.getElementById('hints-container');
+      container.innerHTML += `
+        <div class="mt-3 p-4 bg-blue-50 border-l-4 border-blue-400 rounded-r text-blue-900 animate-fade-in">
+          <strong class="uppercase text-xs tracking-wider opacity-75 block mb-1">Hint ${state.hintIndex + 1}</strong>
+          ${esc(hintsArray[state.hintIndex])}
+        </div>
+      `;
+      state.hintIndex++;
+      
+      // Hide button if no more hints
+      if (state.hintIndex >= hintsArray.length) {
+        document.getElementById('btn-hint').style.display = 'none';
+      }
+    }
+  };
+
   function renderQuiz() {
     if (state.questions.length === 0) {
       app.innerHTML = `
@@ -193,6 +224,11 @@ window.initQuizEngine = async function() {
     const totalQ = state.questions.length;
     const progressPct = ((qNum - 1) / totalQ) * 100;
 
+    // Check for available hints
+    let hintsArray = [];
+    try { hintsArray = typeof q.progressive_hints === 'string' ? JSON.parse(q.progressive_hints) : (q.progressive_hints || []); } catch(e) {}
+    const hasHints = hintsArray.length > 0;
+
     let visualHtml = '';
     if (q.visual_payload && typeof DiagramLibrary !== 'undefined') {
        try { visualHtml = DiagramLibrary.render(q.visual_payload); } catch(e) { console.error("Diagram error", e); }
@@ -205,7 +241,7 @@ window.initQuizEngine = async function() {
     else if (q.type === 'short_ans') inputUiHtml = buildShortAnsUI(q);
     else if (q.type === 'cloze') inputUiHtml = buildClozeUI(q);
     else if (q.type === 'editing') inputUiHtml = buildEditingUI(q);
-    else inputUiHtml = buildWordProblemUI(q); // Defaults to word problem/open-ended with Pen Tool
+    else inputUiHtml = buildWordProblemUI(q); 
 
     app.innerHTML = `
       <div class="w-full bg-light rounded-full h-2 mb-6">
@@ -222,13 +258,16 @@ window.initQuizEngine = async function() {
         
         ${visualHtml ? `<div class="mb-6 flex justify-center w-full">${visualHtml}</div>` : ''}
         
-        <div class="input-container w-full">
-          ${inputUiHtml}
-        </div>
+        <div class="input-container w-full">${inputUiHtml}</div>
+
+        <div id="hints-container" class="w-full mt-2"></div>
 
         <div id="feedback-container" class="w-full transition-all duration-300"></div>
 
-        <div class="mt-8 pt-6 border-t border-light flex justify-end">
+        <div class="mt-8 pt-6 border-t border-light flex justify-between items-center">
+          <div>
+            ${hasHints ? `<button id="btn-hint" class="btn btn-outline text-brand-dark" onclick="window.showNextHint()">💡 Need a hint?</button>` : '<div></div>'}
+          </div>
           <button id="btn-submit" class="btn btn-primary btn-lg" onclick="window.checkAnswer()">Check Answer</button>
         </div>
       </div>
@@ -243,7 +282,7 @@ window.initQuizEngine = async function() {
     let safeOptions = [];
     try { safeOptions = typeof q.options === 'string' ? JSON.parse(q.options) : (q.options || []); } catch(e) {}
     
-    return `<div class="flex flex-col gap-3">` + safeOptions.map((opt, idx) => `
+    return `<div class="flex flex-col gap-3">` + safeOptions.map((opt) => `
       <label class="flex items-center p-4 border border-light rounded-lg cursor-pointer hover:bg-page transition-colors has-[:checked]:border-brand-sage has-[:checked]:bg-green-50">
         <input type="radio" name="mcq" value="${esc(opt)}" class="w-5 h-5 text-brand-sage focus:ring-brand-sage border-gray-300">
         <span class="ml-3 text-lg text-main">${esc(opt)}</span>
@@ -316,16 +355,15 @@ window.initQuizEngine = async function() {
   }
 
   // ==========================================
-  // 5. ANSWER CHECKING & SUBMISSION
+  // 5. ANSWER CHECKING & SUPABASE UPLOAD
   // ==========================================
 
-  window.checkAnswer = function() {
-    if (state.isAnswered) return; // Prevent double clicks
+  window.checkAnswer = async function() {
+    if (state.isAnswered) return; 
     
     const q = state.questions[state.currentIndex];
     let isCorrect = false;
 
-    // Safety Parsers for answer validation
     if (q.type === 'mcq') {
       const selected = document.querySelector('input[name="mcq"]:checked');
       if (!selected) return alert('Please select an option.');
@@ -335,7 +373,6 @@ window.initQuizEngine = async function() {
     } else if (q.type === 'short_ans') {
       const input = document.getElementById('short-ans-input');
       if (!input.value.trim()) return alert('Please enter an answer.');
-      
       let safeAccept = [];
       try { safeAccept = typeof q.accept_also === 'string' ? JSON.parse(q.accept_also) : (q.accept_also || []); } catch(e) {}
       
@@ -348,7 +385,6 @@ window.initQuizEngine = async function() {
     } else if (q.type === 'cloze') {
       let safeBlanks = [];
       try { safeBlanks = typeof q.blanks === 'string' ? JSON.parse(q.blanks) : (q.blanks || []); } catch(e) {}
-      
       let allFilled = true;
       safeBlanks.forEach((b, i) => { if (!document.getElementById(`cloze-blank-${i}`).value) allFilled = false; });
       if (!allFilled) return alert('Please fill in all blanks.');
@@ -364,7 +400,6 @@ window.initQuizEngine = async function() {
     } else if (q.type === 'editing') {
       let safeLines = [];
       try { safeLines = typeof q.passage_lines === 'string' ? JSON.parse(q.passage_lines) : (q.passage_lines || []); } catch(e) {}
-      
       isCorrect = true;
       safeLines.forEach((line, i) => {
         if (line.has_error) {
@@ -375,8 +410,7 @@ window.initQuizEngine = async function() {
         }
       });
     } else {
-      // Word Problem / Open Ended relies on self-marking against the rubric
-      isCorrect = true; // Automatically grant to proceed, real scoring handled manually or in future
+      isCorrect = true; // Open ended automatically proceed
     }
 
     state.isAnswered = true;
@@ -385,7 +419,22 @@ window.initQuizEngine = async function() {
        state.earnedMarks += (q.marks || 1);
     }
 
-    // 🚀 Render Feedback with Smart Formatter
+    // 🚀 SUPABASE TELEMETRY: Save the attempt in the background
+    if (state.studentId) {
+      try {
+        const db = await window.getSupabase();
+        db.from('question_attempts').insert({
+          student_id: state.studentId,
+          question_id: q.id,
+          is_correct: isCorrect,
+          topic: q.topic,
+          subject: q.subject,
+          level: q.level
+        }).then(({error}) => { if(error) console.error("Telemetry error:", error); });
+      } catch (err) { console.warn("Failed to log attempt", err); }
+    }
+
+    // Render Feedback
     const displayMarks = q.marks || 1;
     document.getElementById('feedback-container').innerHTML = `
       <div class="mt-8 p-6 rounded-xl bg-page border border-light shadow-sm w-full" style="box-sizing: border-box;">
@@ -404,11 +453,16 @@ window.initQuizEngine = async function() {
       </div>
     `;
 
+    // Hide Hint Button once answered
+    const btnHint = document.getElementById('btn-hint');
+    if (btnHint) btnHint.style.display = 'none';
+
     const btn = document.getElementById('btn-submit');
     if (btn) {
       btn.textContent = state.currentIndex === state.questions.length - 1 ? 'Finish Module' : 'Next Question';
       btn.onclick = () => {
         state.isAnswered = false;
+        state.hintIndex = 0; // 🚀 Reset hints for next question
         state.currentIndex++;
         if (state.currentIndex >= state.questions.length) {
           state.phase = 'RESULT';
