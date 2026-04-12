@@ -25,7 +25,50 @@
 const DiagramLibrary = {
 
   // ── HELPERS ────────────────────────────────────────────────────────────────
+drawRectangleOnGrid(params) {
+    const w_cm = parseFloat(params.width_cm) || 10;
+    const l_cm = parseFloat(params.length_cm) || 5;
+    const unit = parseFloat(params.unit_grid_cm) || 1;
 
+    // Calculate how many grid squares are needed
+    const w_units = w_cm / unit;
+    const h_units = l_cm / unit;
+
+    const cellSize = 30; // 30 pixels per grid square
+    const gridW = (w_units + 2) * cellSize; // Add padding
+    const gridH = (h_units + 2) * cellSize; // Add padding
+
+    // Draw grid background
+    let gridLines = '';
+    for (let x = 0; x <= gridW; x += cellSize) {
+      gridLines += `<line x1="${x}" y1="0" x2="${x}" y2="${gridH}" stroke="var(--border-light)" stroke-width="1"/>`;
+    }
+    for (let y = 0; y <= gridH; y += cellSize) {
+      gridLines += `<line x1="0" y1="${y}" x2="${gridW}" y2="${y}" stroke="var(--border-light)" stroke-width="1"/>`;
+    }
+
+    // Draw the actual rectangle
+    const rectX = cellSize;
+    const rectY = cellSize;
+    const rectW = w_units * cellSize;
+    const rectH = h_units * cellSize;
+    const rectSvg = `<rect x="${rectX}" y="${rectY}" width="${rectW}" height="${rectH}" fill="rgba(183, 110, 121, 0.1)" stroke="var(--brand-sage)" stroke-width="3"/>`;
+
+    // Draw Labels
+    const labelTop = `<text x="${rectX + rectW/2}" y="${rectY - 8}" text-anchor="middle" fill="var(--text-main)" font-size="14" font-weight="bold">${params.labels || w_cm + 'cm'}</text>`;
+    const labelSide = `<text x="${rectX - 8}" y="${rectY + rectH/2}" text-anchor="end" alignment-baseline="middle" fill="var(--text-main)" font-size="14" font-weight="bold">${l_cm + 'cm'}</text>`;
+
+    const content = `
+      <svg width="100%" height="auto" viewBox="0 0 ${gridW} ${gridH}" style="max-width: 500px;">
+        ${gridLines}
+        ${rectSvg}
+        ${labelTop}
+        ${labelSide}
+      </svg>
+    `;
+    return content;
+  },
+  
   /**
    * Returns an SVG wrapper string with standard attributes.
    * @param {string} content - SVG elements to place inside

@@ -112,26 +112,38 @@ window.initQuizEngine = function() {
   }
 
   function buildWordProblemUI(q) {
-    const savedModelShown = state.isAnswered;
-    const parts = (q.parts || []).map(p => {
-      const savedWorking = (state.answers[state.currentIndex] || {})[p.label] || '';
-      return `
-        <div class="card bg-page p-4 mb-4">
-          <div class="flex items-center gap-3 mb-3">
-            <span class="font-display text-lg text-main font-bold">${esc(p.label)}</span>
-            <span class="badge badge-info text-xs">${p.marks} mark${p.marks!==1?'s':''}</span>
-            ${p.question_text ? `<span class="text-sm text-main">${esc(p.question_text)}</span>` : ''}
+    let html = `<div class="flex flex-col gap-6 mt-4 w-full">`;
+    const parts = q.parts || [{ label: '', question_text: 'Solve the problem above.' }];
+
+    parts.forEach((p, idx) => {
+      // 🚀 FIX: Prevent undefined warnings by safely checking properties
+      const partLabel = p.label ? `${esc(p.label)}) ` : '';
+      const partText = p.question_text ? esc(p.question_text) : '';
+      
+      html += `
+        <div class="word-problem-part p-5 bg-elevated rounded-lg border border-light w-full">
+          ${partText ? `<p class="font-bold text-main mb-4">${partLabel}${partText}</p>` : ''}
+          
+          <div class="flex flex-col gap-3 w-full">
+            <label class="text-sm font-bold text-muted uppercase tracking-wider">Show your working & final answer:</label>
+            
+            <textarea id="wp-text-${idx}" class="form-input w-full p-4 rounded border border-light" rows="4" placeholder="Type your step-by-step working and final answer here..."></textarea>
+            
+            <div class="mt-2 w-full">
+              <button type="button" class="btn btn-outline btn-sm mb-2" onclick="document.getElementById('wp-canvas-container-${idx}').classList.toggle('hidden')">
+                ✏️ Toggle Drawing Pad
+              </button>
+              
+              <div id="wp-canvas-container-${idx}" class="hidden border border-dark rounded bg-white w-full overflow-hidden shadow-sm" style="min-height: 250px;">
+                <canvas id="wp-canvas-${idx}" width="800" height="300" class="w-full h-full bg-white cursor-crosshair" style="touch-action: none;"></canvas>
+              </div>
+            </div>
           </div>
-          <textarea id="wp-${esc(p.label)}" class="form-input w-full p-3" rows="3" style="height:auto;" placeholder="Show your working here..." ${savedModelShown?'disabled':''}>${esc(savedWorking)}</textarea>
-          ${savedModelShown ? `
-            <div class="ans-block strong mt-4">
-              <div class="text-xs font-bold mb-1 text-success">Model Answer</div>
-              <div class="text-sm text-main font-mono whitespace-pre-wrap">${esc(p.model_answer || p.correct_answer || '')}</div>
-              ${p.marking_scheme ? `<div class="text-xs text-muted mt-2 whitespace-pre-wrap">${esc(p.marking_scheme)}</div>` : ''}
-            </div>` : ''}
-        </div>`;
-    }).join('');
-    return parts;
+        </div>
+      `;
+    });
+    html += `</div>`;
+    return html;
   }
 
 function buildClozeUI(q) {
@@ -339,32 +351,32 @@ function buildClozeUI(q) {
 
     const hintsUi = buildHintsUI(q); // 👈 ADD THIS LINE
 
+    // 🚀 FIX: Safe Marks Extraction (Prevent "undefined Marks")
+    const displayMarks = q.marks ? q.marks : 1;
+
+    // 🚀 FIX: Consolidate to ONE Worked Solution block that wraps text safely
     let feedbackHtml = '';
-    if (state.isAnswered && state.feedback) {
-      const fb = state.feedback;
-      if (fb.isModel) {
-        feedbackHtml = `<div class="card card-rule-mint bg-science-tint p-4 mt-4">
-          <div class="font-bold text-sm mb-2 text-success">Worked Solution</div>
-          <pre class="text-sm text-main whitespace-pre-wrap leading-relaxed" style="font-family: inherit;">${esc(q.worked_solution || q.model_answer || '')}</pre>
-        </div>`;
-      } else if (fb.status === 'correct') {
-        feedbackHtml = `<div class="card card-rule-mint bg-science-tint p-4 mt-4">
-          <div class="font-bold mb-2 text-success">🎉 Spot on!</div>
-          <p class="text-sm text-main leading-relaxed">${esc(fb.text)}</p>
-          ${q.examiner_note ? `<p class="text-xs text-muted mt-2 italic">${esc(q.examiner_note)}</p>` : ''}
-        </div>`;
-      } else {
-        const isPartial = fb.status === 'partial';
-        const ruleClass = isPartial ? 'card-rule-amber' : 'card-rule-rose';
-        const bgClass   = isPartial ? 'bg-amber-tint' : 'bg-rose-tint';
-        const textClass = isPartial ? 'text-amber' : 'text-danger';
-        
-        feedbackHtml = `<div class="card ${ruleClass} ${bgClass} p-4 mt-4">
-          <div class="font-bold mb-2 ${textClass}">💡 Miss Wena says:</div>
-          <p class="text-sm text-main leading-relaxed">${esc(fb.text)}</p>
-          ${fb.correctAnswer ? `<div class="mt-3 text-sm font-bold text-main">Correct Answer: <span class="text-success">${esc(fb.correctAnswer)}</span></div>` : ''}
-        </div>`;
-      }
+    if (state.isAnswered) {
+      feedbackHtml = `
+        <div class="mt-8 p-6 rounded-xl bg-page border border-light shadow-sm w-full" style="word-wrap: break-word; overflow-wrap: break-word; white-space: pre-wrap; max-width: 100%; box-sizing: border-box;">
+          
+          <div class="flex justify-between items-center mb-4">
+            <h4 class="text-xl font-bold text-main m-0">Worked Solution</h4>
+            <span class="badge badge-info">${displayMarks} Mark${displayMarks > 1 ? 's' : ''}</span>
+          </div>
+
+          <div class="text-main leading-relaxed text-lg font-medium">
+            ${q.worked_solution ? esc(q.worked_solution) : '<em>No step-by-step solution provided.</em>'}
+          </div>
+
+          ${q.examiner_note ? `
+          <div class="mt-6 p-4 bg-amber-50 border-l-4 border-amber-500 rounded-r">
+            <strong class="text-amber-800 text-sm uppercase tracking-wider">Examiner's Note:</strong>
+            <p class="text-amber-900 mt-2 m-0">${esc(q.examiner_note)}</p>
+          </div>
+          ` : ''}
+        </div>
+      `;
     }
 
     let actionBtn = '';
