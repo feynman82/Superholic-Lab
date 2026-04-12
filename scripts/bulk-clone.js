@@ -73,9 +73,9 @@ SEED QUESTION:
 const delay = ms => new Promise(res => setTimeout(res, ms));
 
 function sanitizeJsonString(rawString) {
-  let clean = rawString.replace(/^```(json)?\n?/, '').replace(/\n?```$/, '').trim();
-  clean = clean.replace(/(?<!\\)\n(?=[^"]*"(?:[^"\\]|\\.)*"(?:[^"\\]|\\.)*$)/g, '\\n');
-  return clean;
+  // Gemini's application/json mode guarantees valid JSON. 
+  // We only need to strip markdown blockquotes if they accidentally slip through.
+  return rawString.replace(/^```(json)?\n?/, '').replace(/\n?```$/, '').trim();
 }
 
 async function runPedagogicalCloner(limit = 10) {
@@ -115,17 +115,23 @@ async function runPedagogicalCloner(limit = 10) {
       const cleanJson = sanitizeJsonString(result.response.text());
       const clones = JSON.parse(cleanJson);
 
-      const payload = clones.map(c => ({
-        ...c, 
-        seed_id: seed.id, 
-        is_ai_cloned: true,
-        subject: seed.subject, 
-        level: seed.level,
-        topic: seed.topic, 
-        cognitive_skill: c.cognitive_skill || null,
-        progressive_hints: c.progressive_hints || null,
-        source_pdf: seed.source_pdf 
-      }));
+      const payload = clones.map(c => {
+        // 🚀 THE FIX: Safely strip out seed-specific keys the AI might have copied
+        const { flag_review, id, created_at, original_id, ...cleanClone } = c;
+
+        return {
+          ...cleanClone, // Safely spread only the actual question data
+          seed_id: seed.id, 
+          is_ai_cloned: true,
+          subject: seed.subject, 
+          level: seed.level,
+          topic: seed.topic, 
+          cognitive_skill: cleanClone.cognitive_skill || null,
+          progressive_hints: cleanClone.progressive_hints || null,
+          instructions: cleanClone.instructions || seed.instructions || null,
+          visual_payload: cleanClone.visual_payload || null 
+        };
+      });
 
       const { error: insErr } = await supabase.from('question_bank').insert(payload);
       if (insErr) throw insErr;

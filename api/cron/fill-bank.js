@@ -96,17 +96,23 @@ export default async function handler(req, res) {
 
       const clones = JSON.parse(sanitizeJsonString(result.response.text()));
 
-      const payload = clones.map(c => ({
-        ...c, 
-        seed_id: seed.id, 
-        is_ai_cloned: true,
-        subject: seed.subject, 
-        level: seed.level,
-        topic: seed.topic, 
-        cognitive_skill: c.cognitive_skill || null,
-        progressive_hints: c.progressive_hints || null,
-        source_pdf: seed.source_pdf 
-      }));
+      const payload = clones.map(c => {
+        // 🚀 THE FIX: Safely strip out seed-specific keys the AI might have copied
+        const { flag_review, id, created_at, original_id, ...cleanClone } = c;
+
+        return {
+          ...cleanClone, // Safely spread only the actual question data
+          seed_id: seed.id, 
+          is_ai_cloned: true,
+          subject: seed.subject, 
+          level: seed.level,
+          topic: seed.topic, 
+          cognitive_skill: cleanClone.cognitive_skill || null,
+          progressive_hints: cleanClone.progressive_hints || null,
+          instructions: cleanClone.instructions || seed.instructions || null,
+          visual_payload: cleanClone.visual_payload || null 
+        };
+      });
 
       const { error: insErr } = await supabase.from('question_bank').insert(payload);
       if (insErr) console.error(`⚠️ DB Insert failed for ${seed.id}:`, insErr.message);
