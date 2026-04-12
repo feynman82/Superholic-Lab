@@ -24,6 +24,77 @@
 
 const DiagramLibrary = {
 
+// 🚀 AI FUNCTION: Dynamic Polygon Generator (Draws any N-sided shape)
+  polygon(params) {
+    const w = 400, h = 260;
+    const cx = 200, cy = 130;
+    const r = 90; // Radius for the polygon
+
+    // 1. Extract and normalize vertices
+    const rawVertices = params.vertices || [];
+    // The AI sometimes passes strings ['A','B'] or objects [{label: 'A'}, {label: 'B'}]
+    const vertices = rawVertices.map(v => typeof v === 'string' ? v : (v.label || ''));
+    
+    // Fallback to a triangle if something goes wrong
+    const n = vertices.length > 2 ? vertices.length : 3; 
+    
+    let points = [];
+    let labelsHtml = '';
+    let angleArcsHtml = '';
+
+    // Start drawing from the top center
+    const startAngle = -Math.PI / 2;
+
+    // 2. Calculate coordinates for each vertex
+    for (let i = 0; i < n; i++) {
+      const angle = startAngle + (i * 2 * Math.PI) / n;
+      const px = cx + r * Math.cos(angle);
+      const py = cy + r * Math.sin(angle);
+      points.push(`${px},${py}`);
+
+      // Push labels slightly outside the shape
+      const labelR = r + 20;
+      const lx = cx + labelR * Math.cos(angle);
+      const ly = cy + labelR * Math.sin(angle);
+      
+      // Smart text alignment based on position
+      const baseline = ly > cy + 10 ? 'hanging' : (ly < cy - 10 ? 'auto' : 'middle');
+      const anchor = lx > cx + 10 ? 'start' : (lx < cx - 10 ? 'end' : 'middle');
+
+      labelsHtml += `<text x="${lx}" y="${ly}" font-size="16" font-weight="bold" fill="var(--text-muted)" text-anchor="${anchor}" dominant-baseline="${baseline}">${vertices[i]}</text>`;
+    }
+
+    // 3. Draw the main shape
+    const polygonHtml = `<polygon points="${points.join(' ')}" fill="rgba(81, 97, 94, 0.05)" stroke="var(--border-dark, #ccc)" stroke-width="3"/>`;
+
+    // 4. Mark the specific angle to measure (e.g., 'HIJ')
+    const angleToMeasure = params.angle_to_measure;
+    if (angleToMeasure && angleToMeasure.length === 3) {
+      // Find the middle letter (the actual corner we are measuring)
+      const targetVertex = angleToMeasure[1];
+      const targetIdx = vertices.indexOf(targetVertex);
+      
+      if (targetIdx !== -1) {
+        // Place a question mark "?" slightly inward from that specific corner
+        const targetAngle = startAngle + (targetIdx * 2 * Math.PI) / n;
+        const textR = r - 25; 
+        const tx = cx + textR * Math.cos(targetAngle);
+        const ty = cy + textR * Math.sin(targetAngle);
+        
+        angleArcsHtml += `<text x="${tx}" y="${ty + 6}" font-size="18" font-weight="bold" fill="var(--brand-rose)" text-anchor="middle">?</text>`;
+      }
+    }
+
+    // 5. Render final SVG
+    return `
+      <svg width="100%" viewBox="0 0 ${w} ${h}" style="height: auto; max-width: 500px; display: block; margin: 0 auto;">
+        ${polygonHtml}
+        ${angleArcsHtml}
+        ${labelsHtml}
+      </svg>
+    `;
+  },
+
 // 🚀 AI FUNCTION 1: Right Angle Divided
   rightAngleDivided(params) {
     const w = 400, h = 260;
@@ -156,7 +227,7 @@ const DiagramLibrary = {
       </svg>
     `;
   },
-    
+
 rectangleDividedRightAngle(params) {
     // Canvas sizing
     const w = 400, h = 260;
