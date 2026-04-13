@@ -289,8 +289,9 @@ function buildClozeUI(q) {
           inputHtml = `<input type="text" id="cloze-blank-${num}" class="editing-input" value="${esc(saved)}" placeholder="type here" autocomplete="off" oninput="window.saveInputState()" style="width: 120px; display: inline-block; margin: 0 4px;">`;
         }
       }
-      // THE FIX: Global regex safely replacing [1] or (1)
-      const blankRegex = new RegExp(`\\[${num}\\]|\\(${num}\\)`, 'g');
+      // THE FIX: Global regex safely replacing [1] or (1) AND swallowing any surrounding underscores/spaces
+      // This turns "___ [1] ___" or "____(1)" purely into the dropdown.
+      const blankRegex = new RegExp(`_*\\s*(\\[|\\()${num}(\\]|\\))\\s*_*`, 'g');
       passage = passage.replace(blankRegex, inputHtml);
     });
 
