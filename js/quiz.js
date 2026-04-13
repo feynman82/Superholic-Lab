@@ -319,87 +319,49 @@ function buildClozeUI(q) {
 
   function buildEditingUI(q) {
     const savedAns = state.answers[state.currentIndex] || {};
-    let parsedLines = [];
-    try { parsedLines = typeof q.passage_lines === 'string' ? JSON.parse(q.passage_lines) : (q.passage_lines || []); } catch(e) {}
-    
-    // SMART DETECTION: If more than 3 lines, it's an Upper Primary continuous passage.
-    const isContinuous = parsedLines.length > 3;
+    let blanks = [];
+    try { blanks = typeof q.blanks === 'string' ? JSON.parse(q.blanks) : (q.blanks || []); } catch(e) {}
 
-    // 1. Render Context Passage for Lower/Middle Primary
-    let contextHtml = '';
-    if (!isContinuous && q.passage) {
-      // Strip markdown artifacts (**, <u>, </u>) from the passage
-      const cleanPassage = esc(q.passage).replace(/\*\*|&lt;u&gt;|&lt;\/u&gt;/gi, '').replace(/\n/g, '<br>');
-      contextHtml = `<div class="editing-passage text-lg text-main font-normal">${cleanPassage}</div>`;
-    }
+    // Format passage with line breaks
+    let html = esc(q.passage || '').replace(/\n/g, '<br><br>');
 
-    const lines = parsedLines.map(line => {
-      const saved = savedAns[line.line_number] || '';
-      
-      // 2. Strip Markdown Artifacts from the database strings before escaping
-      const rawText = (line.text || '').replace(/\*\*|<u>|<\/u>/gi, '');
-      const underlined = (line.underlined_word || '').replace(/\*\*|<u>|<\/u>/gi, '');
-      
-      // Safely highlight the target word
-      const escapedLine = esc(rawText).replace(
-        esc(underlined),
-        `<u style="text-decoration-color:var(--brand-rose);text-decoration-thickness:2px;font-weight:700;">${esc(underlined)}</u>`
-      );
+    // Replace [1], [2] with inline input boxes
+    html = html.replace(/\[(\d+)\]/g, (match, numStr) => {
+      const num = parseInt(numStr, 10);
+      const saved = savedAns[num] || '';
+      const blankDef = blanks.find(b => b.number === num) || {};
 
-      let inputEl;
       if (state.isAnswered) {
-        const res = (state.feedback && state.feedback.lineResults && state.feedback.lineResults[line.line_number]) || {};
-        const isCorrect = res.isCorrect;
+        const isCorrect = saved.toLowerCase() === (blankDef.correct_answer || '').toLowerCase();
         const stateClass = isCorrect ? 'is-correct' : 'is-wrong';
-        inputEl = `<input type="text" value="${esc(saved)}" disabled class="editing-input ${stateClass}">
-          ${!isCorrect && line.correct_word ? `<span class="text-xs font-bold text-success" style="position:absolute; bottom:-18px; left:0; right:0; text-align:center;">→ ${esc(line.correct_word)}</span>` : ''}`;
+        return `<input type="text" value="${esc(saved)}" disabled class="editing-inline-input ${stateClass}">
+                ${!isCorrect ? `<span class="text-xs font-bold text-success ml-1">(${esc(blankDef.correct_answer)})</span>` : ''}`;
       } else {
-        // User requested BLANK box (no placeholder)
-        inputEl = `<input type="text" id="edit-line-${line.line_number}" value="${esc(saved)}"
-          autocomplete="off" class="editing-input" oninput="window.saveInputState()">`;
+        // Notice we use cloze-blank ID so the existing saveInputState() picks it up automatically!
+        return `<input type="text" id="cloze-blank-${num}" value="${esc(saved)}" autocomplete="off" class="editing-inline-input" oninput="window.saveInputState()">`;
       }
+    });
 
-      // Apply dynamic CSS class
-      const lineClass = isContinuous ? 'editing-line' : 'editing-line isolated';
-      
-      // 3. Conditionally hide the line number for isolated sentences!
-      const lineNumHtml = isContinuous ? `<span class="editing-num">${line.line_number}.</span>` : '';
-
-      return `
-        <div class="${lineClass}">
-          ${lineNumHtml}
-          <span class="editing-text">${escapedLine}</span>
-          <div class="editing-input-wrapper">${inputEl}</div>
-        </div>`;
-    }).join('');
-
+    // Feedback explanations
     let editFeedback = '';
-    if (state.isAnswered && state.feedback && state.feedback.lineResults) {
-      const wrongLines = parsedLines.filter(l => {
-        const res = state.feedback.lineResults[l.line_number];
-        return res && !res.isCorrect;
+    if (state.isAnswered) {
+      const wrongBlanks = blanks.filter(b => {
+        const saved = savedAns[b.number] || '';
+        return saved.toLowerCase() !== (b.correct_answer || '').toLowerCase();
       });
-      if (wrongLines.length > 0) {
-        editFeedback = `<div class="card bg-page p-4 mt-4">
+      if (wrongBlanks.length > 0) {
+        editFeedback = `<div class="card bg-page p-4 mt-6">
           <div class="text-xs font-bold text-muted uppercase mb-2">Explanations</div>
-          ${wrongLines.map(l => {
-             const cleanUnderlined = (l.underlined_word || '').replace(/\*\*|<u>|<\/u>/gi, '');
-             const prefix = isContinuous ? `[${l.line_number}] ` : '';
-             return `<div class="text-sm text-main py-2" style="border-bottom: 1px solid var(--border-light);">
-            <span class="font-bold">${prefix}${esc(cleanUnderlined)} → <span class="text-success">${esc(l.correct_word)}</span>:</span> ${esc(l.explanation)}
-          </div>`}).join('')}
+          ${wrongBlanks.map(b => `
+            <div class="text-sm text-main py-2" style="border-bottom: 1px solid var(--border-light);">
+              <span class="font-bold">[${b.number}] → <span class="text-success">${esc(b.correct_answer)}</span>:</span> ${esc(b.explanation)}
+            </div>
+          `).join('')}
         </div>`;
       }
     }
 
-    return `
-      <div class="card p-6">
-        ${contextHtml}
-        <div class="editing-lines-container">
-          ${lines}
-        </div>
-      </div>
-      ${editFeedback}`;
+    return `<div class="card p-6 editing-passage text-lg text-main font-normal" style="line-height: 2.4;">${html}</div>${editFeedback}`;
   }
 
 // 🚀 NEW: Hint Renderer
@@ -1045,7 +1007,7 @@ function buildClozeUI(q) {
       // UPGRADE: Calculate accurate total possible marks for multi-part questions
       state.totalPossibleScore = state.questions.reduce((sum, q) => {
         if (q.type === 'cloze') return sum + (q.blanks?.length || 1);
-        if (q.type === 'editing') return sum + (q.passage_lines?.length || 1);
+        if (q.type === 'editing') return sum + (q.blanks?.length || 1);
         if (q.type === 'word_problem' || q.type === 'open_ended') return sum + 0; // Self-graded types
         return sum + 1; // Standard MCQ & Short Answer
       }, 0);
