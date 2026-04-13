@@ -322,41 +322,53 @@ function buildClozeUI(q) {
     let blanks = [];
     try { blanks = typeof q.blanks === 'string' ? JSON.parse(q.blanks) : (q.blanks || []); } catch(e) {}
 
-    // Format passage with line breaks
-    let html = esc(q.passage || '').replace(/\n/g, '<br><br>');
+    // 1. Format passage: escape HTML, but safely restore <u> tags and line breaks
+    let html = esc(q.passage || '')
+      .replace(/\n/g, '<br><br>')
+      .replace(/&lt;u&gt;/gi, '<u>')
+      .replace(/&lt;\/u&gt;/gi, '</u>');
 
-    // Replace [1], [2] with inline input boxes
+    // 2. Replace [1], [2] with inline input boxes
     html = html.replace(/\[(\d+)\]/g, (match, numStr) => {
       const num = parseInt(numStr, 10);
       const saved = savedAns[num] || '';
-      const blankDef = blanks.find(b => b.number === num) || {};
+      
+      // FIX: Use loose equality (==) to prevent String vs Int database mismatches
+      const blankDef = blanks.find(b => b.number == num) || {};
+      const correctAns = blankDef.correct_answer || blankDef.correct_word || '';
 
       if (state.isAnswered) {
-        const isCorrect = saved.toLowerCase() === (blankDef.correct_answer || '').toLowerCase();
+        const isCorrect = saved.toLowerCase() === correctAns.toLowerCase();
         const stateClass = isCorrect ? 'is-correct' : 'is-wrong';
+        
+        // FIX: Upgraded font size to text-lg and added align-middle
         return `<input type="text" value="${esc(saved)}" disabled class="editing-inline-input ${stateClass}">
-                ${!isCorrect ? `<span class="text-xs font-bold text-success ml-1">(${esc(blankDef.correct_answer)})</span>` : ''}`;
+                ${!isCorrect ? `<span class="text-lg font-bold text-success ml-2 align-middle">(${esc(correctAns)})</span>` : ''}`;
       } else {
-        // Notice we use cloze-blank ID so the existing saveInputState() picks it up automatically!
         return `<input type="text" id="cloze-blank-${num}" value="${esc(saved)}" autocomplete="off" class="editing-inline-input" oninput="window.saveInputState()">`;
       }
     });
 
-    // Feedback explanations
+    // 3. Feedback explanations
     let editFeedback = '';
     if (state.isAnswered) {
       const wrongBlanks = blanks.filter(b => {
         const saved = savedAns[b.number] || '';
-        return saved.toLowerCase() !== (b.correct_answer || '').toLowerCase();
+        const correctAns = b.correct_answer || b.correct_word || '';
+        return saved.toLowerCase() !== correctAns.toLowerCase();
       });
+      
       if (wrongBlanks.length > 0) {
-        editFeedback = `<div class="card bg-page p-4 mt-6">
-          <div class="text-xs font-bold text-muted uppercase mb-2">Explanations</div>
-          ${wrongBlanks.map(b => `
-            <div class="text-sm text-main py-2" style="border-bottom: 1px solid var(--border-light);">
-              <span class="font-bold">[${b.number}] → <span class="text-success">${esc(b.correct_answer)}</span>:</span> ${esc(b.explanation)}
+        editFeedback = `<div class="card bg-page p-6 mt-6">
+          <div class="text-sm font-bold text-muted uppercase mb-4">Explanations</div>
+          ${wrongBlanks.map(b => {
+            const correctAns = b.correct_answer || b.correct_word || '';
+            // FIX: Upgraded Explanation text to text-lg to match the passage
+            return `
+            <div class="text-lg text-main py-3" style="border-bottom: 1px solid var(--border-light);">
+              <span class="font-bold">[${b.number}] → <span class="text-success">${esc(correctAns)}</span>:</span> ${esc(b.explanation)}
             </div>
-          `).join('')}
+          `}).join('')}
         </div>`;
       }
     }
