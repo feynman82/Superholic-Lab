@@ -557,11 +557,13 @@ function buildClozeUI(q) {
       state.answers[state.currentIndex] = ans;
     } else if (q.type === 'editing') {
       const ans = {};
-      let lines = [];
-      try { lines = typeof q.passage_lines === 'string' ? JSON.parse(q.passage_lines) : (q.passage_lines || []); } catch(e) {}
-      lines.forEach(l => {
-        const el = document.getElementById(`edit-line-${l.line_number}`);
-        if (el) ans[l.line_number] = el.value;
+      let blanks = [];
+      try { blanks = typeof q.blanks === 'string' ? JSON.parse(q.blanks) : (q.blanks || []); } catch(e) {}
+      blanks.forEach(b => {
+        const num = b.number || b.id;
+        // The inline renderer uses 'cloze-blank-' IDs for these inputs
+        const el = document.getElementById(`cloze-blank-${num}`);
+        if (el) ans[num] = el.value;
       });
       state.answers[state.currentIndex] = ans;
     } else if (q.type === 'word_problem') {
@@ -672,28 +674,32 @@ function buildClozeUI(q) {
     // ── EDITING ──
     if (q.type === 'editing') {
       const ans = state.answers[state.currentIndex] || {};
-      let lines = [];
-      try { lines = typeof q.passage_lines === 'string' ? JSON.parse(q.passage_lines) : (q.passage_lines || []); } catch(e) {}
+      let blanks = [];
+      try { blanks = typeof q.blanks === 'string' ? JSON.parse(q.blanks) : (q.blanks || []); } catch(e) {}
       let correctCount = 0;
-      const lineResults = {};
-      lines.forEach(l => {
-        const userAns = (ans[l.line_number] || '').trim();
-        const isCorrect = userAns.toLowerCase() === (l.correct_word || '').toLowerCase();
-        if (isCorrect) correctCount++;
-        lineResults[l.line_number] = { userAns, isCorrect };
-      });
-      const allCorrect = correctCount === lines.length;
       
-      // UPGRADE: Award 1 mark for every correct line edit!
+      blanks.forEach(b => {
+        const num = b.number || b.id;
+        const userAns = (ans[num] || '').trim();
+        const correctAns = b.correct_answer || b.correct_word || '';
+        const isCorrect = userAns.toLowerCase() === correctAns.toLowerCase();
+        if (isCorrect) correctCount++;
+      });
+      
+      const totalBlanks = blanks.length;
+      // Prevent 0/0 from triggering a win
+      const allCorrect = totalBlanks > 0 && correctCount === totalBlanks; 
+      
+      // UPGRADE: Award 1 mark for every correct edit!
       state.score += correctCount;
       
       if (allCorrect) { state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak; }
       else state.streak = 0;
+      
       state.isAnswered = true;
       state.feedback = {
         status: allCorrect ? 'correct' : 'partial',
-        text: allCorrect ? `All ${lines.length} corrections right!` : `${correctCount} of ${lines.length} corrections correct.`,
-        lineResults
+        text: allCorrect ? `All ${totalBlanks} corrections right!` : `${correctCount} of ${totalBlanks} corrections correct.`
       };
       render();
       return;
