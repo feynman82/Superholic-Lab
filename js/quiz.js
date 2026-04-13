@@ -145,12 +145,10 @@ window.initQuizEngine = function() {
       }
       
       // Pass the array index to avoid quotation-mark escaping crashes in HTML
-      return `<div class="flex flex-col gap-3 font-sans">` + safeOptions.map((opt) => `
-      <label class="flex items-center p-4 border border-light rounded-xl cursor-pointer hover:bg-page transition-colors has-[:checked]:border-brand-sage has-[:checked]:bg-brand-sage/10 shadow-sm">
-        <input type="radio" name="mcq" value="${esc(opt)}" class="w-5 h-5 text-brand-sage focus:ring-brand-sage border-gray-300">
-        <span class="ml-4 text-lg font-medium text-main">${esc(opt)}</span>
-      </label>
-    `).join('') + `</div>`;
+      return `<div class="mcq-opt${isSel?' is-sel':''}" style="${extraStyle}${state.isAnswered?'pointer-events:none;':''}" onclick="window.selectMcq(${i})">
+        <span class="mcq-badge">${letter}</span><span class="font-medium text-main">${esc(opt)}</span>
+      </div>`;
+    }).join('');
   }
 
   function buildTextAreaUI(q) {
