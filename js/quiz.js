@@ -28,20 +28,24 @@ window.initQuizEngine = function() {
     canvas.isInitialized = true;
   };
 
-  // 🚀 GLOBAL UTILITY: Smart Rubric Formatter
+  // 🚀 GLOBAL UTILITY: Smart Rubric Formatter (Font-Consistent)
   window.formatWorkedSolution = function(raw) {
-    if (!raw) return '<em>No step-by-step solution provided.</em>';
+    if (!raw) return '<em class="font-sans">No step-by-step solution provided.</em>';
     try {
       const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
       if (typeof parsed === 'object' && parsed !== null) {
         let html = '';
         for (const [key, val] of Object.entries(parsed)) {
-           html += `<div class="mb-4"><h5 class="font-bold text-brand-dark mb-2">${esc(key)}</h5><div class="text-main leading-relaxed" style="word-wrap: break-word;">${val}</div></div>`;
+           html += `
+            <div class="mb-4 font-sans">
+              <h5 class="font-bold text-brand-dark mb-2">${esc(key)}</h5>
+              <div class="text-main leading-relaxed" style="word-wrap: break-word;">${val}</div>
+            </div>`;
         }
         return html;
       }
     } catch(e) {}
-    return esc(raw).replace(/\n/g, '<br>');
+    return `<span class="font-sans">${esc(raw).replace(/\n/g, '<br>')}</span>`;
   };
 
   const state = {
@@ -141,10 +145,12 @@ window.initQuizEngine = function() {
       }
       
       // Pass the array index to avoid quotation-mark escaping crashes in HTML
-      return `<div class="mcq-opt${isSel?' is-sel':''}" style="${extraStyle}${state.isAnswered?'pointer-events:none;':''}" onclick="window.selectMcq(${i})">
-        <span class="mcq-badge">${letter}</span><span class="font-medium text-main">${esc(opt)}</span>
-      </div>`;
-    }).join('');
+      return `<div class="flex flex-col gap-3 font-sans">` + safeOptions.map((opt) => `
+      <label class="flex items-center p-4 border border-light rounded-xl cursor-pointer hover:bg-page transition-colors has-[:checked]:border-brand-sage has-[:checked]:bg-brand-sage/10 shadow-sm">
+        <input type="radio" name="mcq" value="${esc(opt)}" class="w-5 h-5 text-brand-sage focus:ring-brand-sage border-gray-300">
+        <span class="ml-4 text-lg font-medium text-main">${esc(opt)}</span>
+      </label>
+    `).join('') + `</div>`;
   }
 
   function buildTextAreaUI(q) {

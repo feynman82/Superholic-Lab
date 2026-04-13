@@ -85,7 +85,12 @@ You are an expert Singapore MOE curriculum designer. You must strictly follow th
 ${masterTemplate}
 
 Follow the TYPE_RULES below for the specific question format:
-${TYPE_RULES[questionType]}
+${typeSpecificInstructions}
+
+STRICT NEGATIVE CONSTRAINTS (DO NOT VIOLATE):
+1. ANTI-LAZY DATA: NEVER embed options directly into the "question_text" or "passage" strings (e.g., DO NOT write "Tom (1) _______ (wake/wakes)").
+2. CLOZE/EDITING: Options MUST ONLY exist inside the "blanks" JSON array. The "passage" string MUST ONLY contain the text and bracketed numbers like [1], [2].
+3. "options" arrays must contain plain strings, NOT objects.
 
 Generate EXACTLY ${CLONES_PER_RUN} NEW variations of this seed question.
 

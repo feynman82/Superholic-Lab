@@ -131,6 +131,8 @@ def run_actor_extraction(pdf_path, level, subject, valid_topics, relative_path):
         4. The source_pdf is "{relative_path}".
         5. MULTI-PART QUESTIONS: If a question has multiple parts (e.g., 14a and 14b) that share a main preamble text or scenario, you MUST include the full preamble in the 'question_text' of EVERY part. A student must be able to answer the question without needing to see the previous parts.
         6. STRICT MCQ SCHEMA: For multiple-choice questions, "correct_answer" MUST be the exact string value of the correct option from the "options" array. NEVER use index letters or numbers (e.g., Do NOT output "A", "B", "1", or "2"). The keys in the "wrong_explanations" object MUST also be the exact wrong option strings.
+        7. ANTI-LAZY DATA RULE: NEVER embed multiple-choice options or blanks directly into the `question_text` or `passage` strings (e.g., do NOT write "Tom (1) ____ (wake/wakes) up").
+        8. CLOZE & EDITING: You MUST use the `blanks` JSON array to store the options for each blank. The `passage` string MUST ONLY contain the text and bracketed numbers like [1], [2].
         """
 
         try:
@@ -187,7 +189,8 @@ def run_critic_review(raw_questions, valid_topics):
     1. Ensure the 'topic' field for EVERY question is strictly one of these: [{topic_string}]. If it is not, re-map it to the closest valid topic from that exact list.
     2. Ensure that 'flag_review' is False unless the question is truly broken.
     3. STRICT MCQ CHECK: For 'mcq' questions, verify that the "correct_answer" is the EXACT string from the options array. If the actor used an index like "A", "B", "1", or "2", you MUST rewrite it to be the exact text of that option.
-    4. Return the corrected JSON array in the exact same schema.
+    4. ANTI-LAZY DATA CHECK: Scan "question_text" and "passage". If you find inline options like "(wake/ wakes/ woke)", REMOVE THEM from the text and ensure they are properly structured inside the "blanks" or "options" JSON arrays.
+    5. Return the corrected JSON array in the exact same schema.
     
     JSON to review:
     {json.dumps(raw_questions)}

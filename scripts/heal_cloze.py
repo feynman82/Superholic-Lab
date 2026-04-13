@@ -7,9 +7,9 @@ load_dotenv()
 supabase: Client = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_SERVICE_ROLE_KEY"))
 
 def heal_cloze_questions():
-    print("Fetching ALL cloze questions for deep inspection...")
+    print("Fetching ALL cloze questions for deep regex inspection...\n")
     
-    # Fetch all cloze questions to bypass strict SQL JSON null-checks
+    # Fetch all cloze questions
     response = supabase.table('question_bank').select('id, passage, question_text, correct_answer, model_answer, blanks').eq('type', 'cloze').execute()
     all_cloze = response.data
     
@@ -17,42 +17,39 @@ def heal_cloze_questions():
         print("No cloze questions exist in the database at all.")
         return
 
-    # 1. Filter broken questions manually in Python
+    # Regex pattern to find the exact broken text: e.g., (1) _______________ (wake/ wakes/ woke)
+    pattern = r'\(([0-9]+)\)\s*_{2,}\s*\(([^)]+)\)'
+
     broken_questions = []
+
+    # 1. Inspect the raw text of every question using Regex
     for q in all_cloze:
-        b = q.get('blanks')
-        # Catch SQL NULL, JSON "null", empty arrays, or empty strings
-        if not b or b == 'null' or b == '[]' or b == []:
-            broken_questions.append(q)
+        passage = q.get('passage') or ''
+        q_text = q.get('question_text') or ''
+        
+        # Combine them to ensure we don't miss anything
+        full_text = passage + " " + q_text 
+        
+        matches = re.findall(pattern, full_text)
+        if matches:
+            broken_questions.append((q, matches))
 
     if not broken_questions:
-        print("All cloze questions have valid blanks! You are good to go.")
+        print("Scan complete. No questions found with embedded options like '(1) ____ (a/b/c)'. They are either already healed or completely missing.")
         return
 
-    print(f"Found {len(broken_questions)} broken cloze questions. Attempting to heal...\n")
-
-    # Regex pattern to find things like: (1) _______________ (wake/ wakes/ woke)
-    pattern = r'\(([0-9]+)\)\s*_{2,}\s*\(([^)]+)\)'
+    print(f"Found {len(broken_questions)} questions with embedded text options. Healing them now...\n")
 
     fixed_count = 0
 
-    for q in broken_questions:
-        # The AI sometimes dumps the text in question_text instead of passage
+    for q, matches in broken_questions:
         passage = q.get('passage') or q.get('question_text') or ''
-        
-        # The AI sometimes dumps the answers in model_answer instead of correct_answer
         ans_str = q.get('model_answer') or q.get('correct_answer') or ''
         
-        matches = re.findall(pattern, passage)
-        
-        if not matches:
-            print(f"  [Skipped] Could not find the '(1) ____ (a/b/c)' pattern in ID: {q['id']}")
-            continue
-
         # Parse the answers into a map: { "1": "wakes", "2": "eats" }
         correct_map = {}
         if ans_str:
-            ans_parts = ans_str.split(',')
+            ans_parts = str(ans_str).split(',')
             for part in ans_parts:
                 if '.' in part:
                     num, word = part.split('.', 1)
@@ -69,7 +66,7 @@ def heal_cloze_questions():
             # Clean up the options into a proper list
             options_list = [opt.strip() for opt in options_raw.split('/')]
             
-            # Get the exact correct answer from our map, or default to the first option if the AI forgot to provide an answer key
+            # Get the exact correct answer from our map, or default to the first option if missing
             correct_word = correct_map.get(blank_num, options_list[0])
 
             blanks_array.append({
@@ -88,11 +85,12 @@ def heal_cloze_questions():
             supabase.table('question_bank').update({
                 'passage': new_passage,
                 'blanks': blanks_array,
-                'question_text': "Fill in each blank with the correct word from the options." # Standardize the preamble
+                'question_text': "Fill in each blank with the correct word from the options."
             }).eq('id', q['id']).execute()
             
             fixed_count += 1
             print(f"  [Fixed] Healed question ID: {q['id']}")
+            print(f"    -> Extracted {len(blanks_array)} interactive dropdowns.")
         except Exception as e:
             print(f"  [Error] Failed to update {q['id']}: {e}")
 
