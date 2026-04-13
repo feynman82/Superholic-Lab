@@ -65,8 +65,45 @@
     .cloze-select.is-correct { border-color: var(--brand-mint); color: var(--brand-mint); background-color: rgba(5,150,105,0.05); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2310B981' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); }
     .cloze-select.is-wrong { border-color: var(--brand-error); color: var(--brand-error); background-color: rgba(220,38,38,0.05); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23EF4444' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); }
     
-    .editing-line { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) 0; border-bottom: 1px solid var(--border-light); }
+    /* --- EDITING COMPONENT --- */
+    .editing-passage {
+      line-height: 2.2;
+      margin-bottom: var(--space-6);
+      padding-bottom: var(--space-4);
+      border-bottom: 2px dashed var(--border-light);
+    }
+    
+    .editing-line { 
+      display: flex; 
+      align-items: flex-start; /* Pins inputs to the top if text wraps */
+      gap: var(--space-4); 
+      padding: var(--space-2) 0; /* Tight padding for continuous flow */
+      border-bottom: 1px solid transparent; 
+    }
+    .editing-line.isolated { 
+      border-bottom: 1px solid var(--border-light); 
+      padding: var(--space-4) 0; /* Wider padding for isolated sentences */
+      align-items: center;
+    }
     .editing-line:last-child { border-bottom: none; }
+    
+    .editing-num {
+      min-width: 28px;
+      font-weight: 700;
+      color: var(--text-muted);
+      padding-top: 2px;
+    }
+    .editing-text {
+      flex: 1;
+      line-height: 1.8;
+      font-size: 1.125rem;
+      color: var(--text-main);
+      font-weight: 500;
+    }
+    .editing-input-wrapper {
+      position: relative;
+      padding-top: 2px;
+    }
     
     .editing-input {
       border: 1px solid var(--border-dark); border-radius: var(--radius-sm);

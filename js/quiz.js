@@ -321,11 +321,26 @@ function buildClozeUI(q) {
     const savedAns = state.answers[state.currentIndex] || {};
     let parsedLines = [];
     try { parsedLines = typeof q.passage_lines === 'string' ? JSON.parse(q.passage_lines) : (q.passage_lines || []); } catch(e) {}
+    
+    // SMART DETECTION: If more than 3 lines, it's an Upper Primary continuous passage.
+    const isContinuous = parsedLines.length > 3;
+
+    // 1. Render Context Passage for Lower/Middle Primary
+    let contextHtml = '';
+    if (!isContinuous && q.passage) {
+      // Strip markdown artifacts from the passage
+      const cleanPassage = esc(q.passage).replace(/\*\*|&lt;u&gt;|&lt;\/u&gt;/gi, '').replace(/\n/g, '<br>');
+      contextHtml = `<div class="editing-passage text-lg text-main font-normal">${cleanPassage}</div>`;
+    }
+
     const lines = parsedLines.map(line => {
       const saved = savedAns[line.line_number] || '';
-      const rawText = line.text || '';
-      const underlined = line.underlined_word || '';
       
+      // 2. Strip Markdown Artifacts from the database strings before escaping
+      const rawText = (line.text || '').replace(/\*\*|<u>|<\/u>/gi, '');
+      const underlined = (line.underlined_word || '').replace(/\*\*|<u>|<\/u>/gi, '');
+      
+      // Safely highlight the target word
       const escapedLine = esc(rawText).replace(
         esc(underlined),
         `<u style="text-decoration-color:var(--brand-rose);text-decoration-thickness:2px;font-weight:700;">${esc(underlined)}</u>`
@@ -337,40 +352,49 @@ function buildClozeUI(q) {
         const isCorrect = res.isCorrect;
         const stateClass = isCorrect ? 'is-correct' : 'is-wrong';
         inputEl = `<input type="text" value="${esc(saved)}" disabled class="editing-input ${stateClass}">
-          ${!isCorrect && line.correct_word ? `<span class="text-xs font-bold text-success" style="position:absolute; bottom:-18px; left:0; right:0;">→ ${esc(line.correct_word)}</span>` : ''}`;
+          ${!isCorrect && line.correct_word ? `<span class="text-xs font-bold text-success" style="position:absolute; bottom:-18px; left:0; right:0; text-align:center;">→ ${esc(line.correct_word)}</span>` : ''}`;
       } else {
+        // 3. User requested BLANK box (no placeholder)
         inputEl = `<input type="text" id="edit-line-${line.line_number}" value="${esc(saved)}"
-          placeholder="${esc(underlined)}" autocomplete="off" class="editing-input"
-          oninput="window.saveInputState()">`;
+          autocomplete="off" class="editing-input" oninput="window.saveInputState()">`;
       }
 
-      // 3.0 UPGRADE: Larger typography, min-widths, and padding
+      // Apply dynamic CSS class
+      const lineClass = isContinuous ? 'editing-line' : 'editing-line isolated';
+
       return `
-        <div class="editing-line" style="padding: var(--space-4) 0;">
-          <span class="text-base font-bold text-muted" style="min-width:32px;">${line.line_number}.</span>
-          <span class="text-lg text-main font-medium flex-1" style="line-height: 1.8;">${escapedLine}</span>
-          <div class="flex items-center gap-2" style="position:relative;">${inputEl}</div>
+        <div class="${lineClass}">
+          <span class="editing-num">${line.line_number}.</span>
+          <span class="editing-text">${escapedLine}</span>
+          <div class="editing-input-wrapper">${inputEl}</div>
         </div>`;
     }).join('');
 
     let editFeedback = '';
     if (state.isAnswered && state.feedback && state.feedback.lineResults) {
-      const wrongLines = (q.passage_lines || []).filter(l => {
+      const wrongLines = parsedLines.filter(l => {
         const res = state.feedback.lineResults[l.line_number];
         return res && !res.isCorrect;
       });
       if (wrongLines.length > 0) {
         editFeedback = `<div class="card bg-page p-4 mt-4">
           <div class="text-xs font-bold text-muted uppercase mb-2">Explanations</div>
-          ${wrongLines.map(l => `<div class="text-sm text-main py-2" style="border-bottom: 1px solid var(--border-light);">
-            <span class="font-bold">[${l.line_number}] ${esc(l.underlined_word)} → <span class="text-success">${esc(l.correct_word)}</span>:</span> ${esc(l.explanation)}
-          </div>`).join('')}
+          ${wrongLines.map(l => {
+             const cleanUnderlined = (l.underlined_word || '').replace(/\*\*|<u>|<\/u>/gi, '');
+             return `<div class="text-sm text-main py-2" style="border-bottom: 1px solid var(--border-light);">
+            <span class="font-bold">[${l.line_number}] ${esc(cleanUnderlined)} → <span class="text-success">${esc(l.correct_word)}</span>:</span> ${esc(l.explanation)}
+          </div>`}).join('')}
         </div>`;
       }
     }
 
     return `
-      <div class="card p-6">${lines}</div>
+      <div class="card p-6">
+        ${contextHtml}
+        <div class="editing-lines-container">
+          ${lines}
+        </div>
+      </div>
       ${editFeedback}`;
   }
 
