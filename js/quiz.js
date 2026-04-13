@@ -249,7 +249,7 @@ function buildClozeUI(q) {
     let wordBankHtml = '';
     if (allWords.size > 0) {
       const wordBankList = [...allWords].sort().map((w, i) =>
-        `<span class="badge badge-info" style="font-size:0.8rem; padding: 4px 10px;">(${i+1}) ${esc(w)}</span>`
+        `<span class="badge bg-surface border border-light text-main" style="font-size:0.9rem; padding: 6px 12px; font-weight: 500;">(${i+1}) ${esc(w)}</span>`
       ).join('');
       wordBankHtml = `
         <div class="card bg-page p-4 mb-4">
@@ -272,7 +272,7 @@ function buildClozeUI(q) {
         
         // 3.0 UPGRADE: Smart Disabled Inputs
         if (b.options && b.options.length > 0) {
-          inputHtml = `<select id="cloze-blank-${num}" class="cloze-select border-b-2 font-bold bg-transparent mx-1 text-center ${stateClass === 'is-correct' ? 'text-green-600 border-green-500 bg-green-50' : 'text-red-600 border-red-500 bg-red-50'}" disabled style="min-width: 100px;">
+          inputHtml = `<select id="cloze-blank-${num}" class="cloze-select ${stateClass}" disabled style="min-width: 100px;">
             <option value="${esc(saved)}">${esc(saved||'—')}</option></select>`;
         } else {
           inputHtml = `<input type="text" id="cloze-blank-${num}" class="editing-input ${stateClass}" value="${esc(saved)}" disabled style="width: 120px; display: inline-block; margin: 0 4px;">`;
@@ -283,7 +283,7 @@ function buildClozeUI(q) {
           const opts = (b.options || []).map(o =>
             `<option value="${esc(o)}" ${saved === o ? 'selected' : ''}>${esc(o)}</option>`
           ).join('');
-          inputHtml = `<select id="cloze-blank-${num}" class="cloze-select border-b-2 border-brand-sage bg-transparent text-brand-sage font-bold mx-1 cursor-pointer text-center focus:outline-none focus:border-brand-rose" onchange="window.saveInputState()" style="min-width: 100px;">
+          inputHtml = `<select id="cloze-blank-${num}" class="cloze-select" onchange="window.saveInputState()" style="min-width: 100px;">
             <option value="" disabled ${!saved ? 'selected' : ''}>Select...</option>${opts}</select>`;
         } else {
           inputHtml = `<input type="text" id="cloze-blank-${num}" class="editing-input" value="${esc(saved)}" placeholder="type here" autocomplete="off" oninput="window.saveInputState()" style="width: 120px; display: inline-block; margin: 0 4px;">`;
@@ -313,7 +313,7 @@ function buildClozeUI(q) {
     // 3.0 UPGRADE: Typography & Line Height
     return `
       ${wordBankHtml}
-      <div class="card p-6 cloze-passage text-lg text-main font-medium" style="line-height: 2;">${passage}</div>
+      <div class="card p-6 cloze-passage text-lg text-main font-normal">${passage}</div>
       ${blankFeedback}`;
   }
 
