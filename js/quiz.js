@@ -328,7 +328,7 @@ function buildClozeUI(q) {
     // 1. Render Context Passage for Lower/Middle Primary
     let contextHtml = '';
     if (!isContinuous && q.passage) {
-      // Strip markdown artifacts from the passage
+      // Strip markdown artifacts (**, <u>, </u>) from the passage
       const cleanPassage = esc(q.passage).replace(/\*\*|&lt;u&gt;|&lt;\/u&gt;/gi, '').replace(/\n/g, '<br>');
       contextHtml = `<div class="editing-passage text-lg text-main font-normal">${cleanPassage}</div>`;
     }
@@ -354,17 +354,20 @@ function buildClozeUI(q) {
         inputEl = `<input type="text" value="${esc(saved)}" disabled class="editing-input ${stateClass}">
           ${!isCorrect && line.correct_word ? `<span class="text-xs font-bold text-success" style="position:absolute; bottom:-18px; left:0; right:0; text-align:center;">→ ${esc(line.correct_word)}</span>` : ''}`;
       } else {
-        // 3. User requested BLANK box (no placeholder)
+        // User requested BLANK box (no placeholder)
         inputEl = `<input type="text" id="edit-line-${line.line_number}" value="${esc(saved)}"
           autocomplete="off" class="editing-input" oninput="window.saveInputState()">`;
       }
 
       // Apply dynamic CSS class
       const lineClass = isContinuous ? 'editing-line' : 'editing-line isolated';
+      
+      // 3. Conditionally hide the line number for isolated sentences!
+      const lineNumHtml = isContinuous ? `<span class="editing-num">${line.line_number}.</span>` : '';
 
       return `
         <div class="${lineClass}">
-          <span class="editing-num">${line.line_number}.</span>
+          ${lineNumHtml}
           <span class="editing-text">${escapedLine}</span>
           <div class="editing-input-wrapper">${inputEl}</div>
         </div>`;
@@ -381,8 +384,9 @@ function buildClozeUI(q) {
           <div class="text-xs font-bold text-muted uppercase mb-2">Explanations</div>
           ${wrongLines.map(l => {
              const cleanUnderlined = (l.underlined_word || '').replace(/\*\*|<u>|<\/u>/gi, '');
+             const prefix = isContinuous ? `[${l.line_number}] ` : '';
              return `<div class="text-sm text-main py-2" style="border-bottom: 1px solid var(--border-light);">
-            <span class="font-bold">[${l.line_number}] ${esc(cleanUnderlined)} → <span class="text-success">${esc(l.correct_word)}</span>:</span> ${esc(l.explanation)}
+            <span class="font-bold">${prefix}${esc(cleanUnderlined)} → <span class="text-success">${esc(l.correct_word)}</span>:</span> ${esc(l.explanation)}
           </div>`}).join('')}
         </div>`;
       }
