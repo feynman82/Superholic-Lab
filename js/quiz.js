@@ -6,25 +6,57 @@ window.initQuizEngine = function() {
     const container = document.getElementById(canvasId + '-container');
     if (!container) return;
     container.classList.toggle('hidden');
+    
     const canvas = document.getElementById(canvasId);
     if (!canvas || canvas.isInitialized) return;
+    
+    // Set actual canvas resolution based on container width
     const rect = container.getBoundingClientRect();
     canvas.width = rect.width || 800;
     canvas.height = rect.height || 300;
+    
+    // CRITICAL: Prevent screen scrolling while drawing on mobile
+    canvas.style.touchAction = 'none';
+    
     const ctx = canvas.getContext('2d');
-    ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 2; 
+    ctx.lineCap = 'round'; 
+    ctx.strokeStyle = 'var(--brand-sage, #51615E)'; // Match UI theme
+
     let isDrawing = false, lastX = 0, lastY = 0;
+
+    // Recalculate bounding rect dynamically in case of scroll
     function getPos(e) {
       const r = canvas.getBoundingClientRect();
-      if(e.touches) return { x: e.touches[0].clientX - r.left, y: e.touches[0].clientY - r.top };
-      return { x: e.clientX - r.left, y: e.clientY - r.top };
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return { 
+        x: (clientX - r.left) * (canvas.width / r.width), 
+        y: (clientY - r.top) * (canvas.height / r.height) 
+      };
     }
+
     function start(e) { e.preventDefault(); isDrawing = true; const p = getPos(e); lastX = p.x; lastY = p.y; }
-    function draw(e) { if (!isDrawing) return; e.preventDefault(); const p = getPos(e); ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(p.x, p.y); ctx.stroke(); lastX = p.x; lastY = p.y; }
-    function stop() { isDrawing = false; }
-    canvas.addEventListener('mousedown', start); canvas.addEventListener('mousemove', draw);
-    window.addEventListener('mouseup', stop); 
-    canvas.addEventListener('touchstart', start, {passive: false}); canvas.addEventListener('touchmove', draw, {passive: false}); window.addEventListener('touchend', stop);
+    function draw(e) { 
+      if (!isDrawing) return; 
+      e.preventDefault(); 
+      const p = getPos(e); 
+      ctx.beginPath(); 
+      ctx.moveTo(lastX, lastY); 
+      ctx.lineTo(p.x, p.y); 
+      ctx.stroke(); 
+      lastX = p.x; 
+      lastY = p.y; 
+    }
+    function end(e) { e.preventDefault(); isDrawing = false; }
+
+    canvas.addEventListener('mousedown', start);
+    canvas.addEventListener('mousemove', draw);
+    window.addEventListener('mouseup', end);
+    canvas.addEventListener('touchstart', start, { passive: false });
+    canvas.addEventListener('touchmove', draw, { passive: false });
+    window.addEventListener('touchend', end);
+    
     canvas.isInitialized = true;
   };
 
@@ -171,8 +203,12 @@ window.initQuizEngine = function() {
 
   function buildWordProblemUI(q) {
     const savedModelShown = state.isAnswered;
-    const parts = (q.parts || []).map(p => {
+    let partsData = [];
+    try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
+    
+    const parts = partsData.map((p, partIdx) => {
       const savedWorking = (state.answers[state.currentIndex] || {})[p.label] || '';
+      const canvasId = `wp-canvas-${state.currentIndex}-${partIdx}`;
       return `
         <div class="card bg-page p-4 mb-4">
           <div class="flex items-center gap-3 mb-3">
@@ -183,11 +219,11 @@ window.initQuizEngine = function() {
           <textarea id="wp-${esc(p.label)}" class="form-input w-full p-3" rows="3" style="height:auto;" placeholder="Show your working here..." ${savedModelShown?'disabled':''}>${esc(savedWorking)}</textarea>
           
           <div class="mt-2 w-full">
-            <button type="button" class="btn btn-outline btn-sm mb-2" onclick="window.togglePenTool('wp-canvas-${idx}')">
+            <button type="button" class="btn btn-outline btn-sm mb-2" onclick="window.togglePenTool('${canvasId}')">
               ✏️ Pen Tool
             </button>
-            <div id="wp-canvas-${idx}-container" class="hidden border border-dark rounded bg-white w-full overflow-hidden shadow-sm" style="min-height: 250px;">
-              <canvas id="wp-canvas-${idx}" width="800" height="300" class="w-full h-full bg-white cursor-crosshair" style="touch-action: none;"></canvas>
+            <div id="${canvasId}-container" class="hidden border border-dark rounded bg-white w-full overflow-hidden shadow-sm" style="min-height: 250px;">
+              <canvas id="${canvasId}" width="800" height="300" class="w-full h-full bg-white cursor-crosshair" style="touch-action: none;"></canvas>
             </div>
           </div>
           ${savedModelShown ? `
@@ -236,7 +272,7 @@ function buildClozeUI(q) {
         
         // 3.0 UPGRADE: Smart Disabled Inputs
         if (b.options && b.options.length > 0) {
-          inputHtml = `<select id="cloze-blank-${num}" class="cloze-select ${stateClass}" disabled>
+          inputHtml = `<select id="cloze-blank-${num}" class="cloze-select border-b-2 font-bold bg-transparent mx-1 text-center ${stateClass === 'is-correct' ? 'text-green-600 border-green-500 bg-green-50' : 'text-red-600 border-red-500 bg-red-50'}" disabled style="min-width: 100px;">
             <option value="${esc(saved)}">${esc(saved||'—')}</option></select>`;
         } else {
           inputHtml = `<input type="text" id="cloze-blank-${num}" class="editing-input ${stateClass}" value="${esc(saved)}" disabled style="width: 120px; display: inline-block; margin: 0 4px;">`;
@@ -247,13 +283,15 @@ function buildClozeUI(q) {
           const opts = (b.options || []).map(o =>
             `<option value="${esc(o)}" ${saved === o ? 'selected' : ''}>${esc(o)}</option>`
           ).join('');
-          inputHtml = `<select id="cloze-blank-${num}" class="cloze-select" onchange="window.saveInputState()">
-            <option value="">— pick —</option>${opts}</select>`;
+          inputHtml = `<select id="cloze-blank-${num}" class="cloze-select border-b-2 border-brand-sage bg-transparent text-brand-sage font-bold mx-1 cursor-pointer text-center focus:outline-none focus:border-brand-rose" onchange="window.saveInputState()" style="min-width: 100px;">
+            <option value="" disabled ${!saved ? 'selected' : ''}>Select...</option>${opts}</select>`;
         } else {
           inputHtml = `<input type="text" id="cloze-blank-${num}" class="editing-input" value="${esc(saved)}" placeholder="type here" autocomplete="off" oninput="window.saveInputState()" style="width: 120px; display: inline-block; margin: 0 4px;">`;
         }
       }
-      passage = passage.replace(`[${num}]`, inputHtml);
+      // THE FIX: Global regex safely replacing [1] or (1)
+      const blankRegex = new RegExp(`\\[${num}\\]|\\(${num}\\)`, 'g');
+      passage = passage.replace(blankRegex, inputHtml);
     });
 
     let blankFeedback = '';
@@ -506,7 +544,9 @@ function buildClozeUI(q) {
     const q = state.questions[state.currentIndex];
     if (q.type === 'cloze') {
       const ans = {};
-      (q.blanks || []).forEach(b => {
+      let blanks = [];
+      try { blanks = typeof q.blanks === 'string' ? JSON.parse(q.blanks) : (q.blanks || []); } catch(e) {}
+      blanks.forEach(b => {
         const num = b.id || b.number;
         const el = document.getElementById(`cloze-blank-${num}`);
         if (el) ans[num] = el.value;
@@ -514,14 +554,18 @@ function buildClozeUI(q) {
       state.answers[state.currentIndex] = ans;
     } else if (q.type === 'editing') {
       const ans = {};
-      (q.passage_lines || []).forEach(l => {
+      let lines = [];
+      try { lines = typeof q.passage_lines === 'string' ? JSON.parse(q.passage_lines) : (q.passage_lines || []); } catch(e) {}
+      lines.forEach(l => {
         const el = document.getElementById(`edit-line-${l.line_number}`);
         if (el) ans[l.line_number] = el.value;
       });
       state.answers[state.currentIndex] = ans;
     } else if (q.type === 'word_problem') {
       const ans = {};
-      (q.parts || []).forEach(p => {
+      let parts = [];
+      try { parts = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
+      parts.forEach(p => {
         const el = document.getElementById(`wp-${p.label}`);
         if (el) ans[p.label] = el.value;
       });
