@@ -218,6 +218,10 @@ window.initQuizEngine = function() {
     const savedAns = String(state.answers[state.currentIndex] || '');
     const isDrawMode = state.drawings[state.currentIndex] && state.drawings[state.currentIndex] !== 'text';
     
+    // 🌟 FIX: Change placeholders to clearly indicate that auto-grading requires typed text.
+    const placeholderText = q.type === 'short_ans' ? 'Type your final answer here (Required for marking)' : 'Final Answer (Optional)';
+    const inputClass = q.type === 'short_ans' ? 'form-input mt-2 w-full border-2 border-brand-sage' : 'form-input mt-2 w-full';
+
     return `
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
         <span class="text-xs font-bold text-muted uppercase tracking-wider">💡 Tip: Draw your working!</span>
@@ -228,7 +232,7 @@ window.initQuizEngine = function() {
       </div>
       
       ${!isDrawMode
-        ? `<textarea id="qInput" class="form-input w-full p-4" rows="4" placeholder="Your answer..." style="height: auto; resize: vertical;" ${state.isAnswered ? 'disabled' : ''}>${esc(savedAns)}</textarea>`
+        ? `<textarea id="qInput" class="form-input w-full p-4" rows="4" placeholder="${q.type === 'short_ans' ? 'Type your answer here...' : 'Your answer...'}" style="height: auto; resize: vertical;" ${state.isAnswered ? 'disabled' : ''}>${esc(savedAns)}</textarea>`
         : `<div id="drawArea" class="scratchpad-container mb-4" style="position: relative; display: block;">
              <canvas id="scratchpadCanvas" class="scratchpad-canvas bg-white border border-light rounded w-full" style="min-height: 300px; touch-action: none; cursor: crosshair; ${state.isAnswered ? 'pointer-events:none;' : ''}"></canvas>
              ${!state.isAnswered ? `
@@ -236,7 +240,7 @@ window.initQuizEngine = function() {
                 <button class="btn btn-sm btn-ghost bg-surface hover-lift border border-light" onclick="window.clearCanvas()">🗑️ Clear</button>
              </div>` : ''}
            </div>
-           <input type="text" id="qInput" class="form-input mt-2 w-full" placeholder="Final Answer (Optional)" value="${esc(savedAns)}" ${state.isAnswered ? 'disabled' : ''}>`
+           <input type="text" id="qInput" class="${inputClass}" placeholder="${placeholderText}" value="${esc(savedAns)}" ${state.isAnswered ? 'disabled' : ''}>`
       }`;
   }
 
@@ -575,11 +579,15 @@ function buildClozeUI(q) {
     window.checkAnswer();
   };
 
-  window.setMode = (mode) => {
+  // 🌟 FIX: Adds the missing clearCanvas function
+  window.clearCanvas = () => {
     if (state.isAnswered) return;
-    window.saveInputState();
-    state.drawings[state.currentIndex] = mode === 'draw' ? 'init' : 'text';
-    render();
+    const canvas = document.getElementById('scratchpadCanvas');
+    if (canvas) {
+      const context = canvas.getContext('2d');
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      state.drawings[state.currentIndex] = 'init'; // Reset drawing state
+    }
   };
 
   window.saveInputState = () => {
@@ -754,6 +762,13 @@ function buildClozeUI(q) {
 
     // ── SHORT ANSWER ──
     const ans = String(state.answers[state.currentIndex] || '').trim();
+    
+    // 🌟 FIX: Prevent the engine from unfairly marking it wrong if they only drew on the canvas
+    if (!ans) {
+      alert('Please type your final answer in the text box below the canvas so it can be automatically marked!');
+      return;
+    }
+
     const norm = (s) => String(s || '').toLowerCase().replace(/\s+/g, '');
     let safeAccept = [];
     try { safeAccept = typeof q.accept_also === 'string' ? JSON.parse(q.accept_also) : (q.accept_also || []); } catch(e) {}
