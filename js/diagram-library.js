@@ -26,6 +26,9 @@ const DiagramLibrary = {
 
 // 🚀 AI FUNCTION: Pie Chart Generator
   pieChart(params) {
+    // ADD THIS LINE RIGHT HERE:
+    const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    
     const { data = [], title = "" } = params;
     const w = 400, h = 260;
     
