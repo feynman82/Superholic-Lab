@@ -229,7 +229,7 @@ window.initQuizEngine = function() {
       
       ${!isDrawMode
         ? `<textarea id="qInput" class="form-input w-full p-4" rows="4" placeholder="Your answer..." style="height: auto; resize: vertical;" ${state.isAnswered ? 'disabled' : ''}>${esc(savedAns)}</textarea>`
-        : `<div id="drawArea" class="scratchpad-container mb-4" style="position: relative;">
+        : `<div id="drawArea" class="scratchpad-container mb-4" style="position: relative; display: block;">
              <canvas id="scratchpadCanvas" class="scratchpad-canvas bg-white border border-light rounded w-full" style="min-height: 300px; touch-action: none; cursor: crosshair; ${state.isAnswered ? 'pointer-events:none;' : ''}"></canvas>
              ${!state.isAnswered ? `
              <div style="position: absolute; top: 8px; right: 8px;">
@@ -962,8 +962,22 @@ function buildClozeUI(q) {
         return { x, y };
       };
 
-      const start = (e) => { isDrawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); e.preventDefault(); };
-      const draw = (e) => { if (!isDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); e.preventDefault(); };
+      const start = (e) => { 
+        isDrawing = true; 
+        const p = getPos(e); 
+        ctx.beginPath(); 
+        ctx.moveTo(p.x, p.y); 
+        ctx.lineTo(p.x, p.y); /* Instantly draws a dot for simple screen taps */
+        ctx.stroke(); 
+        if (e.cancelable) e.preventDefault(); 
+      };
+      const draw = (e) => { 
+        if (!isDrawing) return; 
+        const p = getPos(e); 
+        ctx.lineTo(p.x, p.y); 
+        ctx.stroke(); 
+        if (e.cancelable) e.preventDefault(); 
+      };
       const stop = () => { if(isDrawing) { isDrawing = false; state.drawings[qid] = canvas.toDataURL(); } };
 
       canvas.addEventListener('mousedown', start);
