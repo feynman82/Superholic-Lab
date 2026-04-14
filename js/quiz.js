@@ -5,59 +5,90 @@ window.initQuizEngine = function() {
   window.togglePenTool = function(canvasId) {
     const container = document.getElementById(canvasId + '-container');
     if (!container) return;
+    
     container.classList.toggle('hidden');
     
     const canvas = document.getElementById(canvasId);
-    if (!canvas || canvas.isInitialized) return;
-    
-    // Set actual canvas resolution based on container width
-    const rect = container.getBoundingClientRect();
-    canvas.width = rect.width || 800;
-    canvas.height = rect.height || 300;
-    
-    // CRITICAL: Prevent screen scrolling while drawing on mobile
-    canvas.style.touchAction = 'none';
-    
-    const ctx = canvas.getContext('2d');
-    ctx.lineWidth = 2; 
-    ctx.lineCap = 'round'; 
-    ctx.strokeStyle = 'var(--brand-sage, #51615E)'; // Match UI theme
+    if (!canvas) return;
 
-    let isDrawing = false, lastX = 0, lastY = 0;
+    // If we are just hiding it, don't run the initialization logic
+    if (container.classList.contains('hidden')) return;
 
-    // Recalculate bounding rect dynamically in case of scroll
-    function getPos(e) {
-      const r = canvas.getBoundingClientRect();
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-      return { 
-        x: (clientX - r.left) * (canvas.width / r.width), 
-        y: (clientY - r.top) * (canvas.height / r.height) 
-      };
-    }
+    // 🌟 FIX: Wait 10ms for the browser to render the unhidden container before measuring it
+    setTimeout(() => {
+      // Only set dimensions and listeners on the FIRST time it is opened
+      if (!canvas.isInitialized) {
+        const rect = container.getBoundingClientRect();
+        
+        // Ensure it gets a real width, not 0
+        canvas.width = rect.width || container.offsetWidth || 800;
+        canvas.height = Math.max(rect.height || container.offsetHeight, 300); // Min height of 300px
+        
+        const ctx = canvas.getContext('2d');
+        ctx.lineWidth = 2; 
+        ctx.lineCap = 'round'; 
+        ctx.strokeStyle = 'var(--brand-sage, #51615E)'; // Match UI theme
 
-    function start(e) { e.preventDefault(); isDrawing = true; const p = getPos(e); lastX = p.x; lastY = p.y; }
-    function draw(e) { 
-      if (!isDrawing) return; 
-      e.preventDefault(); 
-      const p = getPos(e); 
-      ctx.beginPath(); 
-      ctx.moveTo(lastX, lastY); 
-      ctx.lineTo(p.x, p.y); 
-      ctx.stroke(); 
-      lastX = p.x; 
-      lastY = p.y; 
-    }
-    function end(e) { e.preventDefault(); isDrawing = false; }
+        let isDrawing = false, lastX = 0, lastY = 0;
 
-    canvas.addEventListener('mousedown', start);
-    canvas.addEventListener('mousemove', draw);
-    window.addEventListener('mouseup', end);
-    canvas.addEventListener('touchstart', start, { passive: false });
-    canvas.addEventListener('touchmove', draw, { passive: false });
-    window.addEventListener('touchend', end);
-    
-    canvas.isInitialized = true;
+        function getPos(e) {
+          const r = canvas.getBoundingClientRect();
+          // Safely handle both mouse and touch coordinates
+          const clientX = e.touches && e.touches.length > 0 ? e.touches[0].clientX : e.clientX;
+          const clientY = e.touches && e.touches.length > 0 ? e.touches[0].clientY : e.clientY;
+          return { 
+            x: clientX - r.left, 
+            y: clientY - r.top 
+          };
+        }
+
+        function startDrawing(e) {
+          isDrawing = true;
+          const pos = getPos(e);
+          lastX = pos.x;
+          lastY = pos.y;
+          ctx.beginPath();
+          ctx.moveTo(lastX, lastY);
+          ctx.lineTo(lastX, lastY); // Instantly draw a dot for simple taps
+          ctx.stroke();
+        }
+
+        function draw(e) {
+          if (!isDrawing) return;
+          if (e.cancelable) e.preventDefault(); // Stop screen from scrolling
+          const pos = getPos(e);
+          ctx.lineTo(pos.x, pos.y);
+          ctx.stroke();
+          lastX = pos.x;
+          lastY = pos.y;
+        }
+
+        function stopDrawing() {
+          isDrawing = false;
+          ctx.closePath();
+        }
+
+        // Desktop Mouse Events
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+
+        // Mobile Touch Events (passive: false is CRITICAL to prevent screen scrolling)
+        canvas.addEventListener('touchstart', (e) => { 
+          if (e.cancelable) e.preventDefault(); 
+          startDrawing(e); 
+        }, { passive: false });
+        canvas.addEventListener('touchmove', draw, { passive: false });
+        canvas.addEventListener('touchend', stopDrawing);
+        canvas.addEventListener('touchcancel', stopDrawing);
+
+        // Hardware-level scroll prevention
+        canvas.style.touchAction = 'none';
+        
+        canvas.isInitialized = true;
+      }
+    }, 10);
   };
 
   // 🚀 GLOBAL UTILITY: Smart Rubric Formatter (Font-Consistent)
