@@ -218,9 +218,14 @@ window.initQuizEngine = function() {
     const savedAns = String(state.answers[state.currentIndex] || '');
     const isDrawMode = state.drawings[state.currentIndex] && state.drawings[state.currentIndex] !== 'text';
     
-    // 🌟 FIX: Change placeholders to clearly indicate that auto-grading requires typed text.
-    const placeholderText = q.type === 'short_ans' ? 'Type your final answer here (Required for marking)' : 'Final Answer (Optional)';
-    const inputClass = q.type === 'short_ans' ? 'form-input mt-2 w-full border-2 border-brand-sage' : 'form-input mt-2 w-full';
+    const isShortAns = q.type === 'short_ans';
+    const placeholderText = isShortAns ? 'Type your final answer here (Required for marking)' : 'Final Answer (Optional)';
+    const inputClass = isShortAns ? 'form-input mt-2 w-full border-2 border-brand-sage' : 'form-input mt-2 w-full';
+
+    // 🌟 UX FIX: Use a perfectly centered single-line input for short answers, and a text area for word problems.
+    const typeModeHTML = isShortAns
+      ? `<input type="text" id="qInput" class="form-input w-full p-4 text-lg" placeholder="Type your answer here..." value="${esc(savedAns)}" ${state.isAnswered ? 'disabled' : ''}>`
+      : `<textarea id="qInput" class="form-input w-full p-4" rows="4" placeholder="Your answer..." style="height: auto; resize: vertical;" ${state.isAnswered ? 'disabled' : ''}>${esc(savedAns)}</textarea>`;
 
     return `
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
@@ -232,7 +237,7 @@ window.initQuizEngine = function() {
       </div>
       
       ${!isDrawMode
-        ? `<textarea id="qInput" class="form-input w-full p-4" rows="4" placeholder="${q.type === 'short_ans' ? 'Type your answer here...' : 'Your answer...'}" style="height: auto; resize: vertical;" ${state.isAnswered ? 'disabled' : ''}>${esc(savedAns)}</textarea>`
+        ? typeModeHTML
         : `<div id="drawArea" class="scratchpad-container mb-4" style="position: relative; display: block;">
              <canvas id="scratchpadCanvas" class="scratchpad-canvas bg-white border border-light rounded w-full" style="min-height: 300px; touch-action: none; cursor: crosshair; ${state.isAnswered ? 'pointer-events:none;' : ''}"></canvas>
              ${!state.isAnswered ? `
@@ -240,7 +245,7 @@ window.initQuizEngine = function() {
                 <button class="btn btn-sm btn-ghost bg-surface hover-lift border border-light" onclick="window.clearCanvas()">🗑️ Clear</button>
              </div>` : ''}
            </div>
-           <input type="text" id="qInput" class="${inputClass}" placeholder="${placeholderText}" value="${esc(savedAns)}" ${state.isAnswered ? 'disabled' : ''}>`
+           <input type="text" id="qInput" class="${inputClass} p-3" placeholder="${placeholderText}" value="${esc(savedAns)}" ${state.isAnswered ? 'disabled' : ''}>`
       }`;
   }
 
