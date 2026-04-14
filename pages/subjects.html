@@ -284,7 +284,6 @@ window.initSubjectsEngine = function() {
 
   function renderTopic() {
     const key = state.level.toLowerCase().replace(' ','-') + ':' + state.subject;
-    const activeTopics = TOPIC_MAP[key] || [];
     const allTopicsForSubj = SYLLABUS_MAP[key] || [];
     const stepText = state.tier === 'single_subject' ? 'Step 1 of 2' : 'Step 2 of 3';
 
@@ -300,8 +299,8 @@ window.initSubjectsEngine = function() {
     const allBtn = buildCard('all', '📚 All Topics', 'Practise everything', state.topic === 'all', false);
     const topicBtns = allTopicsForSubj.map(t => {
       const slug = t.toLowerCase().replace(/ /g, '-');
-      const isLocked = !activeTopics.includes(slug);
-      return buildCard(slug, t, isLocked ? 'Coming soon' : 'Focused topic practice', state.topic === slug, isLocked);
+      const isLocked = false; // 🌟 FIX: Instantly unlock all topics
+      return buildCard(slug, t, 'Focused topic practice', state.topic === slug, isLocked);
     }).join('');
 
     // Show "Choose Question Type" button only when the selected topic is NOT auto-bypassed
@@ -334,7 +333,6 @@ window.initSubjectsEngine = function() {
   window.goToType = () => { if (state.topic) { state.qtype = ''; state.phase = 'TYPE'; render(); } };
 
   function renderType() {
-    const activeTypes = TYPE_MAP[state.subject] || [];
     const allTypesForSubj = ALL_TYPES[state.subject] || [];
     const stepText = state.tier === 'single_subject' ? 'Step 2 of 2' : 'Step 3 of 3';
 
@@ -349,8 +347,8 @@ window.initSubjectsEngine = function() {
 
     const mixedBtn = buildCard('mixed', '🎲 Mixed', 'A balanced mix of questions', state.qtype === 'mixed', false);
     const typeBtns = allTypesForSubj.map(t => {
-      const isLocked = !activeTypes.includes(t.id);
-      return buildCard(t.id, t.label, isLocked ? 'Coming soon' : 'Specific question format', state.qtype === t.id, isLocked);
+      const isLocked = false; // 🌟 FIX: Instantly unlock all types
+      return buildCard(t.id, t.label, 'Specific question format', state.qtype === t.id, isLocked);
     }).join('');
 
     app.innerHTML = `
