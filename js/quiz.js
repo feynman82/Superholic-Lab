@@ -220,12 +220,14 @@ window.initQuizEngine = function() {
     
     const isShortAns = q.type === 'short_ans';
     const placeholderText = isShortAns ? 'Type your final answer here (Required for marking)' : 'Final Answer (Optional)';
-    const inputClass = isShortAns ? 'form-input mt-2 w-full border-2 border-brand-sage' : 'form-input mt-2 w-full';
+    
+    // ✨ UNIFIED BEAUTIFUL STYLING FOR ALL INPUTS ✨
+    const baseInputStyle = "form-input w-full p-4 text-lg border-2 border-slate-200 focus:border-brand-sage rounded-xl transition-all shadow-sm";
+    const drawModeInputStyle = "form-input mt-3 w-full p-4 text-lg border-2 border-brand-sage/50 focus:border-brand-sage rounded-xl transition-all shadow-sm bg-sage-50/10";
 
-    // 🌟 UX FIX: Use a perfectly centered single-line input for short answers, and a text area for word problems.
     const typeModeHTML = isShortAns
-      ? `<input type="text" id="qInput" class="form-input w-full p-4 text-lg" placeholder="Type your answer here..." value="${esc(savedAns)}" ${state.isAnswered ? 'disabled' : ''}>`
-      : `<textarea id="qInput" class="form-input w-full p-4" rows="4" placeholder="Your answer..." style="height: auto; resize: vertical;" ${state.isAnswered ? 'disabled' : ''}>${esc(savedAns)}</textarea>`;
+      ? `<input type="text" id="qInput" class="${baseInputStyle}" placeholder="Type your answer here..." value="${esc(savedAns)}" ${state.isAnswered ? 'disabled' : ''}>`
+      : `<textarea id="qInput" class="${baseInputStyle}" rows="4" placeholder="Type your detailed answer or working here..." style="height: auto; resize: vertical;" ${state.isAnswered ? 'disabled' : ''}>${esc(savedAns)}</textarea>`;
 
     return `
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
@@ -239,13 +241,13 @@ window.initQuizEngine = function() {
       ${!isDrawMode
         ? typeModeHTML
         : `<div id="drawArea" class="scratchpad-container mb-4" style="position: relative; display: block;">
-             <canvas id="scratchpadCanvas" class="scratchpad-canvas bg-white border border-light rounded w-full" style="min-height: 300px; touch-action: none; cursor: crosshair; ${state.isAnswered ? 'pointer-events:none;' : ''}"></canvas>
+             <canvas id="scratchpadCanvas" class="scratchpad-canvas bg-white border-2 border-slate-200 rounded-xl w-full shadow-sm" style="min-height: 300px; touch-action: none; cursor: crosshair; ${state.isAnswered ? 'pointer-events:none;' : ''}"></canvas>
              ${!state.isAnswered ? `
-             <div style="position: absolute; top: 8px; right: 8px;">
-                <button class="btn btn-sm btn-ghost bg-surface hover-lift border border-light" onclick="window.clearCanvas()">🗑️ Clear</button>
+             <div style="position: absolute; top: 12px; right: 12px;">
+                <button class="btn btn-sm btn-ghost bg-white hover-lift border border-slate-200 shadow-sm rounded-lg" onclick="window.clearCanvas()">🗑️ Clear</button>
              </div>` : ''}
            </div>
-           <input type="text" id="qInput" class="${inputClass} p-3" placeholder="${placeholderText}" value="${esc(savedAns)}" ${state.isAnswered ? 'disabled' : ''}>`
+           <input type="text" id="qInput" class="${drawModeInputStyle}" placeholder="${placeholderText}" value="${esc(savedAns)}" ${state.isAnswered ? 'disabled' : ''}>`
       }`;
   }
 
