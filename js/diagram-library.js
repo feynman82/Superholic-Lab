@@ -24,6 +24,86 @@
 
 const DiagramLibrary = {
 
+// 🚀 AI FUNCTION: Pie Chart Generator
+  pieChart(params) {
+    const { data = [], title = "" } = params;
+    const w = 400, h = 260;
+    
+    // Position the pie slightly to the left to leave room for the legend
+    const cx = 130, cy = 140, r = 90;
+
+    // Calculate total to determine the angles
+    const total = data.reduce((sum, item) => sum + (Number(item.value) || 0), 0);
+    if (total === 0) return this._svg(`<text x="200" y="130" text-anchor="middle" fill="var(--text-muted)">No data provided</text>`, { alt: "Empty Pie Chart" });
+
+    // Superholic-themed palette (Rose, Sage, Amber, Muted Blue, Gold, Slate)
+    const colors = ['#B76E79', '#51615E', '#D97706', '#728984', '#E6B885', '#A5B5B1'];
+
+    let currentAngle = -Math.PI / 2; // Start drawing at 12 o'clock
+    let slices = '';
+    let legend = '';
+
+    data.forEach((item, i) => {
+      const val = Number(item.value) || 0;
+      const sliceAngle = (val / total) * (2 * Math.PI);
+      const color = colors[i % colors.length];
+
+      // Safe-catch for 100% full circle
+      if (sliceAngle >= 2 * Math.PI - 0.001) { 
+        slices += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${color}" stroke="#fff" stroke-width="1.5"/>`;
+      } else if (sliceAngle > 0) {
+        // Calculate SVG path points using Trigonometry
+        const startX = cx + r * Math.cos(currentAngle);
+        const startY = cy + r * Math.sin(currentAngle);
+        const endAngle = currentAngle + sliceAngle;
+        const endX = cx + r * Math.cos(endAngle);
+        const endY = cy + r * Math.sin(endAngle);
+
+        // If the slice is more than half the circle, we need the large-arc-flag
+        const largeArcFlag = sliceAngle > Math.PI ? 1 : 0;
+
+        // SVG Path Command: M(ove to center) L(ine to edge) A(rc to next point) Z(close to center)
+        const pathData = [
+          `M ${cx} ${cy}`,
+          `L ${startX} ${startY}`,
+          `A ${r} ${r} 0 ${largeArcFlag} 1 ${endX} ${endY}`,
+          `Z`
+        ].join(' ');
+
+        slices += `<path d="${pathData}" fill="${color}" stroke="#fff" stroke-width="1.5" />`;
+
+        // Add percentage label inside the slice (if it's wide enough to fit text)
+        if (sliceAngle > 0.3) {
+           const midAngle = currentAngle + sliceAngle / 2;
+           const labelR = r * 0.65; // Position text 65% of the way to the edge
+           const lx = cx + labelR * Math.cos(midAngle);
+           const ly = cy + labelR * Math.sin(midAngle) + 4; // +4 to vertically center text
+           const pct = Math.round((val/total)*100) + '%';
+           slices += `<text x="${lx}" y="${ly}" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="bold">${pct}</text>`;
+        }
+
+        currentAngle = endAngle;
+      }
+
+      // Build the Legend on the right side
+      const legX = 250;
+      const legY = 80 + (i * 24); // Space each item 24px apart vertically
+      
+      legend += `
+        <rect x="${legX}" y="${legY - 11}" width="14" height="14" fill="${color}" rx="3"/>
+        <text x="${legX + 22}" y="${legY}" font-size="12" fill="var(--text-main)" font-weight="500">${esc(item.label)}</text>
+      `;
+    });
+
+    const titleEl = title ? `<text x="200" y="30" text-anchor="middle" font-size="14" font-weight="bold" fill="var(--text-main)">${esc(title)}</text>` : '';
+
+    return this._svg(`
+      ${titleEl}
+      ${slices}
+      ${legend}
+    `, { alt: title || 'Pie Chart' });
+  },
+
 // 🚀 AI FUNCTION: Dynamic Polygon Generator (Draws any N-sided shape)
   polygon(params) {
     const w = 400, h = 260;

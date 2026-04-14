@@ -64,22 +64,21 @@ TYPE 1: MCQ — MULTIPLE CHOICE QUESTION
 Used in: Maths Paper 1 Booklet A, Science Booklet A, English
 
 FORMAT:
-  - 4 options labelled (A), (B), (C), (D)
-  - Exactly ONE correct answer
-  - Options must be FULL SENTENCES for Science/English
-  - Options can be numerical values for Maths
-  - Circle badge shows the letter A/B/C/D (NOT the first
-    character of the option text)
+  - 4 options in an array.
+  - Exactly ONE correct answer.
+  - Options must be FULL SENTENCES for Science/English.
+  - Options can be numerical values for Maths.
+  - DO NOT prefix the options with A, B, C, or D (e.g., just "2/7", not "A: 2/7").
 
 ADDITIONAL JSON FIELDS:
   "options": ["string", "string", "string", "string"],
-  "correct_answer": "A" | "B" | "C" | "D",
+  "correct_answer": "string — MUST be the exact string from the options array",
   "wrong_explanations": {
-    "A": "string — specific misconception",
-    "B": "string — specific misconception",
-    "C": "string — specific misconception"
+    "exact_wrong_option_string_1": "string — specific misconception",
+    "exact_wrong_option_string_2": "string — specific misconception",
+    "exact_wrong_option_string_3": "string — specific misconception"
   }
-  (Only include explanations for the 3 WRONG options)
+  (Keys MUST be the exact strings from the options array, NOT "A", "B", "C")
 
 DISPLAY RULES:
   - Show option letter in a CIRCLE BADGE: (A) (B) (C) (D)
@@ -356,18 +355,17 @@ TYPE 5: CLOZE — GRAMMAR CLOZE PASSAGE (ENGLISH)
 Used in: English Paper 2 (Grammar Cloze section)
 
 FORMAT:
-  - A short passage with numbered blanks
-  - Each blank has 4 options
-  - Student selects one option per blank
-  - Tests grammar (tenses, prepositions, articles, etc.)
+  - A continuous passage with embedded bracketed numbers for blanks: [1], [2].
+  - DO NOT put options inside the passage string.
+  - Student selects one option per blank from a dropdown.
 
 ADDITIONAL JSON FIELDS:
-  "passage": "string — the passage with [1], [2], [3] blanks",
+  "passage": "string — the full continuous text with embedded [1], [2] blanks.",
   "blanks": [
     {
       "number": 1,
       "options": ["string", "string", "string", "string"],
-      "correct_answer": "B",
+      "correct_answer": "string — exact correct option",
       "explanation": "string"
     }
   ]
@@ -435,20 +433,18 @@ TYPE 6: EDITING — SPOT AND CORRECT ERRORS (ENGLISH)
 Used in: English Paper 2 (Editing section)
 
 FORMAT:
-  - A short passage with underlined words/phrases
-  - Some are correct, some have errors
-  - Student identifies errors and provides corrections
-  - Tests spelling, grammar, punctuation
+  - A continuous passage.
+  - Errors are marked directly in the passage using HTML underline tags followed by a bracketed number.
+  - Example: "She <u>goed</u> [1] to the market."
+  - Student types the corrected word into an inline input box.
 
 ADDITIONAL JSON FIELDS:
-  "passage_lines": [
+  "passage": "string — the full continuous text with embedded <u>error</u> [1] markings.",
+  "blanks": [
     {
-      "line_number": 1,
-      "text": "string — the line of text",
-      "underlined_word": "string — the underlined word",
-      "has_error": true | false,
-      "correct_word": "string — correction if error, same word if correct",
-      "explanation": "string"
+      "number": 1,
+      "correct_answer": "string — the exact corrected word",
+      "explanation": "string — explanation of the grammar/spelling rule"
     }
   ]
 
