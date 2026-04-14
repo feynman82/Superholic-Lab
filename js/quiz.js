@@ -217,18 +217,26 @@ window.initQuizEngine = function() {
   function buildTextAreaUI(q) {
     const savedAns = String(state.answers[state.currentIndex] || '');
     const isDrawMode = state.drawings[state.currentIndex] && state.drawings[state.currentIndex] !== 'text';
+    
     return `
-      <div class="flex justify-end gap-2 mb-2">
-        <button class="btn btn-sm ${!isDrawMode?'btn-secondary bg-sage-dark text-white':'btn-ghost'}" onclick="window.setMode('text')" ${state.isAnswered?'disabled':''}>⌨️ Type</button>
-        <button class="btn btn-sm ${isDrawMode?'btn-secondary bg-sage-dark text-white':'btn-ghost'}" onclick="window.setMode('draw')" ${state.isAnswered?'disabled':''}>✏️ Pen Tool</button>
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+        <span class="text-xs font-bold text-muted uppercase tracking-wider">💡 Tip: Draw your working!</span>
+        <div class="flex gap-2 w-full sm:w-auto">
+          <button class="btn btn-sm ${!isDrawMode ? 'bg-sage-dark text-white' : 'btn-ghost'}" onclick="window.setMode('text')" ${state.isAnswered ? 'disabled' : ''}>⌨️ Type</button>
+          <button class="btn btn-sm ${isDrawMode ? 'bg-sage-dark text-white' : 'btn-ghost'}" onclick="window.setMode('draw')" ${state.isAnswered ? 'disabled' : ''}>✏️ Pen Tool</button>
+        </div>
       </div>
+      
       ${!isDrawMode
-        ? `<textarea id="qInput" class="form-input w-full p-4" rows="4" placeholder="Your answer..." style="height: auto; resize: vertical;" ${state.isAnswered?'disabled':''}>${esc(savedAns)}</textarea>`
-        : `<div class="scratchpad-container">
-             <canvas id="scratchpadCanvas" class="scratchpad-canvas" ${state.isAnswered?'style="pointer-events:none;"':''}></canvas>
-             ${!state.isAnswered?`<div class="scratchpad-tools"><button class="btn btn-sm btn-ghost bg-surface hover-lift border border-light" onclick="window.clearCanvas()">🗑️ Clear</button></div>`:''}
+        ? `<textarea id="qInput" class="form-input w-full p-4" rows="4" placeholder="Your answer..." style="height: auto; resize: vertical;" ${state.isAnswered ? 'disabled' : ''}>${esc(savedAns)}</textarea>`
+        : `<div id="drawArea" class="scratchpad-container mb-4" style="position: relative;">
+             <canvas id="scratchpadCanvas" class="scratchpad-canvas bg-white border border-light rounded w-full" style="min-height: 300px; touch-action: none; cursor: crosshair; ${state.isAnswered ? 'pointer-events:none;' : ''}"></canvas>
+             ${!state.isAnswered ? `
+             <div style="position: absolute; top: 8px; right: 8px;">
+                <button class="btn btn-sm btn-ghost bg-surface hover-lift border border-light" onclick="window.clearCanvas()">🗑️ Clear</button>
+             </div>` : ''}
            </div>
-           <input type="text" id="qInput" class="form-input mt-4" placeholder="Final Answer" value="${esc(savedAns)}" ${state.isAnswered?'disabled':''}>`
+           <input type="text" id="qInput" class="form-input mt-2 w-full" placeholder="Final Answer (Optional)" value="${esc(savedAns)}" ${state.isAnswered ? 'disabled' : ''}>`
       }`;
   }
 
@@ -921,44 +929,51 @@ function buildClozeUI(q) {
   // ── CANVAS LOGIC ──
   let ctx, isDrawing = false;
   function initCanvas(qid) {
-    const canvas = document.getElementById('scratchpadCanvas');
-    if (!canvas) return;
-    
-    const rect = canvas.parentElement.getBoundingClientRect();
-    canvas.width = rect.width;
-    canvas.height = 300;
-    
-    ctx = canvas.getContext('2d');
-    ctx.lineWidth = 2;
-    ctx.lineCap = 'round';
-    ctx.strokeStyle = '#2C3E3A';
+    // Delay execution to allow the browser to paint the new DOM
+    setTimeout(() => {
+      const canvas = document.getElementById('scratchpadCanvas');
+      if (!canvas) return;
+      
+      const rect = canvas.parentElement.getBoundingClientRect();
+      
+      // Fallbacks added to prevent 0-width errors
+      canvas.width = rect.width || canvas.parentElement.offsetWidth || 600;
+      canvas.height = 300;
+      
+      ctx = canvas.getContext('2d');
+      ctx.lineWidth = 2.5; // Matched to tutor.js
+      ctx.lineCap = 'round';
+      
+      // Inherit the exact stroke color from the CSS variables like tutor.js
+      ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--border-dark').trim() || '#2C3E3A';
 
-    if (state.drawings[qid] && state.drawings[qid] !== 'init' && state.drawings[qid] !== 'text') {
-      let img = new Image();
-      img.onload = () => ctx.drawImage(img, 0, 0);
-      img.src = state.drawings[qid];
-    }
+      if (state.drawings[qid] && state.drawings[qid] !== 'init' && state.drawings[qid] !== 'text') {
+        let img = new Image();
+        img.onload = () => ctx.drawImage(img, 0, 0);
+        img.src = state.drawings[qid];
+      }
 
-    if (state.isAnswered) return; 
+      if (state.isAnswered) return; 
 
-    const getPos = (e) => {
-      const r = canvas.getBoundingClientRect();
-      const x = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
-      const y = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
-      return { x, y };
-    };
+      const getPos = (e) => {
+        const r = canvas.getBoundingClientRect();
+        const x = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
+        const y = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
+        return { x, y };
+      };
 
-    const start = (e) => { isDrawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); e.preventDefault(); };
-    const draw = (e) => { if (!isDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); e.preventDefault(); };
-    const stop = () => { if(isDrawing) { isDrawing = false; state.drawings[qid] = canvas.toDataURL(); } };
+      const start = (e) => { isDrawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); e.preventDefault(); };
+      const draw = (e) => { if (!isDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); e.preventDefault(); };
+      const stop = () => { if(isDrawing) { isDrawing = false; state.drawings[qid] = canvas.toDataURL(); } };
 
-    canvas.addEventListener('mousedown', start);
-    canvas.addEventListener('mousemove', draw);
-    canvas.addEventListener('mouseup', stop);
-    canvas.addEventListener('mouseout', stop);
-    canvas.addEventListener('touchstart', start, {passive: false});
-    canvas.addEventListener('touchmove', draw, {passive: false});
-    canvas.addEventListener('touchend', stop);
+      canvas.addEventListener('mousedown', start);
+      canvas.addEventListener('mousemove', draw);
+      canvas.addEventListener('mouseup', stop);
+      canvas.addEventListener('mouseout', stop);
+      canvas.addEventListener('touchstart', start, {passive: false});
+      canvas.addEventListener('touchmove', draw, {passive: false});
+      canvas.addEventListener('touchend', stop);
+    }, 50); // 50ms buffer aligns with the tutor logic
   }
 
   window.clearCanvas = () => {
