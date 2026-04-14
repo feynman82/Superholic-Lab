@@ -579,15 +579,11 @@ function buildClozeUI(q) {
     window.checkAnswer();
   };
 
-  // 🌟 FIX: Adds the missing clearCanvas function
-  window.clearCanvas = () => {
+  window.setMode = (mode) => {
     if (state.isAnswered) return;
-    const canvas = document.getElementById('scratchpadCanvas');
-    if (canvas) {
-      const context = canvas.getContext('2d');
-      context.clearRect(0, 0, canvas.width, canvas.height);
-      state.drawings[state.currentIndex] = 'init'; // Reset drawing state
-    }
+    window.saveInputState();
+    state.drawings[state.currentIndex] = mode === 'draw' ? 'init' : 'text';
+    render();
   };
 
   window.saveInputState = () => {
