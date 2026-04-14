@@ -24,6 +24,101 @@
 
 const DiagramLibrary = {
 
+  verticalBarChart(params) {
+      const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      
+      const title = params.title || '';
+      const xAxisLabel = params.xAxisLabel || '';
+      const yAxisLabel = params.yAxisLabel || '';
+      const data = params.data || [];
+      const yMin = params.yAxisMin !== undefined ? params.yAxisMin : 0;
+      
+      // Calculate max if not provided
+      let calcMax = 10;
+      data.forEach(d => { if (typeof d.value === 'number' && d.value > calcMax) calcMax = d.value; });
+      const yMax = params.yAxisMax !== undefined ? params.yAxisMax : calcMax;
+      const yStep = params.yAxisStep || Math.max(1, Math.ceil((yMax - yMin) / 5));
+      
+      const svgW = 600;
+      const svgH = 400;
+      const margin = { top: 50, right: 40, bottom: 60, left: 70 };
+      const chartW = svgW - margin.left - margin.right;
+      const chartH = svgH - margin.top - margin.bottom;
+
+      let html = `<div style="font-family: 'Inter', system-ui, sans-serif; width: 100%; max-width: ${svgW}px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">`;
+      html += `<svg viewBox="0 0 ${svgW} ${svgH}" width="100%" height="100%">`;
+      
+      // Title
+      if (title) {
+        html += `<text x="${svgW/2}" y="25" text-anchor="middle" font-size="18" font-weight="700" fill="#1e293b">${esc(title)}</text>`;
+      }
+
+      // Y-Axis Label
+      if (yAxisLabel) {
+        html += `<text x="-${margin.top + chartH/2}" y="20" transform="rotate(-90)" text-anchor="middle" font-size="14" font-weight="600" fill="#64748b">${esc(yAxisLabel)}</text>`;
+      }
+
+      // X-Axis Label
+      if (xAxisLabel) {
+        html += `<text x="${margin.left + chartW/2}" y="${svgH - 10}" text-anchor="middle" font-size="14" font-weight="600" fill="#64748b">${esc(xAxisLabel)}</text>`;
+      }
+
+      // Grid & Y-Axis values
+      const yRange = Math.max(1, yMax - yMin);
+      for (let yVal = yMin; yVal <= yMax; yVal += yStep) {
+        const yPos = margin.top + chartH - ((yVal - yMin) / yRange) * chartH;
+        // Grid line
+        html += `<line x1="${margin.left}" y1="${yPos}" x2="${svgW - margin.right}" y2="${yPos}" stroke="#e2e8f0" stroke-width="1.5" stroke-dasharray="4 4"/>`;
+        // Label
+        html += `<text x="${margin.left - 15}" y="${yPos + 5}" text-anchor="end" font-size="13" font-weight="500" fill="#475569">${yVal}</text>`;
+      }
+
+      // Base X-Axis line
+      html += `<line x1="${margin.left}" y1="${margin.top + chartH}" x2="${svgW - margin.right}" y2="${margin.top + chartH}" stroke="#64748b" stroke-width="2"/>`;
+
+      // Bars
+      const n = data.length;
+      if (n > 0) {
+        const barSpacing = chartW / n;
+        const barW = Math.min(barSpacing * 0.6, 60); 
+        
+        data.forEach((d, i) => {
+          const xCenter = margin.left + (i + 0.5) * barSpacing;
+          const xPos = xCenter - barW / 2;
+          
+          // X-Axis label
+          html += `<text x="${xCenter}" y="${margin.top + chartH + 24}" text-anchor="middle" font-size="13" font-weight="600" fill="#334155">${esc(d.label)}</text>`;
+          
+          // "COVERED" DATA LOGIC
+          if (d.value === 'covered') {
+            const coverY = margin.top + chartH * 0.2; 
+            const coverH = chartH * 0.8;
+            
+            // Draw a literal "Ink Splatter" blob to hide the bar!
+            html += `<path d="M ${xPos - 10} ${coverY + 20} Q ${xCenter} ${coverY - 20} ${xPos + barW + 10} ${coverY + 10} L ${xPos + barW + 15} ${coverY + coverH} L ${xPos - 15} ${coverY + coverH} Z" fill="#94a3b8" opacity="0.9"/>`;
+            html += `<text x="${xCenter}" y="${coverY + coverH/2}" text-anchor="middle" font-size="32" font-weight="bold" fill="#ffffff">?</text>`;
+            html += `<text x="${xCenter}" y="${coverY + coverH/2 + 25}" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff" letter-spacing="1">INK SPILL</text>`;
+          } 
+          // NORMAL DATA LOGIC
+          else {
+            const val = parseFloat(d.value) || 0;
+            const barH = ((val - yMin) / yRange) * chartH;
+            const yPos = margin.top + chartH - barH;
+            
+            html += `<rect x="${xPos}" y="${yPos}" width="${barW}" height="${barH}" fill="var(--brand-mint, #10B981)" rx="3" ry="3" stroke="#059669" stroke-width="2"/>`;
+          }
+        });
+      }
+
+      html += `</svg>`;
+      if (params.notes) {
+        html += `<div style="margin-top: 12px; text-align: center; font-size: 13px; color: #64748b;"><em>${esc(params.notes)}</em></div>`;
+      }
+      html += `</div>`;
+      
+      return html;
+    },
+    
 // 🚀 AI FUNCTION: Pie Chart Generator
   pieChart(params) {
     // ADD THIS LINE RIGHT HERE:
