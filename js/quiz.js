@@ -976,12 +976,6 @@ function buildClozeUI(q) {
     }, 50); // 50ms buffer aligns with the tutor logic
   }
 
-  window.clearCanvas = () => {
-    if(ctx && !state.isAnswered) {
-      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-      state.drawings[state.currentIndex] = ctx.canvas.toDataURL();
-    }
-  };
 
   // ── DATA FETCHING ──
   async function init() {
