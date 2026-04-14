@@ -1065,7 +1065,8 @@ function buildClozeUI(q) {
       if (dbLevel) query = query.eq('level', dbLevel);
       if (dbTopic) query = query.eq('topic', dbTopic);
 
-      let { data: fetchedQuestions, error } = await query.limit(50);
+      // 🌟 UPGRADE: Fetch up to 1000 questions so we have a massive pool to shuffle from
+      let { data: fetchedQuestions, error } = await query.limit(1000);
 
       if (error) {
         console.error('Database fetch error:', error);
@@ -1079,13 +1080,37 @@ function buildClozeUI(q) {
         return;
       }
 
-      // Filter by type if the user requested a specific type (e.g., mcq only)
+      // Filter by type if the user requested a specific type
       let pool = type && type !== 'mixed' 
         ? fetchedQuestions.filter(q => q.type === type) 
         : fetchedQuestions;
 
-      // Slice the final 10 for the session
-      state.questions = pool.slice(0, 10);
+      // 🌟 UPGRADE: The "Shuffle Bag" No-Repeat Engine
+      const seenKey = `shl_seen_${state.studentId}_${dbLevel}_${dbSubject}_${dbTopic || 'all'}_${type || 'mixed'}`;
+      let seenIds = [];
+      try { seenIds = JSON.parse(localStorage.getItem(seenKey)) || []; } catch(e) {}
+
+      // Filter out questions the student has already seen
+      let unseenPool = pool.filter(q => !seenIds.includes(q.id));
+
+      // If we don't have enough unseen questions to form a full lab (10), RESET the bag!
+      if (unseenPool.length < 10 && pool.length >= 10) {
+        console.log("Vault exhausted! Resetting the shuffle bag.");
+        seenIds = []; // Clear the memory
+        unseenPool = [...pool]; // Reset to the full pool
+      } else if (unseenPool.length === 0) {
+        unseenPool = [...pool]; // Fallback if the total pool itself is tiny
+      }
+
+      // Randomize the unseen pool
+      unseenPool = shuffle(unseenPool);
+
+      // Slice the final 10 for this session
+      state.questions = unseenPool.slice(0, 10);
+
+      // Save the newly picked question IDs into the student's memory
+      state.questions.forEach(q => seenIds.push(q.id));
+      localStorage.setItem(seenKey, JSON.stringify(seenIds));
       
       // UPGRADE: Calculate accurate total possible marks for multi-part questions
       state.totalPossibleScore = state.questions.reduce((sum, q) => {
