@@ -24,6 +24,59 @@
 
 const DiagramLibrary = {
 
+/**
+   * 🚀 AI FUNCTION: Equilateral Triangle(s)
+   * Draws a specified count of equilateral triangles with labelled base and tick marks.
+   */
+  equilateralTriangle(params) {
+    const esc = this._esc ? this._esc.bind(this) : (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const unit = params.unit || 'cm';
+    const sideLength = params.side_length || 10;
+    
+    // Fallback to 1, limit to 5 so we don't break the viewBox if the AI goes crazy
+    const count = Math.max(1, Math.min(params.count || 1, 5)); 
+
+    const vbW = 400, vbH = 260;
+    const gap = 20;
+    
+    // Calculate max available width and height per triangle to maintain aspect ratio
+    const maxW = (vbW - (count + 1) * gap) / count;
+    const maxH = vbH - 60; // Leave 60px for bottom labels
+    
+    // Formula: height = width * (sqrt(3)/2)
+    const drawW = Math.min(maxW, maxH / (Math.sqrt(3)/2));
+    const drawH = drawW * (Math.sqrt(3)/2);
+
+    let shapesHtml = '';
+    
+    for (let i = 0; i < count; i++) {
+      // Calculate center point for each triangle in the sequence
+      const cx = gap + (drawW / 2) + i * (drawW + gap);
+      const cy = vbH / 2;
+
+      const topX = cx, topY = cy - drawH / 2;
+      const brX = cx + drawW / 2, brY = cy + drawH / 2;
+      const blX = cx - drawW / 2, blY = cy + drawH / 2;
+
+      const points = `${topX},${topY} ${brX},${brY} ${blX},${blY}`;
+      shapesHtml += `<polygon points="${points}" fill="rgba(81, 97, 94, 0.05)" stroke="var(--brand-sage)" stroke-width="2"/>`;
+      
+      // Draw tick marks on all 3 sides to visually denote 'equilateral'
+      const tickL = 6;
+      // Left side tick
+      shapesHtml += `<line x1="${(topX + blX)/2 - tickL}" y1="${(topY + blY)/2 + tickL/2}" x2="${(topX + blX)/2 + tickL}" y2="${(topY + blY)/2 - tickL/2}" stroke="var(--brand-rose)" stroke-width="2"/>`;
+      // Right side tick
+      shapesHtml += `<line x1="${(topX + brX)/2 - tickL}" y1="${(topY + brY)/2 - tickL/2}" x2="${(topX + brX)/2 + tickL}" y2="${(topY + brY)/2 + tickL/2}" stroke="var(--brand-rose)" stroke-width="2"/>`;
+      // Bottom base tick
+      shapesHtml += `<line x1="${cx}" y1="${brY - tickL}" x2="${cx}" y2="${brY + tickL}" stroke="var(--brand-rose)" stroke-width="2"/>`;
+
+      // Base dimension label
+      shapesHtml += `<text x="${cx}" y="${brY + 24}" text-anchor="middle" font-size="14" font-weight="bold" fill="var(--text-main)">${esc(sideLength)}${esc(unit)}</text>`;
+    }
+
+    return this._svg(shapesHtml, { alt: `${count} equilateral triangle(s) with side length ${sideLength}${unit}` });
+  },
+
 rulerMeasurement(params) {
       const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
       

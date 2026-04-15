@@ -614,7 +614,9 @@ window.initExamEngine = function () {
   // ── PHASE: EXAM (THE FOCUS ROOM) ─────────────────────────────────────────
   function renderFocusExam() {
     if (state.currentQIdx === 0 && !state.timerHandle) {
-      startTimer(state.paper.duration * 60);
+      // Safely fallback through the object tree to find the correct duration
+      const totalMinutes = state.paper.duration || state.paper.template?.durationMinutes || 0;
+      startTimer(totalMinutes * 60);
     }
 
     const q = state.allQs[state.currentQIdx];
@@ -716,7 +718,7 @@ window.initExamEngine = function () {
         ${!isDrawingMode 
           ? `<textarea id="qInput" class="form-input w-full p-4 mt-2" rows="6" style="height:auto; resize:vertical; border: 2px solid var(--border-dark); border-radius: var(--radius-md);" placeholder="Show your working and final answer...">${esc(savedAns)}</textarea>`
           : `
-            <div class="scratchpad-container" style="border: 2px solid var(--border-dark); border-radius: var(--radius-md);">
+            <div class="scratchpad-container" style="display: block; border: 2px solid var(--border-dark); border-radius: var(--radius-md);">
               <canvas id="scratchpadCanvas" class="scratchpad-canvas"></canvas>
               <div class="scratchpad-tools">
                 <button class="btn btn-sm btn-ghost bg-surface hover-lift" style="border: 1px solid var(--border-light);" onclick="window.clearCanvas()">🗑️ Clear</button>
