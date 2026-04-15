@@ -191,28 +191,26 @@ async function generateExam(subject, level, examType) {
     throw new Error(`No exam template found for ${subject} ${level}.`);
   }
 
-  // WA papers use half the question count of full papers
   const resolvedType = examType || 'PRACTICE';
-  const scaleFactor = (resolvedType === 'WA1' || resolvedType === 'WA2') ? 0.5 : 1.0;
 
   // Build each section by picking questions in parallel
   const sectionPromises = template.sections.map(async function(sec) {
-    // Harmonized Keys: reading questionCount and questionType
-    const scaledCount = Math.max(1, Math.round(sec.questionCount * scaleFactor));
-    const questions = await pickQuestions(subject, level, sec.questionType, scaledCount);
+    // Trust the template's questionCount 100%
+    const exactCount = sec.questionCount;
+    const questions = await pickQuestions(subject, level, sec.questionType, exactCount);
 
-    if (questions.length < scaledCount) {
+    if (questions.length < exactCount) {
       console.warn(
         `[exam-generator] Thin bank: ${subject}:${level}:${sec.questionType} — ` +
-        `needed ${scaledCount}, got ${questions.length}. Run @question-coder to expand.`
+        `needed ${exactCount}, got ${questions.length}. Run @question-coder to expand.`
       );
     }
 
     return {
       ...sec,
-      questionCount: scaledCount, // Update to the new key
+      questionCount: exactCount, 
       questions,
-      sectionMarks: questions.length * sec.marksPerQuestion, // Update to the new key
+      sectionMarks: questions.length * sec.marksPerQuestion, 
     };
   });
 
@@ -225,9 +223,9 @@ async function generateExam(subject, level, examType) {
     template,
     examType:     resolvedType,
     sections,
-    totalMarks:   Math.round(template.totalMarks * scaleFactor),
+    totalMarks:   template.totalMarks,
     actualMarks:  actualTotal,
-    duration:     Math.round(template.duration * scaleFactor),
+    duration:     template.durationMinutes || template.duration, // use durationMinutes from new templates
     generatedAt:  new Date().toISOString(),
   };
 }
