@@ -894,7 +894,7 @@ window.initExamEngine = function () {
   };
 
   // ── SUBMIT & GRADE ───────────────────────────────────────────────────────
-  function submitExam() {
+  async function submitExam() {
     stopTimer();
     app.innerHTML = `
       <div class="card flex flex-col items-center justify-center text-center w-full" style="padding: var(--space-8); max-width: 600px;">
@@ -906,6 +906,16 @@ window.initExamEngine = function () {
 
     let graded = [];
     let queue = [];
+    
+    // 🚀 MASTERCLASS FIX: Secure the API call with the student's session token
+    let sessionToken = null;
+    try {
+      const sb = await window.getSupabase();
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) sessionToken = session.access_token;
+    } catch (e) {
+      console.warn("Could not retrieve session for AI grading", e);
+    }
 
     state.allQs.forEach((q, i) => {
       const sa = state.answers[i] || '';
@@ -956,7 +966,6 @@ window.initExamEngine = function () {
       }
       else if (q.type === 'short_ans') {
         const normSa = normalizeAnswer(sa);
-        
         let safeAccept = [];
         if (typeof q.accept_also === 'string') {
           try { safeAccept = JSON.parse(q.accept_also); } catch(e) { console.warn('Failed to parse accept_also JSON'); }
@@ -970,15 +979,26 @@ window.initExamEngine = function () {
         r.status = correct ? 'correct' : 'wrong';
         graded.push(r);
       }
-      else { // THE FINAL FALLBACK MUST BE LAST
+      else { 
+        // 🚀 THE FINAL FALLBACK (AI GRADING)
         r.status = 'pending';
         graded.push(r);
         const idx = graded.length - 1;
+
+        // 🛡️ GHOST SHIELD: Prevent sending broken questions to the API
+        if (!q.model_answer && !q.worked_solution && !q.correct_answer) {
+           graded[idx].status = 'pending';
+           graded[idx].fb = '⚠️ This question is missing its grading rubric. Please review manually.';
+           return; 
+        }
         
         queue.push(
           fetch('/api/grade-answer', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+              'Content-Type': 'application/json',
+              ...(sessionToken ? { 'Authorization': `Bearer ${sessionToken}` } : {})
+            },
             body: JSON.stringify({
               questionId: q.id, questionType: q.type, questionText: q.question_text,
               subject: state.subject, level: state.level,

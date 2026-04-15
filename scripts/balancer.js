@@ -70,9 +70,11 @@ const VISUAL_RULES = `
 CRITICAL VISUAL PAYLOAD RULES:
 If the seed question contains a "visual_payload", your clones MUST include an updated "visual_payload".
 1. "engine" must ALWAYS be "diagram-library".
-2. AUTONOMOUS NAMING: If the seed uses a standard chart (e.g., "barChart", "numberLine"), keep it. If the seed's diagram is a unique science/math setup, you MUST invent a highly logical, camelCase function name (e.g., "seedGerminationExperiment", "balanceScaleWeighing"). Do NOT output null or empty strings.
+2. NO AUTONOMOUS NAMING: You MUST map visual data to one of these generic schemas:
+   - FOR EXPERIMENTS (Beakers, setups, test tubes): Use function_name: "genericExperiment". Include "commonConditions" (array of strings) and "setups" (array of objects with 'label' and specific variables like 'temperature', 'water').
+   - FOR CYCLES & FLOWCHARTS: Use function_name: "arrowDiagram". Include "nodes" (id, label) and "arrows" (from, to, label). Maximum 4 nodes.
+   - FOR STANDARD CHARTS: Use "barChart", "pieChart", "numberLine", or "rulerMeasurement".
 3. PARAMETER SYNC: You MUST accurately update the values inside "visual_payload.params" to mathematically match the new narrative and numbers in your cloned question text.
-4. GRAPH READABILITY: For any graphs, charts, or number lines, axes markings and data points MUST land on easily divisible, primary-school-friendly intervals (e.g., exact multiples of 2, 5, 10, or 50). Do not use ambiguous floating-point coordinates.
 `;
 const masterTemplate = fs.readFileSync('../data/Master_Question_Template.md', 'utf8');
 
@@ -90,6 +92,8 @@ ${typeSpecificInstructions}
 STRICT NEGATIVE CONSTRAINTS (DO NOT VIOLATE):
 1. ANTI-LAZY DATA: NEVER embed options directly into the "question_text" or "passage" strings (e.g., DO NOT write "Tom (1) _______ (wake/wakes)").
 2. CLOZE/EDITING: Options MUST ONLY exist inside the "blanks" JSON array. The "passage" string MUST ONLY contain the text and bracketed numbers like [1], [2].
+3. "options" arrays must contain plain strings, NOT objects.
+4. TYPE LOCK: You MUST NOT change the "type" of the seed question. If the seed is an "mcq", your clones MUST be "mcq". Do NOT mutate an "mcq" into an "open_ended" question.2. CLOZE/EDITING: Options MUST ONLY exist inside the "blanks" JSON array. The "passage" string MUST ONLY contain the text and bracketed numbers like [1], [2].
 3. "options" arrays must contain plain strings, NOT objects.
 
 Generate EXACTLY ${CLONES_PER_RUN} NEW variations of this seed question.

@@ -127,7 +127,11 @@ def run_actor_extraction(pdf_path, level, subject, valid_topics, relative_path):
         1. TOPIC RESTRICTION: You MUST categorize the 'topic' of every question EXACTLY as one of these strings: [{topic_string}].
            CRITICAL: Do NOT invent new topics. Do NOT use topics from other levels or subjects. If a question spans multiple concepts, pick the single closest match from THIS list ONLY.
         2. Cross-reference the answer key to populate correct_answer.
-        3. PROCEDURAL DIAGRAMS: If a diagram is needed, populate 'visual_payload'. Use 'diagram-library' for math/science charts, and describe the params as a stringified JSON object.
+        3. PROCEDURAL DIAGRAMS: If a diagram is needed, populate 'visual_payload' with "engine": "diagram-library". 
+           - CRITICAL: DO NOT invent custom function names. 
+           - For science experiments with setups/conditions, use `function_name: "genericExperiment"`. Pass params: `{{"commonConditions": ["..."], "setups": [{{"label": "Setup A", "Temp": "30C"}}]}}`.
+           - For cycles/flowcharts, use `function_name: "arrowDiagram"`. Pass params: `{{"nodes": [...], "arrows": [...]}}`.
+           - Describe the params as a stringified JSON object.
         4. The source_pdf is "{relative_path}".
         5. MULTI-PART QUESTIONS: If a question has multiple parts (e.g., 14a and 14b) that share a main preamble text or scenario, you MUST include the full preamble in the 'question_text' of EVERY part. A student must be able to answer the question without needing to see the previous parts.
         6. STRICT MCQ SCHEMA: For multiple-choice questions, "correct_answer" MUST be the exact string value of the correct option from the "options" array. NEVER use index letters or numbers (e.g., Do NOT output "A", "B", "1", or "2"). The keys in the "wrong_explanations" object MUST also be the exact wrong option strings.
