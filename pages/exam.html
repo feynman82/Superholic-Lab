@@ -1044,15 +1044,21 @@ window.initExamEngine = function () {
   async function saveExamResult(graded) {
     if (!state.studentId) return;
     try {
-      const sb = await getSupabase();
+      const sb = await window.getSupabase();
       const earned = graded.reduce((s, r) => s + (r.earned || 0), 0);
       const possible = graded.reduce((s, r) => s + r.max, 0);
       const timeTaken = (state.paper?.duration * 60) - state.timeLeft;
 
       await sb.from('exam_results').insert({
-        student_id: state.studentId, subject: state.subject, level: state.level,
-        exam_type: state.examType || 'PRACTICE', score: earned, total_marks: possible,
-        questions_attempted: graded.length, time_taken: timeTaken >= 0 ? timeTaken : null,
+        student_id: state.studentId, 
+        subject: state.subject, 
+        level: state.level,
+        exam_type: state.examType || 'PRACTICE', 
+        score: earned, 
+        total_marks: possible,
+        questions_attempted: graded.length, 
+        time_taken: timeTaken >= 0 ? timeTaken : null,
+        completed_at: new Date().toISOString() // 🚀 CRITICAL FIX: Required for Progress.js sorting
       });
     } catch (err) { console.error('[exam] saveExamResult failed:', err); }
   }
