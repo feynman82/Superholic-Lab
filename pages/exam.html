@@ -233,7 +233,11 @@ window.initExamEngine = function () {
     clearInterval(state.timerHandle);
     
     const timerContainer = document.getElementById('nav-timer-container');
-    if(timerContainer) timerContainer.innerHTML = `<div id="exam-timer" class="timer-pill"></div>`;
+    if(timerContainer) {
+      // 🚀 MASTERCLASS FIX: Overwrite the 'hidden' class to force flexbox display
+      timerContainer.className = 'flex items-center justify-center mx-4';
+      timerContainer.innerHTML = `<div id="exam-timer" class="timer-pill" style="transition: all 0.3s ease;"></div>`;
+    }
     
     tickTimer();
     state.timerHandle = setInterval(() => {
@@ -249,7 +253,11 @@ window.initExamEngine = function () {
   function stopTimer() {
     clearInterval(state.timerHandle);
     const timerContainer = document.getElementById('nav-timer-container');
-    if(timerContainer) timerContainer.innerHTML = '';
+    if(timerContainer) {
+      timerContainer.innerHTML = '';
+      // Cleanly restore the hidden state so the header returns to normal
+      timerContainer.className = 'hidden';
+    }
   }
 
   function tickTimer() {
