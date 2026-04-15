@@ -157,7 +157,7 @@ async function init() {
       .slice(0, 5);
 
     // ── Fetch exam results & Active Quest ──
-    const { data: examResults } = await db.from('exam_results').select('id, subject, level, exam_type, score, total_marks, time_taken, completed_at').eq('student_id', student.id).order('completed_at', { ascending: false }).limit(20);
+    const { data: examResults } = await db.from('exam_results').select('id, subject, level, exam_type, score, total_marks, questions_attempted, time_taken, completed_at').eq('student_id', student.id).order('completed_at', { ascending: false }).limit(20);
     const activeQuest = await loadActiveQuest(db, student.id);
 
     // ── Fetch Study Notes for Revision Vault ──
@@ -199,7 +199,9 @@ async function init() {
     
     let questionsMastered = 0;
     allActivity.forEach(a => {
-      if (a.total_marks && a.score === a.total_marks && a.score > 0) questionsMastered += (a.total_questions || 1);
+      // For Exams: Use questions_attempted
+      if (a.total_marks && a.score === a.total_marks && a.score > 0) questionsMastered += (a.questions_attempted || 1);
+      // For Quizzes: Use total_questions
       else if (a.total_questions && a.score === a.total_questions && a.score > 0) questionsMastered += a.total_questions;
     });
 
