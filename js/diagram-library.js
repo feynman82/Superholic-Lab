@@ -23,6 +23,71 @@
 'use strict';
 
 const DiagramLibrary = {
+/**
+   * 🚀 SMART FALLBACK: Universal Experiment Renderer
+   * Catches hallucinated AI experiment functions and renders a clean UI card.
+   */
+  genericExperiment(params, functionName = '') {
+    const esc = this._esc ? this._esc.bind(this) : (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    
+    // Normalize the title
+    let title = functionName.replace(/([A-Z])/g, ' $1').trim();
+    title = title.charAt(0).toUpperCase() + title.slice(1);
+    if (!title.toLowerCase().includes('experiment')) title += ' Setup';
+
+    let html = `<div class="card p-4 mb-4" style="background: rgba(5,150,105,0.03); border: 1.5px solid rgba(5,150,105,0.2);">`;
+    html += `<div class="font-bold text-sm mb-3 flex items-center gap-2" style="color: var(--science-colour);">🔬 ${esc(title)}</div>`;
+
+    // 1. Render Common Conditions (Constants)
+    if (params.commonConditions && params.commonConditions.length > 0) {
+      html += `<div class="mb-4">
+                 <span class="text-xs font-bold text-muted uppercase" style="letter-spacing: 0.05em;">Constant Variables:</span>
+                 <ul class="text-sm text-main list-disc pl-5 mt-1" style="line-height: 1.6;">`;
+      params.commonConditions.forEach(c => html += `<li>${esc(c)}</li>`);
+      html += `  </ul>
+               </div>`;
+    }
+
+    // 2. Render Setups (Variables)
+    if (params.setups && params.setups.length > 0) {
+      html += `<div class="text-xs font-bold text-muted uppercase mb-2" style="letter-spacing: 0.05em;">Experimental Setups:</div>
+               <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-3);">`;
+      
+      params.setups.forEach((s, idx) => {
+        let label = s.label || `Setup ${idx + 1}`;
+        let condition = s.condition || s.conditions || s.details || '';
+        
+        // If the AI passed an object instead of a string for the condition
+        if (typeof condition === 'object') {
+          condition = Object.entries(condition).map(([k,v]) => `<strong>${esc(k)}:</strong> ${esc(v)}`).join('<br>');
+        }
+
+        html += `<div class="p-3 bg-surface rounded-md shadow-sm" style="border: 1px solid var(--border-light);">
+                   <div class="font-bold text-sm text-main mb-1" style="border-bottom: 1px solid var(--border-light); padding-bottom: 4px;">${esc(label)}</div>
+                   <div class="text-sm text-muted mt-2" style="line-height: 1.4;">${condition || esc(JSON.stringify(s))}</div>
+                 </div>`;
+      });
+      html += `</div>`;
+    } 
+    // 3. Fallback for weird structures (like the lightPollutionExperiment)
+    else if (params.experimentSetup || params.details) {
+      const details = params.experimentSetup || params.details;
+      html += `<div class="text-sm text-main mt-2 p-3 bg-surface rounded-md border border-light">
+                 <ul class="list-disc pl-4">`;
+      Object.entries(details).forEach(([key, val]) => {
+         let displayVal = Array.isArray(val) ? val.join(', ') : val;
+         html += `<li class="mb-1"><strong class="capitalize">${esc(key.replace(/([A-Z])/g, ' $1'))}:</strong> ${esc(displayVal)}</li>`;
+      });
+      html += `  </ul>
+               </div>`;
+    } else {
+      // Absolute fallback if we don't recognize the keys at all
+      html += `<div class="text-sm text-muted bg-surface p-3 rounded border border-light"><pre style="white-space:pre-wrap; font-family:inherit; margin:0;">${esc(JSON.stringify(params, null, 2))}</pre></div>`;
+    }
+
+    html += `</div>`;
+    return html;
+  },
 
 /**
    * 🚀 AI FUNCTION: Equilateral Triangle(s)
@@ -856,14 +921,24 @@ table(params) {
     // 3. Security & Validation: Check if function exists or is missing
     if (!fnName || typeof fnName !== 'string' || typeof this[fnName] !== 'function' || fnName.startsWith('_') || fnName === 'render') {
       const missingName = fnName || 'UnknownFunction';
-      console.warn(`[DiagramLibrary] To-Do: Missing or invalid function ${missingName}`);
       
-      // Extract the keys the AI generated so the developer knows what params to code
-      const paramKeys = params && Object.keys(params).length > 0 
-        ? Object.keys(params).join(', ') 
-        : 'no params';
+      // 🚀 MASTERCLASS ROUTER: Intercept known AI hallucinations
+      
+      // A. Did it try to draw a flow diagram using nodes/edges? Map it to our arrowDiagram.
+      if (missingName.toLowerCase().includes('flow') && params.nodes && (params.edges || params.arrows)) {
+        console.info(`[DiagramLibrary] Auto-routed ${missingName} to arrowDiagram`);
+        return this.arrowDiagram({ nodes: params.nodes, arrows: params.edges || params.arrows });
+      }
 
-      // Render the Developer Build Loop placeholder
+      // B. Did it try to create a science experiment? Route to generic UI.
+      if (params.setups || params.commonConditions || params.experimentSetup || missingName.toLowerCase().includes('experiment')) {
+        console.info(`[DiagramLibrary] Auto-routed ${missingName} to genericExperiment`);
+        return this.genericExperiment(params, missingName);
+      }
+
+      // C. Ultimate Fallback (Developer Warning)
+      console.warn(`[DiagramLibrary] To-Do: Missing or invalid function ${missingName}`);
+      const paramKeys = params && Object.keys(params).length > 0 ? Object.keys(params).join(', ') : 'no params';
       return this.placeholder({ 
         description: `[Requires DiagramLibrary.${missingName}({ ${paramKeys} })]`, 
         borderStyle: 'dashed' 
