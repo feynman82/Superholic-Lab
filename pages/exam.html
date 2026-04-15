@@ -193,30 +193,11 @@ window.initExamEngine = function () {
     if (!visual_payload) return '';
 
     if (visual_payload.engine === 'diagram-library') {
-      try {
-        const fnName = visual_payload.function_name;
-        const params = visual_payload.params || {};
-
-        // Check if the function actually exists in your library
-        if (typeof DiagramLibrary[fnName] === 'function') {
-          return `<div class="procedural-diagram mb-4 flex justify-center">
-                    ${DiagramLibrary[fnName](params)}
-                  </div>`;
-        } else {
-          // The AI invented a function you haven't built yet! Graceful fallback.
-          console.warn(`[DiagramLibrary] Missing function requested by AI: ${fnName}`, params);
-          return `<div class="procedural-diagram mb-4 flex justify-center">
-                    ${DiagramLibrary.placeholder({ 
-                      description: `Requires DiagramLibrary.${fnName}()\nParams: ${JSON.stringify(params).substring(0,40)}...` 
-                    })}
-                  </div>`;
-        }
-      } catch (err) {
-        console.error("[DiagramLibrary] Rendering crashed:", err);
-        return `<div class="procedural-diagram mb-4 flex justify-center">
-                  ${DiagramLibrary.placeholder({ description: "Diagram Rendering Error" })}
-                </div>`;
-      }
+      // 🚀 MASTERCLASS FIX: Delegate entirely to the DiagramLibrary's internal router
+      // so the smart fallbacks and generic experiment handlers actually trigger.
+      return `<div class="procedural-diagram mb-4 flex justify-center w-full" style="max-width: 100%; overflow-x: auto;">
+                ${DiagramLibrary.render(visual_payload)}
+              </div>`;
     }
     
     // Future handling for mermaid engine
