@@ -1000,47 +1000,40 @@ window.initExamEngine = function () {
       const { idx, q, sa } = aiTasks[i];
       if (statusEl) statusEl.textContent = `Reading open-ended answer ${i + 1} of ${aiTasks.length}...`;
       
-      const gradePrompt = `SYSTEM INSTRUCTION: You are Miss Wena, an expert Singapore MOE teacher marking an exam.
-Evaluate the student's answer against the rubric. Be fair but strict.
-Question: ${q.question_text}
-Total Marks: ${q.marks}
-Rubric / Model Answer: ${q.model_answer || q.worked_solution || q.correct_answer || 'Award full marks if the scientific concept is correct.'}
-Student's Answer: ${typeof sa === 'object' ? JSON.stringify(sa) : String(sa || 'No answer provided')}
-
-You MUST respond in EXACTLY this JSON format (no markdown, no backticks, no extra text):
-{"score": 0, "feedback": "your short explanation of why they got this score, highlighting missing keywords if any"}`;
-
       try {
-        const res = await fetch('/api/chat', {
+        const res = await fetch('/api/grade-answer', {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
             ...(sessionToken ? { 'Authorization': `Bearer ${sessionToken}` } : {})
           },
-          body: JSON.stringify({ messages: [{ role: 'user', content: gradePrompt }] })
+          body: JSON.stringify({
+            questionId: q.id, questionType: q.type, questionText: q.question_text,
+            subject: state.subject, level: state.level,
+            correctAnswer: q.correct_answer || q.model_answer || '',
+            modelAnswer: q.model_answer || '',
+            keywords: q.keywords || [], workedSolution: q.worked_solution || '',
+            parts: q.parts || [],
+            studentAnswer: typeof sa === 'object' ? JSON.stringify(sa) : String(sa || ''),
+            marks: q.marks
+          })
         });
         
         const data = await res.json();
         if (data.error) throw new Error(data.error);
         
-        let cleanJson = data.reply.replace(/```json/gi, '').replace(/```/g, '').trim();
-        const jsonStart = cleanJson.indexOf('{');
-        const jsonEnd = cleanJson.lastIndexOf('}');
-        if (jsonStart !== -1 && jsonEnd !== -1) { cleanJson = cleanJson.substring(jsonStart, jsonEnd + 1); }
-        
-        let result = JSON.parse(cleanJson);
-        graded[idx].earned = parseInt(result.score) || 0;
+        graded[idx].earned = parseInt(data.score) || 0;
         if (graded[idx].earned > q.marks) graded[idx].earned = q.marks; 
         
-        graded[idx].fb = result.feedback || '';
+        graded[idx].fb = data.feedback || '';
         graded[idx].status = graded[idx].earned === q.marks ? 'correct' : graded[idx].earned > 0 ? 'partial' : 'wrong';
       } catch (err) {
         console.error("AI Grading failed for Q" + (idx+1), err);
         graded[idx].status = 'pending';
-        graded[idx].fb = 'AI grading temporarily unavailable. Please compare your answer with the model answer.';
+        graded[idx].fb = 'Miss Wena grading unavailable. Please review the model answer manually.';
       }
 
-      // Pause for 1.5 seconds to ensure Gemini API doesn't throw a 429 Spam error
+      // Pause for 1.5 seconds to ensure the API doesn't throw a 429 Spam error
       await new Promise(resolve => setTimeout(resolve, 1500)); 
     }
 
