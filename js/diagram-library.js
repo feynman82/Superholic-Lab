@@ -24,6 +24,101 @@
 
 const DiagramLibrary = {
 
+rulerMeasurement(params) {
+      const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      
+      const item = params.item || 'Object';
+      const unit = params.unit || 'cm';
+      const minVal = params.min_value !== undefined ? params.min_value : 0;
+      const maxVal = params.max_value !== undefined ? params.max_value : 15;
+      const startRead = params.start_reading !== undefined ? params.start_reading : 0;
+      const endRead = params.end_reading !== undefined ? params.end_reading : 10;
+      
+      const majorInt = params.major_interval || 1;
+      const minorInt = params.minor_interval || 0.1;
+      
+      const svgW = 800;
+      const svgH = 300;
+      const margin = { top: 120, right: 60, bottom: 60, left: 60 };
+      const drawW = svgW - margin.left - margin.right;
+      const range = Math.max(1, maxVal - minVal);
+      
+      // Helper to map ruler values to SVG X coordinates
+      const xMap = (val) => margin.left + ((val - minVal) / range) * drawW;
+
+      let html = `<div style="font-family: 'Inter', system-ui, sans-serif; width: 100%; max-width: ${svgW}px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">`;
+      html += `<svg viewBox="0 0 ${svgW} ${svgH}" width="100%" height="100%">`;
+
+      // 1. Draw the Ruler Body
+      html += `<rect x="${margin.left - 20}" y="${margin.top}" width="${drawW + 40}" height="70" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2" rx="6"/>`;
+      
+      // 2. Draw Ruler Ticks and Numbers
+      const eps = minorInt / 100; // Epsilon to handle JS floating point math
+      for (let v = minVal; v <= maxVal + eps; v += minorInt) {
+        const x = xMap(v);
+        
+        // Determine if it's a major, half, or minor tick
+        const remainder = Math.abs((v - minVal) % majorInt);
+        const isMajor = remainder < eps || remainder > majorInt - eps;
+        const halfRemainder = Math.abs((v - minVal) % (majorInt / 2));
+        const isHalf = !isMajor && (halfRemainder < eps || halfRemainder > (majorInt / 2) - eps);
+
+        let tickH = 8, strokeW = 1.5;
+        if (isMajor) { tickH = 20; strokeW = 2; }
+        else if (isHalf) { tickH = 14; strokeW = 1.5; }
+
+        html += `<line x1="${x}" y1="${margin.top}" x2="${x}" y2="${margin.top + tickH}" stroke="#334155" stroke-width="${strokeW}"/>`;
+        
+        if (isMajor) {
+          const labelVal = Math.round(v * 100) / 100; // Clean decimal output
+          html += `<text x="${x}" y="${margin.top + 45}" text-anchor="middle" font-size="15" font-weight="600" fill="#334155">${labelVal}</text>`;
+        }
+      }
+
+      // Unit Label on the right edge of the ruler
+      html += `<text x="${svgW - margin.right + 5}" y="${margin.top + 45}" text-anchor="end" font-size="14" font-weight="700" fill="#64748b">${esc(unit)}</text>`;
+
+      // 3. Draw the Object (e.g., Pencil or Box)
+      const objStartX = xMap(Math.min(startRead, endRead));
+      const objEndX = xMap(Math.max(startRead, endRead));
+      const objW = objEndX - objStartX;
+      const objY = margin.top - 45;
+      const objH = 30;
+
+      if (item.toLowerCase().includes('pencil')) {
+        // Draw a pencil shape
+        const bodyW = objW * 0.8;
+        html += `<rect x="${objStartX}" y="${objY}" width="${bodyW}" height="${objH}" fill="#FBBF24" stroke="#B45309" stroke-width="2"/>`;
+        // Pencil Tip
+        html += `<polygon points="${objStartX + bodyW},${objY} ${objEndX},${objY + objH/2} ${objStartX + bodyW},${objY + objH}" fill="#FDE68A" stroke="#B45309" stroke-width="2"/>`;
+        // Pencil Lead
+        html += `<polygon points="${objEndX - objW*0.05},${objY + objH/2 - 3} ${objEndX},${objY + objH/2} ${objEndX - objW*0.05},${objY + objH/2 + 3}" fill="#334155"/>`;
+        // Eraser End
+        html += `<rect x="${objStartX - 10}" y="${objY}" width="10" height="${objH}" fill="#FCA5A5" stroke="#B45309" stroke-width="2" rx="2"/>`;
+      } else {
+        // Generic rectangular block for anything else
+        html += `<rect x="${objStartX}" y="${objY}" width="${objW}" height="${objH}" fill="var(--brand-mint, #10B981)" stroke="#059669" stroke-width="2" rx="4"/>`;
+        html += `<text x="${objStartX + objW/2}" y="${objY + 20}" text-anchor="middle" font-size="14" font-weight="bold" fill="#ffffff">${esc(item.toUpperCase())}</text>`;
+      }
+
+      // 4. Draw Dotted Guide Lines
+      html += `<line x1="${objStartX}" y1="${objY - 10}" x2="${objStartX}" y2="${margin.top}" stroke="#EF4444" stroke-width="2" stroke-dasharray="6 4"/>`;
+      html += `<line x1="${objEndX}" y1="${objY - 10}" x2="${objEndX}" y2="${margin.top}" stroke="#EF4444" stroke-width="2" stroke-dasharray="6 4"/>`;
+
+      // 5. Title
+      if (params.title) {
+        html += `<text x="${svgW/2}" y="35" text-anchor="middle" font-size="18" font-weight="700" fill="#1e293b">${esc(params.title)}</text>`;
+      }
+
+      html += `</svg>`;
+      if (params.notes) {
+        html += `<div style="margin-top: 12px; text-align: center; font-size: 13px; color: #64748b;"><em>${esc(params.notes)}</em></div>`;
+      }
+      html += `</div>`;
+      
+      return html;
+    },
+
   verticalBarChart(params) {
       const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
       
@@ -118,7 +213,7 @@ const DiagramLibrary = {
       
       return html;
     },
-    
+
 // 🚀 AI FUNCTION: Pie Chart Generator
   pieChart(params) {
     // ADD THIS LINE RIGHT HERE:

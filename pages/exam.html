@@ -33,28 +33,31 @@
     }
     boot();
   </script>
-  <style>
-    /* ── Cloze & Editing Component Styles ── */
-    .cloze-passage { line-height: 2.6; }
+<style>
+    /* ── Cloze & Editing Component Parity (Synced with quiz.html) ── */
+    .cloze-passage { line-height: 2.2; }
     .cloze-select {
       display: inline-block; appearance: none; -webkit-appearance: none;
-      background-color: var(--bg-surface); border: 2px solid var(--border-dark);
-      border-radius: var(--radius-sm); padding: 4px 24px 4px 10px;
-      font-family: var(--font-body); font-size: 1rem; font-weight: 700;
+      background-color: var(--bg-surface); border: 1px solid var(--border-dark); 
+      border-radius: var(--radius-sm); padding: 2px 24px 2px 8px; 
+      font-family: var(--font-body); font-size: 1rem; font-weight: 600; 
       color: var(--brand-rose); cursor: pointer;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23B76E79' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
       background-repeat: no-repeat; background-position: right 6px center; background-size: 14px;
-      margin: 0 4px; vertical-align: middle; transition: all 0.2s ease;
+      margin: 0 4px; vertical-align: baseline; transition: all 0.2s ease;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }
     .cloze-select:focus { outline: none; border-color: var(--brand-rose); box-shadow: 0 0 0 3px rgba(183, 110, 121, 0.2); }
     
-    .editing-line { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) 0; border-bottom: 1px solid var(--border-light); }
-    .editing-line:last-child { border-bottom: none; }
+    .editing-line { 
+      display: flex; align-items: flex-start; gap: var(--space-4); 
+      padding: var(--space-2) 0; border-bottom: 1px solid transparent; 
+    }
     .editing-input {
-      border: 2px solid var(--border-dark); border-radius: var(--radius-sm);
-      padding: 6px 10px; width: 120px; text-align: center; font-family: var(--font-body);
-      font-size: 1rem; font-weight: 700; color: var(--brand-rose);
-      background: var(--bg-surface); transition: all 0.2s ease;
+      border: 1px solid var(--border-dark); border-radius: var(--radius-sm);
+      padding: 2px 8px; width: 120px; text-align: center; font-family: var(--font-body);
+      font-size: 1rem; font-weight: 600; color: var(--brand-rose);
+      background: var(--bg-surface); transition: all 0.2s ease; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }
     .editing-input:focus { outline: none; border-color: var(--brand-rose); box-shadow: 0 0 0 3px rgba(183, 110, 121, 0.2); }
 
@@ -97,7 +100,7 @@
       #print-container { display: block !important; position: absolute; left: 0; top: 0; width: 100%; padding: 20px; }
     }
     #print-container { display: none; }
-  </style>
+  </style>  
 </head>
 
 <body id="mainBody" class="has-bottom-nav bg-page texture-light-grid">
@@ -177,7 +180,8 @@ window.initExamEngine = function () {
 
   function normalizeAnswer(str) {
     if (!str) return '';
-    let s = String(str).toLowerCase().trim().replace(/[\s,]+/g, '');
+    // Strip all spaces, commas, trailing periods, and invisible zero-width chars
+    let s = String(str).toLowerCase().trim().replace(/[\s,\u200B-\u200D\uFEFF]+/g, '').replace(/\.$/, '');
     s = s.replace(/hours|hour|hrs|hr/g, 'h').replace(/minutes|minute|mins/g, 'min').replace(/seconds|second|secs|sec/g, 's');
     s = s.replace(/kilograms|kilogram|kgs/g, 'kg').replace(/grams|gram|gms|gm/g, 'g').replace(/centimetres|centimeters|centimetre|centimeter|cms/g, 'cm').replace(/metres|meters|metre|meter/g, 'm').replace(/litres|liters|litre|liter/g, 'l').replace(/millilitres|milliliters|millilitre|milliliter|mls/g, 'ml');
     s = s.replace(/dollars|dollar/g, '$').replace(/cents|cent/g, 'c');
@@ -691,7 +695,7 @@ window.initExamEngine = function () {
 
       uiHtml = `<div class="card p-6">${lines}</div>`;
     } else if (q.type === 'short_ans') {
-      uiHtml = `<input type="text" id="qInput" class="form-input mt-4" placeholder="Type your final answer..." value="${esc(savedAns)}" autocomplete="off">`;
+      uiHtml = `<input type="text" id="qInput" class="form-input w-full p-4 mt-4" style="font-size: 1.125rem; font-weight: 700; text-align: center; border: 2px solid var(--border-dark); border-radius: var(--radius-md);" placeholder="Type your final answer..." value="${esc(savedAns)}" autocomplete="off">`;
     } else if (['open_ended', 'word_problem'].includes(q.type)) {
       const isDrawingMode = !!state.drawings[ansKey];
       uiHtml = `
@@ -702,20 +706,28 @@ window.initExamEngine = function () {
           </div>
         </div>
         ${!isDrawingMode 
-          ? `<textarea id="qInput" class="form-input w-full p-4" rows="6" style="height:auto; resize:vertical;" placeholder="Show your working and final answer...">${esc(savedAns)}</textarea>`
+          ? `<textarea id="qInput" class="form-input w-full p-4 mt-2" rows="6" style="height:auto; resize:vertical; border: 2px solid var(--border-dark); border-radius: var(--radius-md);" placeholder="Show your working and final answer...">${esc(savedAns)}</textarea>`
           : `
-            <div class="scratchpad-container">
+            <div class="scratchpad-container" style="border: 2px solid var(--border-dark); border-radius: var(--radius-md);">
               <canvas id="scratchpadCanvas" class="scratchpad-canvas"></canvas>
               <div class="scratchpad-tools">
                 <button class="btn btn-sm btn-ghost bg-surface hover-lift" style="border: 1px solid var(--border-light);" onclick="window.clearCanvas()">🗑️ Clear</button>
               </div>
             </div>
-            <input type="text" id="qInput" class="form-input mt-4" placeholder="Final Answer (Required for AI Grading)" value="${esc(savedAns)}" autocomplete="off">
+            <input type="text" id="qInput" class="form-input w-full p-4 mt-4" style="font-size: 1.125rem; font-weight: 700; text-align: center; border: 2px solid var(--border-dark); border-radius: var(--radius-md);" placeholder="Final Answer (Required for AI Grading)" value="${esc(savedAns)}" autocomplete="off">
           `
         }
       `;
-    } else { // THE FINAL FALLBACK MUST BE LAST
-      uiHtml = `<textarea id="qInput" class="form-input w-full p-4" rows="4" style="height:auto;">${esc(savedAns)}</textarea>`;
+    } else { 
+      uiHtml = `<textarea id="qInput" class="form-input w-full p-4 mt-2" rows="4" style="height:auto; border: 2px solid var(--border-dark); border-radius: var(--radius-md);">${esc(savedAns)}</textarea>`;
+    }
+
+    // 🚀 DYNAMIC DIAGRAM INJECTION
+    let diagramHtml = '';
+    if (q.image_url) {
+      diagramHtml = `<div class="mb-6 flex justify-center w-full"><img src="${esc(q.image_url)}" style="max-height: 220px; max-width: 100%; object-fit: contain; border-radius: var(--radius-md); border: 1px solid var(--border-light);"></div>`;
+    } else if (q.visual_payload) {
+      diagramHtml = renderVisualPayload(q.visual_payload);
     }
 
     app.innerHTML = `
@@ -731,6 +743,8 @@ window.initExamEngine = function () {
             
             ${q.sectionInstr ? `<p class="text-sm text-muted italic mb-4">${esc(q.sectionInstr)}</p>` : ''}
             ${['cloze', 'editing'].includes(q.type) ? '' : `<p class="text-lg text-main font-medium mb-6" style="line-height: 1.6;">${esc(q.question_text)}</p>`}
+            
+            ${diagramHtml}
             
             <div class="question-ui">${uiHtml}</div>
           </div>
@@ -761,8 +775,9 @@ window.initExamEngine = function () {
       </div>
     `;
 
+    // 🚀 MASTERCLASS FIX: setTimeout prevents the 0x0 Canvas rendering bug on mode toggle
     if (document.getElementById('scratchpadCanvas')) {
-      initCanvas(ansKey);
+      setTimeout(() => initCanvas(ansKey), 50);
     }
   }
 
@@ -950,7 +965,15 @@ window.initExamEngine = function () {
       }
       else if (q.type === 'short_ans') {
         const normSa = normalizeAnswer(sa);
-        const accepted = [q.correct_answer, ...(q.accept_also||[])].map(normalizeAnswer);
+        
+        let safeAccept = [];
+        if (typeof q.accept_also === 'string') {
+          try { safeAccept = JSON.parse(q.accept_also); } catch(e) { console.warn('Failed to parse accept_also JSON'); }
+        } else if (Array.isArray(q.accept_also)) {
+          safeAccept = q.accept_also;
+        }
+
+        const accepted = [q.correct_answer, ...safeAccept].map(normalizeAnswer);
         const correct = accepted.includes(normSa);
         r.earned = correct ? q.marks : 0;
         r.status = correct ? 'correct' : 'wrong';
