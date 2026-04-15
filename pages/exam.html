@@ -618,10 +618,13 @@ window.initExamEngine = function () {
 
     if (q.type === 'mcq') {
       const letters = ['A','B','C','D'];
-      uiHtml = q.options.map((opt, i) => {
-        const isSel = savedAns === letters[i];
+      let safeOptions = [];
+      try { safeOptions = typeof q.options === 'string' ? JSON.parse(q.options) : (q.options || []); } catch(e) {}
+      
+      uiHtml = safeOptions.map((opt, i) => {
+        const isSel = savedAns === opt; // Compare EXACT string to prevent false negatives
         return `
-          <div class="mcq-opt hover-lift ${isSel ? 'is-sel' : ''}" onclick="window.selectMcq('${letters[i]}')">
+          <div class="mcq-opt hover-lift ${isSel ? 'is-sel' : ''}" onclick="window.selectMcq(${i})">
             <span class="mcq-badge">${letters[i]}</span>
             <span class="font-medium">${esc(opt)}</span>
           </div>`;
@@ -814,8 +817,12 @@ window.initExamEngine = function () {
     setState({ currentQIdx: idx });
   };
 
-  window.selectMcq = (letter) => {
-    state.answers[state.currentQIdx] = letter;
+  window.selectMcq = (idx) => {
+    const q = state.allQs[state.currentQIdx];
+    let safeOptions = [];
+    try { safeOptions = typeof q.options === 'string' ? JSON.parse(q.options) : (q.options || []); } catch(e) {}
+    
+    state.answers[state.currentQIdx] = safeOptions[idx]; // Save exact string, not the letter
     renderFocusExam();
   };
 
@@ -900,12 +907,12 @@ window.initExamEngine = function () {
       <div class="card flex flex-col items-center justify-center text-center w-full" style="padding: var(--space-8); max-width: 600px;">
         <div class="spinner-sm mb-6"></div>
         <h2 class="font-display text-3xl text-main mb-2">Miss Wena is marking...</h2>
-        <p class="text-muted text-sm">Checking for MOE keywords and methods</p>
+        <p class="text-muted text-sm" id="gradingStatus">Grading standard questions...</p>
       </div>
     `;
 
     let graded = [];
-    let queue = [];
+    let aiTasks = []; 
     
     let sessionToken = null;
     try {
@@ -919,9 +926,14 @@ window.initExamEngine = function () {
       let r = { q, sa, earned: 0, max: q.marks, status: 'wrong', fb: '' };
 
       if (q.type === 'mcq') {
-        r.earned = sa === q.correct_answer ? q.marks : 0;
-        r.status = sa === q.correct_answer ? 'correct' : 'wrong';
-        r.fb = r.status === 'wrong' && sa ? (q.wrong_explanations?.[sa] || '') : '';
+        const normAns = String(sa).trim().toLowerCase();
+        const normCorrect = String(q.correct_answer).trim().toLowerCase();
+        r.earned = normAns === normCorrect ? q.marks : 0;
+        r.status = normAns === normCorrect ? 'correct' : 'wrong';
+        
+        let safeWrongExpl = {};
+        try { safeWrongExpl = typeof q.wrong_explanations === 'string' ? JSON.parse(q.wrong_explanations) : (q.wrong_explanations || {}); } catch(e) {}
+        r.fb = r.status === 'wrong' && sa ? (safeWrongExpl[sa] || '') : '';
         graded.push(r);
       } 
       else if (q.type === 'cloze') {
@@ -969,7 +981,6 @@ window.initExamEngine = function () {
         graded.push(r);
       }
       else { 
-        // 🚀 THE FINAL FALLBACK (AI GRADING VIA /api/chat)
         r.status = 'pending';
         graded.push(r);
         const idx = graded.length - 1;
@@ -977,11 +988,19 @@ window.initExamEngine = function () {
         if (!q.model_answer && !q.worked_solution && !q.correct_answer) {
            graded[idx].status = 'pending';
            graded[idx].fb = '⚠️ This question is missing its grading rubric. Please review manually.';
-           return; 
+        } else {
+           aiTasks.push({ idx, q, sa });
         }
-        
-        // Construct the strict JSON prompt for the AI
-        const gradePrompt = `SYSTEM INSTRUCTION: You are Miss Wena, an expert Singapore MOE teacher marking an exam.
+      }
+    });
+
+    // 🚀 SEQUENTIAL AI GRADING (Immune to API Rate Limits)
+    const statusEl = document.getElementById('gradingStatus');
+    for (let i = 0; i < aiTasks.length; i++) {
+      const { idx, q, sa } = aiTasks[i];
+      if (statusEl) statusEl.textContent = `Reading open-ended answer ${i + 1} of ${aiTasks.length}...`;
+      
+      const gradePrompt = `SYSTEM INSTRUCTION: You are Miss Wena, an expert Singapore MOE teacher marking an exam.
 Evaluate the student's answer against the rubric. Be fair but strict.
 Question: ${q.question_text}
 Total Marks: ${q.marks}
@@ -991,49 +1010,42 @@ Student's Answer: ${typeof sa === 'object' ? JSON.stringify(sa) : String(sa || '
 You MUST respond in EXACTLY this JSON format (no markdown, no backticks, no extra text):
 {"score": 0, "feedback": "your short explanation of why they got this score, highlighting missing keywords if any"}`;
 
-        queue.push(
-          fetch('/api/chat', {
-            method: 'POST',
-            headers: { 
-              'Content-Type': 'application/json',
-              ...(sessionToken ? { 'Authorization': `Bearer ${sessionToken}` } : {})
-            },
-            body: JSON.stringify({
-              messages: [{ role: 'user', content: gradePrompt }]
-            })
-          })
-          .then(res => res.json())
-          .then(data => {
-            if (data.error) throw new Error(data.error);
-            
-            // Clean the AI reply just in case it added markdown backticks
-            let cleanJson = data.reply.replace(/```json/gi, '').replace(/```/g, '').trim();
-            const jsonStart = cleanJson.indexOf('{');
-            const jsonEnd = cleanJson.lastIndexOf('}');
-            if (jsonStart !== -1 && jsonEnd !== -1) {
-                cleanJson = cleanJson.substring(jsonStart, jsonEnd + 1);
-            }
-            
-            let result = JSON.parse(cleanJson);
-            graded[idx].earned = parseInt(result.score) || 0;
-            if (graded[idx].earned > q.marks) graded[idx].earned = q.marks; // Safety cap
-            
-            graded[idx].fb = result.feedback || '';
-            graded[idx].status = graded[idx].earned === q.marks ? 'correct' : graded[idx].earned > 0 ? 'partial' : 'wrong';
-          })
-          .catch((err) => {
-            console.error("AI Grading failed:", err);
-            graded[idx].status = 'pending';
-            graded[idx].fb = 'Miss Wena could not automatically grade this. Please compare your answer with the model answer.';
-          })
-        );
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            ...(sessionToken ? { 'Authorization': `Bearer ${sessionToken}` } : {})
+          },
+          body: JSON.stringify({ messages: [{ role: 'user', content: gradePrompt }] })
+        });
+        
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+        
+        let cleanJson = data.reply.replace(/```json/gi, '').replace(/```/g, '').trim();
+        const jsonStart = cleanJson.indexOf('{');
+        const jsonEnd = cleanJson.lastIndexOf('}');
+        if (jsonStart !== -1 && jsonEnd !== -1) { cleanJson = cleanJson.substring(jsonStart, jsonEnd + 1); }
+        
+        let result = JSON.parse(cleanJson);
+        graded[idx].earned = parseInt(result.score) || 0;
+        if (graded[idx].earned > q.marks) graded[idx].earned = q.marks; 
+        
+        graded[idx].fb = result.feedback || '';
+        graded[idx].status = graded[idx].earned === q.marks ? 'correct' : graded[idx].earned > 0 ? 'partial' : 'wrong';
+      } catch (err) {
+        console.error("AI Grading failed for Q" + (idx+1), err);
+        graded[idx].status = 'pending';
+        graded[idx].fb = 'AI grading temporarily unavailable. Please compare your answer with the model answer.';
       }
-    });
 
-    Promise.all(queue).then(() => {
-      saveExamResult(graded);
-      setState({ phase: 'RESULTS', graded });
-    });
+      // Pause for 1.5 seconds to ensure Gemini API doesn't throw a 429 Spam error
+      await new Promise(resolve => setTimeout(resolve, 1500)); 
+    }
+
+    saveExamResult(graded);
+    setState({ phase: 'RESULTS', graded });
   }
 
   async function saveExamResult(graded) {
@@ -1070,9 +1082,15 @@ You MUST respond in EXACTLY this JSON format (no markdown, no backticks, no extr
       let ansHtml = '';
       
       if (r.q.type === 'mcq') {
+        let safeOptions = [];
+        try { safeOptions = typeof r.q.options === 'string' ? JSON.parse(r.q.options) : (r.q.options || []); } catch(e) {}
         const letters = ['A','B','C','D'];
-        const yourLbl = r.sa ? `${r.sa}: ${esc(r.q.options[letters.indexOf(r.sa)]||'')}` : '(no answer)';
-        const corrLbl = `${r.q.correct_answer}: ${esc(r.q.options[letters.indexOf(r.q.correct_answer)]||'')}`;
+        const yourIdx = safeOptions.indexOf(r.sa);
+        const corrIdx = safeOptions.indexOf(r.q.correct_answer);
+        
+        const yourLbl = r.sa ? `${yourIdx >= 0 ? letters[yourIdx] : '?'}: ${esc(r.sa)}` : '(no answer)';
+        const corrLbl = `${corrIdx >= 0 ? letters[corrIdx] : '?'}: ${esc(r.q.correct_answer)}`;
+        
         ansHtml = `<div class="bg-page p-3 mt-2 text-sm" style="border-radius: var(--radius-sm);"><span class="font-bold">Yours:</span> ${yourLbl}<br><span class="font-bold text-success">Correct:</span> ${corrLbl}</div>`;
       } 
       else if (r.q.type === 'cloze') {
@@ -1095,7 +1113,7 @@ You MUST respond in EXACTLY this JSON format (no markdown, no backticks, no extr
         }).join('<br>');
         ansHtml = `<div class="bg-page p-3 mt-2 text-sm" style="border-radius: var(--radius-sm);">${rows}</div>`;
       } 
-      else { // THE FINAL FALLBACK MUST BE LAST
+      else { 
         const modelAns = r.q.model_answer || r.q.correct_answer || r.q.worked_solution || '';
         ansHtml = `<div class="bg-page p-3 mt-2 text-sm" style="border-radius: var(--radius-sm);"><span class="font-bold">Yours:</span> ${esc(r.sa || '(blank)')}<br><span class="font-bold text-success">Model:</span> ${esc(modelAns)}</div>`;
       }
