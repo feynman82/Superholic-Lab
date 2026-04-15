@@ -55,16 +55,47 @@ const DiagramLibrary = {
       
       params.setups.forEach((s, idx) => {
         let label = s.label || `Setup ${idx + 1}`;
-        let condition = s.condition || s.conditions || s.details || '';
+        let conditionHtml = '';
+
+        let condition = s.condition || s.conditions || s.details;
         
-        // If the AI passed an object instead of a string for the condition
-        if (typeof condition === 'object') {
-          condition = Object.entries(condition).map(([k,v]) => `<strong>${esc(k)}:</strong> ${esc(v)}`).join('<br>');
+        if (condition) {
+          // Case A: Variables are nested inside a 'condition' object or string
+          if (typeof condition === 'object') {
+            conditionHtml = Object.entries(condition).map(([k,v]) => `<strong>${esc(k)}:</strong> ${esc(v)}`).join('<br>');
+          } else {
+            conditionHtml = esc(condition);
+          }
+        } else {
+          // 🚀 MASTERCLASS FIX: Variables are placed directly on the setup object!
+          // Map over all keys except 'label' and format them nicely.
+          const validKeys = Object.keys(s).filter(k => k !== 'label');
+          
+          if (validKeys.length > 0) {
+            conditionHtml = validKeys.map(k => {
+              // Clean up the key: "cotton_wool" -> "Cotton wool"
+              const cleanKey = k.replace(/_/g, ' ');
+              const formattedKey = cleanKey.charAt(0).toUpperCase() + cleanKey.slice(1);
+              
+              // Safely handle arrays if the AI passes them
+              let val = Array.isArray(s[k]) ? s[k].join(', ') : s[k];
+              
+              // Ignore complex nested objects to prevent [object Object] output
+              if (typeof val === 'object' && val !== null) {
+                val = JSON.stringify(val);
+              }
+              
+              return `<strong>${esc(formattedKey)}:</strong> ${esc(val)}`;
+            }).join('<br>');
+          } else {
+            // Absolute fallback (with break-all to prevent overlapping text)
+            conditionHtml = `<span style="word-break: break-all;">${esc(JSON.stringify(s))}</span>`; 
+          }
         }
 
         html += `<div class="p-3 bg-surface rounded-md shadow-sm" style="border: 1px solid var(--border-light);">
                    <div class="font-bold text-sm text-main mb-1" style="border-bottom: 1px solid var(--border-light); padding-bottom: 4px;">${esc(label)}</div>
-                   <div class="text-sm text-muted mt-2" style="line-height: 1.4;">${condition || esc(JSON.stringify(s))}</div>
+                   <div class="text-sm text-muted mt-2" style="line-height: 1.4; word-wrap: break-word;">${conditionHtml}</div>
                  </div>`;
       });
       html += `</div>`;
