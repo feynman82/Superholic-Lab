@@ -94,7 +94,7 @@ STRICT NEGATIVE CONSTRAINTS (DO NOT VIOLATE):
 2. CLOZE/EDITING: Options MUST ONLY exist inside the "blanks" JSON array. The "passage" string MUST ONLY contain the text and bracketed numbers like [1], [2].
 3. "options" arrays must contain plain strings, NOT objects.
 4. TYPE LOCK: You MUST NOT change the "type" of the seed question. If the seed is an "mcq", your clones MUST be "mcq". Do NOT mutate an "mcq" into an "open_ended" question.2. CLOZE/EDITING: Options MUST ONLY exist inside the "blanks" JSON array. The "passage" string MUST ONLY contain the text and bracketed numbers like [1], [2].
-3. "options" arrays must contain plain strings, NOT objects.
+5. "options" arrays must contain plain strings, NOT objects.
 
 Generate EXACTLY ${CLONES_PER_RUN} NEW variations of this seed question.
 
