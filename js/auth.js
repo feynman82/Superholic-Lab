@@ -3,6 +3,12 @@
  * Auth + paywall logic. All functions are async.
  * Uses getSupabase() from supabase-client.js (CDN-loaded, not ES module export).
  *
+ * SIGN-UP FLOW:
+ *   Everyone signs up for a free 7-day trial — no Stripe, no credit card.
+ *   The plan choice on signup is stored as intended_plan only (cosmetic preference).
+ *   subscription_tier is ALWAYS 'trial' at signup.
+ *   Stripe checkout only happens when the parent clicks Subscribe on pricing.html.
+ *
  * TEST: import('/js/auth.js').then(m => m.getProfile().then(console.log))
  */
 
@@ -12,22 +18,21 @@ async function db() {
 }
 
 // ─── Sign Up ─────────────────────────────────────────────────
-// Flow when email confirmation is ON (default for new Supabase projects):
-//   1. supabase.auth.signUp() creates the auth.users row.
-//   2. Supabase sends the confirmation email.
-//   3. data.session is NULL — user is not yet authenticated.
-//   4. We redirect to confirm-email.html (a "check your inbox" page).
-//   5. User clicks the link → Supabase redirects to emailRedirectTo.
-//   6. setup.html loads, guardPage() runs, auto-creates the profile row,
-//      and the user completes onboarding.
+// Everyone starts on a free 7-day trial. No Stripe at signup.
+// planChoice is stored as intended_plan only — NOT as subscription_tier.
 //
-// Flow when email confirmation is OFF (Supabase Auth → Settings → toggle):
-//   data.session is populated immediately → we upsert the profile and
-//   redirect straight to setup.html as before.
+// Flow when email confirmation is ON (default):
+//   session is NULL after signUp → redirect to confirm-email.html
+//   User clicks confirmation link → Supabase redirects to setup.html
+//   guardPage() auto-creates the profile with subscription_tier = 'trial'
+//
+// Flow when email confirmation is OFF:
+//   session is live immediately → upsert profile with subscription_tier = 'trial'
+//   redirect to setup.html
 export async function signUp(email, password, fullName, planChoice) {
   const supabase = await db();
 
-  // Store plan in localStorage so setup.html can read it after OAuth/email redirect
+  // Store intended plan in localStorage so setup.html / guardPage can read it
   if (planChoice) localStorage.setItem('pendingPlan', planChoice);
 
   const appUrl = window.location.origin;
@@ -35,13 +40,10 @@ export async function signUp(email, password, fullName, planChoice) {
     email,
     password,
     options: {
-      // emailRedirectTo: where Supabase sends the user after they click the
-      // confirmation link. Include the plan so setup.html can pick it up.
       emailRedirectTo: `${appUrl}/pages/setup.html?plan=${encodeURIComponent(planChoice || 'all_subjects')}`,
       data: {
-        full_name:         fullName,
-        subscription_tier: 'trial',
-        intended_plan:     planChoice,
+        full_name:     fullName,
+        intended_plan: planChoice,   // preference only — NOT the subscription tier
       },
     },
   });
@@ -49,22 +51,18 @@ export async function signUp(email, password, fullName, planChoice) {
   if (error) throw error;
 
   // ── Case A: email confirmation required ──────────────────────
-  // session is null → user exists but isn't authenticated yet.
-  // Redirect to the holding page; setup.html will run after confirmation.
   if (!data.session) {
     window.location.href = '/pages/confirm-email.html?email=' + encodeURIComponent(email);
     return;
   }
 
   // ── Case B: email confirmation is disabled ───────────────────
-  // session is live → create/update the profile row immediately.
-  const userId     = data.user.id;
-  const maxChildren = planChoice === 'family' ? 3 : 1;
-  const now        = new Date();
-  const trialEnd   = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+  // Create the profile row immediately. ALWAYS set subscription_tier = 'trial'.
+  const userId = data.user.id;
+  const now    = new Date();
+  const trialEnd = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-  // Wait briefly for the DB trigger to fire, then upsert to guarantee the row exists.
-  await new Promise(r => setTimeout(r, 1500));
+  await new Promise(r => setTimeout(r, 1500)); // wait for DB trigger
 
   const { error: profileError } = await supabase
     .from('profiles')
@@ -72,10 +70,11 @@ export async function signUp(email, password, fullName, planChoice) {
       id:                userId,
       email,
       full_name:         fullName,
-      subscription_tier: planChoice,
+      subscription_tier: 'trial',      // always trial — Stripe sets the real tier later
+      intended_plan:     planChoice,   // record what they intend to subscribe to
       trial_started_at:  now.toISOString(),
       trial_ends_at:     trialEnd.toISOString(),
-      max_children:      maxChildren,
+      max_children:      1,            // always 1 until they subscribe to Family plan
       role:              'parent',
       created_at:        now.toISOString(),
       updated_at:        now.toISOString(),
@@ -153,7 +152,7 @@ export async function getProfile() {
     console.error('[getProfile] query error:', error.message);
     return null;
   }
-  return data; // null if no row, object if found
+  return data;
 }
 
 // ─── Is Admin ────────────────────────────────────────────────
@@ -198,6 +197,14 @@ export async function isTrialActive() {
     profile.trial_ends_at &&
     new Date(profile.trial_ends_at) > new Date()
   );
+}
+
+// ─── Is Paid Subscriber ──────────────────────────────────────
+export async function isPaidSubscriber() {
+  const profile = await getProfile();
+  if (!profile) return false;
+  if (profile.role === 'admin') return true;
+  return ['all_subjects', 'family', 'single_subject'].includes(profile.subscription_tier);
 }
 
 // ─── Check Daily Usage ───────────────────────────────────────
@@ -278,7 +285,7 @@ export async function enforcePaywall(studentId) {
 
 // ─── Guard Page ──────────────────────────────────────────────
 // Protects authenticated pages. If user has no profile row (trigger missed,
-// OAuth first login, etc.) creates a minimal trial profile automatically.
+// OAuth first login, etc.) creates a minimal TRIAL profile automatically.
 export async function guardPage(requireAuth = true) {
   const supabase = await db();
   const { data: { session } } = await supabase.auth.getSession();
@@ -294,10 +301,9 @@ export async function guardPage(requireAuth = true) {
 
   // ── Safety net: auto-create profile if the DB trigger missed ──
   if (!profile && session.user) {
-    const plan         = localStorage.getItem('pendingPlan') || 'all_subjects';
-    const maxChildren  = plan === 'family' ? 3 : 1;
-    const now          = new Date();
-    const trialEnd     = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const now      = new Date();
+    const trialEnd = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const intendedPlan = localStorage.getItem('pendingPlan') || 'all_subjects';
 
     const { data: created, error: createErr } = await supabase
       .from('profiles')
@@ -306,8 +312,9 @@ export async function guardPage(requireAuth = true) {
         email:             session.user.email,
         full_name:         session.user.user_metadata?.full_name || '',
         role:              'parent',
-        subscription_tier: plan,
-        max_children:      maxChildren,
+        subscription_tier: 'trial',      // always trial — never inherit plan from localStorage
+        intended_plan:     intendedPlan,
+        max_children:      1,            // always 1 until Family plan subscribed
         trial_started_at:  now.toISOString(),
         trial_ends_at:     trialEnd.toISOString(),
         created_at:        now.toISOString(),
@@ -319,7 +326,7 @@ export async function guardPage(requireAuth = true) {
     if (createErr) {
       console.error('[guardPage] profile auto-create failed:', createErr.message);
     } else {
-      console.info('[guardPage] profile auto-created for', session.user.email);
+      console.info('[guardPage] trial profile auto-created for', session.user.email);
       profile = created;
       localStorage.removeItem('pendingPlan');
     }
