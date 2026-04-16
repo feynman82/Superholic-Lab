@@ -51,7 +51,7 @@ const DiagramLibrary = {
     // 2. Render Setups (Variables)
     if (params.setups && params.setups.length > 0) {
       html += `<div class="text-xs font-bold text-muted uppercase mb-2" style="letter-spacing: 0.05em;">Experimental Setups:</div>
-               <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-3);">`;
+               <div style="display: flex; flex-wrap: wrap; gap: var(--space-3); justify-content: center; align-items: stretch; width: 100%;">`;
       
       params.setups.forEach((s, idx) => {
         let label = s.label || `Setup ${idx + 1}`;
@@ -68,34 +68,25 @@ const DiagramLibrary = {
           }
         } else {
           // 🚀 MASTERCLASS FIX: Variables are placed directly on the setup object!
-          // Map over all keys except 'label' and format them nicely.
           const validKeys = Object.keys(s).filter(k => k !== 'label');
           
           if (validKeys.length > 0) {
             conditionHtml = validKeys.map(k => {
-              // Clean up the key: "cotton_wool" -> "Cotton wool"
               const cleanKey = k.replace(/_/g, ' ');
               const formattedKey = cleanKey.charAt(0).toUpperCase() + cleanKey.slice(1);
-              
-              // Safely handle arrays if the AI passes them
               let val = Array.isArray(s[k]) ? s[k].join(', ') : s[k];
-              
-              // Ignore complex nested objects to prevent [object Object] output
-              if (typeof val === 'object' && val !== null) {
-                val = JSON.stringify(val);
-              }
-              
+              if (typeof val === 'object' && val !== null) val = JSON.stringify(val);
               return `<strong>${esc(formattedKey)}:</strong> ${esc(val)}`;
             }).join('<br>');
           } else {
-            // Absolute fallback (with break-all to prevent overlapping text)
             conditionHtml = `<span style="word-break: break-all;">${esc(JSON.stringify(s))}</span>`; 
           }
         }
 
-        html += `<div class="p-3 bg-surface rounded-md shadow-sm" style="border: 1px solid var(--border-light);">
+        // 🌟 FIX: Applied flex-basis and strict word-wrapping to prevent overlap
+        html += `<div class="p-3 bg-surface rounded-md shadow-sm" style="flex: 1 1 200px; max-width: 100%; min-width: 0; box-sizing: border-box; border: 1px solid var(--border-light);">
                    <div class="font-bold text-sm text-main mb-1" style="border-bottom: 1px solid var(--border-light); padding-bottom: 4px;">${esc(label)}</div>
-                   <div class="text-sm text-muted mt-2" style="line-height: 1.4; word-wrap: break-word;">${conditionHtml}</div>
+                   <div class="text-sm text-muted mt-2" style="line-height: 1.5; word-wrap: break-word; overflow-wrap: break-word; hyphens: auto;">${conditionHtml}</div>
                  </div>`;
       });
       html += `</div>`;
@@ -1239,19 +1230,21 @@ table(params) {
    * @param {object} opts
    * @returns {string} SVG string
    */
-  barChart({
-    title = '',
-    xLabel = '',
-    yLabel = '',
-    bars = [],
-    maxY = null,
-    showValues = false,
-  } = {}) {
+  barChart(opts = {}) {
+    const title = opts.title || '';
+    const xLabel = opts.xLabel || opts.xAxisLabel || '';
+    const yLabel = opts.yLabel || opts.yAxisLabel || '';
+    // 🌟 FIX: Automatically accept 'data', 'items', or 'bars' payloads
+    const bars = opts.bars && opts.bars.length > 0 ? opts.bars : (opts.data || opts.items || []);
+    const maxY = opts.maxY || opts.yAxisMax || null;
+    const showValues = opts.showValues || false;
+
     const esc = this._esc.bind(this);
     if (!bars.length) return this.placeholder({ description: 'Bar chart (no data)' });
 
     const chartX = 55, chartY = 30, chartW = 310, chartH = 160;
     const autoMax = maxY || Math.ceil(Math.max(...bars.map(b => b.value)) * 1.2) || 10;
+// ... (leave the rest of the function untouched)
     const barW = Math.min(40, (chartW / bars.length) - 8);
     const gap = (chartW - barW * bars.length) / (bars.length + 1);
 
