@@ -5,12 +5,15 @@
     { "source": "/api/chat",               "destination": "/api/index" },
     { "source": "/api/checkout",           "destination": "/api/index" },
     { "source": "/api/webhook",            "destination": "/api/index" },
+    { "source": "/api/portal",             "destination": "/api/index" },
     { "source": "/api/generate",           "destination": "/api/index" },
     { "source": "/api/generate-question",  "destination": "/api/index" },
+    { "source": "/api/generate-exam",      "destination": "/api/index" },
     { "source": "/api/grade-answer",       "destination": "/api/index" },
     { "source": "/api/save-exam-result",   "destination": "/api/index" },
     { "source": "/api/generate-quest",     "destination": "/api/index" },
-    { "source": "/api/analyze-weakness",   "destination": "/api/index" }
+    { "source": "/api/analyze-weakness",   "destination": "/api/index" },
+    { "source": "/api/summarize-chat",     "destination": "/api/index" }
   ],
   "headers": [
     {
