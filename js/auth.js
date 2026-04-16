@@ -21,11 +21,7 @@ export async function signUp(email, password, fullName, planChoice) {
     options: {
       data: {
         full_name: fullName,
-        
-        // 1. FORCE the database to record them as a trial user
         subscription_tier: 'trial', 
-        
-        // 2. Save what they clicked so we know what to charge them later
         intended_plan: planChoice   
       }
     }
@@ -41,21 +37,27 @@ export async function signUp(email, password, fullName, planChoice) {
   // Wait for DB trigger to create the profile row (1500ms prevents race condition)
   await new Promise(r => setTimeout(r, 1500));
 
+  // Try UPDATE first; if it affected 0 rows the trigger hasn't fired yet,
+  // so fall back to UPSERT to guarantee a profile row always exists.
+  const profilePayload = {
+    id: userId,
+    email,
+    full_name: fullName,
+    subscription_tier: planChoice,
+    trial_started_at: now.toISOString(),
+    trial_ends_at: trialEnd.toISOString(),
+    max_children: maxChildren,
+    role: 'parent',
+    created_at: now.toISOString(),
+    updated_at: now.toISOString(),
+  };
+
   const { error: profileError } = await supabase
     .from('profiles')
-    .update({
-      email,
-      full_name: fullName,
-      subscription_tier: planChoice,
-      trial_started_at: now.toISOString(),
-      trial_ends_at: trialEnd.toISOString(),
-      max_children: maxChildren,
-    })
-    .eq('id', userId);
+    .upsert(profilePayload, { onConflict: 'id' });
 
   if (profileError) {
-    // Log but don't block — setup.html uses URL param as plan source of truth
-    console.error('Profile update error (non-blocking):', profileError.message);
+    console.error('Profile upsert error (non-blocking):', profileError.message);
   }
 
   window.location.href = '/pages/setup.html?plan=' + encodeURIComponent(planChoice);
@@ -110,6 +112,8 @@ export async function getCurrentUser() {
 }
 
 // ─── Get Profile ─────────────────────────────────────────────
+// Uses maybeSingle() instead of single() to avoid a 406 error when no profile
+// row exists yet (e.g. trigger hasn't fired, or OAuth user first login).
 export async function getProfile() {
   const supabase = await db();
   const { data: { user } } = await supabase.auth.getUser();
@@ -119,10 +123,13 @@ export async function getProfile() {
     .from('profiles')
     .select('*')
     .eq('id', user.id)
-    .single();
+    .maybeSingle();       // returns null (not 406) when row is missing
 
-  if (error) return null;
-  return data;
+  if (error) {
+    console.error('[getProfile] query error:', error.message);
+    return null;
+  }
+  return data;  // null if no row, object if found
 }
 
 // ─── Is Admin ────────────────────────────────────────────────
@@ -190,7 +197,6 @@ export async function incrementDailyUsage(studentId, field) {
   const supabase = await db();
   const today = new Date().toISOString().split('T')[0];
 
-  // Try RPC first; fall back to manual upsert
   const { error } = await supabase.rpc('increment_daily_usage', {
     p_student_id: studentId,
     p_date: today,
@@ -218,7 +224,6 @@ export async function enforcePaywall(studentId) {
 
   if (profile.role === 'admin') return { allowed: true, reason: 'admin' };
 
-  // 1. Gracefully handle null tiers (defaults to trial if missing)
   const tier = profile.subscription_tier || 'trial';
 
   if (['single_subject', 'all_subjects', 'family'].includes(tier)) {
@@ -226,21 +231,17 @@ export async function enforcePaywall(studentId) {
   }
 
   if (tier === 'trial') {
-    // 2. Gracefully handle missing trial_ends_at dates
     let endsAt;
     if (profile.trial_ends_at) {
       endsAt = new Date(profile.trial_ends_at);
     } else {
-      // Fallback: 7 days after the account was created
       const start = profile.created_at ? new Date(profile.created_at) : new Date();
       endsAt = new Date(start.getTime() + 7 * 24 * 60 * 60 * 1000);
     }
 
-    // Check if the calculated end date is in the past
     const trialActive = endsAt > new Date();
     if (!trialActive) return { allowed: false, reason: 'expired' };
 
-    // 3. Check daily question limits safely
     const usage = await checkDailyUsage(studentId);
     const attempts = usage?.questions_attempted || 0;
     if (attempts >= 5) return { allowed: false, reason: 'trial_limit' };
@@ -252,6 +253,9 @@ export async function enforcePaywall(studentId) {
 }
 
 // ─── Guard Page ──────────────────────────────────────────────
+// If user is authenticated but has no profile row (trigger missed, OAuth first
+// login, etc.) we create a minimal trial profile on the spot so the app
+// never gets stuck in a broken state.
 export async function guardPage(requireAuth = true) {
   const supabase = await db();
   const { data: { session } } = await supabase.auth.getSession();
@@ -263,7 +267,37 @@ export async function guardPage(requireAuth = true) {
 
   if (!session) return null;
 
-  const profile = await getProfile();
+  let profile = await getProfile();
+
+  // ── Safety net: auto-create profile if trigger missed ──────
+  if (!profile && session.user) {
+    const now = new Date();
+    const trialEnd = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const { data: created, error: createErr } = await supabase
+      .from('profiles')
+      .upsert({
+        id:                session.user.id,
+        email:             session.user.email,
+        full_name:         session.user.user_metadata?.full_name || '',
+        role:              'parent',
+        subscription_tier: 'trial',
+        max_children:      1,
+        trial_started_at:  now.toISOString(),
+        trial_ends_at:     trialEnd.toISOString(),
+        created_at:        now.toISOString(),
+        updated_at:        now.toISOString(),
+      }, { onConflict: 'id' })
+      .select()
+      .maybeSingle();
+
+    if (createErr) {
+      console.error('[guardPage] profile auto-create failed:', createErr.message);
+    } else {
+      console.info('[guardPage] profile auto-created for', session.user.email);
+      profile = created;
+    }
+  }
+
   window.__CURRENT_USER__ = session.user;
   window.__PROFILE__ = profile;
 
