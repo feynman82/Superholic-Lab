@@ -16,6 +16,7 @@ import {
   handleChat,
   handleCheckout,
   handleWebhook,
+  handlePortal,
   handleGenerate,
   handleGenerateQuestion,
   handleGenerateExam,
@@ -71,6 +72,7 @@ export default async function handler(req, res) {
   switch (route) {
     case 'chat':               return handleChat(req, res);
     case 'checkout':           return handleCheckout(req, res);
+    case 'portal':             return handlePortal(req, res);
     case 'generate':           return handleGenerate(req, res);
     case 'generate-question':  return handleGenerateQuestion(req, res);
     case 'generate-exam':      return handleGenerateExam(req, res);

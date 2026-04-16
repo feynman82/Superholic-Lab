@@ -104,7 +104,12 @@
         Mission Control is ready. Manage your learners, track their progress, and start practicing.
       </p>
       
-      <a href="/pages/setup.html" id="addChildBtn" class="btn btn-secondary hover-lift">＋ Add Learner</a>
+      <div class="flex flex-wrap gap-3 items-center">
+        <a href="/pages/setup.html" id="addChildBtn" class="btn btn-secondary hover-lift">＋ Add Learner</a>
+        <button id="manageBillingBtn" class="btn btn-ghost hover-lift hidden" style="border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.8);">
+          Manage Billing
+        </button>
+      </div>
     </div>
 
     <div class="flex-1 flex justify-center items-end hidden sm:flex relative" style="min-width: 300px; height: 200px;">
@@ -279,6 +284,11 @@
     // Admin Tools
     if (profile.role === 'admin') {
       document.getElementById('adminPanel').classList.remove('hidden');
+    }
+
+    // Show Manage Billing button for users who have been through checkout
+    if (profile.stripe_customer_id) {
+      document.getElementById('manageBillingBtn').classList.remove('hidden');
     }
 
     await loadStudents();
@@ -510,6 +520,35 @@
     btn.disabled = false;
     btn.textContent = 'Yes, Delete';
   };
+
+  // ── BILLING PORTAL ──
+  document.getElementById('manageBillingBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('manageBillingBtn');
+    btn.textContent = 'Opening...';
+    btn.disabled = true;
+
+    try {
+      const sb = await getSupabase();
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) { window.location.href = '/pages/login.html'; return; }
+
+      const res = await fetch('/api/portal', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${session.access_token}` },
+      });
+
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error(data.error || 'Could not open billing portal');
+      }
+    } catch (err) {
+      alert('Could not open billing portal: ' + err.message);
+      btn.textContent = 'Manage Billing';
+      btn.disabled = false;
+    }
+  });
 
   // ── STUDY NOTES / BACKPACK ENGINE ──
   window.openBackpackModal = async (studentId) => {
