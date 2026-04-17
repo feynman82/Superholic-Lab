@@ -508,6 +508,90 @@ rulerMeasurement(params) {
     `;
   },
 
+// 🚀 AI FUNCTION: Isometric Cuboid / Water Tank
+  cuboid(params) {
+    const esc = this._esc ? this._esc.bind(this) : (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const lLabel = params.length_label || '';
+    const bLabel = params.breadth_label || '';
+    const hLabel = params.height_label || '';
+    const waterLevel = params.water_level || null;
+
+    const w = 400, h = 260;
+    const fx = 100, fy = 80, fw = 150, fh = 120;
+    const depthX = 60, depthY = -40; 
+
+    let svg = '';
+    // Back edges (dashed to show depth)
+    svg += `<line x1="${fx + depthX}" y1="${fy + depthY}" x2="${fx + fw + depthX}" y2="${fy + depthY}" stroke="var(--border-dark, #ccc)" stroke-width="1.5" stroke-dasharray="4"/>`;
+    svg += `<line x1="${fx + depthX}" y1="${fy + depthY}" x2="${fx + depthX}" y2="${fy + fh + depthY}" stroke="var(--border-dark, #ccc)" stroke-width="1.5" stroke-dasharray="4"/>`;
+    svg += `<line x1="${fx + depthX}" y1="${fy + fh + depthY}" x2="${fx}" y2="${fy + fh}" stroke="var(--border-dark, #ccc)" stroke-width="1.5" stroke-dasharray="4"/>`;
+
+    // Render Water Level inside the tank
+    if (waterLevel) {
+      const wl = Math.max(0, Math.min(1, parseFloat(waterLevel))); 
+      const wH = fh * wl;
+      const wY = fy + fh - wH;
+      // Top water surface
+      svg += `<polygon points="${fx},${wY} ${fx + depthX},${wY + depthY} ${fx + fw + depthX},${wY + depthY} ${fx + fw},${wY}" fill="rgba(16, 185, 129, 0.2)" stroke="var(--brand-mint, #10B981)" stroke-width="1"/>`;
+      // Front water face
+      svg += `<rect x="${fx}" y="${wY}" width="${fw}" height="${wH}" fill="rgba(16, 185, 129, 0.15)" stroke="none"/>`;
+      // Right water face
+      svg += `<polygon points="${fx + fw},${wY} ${fx + fw + depthX},${wY + depthY} ${fx + fw + depthX},${fy + fh + depthY} ${fx + fw},${fy + fh}" fill="rgba(16, 185, 129, 0.25)" stroke="none"/>`;
+    }
+
+    // Visible Outer Edges
+    svg += `<polygon points="${fx},${fy} ${fx + depthX},${fy + depthY} ${fx + fw + depthX},${fy + depthY} ${fx + fw},${fy}" fill="rgba(240, 244, 243, 0.3)" stroke="var(--brand-sage, #51615E)" stroke-width="2"/>`;
+    svg += `<polygon points="${fx + fw},${fy} ${fx + fw + depthX},${fy + depthY} ${fx + fw + depthX},${fy + fh + depthY} ${fx + fw},${fy + fh}" fill="rgba(240, 244, 243, 0.5)" stroke="var(--brand-sage, #51615E)" stroke-width="2"/>`;
+    svg += `<rect x="${fx}" y="${fy}" width="${fw}" height="${fh}" fill="none" stroke="var(--brand-sage, #51615E)" stroke-width="2"/>`;
+
+    // Dimension Labels
+    if (lLabel) svg += `<text x="${fx + fw / 2}" y="${fy + fh + 20}" font-size="14" font-weight="bold" text-anchor="middle" fill="var(--text-main)">${esc(lLabel)}</text>`;
+    if (hLabel) svg += `<text x="${fx - 10}" y="${fy + fh / 2}" font-size="14" font-weight="bold" text-anchor="end" fill="var(--text-main)">${esc(hLabel)}</text>`;
+    if (bLabel) svg += `<text x="${fx + fw + depthX / 2 + 10}" y="${fy + fh + depthY / 2 + 10}" font-size="14" font-weight="bold" fill="var(--text-main)">${esc(bLabel)}</text>`;
+
+    return `<svg width="100%" viewBox="0 0 ${w} ${h}" style="height: auto; max-width: 500px; display: block; margin: 0 auto;">${svg}</svg>`;
+  },
+
+  // 🚀 AI FUNCTION: Parallelogram / Rhombus Generator
+  parallelogram(params) {
+    const esc = this._esc ? this._esc.bind(this) : (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const w = 400, h = 260;
+    const v = params.vertices || ['A', 'B', 'C', 'D']; 
+    const px = 100, py = 70;
+    const width = 160, height = 110, skew = 60;
+
+    const tlX = px + skew, tlY = py;
+    const trX = px + width + skew, trY = py;
+    const brX = px + width, brY = py + height;
+    const blX = px, blY = py + height;
+
+    let svg = `<polygon points="${tlX},${tlY} ${trX},${trY} ${brX},${brY} ${blX},${blY}" fill="rgba(81, 97, 94, 0.05)" stroke="var(--brand-sage)" stroke-width="3"/>`;
+
+    if (params.show_diagonals) {
+        svg += `<line x1="${tlX}" y1="${tlY}" x2="${brX}" y2="${brY}" stroke="var(--border-dark, #ccc)" stroke-width="1.5" stroke-dasharray="4"/>`;
+        svg += `<line x1="${trX}" y1="${trY}" x2="${blX}" y2="${blY}" stroke="var(--border-dark, #ccc)" stroke-width="1.5" stroke-dasharray="4"/>`;
+    }
+
+    // Vertex Labels
+    svg += `<text x="${tlX - 10}" y="${tlY - 5}" font-size="16" font-weight="bold" text-anchor="end" fill="var(--text-muted)">${esc(v[0])}</text>`;
+    svg += `<text x="${trX + 10}" y="${trY - 5}" font-size="16" font-weight="bold" fill="var(--text-muted)">${esc(v[1])}</text>`;
+    svg += `<text x="${brX + 10}" y="${brY + 20}" font-size="16" font-weight="bold" fill="var(--text-muted)">${esc(v[2])}</text>`;
+    svg += `<text x="${blX - 10}" y="${brY + 20}" font-size="16" font-weight="bold" text-anchor="end" fill="var(--text-muted)">${esc(v[3])}</text>`;
+
+    // Internal Angle Markers
+    if (params.angle_arcs) {
+      params.angle_arcs.forEach(arc => {
+        const pt = arc.vertex === v[0] ? {x: tlX + 25, y: tlY + 22} :
+                   arc.vertex === v[1] ? {x: trX - 25, y: trY + 22} :
+                   arc.vertex === v[2] ? {x: brX - 28, y: brY - 15} :
+                   {x: blX + 30, y: blY - 15};
+        svg += `<text x="${pt.x}" y="${pt.y}" font-size="14" font-weight="bold" text-anchor="middle" fill="var(--brand-rose)">${esc(arc.label)}</text>`;
+      });
+    }
+
+    return `<svg width="100%" viewBox="0 0 ${w} ${h}" style="height: auto; max-width: 500px; display: block; margin: 0 auto;">${svg}</svg>`;
+  },
+
 // 🚀 AI FUNCTION 1: Right Angle Divided
   rightAngleDivided(params) {
     const w = 400, h = 260;
