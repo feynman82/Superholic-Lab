@@ -118,7 +118,7 @@ window.initQuizEngine = function() {
     streak: 0,
     maxStreak: 0,
     score: 0,
-    totalPossibleScore: 0, // NEW: Tracks max possible marks
+    totalPossibleScore: 0,
     answers: {},       
     drawings: {},      
     isAnswered: false, 
@@ -126,7 +126,7 @@ window.initQuizEngine = function() {
     currentType: null,
     quizStartTime: null,
     hintLevel: 0,
-    activeWPPart: 0 // NEW: Tracks Progressive Word Problem UI
+    activeWPPart: 0 // Tracks Progressive Word Problem UI
   };
 
   const app = document.getElementById('app');
@@ -255,11 +255,9 @@ window.initQuizEngine = function() {
   function buildWordProblemUI(q) {
     let partsData = [];
     try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
-
-    if (partsData.length === 0) return `<div class="text-amber">Legacy question format. Please update in database.</div>`;
+    if (partsData.length === 0) return `<div class="text-amber">Legacy format. Please update in database.</div>`;
 
     return partsData.map((p, partIdx) => {
-      // Safely handle both legacy and new DB formats
       const pLabel = p.label || (p.part_id ? `(${p.part_id})` : `Part ${partIdx + 1}`);
       const pQuestion = p.question || p.question_text || '';
       const pMarks = p.marks || 2;
@@ -269,48 +267,62 @@ window.initQuizEngine = function() {
       const isCompleted = partIdx < state.activeWPPart;
       const isActive = partIdx === state.activeWPPart;
 
-      // 1. LOCKED STATE (Faded Out)
       if (isLocked) {
         return `
-          <div class="card bg-surface p-4 mb-4 shadow-sm" style="border: 1px dashed var(--border-light); opacity: 0.5; pointer-events: none;">
-            <div class="flex items-center gap-3">
-              <span class="font-display text-lg text-muted font-bold">🔒 ${esc(pLabel)}</span>
-              <span class="text-sm text-muted">Complete previous part to unlock</span>
-            </div>
+          <div class="mb-4 p-4" style="opacity: 0.4; pointer-events: none; border-left: 3px solid var(--border-light);">
+            <span class="font-display text-xl text-muted font-bold">🔒 ${esc(pLabel)}</span>
           </div>`;
       }
 
       const savedWorking = (state.answers[state.currentIndex] || {})[pLabel] || '';
-      const canvasId = `wp-canvas-${state.currentIndex}-${partIdx}`;
-      const showModel = isCompleted || state.isAnswered;
+      const drawKey = `${state.currentIndex}_${pLabel}`;
+      const isDrawMode = state.drawings[drawKey] && state.drawings[drawKey] !== 'text';
+      const showModel = isCompleted || (isActive && state.isAnswered);
 
-      // 2. ACTIVE & COMPLETED STATES
+      const baseInputStyle = "form-input w-full p-4 text-lg border-2 border-slate-200 focus:border-brand-sage rounded-xl transition-all shadow-sm";
+      const drawModeInputStyle = "form-input mt-3 w-full p-4 text-lg border-2 border-brand-sage/50 focus:border-brand-sage rounded-xl transition-all shadow-sm bg-sage-50/10";
+
+      let interactionUI = '';
+      if (!showModel) {
+        interactionUI = `
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+            <span class="text-xs font-bold text-muted uppercase tracking-wider">💡 Tip: Draw your working!</span>
+            <div class="flex gap-2 w-full sm:w-auto">
+              <button class="btn btn-sm ${!isDrawMode ? 'bg-sage-dark text-white' : 'btn-ghost'}" onclick="window.setMode('text', '${pLabel}')">⌨️ Type</button>
+              <button class="btn btn-sm ${isDrawMode ? 'bg-sage-dark text-white' : 'btn-ghost'}" onclick="window.setMode('draw', '${pLabel}')">✏️ Pen Tool</button>
+            </div>
+          </div>
+          
+          ${!isDrawMode
+            ? `<textarea id="wp-${esc(pLabel)}" class="${baseInputStyle}" rows="3" placeholder="Type your detailed working and answer here..." style="height: auto; resize: vertical;"></textarea>`
+            : `<div class="scratchpad-container mb-4" style="position: relative; display: block;">
+                 <canvas id="scratchpadCanvas" data-drawkey="${drawKey}" class="scratchpad-canvas bg-white border-2 border-slate-200 rounded-xl w-full shadow-sm" style="min-height: 300px; touch-action: none; cursor: crosshair;"></canvas>
+                 <div style="position: absolute; top: 12px; right: 12px;">
+                    <button class="btn btn-sm btn-ghost bg-white hover-lift border border-slate-200 shadow-sm rounded-lg" onclick="window.clearCanvas()">🗑️ Clear</button>
+                 </div>
+               </div>
+               <input type="text" id="wp-${esc(pLabel)}" class="${drawModeInputStyle}" placeholder="Final Answer (Required for marking)" value="${esc(savedWorking)}">`
+          }`;
+      } else {
+        interactionUI = `
+          <div class="p-4 bg-surface border border-light rounded-xl mb-4 text-main whitespace-pre-wrap text-lg">${esc(savedWorking) || '<em>No text answer provided.</em>'}</div>
+          ${(state.drawings[drawKey] && state.drawings[drawKey] !== 'init' && state.drawings[drawKey] !== 'text') ? `<img src="${state.drawings[drawKey]}" class="mb-4 border-2 border-slate-200 rounded-xl shadow-sm bg-white" style="max-height: 200px;">` : ''}
+          
+          <div class="ans-block strong p-5 bg-science-tint card-rule-mint rounded-xl">
+            <div class="text-xs font-bold mb-2 text-success uppercase tracking-wider flex items-center gap-2"><span>✨</span> Miss Wena's Model Answer</div>
+            <div class="text-base text-main font-medium whitespace-pre-wrap leading-relaxed">${window.formatWorkedSolution(pModel)}</div>
+          </div>
+        `;
+      }
+
       return `
-        <div class="card bg-page p-5 mb-5 shadow-sm" style="border: 2px solid ${isActive ? 'var(--brand-sage)' : 'var(--border-light)'}; transition: all 0.3s ease; border-radius: var(--radius-lg);">
-          <div class="flex items-center gap-3 mb-4">
+        <div class="mb-6">
+          <div class="flex items-center gap-3 mb-3">
             <span class="font-display text-xl text-main font-bold" style="color: var(--brand-sage);">${esc(pLabel)}</span>
             <span class="badge badge-info text-xs">${pMarks} mark${pMarks!==1?'s':''}</span>
           </div>
           ${pQuestion ? `<div class="text-lg text-main font-medium mb-4 leading-relaxed">${esc(pQuestion)}</div>` : ''}
-
-          ${!showModel ? `
-            <textarea id="wp-${esc(pLabel)}" class="form-input w-full p-4 border-2 border-slate-200 focus:border-brand-sage rounded-xl transition-all shadow-sm text-lg" rows="3" placeholder="Type your working and final answer here...">${esc(savedWorking)}</textarea>
-
-            <div class="mt-4 w-full flex flex-col items-start gap-2">
-              <button type="button" class="btn btn-sm btn-ghost bg-surface hover-lift" style="border: 1px solid var(--border-light); color: var(--text-main);" onclick="window.togglePenTool('${canvasId}')">
-                ✏️ Pen Tool
-              </button>
-              <div id="${canvasId}-container" class="hidden border-2 border-slate-200 rounded-xl bg-white w-full overflow-hidden shadow-sm mt-2" style="min-height: 250px;">
-                <canvas id="${canvasId}" width="800" height="300" class="w-full h-full bg-white cursor-crosshair" style="touch-action: none;"></canvas>
-              </div>
-            </div>
-          ` : `
-            <div class="p-4 bg-surface border border-light rounded-xl mb-4 text-main whitespace-pre-wrap text-lg">${esc(savedWorking) || '<em>No text answer provided.</em>'}</div>
-            <div class="ans-block strong p-5 bg-science-tint card-rule-mint rounded-xl">
-              <div class="text-xs font-bold mb-2 text-success uppercase tracking-wider flex items-center gap-2"><span>✨</span> Miss Wena's Model Answer</div>
-              <div class="text-base text-main font-medium whitespace-pre-wrap leading-relaxed">${esc(pModel)}</div>
-            </div>
-          `}
+          ${interactionUI}
         </div>`;
     }).join('');
   }
@@ -526,13 +538,14 @@ function buildClozeUI(q) {
         </div>`;
       } else {
         const isPartial = fb.status === 'partial';
-        const ruleClass = isPartial ? 'card-rule-amber' : 'card-rule-rose';
-        const bgClass   = isPartial ? 'bg-amber-tint' : 'bg-rose-tint';
-        const textClass = isPartial ? 'text-amber' : 'text-danger';
+        const isLoad = fb.status === 'loading';
+        const ruleClass = isPartial ? 'card-rule-amber' : (isLoad ? 'card-rule-mint' : 'card-rule-rose');
+        const bgClass   = isPartial ? 'bg-amber-tint' : (isLoad ? 'bg-surface' : 'bg-rose-tint');
+        const textClass = isPartial ? 'text-amber' : (isLoad ? 'text-main' : 'text-danger');
         
         feedbackHtml = `<div class="card ${ruleClass} ${bgClass} p-4 mt-4">
-          <div class="font-bold mb-2 ${textClass}">💡 Miss Wena says:</div>
-          <p class="text-sm text-main leading-relaxed">${esc(fb.text)}</p>
+          <div class="font-bold mb-2 ${textClass}">${isLoad ? '<span class="spinner-sm inline-block mr-2 border-brand-mint"></span>' : '💡'} Miss Wena says:</div>
+          <p class="text-sm text-main leading-relaxed">${fb.text}</p>
           ${fb.correctAnswer ? `<div class="mt-3 text-sm font-bold text-main">Correct Answer: <span class="text-success">${esc(fb.correctAnswer)}</span></div>` : ''}
         </div>`;
       }
@@ -540,13 +553,15 @@ function buildClozeUI(q) {
 
     let actionBtn = '';
     if (!state.isAnswered) {
-      if (q.type === 'word_problem') {
+      if (state.feedback && state.feedback.status === 'loading') {
+        actionBtn = `<button class="btn btn-primary" disabled><span class="spinner-sm inline-block mr-2 border-white"></span> Grading...</button>`;
+      } else if (q.type === 'word_problem') {
         let partsData = [];
         try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
         const isLastPart = state.activeWPPart >= partsData.length - 1;
-        actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">${isLastPart ? 'Reveal Final Answer' : 'Submit Part & Continue'}</button>`;
+        actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">${isLastPart ? 'Submit Final Answer' : 'Submit Part & Continue'}</button>`;
       }
-      else if (q.type === 'open_ended') actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">Reveal Model Answer</button>`;
+      else if (q.type === 'open_ended') actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">Submit for Grading</button>`;
       else if (q.type === 'cloze' || q.type === 'editing') actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">Check Answers</button>`;
       else if (q.type !== 'mcq') actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">Check Answer</button>`;
     } else {
@@ -620,10 +635,11 @@ function buildClozeUI(q) {
     window.checkAnswer();
   };
 
-  window.setMode = (mode) => {
+  window.setMode = (mode, subKey = null) => {
     if (state.isAnswered) return;
     window.saveInputState();
-    state.drawings[state.currentIndex] = mode === 'draw' ? 'init' : 'text';
+    const key = subKey ? `${state.currentIndex}_${subKey}` : state.currentIndex;
+    state.drawings[key] = mode === 'draw' ? 'init' : 'text';
     render();
   };
 
@@ -671,7 +687,7 @@ function buildClozeUI(q) {
   window.navQuiz = (dir) => {
     if (!state.isAnswered && dir > 0) return;
 
-    state.activeWPPart = 0; // Reset progressive UI for the new question
+    state.activeWPPart = 0; // Reset progressive UI
 
     if (dir < 0) {
       window.saveInputState();
@@ -697,7 +713,7 @@ function buildClozeUI(q) {
     render();
   };
 
-  window.checkAnswer = () => {
+  window.checkAnswer = async () => {
     window.saveInputState();
     const q = state.questions[state.currentIndex];
 
@@ -710,21 +726,15 @@ function buildClozeUI(q) {
       const normCorrect = String(q.correct_answer).trim().toLowerCase();
       const isCorrect = normAns === normCorrect;
 
-      // Safely parse the wrong explanations JSON from the database
       let safeWrongExpl = {};
       try { safeWrongExpl = typeof q.wrong_explanations === 'string' ? JSON.parse(q.wrong_explanations) : (q.wrong_explanations || {}); } catch(e) {}
 
-      const fbText = isCorrect
-        ? (q.worked_solution ? `Correct! ${q.worked_solution.split('\n')[0]}` : 'Perfectly executed!')
-        : (safeWrongExpl[ans] || `The correct answer is ${q.correct_answer}.`);
+      const fbText = isCorrect ? (q.worked_solution ? `Correct! ${q.worked_solution.split('\n')[0]}` : 'Perfectly executed!') : (safeWrongExpl[ans] || `The correct answer is ${q.correct_answer}.`);
         
-      if (isCorrect) { state.score++; state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak; }
-      else state.streak = 0;
-      
+      if (isCorrect) { state.score++; state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak; } else state.streak = 0;
       state.isAnswered = true;
       state.feedback = { status: isCorrect ? 'correct' : 'wrong', text: fbText, correctAnswer: isCorrect ? null : q.correct_answer };
-      render();
-      return;
+      render(); return;
     }
 
     // ── CLOZE ──
@@ -742,20 +752,11 @@ function buildClozeUI(q) {
         blankResults[num] = { selected, isCorrect };
       });
       const allCorrect = correctCount === blanks.length;
-      
-      // UPGRADE: Award 1 mark for every correct blank!
       state.score += correctCount;
-      
-      if (allCorrect) { state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak; }
-      else state.streak = 0;
+      if (allCorrect) { state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak; } else state.streak = 0;
       state.isAnswered = true;
-      state.feedback = {
-        status: allCorrect ? 'correct' : 'partial',
-        text: allCorrect ? `All ${blanks.length} blanks correct!` : `${correctCount} of ${blanks.length} blanks correct. Review the highlighted answers below.`,
-        blankResults
-      };
-      render();
-      return;
+      state.feedback = { status: allCorrect ? 'correct' : 'partial', text: allCorrect ? `All ${blanks.length} blanks correct!` : `${correctCount} of ${blanks.length} blanks correct. Review the highlighted answers below.`, blankResults };
+      render(); return;
     }
 
     // ── EDITING ──
@@ -764,80 +765,112 @@ function buildClozeUI(q) {
       let blanks = [];
       try { blanks = typeof q.blanks === 'string' ? JSON.parse(q.blanks) : (q.blanks || []); } catch(e) {}
       let correctCount = 0;
-      
       blanks.forEach(b => {
         const num = b.number || b.id;
         const userAns = (ans[num] || '').trim();
         const correctAns = b.correct_answer || b.correct_word || '';
-        const isCorrect = userAns.toLowerCase() === correctAns.toLowerCase();
-        if (isCorrect) correctCount++;
+        if (userAns.toLowerCase() === correctAns.toLowerCase()) correctCount++;
       });
-      
       const totalBlanks = blanks.length;
-      // Prevent 0/0 from triggering a win
       const allCorrect = totalBlanks > 0 && correctCount === totalBlanks; 
-      
-      // UPGRADE: Award 1 mark for every correct edit!
       state.score += correctCount;
-      
-      if (allCorrect) { state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak; }
-      else state.streak = 0;
-      
+      if (allCorrect) { state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak; } else state.streak = 0;
       state.isAnswered = true;
-      state.feedback = {
-        status: allCorrect ? 'correct' : 'partial',
-        text: allCorrect ? `All ${totalBlanks} corrections right!` : `${correctCount} of ${totalBlanks} corrections correct.`
-      };
-      render();
-      return;
+      state.feedback = { status: allCorrect ? 'correct' : 'partial', text: allCorrect ? `All ${totalBlanks} corrections right!` : `${correctCount} of ${totalBlanks} corrections correct.` };
+      render(); return;
     }
 
-    // ── OPEN-ENDED: reveal model answer ──
-    if (q.type === 'open_ended') {
-      state.isAnswered = true;
-      state.feedback = { status: 'model', text: '', isModel: true };
-      render();
-      return;
-    }
+    // ── WORD PROBLEM / OPEN-ENDED (Live AI Grading) ──
+    if (q.type === 'word_problem' || q.type === 'open_ended') {
+      let ans = '';
+      let currentPart = null;
 
-    // ── WORD PROBLEM: Progressive Disclosure ──
-    if (q.type === 'word_problem') {
-      let partsData = [];
-      try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
-      
-      state.activeWPPart++;
-
-      if (state.activeWPPart >= partsData.length) {
-        // All parts completed
-        state.isAnswered = true;
-        state.score += q.marks || 0; // Temporarily give full marks in practice
-        state.feedback = { status: 'model', text: 'All parts completed! Review the model answers below.', isModel: true };
+      if (q.type === 'word_problem') {
+        let partsData = [];
+        try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
+        currentPart = partsData[state.activeWPPart];
+        const pLabel = currentPart.label || (currentPart.part_id ? `(${currentPart.part_id})` : `Part ${state.activeWPPart + 1}`);
+        ans = (state.answers[state.currentIndex] || {})[pLabel] || '';
       } else {
-        // Next part unlocked
-        state.feedback = { status: 'partial', text: 'Great! Review the model answer and move on to the next part.' };
+        ans = state.answers[state.currentIndex] || '';
       }
+
+      if (!ans.trim()) { alert('Please type your final answer or working so Miss Wena can grade it!'); return; }
+
+      // Set Loading State
+      state.feedback = { status: 'loading', text: 'Analyzing your logic...' };
       render();
+
+      try {
+        const res = await fetch('/api/grade-answer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            questionId: q.id, 
+            questionType: 'open_ended', // We pass WP parts as single open-ended to the grader
+            questionText: currentPart ? (currentPart.question || currentPart.question_text || q.question_text) : q.question_text,
+            subject: new URLSearchParams(window.location.search).get('subject') || 'mathematics',
+            level: new URLSearchParams(window.location.search).get('level') || 'primary-4',
+            studentAnswer: String(ans),
+            workedSolution: currentPart ? (currentPart.worked_solution || currentPart.model_answer || currentPart.correct_answer) : (q.worked_solution || q.model_answer),
+            keywords: q.keywords || [],
+            marks: currentPart ? (currentPart.marks || 2) : (q.marks || 2)
+          })
+        });
+
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+
+        const maxM = currentPart ? (currentPart.marks || 2) : (q.marks || 2);
+        const isCorrect = data.score >= maxM;
+        
+        state.score += data.score;
+        if (isCorrect) { state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak; } else state.streak = 0;
+
+        if (q.type === 'word_problem') {
+          let partsData = [];
+          try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
+          state.activeWPPart++;
+          
+          if (state.activeWPPart >= partsData.length) {
+            state.isAnswered = true;
+            state.feedback = { status: isCorrect ? 'correct' : 'partial', text: data.feedback + '<br><br><strong>All parts completed!</strong> Review the full model answer.', isModel: false };
+          } else {
+            state.feedback = { status: isCorrect ? 'correct' : 'partial', text: data.feedback + '<br><br><strong>Next part unlocked! Keep going.</strong>', isModel: false };
+          }
+        } else {
+          state.isAnswered = true;
+          state.feedback = { status: isCorrect ? 'correct' : 'partial', text: data.feedback, isModel: false };
+        }
+        render();
+      } catch (err) {
+        console.error("AI Grading Error:", err);
+        // Fallback to reveal if API fails
+        if (q.type === 'word_problem') {
+          let partsData = [];
+          try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
+          state.activeWPPart++;
+          if (state.activeWPPart >= partsData.length) state.isAnswered = true;
+        } else { state.isAnswered = true; }
+        state.feedback = { status: 'model', text: 'Miss Wena is resting. Here is the model answer.', isModel: true };
+        render();
+      }
       return;
     }
 
     // ── SHORT ANSWER ──
     const ans = String(state.answers[state.currentIndex] || '').trim();
-    
-    // 🌟 FIX: Prevent the engine from unfairly marking it wrong if they only drew on the canvas
-    if (!ans) {
-      alert('Please type your final answer in the text box below the canvas so it can be automatically marked!');
-      return;
-    }
+    if (!ans) { alert('Please type your final answer in the text box below the canvas so it can be marked!'); return; }
 
     const norm = (s) => String(s || '').toLowerCase().replace(/\s+/g, '');
     let safeAccept = [];
     try { safeAccept = typeof q.accept_also === 'string' ? JSON.parse(q.accept_also) : (q.accept_also || []); } catch(e) {}
     const correct = norm(ans) === norm(q.correct_answer) || safeAccept.some(a => norm(ans) === norm(a));
-    const fbText = correct ? 'Excellent!' : `Expected: ${q.correct_answer}. ${q.worked_solution ? '\n' + q.worked_solution : ''}`;
-    if (correct) { state.score++; state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak; }
-    else state.streak = 0;
+    const fbText = correct ? 'Excellent!' : `Expected: ${q.correct_answer}.`;
+    
+    if (correct) { state.score++; state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak; } else state.streak = 0;
     state.isAnswered = true;
-    state.feedback = { status: correct ? 'correct' : 'wrong', text: fbText };
+    state.feedback = { status: correct ? 'correct' : 'wrong', text: fbText, isModel: true };
     render();
   };
 
@@ -1003,6 +1036,17 @@ function buildClozeUI(q) {
 
   // ── CANVAS LOGIC ──
   let ctx, isDrawing = false;
+  
+  window.clearCanvas = () => {
+    const canvas = document.getElementById('scratchpadCanvas');
+    if (canvas) {
+      const context = canvas.getContext('2d');
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      const drawKey = canvas.getAttribute('data-drawkey') || state.currentIndex;
+      state.drawings[drawKey] = canvas.toDataURL();
+    }
+  };
+
   function initCanvas(qid) {
     // Delay execution to allow the browser to paint the new DOM
     setTimeout(() => {
@@ -1022,10 +1066,12 @@ function buildClozeUI(q) {
       // Inherit the exact stroke color from the CSS variables like tutor.js
       ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--border-dark').trim() || '#2C3E3A';
 
-      if (state.drawings[qid] && state.drawings[qid] !== 'init' && state.drawings[qid] !== 'text') {
+      const drawKey = canvas.getAttribute('data-drawkey') || qid;
+
+      if (state.drawings[drawKey] && state.drawings[drawKey] !== 'init' && state.drawings[drawKey] !== 'text') {
         let img = new Image();
         img.onload = () => ctx.drawImage(img, 0, 0);
-        img.src = state.drawings[qid];
+        img.src = state.drawings[drawKey];
       }
 
       if (state.isAnswered) return; 
@@ -1053,7 +1099,7 @@ function buildClozeUI(q) {
         ctx.stroke(); 
         if (e.cancelable) e.preventDefault(); 
       };
-      const stop = () => { if(isDrawing) { isDrawing = false; state.drawings[qid] = canvas.toDataURL(); } };
+      const stop = () => { if(isDrawing) { isDrawing = false; state.drawings[drawKey] = canvas.toDataURL(); } };
 
       canvas.addEventListener('mousedown', start);
       canvas.addEventListener('mousemove', draw);
