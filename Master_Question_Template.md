@@ -384,6 +384,49 @@ DISPLAY RULES:
   - For each underlined word: text input for correction
   - "Check" button reveals answers
 
+═══════════════════════════════════════════════════════════════
+TYPE 6: COMPREHENSION — (English PSLE)
+═══════════════════════════════════════════════════════════════
+
+**Type Code:** `comprehension`
+**Description:** A mixed-format question type featuring a root passage and a polymorphic `parts` array representing different sub-questions (MCQ, True/False tables, Open-Ended text boxes).
+
+**JSON Structure:**
+```json
+{
+  "type": "comprehension",
+  "marks": 9,
+  "passage": "Siti was walking home from school...", 
+  "parts": [
+    {
+      "part_type": "mcq",
+      "marks": 1,
+      "question": "Why did Siti drop her bag?",
+      "options": ["She was tired.", "To save the kitten.", "It fell.", "Her mom told her to."],
+      "correct_answer": "To save the kitten.",
+      "explanation": "She needed to free her hands."
+    },
+    {
+      "part_type": "true_false",
+      "marks": 2,
+      "instructions": "State whether the statement is True or False, and give a reason.",
+      "items": [
+        {
+          "statement": "Siti ignored the kitten.",
+          "correct_answer": "False",
+          "reason_evidence": "The passage states she dropped her bag without hesitation."
+        }
+      ]
+    },
+    {
+      "part_type": "text_box",
+      "marks": 2,
+      "question": "How did Siti keep the kitten warm?",
+      "model_answer": "Siti kept the kitten warm by wrapping it tightly in her jacket.",
+      "rubric": "Award 2 marks for mentioning wrapping in her jacket. 1 mark for jacket only."
+    }
+  ]
+}
 
 ═══════════════════════════════════════════════════════════════
 VISUAL PAYLOAD ENGINES REGISTRY

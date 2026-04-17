@@ -294,7 +294,7 @@ const EXAM_TEMPLATES = {
       { id: 'sec-a', label: 'Section A', title: 'Grammar MCQ', instructions: 'Choose the correct answer.', questionType: 'mcq', questionCount: 5, marksPerQuestion: 1 },
       { id: 'sec-b', label: 'Section B', title: 'Vocabulary MCQ', instructions: 'Choose the correct answer.', questionType: 'mcq', questionCount: 5, marksPerQuestion: 1 },
       { id: 'sec-c', label: 'Section C', title: 'Grammar Cloze', instructions: 'Fill in the blanks.', questionType: 'cloze', questionCount: 5, marksPerQuestion: 1 },
-      { id: 'sec-d', label: 'Section D', title: 'Comprehension OE', instructions: 'Answer in complete sentences.', questionType: 'open_ended', questionCount: 2, marksPerQuestion: 2 }, 
+      { id: 'sec-d', label: 'Section D', title: 'Comprehension Open-Ended', instructions: 'Read the passage carefully and answer the questions that follow. For open-ended questions, write your answers in complete sentences.', questionType: 'comprehension', questionCount: 1, marksPerQuestion: 10 }
     ]
   },
   'english-p3-wa2': {
@@ -303,7 +303,7 @@ const EXAM_TEMPLATES = {
     sections: [
       { id: 'sec-a', label: 'Section A', title: 'Grammar & Vocab MCQ', instructions: 'Choose the correct answer.', questionType: 'mcq', questionCount: 10, marksPerQuestion: 1 },
       { id: 'sec-b', label: 'Section B', title: 'Editing', instructions: 'Correct the spelling and grammar errors.', questionType: 'editing', questionCount: 5, marksPerQuestion: 1 },
-      { id: 'sec-c', label: 'Section C', title: 'Comprehension OE', instructions: 'Answer in complete sentences.', questionType: 'open_ended', questionCount: 5, marksPerQuestion: 2 },
+      { id: 'sec-c', label: 'Section C', title: 'Comprehension Open-Ended', instructions: 'Read the passage carefully and answer the questions that follow. For open-ended questions, write your answers in complete sentences.', questionType: 'comprehension', questionCount: 1, marksPerQuestion: 10 }
     ]
   },
   'english-p3-wa3': {
@@ -313,7 +313,7 @@ const EXAM_TEMPLATES = {
       { id: 'sec-a', label: 'Section A', title: 'Grammar MCQ', instructions: 'Choose the correct answer.', questionType: 'mcq', questionCount: 10, marksPerQuestion: 1 },
       { id: 'sec-b', label: 'Section B', title: 'Vocabulary MCQ', instructions: 'Choose the correct answer.', questionType: 'mcq', questionCount: 5, marksPerQuestion: 1 },
       { id: 'sec-c', label: 'Section C', title: 'Grammar Cloze', instructions: 'Fill in the blanks.', questionType: 'cloze', questionCount: 5, marksPerQuestion: 1 },
-      { id: 'sec-d', label: 'Section D', title: 'Comprehension OE', instructions: 'Answer in complete sentences.', questionType: 'open_ended', questionCount: 5, marksPerQuestion: 2 },
+      { id: 'sec-d', label: 'Section D', title: 'Comprehension Open-Ended', instructions: 'Read the passage carefully and answer the questions that follow. For open-ended questions, write your answers in complete sentences.', questionType: 'comprehension', questionCount: 1, marksPerQuestion: 10 }
     ]
   },
   'english-p3-eoy': {
@@ -324,7 +324,7 @@ const EXAM_TEMPLATES = {
       { id: 'sec-b', label: 'Section B', title: 'Grammar Cloze', instructions: 'Fill in the blanks.', questionType: 'cloze', questionCount: 8, marksPerQuestion: 1 },
       { id: 'sec-c', label: 'Section C', title: 'Editing', instructions: 'Correct the spelling and grammar errors.', questionType: 'editing', questionCount: 4, marksPerQuestion: 1 },
       { id: 'sec-d', label: 'Section D', title: 'Synthesis', instructions: 'Rewrite the sentences.', questionType: 'short_ans', questionCount: 3, marksPerQuestion: 1 },
-      { id: 'sec-e', label: 'Section E', title: 'Comprehension OE', instructions: 'Answer in complete sentences.', questionType: 'open_ended', questionCount: 8, marksPerQuestion: 2 },
+      { id: 'sec-e', label: 'Section E', title: 'Comprehension Open-Ended', instructions: 'Read the passage carefully and answer the questions that follow. For open-ended questions, write your answers in complete sentences.', questionType: 'comprehension', questionCount: 1, marksPerQuestion: 10 }
     ]
   },
 
@@ -334,7 +334,7 @@ const EXAM_TEMPLATES = {
     sections: [
       { id: 'sec-a', label: 'Section A', title: 'Grammar & Vocab MCQ', instructions: 'Choose the correct answer.', questionType: 'mcq', questionCount: 10, marksPerQuestion: 1 },
       { id: 'sec-b', label: 'Section B', title: 'Grammar Cloze', instructions: 'Fill in the blanks.', questionType: 'cloze', questionCount: 5, marksPerQuestion: 1 },
-      { id: 'sec-c', label: 'Section C', title: 'Comprehension OE', instructions: 'Answer in complete sentences.', questionType: 'open_ended', questionCount: 5, marksPerQuestion: 2 },
+      { id: 'sec-c', label: 'Section C', title: 'Comprehension Open-Ended', instructions: 'Read the passage carefully and answer the questions that follow. For open-ended questions, write your answers in complete sentences.', questionType: 'comprehension', questionCount: 1, marksPerQuestion: 10 }
     ]
   },
   'english-p4-wa2': {
@@ -344,7 +344,7 @@ const EXAM_TEMPLATES = {
       { id: 'sec-a', label: 'Section A', title: 'Grammar & Vocab MCQ', instructions: 'Choose the correct answer.', questionType: 'mcq', questionCount: 12, marksPerQuestion: 1 },
       { id: 'sec-b', label: 'Section B', title: 'Editing', instructions: 'Correct the spelling and grammar errors.', questionType: 'editing', questionCount: 6, marksPerQuestion: 1 },
       { id: 'sec-c', label: 'Section C', title: 'Synthesis', instructions: 'Rewrite the sentences.', questionType: 'short_ans', questionCount: 4, marksPerQuestion: 1 },
-      { id: 'sec-d', label: 'Section D', title: 'Comprehension OE', instructions: 'Answer in complete sentences.', questionType: 'open_ended', questionCount: 6, marksPerQuestion: 2 }, 
+      { id: 'sec-d', label: 'Section D', title: 'Comprehension Open-Ended', instructions: 'Read the passage carefully and answer the questions that follow. For open-ended questions, write your answers in complete sentences.', questionType: 'comprehension', questionCount: 1, marksPerQuestion: 10 }, 
     ]
   },
   'english-p4-wa3': {
@@ -353,7 +353,7 @@ const EXAM_TEMPLATES = {
     sections: [
       { id: 'sec-a', label: 'Section A', title: 'Grammar & Vocab MCQ', instructions: 'Choose the correct answer.', questionType: 'mcq', questionCount: 14, marksPerQuestion: 1 },
       { id: 'sec-b', label: 'Section B', title: 'Grammar Cloze', instructions: 'Fill in the blanks.', questionType: 'cloze', questionCount: 6, marksPerQuestion: 1 },
-      { id: 'sec-c', label: 'Section C', title: 'Comprehension OE', instructions: 'Answer in complete sentences.', questionType: 'open_ended', questionCount: 10, marksPerQuestion: 2 },
+      { id: 'sec-c', label: 'Section C', title: 'Comprehension Open-Ended', instructions: 'Read the passage carefully and answer the questions that follow. For open-ended questions, write your answers in complete sentences.', questionType: 'comprehension', questionCount: 1, marksPerQuestion: 10 },
     ]
   },
   'english-p4-eoy': {
@@ -364,7 +364,7 @@ const EXAM_TEMPLATES = {
       { id: 'sec-b', label: 'Section B', title: 'Cloze Passages', instructions: 'Fill in the blanks.', questionType: 'cloze', questionCount: 12, marksPerQuestion: 1 },
       { id: 'sec-c', label: 'Section C', title: 'Editing', instructions: 'Correct the spelling and grammar errors.', questionType: 'editing', questionCount: 8, marksPerQuestion: 1 },
       { id: 'sec-d', label: 'Section D', title: 'Synthesis', instructions: 'Rewrite the sentences.', questionType: 'short_ans', questionCount: 5, marksPerQuestion: 1 },
-      { id: 'sec-e', label: 'Section E', title: 'Comprehension OE', instructions: 'Answer in complete sentences.', questionType: 'open_ended', questionCount: 10, marksPerQuestion: 2 },
+      { id: 'sec-e', label: 'Section E', title: 'Comprehension Open-Ended', instructions: 'Read the passage carefully and answer the questions that follow. For open-ended questions, write your answers in complete sentences.', questionType: 'comprehension', questionCount: 1, marksPerQuestion: 10 },
     ]
   },
 
@@ -373,8 +373,8 @@ const EXAM_TEMPLATES = {
     durationMinutes: 45, totalMarks: 35,
     sections: [
       { id: 'sec-a', label: 'Section A', title: 'Grammar & Vocab MCQ', instructions: 'Choose the correct answer.', questionType: 'mcq', questionCount: 15, marksPerQuestion: 1 },
-      { id: 'sec-b', label: 'Section B', title: 'Grammar Cloze', instructions: 'Fill in the blanks.', questionType: 'cloze', count: 10, marksEach: 1 },
-      { id: 'sec-c', label: 'Section C', title: 'Comprehension OE', instructions: 'Answer in complete sentences.', questionType: 'open_ended', count: 5, marksEach: 2 },
+      { id: 'sec-b', label: 'Section B', title: 'Grammar Cloze', instructions: 'Fill in the blanks.', questionType: 'cloze', questionCount: 10, marksPerQuestion: 1 },
+      { id: 'sec-c', label: 'Section C', title: 'Comprehension Open-Ended', instructions: 'Read the passage carefully and answer the questions that follow. For open-ended questions, write your answers in complete sentences.', questionType: 'comprehension', questionCount: 1, marksPerQuestion: 20 }
     ]
   },
   'english-p5-wa2': {
@@ -384,7 +384,7 @@ const EXAM_TEMPLATES = {
       { id: 'sec-a', label: 'Section A', title: 'Grammar & Vocab MCQ', instructions: 'Choose the correct answer.', questionType: 'mcq', questionCount: 15, marksPerQuestion: 1 },
       { id: 'sec-b', label: 'Section B', title: 'Editing', instructions: 'Correct the spelling and grammar errors.', questionType: 'editing', questionCount: 8, marksPerQuestion: 1 },
       { id: 'sec-c', label: 'Section C', title: 'Synthesis', instructions: 'Rewrite the sentences.', questionType: 'short_ans', questionCount: 5, marksPerQuestion: 1 },
-      { id: 'sec-d', label: 'Section D', title: 'Comprehension OE', instructions: 'Answer in complete sentences.', questionType: 'open_ended', questionCount: 6, marksPerQuestion: 2 },
+      { id: 'sec-d', label: 'Section D', title: 'Comprehension Open-Ended', instructions: 'Read the passage carefully and answer the questions that follow. For open-ended questions, write your answers in complete sentences.', questionType: 'comprehension', questionCount: 1, marksPerQuestion: 20 }
     ]
   },
   'english-p5-wa3': {
@@ -393,7 +393,7 @@ const EXAM_TEMPLATES = {
     sections: [
       { id: 'sec-a', label: 'Section A', title: 'Grammar & Vocab MCQ', instructions: 'Choose the correct answer.', questionType: 'mcq', questionCount: 15, marksPerQuestion: 1 },
       { id: 'sec-b', label: 'Section B', title: 'Cloze Passages', instructions: 'Fill in the blanks.', questionType: 'cloze', questionCount: 10, marksPerQuestion: 1 },
-      { id: 'sec-c', label: 'Section C', title: 'Comprehension OE', instructions: 'Answer in complete sentences.', questionType: 'open_ended', questionCount: 10, marksPerQuestion: 2 },
+      { id: 'sec-c', label: 'Section C', title: 'Comprehension Open-Ended', instructions: 'Read the passage carefully and answer the questions that follow. For open-ended questions, write your answers in complete sentences.', questionType: 'comprehension', questionCount: 1, marksPerQuestion: 20 },
     ]
   },
   'english-p5-eoy': {
@@ -404,7 +404,7 @@ const EXAM_TEMPLATES = {
       { id: 'sec-b', label: 'Section B', title: 'Cloze Passages', instructions: 'Fill in the blanks.', questionType: 'cloze', questionCount: 25, marksPerQuestion: 1 },
       { id: 'sec-c', label: 'Section C', title: 'Editing', instructions: 'Correct the errors.', questionType: 'editing', questionCount: 12, marksPerQuestion: 1 },
       { id: 'sec-d', label: 'Section D', title: 'Synthesis', instructions: 'Rewrite the sentences.', questionType: 'short_ans', questionCount: 5, marksPerQuestion: 2 },
-      { id: 'sec-e', label: 'Section E', title: 'Comprehension OE', instructions: 'Answer in complete sentences.', questionType: 'open_ended', questionCount: 10, marksPerQuestion: 2 },
+      { id: 'sec-e', label: 'Section E', title: 'Comprehension Open-Ended', instructions: 'Read the passage carefully and answer the questions that follow. For open-ended questions, write your answers in complete sentences.', questionType: 'comprehension', questionCount: 1, marksPerQuestion: 20 },
     ]
   },
 
@@ -415,7 +415,7 @@ const EXAM_TEMPLATES = {
       { id: 'sec-a', label: 'Section A', title: 'Grammar & Vocab MCQ', instructions: 'Choose the correct answer.', questionType: 'mcq', questionCount: 15, marksPerQuestion: 1 },
       { id: 'sec-b', label: 'Section B', title: 'Grammar Cloze', instructions: 'Fill in the blanks.', questionType: 'cloze', questionCount: 10, marksPerQuestion: 1 },
       { id: 'sec-c', label: 'Section C', title: 'Editing', instructions: 'Correct the errors.', questionType: 'editing', questionCount: 5, marksPerQuestion: 1 },
-      { id: 'sec-d', label: 'Section D', title: 'Comprehension OE', instructions: 'Answer in complete sentences.', questionType: 'open_ended', questionCount: 5, marksPerQuestion: 2 },
+      { id: 'sec-d', label: 'Section D', title: 'Comprehension Open-Ended', instructions: 'Read the passage carefully and answer the questions that follow. For open-ended questions, write your answers in complete sentences.', questionType: 'comprehension', questionCount: 1, marksPerQuestion: 20 }
     ]
   },
   'english-p6-wa2': {
@@ -425,7 +425,7 @@ const EXAM_TEMPLATES = {
       { id: 'sec-a', label: 'Section A', title: 'Grammar & Vocab MCQ', instructions: 'Choose the correct answer.', questionType: 'mcq', questionCount: 20, marksPerQuestion: 1 },
       { id: 'sec-b', label: 'Section B', title: 'Editing', instructions: 'Correct the errors.', questionType: 'editing', questionCount: 10, marksPerQuestion: 1 },
       { id: 'sec-c', label: 'Section C', title: 'Synthesis', instructions: 'Rewrite the sentences.', questionType: 'short_ans', questionCount: 5, marksPerQuestion: 2 },
-      { id: 'sec-d', label: 'Section D', title: 'Comprehension OE', instructions: 'Answer in complete sentences.', questionType: 'open_ended', questionCount: 5, marksPerQuestion: 2 },
+      { id: 'sec-d', label: 'Section D', title: 'Comprehension Open-Ended', instructions: 'Read the passage carefully and answer the questions that follow. For open-ended questions, write your answers in complete sentences.', questionType: 'comprehension', questionCount: 1, marksPerQuestion: 20 }
     ]
   },
   'english-p6-prelim': {
@@ -436,7 +436,7 @@ const EXAM_TEMPLATES = {
       { id: 'sec-b', label: 'Section B', title: 'Cloze Passages', instructions: 'Fill in the blanks.', questionType: 'cloze', questionCount: 25, marksPerQuestion: 1 },
       { id: 'sec-c', label: 'Section C', title: 'Editing', instructions: 'Correct the spelling and grammar errors.', questionType: 'editing', questionCount: 12, marksPerQuestion: 1 },
       { id: 'sec-d', label: 'Section D', title: 'Synthesis', instructions: 'Rewrite the sentences.', questionType: 'short_ans', questionCount: 5, marksPerQuestion: 2 },
-      { id: 'sec-e', label: 'Section E', title: 'Comprehension OE', instructions: 'Answer in complete sentences.', questionType: 'open_ended', questionCount: 10, marksPerQuestion: 2 },
+      { id: 'sec-e', label: 'Section E', title: 'Comprehension Open-Ended', instructions: 'Read the passage carefully and answer the questions that follow. For open-ended questions, write your answers in complete sentences.', questionType: 'comprehension', questionCount: 1, marksPerQuestion: 20 }
     ]
   },
 
