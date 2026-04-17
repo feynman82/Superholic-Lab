@@ -915,17 +915,38 @@ window.initExamEngine = function () {
       let partsData = [];
       try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
       partsData.forEach((p, idx) => {
-        // 1. Handle naming: Q1 vs Part 1
         const pLabel = q.type === 'comprehension' 
             ? `Q${idx + 1}` 
             : (p.label || (p.part_id ? `(${p.part_id})` : `Part ${idx + 1}`));
             
-        // 2. Handle HTML IDs: comp-Q1 vs wp-Part1
         const safeIdLabel = String(pLabel).replace(/[^a-zA-Z0-9]/g, '');
         const prefix = q.type === 'comprehension' ? 'comp-' : 'wp-';
-        
-        const el = document.getElementById(`${prefix}${safeIdLabel}`);
-        if (el) ans[pLabel] = el.value;
+
+        if (q.type === 'comprehension' && p.part_type !== 'text_box' && p.part_type !== 'mcq') {
+           ans[pLabel] = ans[pLabel] || {};
+           if (p.part_type === 'referent') {
+             (p.items || []).forEach((_, i) => {
+               const el = document.getElementById(`comp-${safeIdLabel}-ref${i}`);
+               if (el) ans[pLabel]['ref'+i] = el.value;
+             });
+           } else if (p.part_type === 'sequencing') {
+             (p.items || []).forEach((_, i) => {
+               const el = document.getElementById(`comp-${safeIdLabel}-seq${i}`);
+               if (el) ans[pLabel]['seq'+i] = el.value;
+             });
+           } else if (p.part_type === 'true_false') {
+             (p.items || []).forEach((_, i) => {
+               const checked = document.querySelector(`input[name="comp-${safeIdLabel}-tf${i}"]:checked`);
+               if (checked) ans[pLabel]['tf'+i] = checked.value;
+               const el = document.getElementById(`comp-${safeIdLabel}-reason${i}`);
+               if (el) ans[pLabel]['reason'+i] = el.value;
+             });
+           }
+        } else {
+           // Standard text box extraction
+           const el = document.getElementById(`${prefix}${safeIdLabel}`);
+           if (el && p.part_type !== 'mcq') ans[pLabel] = el.value;
+        }
       });
       state.answers[ansKey] = ans;
     } else if (q.type !== 'mcq') {
