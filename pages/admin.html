@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel — Superholic Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="icon" href="../assets/favicon.ico" />
+  <script src="/js/header.js" defer></script>
+  <script src="../js/supabase-client.js"></script>
+  <style>
+    .admin-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    .admin-table th { text-align: left; padding: 10px 16px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); border-bottom: 2px solid var(--border-light); background: var(--bg-elevated); }
+    .admin-table td { padding: 12px 16px; border-bottom: 1px solid var(--border-light); vertical-align: middle; }
+    .admin-table tr:hover td { background: var(--bg-elevated); }
+    .tier-badge { padding: 3px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; }
+    .modal-overlay { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); opacity: 0; visibility: hidden; transition: all 0.2s ease; padding: var(--space-4); }
+    .modal-overlay.is-open { opacity: 1; visibility: visible; }
+    .modal-content { width: 100%; max-width: 440px; background: var(--bg-surface); transform: scale(0.95); transition: transform 0.2s ease; border-radius: var(--radius-lg); }
+    .modal-overlay.is-open .modal-content { transform: scale(1); }
+  </style>
+</head>
+<body class="bg-page texture-light-grid">
+<global-header></global-header>
+
+<section class="py-10" style="padding-top: calc(64px + var(--space-8)); background: linear-gradient(135deg, var(--sage-dark) 0%, #2d3a38 100%);">
+  <div class="container">
+    <div class="badge mb-3" style="background: var(--brand-rose); color: white;">👑 Admin Panel</div>
+    <h1 class="font-display text-4xl text-white mb-2">Mission Control</h1>
+    <p style="color: rgba(255,255,255,0.7);">Manage all parents, students, and subscriptions.</p>
+  </div>
+</section>
+
+<!-- Stats -->
+<section class="py-6 bg-page" style="border-bottom: 1px solid var(--border-light);">
+  <div class="container">
+    <div class="flex flex-wrap gap-4" id="statsRow">
+      <div class="card p-4 flex-1 text-center" style="min-width: 130px;"><div class="spinner-sm mx-auto"></div></div>
+    </div>
+  </div>
+</section>
+
+<main class="container py-8" style="min-height: 60vh;">
+
+  <!-- Tabs -->
+  <div class="flex gap-2 mb-4">
+    <button id="tabParents"  class="btn btn-primary btn-sm"  onclick="switchTab('parents')">Parents</button>
+    <button id="tabStudents" class="btn btn-ghost btn-sm"    onclick="switchTab('students')">Students</button>
+  </div>
+
+  <!-- Search -->
+  <div class="mb-4" style="max-width: 360px;">
+    <input type="search" id="searchInput" class="form-input" placeholder="Search by name or email..." oninput="renderCurrentTab()" />
+  </div>
+
+  <!-- Error -->
+  <div id="errorMsg" class="mb-4 p-3 text-sm font-bold rounded hidden" style="background:rgba(220,38,38,0.1);border:1px solid rgba(220,38,38,0.3);color:var(--brand-error);"></div>
+
+  <!-- Parents Tab -->
+  <div id="parentsTab">
+    <div class="card" style="overflow-x: auto;">
+      <table class="admin-table">
+        <thead><tr><th>Name</th><th>Email</th><th>Plan</th><th>Trial Ends</th><th>Joined</th><th>Actions</th></tr></thead>
+        <tbody id="parentsBody"><tr><td colspan="6" style="text-align:center;padding:40px;"><div class="spinner-sm mx-auto"></div></td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Students Tab -->
+  <div id="studentsTab" class="hidden">
+    <div class="card" style="overflow-x: auto;">
+      <table class="admin-table">
+        <thead><tr><th>Name</th><th>Level</th><th>Parent Email</th><th>Joined</th></tr></thead>
+        <tbody id="studentsBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<!-- Edit Tier Modal -->
+<div id="editTierModal" class="modal-overlay" onclick="if(event.target.id==='editTierModal')closeEditTierModal()">
+  <div class="card p-6 modal-content flex flex-col gap-4">
+    <h3 class="font-display text-2xl text-main m-0">Edit Subscription</h3>
+    <p class="text-sm text-muted m-0" id="editTierEmail"></p>
+    <div class="flex flex-col gap-1">
+      <label class="text-sm font-bold text-muted">Plan</label>
+      <select id="editTierSelect" class="form-select w-full">
+        <option value="trial">Free Trial</option>
+        <option value="all_subjects">All Subjects</option>
+        <option value="family">Family Plan</option>
+        <option value="single_subject">Single Subject</option>
+      </select>
+    </div>
+    <div class="flex gap-3 mt-2">
+      <button class="btn btn-ghost flex-1" onclick="closeEditTierModal()">Cancel</button>
+      <button class="btn btn-primary flex-1 hover-lift" onclick="saveTier()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let allProfiles = [];
+  let allStudents = [];
+  let currentTab  = 'parents';
+  let editTargetId = null;
+  let callerRole   = 'sub-admin';
+  let adminSession = null;
+
+  function showError(msg) {
+    const el = document.getElementById('errorMsg');
+    el.textContent = msg; el.classList.remove('hidden');
+    setTimeout(() => el.classList.add('hidden'), 8000);
+  }
+
+  async function loadAdminData() {
+    const sb = await getSupabase();
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { window.location.href = '/pages/login.html'; return; }
+    adminSession = session;
+
+    // Client-side role check first (UX only — server re-validates everything)
+    const { data: myProfile } = await sb.from('profiles').select('role, full_name').eq('id', session.user.id).single();
+    if (!myProfile || !['admin','sub-admin'].includes(myProfile.role)) {
+      document.body.innerHTML = '<div style="padding:60px;text-align:center;"><h2 class="font-display text-3xl mb-4">🚫 Access Denied</h2><p class="text-muted">Admin or sub-admin role required.</p><a href="/pages/dashboard.html" class="btn btn-primary mt-4">Back to Dashboard</a></div>';
+      return;
+    }
+    callerRole = myProfile.role;
+
+    // Fetch all data from server
+    const res = await fetch('/api/admin', {
+      method: 'GET',
+      headers: { 'Authorization': `Bearer ${session.access_token}` },
+    });
+    if (!res.ok) { showError('Failed to load admin data. Server returned ' + res.status); return; }
+    const data = await res.json();
+    allProfiles = data.profiles || [];
+    allStudents = data.students || [];
+
+    renderStats();
+    renderCurrentTab();
+  }
+
+  function renderStats() {
+    const total    = allProfiles.length;
+    const paid     = allProfiles.filter(p => ['all_subjects','family','single_subject'].includes(p.subscription_tier)).length;
+    const trial    = allProfiles.filter(p => p.subscription_tier === 'trial').length;
+    const students = allStudents.length;
+    const stats = [
+      { label: 'Total Parents', value: total,    icon: '👨‍👩‍👧' },
+      { label: 'Subscribers',   value: paid,     icon: '💳' },
+      { label: 'On Trial',      value: trial,    icon: '🎁' },
+      { label: 'Total Students',value: students, icon: '📚' },
+    ];
+    document.getElementById('statsRow').innerHTML = stats.map(s =>
+      `<div class="card p-4 flex-1 text-center" style="min-width:130px;">
+        <div style="font-size:2rem;">${s.icon}</div>
+        <div class="font-display text-3xl text-main">${s.value}</div>
+        <div class="text-xs text-muted mt-1">${s.label}</div>
+      </div>`
+    ).join('');
+  }
+
+  function switchTab(tab) {
+    currentTab = tab;
+    document.getElementById('parentsTab').classList.toggle('hidden', tab !== 'parents');
+    document.getElementById('studentsTab').classList.toggle('hidden', tab !== 'students');
+    document.getElementById('tabParents').className  = tab === 'parents'  ? 'btn btn-primary btn-sm' : 'btn btn-ghost btn-sm';
+    document.getElementById('tabStudents').className = tab === 'students' ? 'btn btn-primary btn-sm' : 'btn btn-ghost btn-sm';
+    renderCurrentTab();
+  }
+
+  function renderCurrentTab() {
+    if (currentTab === 'parents') renderParents();
+    else renderStudents();
+  }
+
+  function tierBadge(tier) {
+    const colours = { trial: '#888', all_subjects: 'var(--brand-rose)', family: 'var(--brand-sage)', single_subject: '#a67c52' };
+    const labels  = { trial: 'Trial', all_subjects: 'All Subjects', family: 'Family', single_subject: 'Single Sub' };
+    const c = colours[tier] || '#888';
+    return `<span class="tier-badge" style="background:${c}22;color:${c};border:1px solid ${c}55;">${labels[tier]||tier}</span>`;
+  }
+
+  function fmtDate(iso) {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleDateString('en-SG', { day:'numeric', month:'short', year:'2-digit' });
+  }
+
+  function renderParents() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const filtered = allProfiles.filter(p =>
+      (p.full_name||'').toLowerCase().includes(q) ||
+      (p.email||'').toLowerCase().includes(q)
+    );
+    const tbody = document.getElementById('parentsBody');
+    if (filtered.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted);">No parents found.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = filtered.map(p => {
+      const safeEmail = (p.email||'').replace(/'/g,"&apos;");
+      const safeName  = (p.full_name||'').replace(/'/g,"&apos;");
+      const deleteBtn = callerRole === 'admin'
+        ? `<button class="btn btn-sm hover-lift" style="background:rgba(220,38,38,0.1);color:var(--brand-error);border:none;" onclick="deleteUser('${p.id}','${safeEmail}')">🗑️</button>`
+        : '';
+      return `<tr>
+        <td><span class="font-semibold">${p.full_name||'<span class="text-muted">&mdash;</span>'}</span></td>
+        <td style="color:var(--text-muted);">${p.email||'&mdash;'}</td>
+        <td>${tierBadge(p.subscription_tier)}</td>
+        <td style="color:var(--text-muted);font-size:0.8rem;">${fmtDate(p.trial_ends_at)}</td>
+        <td style="color:var(--text-muted);font-size:0.8rem;">${fmtDate(p.created_at)}</td>
+        <td><div style="display:flex;gap:6px;">
+          <button class="btn btn-sm btn-secondary hover-lift" onclick="openEditTier('${p.id}','${safeEmail}','${p.subscription_tier||'trial}'")">&#x270F;&#xFE0F; Plan</button>
+          ${deleteBtn}
+        </div></td>
+      </tr>`;
+    }).join('');
+  }
+
+  function renderStudents() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const emailMap = Object.fromEntries(allProfiles.map(p => [p.id, p.email]));
+    const filtered = allStudents.filter(s =>
+      (s.name||'').toLowerCase().includes(q) ||
+      (emailMap[s.parent_id]||'').toLowerCase().includes(q)
+    );
+    const tbody = document.getElementById('studentsBody');
+    if (filtered.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--text-muted);">No students found.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = filtered.map(s => `<tr>
+      <td class="font-semibold">${s.name||'&mdash;'}</td>
+      <td><span class="badge badge-info text-xs">${s.level||'&mdash;'}</span></td>
+      <td style="color:var(--text-muted);">${emailMap[s.parent_id]||'&mdash;'}</td>
+      <td style="color:var(--text-muted);font-size:0.8rem;">${fmtDate(s.created_at)}</td>
+    </tr>`).join('');
+  }
+
+  function openEditTier(userId, email, currentTier) {
+    editTargetId = userId;
+    document.getElementById('editTierEmail').textContent = email;
+    document.getElementById('editTierSelect').value = currentTier || 'trial';
+    document.getElementById('editTierModal').classList.add('is-open');
+  }
+
+  function closeEditTierModal() {
+    document.getElementById('editTierModal').classList.remove('is-open');
+    editTargetId = null;
+  }
+
+  async function saveTier() {
+    if (!editTargetId || !adminSession) return;
+    const tier = document.getElementById('editTierSelect').value;
+    const res  = await fetch('/api/admin', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${adminSession.access_token}`, 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ action: 'update_tier', userId: editTargetId, tier }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      const p = allProfiles.find(p => p.id === editTargetId);
+      if (p) p.subscription_tier = tier;
+      closeEditTierModal();
+      renderStats();
+      renderCurrentTab();
+    } else {
+      showError('Failed to update plan: ' + (data.error || 'Unknown error'));
+    }
+  }
+
+  async function deleteUser(userId, email) {
+    if (!confirm(`Delete account for ${email}?\n\nThis will permanently delete their profile and all student data. This cannot be undone.`)) return;
+    if (!adminSession) return;
+    const res  = await fetch('/api/admin', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${adminSession.access_token}`, 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ action: 'delete_user', userId }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      allProfiles = allProfiles.filter(p => p.id !== userId);
+      allStudents = allStudents.filter(s => s.parent_id !== userId);
+      renderStats();
+      renderCurrentTab();
+    } else {
+      showError('Failed to delete user: ' + (data.error || 'Unknown error'));
+    }
+  }
+
+  loadAdminData();
+</script>
+</body>
+</html>

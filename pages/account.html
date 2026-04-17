@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Account — Superholic Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="icon" href="../assets/favicon.ico" />
+  <script src="/js/header.js" defer></script>
+  <script src="/js/footer.js" defer></script>
+  <script src="../js/supabase-client.js"></script>
+  <script type="module">
+    import { guardPage } from '/js/auth.js';
+    window.userProfile = await guardPage(true);
+    if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', () => window.initAccount && window.initAccount()); }
+    else { window.initAccount && window.initAccount(); }
+  </script>
+</head>
+<body class="has-bottom-nav bg-page texture-light-grid">
+<global-header></global-header>
+
+<section class="bg-sage texture-dots py-10" style="padding-top: calc(64px + var(--space-8));">
+  <div class="container">
+    <h1 class="font-display text-4xl text-white mb-2">My Account</h1>
+    <p style="color: rgba(255,255,255,0.8);">Manage your profile, password, and subscription.</p>
+  </div>
+</section>
+
+<main class="container py-10" style="max-width: 640px;">
+
+  <div id="successMsg" class="mb-4 p-3 text-sm font-bold rounded hidden" style="background:rgba(81,97,94,0.1);border:1px solid var(--brand-sage);color:var(--brand-sage);"></div>
+  <div id="errorMsg" class="mb-4 p-3 text-sm font-bold rounded hidden" style="background:rgba(220,38,38,0.1);border:1px solid rgba(220,38,38,0.3);color:var(--brand-error);"></div>
+
+  <!-- Subscription -->
+  <div class="card p-6 mb-6">
+    <h2 class="font-display text-2xl text-main mb-4">Subscription</h2>
+    <div id="subscriptionContent"><div class="spinner-sm"></div></div>
+  </div>
+
+  <!-- Profile -->
+  <div class="card p-6 mb-6">
+    <h2 class="font-display text-2xl text-main mb-4">Profile</h2>
+    <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-bold text-muted">Display Name</label>
+        <input type="text" id="fullName" class="form-input" placeholder="Your name" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-bold text-muted">Email Address</label>
+        <input type="email" id="emailField" class="form-input" placeholder="you@email.com" />
+        <p class="text-xs text-muted mt-1">You'll receive a confirmation email if you change your address.</p>
+      </div>
+      <button class="btn btn-primary hover-lift" id="saveProfileBtn" onclick="window.saveProfile()">Save Changes</button>
+    </div>
+  </div>
+
+  <!-- Password -->
+  <div class="card p-6">
+    <h2 class="font-display text-2xl text-main mb-4">Change Password</h2>
+    <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-bold text-muted">New Password</label>
+        <input type="password" id="newPassword" class="form-input" placeholder="At least 8 characters" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-bold text-muted">Confirm New Password</label>
+        <input type="password" id="confirmPassword" class="form-input" placeholder="Repeat new password" />
+      </div>
+      <button class="btn btn-secondary hover-lift" id="savePasswordBtn" onclick="window.changePassword()">Update Password</button>
+    </div>
+  </div>
+
+  <div class="text-center mt-6">
+    <a href="/pages/dashboard.html" class="text-sm text-muted" style="text-decoration: none;">← Back to Dashboard</a>
+  </div>
+
+</main>
+<global-footer></global-footer>
+
+<nav class="bottom-nav">
+  <a href="subjects.html" class="bottom-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>Practise</a>
+  <a href="dashboard.html" class="bottom-nav-item is-active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Dashboard</a>
+  <a href="progress.html" class="bottom-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Progress</a>
+</nav>
+
+<script>
+  function showMsg(type, msg) {
+    const ok  = document.getElementById('successMsg');
+    const err = document.getElementById('errorMsg');
+    ok.classList.add('hidden'); err.classList.add('hidden');
+    const el = type === 'success' ? ok : err;
+    el.textContent = msg;
+    el.classList.remove('hidden');
+    setTimeout(() => el.classList.add('hidden'), 6000);
+  }
+
+  window.initAccount = async function() {
+    const profile = window.userProfile;
+    if (!profile) return;
+
+    document.getElementById('fullName').value  = profile.full_name || '';
+    document.getElementById('emailField').value = profile.email    || '';
+
+    const content    = document.getElementById('subscriptionContent');
+    const tier       = profile.subscription_tier || 'trial';
+    const planLabels = { trial: 'Free Trial', all_subjects: 'All Subjects', family: 'Family Plan', single_subject: 'Single Subject' };
+    const planName   = planLabels[tier] || tier;
+
+    if (tier === 'trial') {
+      const daysLeft = profile.trial_ends_at ? Math.max(0, Math.ceil((new Date(profile.trial_ends_at) - new Date()) / 86400000)) : 0;
+      content.innerHTML = `
+        <div class="flex items-center gap-3 p-4 rounded-lg mb-4" style="background: var(--bg-elevated);">
+          <span class="text-2xl">${daysLeft > 0 ? '🎁' : '⏰'}</span>
+          <div class="flex-1">
+            <div class="font-bold text-main">${daysLeft > 0 ? 'Free Trial' : 'Trial Expired'}</div>
+            <div class="text-sm text-muted">${daysLeft > 0 ? `${daysLeft} day${daysLeft !== 1 ? 's' : ''} remaining` : 'Your trial has ended'}</div>
+          </div>
+        </div>
+        <a href="/pages/pricing.html" class="btn btn-primary w-full hover-lift">Subscribe Now →</a>
+        <p class="text-xs text-center text-muted mt-2">Cancel anytime · Card charged immediately on subscribe</p>
+      `;
+    } else {
+      content.innerHTML = `
+        <div class="flex items-center gap-3 p-4 rounded-lg mb-4" style="background: var(--bg-elevated);">
+          <span class="text-2xl">✅</span>
+          <div>
+            <div class="font-bold text-main">${planName}</div>
+            <div class="text-sm text-muted">Active subscription</div>
+          </div>
+        </div>
+        <button id="openPortalBtn" class="btn btn-secondary w-full hover-lift" onclick="window.openBillingPortal()">
+          Manage Subscription →
+        </button>
+        <p class="text-xs text-center text-muted mt-2">Change payment method, cancel, or switch plans via Stripe's secure portal.</p>
+      `;
+    }
+  };
+
+  window.saveProfile = async function() {
+    const name  = document.getElementById('fullName').value.trim();
+    const email = document.getElementById('emailField').value.trim();
+    const btn   = document.getElementById('saveProfileBtn');
+    if (!name)  { showMsg('error', 'Name cannot be empty.'); return; }
+    if (!email) { showMsg('error', 'Email cannot be empty.'); return; }
+    btn.disabled = true; btn.textContent = 'Saving...';
+    try {
+      const sb = await getSupabase();
+      const { error: dbErr } = await sb.from('profiles').update({ full_name: name, updated_at: new Date().toISOString() }).eq('id', window.userProfile.id);
+      if (dbErr) throw dbErr;
+      if (email !== window.userProfile.email) {
+        const { error: authErr } = await sb.auth.updateUser({ email });
+        if (authErr) throw authErr;
+        showMsg('success', 'Profile saved. Check your new email address for a confirmation link.');
+      } else {
+        showMsg('success', 'Profile saved successfully.');
+      }
+      window.userProfile.full_name = name;
+    } catch (err) { showMsg('error', err.message || 'Failed to save profile.'); }
+    finally { btn.disabled = false; btn.textContent = 'Save Changes'; }
+  };
+
+  window.changePassword = async function() {
+    const newPw     = document.getElementById('newPassword').value;
+    const confirmPw = document.getElementById('confirmPassword').value;
+    const btn       = document.getElementById('savePasswordBtn');
+    if (!newPw || newPw.length < 8) { showMsg('error', 'Password must be at least 8 characters.'); return; }
+    if (newPw !== confirmPw)        { showMsg('error', 'Passwords do not match.'); return; }
+    btn.disabled = true; btn.textContent = 'Updating...';
+    try {
+      const sb = await getSupabase();
+      const { error } = await sb.auth.updateUser({ password: newPw });
+      if (error) throw error;
+      showMsg('success', 'Password updated successfully.');
+      document.getElementById('newPassword').value = '';
+      document.getElementById('confirmPassword').value = '';
+    } catch (err) { showMsg('error', err.message || 'Failed to update password.'); }
+    finally { btn.disabled = false; btn.textContent = 'Update Password'; }
+  };
+
+  window.openBillingPortal = async function() {
+    const btn = document.getElementById('openPortalBtn');
+    if (btn) { btn.textContent = 'Opening...'; btn.disabled = true; }
+    try {
+      const sb = await getSupabase();
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) { window.location.href = '/pages/login.html'; return; }
+      const res = await fetch('/api/portal', { method: 'POST', headers: { 'Authorization': `Bearer ${session.access_token}` } });
+      const data = await res.json();
+      if (data.url) { window.location.href = data.url; }
+      else throw new Error(data.error || 'Could not open billing portal');
+    } catch (err) {
+      showMsg('error', 'Could not open billing portal: ' + err.message);
+      if (btn) { btn.textContent = 'Manage Subscription →'; btn.disabled = false; }
+    }
+  };
+</script>
+</body>
+</html>
