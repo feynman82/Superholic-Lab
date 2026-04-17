@@ -1,13 +1,14 @@
 /**
  * scripts/balancer.js
- * The MOE-Aligned Distribution Brain.
- * Audits the DB against a strict MOE syllabus taxonomy, calculates deficits, 
- * and clones questions to ensure perfectly balanced, curriculum-aligned coverage.
+ * The MOE-Aligned Distribution Brain (Masterclass Edition).
+ * Audits the DB against a strict MOE syllabus taxonomy down to the sub-topic level,
+ * calculates deficits, and clones questions to ensure perfectly balanced coverage.
  */
 
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import path from 'path';
+import fs from 'fs';
 import { createClient } from '@supabase/supabase-js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
@@ -17,68 +18,57 @@ dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
-// 🚀 GOAL: Target number of questions per MOE topic
-const TARGET_PER_TOPIC = 100; 
+// 🚀 TARGET: Target number of questions per SUB-TOPIC
+const TARGET_PER_SUB_TOPIC = 20; 
 const CLONES_PER_RUN = 4; // 1 Easy, 2 Medium, 1 Hard
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }); 
 
-// 🚀 SOURCE OF TRUTH: The official MOE Taxonomy (mirrors subjects.html)
+// 🚀 EXHAUSTIVE MOE TAXONOMY
 const MOE_SYLLABUS = [
-  // Primary 1 (No formal Science)
-  ...['Whole Numbers', 'Addition and Subtraction', 'Multiplication and Division', 'Money', 'Length and Mass', 'Shapes and Patterns', 'Picture Graphs'].map(t => ({ level: 'Primary 1', subject: 'Mathematics', topic: t })),
-  ...['Grammar', 'Vocabulary', 'Comprehension', 'Cloze'].map(t => ({ level: 'Primary 1', subject: 'English Language', topic: t })),
+  // Primary 3 Math
+  ...['Part-Whole', 'Comparison', 'Division with Remainder', '2-Step Word Problems'].map(st => ({ level: 'Primary 3', subject: 'Mathematics', topic: 'Whole Numbers', sub_topic: st })),
+  ...['Equivalent Fractions', 'Comparing Fractions', 'Addition/Subtraction'].map(st => ({ level: 'Primary 3', subject: 'Mathematics', topic: 'Fractions', sub_topic: st })),
+  ...['Length', 'Mass', 'Volume', 'Time'].map(st => ({ level: 'Primary 3', subject: 'Mathematics', topic: 'Measurement', sub_topic: st })),
+  ...['Money Word Problems'].map(st => ({ level: 'Primary 3', subject: 'Mathematics', topic: 'Money', sub_topic: st })),
+  ...['Angles', 'Area and Perimeter', 'Bar Graphs'].map(st => ({ level: 'Primary 3', subject: 'Mathematics', topic: 'Geometry & Graphs', sub_topic: st })),
+  
+  // Primary 4 Math
+  ...['Factors & Multiples', 'Grouping/Sets', 'Constant Difference'].map(st => ({ level: 'Primary 4', subject: 'Mathematics', topic: 'Whole Numbers', sub_topic: st })),
+  ...['Mixed Numbers', 'Fraction of a Set', 'Remainder Heuristic'].map(st => ({ level: 'Primary 4', subject: 'Mathematics', topic: 'Fractions', sub_topic: st })),
+  ...['Addition/Subtraction', 'Multiplication/Division', 'Money Step-Rates'].map(st => ({ level: 'Primary 4', subject: 'Mathematics', topic: 'Decimals', sub_topic: st })),
+  ...['Symmetry', '8-Point Compass', 'Push-out Perimeter', 'Composite Area', 'Line Graphs'].map(st => ({ level: 'Primary 4', subject: 'Mathematics', topic: 'Geometry & Measurement', sub_topic: st })),
 
-  // Primary 2 (No formal Science)
-  ...['Whole Numbers', 'Multiplication Tables', 'Fractions', 'Money', 'Time', 'Length, Mass and Volume', 'Shapes', 'Picture Graphs'].map(t => ({ level: 'Primary 2', subject: 'Mathematics', topic: t })),
-  ...['Grammar', 'Vocabulary', 'Comprehension', 'Cloze'].map(t => ({ level: 'Primary 2', subject: 'English Language', topic: t })),
+  // Primary 5 Math
+  ...['Order of Operations', 'Supposition', 'Excess and Shortage'].map(st => ({ level: 'Primary 5', subject: 'Mathematics', topic: 'Whole Numbers', sub_topic: st })),
+  ...['Equating Numerators', 'Branching', 'Remainder of Remainder'].map(st => ({ level: 'Primary 5', subject: 'Mathematics', topic: 'Fractions', sub_topic: st })),
+  ...['One Part Unchanged', 'Internal Transfer', 'Constant Difference', 'Repeated Identity'].map(st => ({ level: 'Primary 5', subject: 'Mathematics', topic: 'Ratio', sub_topic: st })),
+  ...['Base Shifts', 'GST/Discount', 'Rates'].map(st => ({ level: 'Primary 5', subject: 'Mathematics', topic: 'Percentage', sub_topic: st })),
+  ...['Area of Triangle', 'Volume Displacement', 'Angles in Polygons', 'Average'].map(st => ({ level: 'Primary 5', subject: 'Mathematics', topic: 'Geometry & Stats', sub_topic: st })),
 
-  // Primary 3
-  ...['Diversity', 'Systems', 'Interactions'].map(t => ({ level: 'Primary 3', subject: 'Science', topic: t })),
-  ...['Whole Numbers', 'Fractions', 'Length, Mass and Volume', 'Time', 'Angles', 'Area and Perimeter', 'Bar Graphs'].map(t => ({ level: 'Primary 3', subject: 'Mathematics', topic: t })),
-  ...['Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing'].map(t => ({ level: 'Primary 3', subject: 'English Language', topic: t })),
-  
-  // Primary 4
-  ...['Cycles', 'Energy', 'Heat', 'Light', 'Magnets', 'Matter'].map(t => ({ level: 'Primary 4', subject: 'Science', topic: t })),
-  ...['Whole Numbers', 'Factors and Multiples', 'Fractions', 'Decimals', 'Angles', 'Area and Perimeter', 'Symmetry', 'Data Analysis'].map(t => ({ level: 'Primary 4', subject: 'Mathematics', topic: t })),
-  ...['Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing'].map(t => ({ level: 'Primary 4', subject: 'English Language', topic: t })),
-  
-  // Primary 5
-  ...['Cycles', 'Systems', 'Energy', 'Interactions'].map(t => ({ level: 'Primary 5', subject: 'Science', topic: t })),
-  ...['Whole Numbers', 'Fractions', 'Decimals', 'Percentage', 'Ratio', 'Rate', 'Area of Triangle', 'Volume', 'Angles and Geometry', 'Average'].map(t => ({ level: 'Primary 5', subject: 'Mathematics', topic: t })),
-  ...['Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing', 'Synthesis'].map(t => ({ level: 'Primary 5', subject: 'English Language', topic: t })),
-  
-  // Primary 6
-  ...['Interactions', 'Energy', 'Cells', 'Forces'].map(t => ({ level: 'Primary 6', subject: 'Science', topic: t })),
-  ...['Fractions', 'Percentage', 'Ratio', 'Speed', 'Algebra', 'Circles', 'Volume', 'Geometry', 'Pie Charts'].map(t => ({ level: 'Primary 6', subject: 'Mathematics', topic: t })),
-  ...['Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing', 'Synthesis'].map(t => ({ level: 'Primary 6', subject: 'English Language', topic: t }))
+  // Primary 6 Math
+  ...['Algebraic substitution', 'Simultaneous Concepts', 'Changing Bases', 'Speed (Catching up)', 'Circles', 'Nets/Solids', 'Pie Charts'].map(st => ({ level: 'Primary 6', subject: 'Mathematics', topic: 'P6 Math Core', sub_topic: st })),
+
+  // Science Examples (P3-P6)
+  ...['Living/Non-Living', 'Materials', 'Human Digestive', 'Magnets'].map(st => ({ level: 'Primary 3', subject: 'Science', topic: 'Diversity & Systems', sub_topic: st })),
+  ...['Matter', 'Life Cycles', 'Heat', 'Light'].map(st => ({ level: 'Primary 4', subject: 'Science', topic: 'Cycles & Energy', sub_topic: st })),
+  ...['Water Cycle', 'Reproduction', 'Electrical Circuits', 'Plant Transport'].map(st => ({ level: 'Primary 5', subject: 'Science', topic: 'Cycles & Systems', sub_topic: st })),
+  ...['Forces', 'Environment', 'Food Webs', 'Energy Conversions'].map(st => ({ level: 'Primary 6', subject: 'Science', topic: 'Interactions & Energy', sub_topic: st }))
 ];
 
 const TYPE_RULES = {
-  mcq: `\n- Each question must have an "options" array with exactly 4 string values.\n- "correct_answer" MUST be the exact string value of the correct option from the array. Do NOT use "A", "B", "C", or "D".\n- Include a "wrong_explanations" object where the keys are the exact wrong option strings.\n- Include an "examiner_note".`,  
-  short_ans: `\n- Answers must be concise (a number, expression, or short phrase).\n- Include an "accept_also" array for equivalent correct forms.`,
-  word_problem: `\n- Each word problem must have a "parts" array with 2–3 parts.\n- Show full step-by-step "worked_solution".\n- Include an "examiner_note".`,
-  open_ended: `\n- Write a "model_answer" using CER framework.\n- List "keywords" array.\n- Provide a marking rubric in worked solution.`,
-  cloze: `\n- "passage" must have blanks marked as [1], [2].\n- Include "blanks" array (number, options, correct_answer, explanation). \n- question_text" MUST be a simple instruction (e.g., "Fill in each blank with the correct word.").\n- "passage" MUST contain the full text. You MUST replace every blank with a bracketed number: [1], [2], [3], etc. DO NOT put the options inside this passage string.\n- "blanks" MUST NOT BE NULL. It MUST be a valid JSON array of objects.\n- Each object in the "blanks" array MUST have: - "number": the integer matching the bracket in the passage (e.g., 1). - "correct_answer": the exact correct string. - "options": a JSON array of exactly 3 to 4 plausible string options for this specific blank.- "explanation": a string explaining why the answer is correct.`,
-  editing: `\n- DO NOT use the "passage_lines" array.\n- "passage" MUST contain the full continuous text. Embed the errors directly in the passage text using an HTML underline tag followed by a bracketed number. Example: "She <u>goed</u> [1] to the market."\n- Include a "blanks" JSON array of objects. MUST NOT BE NULL.\n- Each object in the "blanks" array MUST have: "number" (integer matching the bracket), "correct_answer" (the exact corrected word), and "explanation" (detailed reason why the original was wrong). DO NOT include an "options" array for editing.\n- Scale the number of blanks based on the level: Primary 1-2 (5 blanks), Primary 3-4 (8 blanks), Primary 5-6 (10 blanks).`
+  mcq: `\n- Each question must have an "options" array with exactly 4 string values.\n- "correct_answer" MUST be the exact string value. Do NOT use "A", "B", "C", or "D".\n- Include a "wrong_explanations" object.`,  
+  short_ans: `\n- Answers must be concise.\n- Include an "accept_also" array for equivalent correct forms.`,
+  word_problem: `\n- Include a "parts" array with 2–3 sub-questions (a, b).\n- Each part MUST have "label", "question", "marks", "correct_answer", "worked_solution", and "progressive_hints" (array of 2 strings).`,
+  open_ended: `\n- Include a "parts" array exactly like the 'word_problem' schema for sub-questions (a, b).\n- "correct_answer" in each part should be the ideal scientific phrasing/CER statement.\n- Include "keywords" array and "progressive_hints" to guide the student's reasoning.`,
+  cloze: `\n- "passage" must have blanks marked as [1], [2].\n- Include "blanks" array with options and correct_answer. DO NOT put options inside the passage.`,
+  editing: `\n- Errors embedded directly in the "passage" using <u>error</u> [1].\n- Include "blanks" array with the correct_answer correction.`
 };
 
+const masterTemplate = fs.readFileSync(path.join(__dirname, '../data/Master_Question_Template.md'), 'utf8');
 
-
-const VISUAL_RULES = `
-CRITICAL VISUAL PAYLOAD RULES:
-If the seed question contains a "visual_payload", your clones MUST include an updated "visual_payload".
-1. "engine" must ALWAYS be "diagram-library".
-2. NO AUTONOMOUS NAMING: You MUST map visual data to one of these generic schemas:
-   - FOR EXPERIMENTS (Beakers, setups, test tubes): Use function_name: "genericExperiment". Include "commonConditions" (array of strings) and "setups" (array of objects with 'label' and specific variables like 'temperature', 'water').
-   - FOR CYCLES & FLOWCHARTS: Use function_name: "arrowDiagram". Include "nodes" (id, label) and "arrows" (from, to, label). Maximum 4 nodes.
-   - FOR STANDARD CHARTS: Use "barChart", "pieChart", "numberLine", or "rulerMeasurement".
-3. PARAMETER SYNC: You MUST accurately update the values inside "visual_payload.params" to mathematically match the new narrative and numbers in your cloned question text.
-`;
-const masterTemplate = fs.readFileSync('../data/Master_Question_Template.md', 'utf8');
-
-function buildPrompt(seedType, targetTopic) {
+function buildPrompt(seedType, targetNode) {
   const typeSpecificInstructions = TYPE_RULES[seedType] || TYPE_RULES.mcq;
 
   return `
@@ -89,27 +79,13 @@ ${masterTemplate}
 Follow the TYPE_RULES below for the specific question format:
 ${typeSpecificInstructions}
 
-STRICT NEGATIVE CONSTRAINTS (DO NOT VIOLATE):
-1. ANTI-LAZY DATA: NEVER embed options directly into the "question_text" or "passage" strings (e.g., DO NOT write "Tom (1) _______ (wake/wakes)").
-2. CLOZE/EDITING: Options MUST ONLY exist inside the "blanks" JSON array. The "passage" string MUST ONLY contain the text and bracketed numbers like [1], [2].
-3. "options" arrays must contain plain strings, NOT objects.
-4. TYPE LOCK: You MUST NOT change the "type" of the seed question. If the seed is an "mcq", your clones MUST be "mcq". Do NOT mutate an "mcq" into an "open_ended" question.2. CLOZE/EDITING: Options MUST ONLY exist inside the "blanks" JSON array. The "passage" string MUST ONLY contain the text and bracketed numbers like [1], [2].
-5. "options" arrays must contain plain strings, NOT objects.
+STRICT CONSTRAINTS (DO NOT VIOLATE):
+1. SQL ESCAPING (CRITICAL): Every single quote or apostrophe in your text strings MUST be double-escaped (e.g., Siti''s apples).
+2. TYPE LOCK: You MUST NOT change the "type" of the seed question.
+3. SCAFFOLDING: "difficulty": 1 "easy", 2 "medium", 1 "hard". Provide "cognitive_skill" and "progressive_hints".
+4. CATEGORIZATION: You MUST categorize every question EXACTLY as Topic: "${targetNode.topic}" and Sub-Topic: "${targetNode.sub_topic}".
 
-Generate EXACTLY ${CLONES_PER_RUN} NEW variations of this seed question.
-
-SCAFFOLDING REQUIREMENTS:
-1. "difficulty": 1 "easy", 2 "medium", 1 "hard".
-2. "cognitive_skill": Add a 2-3 word string describing the specific micro-skill.
-3. "progressive_hints": An array of 2 strings. Hint 1 is a nudge. Hint 2 is a clue.
-4. "topic": You MUST categorize every question EXACTLY as "${targetTopic}".
-
-STRICT SCHEMA REQUIREMENTS:
-- CORE KEYS: You MUST include "question_text", "type", and "marks". Do NOT omit them.
-${typeSpecificInstructions}
-${VISUAL_RULES}
-
-Return ONLY a valid JSON array of the ${CLONES_PER_RUN} new question objects. Do NOT wrap in markdown fences.
+Return ONLY a valid JSON array of ${CLONES_PER_RUN} new question objects. Do NOT wrap in markdown fences.
 SEED: 
 `;
 }
@@ -119,21 +95,20 @@ function sanitizeJsonString(rawString) {
 }
 
 async function runBalancer() {
-  console.log(`\n🧠 Auditing MOE Taxonomy Deficits...`);
+  console.log(`\n🧠 Auditing MOE Taxonomy Deficits (Sub-Topic Level)...`);
   
   let totalDeficit = 0;
   const deficitMap = [];
 
-  // Calculate deficits against the strict MOE syllabus
   for (const moe of MOE_SYLLABUS) {
     const { count } = await supabase
       .from('question_bank')
       .select('*', { count: 'exact', head: true })
       .eq('level', moe.level)
       .eq('subject', moe.subject)
-      .eq('topic', moe.topic);
+      .eq('sub_topic', moe.sub_topic); // Balancing heavily relies on sub_topic now
 
-    const deficit = TARGET_PER_TOPIC - (count || 0);
+    const deficit = TARGET_PER_SUB_TOPIC - (count || 0);
     if (deficit > 0) {
       deficitMap.push({ ...moe, deficit });
       totalDeficit += deficit;
@@ -142,46 +117,38 @@ async function runBalancer() {
 
   if (deficitMap.length === 0) return console.log(`\n🎉 INCREDIBLE! The MOE Vault is 100% complete!`);
 
-  // Target the weakest link
   deficitMap.sort((a, b) => b.deficit - a.deficit);
-  
   console.log(`🚨 Global Deficit: ${totalDeficit} questions needed.`);
 
   let target = null;
   let targetSeeds = null;
 
-  // 🚀 THE FIX: Walk down the priority list until we find a topic that has seed inventory
   for (const potentialTarget of deficitMap) {
-    // Clean the first word to remove commas/symbols for the fuzzy match
-    const firstWord = potentialTarget.topic.split(' ')[0].replace(/[^a-zA-Z]/g, '');
+    const firstWord = potentialTarget.sub_topic.split(' ')[0].replace(/[^a-zA-Z]/g, '');
 
+    // Search seed DB using sub_topic matching
     const { data: seeds } = await supabase
       .from('seed_questions')
       .select('*')
       .eq('level', potentialTarget.level)
       .eq('subject', potentialTarget.subject)
-      .ilike('topic', `%${firstWord}%`)
+      .ilike('sub_topic', `%${firstWord}%`)
       .limit(10);
 
     if (seeds && seeds.length > 0) {
       target = potentialTarget;
       targetSeeds = seeds;
-      break; // Found our highest-priority topic that actually has seeds!
-    } else {
-      console.log(`   ⏭️ Skipping Priority "${potentialTarget.topic}" (${potentialTarget.level}): No seeds in Vault.`);
+      break; 
     }
   }
 
-  // If we looped through the entire deficit map and found zero seeds anywhere
   if (!target || !targetSeeds) {
-     console.log(`\n🛑 System Halted: Deficits exist, but the Vault is completely out of seeds for all needed topics!`);
-     console.log(`   (You need to run ingestor.js on new PDFs to restock the Vault).`);
-     // Pause the script for a long time to prevent spamming the database
+     console.log(`\n🛑 System Halted: Deficits exist, but Vault is out of seeds. Run ingestor.js.`);
      await new Promise(resolve => setTimeout(resolve, 60000));
      return; 
   }
 
-  console.log(`🏭 Routing cloning engine to Priority: ${target.level} ${target.subject} - "${target.topic}"`);
+  console.log(`🏭 Routing cloning engine to Priority: ${target.level} ${target.subject} - "${target.sub_topic}"`);
 
   const randomSeed = targetSeeds[Math.floor(Math.random() * targetSeeds.length)];
 
@@ -190,7 +157,7 @@ async function runBalancer() {
   }
 
   try {
-    const prompt = buildPrompt(randomSeed.type, target.topic);
+    const prompt = buildPrompt(randomSeed.type, target);
     const result = await model.generateContent({
       contents: [{ role: "user", parts: [{ text: prompt + JSON.stringify(randomSeed) }] }],
       generationConfig: { temperature: 0.7, responseMimeType: "application/json" }
@@ -203,27 +170,24 @@ async function runBalancer() {
       const { flag_review, id, created_at, original_id, source_pdf, image_url, ...cleanClone } = c;
       return {
         ...cleanClone,
+        id: crypto.randomUUID(), // Guarantee fresh UUID
         seed_id: randomSeed.id, 
         is_ai_cloned: true,
         subject: target.subject, 
         level: target.level,
-        topic: target.topic, // 🚀 FORCE The clean MOE Topic
-        type: cleanClone.type || randomSeed.type || 'short_ans',
-        question_text: cleanClone.question_text || randomSeed.question_text || '[AI omitted question text]',
-        marks: cleanClone.marks || randomSeed.marks || 1,
-        cognitive_skill: cleanClone.cognitive_skill || null,
-        progressive_hints: cleanClone.progressive_hints || null,
-        instructions: cleanClone.instructions || randomSeed.instructions || null,
-        visual_payload: cleanClone.visual_payload || null 
+        topic: target.topic, 
+        sub_topic: target.sub_topic, // 🚀 FORCE The Sub-Topic
+        type: cleanClone.type || randomSeed.type,
+        visual_payload: cleanClone.visual_payload ? JSON.stringify(cleanClone.visual_payload) : null // Ensure stringified
       };
     });
 
     const { error: insErr } = await supabase.from('question_bank').insert(payload);
     if (insErr) throw insErr;
 
-    console.log(`✅ Success! Injected ${payload.length} new adaptive questions for "${target.topic}".`);
+    console.log(`✅ Success! Injected ${payload.length} new adaptive questions for "${target.sub_topic}".`);
   } catch (e) {
-    console.error(`⚠️ Engine Error on ${target.topic}:`, e.message);
+    console.error(`⚠️ Engine Error on ${target.sub_topic}:`, e.message);
   }
 }
 
