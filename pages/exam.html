@@ -690,7 +690,53 @@ window.initExamEngine = function () {
       uiHtml = `<div class="card p-6">${lines}</div>`;
     } else if (q.type === 'short_ans') {
       uiHtml = `<input type="text" id="qInput" class="form-input w-full p-4 mt-4" style="font-size: 1.125rem; font-weight: 700; text-align: center; border: 2px solid var(--border-dark); border-radius: var(--radius-md);" placeholder="Type your final answer..." value="${esc(savedAns)}" autocomplete="off">`;
-    } else if (['open_ended', 'word_problem'].includes(q.type)) {
+    } else if (q.type === 'word_problem') {
+      let partsData = [];
+      try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
+      
+      const savedObj = (typeof savedAns === 'object') ? savedAns : {};
+      
+      let partsHtml = partsData.length === 0 
+        ? `<div class="text-amber">Legacy format detected. Please update database.</div>`
+        : partsData.map((p, idx) => {
+            const pLabel = p.label || (p.part_id ? `(${p.part_id})` : `Part ${idx + 1}`);
+            const pQ = p.question || p.question_text || '';
+            const savedWorking = savedObj[pLabel] || '';
+            return `
+              <div class="card bg-page p-5 mb-4 shadow-sm" style="border: 1px solid var(--border-light); border-radius: var(--radius-lg);">
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex flex-col gap-1">
+                    <span class="font-display text-xl text-main font-bold" style="color: var(--brand-sage);">${esc(pLabel)}</span>
+                    ${pQ ? `<span class="text-base text-main font-medium mt-1">${esc(pQ)}</span>` : ''}
+                  </div>
+                  <span class="badge badge-amber text-xs">${p.marks || 2} marks</span>
+                </div>
+                <textarea id="wp-${esc(pLabel)}" class="form-input w-full p-4 border-2 border-slate-200 focus:border-brand-sage rounded-xl transition-all shadow-sm text-base mt-2" rows="3" placeholder="Type your working and answer here..." oninput="window.saveCurrentAnswerState()">${esc(savedWorking)}</textarea>
+              </div>
+            `;
+          }).join('');
+
+      const isDrawingMode = !!state.drawings[ansKey];
+      uiHtml = `
+        ${partsHtml}
+        <div class="mt-4 bg-surface p-4 rounded-xl border border-light">
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-sm font-bold text-muted uppercase">Global Scratchpad</span>
+            <div class="flex gap-2">
+              <button class="btn btn-sm ${!isDrawingMode ? 'bg-sage-dark text-white' : 'btn-ghost'}" onclick="window.setMode('text')">⌨️ Hide</button>
+              <button class="btn btn-sm ${isDrawingMode ? 'bg-sage-dark text-white' : 'btn-ghost'}" onclick="window.setMode('draw')">✏️ Draw</button>
+            </div>
+          </div>
+          ${isDrawingMode ? `
+            <div class="scratchpad-container border-2 border-slate-200 rounded-xl overflow-hidden mt-2 bg-white shadow-sm">
+              <canvas id="scratchpadCanvas" class="scratchpad-canvas w-full" style="min-height:300px; touch-action:none;"></canvas>
+              <div class="p-2 border-t border-light bg-page flex justify-end">
+                <button class="btn btn-sm btn-ghost hover-lift" onclick="window.clearCanvas()">🗑️ Clear</button>
+              </div>
+            </div>` : ''}
+        </div>
+      `;
+    } else if (q.type === 'open_ended') {
       const isDrawingMode = !!state.drawings[ansKey];
       uiHtml = `
         <div class="flex justify-between gap-2 mb-2">
@@ -700,7 +746,7 @@ window.initExamEngine = function () {
           </div>
         </div>
         ${!isDrawingMode 
-          ? `<textarea id="qInput" class="form-input w-full p-4 mt-2" rows="6" style="height:auto; resize:vertical; border: 2px solid var(--border-dark); border-radius: var(--radius-md);" placeholder="Show your working and final answer...">${esc(savedAns)}</textarea>`
+          ? `<textarea id="qInput" class="form-input w-full p-4 mt-2 border-2 border-slate-200 focus:border-brand-sage rounded-xl transition-all shadow-sm text-base" rows="6" style="height:auto; resize:vertical;" placeholder="Show your working and final answer...">${esc(savedAns)}</textarea>`
           : `
             <div class="scratchpad-container" style="display: block; border: 2px solid var(--border-dark); border-radius: var(--radius-md);">
               <canvas id="scratchpadCanvas" class="scratchpad-canvas"></canvas>
@@ -708,7 +754,7 @@ window.initExamEngine = function () {
                 <button class="btn btn-sm btn-ghost bg-surface hover-lift" style="border: 1px solid var(--border-light);" onclick="window.clearCanvas()">🗑️ Clear</button>
               </div>
             </div>
-            <input type="text" id="qInput" class="form-input w-full p-4 mt-4" style="font-size: 1.125rem; font-weight: 700; text-align: center; border: 2px solid var(--border-dark); border-radius: var(--radius-md);" placeholder="Final Answer (Required for AI Grading)" value="${esc(savedAns)}" autocomplete="off">
+            <input type="text" id="qInput" class="form-input w-full p-4 mt-4 border-2 border-slate-200 focus:border-brand-sage rounded-xl transition-all shadow-sm text-center font-bold text-lg" placeholder="Final Answer (Required for AI Grading)" value="${esc(savedAns)}" autocomplete="off">
           `
         }
       `;
@@ -793,6 +839,16 @@ window.initExamEngine = function () {
       (q.passage_lines || []).forEach(l => {
         const el = document.getElementById(`edit-line-${l.line_number}`);
         if (el) ans[l.line_number] = el.value;
+      });
+      state.answers[ansKey] = ans;
+    } else if (q.type === 'word_problem') {
+      const ans = state.answers[ansKey] || {};
+      let partsData = [];
+      try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
+      partsData.forEach((p, idx) => {
+        const pLabel = p.label || (p.part_id ? `(${p.part_id})` : `Part ${idx + 1}`);
+        const el = document.getElementById(`wp-${pLabel}`);
+        if (el) ans[pLabel] = el.value;
       });
       state.answers[ansKey] = ans;
     } else if (q.type !== 'mcq') {
@@ -1111,10 +1167,26 @@ window.initExamEngine = function () {
           return `Line ${num}: You: ${esc(selected)} ${isCor ? '✅' : `❌ (Correct: ${esc(l.correct_word)})`}`;
         }).join('<br>');
         ansHtml = `<div class="bg-page p-3 mt-2 text-sm" style="border-radius: var(--radius-sm);">${rows}</div>`;
-      } 
-      else { 
+      } else if (r.q.type === 'word_problem') {
+        let partsData = [];
+        try { partsData = typeof r.q.parts === 'string' ? JSON.parse(r.q.parts) : (r.q.parts || []); } catch(e) {}
+        
+        const rows = partsData.map((p, idx) => {
+          const pLabel = p.label || (p.part_id ? `(${p.part_id})` : `Part ${idx + 1}`);
+          const userAns = (r.sa && typeof r.sa === 'object') ? r.sa[pLabel] : '';
+          const modelAns = p.model_answer || p.worked_solution || p.correct_answer || '';
+          return `
+            <div class="mb-3 border-b border-light pb-2 last:border-0 last:pb-0">
+              <div class="font-bold" style="color: var(--brand-sage);">${esc(pLabel)}</div>
+              <div><span class="font-bold text-muted">Yours:</span> ${esc(userAns || '(blank)')}</div>
+              <div class="mt-1"><span class="font-bold text-success">Model:</span> ${esc(modelAns)}</div>
+            </div>`;
+        }).join('');
+        ansHtml = `<div class="bg-page p-4 mt-2 text-sm" style="border-radius: var(--radius-sm);">${rows}</div>`;
+      } else { 
         const modelAns = r.q.model_answer || r.q.correct_answer || r.q.worked_solution || '';
-        ansHtml = `<div class="bg-page p-3 mt-2 text-sm" style="border-radius: var(--radius-sm);"><span class="font-bold">Yours:</span> ${esc(r.sa || '(blank)')}<br><span class="font-bold text-success">Model:</span> ${esc(modelAns)}</div>`;
+        const userStr = typeof r.sa === 'object' ? JSON.stringify(r.sa) : r.sa;
+        ansHtml = `<div class="bg-page p-4 mt-2 text-sm" style="border-radius: var(--radius-sm);"><span class="font-bold text-muted">Yours:</span> ${esc(userStr || '(blank)')}<br><span class="font-bold text-success mt-1 inline-block">Model:</span> ${esc(modelAns)}</div>`;
       }
 
       const drawingData = state.drawings[i];

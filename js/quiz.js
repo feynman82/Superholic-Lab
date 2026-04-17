@@ -125,7 +125,8 @@ window.initQuizEngine = function() {
     feedback: null,
     currentType: null,
     quizStartTime: null,
-    hintLevel: 0 //
+    hintLevel: 0,
+    activeWPPart: 0 // NEW: Tracks Progressive Word Problem UI
   };
 
   const app = document.getElementById('app');
@@ -252,39 +253,66 @@ window.initQuizEngine = function() {
   }
 
   function buildWordProblemUI(q) {
-    const savedModelShown = state.isAnswered;
     let partsData = [];
     try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
-    
-    const parts = partsData.map((p, partIdx) => {
-      const savedWorking = (state.answers[state.currentIndex] || {})[p.label] || '';
-      const canvasId = `wp-canvas-${state.currentIndex}-${partIdx}`;
-      return `
-        <div class="card bg-page p-4 mb-4">
-          <div class="flex items-center gap-3 mb-3">
-            <span class="font-display text-lg text-main font-bold">${esc(p.label)}</span>
-            <span class="badge badge-info text-xs">${p.marks} mark${p.marks!==1?'s':''}</span>
-            ${p.question_text ? `<span class="text-sm text-main">${esc(p.question_text)}</span>` : ''}
-          </div>
-          <textarea id="wp-${esc(p.label)}" class="form-input w-full p-3" rows="3" style="height:auto;" placeholder="Show your working here..." ${savedModelShown?'disabled':''}>${esc(savedWorking)}</textarea>
-          
-          <div class="mt-2 w-full">
-            <button type="button" class="btn btn-outline btn-sm mb-2" onclick="window.togglePenTool('${canvasId}')">
-              ✏️ Pen Tool
-            </button>
-            <div id="${canvasId}-container" class="hidden border border-dark rounded bg-white w-full overflow-hidden shadow-sm" style="min-height: 250px;">
-              <canvas id="${canvasId}" width="800" height="300" class="w-full h-full bg-white cursor-crosshair" style="touch-action: none;"></canvas>
+
+    if (partsData.length === 0) return `<div class="text-amber">Legacy question format. Please update in database.</div>`;
+
+    return partsData.map((p, partIdx) => {
+      // Safely handle both legacy and new DB formats
+      const pLabel = p.label || (p.part_id ? `(${p.part_id})` : `Part ${partIdx + 1}`);
+      const pQuestion = p.question || p.question_text || '';
+      const pMarks = p.marks || 2;
+      const pModel = p.model_answer || p.worked_solution || p.correct_answer || '';
+
+      const isLocked = partIdx > state.activeWPPart;
+      const isCompleted = partIdx < state.activeWPPart;
+      const isActive = partIdx === state.activeWPPart;
+
+      // 1. LOCKED STATE (Faded Out)
+      if (isLocked) {
+        return `
+          <div class="card bg-surface p-4 mb-4 shadow-sm" style="border: 1px dashed var(--border-light); opacity: 0.5; pointer-events: none;">
+            <div class="flex items-center gap-3">
+              <span class="font-display text-lg text-muted font-bold">🔒 ${esc(pLabel)}</span>
+              <span class="text-sm text-muted">Complete previous part to unlock</span>
             </div>
+          </div>`;
+      }
+
+      const savedWorking = (state.answers[state.currentIndex] || {})[pLabel] || '';
+      const canvasId = `wp-canvas-${state.currentIndex}-${partIdx}`;
+      const showModel = isCompleted || state.isAnswered;
+
+      // 2. ACTIVE & COMPLETED STATES
+      return `
+        <div class="card bg-page p-5 mb-5 shadow-sm" style="border: 2px solid ${isActive ? 'var(--brand-sage)' : 'var(--border-light)'}; transition: all 0.3s ease; border-radius: var(--radius-lg);">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="font-display text-xl text-main font-bold" style="color: var(--brand-sage);">${esc(pLabel)}</span>
+            <span class="badge badge-info text-xs">${pMarks} mark${pMarks!==1?'s':''}</span>
           </div>
-          ${savedModelShown ? `
-            <div class="ans-block strong mt-4">
-              <div class="text-xs font-bold mb-1 text-success">Model Answer</div>
-              <div class="text-sm text-main font-mono whitespace-pre-wrap">${esc(p.model_answer || p.correct_answer || '')}</div>
-              ${p.marking_scheme ? `<div class="text-xs text-muted mt-2 whitespace-pre-wrap">${esc(p.marking_scheme)}</div>` : ''}
-            </div>` : ''}
+          ${pQuestion ? `<div class="text-lg text-main font-medium mb-4 leading-relaxed">${esc(pQuestion)}</div>` : ''}
+
+          ${!showModel ? `
+            <textarea id="wp-${esc(pLabel)}" class="form-input w-full p-4 border-2 border-slate-200 focus:border-brand-sage rounded-xl transition-all shadow-sm text-lg" rows="3" placeholder="Type your working and final answer here...">${esc(savedWorking)}</textarea>
+
+            <div class="mt-4 w-full flex flex-col items-start gap-2">
+              <button type="button" class="btn btn-sm btn-ghost bg-surface hover-lift" style="border: 1px solid var(--border-light); color: var(--text-main);" onclick="window.togglePenTool('${canvasId}')">
+                ✏️ Pen Tool
+              </button>
+              <div id="${canvasId}-container" class="hidden border-2 border-slate-200 rounded-xl bg-white w-full overflow-hidden shadow-sm mt-2" style="min-height: 250px;">
+                <canvas id="${canvasId}" width="800" height="300" class="w-full h-full bg-white cursor-crosshair" style="touch-action: none;"></canvas>
+              </div>
+            </div>
+          ` : `
+            <div class="p-4 bg-surface border border-light rounded-xl mb-4 text-main whitespace-pre-wrap text-lg">${esc(savedWorking) || '<em>No text answer provided.</em>'}</div>
+            <div class="ans-block strong p-5 bg-science-tint card-rule-mint rounded-xl">
+              <div class="text-xs font-bold mb-2 text-success uppercase tracking-wider flex items-center gap-2"><span>✨</span> Miss Wena's Model Answer</div>
+              <div class="text-base text-main font-medium whitespace-pre-wrap leading-relaxed">${esc(pModel)}</div>
+            </div>
+          `}
         </div>`;
     }).join('');
-    return parts;
   }
 
 function buildClozeUI(q) {
@@ -512,7 +540,13 @@ function buildClozeUI(q) {
 
     let actionBtn = '';
     if (!state.isAnswered) {
-      if (isModelType) actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">Reveal Model Answer</button>`;
+      if (q.type === 'word_problem') {
+        let partsData = [];
+        try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
+        const isLastPart = state.activeWPPart >= partsData.length - 1;
+        actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">${isLastPart ? 'Reveal Final Answer' : 'Submit Part & Continue'}</button>`;
+      }
+      else if (q.type === 'open_ended') actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">Reveal Model Answer</button>`;
       else if (q.type === 'cloze' || q.type === 'editing') actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">Check Answers</button>`;
       else if (q.type !== 'mcq') actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">Check Answer</button>`;
     } else {
@@ -617,12 +651,13 @@ function buildClozeUI(q) {
       });
       state.answers[state.currentIndex] = ans;
     } else if (q.type === 'word_problem') {
-      const ans = {};
+      const ans = state.answers[state.currentIndex] || {};
       let parts = [];
       try { parts = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
-      parts.forEach(p => {
-        const el = document.getElementById(`wp-${p.label}`);
-        if (el) ans[p.label] = el.value;
+      parts.forEach((p, idx) => {
+        const pLabel = p.label || (p.part_id ? `(${p.part_id})` : `Part ${idx + 1}`);
+        const el = document.getElementById(`wp-${pLabel}`);
+        if (el) ans[pLabel] = el.value;
       });
       state.answers[state.currentIndex] = ans;
     } else if (q.type !== 'mcq' && q.type !== 'open_ended') {
@@ -635,6 +670,8 @@ function buildClozeUI(q) {
 
   window.navQuiz = (dir) => {
     if (!state.isAnswered && dir > 0) return;
+
+    state.activeWPPart = 0; // Reset progressive UI for the new question
 
     if (dir < 0) {
       window.saveInputState();
@@ -755,10 +792,30 @@ function buildClozeUI(q) {
       return;
     }
 
-    // ── WORD PROBLEM / OPEN-ENDED: reveal model answer ──
-    if (q.type === 'word_problem' || q.type === 'open_ended') {
+    // ── OPEN-ENDED: reveal model answer ──
+    if (q.type === 'open_ended') {
       state.isAnswered = true;
       state.feedback = { status: 'model', text: '', isModel: true };
+      render();
+      return;
+    }
+
+    // ── WORD PROBLEM: Progressive Disclosure ──
+    if (q.type === 'word_problem') {
+      let partsData = [];
+      try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
+      
+      state.activeWPPart++;
+
+      if (state.activeWPPart >= partsData.length) {
+        // All parts completed
+        state.isAnswered = true;
+        state.score += q.marks || 0; // Temporarily give full marks in practice
+        state.feedback = { status: 'model', text: 'All parts completed! Review the model answers below.', isModel: true };
+      } else {
+        // Next part unlocked
+        state.feedback = { status: 'partial', text: 'Great! Review the model answer and move on to the next part.' };
+      }
       render();
       return;
     }
