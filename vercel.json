@@ -6,6 +6,7 @@
     { "source": "/api/checkout",           "destination": "/api/index" },
     { "source": "/api/webhook",            "destination": "/api/index" },
     { "source": "/api/portal",             "destination": "/api/index" },
+    { "source": "/api/admin",              "destination": "/api/index" },
     { "source": "/api/generate",           "destination": "/api/index" },
     { "source": "/api/generate-question",  "destination": "/api/index" },
     { "source": "/api/generate-exam",      "destination": "/api/index" },
@@ -25,12 +26,6 @@
         { "key": "Referrer-Policy",         "value": "strict-origin-when-cross-origin" },
         { "key": "Permissions-Policy",      "value": "camera=(), microphone=(), geolocation=()" }
       ]
-    }
-  ],
-  "crons": [
-    {
-      "path": "/api/cron/fill-bank",
-      "schedule": "0 0 * * *"
     }
   ]
 }
