@@ -121,7 +121,7 @@
     if (!session) { window.location.href = '/pages/login.html'; return; }
     adminSession = session;
 
-    // Client-side role check first (UX only — server re-validates everything)
+    // Client-side role check (UX only — server re-validates on every request)
     const { data: myProfile } = await sb.from('profiles').select('role, full_name').eq('id', session.user.id).single();
     if (!myProfile || !['admin','sub-admin'].includes(myProfile.role)) {
       document.body.innerHTML = '<div style="padding:60px;text-align:center;"><h2 class="font-display text-3xl mb-4">🚫 Access Denied</h2><p class="text-muted">Admin or sub-admin role required.</p><a href="/pages/dashboard.html" class="btn btn-primary mt-4">Back to Dashboard</a></div>';
@@ -129,10 +129,9 @@
     }
     callerRole = myProfile.role;
 
-    // Fetch all data from server
     const res = await fetch('/api/admin', {
       method: 'GET',
-      headers: { 'Authorization': `Bearer ${session.access_token}` },
+      headers: { 'Authorization': 'Bearer ' + session.access_token },
     });
     if (!res.ok) { showError('Failed to load admin data. Server returned ' + res.status); return; }
     const data = await res.json();
@@ -154,13 +153,13 @@
       { label: 'On Trial',      value: trial,    icon: '🎁' },
       { label: 'Total Students',value: students, icon: '📚' },
     ];
-    document.getElementById('statsRow').innerHTML = stats.map(s =>
-      `<div class="card p-4 flex-1 text-center" style="min-width:130px;">
-        <div style="font-size:2rem;">${s.icon}</div>
-        <div class="font-display text-3xl text-main">${s.value}</div>
-        <div class="text-xs text-muted mt-1">${s.label}</div>
-      </div>`
-    ).join('');
+    document.getElementById('statsRow').innerHTML = stats.map(function(s) {
+      return '<div class="card p-4 flex-1 text-center" style="min-width:130px;">'
+        + '<div style="font-size:2rem;">' + s.icon + '</div>'
+        + '<div class="font-display text-3xl text-main">' + s.value + '</div>'
+        + '<div class="text-xs text-muted mt-1">' + s.label + '</div>'
+        + '</div>';
+    }).join('');
   }
 
   function switchTab(tab) {
@@ -181,7 +180,8 @@
     const colours = { trial: '#888', all_subjects: 'var(--brand-rose)', family: 'var(--brand-sage)', single_subject: '#a67c52' };
     const labels  = { trial: 'Trial', all_subjects: 'All Subjects', family: 'Family', single_subject: 'Single Sub' };
     const c = colours[tier] || '#888';
-    return `<span class="tier-badge" style="background:${c}22;color:${c};border:1px solid ${c}55;">${labels[tier]||tier}</span>`;
+    const label = labels[tier] || tier;
+    return '<span class="tier-badge" style="background:' + c + '22;color:' + c + ';border:1px solid ' + c + '55;">' + label + '</span>';
   }
 
   function fmtDate(iso) {
@@ -191,53 +191,64 @@
 
   function renderParents() {
     const q = document.getElementById('searchInput').value.toLowerCase();
-    const filtered = allProfiles.filter(p =>
-      (p.full_name||'').toLowerCase().includes(q) ||
-      (p.email||'').toLowerCase().includes(q)
-    );
+    const filtered = allProfiles.filter(function(p) {
+      return (p.full_name||'').toLowerCase().includes(q) || (p.email||'').toLowerCase().includes(q);
+    });
     const tbody = document.getElementById('parentsBody');
     if (filtered.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted);">No parents found.</td></tr>`;
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted);">No parents found.</td></tr>';
       return;
     }
-    tbody.innerHTML = filtered.map(p => {
-      const safeEmail = (p.email||'').replace(/'/g,"&apos;");
-      const safeName  = (p.full_name||'').replace(/'/g,"&apos;");
-      const deleteBtn = callerRole === 'admin'
-        ? `<button class="btn btn-sm hover-lift" style="background:rgba(220,38,38,0.1);color:var(--brand-error);border:none;" onclick="deleteUser('${p.id}','${safeEmail}')">🗑️</button>`
+
+    var rows = '';
+    filtered.forEach(function(p) {
+      // Precompute safe values — avoids nested quotes inside template strings
+      var safeId    = (p.id || '').replace(/'/g, '');
+      var safeEmail = (p.email || '').replace(/'/g, '&apos;');
+      var safeTier  = p.subscription_tier || 'trial';
+      var safeName  = p.full_name || '';
+
+      var deleteBtn = callerRole === 'admin'
+        ? '<button class="btn btn-sm hover-lift" style="background:rgba(220,38,38,0.1);color:var(--brand-error);border:none;" onclick="deleteUser(\'' + safeId + '\',\'' + safeEmail + '\')">🗑️</button>'
         : '';
-      return `<tr>
-        <td><span class="font-semibold">${p.full_name||'<span class="text-muted">&mdash;</span>'}</span></td>
-        <td style="color:var(--text-muted);">${p.email||'&mdash;'}</td>
-        <td>${tierBadge(p.subscription_tier)}</td>
-        <td style="color:var(--text-muted);font-size:0.8rem;">${fmtDate(p.trial_ends_at)}</td>
-        <td style="color:var(--text-muted);font-size:0.8rem;">${fmtDate(p.created_at)}</td>
-        <td><div style="display:flex;gap:6px;">
-          <button class="btn btn-sm btn-secondary hover-lift" onclick="openEditTier('${p.id}','${safeEmail}','${p.subscription_tier||'trial}'")">&#x270F;&#xFE0F; Plan</button>
-          ${deleteBtn}
-        </div></td>
-      </tr>`;
-    }).join('');
+
+      rows += '<tr>'
+        + '<td><span class="font-semibold">' + (safeName || '<span class="text-muted">&mdash;</span>') + '</span></td>'
+        + '<td style="color:var(--text-muted);">' + (p.email || '&mdash;') + '</td>'
+        + '<td>' + tierBadge(safeTier) + '</td>'
+        + '<td style="color:var(--text-muted);font-size:0.8rem;">' + fmtDate(p.trial_ends_at) + '</td>'
+        + '<td style="color:var(--text-muted);font-size:0.8rem;">' + fmtDate(p.created_at) + '</td>'
+        + '<td><div style="display:flex;gap:6px;">'
+        + '<button class="btn btn-sm btn-secondary hover-lift" onclick="openEditTier(\'' + safeId + '\',\'' + safeEmail + '\',\'' + safeTier + '\')">✏️ Plan</button>'
+        + deleteBtn
+        + '</div></td>'
+        + '</tr>';
+    });
+    tbody.innerHTML = rows;
   }
 
   function renderStudents() {
     const q = document.getElementById('searchInput').value.toLowerCase();
-    const emailMap = Object.fromEntries(allProfiles.map(p => [p.id, p.email]));
-    const filtered = allStudents.filter(s =>
-      (s.name||'').toLowerCase().includes(q) ||
-      (emailMap[s.parent_id]||'').toLowerCase().includes(q)
-    );
+    const emailMap = {};
+    allProfiles.forEach(function(p) { emailMap[p.id] = p.email; });
+    const filtered = allStudents.filter(function(s) {
+      return (s.name||'').toLowerCase().includes(q) || (emailMap[s.parent_id]||'').toLowerCase().includes(q);
+    });
     const tbody = document.getElementById('studentsBody');
     if (filtered.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--text-muted);">No students found.</td></tr>`;
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--text-muted);">No students found.</td></tr>';
       return;
     }
-    tbody.innerHTML = filtered.map(s => `<tr>
-      <td class="font-semibold">${s.name||'&mdash;'}</td>
-      <td><span class="badge badge-info text-xs">${s.level||'&mdash;'}</span></td>
-      <td style="color:var(--text-muted);">${emailMap[s.parent_id]||'&mdash;'}</td>
-      <td style="color:var(--text-muted);font-size:0.8rem;">${fmtDate(s.created_at)}</td>
-    </tr>`).join('');
+    var rows = '';
+    filtered.forEach(function(s) {
+      rows += '<tr>'
+        + '<td class="font-semibold">' + (s.name || '&mdash;') + '</td>'
+        + '<td><span class="badge badge-info text-xs">' + (s.level || '&mdash;') + '</span></td>'
+        + '<td style="color:var(--text-muted);">' + (emailMap[s.parent_id] || '&mdash;') + '</td>'
+        + '<td style="color:var(--text-muted);font-size:0.8rem;">' + fmtDate(s.created_at) + '</td>'
+        + '</tr>';
+    });
+    tbody.innerHTML = rows;
   }
 
   function openEditTier(userId, email, currentTier) {
@@ -257,12 +268,12 @@
     const tier = document.getElementById('editTierSelect').value;
     const res  = await fetch('/api/admin', {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${adminSession.access_token}`, 'Content-Type': 'application/json' },
+      headers: { 'Authorization': 'Bearer ' + adminSession.access_token, 'Content-Type': 'application/json' },
       body:    JSON.stringify({ action: 'update_tier', userId: editTargetId, tier }),
     });
     const data = await res.json();
     if (data.success) {
-      const p = allProfiles.find(p => p.id === editTargetId);
+      const p = allProfiles.find(function(p) { return p.id === editTargetId; });
       if (p) p.subscription_tier = tier;
       closeEditTierModal();
       renderStats();
@@ -273,17 +284,17 @@
   }
 
   async function deleteUser(userId, email) {
-    if (!confirm(`Delete account for ${email}?\n\nThis will permanently delete their profile and all student data. This cannot be undone.`)) return;
+    if (!confirm('Delete account for ' + email + '?\n\nThis will permanently delete their profile and all student data. This cannot be undone.')) return;
     if (!adminSession) return;
-    const res  = await fetch('/api/admin', {
+    const res = await fetch('/api/admin', {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${adminSession.access_token}`, 'Content-Type': 'application/json' },
+      headers: { 'Authorization': 'Bearer ' + adminSession.access_token, 'Content-Type': 'application/json' },
       body:    JSON.stringify({ action: 'delete_user', userId }),
     });
     const data = await res.json();
     if (data.success) {
-      allProfiles = allProfiles.filter(p => p.id !== userId);
-      allStudents = allStudents.filter(s => s.parent_id !== userId);
+      allProfiles = allProfiles.filter(function(p) { return p.id !== userId; });
+      allStudents = allStudents.filter(function(s) { return s.parent_id !== userId; });
       renderStats();
       renderCurrentTab();
     } else {
