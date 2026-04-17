@@ -474,8 +474,11 @@ function buildClozeUI(q) {
       
       let interactionUI = '';
       if (!isCompleted) {
+        const safeIdLabel = String(pLabel).replace(/[^a-zA-Z0-9]/g, '');
+        
         if (part.part_type === 'text_box') {
-          interactionUI = `<textarea id="comp-${pLabel}" class="form-input w-full p-4 text-lg border-2 border-slate-200 focus:border-brand-sage rounded-xl" rows="3" placeholder="Type your answer here...">${esc(savedWorking)}</textarea>`;
+          interactionUI = `<textarea id="comp-${safeIdLabel}" class="form-input w-full p-4 text-lg border-2 border-slate-200 focus:border-brand-sage rounded-xl" rows="3" placeholder="Type your answer here...">${esc(typeof savedWorking === 'string' ? savedWorking : '')}</textarea>`;
+        
         } else if (part.part_type === 'mcq') {
           const letters = ['A','B','C','D'];
           interactionUI = (part.options || []).map((opt, i) => `
@@ -483,6 +486,34 @@ function buildClozeUI(q) {
               <span class="mcq-badge">${letters[i]}</span><span class="font-medium text-main">${esc(opt)}</span>
             </div>
           `).join('');
+          
+        } else if (part.part_type === 'referent') {
+          interactionUI = `<div class="flex flex-col gap-3">` + (part.items || []).map((item, i) => `
+            <div class="flex items-center gap-4 bg-surface p-3 rounded-lg border border-light">
+              <div class="font-bold text-main w-1/3">${esc(item.word)}</div>
+              <input type="text" id="comp-${safeIdLabel}-ref${i}" class="form-input flex-1 p-3 text-lg border-2 border-slate-200 rounded-lg" placeholder="Refers to..." value="${esc(savedWorking['ref'+i] || '')}">
+            </div>
+          `).join('') + `</div>`;
+          
+        } else if (part.part_type === 'sequencing') {
+          interactionUI = `<div class="flex flex-col gap-3">` + (part.items || []).map((item, i) => `
+            <div class="flex items-center gap-4 bg-surface p-3 rounded-lg border border-light">
+              <input type="number" id="comp-${safeIdLabel}-seq${i}" class="form-input w-20 p-3 text-lg text-center border-2 border-slate-200 rounded-lg" min="1" max="3" value="${esc(savedWorking['seq'+i] || '')}">
+              <div class="font-medium text-main leading-relaxed">${esc(item)}</div>
+            </div>
+          `).join('') + `</div>`;
+          
+        } else if (part.part_type === 'true_false') {
+          interactionUI = `<div class="flex flex-col gap-4">` + (part.items || []).map((item, i) => `
+            <div class="p-4 border-2 border-slate-200 rounded-xl bg-surface">
+              <div class="font-medium text-lg mb-3">${esc(item.statement)}</div>
+              <div class="flex gap-4 mb-3">
+                <label class="flex items-center gap-2 cursor-pointer font-bold"><input type="radio" name="comp-${safeIdLabel}-tf${i}" value="True" ${savedWorking['tf'+i]==='True'?'checked':''}> True</label>
+                <label class="flex items-center gap-2 cursor-pointer font-bold"><input type="radio" name="comp-${safeIdLabel}-tf${i}" value="False" ${savedWorking['tf'+i]==='False'?'checked':''}> False</label>
+              </div>
+              <textarea id="comp-${safeIdLabel}-reason${i}" class="form-input w-full p-3 text-lg border-2 border-slate-200 rounded-lg" rows="2" placeholder="Reason/Evidence from text...">${esc(savedWorking['reason'+i] || '')}</textarea>
+            </div>
+          `).join('') + `</div>`;
         }
       } else {
          // Completed State
@@ -639,8 +670,11 @@ function buildClozeUI(q) {
 
     const diagramHtml = renderVisualPayload(q.visual_payload);
     
+    // Expand to 1200px for Comprehension split-screen, keep 680px for others
+    const maxWidth = q.type === 'comprehension' ? '1200px' : '680px';
+    
     app.innerHTML = `
-      <div class="w-full" style="max-width: 680px;">
+      <div class="w-full" style="max-width: ${maxWidth}; transition: max-width 0.3s ease;">
         <div class="flex justify-between items-center mb-6">
           <div class="flex flex-col gap-1">
             <div class="text-xs font-bold text-muted uppercase">Question ${state.currentIndex + 1} of ${state.questions.length}</div>
@@ -748,18 +782,39 @@ function buildClozeUI(q) {
       const ans = state.answers[state.currentIndex] || {};
       let parts = [];
       try { parts = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
-      parts.forEach((p, idx) => {
-        
-        // 1. Handle different naming for Comprehension (Q1) vs Word Problem (Part 1)
+      partsData.forEach((p, idx) => {
         const pLabel = q.type === 'comprehension' 
             ? `Q${idx + 1}` 
             : (p.label || (p.part_id ? `(${p.part_id})` : `Part ${idx + 1}`));
             
-        // 2. Handle different HTML IDs for Comprehension (comp-) vs Word Problem (wp-)
+        const safeIdLabel = String(pLabel).replace(/[^a-zA-Z0-9]/g, '');
         const prefix = q.type === 'comprehension' ? 'comp-' : 'wp-';
-        const el = document.getElementById(`${prefix}${esc(pLabel)}`);
-        
-        if (el) ans[pLabel] = el.value;
+
+        if (q.type === 'comprehension' && p.part_type !== 'text_box' && p.part_type !== 'mcq') {
+           ans[pLabel] = ans[pLabel] || {};
+           if (p.part_type === 'referent') {
+             (p.items || []).forEach((_, i) => {
+               const el = document.getElementById(`comp-${safeIdLabel}-ref${i}`);
+               if (el) ans[pLabel]['ref'+i] = el.value;
+             });
+           } else if (p.part_type === 'sequencing') {
+             (p.items || []).forEach((_, i) => {
+               const el = document.getElementById(`comp-${safeIdLabel}-seq${i}`);
+               if (el) ans[pLabel]['seq'+i] = el.value;
+             });
+           } else if (p.part_type === 'true_false') {
+             (p.items || []).forEach((_, i) => {
+               const checked = document.querySelector(`input[name="comp-${safeIdLabel}-tf${i}"]:checked`);
+               if (checked) ans[pLabel]['tf'+i] = checked.value;
+               const el = document.getElementById(`comp-${safeIdLabel}-reason${i}`);
+               if (el) ans[pLabel]['reason'+i] = el.value;
+             });
+           }
+        } else {
+           // Standard text box extraction
+           const el = document.getElementById(`${prefix}${safeIdLabel}`);
+           if (el && p.part_type !== 'mcq') ans[pLabel] = el.value;
+        }
       });
       state.answers[state.currentIndex] = ans;
     } else if (q.type !== 'mcq' && q.type !== 'open_ended') {
