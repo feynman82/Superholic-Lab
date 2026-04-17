@@ -4,6 +4,27 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Start Free Trial — Superholic Lab</title>
+  <!-- SEO -->
+  <meta name="description" content="Start your 7-day free trial on Superholic Lab — Singapore’s AI-powered learning platform for P1–P6. MOE-aligned Maths, Science &amp; English. No credit card required.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://www.superholiclab.com/pages/signup.html">
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Superholic Lab">
+  <meta property="og:title" content="Start Free Trial — Superholic Lab">
+  <meta property="og:description" content="7-day free trial. No credit card. MOE-aligned Maths, Science &amp; English for Singapore P1–P6 students.">
+  <meta property="og:url" content="https://www.superholiclab.com/pages/signup.html">
+  <meta property="og:image" content="https://www.superholiclab.com/assets/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:locale" content="en_SG">
+  <!-- Twitter/X Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Start Free Trial — Superholic Lab">
+  <meta name="twitter:description" content="7-day free trial. No credit card. MOE-aligned learning for Singapore P1–P6.">
+  <meta name="twitter:image" content="https://www.superholiclab.com/assets/og.png">
+  <!-- Plausible Analytics -->
+  <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="../css/style.css" />
@@ -130,7 +151,6 @@
       });
     }
 
-    // Pre-select plan from URL param if coming from pricing page
     const urlPlan = new URLSearchParams(window.location.search).get('plan');
     if (urlPlan === 'family') {
       document.getElementById('plan_family').checked = true;
@@ -157,16 +177,18 @@
 
       document.getElementById('errorMsg').style.display = 'none';
 
-      if (!name)                          { showError('Please enter your name.'); return; }
-      if (!email)                         { showError('Please enter your email.'); return; }
+      if (!name)                            { showError('Please enter your name.'); return; }
+      if (!email)                           { showError('Please enter your email.'); return; }
       if (!password || password.length < 8) { showError('Password must be at least 8 characters.'); return; }
-      if (password !== confirm)           { showError('Passwords do not match.'); return; }
+      if (password !== confirm)             { showError('Passwords do not match.'); return; }
 
       btn.disabled    = true;
       btn.textContent = 'Creating account…';
 
       try {
         await signUp(email, password, name, plan);
+        // Analytics: fire Signup event on success
+        if (window.plausible) window.plausible('Signup', { props: { plan } });
       } catch (err) {
         showError(err.message || 'Sign-up failed. Please try again.');
         btn.disabled    = false;
@@ -181,6 +203,8 @@
       document.getElementById('errorMsg').style.display = 'none';
       try {
         await signInWithGoogle();
+        // Note: Google OAuth redirects away — Signup event not fired here
+        // as we can't intercept the OAuth callback directly
       } catch (err) {
         showError('Google sign-in failed. Please try again.');
         document.getElementById('googleBtn').disabled = false;
