@@ -730,6 +730,59 @@ window.initExamEngine = function () {
              <input type="text" id="qInput" class="form-input w-full p-4 text-lg border-2 border-brand-sage/50 focus:border-brand-sage rounded-xl transition-all shadow-sm bg-sage-50/10" placeholder="Final Answer (Optional)" value="${esc(savedAns)}" autocomplete="off" oninput="window.saveCurrentAnswerState()">`
         }
       `;
+    } else if (q.type === 'comprehension') {
+      let partsData = [];
+      try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
+      const savedObj = (typeof savedAns === 'object' && savedAns !== null) ? savedAns : {};
+
+      const partsHtml = partsData.map((part, idx) => {
+        const pLabel = `Q${idx + 1}`;
+        const safeIdLabel = String(pLabel).replace(/[^a-zA-Z0-9]/g, '');
+        const savedWorking = savedObj[pLabel] || '';
+        let inputUI = '';
+        
+        if (part.part_type === 'text_box') {
+          inputUI = `<textarea id="comp-${safeIdLabel}" class="form-input w-full p-4 text-lg border-2 border-slate-200 rounded-xl" rows="3" placeholder="Type answer here..." oninput="window.saveCurrentAnswerState()">${esc(savedWorking)}</textarea>`;
+        } else if (part.part_type === 'mcq') {
+          const letters = ['A','B','C','D'];
+          inputUI = (part.options || []).map((opt, i) => `
+            <div class="mcq-opt hover-lift ${savedWorking === opt ? 'is-sel' : ''}" onclick="window.selectCompMcq('${pLabel}', ${i})">
+              <span class="mcq-badge">${letters[i]}</span><span class="font-medium">${esc(opt)}</span>
+            </div>
+          `).join('');
+        }
+        
+        return `
+          <div class="mb-6 pb-6" style="${idx < partsData.length - 1 ? 'border-bottom: 1px dashed var(--border-light);' : ''}">
+            <div class="flex items-center gap-3 mb-3">
+              <span class="font-display text-xl text-main font-bold" style="color: var(--english-colour);">${pLabel}</span>
+              <span class="badge badge-info text-xs">${part.marks} mark${part.marks !== 1 ? 's' : ''}</span>
+            </div>
+            ${part.question ? `<div class="text-lg text-main mb-4 font-medium">${esc(part.question)}</div>` : ''}
+            ${part.instructions ? `<div class="text-sm text-muted italic mb-4">${esc(part.instructions)}</div>` : ''}
+            ${inputUI}
+          </div>`;
+      }).join('');
+
+      const modalHtml = `
+        <dialog id="passageModal" class="comp-modal-dialog">
+          <div class="sticky top-0 bg-page p-4 border-b border-light flex justify-between items-center z-10">
+            <h3 class="font-display text-xl m-0">Passage</h3>
+            <button class="btn btn-sm btn-ghost" onclick="document.getElementById('passageModal').close()">Close</button>
+          </div>
+          <div class="p-6 text-lg text-main leading-relaxed">${esc(q.passage).replace(/\\n/g, '<br><br>')}</div>
+        </dialog>
+        <button class="mobile-passage-toggle btn btn-primary" onclick="document.getElementById('passageModal').showModal()">📖 Read Passage</button>
+      `;
+
+      uiHtml = `
+        <div class="comp-container">
+          <div class="comp-passage-pane card p-6 text-lg leading-relaxed bg-surface">${esc(q.passage).replace(/\\n/g, '<br><br>')}</div>
+          <div class="comp-questions-pane">${partsHtml}</div>
+        </div>
+        ${modalHtml}
+      `;
+
     } else if (q.type === 'word_problem') {
       let partsData = [];
       try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
@@ -857,14 +910,21 @@ window.initExamEngine = function () {
         if (el) ans[l.line_number] = el.value;
       });
       state.answers[ansKey] = ans;
-    } else if (q.type === 'word_problem') {
+    } else if (q.type === 'word_problem' || q.type === 'comprehension') {
       const ans = state.answers[ansKey] || {};
       let partsData = [];
       try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
       partsData.forEach((p, idx) => {
-        const pLabel = p.label || (p.part_id ? `(${p.part_id})` : `Part ${idx + 1}`);
+        // 1. Handle naming: Q1 vs Part 1
+        const pLabel = q.type === 'comprehension' 
+            ? `Q${idx + 1}` 
+            : (p.label || (p.part_id ? `(${p.part_id})` : `Part ${idx + 1}`));
+            
+        // 2. Handle HTML IDs: comp-Q1 vs wp-Part1
         const safeIdLabel = String(pLabel).replace(/[^a-zA-Z0-9]/g, '');
-        const el = document.getElementById(`wp-${safeIdLabel}`);
+        const prefix = q.type === 'comprehension' ? 'comp-' : 'wp-';
+        
+        const el = document.getElementById(`${prefix}${safeIdLabel}`);
         if (el) ans[pLabel] = el.value;
       });
       state.answers[ansKey] = ans;
@@ -899,6 +959,20 @@ window.initExamEngine = function () {
     try { safeOptions = typeof q.options === 'string' ? JSON.parse(q.options) : (q.options || []); } catch(e) {}
     
     state.answers[state.currentQIdx] = safeOptions[idx]; // Save exact string, not the letter
+    renderFocusExam();
+  };
+
+  window.selectCompMcq = (pLabel, idx) => {
+    const q = state.allQs[state.currentQIdx];
+    let partsData = [];
+    try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
+    
+    const partIndex = parseInt(pLabel.replace('Q', '')) - 1;
+    const partData = partsData[partIndex];
+    if (!partData) return;
+
+    if (!state.answers[state.currentQIdx]) state.answers[state.currentQIdx] = {};
+    state.answers[state.currentQIdx][pLabel] = partData.options[idx];
     renderFocusExam();
   };
 
@@ -1214,14 +1288,18 @@ window.initExamEngine = function () {
           return `Line ${num}: You: ${esc(selected)} ${isCor ? '✅' : `❌ (Correct: ${esc(l.correct_word)})`}`;
         }).join('<br>');
         ansHtml = `<div class="bg-page p-3 mt-2 text-sm" style="border-radius: var(--radius-sm);">${rows}</div>`;
-      } else if (r.q.type === 'word_problem') {
+      } else if (r.q.type === 'word_problem' || r.q.type === 'comprehension') {
         let partsData = [];
         try { partsData = typeof r.q.parts === 'string' ? JSON.parse(r.q.parts) : (r.q.parts || []); } catch(e) {}
         
         const rows = partsData.map((p, idx) => {
-          const pLabel = p.label || (p.part_id ? `(${p.part_id})` : `Part ${idx + 1}`);
+          const pLabel = r.q.type === 'comprehension' 
+              ? `Q${idx + 1}` 
+              : (p.label || (p.part_id ? `(${p.part_id})` : `Part ${idx + 1}`));
+              
           const userAns = (r.sa && typeof r.sa === 'object') ? r.sa[pLabel] : '';
           const modelAns = p.model_answer || p.worked_solution || p.correct_answer || '';
+          
           return `
             <div class="mb-3 border-b border-light pb-2 last:border-0 last:pb-0">
               <div class="font-bold" style="color: var(--brand-sage);">${esc(pLabel)}</div>
