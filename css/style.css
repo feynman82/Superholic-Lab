@@ -1872,3 +1872,67 @@ p { text-align: justify; }
   /* Show exam content area at full width */
   .container { max-width: 100% !important; padding: 0 !important; }
 }
+/* ── COMPREHENSION LAYOUT (Split Screen & Mobile) ── */
+.comp-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  width: 100%;
+}
+
+.comp-passage-pane {
+  display: none; /* Hidden on mobile main flow */
+}
+
+.comp-questions-pane {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* Desktop Split-Screen */
+@media (min-width: 1024px) {
+  .comp-container {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+  .comp-passage-pane {
+    display: block;
+    width: 45%;
+    position: sticky;
+    top: calc(var(--navbar-h) + var(--space-4));
+    max-height: 75vh;
+    overflow-y: auto;
+    padding-right: var(--space-4);
+    border-right: 2px dashed var(--border-light);
+  }
+  .comp-questions-pane {
+    width: 55%;
+  }
+  .mobile-passage-toggle {
+    display: none !important;
+  }
+}
+
+/* Mobile Sticky Toggle */
+.mobile-passage-toggle {
+  position: fixed;
+  bottom: calc(var(--navbar-h) + 1rem);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 40;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  border-radius: 50px;
+  padding: 10px 24px;
+}
+
+/* Mobile Modal for Passage */
+.comp-modal-dialog {
+  width: 100vw; max-width: 100vw; height: 85vh; max-height: 85vh;
+  margin-top: auto; margin-bottom: 0;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  border: none; padding: 0; box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
+  background: var(--bg-page);
+}
+.comp-modal-dialog::backdrop { background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); }
