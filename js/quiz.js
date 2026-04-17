@@ -452,6 +452,82 @@ function buildClozeUI(q) {
     return `<div class="card p-6 editing-passage text-lg text-main font-normal" style="line-height: 2.4;">${html}</div>${editFeedback}`;
   }
 
+  function buildComprehensionUI(q) {
+    let partsData = [];
+    try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
+    if (partsData.length === 0) return `<div class="text-amber">No questions found for this passage.</div>`;
+
+    const savedAnsObj = state.answers[state.currentIndex] || {};
+
+    const partsHtml = partsData.map((part, idx) => {
+      // Use activeWPPart to track progression, just like word problems
+      const isLocked = idx > state.activeWPPart;
+      const isCompleted = idx < state.activeWPPart;
+      const isActive = idx === state.activeWPPart;
+      const pLabel = `Q${idx + 1}`; 
+
+      if (isLocked) {
+        return `<div class="mb-4 p-4" style="opacity: 0.4; pointer-events: none; border-left: 3px solid var(--border-light);"><span class="font-display text-xl text-muted font-bold">🔒 ${pLabel}</span></div>`;
+      }
+
+      const savedWorking = savedAnsObj[pLabel] || '';
+      
+      let interactionUI = '';
+      if (!isCompleted) {
+        if (part.part_type === 'text_box') {
+          interactionUI = `<textarea id="comp-${pLabel}" class="form-input w-full p-4 text-lg border-2 border-slate-200 focus:border-brand-sage rounded-xl" rows="3" placeholder="Type your answer here...">${esc(savedWorking)}</textarea>`;
+        } else if (part.part_type === 'mcq') {
+          const letters = ['A','B','C','D'];
+          interactionUI = (part.options || []).map((opt, i) => `
+            <div class="mcq-opt hover-lift ${savedWorking === opt ? 'is-sel' : ''}" onclick="window.selectCompMcq('${pLabel}', ${i})">
+              <span class="mcq-badge">${letters[i]}</span><span class="font-medium text-main">${esc(opt)}</span>
+            </div>
+          `).join('');
+        }
+      } else {
+         // Completed State
+         interactionUI = `
+          <div class="p-4 bg-surface border border-light rounded-xl mb-4 text-main text-lg">${esc(savedWorking) || '<em>No answer provided.</em>'}</div>
+          <div class="ans-block strong p-5 bg-science-tint card-rule-mint rounded-xl">
+            <div class="text-xs font-bold mb-2 text-success uppercase tracking-wider">✨ Model Answer / Explanation</div>
+            <div class="text-base text-main font-medium leading-relaxed">${esc(part.model_answer || part.explanation || part.correct_answer)}</div>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="mb-6 pb-6 ${idx < partsData.length - 1 ? 'border-b border-light border-dashed' : ''}">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="font-display text-xl text-main font-bold" style="color: var(--english-colour);">${pLabel}</span>
+            <span class="badge badge-info text-xs">${part.marks} mark${part.marks !== 1 ? 's' : ''}</span>
+          </div>
+          ${part.question ? `<div class="text-lg text-main font-medium mb-4 leading-relaxed">${esc(part.question)}</div>` : ''}
+          ${part.instructions ? `<div class="text-sm text-muted italic mb-4">${esc(part.instructions)}</div>` : ''}
+          ${interactionUI}
+        </div>`;
+    }).join('');
+
+    // Modal dialog for mobile, hidden on desktop
+    const modalHtml = `
+      <dialog id="passageModal" class="comp-modal-dialog">
+        <div class="sticky top-0 bg-page p-4 border-b border-light flex justify-between items-center z-10">
+          <h3 class="font-display text-xl m-0">Passage</h3>
+          <button class="btn btn-sm btn-ghost" onclick="document.getElementById('passageModal').close()">Close</button>
+        </div>
+        <div class="p-6 text-lg text-main leading-relaxed">${esc(q.passage).replace(/\\n/g, '<br><br>')}</div>
+      </dialog>
+      <button class="mobile-passage-toggle btn btn-primary" onclick="document.getElementById('passageModal').showModal()">📖 Read Passage</button>
+    `;
+
+    return `
+      <div class="comp-container">
+        <div class="comp-passage-pane card p-6 text-lg text-main leading-relaxed">${esc(q.passage).replace(/\\n/g, '<br><br>')}</div>
+        <div class="comp-questions-pane">${partsHtml}</div>
+      </div>
+      ${modalHtml}
+    `;
+  }
+
 // 🚀 NEW: Hint Renderer
   function buildHintsUI(q) {
     if (!q.progressive_hints || !Array.isArray(q.progressive_hints) || q.progressive_hints.length === 0) return '';
@@ -497,13 +573,15 @@ function buildClozeUI(q) {
     const isLast = state.currentIndex === state.questions.length - 1;
     const isModelType = q.type === 'word_problem' || q.type === 'open_ended';
 
+    // IN renderQuiz()
     let inputUi = '';
     if (q.type === 'mcq')           inputUi = buildMCQOptions(q);
     else if (q.type === 'word_problem') inputUi = buildWordProblemUI(q);
+    else if (q.type === 'comprehension') inputUi = buildComprehensionUI(q); // ADDED
     else if (q.type === 'cloze')    inputUi = buildClozeUI(q);
     else if (q.type === 'editing')  inputUi = buildEditingUI(q);
-    else                            inputUi = buildTextAreaUI(q);   
-
+    else                            inputUi = buildTextAreaUI(q);
+    
     const hintsUi = buildHintsUI(q);
 
     let feedbackHtml = '';
@@ -539,7 +617,7 @@ function buildClozeUI(q) {
     if (!state.isAnswered) {
       if (state.feedback && state.feedback.status === 'loading') {
         actionBtn = `<button class="btn btn-primary" disabled><span class="spinner-sm inline-block mr-2 border-white"></span> Grading...</button>`;
-      } else if (q.type === 'word_problem') {
+      } else if (q.type === 'word_problem' || q.type === 'comprehension') {
         let partsData = [];
         try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
         const isLastPart = state.activeWPPart >= partsData.length - 1;
@@ -617,6 +695,25 @@ function buildClozeUI(q) {
     window.checkAnswer();
   };
 
+  window.selectCompMcq = (pLabel, idx) => {
+    if (state.isAnswered) return;
+    const q = state.questions[state.currentIndex];
+    let partsData = [];
+    try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
+    
+    // Find the specific part data
+    const partIndex = parseInt(pLabel.replace('Q', '')) - 1;
+    const partData = partsData[partIndex];
+    if (!partData) return;
+
+    // Initialize object if empty
+    if (!state.answers[state.currentIndex]) state.answers[state.currentIndex] = {};
+    
+    // Save the exact string of the option
+    state.answers[state.currentIndex][pLabel] = partData.options[idx];
+    render(); // Re-render to show selection
+  };
+
   window.setMode = (mode, subKey = null) => {
     if (state.isAnswered) return;
     window.saveInputState();
@@ -647,13 +744,21 @@ function buildClozeUI(q) {
         if (el) ans[num] = el.value;
       });
       state.answers[state.currentIndex] = ans;
-    } else if (q.type === 'word_problem') {
+    } else if (q.type === 'word_problem' || q.type === 'comprehension') {
       const ans = state.answers[state.currentIndex] || {};
       let parts = [];
       try { parts = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
       parts.forEach((p, idx) => {
-        const pLabel = p.label || (p.part_id ? `(${p.part_id})` : `Part ${idx + 1}`);
-        const el = document.getElementById(`wp-${pLabel}`);
+        
+        // 1. Handle different naming for Comprehension (Q1) vs Word Problem (Part 1)
+        const pLabel = q.type === 'comprehension' 
+            ? `Q${idx + 1}` 
+            : (p.label || (p.part_id ? `(${p.part_id})` : `Part ${idx + 1}`));
+            
+        // 2. Handle different HTML IDs for Comprehension (comp-) vs Word Problem (wp-)
+        const prefix = q.type === 'comprehension' ? 'comp-' : 'wp-';
+        const el = document.getElementById(`${prefix}${esc(pLabel)}`);
+        
         if (el) ans[pLabel] = el.value;
       });
       state.answers[state.currentIndex] = ans;
@@ -758,15 +863,50 @@ function buildClozeUI(q) {
       render(); return;
     }
 
-    if (q.type === 'word_problem' || q.type === 'open_ended') {
+    // IN window.checkAnswer()
+    if (q.type === 'comprehension') {
+      let partsData = [];
+      try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
+      const currentPart = partsData[state.activeWPPart];
+      const pLabel = `Q${state.activeWPPart + 1}`;
+      const ans = (state.answers[state.currentIndex] || {})[pLabel] || '';
+
+      if (!ans) { alert('Please provide an answer before continuing!'); return; }
+
+      // Route A: Fast Local Grading for MCQ
+      if (currentPart.part_type === 'mcq' || currentPart.part_type === 'referent') {
+        const isCorrect = String(ans).trim().toLowerCase() === String(currentPart.correct_answer).trim().toLowerCase();
+        
+        state.score += isCorrect ? currentPart.marks : 0;
+        if (isCorrect) { state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak; } else state.streak = 0;
+        
+        state.activeWPPart++;
+        const isLast = state.activeWPPart >= partsData.length;
+        if (isLast) state.isAnswered = true;
+        
+        state.feedback = { 
+          status: isCorrect ? 'correct' : 'wrong', 
+          text: isCorrect ? 'Spot on!' : (currentPart.explanation || `Correct answer: ${currentPart.correct_answer}`),
+          isModel: false
+        };
+        render();
+        return;
+      }
+
+      // Route B: If it's a text_box, fall through to the API grading block below!
+    }
+    
+    if (q.type === 'word_problem' || q.type === 'open_ended' || q.type === 'comprehension') { // MODIFIED
       let ans = '';
       let currentPart = null;
 
-      if (q.type === 'word_problem') {
+      if (q.type === 'word_problem' || q.type === 'comprehension') { // MODIFIED
         let partsData = [];
         try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
         currentPart = partsData[state.activeWPPart];
-        const pLabel = currentPart.label || (currentPart.part_id ? `(${currentPart.part_id})` : `Part ${state.activeWPPart + 1}`);
+        const pLabel = q.type === 'comprehension' 
+            ? `Q${state.activeWPPart + 1}` 
+            : (currentPart.label || (currentPart.part_id ? `(${currentPart.part_id})` : `Part ${state.activeWPPart + 1}`));
         ans = (state.answers[state.currentIndex] || {})[pLabel] || '';
       } else {
         ans = state.answers[state.currentIndex] || '';
@@ -783,12 +923,13 @@ function buildClozeUI(q) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             questionId: q.id, 
-            questionType: 'open_ended',
-            questionText: currentPart ? (currentPart.question || currentPart.question_text || q.question_text) : q.question_text,
+            questionType: q.type === 'comprehension' ? 'comprehension' : 'open_ended', // MODIFIED
+            questionText: currentPart ? (currentPart.question || currentPart.instructions || currentPart.question_text || q.question_text) : q.question_text,
             subject: new URLSearchParams(window.location.search).get('subject') || 'mathematics',
             level: new URLSearchParams(window.location.search).get('level') || 'primary-4',
             studentAnswer: String(ans),
             workedSolution: currentPart ? (currentPart.worked_solution || currentPart.model_answer || currentPart.correct_answer) : (q.worked_solution || q.model_answer),
+            rubric: currentPart ? currentPart.rubric : null, // NEW FOR COMPREHENSION
             keywords: q.keywords || [],
             marks: currentPart ? (currentPart.marks || 2) : (q.marks || 2)
           })
@@ -803,7 +944,7 @@ function buildClozeUI(q) {
         state.score += data.score;
         if (isCorrect) { state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak; } else state.streak = 0;
 
-        if (q.type === 'word_problem') {
+        if (q.type === 'word_problem' || q.type === 'comprehension') { // MODIFIED
           let partsData = [];
           try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
           state.activeWPPart++;
