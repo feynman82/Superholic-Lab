@@ -1,10 +1,52 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pricing — Superholic Lab</title>
-  <meta name="description" content="Simple, transparent pricing for Singapore's best AI tutor. Start your 7-day free trial — no credit card required.">
-  
+  <!-- SEO -->
+  <meta name="description" content="All Subjects from S$12.99/month. Family Plan from S$19.99/month. 7-day free trial, no credit card required. MOE-aligned Maths, Science &amp; English for Singapore P1–P6.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://www.superholiclab.com/pages/pricing.html">
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Superholic Lab">
+  <meta property="og:title" content="Pricing — Superholic Lab">
+  <meta property="og:description" content="All Subjects from S$12.99/month. 7-day free trial, no credit card. MOE-aligned AI tutor for Singapore P1–P6.">
+  <meta property="og:url" content="https://www.superholiclab.com/pages/pricing.html">
+  <meta property="og:image" content="https://www.superholiclab.com/assets/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:locale" content="en_SG">
+  <!-- Twitter/X Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Pricing — Superholic Lab">
+  <meta name="twitter:description" content="All Subjects from S$12.99/month. 7-day free trial, no credit card required.">
+  <meta name="twitter:image" content="https://www.superholiclab.com/assets/og.png">
+  <!-- JSON-LD: FAQPage -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Do I need a credit card to start the free trial?",
+        "acceptedAnswer": { "@type": "Answer", "text": "No. Your 7-day free trial starts the moment you create an account — no payment details required." }
+      },
+      {
+        "@type": "Question",
+        "name": "What happens when my free trial ends?",
+        "acceptedAnswer": { "@type": "Answer", "text": "When your 7-day trial ends, you'll need to subscribe to continue practising. We will never charge you automatically." }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I change or cancel my plan?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Yes. You can upgrade, downgrade, update your payment method, or cancel at any time from your account settings." }
+      }
+    ]
+  }
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="../css/style.css" />
@@ -46,14 +88,12 @@
       <!-- All Subjects -->
       <div class="card pricing-card-hover flex-1 flex flex-col gap-4 p-6" style="min-width: 300px; max-width: 380px; border-color: var(--brand-rose); border-width: 2px; box-shadow: var(--shadow-md); position: relative; transform: translateY(-10px);">
         <div class="badge self-center absolute" style="top: -12px; background: var(--brand-rose); color: white;">Most Popular</div>
-        
         <div class="text-center mb-2 mt-2">
           <h2 class="font-display text-2xl text-main">All Subjects</h2>
           <div class="font-display text-4xl text-rose mt-2">S$<span id="price-all">12.99</span><span class="text-sm text-muted font-body" style="text-transform: none;">/mo</span></div>
           <div id="annual-note-all" class="text-xs text-muted mt-2" style="display: none;">Billed S$129.90/year · 2 months free</div>
           <p class="text-sm text-muted mt-3">The complete P1–P6 toolkit — Maths, Science &amp; English.</p>
         </div>
-        
         <div class="flex-1 flex flex-col gap-3 text-sm text-main mb-6">
           <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> All 3 subjects (Maths, Science, English)</div>
           <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Unlimited MOE-aligned questions</div>
@@ -65,7 +105,6 @@
           <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Study Notes Backpack</div>
           <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> 1 child profile</div>
         </div>
-        
         <button id="btn-sub-all" class="btn btn-primary w-full" data-plan="all_subjects">Start Free Trial</button>
         <div id="sub-note-all" class="text-xs text-center text-muted mt-2">7 days free · No credit card</div>
       </div>
@@ -78,7 +117,6 @@
           <div id="annual-note-family" class="text-xs text-muted mt-2" style="display: none;">Billed S$199.90/year · 2 months free</div>
           <p class="text-sm text-muted mt-3">Everything in All Subjects — for up to 3 children, with a parent dashboard for all.</p>
         </div>
-        
         <div class="flex-1 flex flex-col gap-3 text-sm text-main mb-6">
           <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> All 3 subjects (Maths, Science, English)</div>
           <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Unlimited MOE-aligned questions</div>
@@ -90,7 +128,6 @@
           <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Study Notes Backpack</div>
           <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> 3 child profiles + parent dashboard</div>
         </div>
-        
         <button id="btn-sub-family" class="btn btn-secondary w-full" data-plan="family">Start Free Trial</button>
         <div id="sub-note-family" class="text-xs text-center text-muted mt-2">7 days free · No credit card</div>
       </div>
@@ -105,49 +142,23 @@
       <div class="badge badge-info mb-2">Questions?</div>
       <h2 class="font-display text-3xl mb-2 text-main">Frequently Asked Questions</h2>
     </div>
-    
     <div class="flex flex-col gap-4">
-      
       <div class="card hover-lift cursor-pointer faq-item" style="padding: var(--space-4);">
-        <div class="flex justify-between items-center font-bold text-main">
-          Do I need a credit card to start the free trial?
-          <span class="text-rose text-xl transition-transform duration-300 faq-icon">+</span>
-        </div>
-        <div class="text-muted text-sm mt-2 hidden faq-answer">
-          No. Your 7-day free trial starts the moment you create an account — no payment details required. You only enter your card when you decide to subscribe.
-        </div>
+        <div class="flex justify-between items-center font-bold text-main">Do I need a credit card to start the free trial?<span class="text-rose text-xl transition-transform duration-300 faq-icon">+</span></div>
+        <div class="text-muted text-sm mt-2 hidden faq-answer">No. Your 7-day free trial starts the moment you create an account — no payment details required. You only enter your card when you decide to subscribe.</div>
       </div>
-
       <div class="card hover-lift cursor-pointer faq-item" style="padding: var(--space-4);">
-        <div class="flex justify-between items-center font-bold text-main">
-          What happens when my free trial ends?
-          <span class="text-rose text-xl transition-transform duration-300 faq-icon">+</span>
-        </div>
-        <div class="text-muted text-sm mt-2 hidden faq-answer">
-          When your 7-day trial ends, you'll need to subscribe to continue practising. We will never charge you automatically — you choose when to subscribe by clicking the Subscribe button above.
-        </div>
+        <div class="flex justify-between items-center font-bold text-main">What happens when my free trial ends?<span class="text-rose text-xl transition-transform duration-300 faq-icon">+</span></div>
+        <div class="text-muted text-sm mt-2 hidden faq-answer">When your 7-day trial ends, you'll need to subscribe to continue practising. We will never charge you automatically — you choose when to subscribe by clicking the Subscribe button above.</div>
       </div>
-
       <div class="card hover-lift cursor-pointer faq-item" style="padding: var(--space-4);">
-        <div class="flex justify-between items-center font-bold text-main">
-          Can I change or cancel my plan?
-          <span class="text-rose text-xl transition-transform duration-300 faq-icon">+</span>
-        </div>
-        <div class="text-muted text-sm mt-2 hidden faq-answer">
-          Yes. Once you subscribe, you can upgrade, downgrade, update your payment method, or cancel at any time from your dashboard billing settings.
-        </div>
+        <div class="flex justify-between items-center font-bold text-main">Can I change or cancel my plan?<span class="text-rose text-xl transition-transform duration-300 faq-icon">+</span></div>
+        <div class="text-muted text-sm mt-2 hidden faq-answer">Yes. Once you subscribe, you can upgrade, downgrade, update your payment method, or cancel at any time from your dashboard billing settings.</div>
       </div>
-
       <div class="card hover-lift cursor-pointer faq-item" style="padding: var(--space-4);">
-        <div class="flex justify-between items-center font-bold text-main">
-          Is my child's data secure?
-          <span class="text-rose text-xl transition-transform duration-300 faq-icon">+</span>
-        </div>
-        <div class="text-muted text-sm mt-2 hidden faq-answer">
-          Absolutely. We are fully PDPA-compliant. All student data is encrypted and stored on Singapore servers (Supabase SG region).
-        </div>
+        <div class="flex justify-between items-center font-bold text-main">Is my child's data secure?<span class="text-rose text-xl transition-transform duration-300 faq-icon">+</span></div>
+        <div class="text-muted text-sm mt-2 hidden faq-answer">Absolutely. We are fully PDPA-compliant. All student data is encrypted and stored on Singapore servers (Supabase SG region).</div>
       </div>
-
     </div>
   </div>
 </section>
@@ -174,38 +185,12 @@
     try {
       const { data } = await sb.auth.getSession();
       session = data.session;
-      
       if (session) {
         const { data: prof } = await sb.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
         profileData = prof || {};
-
-        const authContainer = document.getElementById('auth-header-container');
-        if (authContainer) {
-          authContainer.innerHTML = '<a href="dashboard.html" class="btn btn-secondary btn-sm" style="background: rgba(255,255,255,0.15); color: #FFFFFF; border: 1px solid rgba(255,255,255,0.1);">Dashboard</a>';
-        }
-
-        const navLinks = document.getElementById('navDropdown');
-        if (navLinks && !document.getElementById('navSignOut')) {
-          const signOut = document.createElement('a');
-          signOut.id        = 'navSignOut';
-          signOut.href      = '#';
-          signOut.textContent = 'Sign Out';
-          signOut.style.color = 'var(--brand-rose)';
-          signOut.onclick = async (e) => {
-            e.preventDefault();
-            await sb.auth.signOut();
-            window.location.href = '../index.html';
-          };
-          navLinks.appendChild(signOut);
-          const signUpLink = document.getElementById('navSignUp');
-          if (signUpLink) signUpLink.remove();
-        }
-
         updateButtonStates();
       }
-    } catch (e) {
-      console.error('Auth check failed:', e);
-    }
+    } catch (e) { console.error('Auth check failed:', e); }
   });
 
   /* ── 2. Billing toggle ── */
@@ -215,74 +200,48 @@
     yearly:  { all: '129.90', family: '199.90' },
   };
 
-  const tglMo = document.getElementById('toggleMonthly');
-  const tglYr = document.getElementById('toggleYearly');
-
   function setBilling(mode) {
     currentBilling = mode;
     const isYearly = mode === 'yearly';
-
+    const tglMo = document.getElementById('toggleMonthly');
+    const tglYr = document.getElementById('toggleYearly');
     tglMo.style.background = isYearly ? 'transparent' : 'var(--bg-surface)';
     tglMo.style.color      = isYearly ? 'rgba(255,255,255,0.9)' : 'var(--text-main)';
     tglMo.classList.toggle('btn-ghost', isYearly);
-
     tglYr.style.background = isYearly ? 'var(--bg-surface)' : 'transparent';
     tglYr.style.color      = isYearly ? 'var(--text-main)' : 'rgba(255,255,255,0.9)';
     tglYr.classList.toggle('btn-ghost', !isYearly);
-
     document.getElementById('price-all').textContent    = prices[mode].all;
     document.getElementById('price-family').textContent = prices[mode].family;
-
-    document.querySelectorAll('.font-display .text-sm.font-body').forEach(el => {
-      el.textContent = isYearly ? '/yr' : '/mo';
-    });
-
+    document.querySelectorAll('.font-display .text-sm.font-body').forEach(el => { el.textContent = isYearly ? '/yr' : '/mo'; });
     document.getElementById('annual-note-all').style.display    = isYearly ? 'block' : 'none';
     document.getElementById('annual-note-family').style.display = isYearly ? 'block' : 'none';
   }
 
-  tglMo.addEventListener('click', () => setBilling('monthly'));
-  tglYr.addEventListener('click', () => setBilling('yearly'));
+  document.getElementById('toggleMonthly').addEventListener('click', () => setBilling('monthly'));
+  document.getElementById('toggleYearly').addEventListener('click', () => setBilling('yearly'));
 
   /* ── 3. Button states ── */
-  //
-  // Button behaviour by user state:
-  //   Guest (not logged in)  → "Start Free Trial"  → goes to signup.html (no Stripe)
-  //   Trial user             → "Subscribe Now →"   → goes to Stripe checkout (charged immediately)
-  //   Paid — current plan    → "✓ Current Plan"    → disabled
-  //   Paid — other plan      → "Switch Plan"       → goes to Stripe checkout
-  //
   function updateButtonStates() {
     if (!profileData || !session) return;
-
     const tier   = profileData.subscription_tier || 'trial';
     const isPaid = ['all_subjects', 'family', 'single_subject'].includes(tier);
-
-    const plans = ['all_subjects', 'family'];
+    const plans  = ['all_subjects', 'family'];
     const idMap  = { all_subjects: 'btn-sub-all', family: 'btn-sub-family' };
     const noteMap = { all_subjects: 'sub-note-all', family: 'sub-note-family' };
-
     plans.forEach(plan => {
       const btn  = document.getElementById(idMap[plan]);
       const note = document.getElementById(noteMap[plan]);
       if (!btn) return;
-
       if (isPaid && tier === plan) {
-        // User is already on this plan
-        btn.textContent = '✓ Current Plan';
-        btn.disabled    = true;
-        btn.classList.remove('btn-primary');
-        btn.classList.add('btn-secondary');
+        btn.textContent = '✓ Current Plan'; btn.disabled = true;
+        btn.classList.remove('btn-primary'); btn.classList.add('btn-secondary');
         if (note) note.textContent = 'Your active plan';
       } else if (isPaid) {
-        // User is paid but on a different plan
-        btn.textContent = 'Switch Plan';
-        btn.disabled    = false;
+        btn.textContent = 'Switch Plan'; btn.disabled = false;
         if (note) note.textContent = 'Charged immediately · Cancel anytime';
       } else {
-        // Trial user — show Subscribe button
-        btn.textContent = 'Subscribe Now →';
-        btn.disabled    = false;
+        btn.textContent = 'Subscribe Now →'; btn.disabled = false;
         if (note) note.textContent = 'Charged immediately · Cancel anytime';
       }
     });
@@ -294,12 +253,8 @@
       const plan = e.currentTarget.dataset.plan;
 
       // Guest → go to signup (free trial, no Stripe)
-      if (!session) {
-        window.location.href = `signup.html?plan=${plan}`;
-        return;
-      }
+      if (!session) { window.location.href = `signup.html?plan=${plan}`; return; }
 
-      // Logged-in user → go to Stripe checkout (immediate charge)
       e.currentTarget.textContent = 'Preparing…';
       e.currentTarget.disabled    = true;
 
@@ -307,23 +262,19 @@
         const res = await fetch('/api/checkout', {
           method:  'POST',
           headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify({
-            plan,
-            billing: currentBilling,
-            userId:  session.user.id,
-            email:   session.user.email,
-          }),
+          body:    JSON.stringify({ plan, billing: currentBilling, userId: session.user.id, email: session.user.email }),
         });
-
         const data = await res.json();
         if (data.url) {
+          // Analytics: record checkout intent before redirect
+          if (window.plausible) window.plausible('Subscribe Click', { props: { plan, billing: currentBilling } });
           window.location.href = data.url;
         } else {
           throw new Error(data.error || 'No checkout URL returned');
         }
       } catch (err) {
         alert('Could not start checkout: ' + err.message);
-        updateButtonStates(); // restore correct button text
+        updateButtonStates();
         e.currentTarget.disabled = false;
       }
     });
@@ -335,15 +286,9 @@
       const answer = item.querySelector('.faq-answer');
       const icon   = item.querySelector('.faq-icon');
       const isOpen = !answer.classList.contains('hidden');
-
       document.querySelectorAll('.faq-answer').forEach(a => a.classList.add('hidden'));
       document.querySelectorAll('.faq-icon').forEach(i => { i.textContent = '+'; i.style.transform = 'rotate(0deg)'; });
-
-      if (!isOpen) {
-        answer.classList.remove('hidden');
-        icon.textContent     = '−';
-        icon.style.transform = 'rotate(180deg)';
-      }
+      if (!isOpen) { answer.classList.remove('hidden'); icon.textContent = '−'; icon.style.transform = 'rotate(180deg)'; }
     });
   });
 </script>

@@ -15,6 +15,7 @@
   let messageQueue = [];
   let batchTimeout = null;
   const BATCH_DELAY_MS = 1500;
+  let _sessionTracked = false; // Prevents duplicate Tutor Session analytics events
 
   // Canvas State
   let isDrawMode = false;
@@ -53,7 +54,6 @@
     await checkStudentLimits();
 
     // Event Listeners
-    // ... (keep your existing event listeners here) ...
     sendBtn.addEventListener('click', handleSend);
     chatInput.addEventListener('keydown', e => { 
       if (e.key === 'Enter' && !e.shiftKey) { 
@@ -147,7 +147,11 @@
 
     const imageData = hasImage ? canvas.toDataURL('image/png') : null;
     appendBubble('user', text, imageData);
-    
+    // Analytics: record first message per tutor session (fires once per page load)
+    if (!_sessionTracked) {
+      _sessionTracked = true;
+      if (window.plausible) window.plausible('Tutor Session', { props: { subject: currentSubjectContext } });
+    }
     messageQueue.push({ text, image: imageData });
     
     chatInput.value = '';
@@ -242,22 +246,17 @@
   function appendBubble(role, text, imageBase64 = null) {
     const isUser = role === 'user';
     
-    // Outer wrap controls left/right alignment
     const wrap = document.createElement('div');
     wrap.className = `flex w-full ${isUser ? 'justify-end' : 'justify-start'}`;
-    
-    // CRITICAL FIX: Hardcode layout rules to bypass missing utility classes and force the avatar right
     wrap.style.display = 'flex';
     wrap.style.width = '100%';
     wrap.style.justifyContent = isUser ? 'flex-end' : 'flex-start';
 
-    // Inner flex container
     const innerFlex = document.createElement('div');
     innerFlex.className = `flex gap-4`;
     innerFlex.style.display = 'flex';
     innerFlex.style.maxWidth = '85%';
 
-    // Avatar configuration
     const avatar = document.createElement('img');
     avatar.src = isUser ? currentStudentPhoto : '../assets/images/miss_wena.png';
     avatar.alt = isUser ? 'You' : 'Miss Wena';
@@ -269,7 +268,6 @@
     avatar.style.objectFit = 'cover';
     avatar.style.flexShrink = '0';
 
-    // Chat Bubble
     const bubble = document.createElement('div');
     bubble.className = isUser ? 'chat-bubble-user text-sm' : 'chat-bubble-tutor text-sm';
     
@@ -290,7 +288,6 @@
       bubble.appendChild(textContainer);
     }
 
-    // DOM Ordering (Guarantees avatar placement)
     if (isUser) {
       innerFlex.appendChild(bubble);
       innerFlex.appendChild(avatar);
@@ -308,8 +305,6 @@
   function appendTyping() {
     const wrap = document.createElement('div');
     wrap.className = 'flex justify-start w-full';
-    
-    // CRITICAL FIX: Hardcode layout rules for typing indicator
     wrap.style.display = 'flex';
     wrap.style.width = '100%';
     wrap.style.justifyContent = 'flex-start';
@@ -335,7 +330,6 @@
     bubble.style.minWidth = '60px';
     bubble.style.height = '40px';
     
-    // Using global 3.0 spinner component
     const spinner = document.createElement('div');
     spinner.className = 'spinner-sm';
     spinner.style.width = '16px';
@@ -368,7 +362,6 @@
       
       if (student) {
         currentStudentId = student.id;
-        // Dynamically update the photo fallback
         currentStudentPhoto = student.photo_url || '../assets/images/kid_studying.png';
         localStorage.setItem('shl_active_student_id', currentStudentId);
       }
@@ -407,13 +400,11 @@
       if (topicEl) topicEl.textContent = topic;
       if (banner) banner.hidden = false;
 
-      // Auto-trigger Miss Wena's Data-Driven Opening Hook
       isLoading = true;
       chatInput.disabled = true;
       sendBtn.disabled = true;
       const typingEl = appendTyping();
 
-      // Fetch the student's name if available
       let sName = 'there';
       try {
          const sb = await window.getSupabase();
@@ -454,9 +445,9 @@
         sendBtn.disabled = false;
         chatInput.focus();
       }
-      return true; // Indicates it handled the greeting
+      return true;
     }
-    return false; // Indicates it was a normal visit
+    return false;
   }
 
 

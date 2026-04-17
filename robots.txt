@@ -1,0 +1,20 @@
+User-agent: *
+Allow: /
+
+# Keep authenticated app pages private
+Disallow: /pages/dashboard.html
+Disallow: /pages/quiz.html
+Disallow: /pages/tutor.html
+Disallow: /pages/progress.html
+Disallow: /pages/exam.html
+Disallow: /pages/subjects.html
+Disallow: /pages/setup.html
+Disallow: /pages/admin.html
+Disallow: /pages/account.html
+Disallow: /pages/update-password.html
+Disallow: /pages/confirm-email.html
+
+# Keep API endpoints private
+Disallow: /api/
+
+Sitemap: https://www.superholiclab.com/sitemap.xml

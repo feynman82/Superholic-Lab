@@ -4,10 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard — Superholic Lab</title>
+  <meta name="robots" content="noindex, nofollow">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="icon" href="../assets/favicon.ico" />
+  <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js"></script>
   <script src="/js/header.js" defer></script>
   <script src="/js/footer.js" defer></script>
   <script src="../js/supabase-client.js"></script>
@@ -42,7 +44,6 @@
     .note-viewer-content p { font-size: 0.95rem; color: var(--text-muted); margin-bottom: 1rem; }
     .note-viewer-content ul { padding-left: 1.5rem; margin-bottom: 1rem; }
     .note-viewer-content li { margin-bottom: 0.5rem; font-size: 0.95rem; color: var(--text-main); }
-    /* Checkout toast */
     #checkoutToast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--sage-dark); color: white; padding: 16px 28px; border-radius: var(--radius-lg); z-index: 9999; box-shadow: 0 12px 32px rgba(0,0,0,0.35); text-align: center; max-width: min(420px, 90vw); border: 1px solid rgba(255,255,255,0.15); display: none; }
     #checkoutToast .toast-title { font-weight: 700; margin-bottom: 4px; }
     #checkoutToast .toast-status { font-size: 0.85rem; opacity: 0.85; }
@@ -51,7 +52,6 @@
 
 <body id="mainBody" class="has-bottom-nav bg-page texture-light-grid">
 
-<!-- Checkout Success Toast -->
 <div id="checkoutToast">
   <div class="toast-title">🎉 Payment successful!</div>
   <div class="toast-status" id="checkoutToastStatus">Activating your subscription — just a moment...</div>
@@ -181,7 +181,7 @@ function escapeHtml(str) {
 
 // ── Checkout success polling ──
 // Polls Supabase every 3s (max 8 attempts = 24s) after returning from Stripe.
-// When the webhook updates subscription_tier, the UI updates automatically.
+// When the webhook updates subscription_tier, the UI auto-updates.
 async function pollSubscriptionUpdate(attempt) {
   if (attempt >= 8) {
     const statusEl = document.getElementById('checkoutToastStatus');
@@ -198,8 +198,10 @@ async function pollSubscriptionUpdate(attempt) {
       .eq('id', session.user.id)
       .single();
     if (p && p.subscription_tier !== 'trial') {
-      // Webhook came through! Update UI.
+      // Webhook came through — update profile state
       Object.assign(window.userProfile, p);
+      // Analytics: record the confirmed subscription activation
+      if (window.plausible) window.plausible('Subscribe Complete', { props: { plan: p.subscription_tier } });
       // Hide trial banner
       const banner = document.getElementById('trialBanner');
       if (banner) banner.style.display = 'none';
@@ -212,7 +214,6 @@ async function pollSubscriptionUpdate(attempt) {
       const planNames = { all_subjects: 'All Subjects', family: 'Family Plan', single_subject: 'Single Subject' };
       const statusEl = document.getElementById('checkoutToastStatus');
       if (statusEl) statusEl.textContent = `✓ You're now on ${planNames[p.subscription_tier] || p.subscription_tier}!`;
-      // Hide toast after 4s
       setTimeout(() => { const t = document.getElementById('checkoutToast'); if (t) t.style.display = 'none'; }, 4000);
     } else {
       pollSubscriptionUpdate(attempt + 1);
@@ -235,7 +236,7 @@ window.initDashboard = async function() {
     badge.textContent = profile.role === 'admin' ? '👑 Admin' : (planLabels[profile.subscription_tier] || profile.subscription_tier || 'Free Trial');
   }
 
-  // Trial countdown
+  // Trial countdown + urgency analytics
   if (profile.subscription_tier === 'trial' && profile.trial_ends_at) {
     const daysLeft = Math.ceil((new Date(profile.trial_ends_at) - new Date()) / 86400000);
     if (daysLeft > 0) {
@@ -243,6 +244,10 @@ window.initDashboard = async function() {
       trialBanner.classList.remove('hidden');
       trialBanner.style.display = 'inline-flex';
       document.getElementById('trialDaysLeft').textContent = `${daysLeft} day${daysLeft !== 1 ? 's' : ''}`;
+      // Analytics: fire Trial Day 5 when ≤2 days remain (last urgency window)
+      if (daysLeft <= 2) {
+        if (window.plausible) window.plausible('Trial Day 5');
+      }
     }
   }
 
@@ -261,13 +266,9 @@ window.initDashboard = async function() {
   // ── Checkout success detection ──
   const params = new URLSearchParams(window.location.search);
   if (params.get('checkout') === 'success') {
-    // Clean URL so reload doesn't re-trigger
     window.history.replaceState({}, '', window.location.pathname);
-    // Show toast
     const toast = document.getElementById('checkoutToast');
     if (toast) toast.style.display = 'block';
-    // Start polling for webhook confirmation
-    // Small initial delay to give Stripe time to deliver the webhook
     setTimeout(() => pollSubscriptionUpdate(0), 2000);
   }
 };
@@ -413,7 +414,6 @@ window.confirmDelete = async () => {
   btn.disabled = false; btn.textContent = 'Yes, Delete';
 };
 
-// Manage Billing → account.html (parent account & billing portal)
 document.getElementById('manageBillingBtn').addEventListener('click', () => {
   window.location.href = '/pages/account.html';
 });
