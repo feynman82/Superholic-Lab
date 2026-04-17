@@ -488,32 +488,73 @@ function buildClozeUI(q) {
           `).join('');
           
         } else if (part.part_type === 'referent') {
-          interactionUI = `<div class="flex flex-col gap-3">` + (part.items || []).map((item, i) => `
-            <div class="flex items-center gap-4 bg-surface p-3 rounded-lg border border-light">
-              <div class="font-bold text-main w-1/3">${esc(item.word)}</div>
-              <input type="text" id="comp-${safeIdLabel}-ref${i}" class="form-input flex-1 p-3 text-lg border-2 border-slate-200 rounded-lg" placeholder="Refers to..." value="${esc(savedWorking['ref'+i] || '')}">
-            </div>
-          `).join('') + `</div>`;
+          interactionUI = `
+            <table class="w-full text-left border-collapse border border-slate-200 rounded-lg overflow-hidden mt-2 mb-4 bg-surface shadow-sm">
+              <thead class="bg-slate-100 border-b border-slate-200">
+                <tr>
+                  <th class="p-3 font-bold text-main w-1/2">Word from passage</th>
+                  <th class="p-3 font-bold text-main w-1/2">What it refers to</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${(part.items || []).map((item, i) => `
+                  <tr class="border-b border-slate-200 last:border-0">
+                    <td class="p-4 font-medium text-main align-middle leading-relaxed">${esc(item.word)}</td>
+                    <td class="p-3 align-middle border-l border-slate-200">
+                      <input type="text" id="comp-${safeIdLabel}-ref${i}" class="form-input w-full p-3 text-lg border-2 border-slate-200 rounded-lg focus:border-brand-sage" placeholder="Type here..." value="${esc(savedWorking['ref'+i] || '')}" oninput="window.saveInputState ? window.saveInputState() : null">
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>`;
           
         } else if (part.part_type === 'sequencing') {
-          interactionUI = `<div class="flex flex-col gap-3">` + (part.items || []).map((item, i) => `
-            <div class="flex items-center gap-4 bg-surface p-3 rounded-lg border border-light">
-              <input type="number" id="comp-${safeIdLabel}-seq${i}" class="form-input w-20 p-3 text-lg text-center border-2 border-slate-200 rounded-lg" min="1" max="3" value="${esc(savedWorking['seq'+i] || '')}">
+          interactionUI = `<div class="flex flex-col gap-3 mt-2">` + (part.items || []).map((item, i) => `
+            <div class="flex items-center gap-4 bg-surface p-3 rounded-lg border border-light shadow-sm">
+              <input type="number" id="comp-${safeIdLabel}-seq${i}" class="form-input w-20 p-3 text-lg text-center border-2 border-slate-200 rounded-lg focus:border-brand-sage" min="1" max="3" value="${esc(savedWorking['seq'+i] || '')}" oninput="window.saveInputState ? window.saveInputState() : null">
               <div class="font-medium text-main leading-relaxed">${esc(item)}</div>
             </div>
           `).join('') + `</div>`;
           
         } else if (part.part_type === 'true_false') {
-          interactionUI = `<div class="flex flex-col gap-4">` + (part.items || []).map((item, i) => `
-            <div class="p-4 border-2 border-slate-200 rounded-xl bg-surface">
-              <div class="font-medium text-lg mb-3">${esc(item.statement)}</div>
-              <div class="flex gap-4 mb-3">
-                <label class="flex items-center gap-2 cursor-pointer font-bold"><input type="radio" name="comp-${safeIdLabel}-tf${i}" value="True" ${savedWorking['tf'+i]==='True'?'checked':''}> True</label>
-                <label class="flex items-center gap-2 cursor-pointer font-bold"><input type="radio" name="comp-${safeIdLabel}-tf${i}" value="False" ${savedWorking['tf'+i]==='False'?'checked':''}> False</label>
-              </div>
-              <textarea id="comp-${safeIdLabel}-reason${i}" class="form-input w-full p-3 text-lg border-2 border-slate-200 rounded-lg" rows="2" placeholder="Reason/Evidence from text...">${esc(savedWorking['reason'+i] || '')}</textarea>
-            </div>
-          `).join('') + `</div>`;
+          interactionUI = `
+            <table class="w-full text-left border-collapse border border-slate-200 rounded-lg overflow-hidden mt-2 mb-4 bg-surface shadow-sm">
+              <thead class="bg-slate-100 border-b border-slate-200">
+                <tr>
+                  <th class="p-3 font-bold text-main w-2/5">Statement</th>
+                  <th class="p-3 font-bold text-main text-center w-1/5 whitespace-nowrap border-l border-slate-200">True / False</th>
+                  <th class="p-3 font-bold text-main w-2/5 border-l border-slate-200">Reason</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${(part.items || []).map((item, i) => `
+                  <tr class="border-b border-slate-200 last:border-0">
+                    <td class="p-4 font-medium text-main align-top leading-relaxed">${esc(item.statement)}</td>
+                    <td class="p-4 align-top text-center border-l border-slate-200">
+                      <div class="flex flex-col gap-3 items-center justify-start mt-2">
+                        <label class="flex items-center gap-2 cursor-pointer font-bold"><input type="radio" name="comp-${safeIdLabel}-tf${i}" value="True" ${savedWorking['tf'+i]==='True'?'checked':''} onchange="window.saveInputState ? window.saveInputState() : null"> True</label>
+                        <label class="flex items-center gap-2 cursor-pointer font-bold"><input type="radio" name="comp-${safeIdLabel}-tf${i}" value="False" ${savedWorking['tf'+i]==='False'?'checked':''} onchange="window.saveInputState ? window.saveInputState() : null"> False</label>
+                      </div>
+                    </td>
+                    <td class="p-3 align-top border-l border-slate-200">
+                      <textarea id="comp-${safeIdLabel}-reason${i}" class="form-input w-full p-3 text-base border-2 border-slate-200 rounded-lg focus:border-brand-sage" rows="4" placeholder="Evidence from text..." oninput="window.saveInputState ? window.saveInputState() : null">${esc(savedWorking['reason'+i] || '')}</textarea>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>`;
+        }
+
+        // Sub-question Diagram Support for quiz.js
+        let partDiagram = '';
+        if (part.visual_payload && typeof renderVisualPayload !== 'undefined') {
+          partDiagram = renderVisualPayload(part.visual_payload);
+        } else if (part.image_url) {
+          partDiagram = `<div class="mb-4 flex justify-center w-full"><img src="${esc(part.image_url)}" style="max-height: 220px; max-width: 100%; object-fit: contain; border-radius: var(--radius-md); border: 1px solid var(--border-light);"></div>`;
+        }
+        
+        if (partDiagram) {
+            interactionUI = partDiagram + interactionUI;
         }
       } else {
          // Completed State
@@ -595,7 +636,8 @@ function buildClozeUI(q) {
 
   function renderQuiz() {
     if (state.questions.length === 0) {
-      app.innerHTML = `<div class="card text-center w-full hover-lift p-6" style="max-width: 600px;"><div class="text-4xl mb-4">🕵️</div><h2 class="font-display text-2xl text-main">No questions found!</h2><p class="text-muted text-sm my-4">Miss Wena hasn't added questions for this specific combination yet. Check back soon!</p><button class="btn btn-primary hover-lift" onclick="window.location.href='subjects.html'">Return to Subjects</button></div>`;
+      const maxWidth = q.type === 'comprehension' ? '1200px' : '680px';
+      app.innerHTML = `<div class="card text-center w-full hover-lift p-6" style="max-width: ${maxWidth}; transition: max-width 0.3s ease;"><div class="text-4xl mb-4">🕵️</div><h2 class="font-display text-2xl text-main">No questions found!</h2><p class="text-muted text-sm my-4">Miss Wena hasn't added questions for this specific combination yet. Check back soon!</p><button class="btn btn-primary hover-lift" onclick="window.location.href='subjects.html'">Return to Subjects</button></div>`;
       return;
     }
 
