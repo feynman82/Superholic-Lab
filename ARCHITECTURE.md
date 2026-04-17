@@ -1,15 +1,15 @@
 # SUPERHOLIC LAB — ARCHITECTURE BRIEFING
-# Version 2.0 | Updated 2026-03-25
+# Version 3.0 | Updated 2026-04-17
 # Purpose: Source of truth for Claude Code on infrastructure,
-#          project state, ECC framework, and build plan.
+#          database schema, API routes, and build state.
 
 ═══════════════════════════════════════════════════════════════
 WHAT THIS FILE IS
 ═══════════════════════════════════════════════════════════════
 
 Claude Code must read CLAUDE.md + this file at session start.
-CLAUDE.md has coding rules and dev workflow.
-This file has infrastructure, schema, and build state.
+CLAUDE.md has coding rules, dev workflow, and feature reference.
+This file has infrastructure, schema, API routes, and build state.
 
 ═══════════════════════════════════════════════════════════════
 THE PRODUCT
@@ -20,328 +20,379 @@ Tagline:          "Learn like a champion. Think like a winner."
 Live domain:      https://www.superholiclab.com
 GitHub repo:      https://github.com/feynman82/Superholic-Lab
 Local code path:  D:\Git\Superholic-Lab
+Google Drive MCP: C:\SLabDrive (junction to G:\My Drive\Superholic Lab)
 
 What it is:
-  Singapore's AI-powered learning platform for P1–S4 students.
-  Parents pay monthly subscriptions. Children practice MOE-aligned
-  questions with 6 PSLE exam formats, full worked solutions,
-  wrong-answer explanations, and an AI tutor.
+  Singapore's AI-powered EdTech platform for P1–S4 students.
+  Parents subscribe monthly. Students practise MOE-aligned questions
+  in 6 PSLE exam formats, get AI tutoring from Miss Wena, track
+  progress, and receive personalised remedial plans.
 
 Key differentiator:
-  Wrong-answer explanations for every MCQ option + 6 question
-  types matching actual MOE/SEAB exam formats (not just MCQ).
+  Wrong-answer explanations naming specific misconceptions for every
+  MCQ option + 6 question types matching actual SEAB exam formats.
 
 ═══════════════════════════════════════════════════════════════
-SUBSCRIPTION TIERS
+SUBSCRIPTION TIERS (current)
 ═══════════════════════════════════════════════════════════════
 
-All plans include a 7-day free trial. No credit card required.
+All plans: 7-day free trial, no credit card required at signup.
+Stripe charges immediately when parent clicks Subscribe.
+No trial_period_days in Stripe — trial is tracked app-side only.
 
-  Tier 1: Single Subject    SGD 9.99/month
-  Tier 2: All Subjects      SGD 19.99/month (FEATURED)
-  Tier 3: Family            SGD 29.99/month (up to 3 children)
+  All Subjects    S$12.99/month  |  S$129.90/year (save 17%)
+  Family Plan     S$19.99/month  |  S$199.90/year (save 17%)
 
-Annual pricing: 17% discount (~2 months free).
-Stripe price IDs stored in .env.
+FAMILY adds up to 3 child profiles. ALL SUBJECTS = 1 child profile.
+Single Subject tier is REMOVED from product and codebase.
 
-═══════════════════════════════════════════════════════════════
-INFRASTRUCTURE — ALL CONFIRMED WORKING
-═══════════════════════════════════════════════════════════════
-
-  ✓ GitHub       feynman82/Superholic-Lab, main branch
-  ✓ Vercel       Auto-deploy from main, ~60s
-  ✓ Cloudflare   DNS for superholiclab.com
-  ✓ Supabase     SG region, 6 tables, RLS enabled
-  ✓ Stripe       Test mode, 3 SGD products
-  ✓ Anthropic    claude-sonnet-4-6 via api/chat.js
-  ✓ MCP          supabase + github + filesystem
+Stripe Price IDs in .env:
+  STRIPE_ALL_SUBJECTS_PRICE_ID         monthly all_subjects
+  STRIPE_FAMILY_PRICE_ID               monthly family
+  STRIPE_ALL_SUBJECTS_ANNUAL_PRICE_ID  annual all_subjects
+  STRIPE_FAMILY_ANNUAL_PRICE_ID        annual family
 
 ═══════════════════════════════════════════════════════════════
-ECC FRAMEWORK — DEVELOPMENT SYSTEM
+INFRASTRUCTURE
 ═══════════════════════════════════════════════════════════════
 
-Superholic Lab uses the Everything Claude Code (ECC) framework
-for structured development. This provides:
-
-Rules (.claude/rules/) — 7 always-active guidelines:
-  coding-style.md       Immutability, naming, file limits
-  security.md           PDPA, XSS, RLS, secret detection
-  git-workflow.md       Conventional commits, pre-push checks
-  development-workflow.md Research-first pipeline
-  patterns.md           Supabase queries, API functions, question schema
-  performance.md        Token optimization, frontend + DB perf
-  testing.md            Manual verification protocol
-
-Commands (.claude/commands/) — 6 slash commands:
-  /plan                 Feature implementation planning
-  /code-review          Quality + security review
-  /build-fix            Error diagnosis and fix
-  /deploy               Pre-deploy checklist + push
-  /generate-questions   MOE-aligned content for all 6 question types
-  /security-check       Full security audit
-
-Agents (AGENTS.md) — 5 specialist subagents:
-  planner, code-reviewer, security-reviewer,
-  quiz-content-reviewer, database-reviewer
-
-Hooks (hooks/hooks.json) — 2 automated checks:
-  Secret detection      Blocks exposed API keys on file edit
-  CSS enforcement       Warns on hardcoded colors
+  ✓ GitHub      feynman82/Superholic-Lab, auto-deploy on push to main
+  ✓ Vercel      Hobby plan, ~60s deploy, 12-function limit
+  ✓ Cloudflare  DNS: www.superholiclab.com → Vercel
+  ✓ Supabase    SG region (rlmqsbxevuutugtyysjr), RLS on all tables
+  ✓ Stripe      Test mode (webhook configured, whsec set in Vercel)
+  ✓ Gemini      gemini-3-flash-preview (primary AI model for Miss Wena)
+  ✓ Anthropic   claude-3-5-sonnet-20241022 (grading + question gen)
+  ✓ Plausible   Analytics script tag (added to pricing.html, extend to all pages)
+  ✓ MCP         supabase + github + filesystem (in Claude Code sessions)
+  ✓ Auth        Email/password + Google OAuth + Apple OAuth
 
 ═══════════════════════════════════════════════════════════════
-MASTER QUESTION TEMPLATE — 6 PSLE EXAM FORMATS
+API ARCHITECTURE — SINGLE SERVERLESS GATEWAY
 ═══════════════════════════════════════════════════════════════
 
-Full template: C:\SLabDrive\01 - Platform Intelligence\Master_Question_Template.md
-Also: data/MASTER_QUESTION_TEMPLATE.md (summary in repo)
+Vercel Hobby = 12-function cap. All routes share ONE function:
 
-Supported question types:
-  mcq          MCQ with A/B/C/D (Maths, Science, English)
-  short_ans    Text input, numerical/fraction (Maths Paper 1B)
-  word_problem Multi-part (a)(b)(c), show working (Maths Paper 2)
-  open_ended   Written explanation with keywords (Science Booklet B)
-  cloze        Grammar cloze passage with blanks (English Paper 2)
-  editing      Spot and correct errors (English Paper 2)
+  /api/{any}  →  api/index.js  (router)
+                   →  lib/api/handlers.js  (all handler logic)
 
-Universal base fields (all types):
-  id, subject, level, topic, sub_topic, difficulty, type,
-  marks, question_text, correct_answer, worked_solution,
-  examiner_note
+vercel.json rewrites map each /api/{route} → /api/index.
+api/index.js strips the prefix and dispatches via switch statement.
+The webhook route bypasses JSON body parsing (raw body required).
 
-File naming: data/questions/{level}-{subject}-{topic}.json
-  Examples: p4-mathematics-fractions.json, p4-science-heat.json
+Do NOT create new api/*.js files — add handlers to lib/api/handlers.js
+and register them in api/index.js + vercel.json.
 
-Quality rules:
-  • Singapore context (names, places, food)
-  • All MCQ wrong options have specific misconception explanations
-  • Science/English MCQ options are full sentences
-  • Worked solutions have numbered steps
-  • Difficulty mix: 20% Foundation, 50% Standard, 20% Advanced, 10% HOTS
-  • Minimum 20 questions per file
+AI MODEL ROUTING:
+  Chat/tutor:        Gemini Flash (primary) → no Claude fallback
+  Question gen:      Gemini Flash (primary) → Claude Sonnet (fallback)
+  Grading:           Claude Sonnet (primary) → Gemini Flash (fallback)
+  Exam gen:          Gemini Flash (primary) → Claude Haiku (fallback)
+  Quest/analysis:    Gemini Flash (primary) → Claude Sonnet (fallback)
+  Summarize chat:    Gemini Flash only
+  Bulk generation:   Claude Sonnet via /api/generate (internal tooling)
 
 ═══════════════════════════════════════════════════════════════
-CURRENT PROJECT STRUCTURE (as of v2.0)
+SUPABASE DATABASE SCHEMA — RLS ENABLED ON ALL TABLES
+═══════════════════════════════════════════════════════════════
+
+RLS PATTERN FOR STUDENT DATA (always use this — not auth.uid() = student_id):
+  student_id IN (SELECT id FROM students WHERE parent_id = auth.uid())
+
+───────────────────────────────────────────────────────────────
+TABLE: profiles
+  id                  uuid PK (= auth.users.id)
+  email               text
+  full_name           text
+  role                text   'parent' | 'admin' | 'sub-admin'
+  subscription_tier   text   'trial' | 'all_subjects' | 'family' | 'single_subject'
+  stripe_customer_id  text   (set by webhook on first checkout)
+  trial_started_at    timestamptz
+  trial_ends_at       timestamptz  (7 days after created_at)
+  max_children        int    1 for trial/all_subjects, 3 for family
+  setup_complete      bool
+  intended_plan       text   (set at signup — cosmetic preference only)
+  created_at          timestamptz
+  updated_at          timestamptz
+
+  Triggers: handle_new_user() on auth.users INSERT
+            handle_updated_at() on profiles UPDATE
+
+───────────────────────────────────────────────────────────────
+TABLE: students
+  id               uuid PK
+  parent_id        uuid FK → profiles.id
+  name             text
+  level            text   e.g. 'Primary 4'
+  selected_subject text
+  photo_url        text   (Supabase Storage, avatars bucket)
+  created_at       timestamptz
+
+───────────────────────────────────────────────────────────────
+TABLE: quiz_attempts
+  id                  uuid PK
+  student_id          uuid FK → students.id
+  subject             text
+  level               text
+  topic               text
+  difficulty          text
+  score               numeric
+  total_questions     int
+  time_taken_seconds  int
+  completed_at        timestamptz
+
+───────────────────────────────────────────────────────────────
+TABLE: question_attempts
+  id               uuid PK
+  quiz_attempt_id  uuid FK → quiz_attempts.id
+  student_id       uuid FK → students.id
+  question_text    text
+  topic            text
+  difficulty       text
+  correct          bool
+  answer_chosen    text
+  correct_answer   text
+  created_at       timestamptz
+
+───────────────────────────────────────────────────────────────
+TABLE: subscriptions
+  id                       uuid PK
+  profile_id               uuid FK → profiles.id
+  stripe_subscription_id   text UNIQUE  (⚠ add UNIQUE constraint if missing)
+  stripe_price_id          text
+  plan_name                text
+  status                   text  'active'|'past_due'|'cancelled'
+  current_period_start     timestamptz
+  current_period_end       timestamptz
+  created_at               timestamptz
+
+  NOTE: stripe_subscription_id must have a UNIQUE constraint for
+  the upsert in handleWebhook to work correctly. If absent, the
+  upsert will silently fail (profiles still updates correctly via
+  the same webhook, so access control is not affected).
+
+───────────────────────────────────────────────────────────────
+TABLE: daily_usage
+  id                   uuid PK
+  student_id           uuid FK → students.id
+  date                 date
+  questions_attempted  int
+  ai_tutor_messages    int
+  UNIQUE(student_id, date)
+
+───────────────────────────────────────────────────────────────
+TABLE: question_bank  (PRIMARY CONTENT STORE)
+  id                uuid PK
+  seed_id           uuid  (original if is_ai_cloned = true)
+  is_ai_cloned      bool
+  subject           text  'Mathematics'|'Science'|'English'
+  level             text  'Primary 1' ... 'Secondary 4'
+  topic             text
+  sub_topic         text
+  difficulty        text  'Foundation'|'Standard'|'Advanced'|'HOTS'
+  type              text  'mcq'|'short_ans'|'word_problem'|'open_ended'|'cloze'|'editing'
+  marks             int
+  question_text     text
+  options           jsonb  [{label, text}]
+  correct_answer    text  letter format: "B" (never index)
+  wrong_explanations jsonb {"A": "misconception", ...}
+  worked_solution   text
+  parts             jsonb  [{label, marks, question, correct_answer, worked_solution, progressive_hints}]
+  keywords          text[]
+  model_answer      text
+  passage           text
+  blanks            jsonb
+  passage_lines     jsonb
+  examiner_note     text
+  cognitive_skill   text
+  progressive_hints jsonb
+  image_url         text
+  visual_payload    jsonb  {engine, function_name, params} for diagram-library.js
+  instructions      text
+  flag_review       bool
+  accept_also       text
+  created_at        timestamptz
+
+───────────────────────────────────────────────────────────────
+TABLE: study_notes  (Miss Wena Backpack)
+  id            uuid PK
+  student_id    uuid FK → students.id
+  subject       text
+  topic         text
+  title         text
+  content_html  text  (HTML generated by /api/summarize-chat)
+  is_read       bool
+  created_at    timestamptz
+
+───────────────────────────────────────────────────────────────
+TABLE: exam_results
+  id                   uuid PK
+  student_id           uuid FK → students.id
+  subject              text
+  level                text
+  exam_type            text  'WA1'|'WA2'|'EOY'|'PRELIM'|'PRACTICE'|'QUIZ'
+  exam_id              text  (optional identifier)
+  score                int
+  total_marks          int
+  time_taken           int   (seconds)
+  questions_attempted  int
+  completed_at         timestamptz
+
+  NOTE: SA1 is abolished (MOE 2023). Valid types: WA1, WA2, EOY.
+        Do not reference SA1 anywhere.
+
+───────────────────────────────────────────────────────────────
+TABLE: remedial_quests
+  id                  uuid PK
+  student_id          uuid FK → students.id
+  subject             text
+  level               text
+  topic               text
+  trigger_score       numeric  (quiz score % that triggered the quest)
+  trigger_attempt_id  uuid
+  quest_title         text
+  steps               jsonb  [{day, type, title, description, action_url, estimated_minutes}]
+  current_step        int
+  status              text  'active' | 'completed'
+  created_at          timestamptz
+
+  Step URL rules:
+    Day 1 (tutor):  /pages/tutor.html?subject=X&level=Y&intent=remedial&topic=Z&score=N
+    Day 2 (quiz):   /pages/quiz.html?subject=X&level=Y&topic=Z&type=mcq
+    Day 3 (quiz):   /pages/quiz.html?subject=X&level=Y&topic=Z&type=short_ans
+
+═══════════════════════════════════════════════════════════════
+PROJECT STRUCTURE (current)
 ═══════════════════════════════════════════════════════════════
 
 D:\Git\Superholic-Lab\
-├── index.html              ← Marketing homepage
-├── 404.html                ← Friendly error page
-├── CLAUDE.md               ← Coding rules + dev workflow
-├── ARCHITECTURE.md         ← This file (infra + state)
-├── AGENTS.md               ← Subagent definitions
-├── .env                    ← Credentials (gitignored)
-├── .gitignore
-├── .mcp.json               ← MCP server config (gitignored)
+├── index.html               ← Marketing homepage
+├── 404.html                 ← Custom error page
+├── CLAUDE.md                ← Coding rules + dev workflow (read first)
+├── ARCHITECTURE.md          ← This file
+├── AGENTS.md                ← 5 specialist subagent definitions
+├── .env                     ← All secrets (gitignored)
+├── .mcp.json                ← MCP server config (gitignored)
+├── vercel.json              ← 13 rewrites + security headers
 ├── package.json
-├── vercel.json             ← Security headers + routing
 ├── pages/
-│   ├── subjects.html       ← Subject + level selector
-│   ├── quiz.html           ← Quiz engine (6 question types)
-│   ├── tutor.html          ← AI tutor chat
-│   ├── progress.html       ← Student progress tracker
-│   ├── pricing.html        ← Subscription plans
-│   ├── login.html          ← Auth
-│   ├── signup.html         ← Auth
-│   ├── dashboard.html      ← Student dashboard
-│   ├── about.html
-│   ├── terms.html
+│   ├── account.html           ← Parent account portal (profile, password, billing)
+│   ├── admin.html             ← Master admin panel (role-gated)
+│   ├── confirm-email.html     ← Email confirmation holding page
+│   ├── contact.html
+│   ├── dashboard.html         ← Parent dashboard (learner cards, backpack)
+│   ├── exam.html              ← AI exam paper generator
+│   ├── login.html             ← Email + Google + Apple login
+│   ├── pricing.html           ← Plans + monthly/annual toggle + FAQ
 │   ├── privacy.html
-│   └── contact.html
+│   ├── progress.html          ← Progress tracker + weakness analysis + quest
+│   ├── quiz.html              ← Quiz engine (all 6 PSLE question types)
+│   ├── setup.html             ← New learner setup (post-signup)
+│   ├── signup.html            ← 7-day trial signup, no credit card
+│   ├── subject-english.html   ← English subject landing page
+│   ├── subject-mathematics.html ← Maths subject landing page
+│   ├── subject-science.html   ← Science subject landing page
+│   ├── subjects.html          ← Level + subject selector
+│   ├── terms.html
+│   ├── tutor.html             ← Miss Wena AI tutor chat
+│   └── update-password.html   ← Password reset landing page
 ├── css/
-│   └── style.css           ← ALL styles, CSS variables
+│   └── style.css              ← ALL styles, all CSS variables (do not add new CSS files)
 ├── js/
-│   ├── supabase-client.js  ← Supabase client instance
-│   ├── supabase.js         ← Legacy (to be removed)
-│   ├── auth.js             ← Auth + session + paywall
-│   ├── quiz.js             ← Quiz engine (6 types)
-│   ├── tutor.js            ← AI tutor + system prompts
-│   ├── progress.js         ← Progress tracking
-│   └── stripe.js           ← Stripe checkout redirect
+│   ├── app-shell.js           ← Plan badge + shared UI init
+│   ├── auth.js                ← Auth, paywall, guardPage(), enforcePaywall()
+│   ├── diagram-library.js     ← SVG diagram rendering for visual_payload questions
+│   ├── exam-generator.js      ← Exam config and section builder
+│   ├── exam-renderer.js       ← Renders generated exam paper to DOM
+│   ├── exam-templates.js      ← Preset exam configs (WA, EOY, PSLE)
+│   ├── footer.js              ← <global-footer> web component
+│   ├── header.js              ← <global-header> web component (auth-aware)
+│   ├── progress.js            ← Progress charts + weakness analysis
+│   ├── quiz.js                ← Quiz engine (fetches from question_bank via Supabase)
+│   ├── supabase-client.js     ← Supabase JS client singleton (getSupabase())
+│   ├── supabase.js            ← Legacy alias (do not modify)
+│   └── tutor.js               ← Miss Wena chat UI + save notes logic
 ├── api/
-│   ├── chat.js             ← Anthropic API serverless
-│   ├── generate.js         ← Question generation
-│   ├── checkout.js         ← Stripe checkout session
-│   └── webhook.js          ← Stripe webhook handler
-├── data/
-│   ├── MASTER_QUESTION_TEMPLATE.md
-│   └── questions/          ← Question bank JSON files
-│       ├── p2-mathematics.json
-│       ├── p2-english.json
-│       ├── p4-mathematics.json
-│       ├── p4-science.json
-│       └── p4-english.json
+│   ├── index.js               ← ONLY serverless entry point (router)
+│   ├── generate-quest.js      ← Legacy alias (kept for progress.html compatibility)
+│   ├── summarize-chat.js      ← Legacy alias (kept for tutor.html compatibility)
+│   └── cron/
+│       └── fill-bank.js         ← Cron job for question bank auto-fill
+├── lib/
+│   └── api/
+│       ├── handlers.js          ← ALL handler logic (13 handlers)
+│       └── prompts/             ← System prompts for /api/generate
+│           ├── mcq.js
+│           ├── short-ans.js
+│           ├── word-problem.js
+│           ├── open-ended.js
+│           ├── cloze.js
+│           └── editing.js
+├── supabase/                  ← SQL migrations (run manually in Supabase SQL Editor)
+│   ├── 002_question_types.sql
+│   ├── 003_exam_results.sql
+│   ├── 004_profiles_email.sql
+│   ├── 006_study_notes.sql
+│   ├── 007_photo_upload.sql
+│   └── 008_fix_profile_trigger.sql  (APPLIED 2026-04-17)
 ├── assets/
 │   ├── favicon.ico
-│   └── logo.svg
+│   ├── logo.svg
+│   └── images/
+│       ├── miss_wena.png          ← AI tutor avatar (SVG onerror fallback)
+│       └── ... (screenshots, student illustrations)
 ├── hooks/
-│   └── hooks.json          ← Automated quality hooks
+│   └── hooks.json             ← Secret detection + CSS enforcement
 └── .claude/
-    ├── settings.local.json ← MCP permissions (gitignored)
-    ├── rules/              ← 7 always-active rule files
-    │   ├── coding-style.md
-    │   ├── security.md
-    │   ├── git-workflow.md
-    │   ├── development-workflow.md
-    │   ├── patterns.md
-    │   ├── performance.md
-    │   └── testing.md
-    └── commands/           ← 6 slash commands
-        ├── plan.md
-        ├── code-review.md
-        ├── build-fix.md
-        ├── deploy.md
-        ├── generate-questions.md
-        └── security-check.md
+    ├── rules/                 ← 7 always-active rule files
+    ├── commands/              ← 6 slash commands
+    ├── skills/                ← 5 domain skills
+    └── settings.local.json    ← MCP permissions (gitignored)
 
 ═══════════════════════════════════════════════════════════════
-SUPABASE DATABASE SCHEMA — 6 TABLES, RLS ENABLED
+BUILD STATUS (as of 2026-04-17)
 ═══════════════════════════════════════════════════════════════
 
-TABLE 1: profiles
-  id, full_name, role, subscription_tier, stripe_customer_id,
-  trial_started_at, trial_ends_at, max_children, created_at, updated_at
-  Triggers: handle_new_user(), handle_updated_at()
-
-TABLE 2: students
-  id, parent_id, name, level, selected_subject, created_at
-
-TABLE 3: quiz_attempts
-  id, student_id, subject, level, topic, difficulty,
-  score, total_questions, time_taken_seconds, completed_at
-
-TABLE 4: question_attempts
-  id, quiz_attempt_id, student_id, question_text, topic,
-  difficulty, correct, answer_chosen, correct_answer, created_at
-
-TABLE 5: subscriptions
-  id, profile_id, stripe_subscription_id, stripe_price_id,
-  plan_name, status, current_period_start, current_period_end, created_at
-
-TABLE 6: daily_usage
-  id, student_id, date, questions_attempted, ai_tutor_messages
-  unique(student_id, date)
-
-═══════════════════════════════════════════════════════════════
-ENVIRONMENT VARIABLES
-═══════════════════════════════════════════════════════════════
-
-All in .env (gitignored) + Vercel dashboard:
-  ANTHROPIC_API_KEY, SUPABASE_URL, SUPABASE_ANON_KEY,
-  SUPABASE_SERVICE_ROLE_KEY (server-only),
-  STRIPE_PUBLISHABLE_KEY, STRIPE_SECRET_KEY (server-only),
-  STRIPE_SINGLE_SUBJECT_PRICE_ID, STRIPE_ALL_SUBJECTS_PRICE_ID,
-  STRIPE_FAMILY_PRICE_ID, NEXT_PUBLIC_APP_URL
-
-SECURITY: Never hardcode. Server-only keys never in frontend JS.
-
-═══════════════════════════════════════════════════════════════
-DESIGN SYSTEM v2.0 — "Rose & Sage" (ECC Framework)
-═══════════════════════════════════════════════════════════════
-
-Fonts:
-  Display H1/H2: Bebas Neue (fallback for Ace Sans Black), uppercase
-  Body:          Plus Jakarta Sans (400, 500, 600, 700, 800)
-  Mono/Labels:   Courier New (fallback — minimal use)
-
-CSS Variables (core brand palette):
-  --sage:        #60726f   Muted sage — primary background
-  --sage-dark:   #4a5a57   Deeper sage — nav, cards, dark sections
-  --sage-light:  #7a8f8c   Secondary text on sage
-  --cream:       #e3d9ca   Primary text + headings on sage bg
-  --cream-dim:   #c8bfb2   Secondary text on sage bg
-  --white:       #ffffff   Pure white (light section bg)
-  --off-white:   #f9f7f4   Warm off-white sections
-  --rose:        #B76E79   Antique Rose — primary CTA
-  --rose-dark:   #9d5a64   Rose hover state
-  --rose-light:  #f2e6e8   Rose tint on white
-  --peach:       #B88078   Terracotta Peach — secondary accent, progress
-  --peach-light: #f2e9e8   Peach tint on white
-  --text-dark:   #2a2a2a   Headings on white sections
-  --text-body:   #4a4a4a   Body text on white sections
-  --text-muted:  #7a7a7a   Captions on white sections
-
-Legacy mappings (ensure inner app pages still work):
-  --primary:     var(--rose)    CTAs, active states
-  --success:     #10b981        Correct answers
-  --danger:      #ef4444        Errors
-  --bg:          var(--sage-dark)
-  --border:      rgba(227,217,202,0.16)
-
-Difficulty badges (MOE-aligned, unchanged):
-  Foundation: bg #f0fdf4 text #15803d
-  Standard:   bg #f0fdfa text #0f766e
-  Advanced:   bg #fffbeb text #b45309
-  HOTS:       bg #fff1f2 text #be123c
-
-Shadow system:
-  --shadow-card: 0 4px 24px rgba(0,0,0,0.12)   Light card shadow
-  --shadow-neo:  4px 4px 0px rgba(42,42,42,0.18)  Neo-brutalist offset
-
-═══════════════════════════════════════════════════════════════
-AI TUTOR SYSTEM PROMPTS
-═══════════════════════════════════════════════════════════════
-
-Defined in api/chat.js, switch by subject.
-4 prompts: Mathematics, Science, English, General (fallback).
-All follow MOE syllabus, guide before answering, step-by-step
-working, celebrate specific correct thinking.
-See js/tutor.js for the full prompt text.
-
-═══════════════════════════════════════════════════════════════
-BUILD STATUS — 4-WEEK SPRINT
-═══════════════════════════════════════════════════════════════
-
-WEEK 1 — Foundation & Homepage        [COMPLETED]
-  [x] Repo cleaned + scaffolded
-  [x] CSS design system (style.css)
+COMPLETED
+  [x] CSS design system (Rose & Sage, Bebas Neue, CSS variables)
   [x] Marketing homepage (index.html)
-  [x] Subject selection page
+  [x] Subject landing pages (maths, science, english)
   [x] 404 page
+  [x] Auth: email/password + Google + Apple OAuth
+  [x] Auth pages: login.html, signup.html, confirm-email.html, update-password.html
+  [x] Signup flow: 7-day trial, no credit card, subscription_tier = 'trial'
+  [x] Profile trigger: handle_new_user() + 008 migration applied
+  [x] guardPage() + enforcePaywall() in auth.js
+  [x] Daily usage limits (5 questions/day on trial)
+  [x] Quiz engine: all 6 PSLE question types (quiz.js + quiz.html)
+  [x] Question bank: migrated to Supabase question_bank table
+  [x] Miss Wena AI tutor: Gemini Flash, 3-Strike scaffolding, save-to-backpack
+  [x] Study Notes Backpack: summarize-chat → study_notes table → dashboard modal
+  [x] Progress tracker (progress.html + progress.js)
+  [x] AI weakness analysis (/api/analyze-weakness)
+  [x] Remedial Plan Quest (/api/generate-quest, 3-day plan)
+  [x] Exam generator: AI-generated WA/EOY/PSLE papers (exam.html)
+  [x] AI grading for open_ended + word_problem (/api/grade-answer)
+  [x] Stripe: trial-first flow, checkout, webhook, profiles.subscription_tier updated
+  [x] Stripe Customer Portal (/api/portal via account.html)
+  [x] Parent Account Portal (account.html: profile, email, password, billing)
+  [x] Master Admin Panel (admin.html: users, plans, students, role-gated)
+  [x] Dashboard: checkout polling (auto-updates UI on webhook), trial banner
+  [x] Header: Manage Billing link for subscribers, Admin Panel link for admins
+  [x] Student photo upload (Supabase Storage, avatars bucket)
+  [x] ECC framework (rules, commands, agents, hooks, skills)
+  [x] Single gateway API (api/index.js → lib/api/handlers.js, 13 routes)
+  [x] vercel.json: 13 rewrites + security headers
+  [x] Profile trigger fix (008_fix_profile_trigger.sql applied)
+  [x] Subject-specific pages (subject-mathematics/science/english.html)
 
-WEEK 2 — Quiz Engine & AI Tutor        [COMPLETED]
-  [x] Supabase JS client (supabase-client.js)
-  [x] Auth module (auth.js)
-  [x] Auth pages (login.html, signup.html)
-  [x] Quiz engine with MCQ (quiz.js + quiz.html)
-  [x] AI tutor chat (tutor.js + tutor.html + api/chat.js)
-  [x] Question bank JSON (P2/P4 Maths, Science, English)
-  [x] ECC framework implemented
-  [x] Master Question Template defined (6 types)
-
-WEEK 3 — Auth, Payments & Progress     [IN PROGRESS]
-  [ ] Implement 6 question types in quiz engine
-  [ ] Migrate question bank to topic-specific files
-  [ ] Topic selection on subjects page
-  [ ] Progress tracker (progress.js + progress.html)
-  [ ] Stripe integration (checkout.js + webhook.js)
-  [ ] Pricing page with Stripe Checkout
-  [ ] Paywall enforcement
-
-WEEK 4 — Polish, SEO & Launch          [NOT STARTED]
-  [ ] Loading states + error handling everywhere
-  [ ] SEO meta tags + JSON-LD
-  [ ] Analytics (Plausible or GA4)
-  [ ] Legal pages (PDPA-compliant terms/privacy)
-  [ ] Switch Stripe to live mode
-
-═══════════════════════════════════════════════════════════════
-CONTENT IN GOOGLE DRIVE (via MCP)
-═══════════════════════════════════════════════════════════════
-
-Path: C:\SLabDrive (alias for Google Drive)
-
-  01 - Platform Intelligence/
-    Master_Question_Template.md  ← SOURCE OF TRUTH for question formats
-    System Prompt v1.0.txt
-    Brand Story Homepage Copy.html
-  02 - MOE Syllabuses/
-    Primary/ (P1-P6 Maths, P3-P6 Science, P1-P6 English PDFs)
-  03 - Content Library/
-    Primary 4/ Mathematics/ (weekly content gdocs)
-  04 - Business/
-    Brand Story, Competitor Research, Pricing Strategy
-  05 - Content Tracker/
-    Master Content Tracker.gsheet
+PENDING / IN PROGRESS
+  [ ] Analytics: Plausible script on ALL pages (currently pricing.html only)
+  [ ] SEO: meta descriptions, Open Graph, JSON-LD on all pages
+  [ ] sitemap.xml + robots.txt
+  [ ] subscriptions table: UNIQUE constraint on stripe_subscription_id
+  [ ] Stripe: switch from test mode to live mode
+  [ ] Question bank: expand to 600+ questions (P1, P3, P6 currently empty)
 
 ═══════════════════════════════════════════════════════════════
 HOW TO START A CLAUDE CODE SESSION
@@ -349,12 +400,16 @@ HOW TO START A CLAUDE CODE SESSION
 
 Open Claude Code in D:\Git\Superholic-Lab.
 Rules and hooks load automatically from .claude/ and hooks/.
-Commands available: /plan, /code-review, /build-fix, /deploy,
-/generate-questions, /security-check
 
-First prompt for any session:
-  Read CLAUDE.md and ARCHITECTURE.md, then [your task].
+First prompt for any new session:
+  "Read CLAUDE.md and ARCHITECTURE.md, then [your task]."
+
+MCP servers available in Claude Code:
+  filesystem   D:\Git\Superholic-Lab + C:\SLabDrive
+  github       feynman82/Superholic-Lab
+  supabase     project: rlmqsbxevuutugtyysjr
+  Chrome MCP   for visual QA after deploys
 
 ═══════════════════════════════════════════════════════════════
-END OF ARCHITECTURE BRIEFING v2.0
+END OF ARCHITECTURE BRIEFING v3.0
 ═══════════════════════════════════════════════════════════════
