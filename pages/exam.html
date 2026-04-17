@@ -689,75 +689,93 @@ window.initExamEngine = function () {
 
       uiHtml = `<div class="card p-6">${lines}</div>`;
     } else if (q.type === 'short_ans') {
-      uiHtml = `<input type="text" id="qInput" class="form-input w-full p-4 mt-4" style="font-size: 1.125rem; font-weight: 700; text-align: center; border: 2px solid var(--border-dark); border-radius: var(--radius-md);" placeholder="Type your final answer..." value="${esc(savedAns)}" autocomplete="off">`;
+      const isDrawMode = state.drawings[ansKey] && state.drawings[ansKey] !== 'text';
+      uiHtml = `
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+          <span class="text-xs font-bold text-muted uppercase tracking-wider">💡 Tip: Draw your working!</span>
+          <div class="flex gap-2 w-full sm:w-auto">
+            <button class="btn btn-sm ${!isDrawMode ? 'bg-sage-dark text-white' : 'btn-ghost'}" onclick="window.setMode('text')">⌨️ Type</button>
+            <button class="btn btn-sm ${isDrawMode ? 'bg-sage-dark text-white' : 'btn-ghost'}" onclick="window.setMode('draw')">✏️ Pen Tool</button>
+          </div>
+        </div>
+        ${!isDrawMode 
+          ? `<input type="text" id="qInput" class="form-input w-full p-4 text-lg border-2 border-slate-200 focus:border-brand-sage rounded-xl transition-all shadow-sm" placeholder="Type your final answer here (Required for marking)" value="${esc(savedAns)}" autocomplete="off" oninput="window.saveCurrentAnswerState()">`
+          : `<div class="scratchpad-container mb-4" style="position: relative; display: block;">
+               <canvas id="canvas-${ansKey}" data-drawkey="${ansKey}" class="scratchpad-canvas bg-white border-2 border-slate-200 rounded-xl w-full shadow-sm" style="min-height: 300px; touch-action: none; cursor: crosshair;"></canvas>
+               <div style="position: absolute; top: 12px; right: 12px;">
+                  <button class="btn btn-sm btn-ghost bg-white hover-lift border border-slate-200 shadow-sm rounded-lg" onclick="window.clearCanvas('${ansKey}')">🗑️ Clear</button>
+               </div>
+             </div>
+             <input type="text" id="qInput" class="form-input w-full p-4 text-lg border-2 border-brand-sage/50 focus:border-brand-sage rounded-xl transition-all shadow-sm bg-sage-50/10" placeholder="Type your final answer here (Required for marking)" value="${esc(savedAns)}" autocomplete="off" oninput="window.saveCurrentAnswerState()">`
+        }
+      `;
+    } else if (q.type === 'open_ended') {
+      const isDrawMode = state.drawings[ansKey] && state.drawings[ansKey] !== 'text';
+      uiHtml = `
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+          <span class="text-xs font-bold text-muted uppercase tracking-wider">💡 Tip: Draw your working!</span>
+          <div class="flex gap-2 w-full sm:w-auto">
+            <button class="btn btn-sm ${!isDrawMode ? 'bg-sage-dark text-white' : 'btn-ghost'}" onclick="window.setMode('text')">⌨️ Type</button>
+            <button class="btn btn-sm ${isDrawMode ? 'bg-sage-dark text-white' : 'btn-ghost'}" onclick="window.setMode('draw')">✏️ Pen Tool</button>
+          </div>
+        </div>
+        ${!isDrawMode 
+          ? `<textarea id="qInput" class="form-input w-full p-4 text-lg border-2 border-slate-200 focus:border-brand-sage rounded-xl transition-all shadow-sm" rows="5" style="height:auto; resize:vertical;" placeholder="Type your detailed working and answer here..." oninput="window.saveCurrentAnswerState()">${esc(savedAns)}</textarea>`
+          : `<div class="scratchpad-container mb-4" style="position: relative; display: block;">
+               <canvas id="canvas-${ansKey}" data-drawkey="${ansKey}" class="scratchpad-canvas bg-white border-2 border-slate-200 rounded-xl w-full shadow-sm" style="min-height: 300px; touch-action: none; cursor: crosshair;"></canvas>
+               <div style="position: absolute; top: 12px; right: 12px;">
+                  <button class="btn btn-sm btn-ghost bg-white hover-lift border border-slate-200 shadow-sm rounded-lg" onclick="window.clearCanvas('${ansKey}')">🗑️ Clear</button>
+               </div>
+             </div>
+             <input type="text" id="qInput" class="form-input w-full p-4 text-lg border-2 border-brand-sage/50 focus:border-brand-sage rounded-xl transition-all shadow-sm bg-sage-50/10" placeholder="Final Answer (Optional)" value="${esc(savedAns)}" autocomplete="off" oninput="window.saveCurrentAnswerState()">`
+        }
+      `;
     } else if (q.type === 'word_problem') {
       let partsData = [];
       try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
       
-      const savedObj = (typeof savedAns === 'object') ? savedAns : {};
+      const savedObj = (typeof savedAns === 'object' && savedAns !== null) ? savedAns : {};
       
-      let partsHtml = partsData.length === 0 
+      uiHtml = partsData.length === 0 
         ? `<div class="text-amber">Legacy format detected. Please update database.</div>`
         : partsData.map((p, idx) => {
             const pLabel = p.label || (p.part_id ? `(${p.part_id})` : `Part ${idx + 1}`);
             const pQ = p.question || p.question_text || '';
+            const pMarks = p.marks || 2;
             const savedWorking = savedObj[pLabel] || '';
+            const drawKey = `${ansKey}_${pLabel}`;
+            const isDrawMode = state.drawings[drawKey] && state.drawings[drawKey] !== 'text';
+            const safeIdLabel = String(pLabel).replace(/[^a-zA-Z0-9]/g, '');
+
             return `
-              <div class="card bg-page p-5 mb-4 shadow-sm" style="border: 1px solid var(--border-light); border-radius: var(--radius-lg);">
-                <div class="flex items-center justify-between mb-3">
-                  <div class="flex flex-col gap-1">
-                    <span class="font-display text-xl text-main font-bold" style="color: var(--brand-sage);">${esc(pLabel)}</span>
-                    ${pQ ? `<span class="text-base text-main font-medium mt-1">${esc(pQ)}</span>` : ''}
-                  </div>
-                  <span class="badge badge-amber text-xs">${p.marks || 2} marks</span>
+              <div class="mb-6 pb-6" style="${idx < partsData.length - 1 ? 'border-bottom: 1px dashed var(--border-light);' : ''}">
+                <div class="flex items-center gap-3 mb-3">
+                  <span class="font-display text-xl text-main font-bold" style="color: var(--brand-sage);">${esc(pLabel)}</span>
+                  <span class="badge badge-info text-xs">${pMarks} mark${pMarks!==1?'s':''}</span>
                 </div>
-                <textarea id="wp-${esc(pLabel)}" class="form-input w-full p-4 border-2 border-slate-200 focus:border-brand-sage rounded-xl transition-all shadow-sm text-base mt-2" rows="3" placeholder="Type your working and answer here..." oninput="window.saveCurrentAnswerState()">${esc(savedWorking)}</textarea>
+                ${pQ ? `<div class="text-lg text-main font-medium mb-4 leading-relaxed">${esc(pQ)}</div>` : ''}
+                
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+                  <span class="text-xs font-bold text-muted uppercase tracking-wider">💡 Tip: Draw your working!</span>
+                  <div class="flex gap-2 w-full sm:w-auto">
+                    <button class="btn btn-sm ${!isDrawMode ? 'bg-sage-dark text-white' : 'btn-ghost'}" onclick="window.setMode('text', '${esc(pLabel)}')">⌨️ Type</button>
+                    <button class="btn btn-sm ${isDrawMode ? 'bg-sage-dark text-white' : 'btn-ghost'}" onclick="window.setMode('draw', '${esc(pLabel)}')">✏️ Pen Tool</button>
+                  </div>
+                </div>
+                
+                ${!isDrawMode
+                  ? `<textarea id="wp-${safeIdLabel}" data-part="${esc(pLabel)}" class="form-input w-full p-4 text-lg border-2 border-slate-200 focus:border-brand-sage rounded-xl transition-all shadow-sm" rows="3" placeholder="Type your working and answer here..." oninput="window.saveCurrentAnswerState()">${esc(savedWorking)}</textarea>`
+                  : `<div class="scratchpad-container mb-4" style="position: relative; display: block;">
+                       <canvas id="canvas-${drawKey}" data-drawkey="${drawKey}" class="scratchpad-canvas bg-white border-2 border-slate-200 rounded-xl w-full shadow-sm" style="min-height: 300px; touch-action: none; cursor: crosshair;"></canvas>
+                       <div style="position: absolute; top: 12px; right: 12px;">
+                          <button class="btn btn-sm btn-ghost bg-white hover-lift border border-slate-200 shadow-sm rounded-lg" onclick="window.clearCanvas('${drawKey}')">🗑️ Clear</button>
+                       </div>
+                     </div>
+                     <input type="text" id="wp-${safeIdLabel}" data-part="${esc(pLabel)}" class="form-input w-full p-4 text-lg border-2 border-brand-sage/50 focus:border-brand-sage rounded-xl transition-all shadow-sm bg-sage-50/10" placeholder="Final Answer (Required for marking)" value="${esc(savedWorking)}" oninput="window.saveCurrentAnswerState()">`
+                }
               </div>
             `;
           }).join('');
-
-      const isDrawingMode = !!state.drawings[ansKey];
-      uiHtml = `
-        ${partsHtml}
-        <div class="mt-4 bg-surface p-4 rounded-xl border border-light">
-          <div class="flex justify-between items-center mb-2">
-            <span class="text-sm font-bold text-muted uppercase">Global Scratchpad</span>
-            <div class="flex gap-2">
-              <button class="btn btn-sm ${!isDrawingMode ? 'bg-sage-dark text-white' : 'btn-ghost'}" onclick="window.setMode('text')">⌨️ Hide</button>
-              <button class="btn btn-sm ${isDrawingMode ? 'bg-sage-dark text-white' : 'btn-ghost'}" onclick="window.setMode('draw')">✏️ Draw</button>
-            </div>
-          </div>
-          ${isDrawingMode ? `
-            <div class="scratchpad-container border-2 border-slate-200 rounded-xl overflow-hidden mt-2 bg-white shadow-sm">
-              <canvas id="scratchpadCanvas" class="scratchpad-canvas w-full" style="min-height:300px; touch-action:none;"></canvas>
-              <div class="p-2 border-t border-light bg-page flex justify-end">
-                <button class="btn btn-sm btn-ghost hover-lift" onclick="window.clearCanvas()">🗑️ Clear</button>
-              </div>
-            </div>` : ''}
-        </div>
-      `;
-    } else if (q.type === 'open_ended') {
-      const isDrawingMode = !!state.drawings[ansKey];
-      uiHtml = `
-        <div class="flex justify-between gap-2 mb-2">
-          <div></div> <div class="flex gap-2">
-            <button class="btn btn-sm ${!isDrawingMode ? 'bg-sage-dark text-white' : 'btn-ghost'}" onclick="window.setMode('text')">⌨️ Type</button>
-            <button class="btn btn-sm ${isDrawingMode ? 'bg-sage-dark text-white' : 'btn-ghost'}" onclick="window.setMode('draw')">✏️ Pen Tool</button>
-          </div>
-        </div>
-        ${!isDrawingMode 
-          ? `<textarea id="qInput" class="form-input w-full p-4 mt-2 border-2 border-slate-200 focus:border-brand-sage rounded-xl transition-all shadow-sm text-base" rows="6" style="height:auto; resize:vertical;" placeholder="Show your working and final answer...">${esc(savedAns)}</textarea>`
-          : `
-            <div class="scratchpad-container" style="display: block; border: 2px solid var(--border-dark); border-radius: var(--radius-md);">
-              <canvas id="scratchpadCanvas" class="scratchpad-canvas"></canvas>
-              <div class="scratchpad-tools">
-                <button class="btn btn-sm btn-ghost bg-surface hover-lift" style="border: 1px solid var(--border-light);" onclick="window.clearCanvas()">🗑️ Clear</button>
-              </div>
-            </div>
-            <input type="text" id="qInput" class="form-input w-full p-4 mt-4 border-2 border-slate-200 focus:border-brand-sage rounded-xl transition-all shadow-sm text-center font-bold text-lg" placeholder="Final Answer (Required for AI Grading)" value="${esc(savedAns)}" autocomplete="off">
-          `
-        }
-      `;
     } else { 
       uiHtml = `<textarea id="qInput" class="form-input w-full p-4 mt-2" rows="4" style="height:auto; border: 2px solid var(--border-dark); border-radius: var(--radius-md);">${esc(savedAns)}</textarea>`;
     }
@@ -816,9 +834,7 @@ window.initExamEngine = function () {
     `;
 
     // 🚀 MASTERCLASS FIX: setTimeout prevents the 0x0 Canvas rendering bug on mode toggle
-    if (document.getElementById('scratchpadCanvas')) {
-      setTimeout(() => initCanvas(ansKey), 50);
-    }
+    setTimeout(() => initCanvas(), 50);
   }
 
   // ── EXAM INTERACTIONS ────────────────────────────────────────────────────
@@ -847,7 +863,8 @@ window.initExamEngine = function () {
       try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
       partsData.forEach((p, idx) => {
         const pLabel = p.label || (p.part_id ? `(${p.part_id})` : `Part ${idx + 1}`);
-        const el = document.getElementById(`wp-${pLabel}`);
+        const safeIdLabel = String(pLabel).replace(/[^a-zA-Z0-9]/g, '');
+        const el = document.getElementById(`wp-${safeIdLabel}`);
         if (el) ans[pLabel] = el.value;
       });
       state.answers[ansKey] = ans;
@@ -856,8 +873,11 @@ window.initExamEngine = function () {
       if (inp) state.answers[ansKey] = inp.value;
     }
     
-    const canvas = document.getElementById('scratchpadCanvas');
-    if (canvas) state.drawings[ansKey] = canvas.toDataURL();
+    // Save ALL canvases currently on screen
+    document.querySelectorAll('.scratchpad-canvas').forEach(canvas => {
+      const drawKey = canvas.getAttribute('data-drawkey');
+      if (drawKey) state.drawings[drawKey] = canvas.toDataURL();
+    });
   };
 
   window.navExam = (dir) => {
@@ -889,9 +909,9 @@ window.initExamEngine = function () {
     renderFocusExam();
   };
 
-  window.setMode = (mode) => {
+  window.setMode = (mode, subKey = null) => {
     window.saveCurrentAnswerState();
-    const k = state.currentQIdx;
+    const k = subKey ? `${state.currentQIdx}_${subKey}` : state.currentQIdx;
     if (mode === 'draw') {
       state.drawings[k] = state.drawings[k] || 'init'; 
     } else {
@@ -908,53 +928,80 @@ window.initExamEngine = function () {
   };
 
   // ── CANVAS LOGIC ─────────────────────────────────────────────────────────
-  let ctx, isDrawing = false;
-  function initCanvas(qid) {
-    const canvas = document.getElementById('scratchpadCanvas');
-    if (!canvas) return;
-    
-    const rect = canvas.parentElement.getBoundingClientRect();
-    canvas.width = rect.width;
-    canvas.height = 300;
-    
-    ctx = canvas.getContext('2d');
-    ctx.lineWidth = 2;
-    ctx.lineCap = 'round';
-    ctx.strokeStyle = '#2C3E3A';
-
-    if (state.drawings[qid] && state.drawings[qid] !== 'init') {
-      let img = new Image();
-      img.onload = () => ctx.drawImage(img, 0, 0);
-      img.src = state.drawings[qid];
-    }
-
-    const getPos = (e) => {
-      const r = canvas.getBoundingClientRect();
-      const x = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
-      const y = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
-      return { x, y };
-    };
-
-    const start = (e) => { isDrawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); e.preventDefault(); };
-    const draw = (e) => { if (!isDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); e.preventDefault(); };
-    const stop = () => { if(isDrawing) { isDrawing = false; state.drawings[qid] = canvas.toDataURL(); } };
-
-    canvas.addEventListener('mousedown', start);
-    canvas.addEventListener('mousemove', draw);
-    canvas.addEventListener('mouseup', stop);
-    canvas.addEventListener('mouseout', stop);
-
-    canvas.addEventListener('touchstart', start, {passive: false});
-    canvas.addEventListener('touchmove', draw, {passive: false});
-    canvas.addEventListener('touchend', stop);
-  }
-
-  window.clearCanvas = () => {
-    if(ctx) {
-      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-      state.drawings[state.currentQIdx] = ctx.canvas.toDataURL();
+  let isDrawing = false;
+  
+  window.clearCanvas = (drawKey) => {
+    const canvas = document.getElementById(`canvas-${drawKey}`);
+    if (canvas) {
+      const context = canvas.getContext('2d');
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      state.drawings[drawKey] = canvas.toDataURL();
     }
   };
+
+  function initCanvas() {
+    document.querySelectorAll('.scratchpad-canvas').forEach(canvas => {
+      if (canvas.isInitialized) return;
+
+      const rect = canvas.parentElement.getBoundingClientRect();
+      canvas.width = rect.width || canvas.parentElement.offsetWidth || 600;
+      canvas.height = 300;
+      
+      const context = canvas.getContext('2d');
+      context.lineWidth = 2.5;
+      context.lineCap = 'round';
+      context.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--border-dark').trim() || '#2C3E3A';
+
+      const drawKey = canvas.getAttribute('data-drawkey');
+
+      if (state.drawings[drawKey] && state.drawings[drawKey] !== 'init' && state.drawings[drawKey] !== 'text') {
+        let img = new Image();
+        img.onload = () => context.drawImage(img, 0, 0);
+        img.src = state.drawings[drawKey];
+      }
+
+      const getPos = (e) => {
+        const r = canvas.getBoundingClientRect();
+        const x = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
+        const y = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
+        return { x, y };
+      };
+
+      const start = (e) => { 
+        isDrawing = true; 
+        const p = getPos(e); 
+        context.beginPath(); 
+        context.moveTo(p.x, p.y); 
+        context.lineTo(p.x, p.y); 
+        context.stroke(); 
+        if (e.cancelable) e.preventDefault(); 
+      };
+      const draw = (e) => { 
+        if (!isDrawing) return; 
+        const p = getPos(e); 
+        context.lineTo(p.x, p.y); 
+        context.stroke(); 
+        if (e.cancelable) e.preventDefault(); 
+      };
+      const stop = () => { 
+        if(isDrawing) { 
+          isDrawing = false; 
+          state.drawings[drawKey] = canvas.toDataURL(); 
+        } 
+      };
+
+      canvas.addEventListener('mousedown', start);
+      canvas.addEventListener('mousemove', draw);
+      canvas.addEventListener('mouseup', stop);
+      canvas.addEventListener('mouseout', stop);
+      canvas.addEventListener('touchstart', start, {passive: false});
+      canvas.addEventListener('touchmove', draw, {passive: false});
+      canvas.addEventListener('touchend', stop);
+      
+      canvas.style.touchAction = 'none';
+      canvas.isInitialized = true;
+    });
+  }
 
 // ── SUBMIT & GRADE ───────────────────────────────────────────────────────
   async function submitExam() {
