@@ -222,7 +222,6 @@ window.initQuizEngine = function() {
     const isShortAns = q.type === 'short_ans';
     const placeholderText = isShortAns ? 'Type your final answer here (Required for marking)' : 'Final Answer (Optional)';
     
-    // ✨ UNIFIED BEAUTIFUL STYLING FOR ALL INPUTS ✨
     const baseInputStyle = "form-input w-full p-4 text-lg border-2 border-slate-200 focus:border-brand-sage rounded-xl transition-all shadow-sm";
     const drawModeInputStyle = "form-input mt-3 w-full p-4 text-lg border-2 border-brand-sage/50 focus:border-brand-sage rounded-xl transition-all shadow-sm bg-sage-50/10";
 
@@ -335,7 +334,6 @@ function buildClozeUI(q) {
     const allWords = new Set();
     blanks.forEach(b => (b.options || []).forEach(w => allWords.add(w)));
     
-    // 3.0 UPGRADE: Smart Word Bank (Hides if empty)
     let wordBankHtml = '';
     if (allWords.size > 0) {
       const wordBankList = [...allWords].sort().map((w, i) =>
@@ -348,7 +346,6 @@ function buildClozeUI(q) {
         </div>`;
     }
 
-    // 3.0 UPGRADE: Line breaks support
     let passage = esc(q.passage || '').replace(/\n/g, '<br>');
     
     blanks.forEach(b => {
@@ -360,7 +357,6 @@ function buildClozeUI(q) {
         const isCorrect = (savedAns[num] || '').toLowerCase() === (b.correct_answer || '').toLowerCase();
         const stateClass = isCorrect ? 'is-correct' : 'is-wrong';
         
-        // 3.0 UPGRADE: Smart Disabled Inputs
         if (b.options && b.options.length > 0) {
           inputHtml = `<select id="cloze-blank-${num}" class="cloze-select ${stateClass}" disabled style="min-width: 100px;">
             <option value="${esc(saved)}">${esc(saved||'—')}</option></select>`;
@@ -368,7 +364,6 @@ function buildClozeUI(q) {
           inputHtml = `<input type="text" id="cloze-blank-${num}" class="editing-input ${stateClass}" value="${esc(saved)}" disabled style="width: 120px; display: inline-block; margin: 0 4px;">`;
         }
       } else {
-        // 3.0 UPGRADE: Smart Active Inputs (Dropdown vs Text Box)
         if (b.options && b.options.length > 0) {
           const opts = (b.options || []).map(o =>
             `<option value="${esc(o)}" ${saved === o ? 'selected' : ''}>${esc(o)}</option>`
@@ -379,8 +374,6 @@ function buildClozeUI(q) {
           inputHtml = `<input type="text" id="cloze-blank-${num}" class="editing-input" value="${esc(saved)}" placeholder="type here" autocomplete="off" oninput="window.saveInputState()" style="width: 120px; display: inline-block; margin: 0 4px;">`;
         }
       }
-      // THE FIX: Global regex safely replacing [1] or (1) AND swallowing any surrounding underscores/spaces
-      // This turns "___ [1] ___" or "____(1)" purely into the dropdown.
       const blankRegex = new RegExp(`_*\\s*(\\[|\\()${num}(\\]|\\))\\s*_*`, 'g');
       passage = passage.replace(blankRegex, inputHtml);
     });
@@ -400,7 +393,6 @@ function buildClozeUI(q) {
       blankFeedback = `<div class="card bg-page p-4 mt-4">${rows}</div>`;
     }
 
-    // 3.0 UPGRADE: Typography & Line Height
     return `
       ${wordBankHtml}
       <div class="card p-6 cloze-passage text-lg text-main font-normal">${passage}</div>
@@ -412,18 +404,15 @@ function buildClozeUI(q) {
     let blanks = [];
     try { blanks = typeof q.blanks === 'string' ? JSON.parse(q.blanks) : (q.blanks || []); } catch(e) {}
 
-    // 1. Format passage: escape HTML, but safely restore <u> tags and line breaks
     let html = esc(q.passage || '')
       .replace(/\n/g, '<br><br>')
       .replace(/&lt;u&gt;/gi, '<u>')
       .replace(/&lt;\/u&gt;/gi, '</u>');
 
-    // 2. Replace [1], [2] with inline input boxes
     html = html.replace(/\[(\d+)\]/g, (match, numStr) => {
       const num = parseInt(numStr, 10);
       const saved = savedAns[num] || '';
       
-      // FIX: Use loose equality (==) to prevent String vs Int database mismatches
       const blankDef = blanks.find(b => b.number == num) || {};
       const correctAns = blankDef.correct_answer || blankDef.correct_word || '';
 
@@ -431,7 +420,6 @@ function buildClozeUI(q) {
         const isCorrect = saved.toLowerCase() === correctAns.toLowerCase();
         const stateClass = isCorrect ? 'is-correct' : 'is-wrong';
         
-        // FIX: Upgraded font size to text-lg and added align-middle
         return `<input type="text" value="${esc(saved)}" disabled class="editing-inline-input ${stateClass}">
                 ${!isCorrect ? `<span class="text-lg font-bold text-success ml-2 align-middle">(${esc(correctAns)})</span>` : ''}`;
       } else {
@@ -439,7 +427,6 @@ function buildClozeUI(q) {
       }
     });
 
-    // 3. Feedback explanations
     let editFeedback = '';
     if (state.isAnswered) {
       const wrongBlanks = blanks.filter(b => {
@@ -453,7 +440,6 @@ function buildClozeUI(q) {
           <div class="text-sm font-bold text-muted uppercase mb-4">Explanations</div>
           ${wrongBlanks.map(b => {
             const correctAns = b.correct_answer || b.correct_word || '';
-            // FIX: Upgraded Explanation text to text-lg to match the passage
             return `
             <div class="text-lg text-main py-3" style="border-bottom: 1px solid var(--border-light);">
               <span class="font-bold">[${b.number}] → <span class="text-success">${esc(correctAns)}</span>:</span> ${esc(b.explanation)}
@@ -472,7 +458,6 @@ function buildClozeUI(q) {
 
     let hintsHtml = '';
     
-    // Show revealed hints
     if (state.hintLevel > 0) {
       const revealedHints = q.progressive_hints.slice(0, state.hintLevel);
       hintsHtml += `<div class="mt-4 flex flex-col gap-3">`;
@@ -488,7 +473,6 @@ function buildClozeUI(q) {
       hintsHtml += `</div>`;
     }
 
-    // Show hint button if hints remain and question is unanswered
     if (!state.isAnswered && state.hintLevel < q.progressive_hints.length) {
       const btnText = state.hintLevel === 0 ? '💡 Need a hint?' : '💡 Show next hint';
       hintsHtml += `
@@ -520,7 +504,7 @@ function buildClozeUI(q) {
     else if (q.type === 'editing')  inputUi = buildEditingUI(q);
     else                            inputUi = buildTextAreaUI(q);   
 
-    const hintsUi = buildHintsUI(q); // 👈 ADD THIS LINE
+    const hintsUi = buildHintsUI(q);
 
     let feedbackHtml = '';
     if (state.isAnswered && state.feedback) {
@@ -568,14 +552,13 @@ function buildClozeUI(q) {
       actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.navQuiz(1)">${isLast ? 'Finish Lab →' : 'Next Question →'}</button>`;
     }
 
-    // --- SMART INSTRUCTION OVERRIDE ---
     let displayInstruction = esc(q.question_text);
     if (q.type === 'cloze') {
       displayInstruction = 'Fill in each blank with the correct word from the Word Bank.';
     } else if (q.type === 'editing') {
       displayInstruction = 'Read the passage and correct each underlined spelling or grammatical error.';
     }
-    // ----------------------------------
+
     const diagramHtml = renderVisualPayload(q.visual_payload);
     
     app.innerHTML = `
@@ -619,7 +602,7 @@ function buildClozeUI(q) {
 
   window.showHint = () => {
     if (state.isAnswered) return;
-    window.saveInputState(); // Save current input so it doesn't vanish on re-render
+    window.saveInputState();
     state.hintLevel++;
     render();
   };
@@ -630,7 +613,6 @@ function buildClozeUI(q) {
     let safeOptions = [];
     try { safeOptions = typeof q.options === 'string' ? JSON.parse(q.options) : (q.options || []); } catch(e) {}
     
-    // Save the exact string value of the clicked option, not 'A' or 'B'
     state.answers[state.currentIndex] = safeOptions[idx];
     window.checkAnswer();
   };
@@ -661,7 +643,6 @@ function buildClozeUI(q) {
       try { blanks = typeof q.blanks === 'string' ? JSON.parse(q.blanks) : (q.blanks || []); } catch(e) {}
       blanks.forEach(b => {
         const num = b.number || b.id;
-        // The inline renderer uses 'cloze-blank-' IDs for these inputs
         const el = document.getElementById(`cloze-blank-${num}`);
         if (el) ans[num] = el.value;
       });
@@ -687,7 +668,7 @@ function buildClozeUI(q) {
   window.navQuiz = (dir) => {
     if (!state.isAnswered && dir > 0) return;
 
-    state.activeWPPart = 0; // Reset progressive UI
+    state.activeWPPart = 0;
 
     if (dir < 0) {
       window.saveInputState();
@@ -717,7 +698,6 @@ function buildClozeUI(q) {
     window.saveInputState();
     const q = state.questions[state.currentIndex];
 
-    // ── MCQ ──
     if (q.type === 'mcq') {
       const ans = state.answers[state.currentIndex];
       if (!ans) { alert('Please select an answer!'); return; }
@@ -737,7 +717,6 @@ function buildClozeUI(q) {
       render(); return;
     }
 
-    // ── CLOZE ──
     if (q.type === 'cloze') {
       const ans = state.answers[state.currentIndex] || {};
       let blanks = [];
@@ -759,7 +738,6 @@ function buildClozeUI(q) {
       render(); return;
     }
 
-    // ── EDITING ──
     if (q.type === 'editing') {
       const ans = state.answers[state.currentIndex] || {};
       let blanks = [];
@@ -780,7 +758,6 @@ function buildClozeUI(q) {
       render(); return;
     }
 
-    // ── WORD PROBLEM / OPEN-ENDED (Live AI Grading) ──
     if (q.type === 'word_problem' || q.type === 'open_ended') {
       let ans = '';
       let currentPart = null;
@@ -797,7 +774,6 @@ function buildClozeUI(q) {
 
       if (!ans.trim()) { alert('Please type your final answer or working so Miss Wena can grade it!'); return; }
 
-      // Set Loading State
       state.feedback = { status: 'loading', text: 'Analyzing your logic...' };
       render();
 
@@ -807,7 +783,7 @@ function buildClozeUI(q) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             questionId: q.id, 
-            questionType: 'open_ended', // We pass WP parts as single open-ended to the grader
+            questionType: 'open_ended',
             questionText: currentPart ? (currentPart.question || currentPart.question_text || q.question_text) : q.question_text,
             subject: new URLSearchParams(window.location.search).get('subject') || 'mathematics',
             level: new URLSearchParams(window.location.search).get('level') || 'primary-4',
@@ -845,7 +821,6 @@ function buildClozeUI(q) {
         render();
       } catch (err) {
         console.error("AI Grading Error:", err);
-        // Fallback to reveal if API fails
         if (q.type === 'word_problem') {
           let partsData = [];
           try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
@@ -880,6 +855,8 @@ function buildClozeUI(q) {
     // UPGRADE: Use total possible marks for percentage
     const maxScore = state.totalPossibleScore > 0 ? state.totalPossibleScore : 1;
     const pct = Math.round((state.score / maxScore) * 100);
+    // Analytics: record quiz session completion
+    if (window.plausible) window.plausible('Quiz Complete', { props: { score: pct, subject: new URLSearchParams(window.location.search).get('subject') || 'mixed' } });
     
     app.innerHTML = `
       <div class="card flex flex-col items-center text-center w-full hover-lift p-6 card-rule-mint" style="max-width: 600px;">
@@ -970,7 +947,6 @@ function buildClozeUI(q) {
           topic:              primaryTopic,
           difficulty:         'Mixed',
           score:              state.score,
-          // FIX: Removed the duplicate total_questions key so multi-part grading works
           total_questions:    state.totalPossibleScore > 0 ? state.totalPossibleScore : state.questions.length,
           time_taken_seconds: state.quizStartTime ? Math.round((Date.now() - state.quizStartTime) / 1000) : null,
           completed_at:       new Date().toISOString(),
@@ -1048,22 +1024,18 @@ function buildClozeUI(q) {
   };
 
   function initCanvas(qid) {
-    // Delay execution to allow the browser to paint the new DOM
     setTimeout(() => {
       const canvas = document.getElementById('scratchpadCanvas');
       if (!canvas) return;
       
       const rect = canvas.parentElement.getBoundingClientRect();
       
-      // Fallbacks added to prevent 0-width errors
       canvas.width = rect.width || canvas.parentElement.offsetWidth || 600;
       canvas.height = 300;
       
       ctx = canvas.getContext('2d');
-      ctx.lineWidth = 2.5; // Matched to tutor.js
+      ctx.lineWidth = 2.5;
       ctx.lineCap = 'round';
-      
-      // Inherit the exact stroke color from the CSS variables like tutor.js
       ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--border-dark').trim() || '#2C3E3A';
 
       const drawKey = canvas.getAttribute('data-drawkey') || qid;
@@ -1088,7 +1060,7 @@ function buildClozeUI(q) {
         const p = getPos(e); 
         ctx.beginPath(); 
         ctx.moveTo(p.x, p.y); 
-        ctx.lineTo(p.x, p.y); /* Instantly draws a dot for simple screen taps */
+        ctx.lineTo(p.x, p.y);
         ctx.stroke(); 
         if (e.cancelable) e.preventDefault(); 
       };
@@ -1108,7 +1080,7 @@ function buildClozeUI(q) {
       canvas.addEventListener('touchstart', start, {passive: false});
       canvas.addEventListener('touchmove', draw, {passive: false});
       canvas.addEventListener('touchend', stop);
-    }, 50); // 50ms buffer aligns with the tutor logic
+    }, 50);
   }
 
 
@@ -1143,10 +1115,8 @@ function buildClozeUI(q) {
         }
       }
       
-      // --- MASTERCLASS UPGRADE: Fetch dynamically from Supabase ---
       const db = await window.getSupabase();
       
-      // 🚀 THE FIX: Transparent Taxonomy Mapper
       let dbSubject = subject;
       if (subject === 'mathematics') dbSubject = 'Mathematics';
       if (subject === 'science') dbSubject = 'Science';
@@ -1175,7 +1145,6 @@ function buildClozeUI(q) {
       if (dbLevel) query = query.eq('level', dbLevel);
       if (dbTopic) query = query.eq('topic', dbTopic);
 
-      // 🌟 UPGRADE: Fetch up to 1000 questions so we have a massive pool to shuffle from
       let { data: fetchedQuestions, error } = await query.limit(1000);
 
       if (error) {
@@ -1190,44 +1159,36 @@ function buildClozeUI(q) {
         return;
       }
 
-      // Filter by type if the user requested a specific type
       let pool = type && type !== 'mixed' 
         ? fetchedQuestions.filter(q => q.type === type) 
         : fetchedQuestions;
 
-      // 🌟 UPGRADE: The "Shuffle Bag" No-Repeat Engine
       const seenKey = `shl_seen_${state.studentId}_${dbLevel}_${dbSubject}_${dbTopic || 'all'}_${type || 'mixed'}`;
       let seenIds = [];
       try { seenIds = JSON.parse(localStorage.getItem(seenKey)) || []; } catch(e) {}
 
-      // Filter out questions the student has already seen
       let unseenPool = pool.filter(q => !seenIds.includes(q.id));
 
-      // If we don't have enough unseen questions to form a full lab (10), RESET the bag!
       if (unseenPool.length < 10 && pool.length >= 10) {
         console.log("Vault exhausted! Resetting the shuffle bag.");
-        seenIds = []; // Clear the memory
-        unseenPool = [...pool]; // Reset to the full pool
+        seenIds = [];
+        unseenPool = [...pool];
       } else if (unseenPool.length === 0) {
-        unseenPool = [...pool]; // Fallback if the total pool itself is tiny
+        unseenPool = [...pool];
       }
 
-      // Randomize the unseen pool
       unseenPool = shuffle(unseenPool);
 
-      // Slice the final 10 for this session
       state.questions = unseenPool.slice(0, 10);
 
-      // Save the newly picked question IDs into the student's memory
       state.questions.forEach(q => seenIds.push(q.id));
       localStorage.setItem(seenKey, JSON.stringify(seenIds));
       
-      // UPGRADE: Calculate accurate total possible marks for multi-part questions
       state.totalPossibleScore = state.questions.reduce((sum, q) => {
         if (q.type === 'cloze') return sum + (q.blanks?.length || 1);
         if (q.type === 'editing') return sum + (q.blanks?.length || 1);
-        if (q.type === 'word_problem' || q.type === 'open_ended') return sum + 0; // Self-graded types
-        return sum + 1; // Standard MCQ & Short Answer
+        if (q.type === 'word_problem' || q.type === 'open_ended') return sum + 0;
+        return sum + 1;
       }, 0);
 
       state.quizStartTime = Date.now();
