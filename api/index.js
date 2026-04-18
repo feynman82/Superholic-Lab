@@ -24,6 +24,7 @@ import {
   handleAccountDelete,
   handleExport,
   handleAdminEdit,
+  handleContact,
 } from '../lib/api/handlers.js';
 
 // Disable Vercel's auto body parsing — required for Stripe webhook raw body.
@@ -51,7 +52,6 @@ export default async function handler(req, res) {
     return handleWebhook(req, res);
   }
 
-  // analytics uses GET with query params — parse body safely (returns {})
   try {
     req.body = await parseJsonBody(req);
   } catch (err) {
@@ -64,6 +64,7 @@ export default async function handler(req, res) {
     case 'chat':               return handleChat(req, res);
     case 'checkout':           return handleCheckout(req, res);
     case 'portal':             return handlePortal(req, res);
+    case 'contact':            return handleContact(req, res);
     // ── Admin & Account ──
     case 'admin':              return handleAdmin(req, res);
     case 'admin-edit':         return handleAdminEdit(req, res);
