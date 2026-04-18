@@ -2,6 +2,7 @@ class GlobalHeader extends HTMLElement {
   connectedCallback() {
     this.innerHTML = `
 <style>
+  global-header, .navbar, header { position: relative; z-index: 10000 !important; }
   .subjects-menu { display: none; position: absolute; right: 0; top: calc(100% + 8px); background: var(--sage-dark); border: 1px solid rgba(255,255,255,0.12); border-radius: var(--radius-md); padding: 6px; min-width: 180px; box-shadow: 0 8px 24px rgba(0,0,0,0.25); z-index: 9999; }
   .subjects-menu.is-open { display: block; animation: fadeDown 0.2s ease; }
   @keyframes fadeDown { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }

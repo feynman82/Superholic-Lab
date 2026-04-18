@@ -547,7 +547,7 @@ function buildClozeUI(q) {
         } else if (part.part_type === 'sequencing') {
           interactionUI = `<div class="flex flex-col gap-3 mt-2 text-lg">` + (part.items || []).map((item, i) => `
             <div class="flex items-center gap-4 bg-surface p-3 rounded-lg border border-light shadow-sm">
-              <input type="number" id="comp-${safeIdLabel}-seq${i}" class="form-input w-20 p-3 text-lg text-center border-2 border-slate-200 rounded-lg focus:border-brand-sage" min="1" max="3" value="${esc(savedWorking['seq'+i] || '')}" oninput="window.saveInputState ? window.saveInputState() : null">
+              <input type="number" id="comp-${safeIdLabel}-seq${i}" class="form-input border-2 border-slate-200 rounded-lg focus:border-brand-sage text-2xl font-bold text-center" style="width: 60px; height: 60px; padding: 0;" min="1" max="3" value="${esc(savedWorking['seq'+i] || '')}" oninput="window.saveInputState ? window.saveInputState() : null">
               <div class="font-medium text-main leading-relaxed text-lg">${esc(item)}</div>
             </div>
           `).join('') + `</div>`;
@@ -621,7 +621,7 @@ function buildClozeUI(q) {
             <span class="badge badge-info text-xs">${part.marks} mark${part.marks !== 1 ? 's' : ''}</span>
           </div>
           ${part.question ? `<div class="text-lg text-main font-medium mb-4 leading-relaxed">${esc(part.question)}</div>` : ''}
-          ${part.instructions ? `<div class="text-sm text-muted italic mb-4">${esc(part.instructions)}</div>` : ''}
+          ${part.instructions ? `<div class="text-lg text-main font-medium mb-4 leading-relaxed">${esc(part.instructions)}</div>` : ''}
           ${interactionUI}
         </div>`;
     }).join('');
