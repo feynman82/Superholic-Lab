@@ -654,7 +654,6 @@ function buildClozeUI(q) {
       ${mobileStyleOverride}
       <div class="comp-container">
         <div class="comp-passage-pane card p-6 text-lg text-main leading-relaxed">
-          <div class="text-xs font-bold text-muted uppercase mb-3 sticky top-0 pb-2" style="background: var(--bg-surface); z-index: 5;">📖 Reference Context</div>
           ${esc(q.passage).replace(/\\n/g, '<br><br>')}
         </div>
         <div class="comp-questions-pane">${partsHtml}</div>

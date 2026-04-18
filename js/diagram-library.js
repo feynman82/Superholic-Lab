@@ -69,43 +69,52 @@ const DiagramLibrary = {
    * Draws a beautiful scientific data graph.
    * AI Params: { title, xLabel, yLabel, points: [{xText, yVal}], yMax }
    */
+  /**
+   * 📈 MOE Line Graph Engine (Hardened & Scaled)
+   */
   lineGraph(params) {
     const esc = this._esc ? this._esc.bind(this) : (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    const { title = '', xLabel = '', yLabel = '', points = [], yMax = 100 } = params;
+    
+    // Safely parse params in case it arrives as a string
+    let p = params;
+    if (typeof p === 'string') { try { p = JSON.parse(p); } catch(e) { p = {}; } }
+    
+    const { title = '', xLabel = '', yLabel = '', points = [], yMax = 100 } = p;
 
-    const width = 500, height = 300;
-    const padL = 60, padR = 20, padT = 40, padB = 50;
+    // Compact viewBox forces fonts to scale up proportionally in the UI
+    const width = 380, height = 240;
+    const padL = 50, padR = 20, padT = 30, padB = 40;
     const plotW = width - padL - padR;
     const plotH = height - padT - padB;
 
-    // Draw Grid & Axes
-    let svg = `<svg viewBox="0 0 ${width} ${height}" width="100%" style="height: auto; max-width: 500px; display: block; margin: 0 auto; background: var(--bg-surface); border-radius: 8px;" role="img">
-      <text x="${width/2}" y="25" text-anchor="middle" font-weight="bold" font-size="16" fill="var(--text-main)" font-family="sans-serif">${esc(title)}</text>
+    let svg = `<svg viewBox="0 0 ${width} ${height}" width="100%" style="height: auto; max-width: 100%; display: block; margin: 0 auto; background: var(--bg-surface); border-radius: 8px; border: 1px solid var(--border-light);" role="img">
+      <text x="${width/2}" y="20" text-anchor="middle" font-weight="bold" font-size="14" fill="var(--text-main)" font-family="sans-serif">${esc(title)}</text>
       <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${height - padB}" stroke="var(--border-dark)" stroke-width="2"/>
-      <text x="${padL - 40}" y="${height/2}" transform="rotate(-90 ${padL - 40} ${height/2})" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-main)" font-family="sans-serif">${esc(yLabel)}</text>
+      <text x="${padL - 35}" y="${padT + plotH/2}" transform="rotate(-90 ${padL - 35} ${padT + plotH/2})" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-main)" font-family="sans-serif">${esc(yLabel)}</text>
       <line x1="${padL}" y1="${height - padB}" x2="${width - padR}" y2="${height - padB}" stroke="var(--border-dark)" stroke-width="2"/>
       <text x="${padL + plotW/2}" y="${height - 10}" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-main)" font-family="sans-serif">${esc(xLabel)}</text>
     `;
 
-    // Calculate Coordinates & Plot
-    if (points.length > 0) {
-      const stepX = plotW / (points.length || 1);
-      const coords = points.map((p, i) => {
+    const safePoints = Array.isArray(points) ? points : [];
+    if (safePoints.length > 0) {
+      const stepX = plotW / safePoints.length;
+      const safeYMax = Number(yMax) || 100;
+      
+      const coords = safePoints.map((pt, i) => {
         const cx = padL + (stepX * i) + (stepX / 2);
-        const cy = (height - padB) - ((p.yVal / yMax) * plotH);
-        return { cx, cy, label: p.xText, val: p.yVal };
+        const safeY = Number(pt.yVal) || 0; // Forces to Number, prevents NaN
+        const cy = (height - padB) - ((safeY / safeYMax) * plotH);
+        return { cx, cy, label: pt.xText || '', val: safeY };
       });
 
-      // Draw Path
       const pathD = `M ${coords.map(c => `${c.cx},${c.cy}`).join(' L ')}`;
       svg += `<path d="${pathD}" fill="none" stroke="var(--brand-rose)" stroke-width="3" stroke-linejoin="round"/>`;
 
-      // Draw Points & X-Labels
       coords.forEach(c => {
         svg += `
-          <circle cx="${c.cx}" cy="${c.cy}" r="5" fill="var(--brand-sage)" stroke="#fff" stroke-width="2"/>
-          <text x="${c.cx}" y="${height - padB + 20}" text-anchor="middle" font-size="12" fill="var(--text-muted)" font-family="sans-serif">${esc(c.label)}</text>
-          <text x="${padL - 10}" y="${c.cy + 4}" text-anchor="end" font-size="12" fill="var(--text-muted)" font-family="sans-serif">${c.val}</text>
+          <circle cx="${c.cx}" cy="${c.cy}" r="4" fill="var(--brand-sage)" stroke="#fff" stroke-width="2"/>
+          <text x="${c.cx}" y="${height - padB + 16}" text-anchor="middle" font-size="11" fill="var(--text-muted)" font-family="sans-serif">${esc(c.label)}</text>
+          <text x="${padL - 8}" y="${c.cy + 4}" text-anchor="end" font-size="11" fill="var(--text-muted)" font-family="sans-serif">${c.val}</text>
           <line x1="${padL-4}" y1="${c.cy}" x2="${padL}" y2="${c.cy}" stroke="var(--border-dark)" stroke-width="1"/>
         `;
       });
@@ -114,42 +123,46 @@ const DiagramLibrary = {
   },
 
   /**
-   * 🕸️ MOE Concept Map / Food Web Engine
-   * AI Params: { nodes: [{id, label, x, y}], edges: [{from, to, label}] }
-   * Coordinates are 0-100 percentage layout to scale automatically.
+   * 🕸️ MOE Concept Map / Food Web Engine (Hardened & Scaled)
    */
   conceptMap(params) {
     const esc = this._esc ? this._esc.bind(this) : (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    const { nodes = [], edges = [] } = params;
-    const width = 500, height = 300;
+    
+    let p = params;
+    if (typeof p === 'string') { try { p = JSON.parse(p); } catch(e) { p = {}; } }
+    const { nodes = [], edges = [] } = p;
+    
+    const width = 380, height = 240;
 
-    let svg = `<svg viewBox="0 0 ${width} ${height}" width="100%" style="height: auto; max-width: 500px; display: block; margin: 0 auto; background: var(--bg-surface); border-radius: 8px;" role="img">
+    let svg = `<svg viewBox="0 0 ${width} ${height}" width="100%" style="height: auto; max-width: 100%; display: block; margin: 0 auto; background: var(--bg-surface); border-radius: 8px; border: 1px solid var(--border-light);" role="img">
       <defs>
-        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="28" refY="3.5" orient="auto">
-          <polygon points="0 0, 10 3.5, 0 7" fill="var(--brand-sage)" />
+        <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="24" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="var(--brand-sage)" />
         </marker>
       </defs>`;
 
-    // Draw Edges First (so they stay behind nodes)
-    edges.forEach(edge => {
-      const fromNode = nodes.find(n => n.id === edge.from);
-      const toNode = nodes.find(n => n.id === edge.to);
+    const safeNodes = Array.isArray(nodes) ? nodes : [];
+    const safeEdges = Array.isArray(edges) ? edges : [];
+
+    safeEdges.forEach(edge => {
+      const fromNode = safeNodes.find(n => n.id === edge.from);
+      const toNode = safeNodes.find(n => n.id === edge.to);
       if (fromNode && toNode) {
-        const x1 = (fromNode.x / 100) * width;
-        const y1 = (fromNode.y / 100) * height;
-        const x2 = (toNode.x / 100) * width;
-        const y2 = (toNode.y / 100) * height;
+        // Force Number() to prevent NaN crashes
+        const x1 = (Number(fromNode.x) / 100) * width;
+        const y1 = (Number(fromNode.y) / 100) * height;
+        const x2 = (Number(toNode.x) / 100) * width;
+        const y2 = (Number(toNode.y) / 100) * height;
         svg += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--brand-sage)" stroke-width="2" marker-end="url(#arrowhead)"/>`;
       }
     });
 
-    // Draw Nodes
-    nodes.forEach(node => {
-      const nx = (node.x / 100) * width;
-      const ny = (node.y / 100) * height;
+    safeNodes.forEach(node => {
+      const nx = (Number(node.x) / 100) * width;
+      const ny = (Number(node.y) / 100) * height;
       svg += `
-        <rect x="${nx - 45}" y="${ny - 15}" width="90" height="30" rx="15" fill="var(--bg-elevated)" stroke="var(--border-dark)" stroke-width="2"/>
-        <text x="${nx}" y="${ny + 4}" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-main)" font-family="sans-serif">${esc(node.label)}</text>
+        <rect x="${nx - 40}" y="${ny - 12}" width="80" height="24" rx="12" fill="var(--bg-elevated)" stroke="var(--border-dark)" stroke-width="2"/>
+        <text x="${nx}" y="${ny + 4}" text-anchor="middle" font-size="11" font-weight="bold" fill="var(--text-main)" font-family="sans-serif">${esc(node.label)}</text>
       `;
     });
 
