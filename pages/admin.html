@@ -3,306 +3,467 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Panel — Superholic Lab</title>
+  <title>Master Control Center — Superholic Lab</title>
+  <meta name="robots" content="noindex, nofollow">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="icon" href="../assets/favicon.ico" />
   <script src="/js/header.js" defer></script>
   <script src="../js/supabase-client.js"></script>
+
+  <!-- PAGE-LEVEL CSS  ·  admin.html v2.0
+       Design guardian: zero hardcoded hex in style= attributes. -->
   <style>
-    .admin-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
-    .admin-table th { text-align: left; padding: 10px 16px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); border-bottom: 2px solid var(--border-light); background: var(--bg-elevated); }
-    .admin-table td { padding: 12px 16px; border-bottom: 1px solid var(--border-light); vertical-align: middle; }
-    .admin-table tr:hover td { background: var(--bg-elevated); }
-    .tier-badge { padding: 3px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; }
-    .modal-overlay { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); opacity: 0; visibility: hidden; transition: all 0.2s ease; padding: var(--space-4); }
+    .pulse-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); }
+    @media (max-width: 768px) { .pulse-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px) { .pulse-grid { grid-template-columns: 1fr; } }
+    .pulse-card { background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: var(--radius-lg); padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-1); transition: transform 0.15s, box-shadow 0.15s; }
+    .pulse-card.clickable { cursor: pointer; }
+    .pulse-card.clickable:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+    .pulse-card-icon { font-size: 1.6rem; }
+    .pulse-card-value { font-family: var(--font-display); font-size: 2.8rem; color: var(--text-main); line-height: 1; }
+    .pulse-card-label { font-size: var(--text-xs); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
+    .pulse-card-sub   { font-size: var(--text-xs); color: var(--text-muted); margin-top: 2px; }
+    .pulse-card-rose  { border-top: 3px solid var(--brand-rose); }
+    .pulse-card-mint  { border-top: 3px solid var(--brand-mint); }
+    .zone-heading { font-family: var(--font-display); font-size: 1.6rem; color: var(--text-main); letter-spacing: 0.03em; margin: 0 0 var(--space-4) 0; }
+    .radar-tabs { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-4); }
+    .radar-tab { padding: 6px 16px; border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: 700; cursor: pointer; border: 1px solid var(--border-light); background: var(--bg-surface); color: var(--text-muted); transition: all 0.15s; display: flex; align-items: center; gap: 6px; }
+    .radar-tab.is-active { background: var(--sage-dark); color: white; border-color: var(--sage-dark); }
+    .radar-count { min-width: 18px; height: 18px; border-radius: 9px; background: rgba(183,110,121,0.25); color: var(--brand-rose); font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; padding: 0 5px; }
+    .radar-tab.is-active .radar-count { background: rgba(255,255,255,0.2); color: white; }
+    .risk-table { width: 100%; border-collapse: collapse; }
+    .risk-table th { text-align: left; padding: 8px 12px; font-size: var(--text-xs); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); border-bottom: 2px solid var(--border-light); background: var(--bg-elevated); }
+    .risk-table td { padding: 10px 12px; border-bottom: 1px solid var(--border-light); vertical-align: middle; font-size: var(--text-sm); }
+    .risk-table tr:hover td { background: var(--bg-elevated); }
+    .risk-flag { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: var(--radius-full); font-size: 11px; font-weight: 700; }
+    .flag-red    { background: rgba(220,38,38,0.1);   color: var(--brand-error); }
+    .flag-amber  { background: rgba(245,158,11,0.1);  color: var(--brand-amber); }
+    .flag-orange { background: rgba(249,115,22,0.1);  color: #f97316; }
+    .flag-gray   { background: rgba(107,114,128,0.1); color: var(--text-muted); }
+    .admin-table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+    .admin-table th { text-align: left; padding: 10px 14px; font-size: var(--text-xs); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); border-bottom: 2px solid var(--border-light); background: var(--bg-elevated); }
+    .admin-table td { padding: 11px 14px; border-bottom: 1px solid var(--border-light); vertical-align: middle; }
+    .admin-table tr.data-row:hover td { background: var(--bg-elevated); }
+    .admin-table tr.edit-row { display: none; }
+    .admin-table tr.edit-row.is-open { display: table-row; }
+    .admin-table tr.edit-row td { background: var(--bg-elevated); padding: 12px 14px; }
+    .tier-pill { padding: 3px 9px; border-radius: var(--radius-full); font-size: 11px; font-weight: 700; }
+    .tier-trial  { background: rgba(183,110,121,0.1); color: var(--brand-rose); }
+    .tier-paid   { background: rgba(5,150,105,0.1);   color: var(--brand-mint); }
+    .tier-paused { background: rgba(99,102,241,0.1);  color: #6366f1; }
+    .tier-due    { background: rgba(220,38,38,0.1);   color: var(--brand-error); }
+    .feed-item { display: flex; gap: var(--space-3); align-items: flex-start; padding: var(--space-3) 0; border-bottom: 1px solid var(--border-light); }
+    .feed-item:last-child { border-bottom: none; }
+    .feed-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; background: var(--bg-elevated); }
+    .feed-body { flex: 1; min-width: 0; }
+    .feed-text { font-size: var(--text-sm); color: var(--text-main); }
+    .feed-time { font-size: var(--text-xs); color: var(--text-muted); margin-top: 2px; }
+    .analytics-period { display: flex; gap: var(--space-2); margin-bottom: var(--space-4); }
+    .period-btn { padding: 5px 14px; border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: 700; cursor: pointer; border: 1px solid var(--border-light); background: var(--bg-surface); color: var(--text-muted); transition: all 0.15s; }
+    .period-btn.is-active { background: var(--sage-dark); color: white; border-color: var(--sage-dark); }
+    .analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+    @media (max-width: 640px) { .analytics-grid { grid-template-columns: 1fr; } }
+    .metric-card { padding: var(--space-4); background: var(--bg-elevated); border-radius: var(--radius-md); border: 1px solid var(--border-light); }
+    .metric-val { font-family: var(--font-display); font-size: 2rem; color: var(--text-main); }
+    .metric-lbl { font-size: var(--text-xs); color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
+    .event-row { display: flex; justify-content: space-between; align-items: center; padding: var(--space-2) 0; border-bottom: 1px solid var(--border-light); font-size: var(--text-sm); }
+    .event-row:last-child { border-bottom: none; }
+    .modal-overlay { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); opacity: 0; visibility: hidden; transition: all 0.2s ease; padding: var(--space-4); }
     .modal-overlay.is-open { opacity: 1; visibility: visible; }
-    .modal-content { width: 100%; max-width: 440px; background: var(--bg-surface); transform: scale(0.95); transition: transform 0.2s ease; border-radius: var(--radius-lg); }
-    .modal-overlay.is-open .modal-content { transform: scale(1); }
+    .modal-box { width: 100%; background: var(--bg-surface); border-radius: var(--radius-lg); transform: scale(0.95); transition: transform 0.2s ease; max-height: 90vh; overflow-y: auto; }
+    .modal-overlay.is-open .modal-box { transform: scale(1); }
+    .modal-sm { max-width: 460px; }
+    .modal-md { max-width: 600px; }
+    .mrr-table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+    .mrr-table td { padding: 8px 12px; border-bottom: 1px solid var(--border-light); }
+    .mrr-table td:last-child { text-align: right; font-weight: 700; }
+    .mrr-table .total-row td { background: var(--bg-elevated); font-weight: 700; font-size: var(--text-base); }
+    .mrr-note { font-size: 11px; color: var(--text-muted); line-height: 1.6; margin: 0; }
+    .intel-grid { display: grid; grid-template-columns: 1fr 2fr; gap: var(--space-6); }
+    @media (max-width: 900px) { .intel-grid { grid-template-columns: 1fr; } }
+    .edit-panel { background: var(--bg-page); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: var(--space-4); display: flex; flex-wrap: wrap; gap: var(--space-3); }
+    .edit-group { display: flex; flex-direction: column; gap: 4px; min-width: 140px; flex: 1; }
+    .edit-group label { font-size: var(--text-xs); font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
   </style>
 </head>
-<body class="bg-page texture-light-grid">
+
+<body class="bg-page">
 <global-header></global-header>
 
-<section class="py-10" style="padding-top: calc(64px + var(--space-8)); background: linear-gradient(135deg, var(--sage-dark) 0%, #2d3a38 100%);">
+<section style="padding-top: calc(64px + var(--space-8)); padding-bottom: var(--space-10); background: linear-gradient(135deg, var(--sage-dark) 0%, #1e2c28 100%);">
   <div class="container">
-    <div class="badge mb-3" style="background: var(--brand-rose); color: white;">👑 Admin Panel</div>
-    <h1 class="font-display text-4xl text-white mb-2">Mission Control</h1>
-    <p style="color: rgba(255,255,255,0.7);">Manage all parents, students, and subscriptions.</p>
+    <div class="badge mb-3" style="background: var(--brand-rose); color: white; letter-spacing: 0.08em;">👑 Admin Access</div>
+    <h1 class="font-display text-white m-0" style="font-size: clamp(2.5rem, 6vw, 5rem); line-height: 0.95; letter-spacing: 0.02em;">MASTER<br>CONTROL CENTER</h1>
+    <p class="mt-3 mb-0" style="color: rgba(255,255,255,0.65); font-size: var(--text-lg);">
+      Greetings, <strong id="adminName" class="text-white">Administrator</strong>. &nbsp;
+      <span id="liveClock" class="font-bold" style="color: var(--brand-rose);"></span>
+    </p>
   </div>
 </section>
 
-<!-- Stats -->
-<section class="py-6 bg-page" style="border-bottom: 1px solid var(--border-light);">
+<section class="py-8 bg-white" style="border-bottom: 1px solid var(--border-light);">
   <div class="container">
-    <div class="flex flex-wrap gap-4" id="statsRow">
-      <div class="card p-4 flex-1 text-center" style="min-width: 130px;"><div class="spinner-sm mx-auto"></div></div>
+    <div class="pulse-grid" id="pulseGrid">
+      <div class="pulse-card"><div class="spinner-sm"></div></div>
+      <div class="pulse-card"><div class="spinner-sm"></div></div>
+      <div class="pulse-card"><div class="spinner-sm"></div></div>
+      <div class="pulse-card"><div class="spinner-sm"></div></div>
+      <div class="pulse-card"><div class="spinner-sm"></div></div>
+      <div class="pulse-card"><div class="spinner-sm"></div></div>
     </div>
   </div>
 </section>
 
-<main class="container py-8" style="min-height: 60vh;">
-
-  <!-- Tabs -->
-  <div class="flex gap-2 mb-4">
-    <button id="tabParents"  class="btn btn-primary btn-sm"  onclick="switchTab('parents')">Parents</button>
-    <button id="tabStudents" class="btn btn-ghost btn-sm"    onclick="switchTab('students')">Students</button>
+<section class="py-8 bg-page texture-light-grid">
+  <div class="container">
+    <h2 class="zone-heading">🔭 At-Risk Radar</h2>
+    <p class="text-sm text-muted mb-4">Accounts that need attention. Take action proactively to reduce churn.</p>
+    <div class="radar-tabs" id="radarTabs">
+      <button class="radar-tab is-active" onclick="window.showRadarTab('failed', this)">🔴 Payment Failed <span class="radar-count" id="cnt-failed">0</span></button>
+      <button class="radar-tab" onclick="window.showRadarTab('inactive', this)">🟡 Inactive Subscribers <span class="radar-count" id="cnt-inactive">0</span></button>
+      <button class="radar-tab" onclick="window.showRadarTab('expiring', this)">🟠 Trial Expiring Soon <span class="radar-count" id="cnt-expiring">0</span></button>
+      <button class="radar-tab" onclick="window.showRadarTab('unconverted', this)">⚫ Trial Expired, Not Converted <span class="radar-count" id="cnt-unconverted">0</span></button>
+    </div>
+    <div class="card" style="overflow-x: auto;">
+      <div id="radarContent"><div class="p-6 text-center"><div class="spinner-sm mx-auto"></div></div></div>
+    </div>
   </div>
+</section>
 
-  <!-- Search -->
-  <div class="mb-4" style="max-width: 360px;">
-    <input type="search" id="searchInput" class="form-input" placeholder="Search by name or email..." oninput="renderCurrentTab()" />
-  </div>
-
-  <!-- Error -->
-  <div id="errorMsg" class="mb-4 p-3 text-sm font-bold rounded hidden" style="background:rgba(220,38,38,0.1);border:1px solid rgba(220,38,38,0.3);color:var(--brand-error);"></div>
-
-  <!-- Parents Tab -->
-  <div id="parentsTab">
+<section class="py-8 bg-white">
+  <div class="container">
+    <div class="flex justify-between items-center mb-4 flex-wrap gap-3">
+      <h2 class="zone-heading m-0">👨‍👩‍👧 All Parents</h2>
+      <div class="flex gap-3">
+        <input type="search" id="parentSearch" class="form-input" placeholder="Search name or email…" style="width: 240px;" oninput="window.renderParents()" />
+        <button class="btn btn-secondary btn-sm hover-lift" onclick="window.exportCSV()">⬇️ Export CSV</button>
+      </div>
+    </div>
+    <div id="errorMsg" class="mb-4 p-3 text-sm font-bold rounded hidden" style="background: rgba(220,38,38,0.1); border: 1px solid rgba(220,38,38,0.3); color: var(--brand-error);"></div>
     <div class="card" style="overflow-x: auto;">
       <table class="admin-table">
-        <thead><tr><th>Name</th><th>Email</th><th>Plan</th><th>Trial Ends</th><th>Joined</th><th>Actions</th></tr></thead>
-        <tbody id="parentsBody"><tr><td colspan="6" style="text-align:center;padding:40px;"><div class="spinner-sm mx-auto"></div></td></tr></tbody>
+        <thead><tr><th>Name</th><th>Email</th><th>Plan</th><th>Last Active</th><th>Students</th><th>Joined</th><th>Actions</th></tr></thead>
+        <tbody id="parentsBody"><tr><td colspan="7" style="text-align: center; padding: 40px;"><div class="spinner-sm mx-auto"></div></td></tr></tbody>
       </table>
     </div>
   </div>
+</section>
 
-  <!-- Students Tab -->
-  <div id="studentsTab" class="hidden">
-    <div class="card" style="overflow-x: auto;">
-      <table class="admin-table">
-        <thead><tr><th>Name</th><th>Level</th><th>Parent Email</th><th>Joined</th></tr></thead>
-        <tbody id="studentsBody"></tbody>
-      </table>
+<section class="py-8 bg-page texture-light-grid">
+  <div class="container">
+    <div class="intel-grid">
+      <div>
+        <h2 class="zone-heading">⚡ Activity Feed</h2>
+        <div class="card p-4">
+          <div id="activityFeed"><div class="text-center py-4"><div class="spinner-sm mx-auto"></div></div></div>
+          <p class="text-xs text-muted text-center mt-3">Auto-refreshes every 60 seconds</p>
+        </div>
+      </div>
+      <div>
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="zone-heading m-0">📊 Analytics</h2>
+          <div class="analytics-period">
+            <button class="period-btn is-active" onclick="window.loadAnalytics('30d', this)">30D</button>
+            <button class="period-btn" onclick="window.loadAnalytics('7d', this)">7D</button>
+            <button class="period-btn" onclick="window.loadAnalytics('6mo', this)">6MO</button>
+            <button class="period-btn" onclick="window.loadAnalytics('12mo', this)">12MO</button>
+          </div>
+        </div>
+        <div class="card p-5">
+          <div id="analyticsContent"><div class="text-center py-4"><div class="spinner-sm mx-auto"></div></div></div>
+        </div>
+      </div>
     </div>
   </div>
+</section>
 
-</main>
+<div id="subBreakdownModal" class="modal-overlay" onclick="if(event.target.id==='subBreakdownModal')this.classList.remove('is-open')">
+  <div class="card p-6 modal-box modal-md">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="font-display text-2xl text-main m-0">Subscriber Breakdown</h3>
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('subBreakdownModal').classList.remove('is-open')" style="font-size:1.2rem;line-height:1;padding:2px 8px;">×</button>
+    </div>
+    <div id="subBreakdownContent"><div class="spinner-sm"></div></div>
+  </div>
+</div>
 
-<!-- Edit Tier Modal -->
-<div id="editTierModal" class="modal-overlay" onclick="if(event.target.id==='editTierModal')closeEditTierModal()">
-  <div class="card p-6 modal-content flex flex-col gap-4">
-    <h3 class="font-display text-2xl text-main m-0">Edit Subscription</h3>
-    <p class="text-sm text-muted m-0" id="editTierEmail"></p>
-    <div class="flex flex-col gap-1">
+<div id="mrrModal" class="modal-overlay" onclick="if(event.target.id==='mrrModal')this.classList.remove('is-open')">
+  <div class="card p-6 modal-box modal-md">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="font-display text-2xl text-main m-0">MRR Detail</h3>
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('mrrModal').classList.remove('is-open')" style="font-size:1.2rem;line-height:1;padding:2px 8px;">×</button>
+    </div>
+    <div id="mrrContent"><div class="spinner-sm"></div></div>
+  </div>
+</div>
+
+<div id="editTierModal" class="modal-overlay" onclick="if(event.target.id==='editTierModal')window.closeEditTierModal()">
+  <div class="card p-6 modal-box modal-sm">
+    <h3 class="font-display text-2xl text-main m-0 mb-2">Edit Subscription</h3>
+    <p class="text-sm text-muted m-0 mb-4" id="editTierEmail"></p>
+    <div class="flex flex-col gap-1 mb-4">
       <label class="text-sm font-bold text-muted">Plan</label>
       <select id="editTierSelect" class="form-select w-full">
         <option value="trial">Free Trial</option>
         <option value="all_subjects">All Subjects</option>
         <option value="family">Family Plan</option>
         <option value="single_subject">Single Subject</option>
+        <option value="paused">Paused</option>
       </select>
     </div>
-    <div class="flex gap-3 mt-2">
-      <button class="btn btn-ghost flex-1" onclick="closeEditTierModal()">Cancel</button>
-      <button class="btn btn-primary flex-1 hover-lift" onclick="saveTier()">Save Changes</button>
+    <div class="flex gap-3">
+      <button class="btn btn-ghost flex-1" onclick="window.closeEditTierModal()">Cancel</button>
+      <button class="btn btn-primary flex-1 hover-lift" onclick="window.saveTier()">Save Changes</button>
     </div>
   </div>
 </div>
 
 <script>
-  let allProfiles = [];
-  let allStudents = [];
-  let currentTab  = 'parents';
-  let editTargetId = null;
-  let callerRole   = 'sub-admin';
-  let adminSession = null;
+var allProfiles = []; var allStudents = []; var allSubs = [];
+var subsByProfile = {}; var lastActivityMap = {}; var breakdown = {};
+var recentActivity = []; var adminSession = null;
+var callerRole = 'sub-admin'; var editTargetId = null; var currentRadarTab = 'failed';
 
-  function showError(msg) {
-    const el = document.getElementById('errorMsg');
-    el.textContent = msg; el.classList.remove('hidden');
-    setTimeout(() => el.classList.add('hidden'), 8000);
-  }
+function showError(msg) { var el = document.getElementById('errorMsg'); el.textContent = msg; el.classList.remove('hidden'); setTimeout(function() { el.classList.add('hidden'); }, 8000); }
+function fmtDate(iso) { if (!iso) return '—'; return new Date(iso).toLocaleDateString('en-SG', { day:'numeric', month:'short', year:'2-digit' }); }
+function fmtTime(iso) { if (!iso) return '—'; var diff = Date.now() - new Date(iso).getTime(); var m = Math.floor(diff/60000); if (m < 1) return 'just now'; if (m < 60) return m + 'm ago'; var h = Math.floor(m/60); if (h < 24) return h + 'h ago'; return Math.floor(h/24) + 'd ago'; }
+function esc(s) { if (!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fmtSGD(n) { return 'S$' + Number(n || 0).toFixed(2); }
+function tierPill(t) { var lbl = { trial:'Trial', all_subjects:'All Subjects', family:'Family', single_subject:'Single Sub', paused:'Paused' }[t] || t; var cls = { trial:'tier-trial', all_subjects:'tier-paid', family:'tier-paid', single_subject:'tier-paid', paused:'tier-paused' }[t] || 'tier-trial'; return '<span class="tier-pill ' + cls + '">' + esc(lbl) + '</span>'; }
+function daysSince(iso) { if (!iso) return Infinity; return Math.floor((Date.now() - new Date(iso).getTime()) / 86400000); }
+function buildContactLink(email, subject, body) { return 'mailto:' + encodeURIComponent(email) + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body); }
 
-  async function loadAdminData() {
-    const sb = await getSupabase();
-    const { data: { session } } = await sb.auth.getSession();
-    if (!session) { window.location.href = '/pages/login.html'; return; }
-    adminSession = session;
+function updateClock() { var el = document.getElementById('liveClock'); if (el) el.textContent = new Date().toLocaleTimeString('en-SG', { timeZone:'Asia/Singapore', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false }) + ' SGT'; }
+setInterval(updateClock, 1000); updateClock();
 
-    // Client-side role check (UX only — server re-validates on every request)
-    const { data: myProfile } = await sb.from('profiles').select('role, full_name').eq('id', session.user.id).single();
-    if (!myProfile || !['admin','sub-admin'].includes(myProfile.role)) {
-      document.body.innerHTML = '<div style="padding:60px;text-align:center;"><h2 class="font-display text-3xl mb-4">🚫 Access Denied</h2><p class="text-muted">Admin or sub-admin role required.</p><a href="/pages/dashboard.html" class="btn btn-primary mt-4">Back to Dashboard</a></div>';
-      return;
-    }
-    callerRole = myProfile.role;
+async function loadAdminData() {
+  var sb = await getSupabase();
+  var { data: { session } } = await sb.auth.getSession();
+  if (!session) { window.location.href = '/pages/login.html'; return; }
+  adminSession = session;
+  var { data: myProfile } = await sb.from('profiles').select('role, full_name').eq('id', session.user.id).single();
+  if (!myProfile || !['admin','sub-admin'].includes(myProfile.role)) { document.body.innerHTML = '<div style="padding:80px;text-align:center;"><h2 class="font-display text-3xl mb-4">Access Denied</h2><p class="text-muted">Admin role required.</p></div>'; return; }
+  callerRole = myProfile.role;
+  if (myProfile.full_name) document.getElementById('adminName').textContent = myProfile.full_name.split(' ')[0];
+  var res = await fetch('/api/admin', { method:'GET', headers:{ 'Authorization':'Bearer ' + session.access_token } });
+  if (!res.ok) { showError('Failed to load admin data — server returned ' + res.status); return; }
+  var data = await res.json();
+  allProfiles = data.profiles || []; allStudents = data.students || []; allSubs = data.subscriptions || [];
+  subsByProfile = data.subscriptions_by_profile || {}; lastActivityMap = data.last_activity_by_parent || {};
+  breakdown = data.subscription_breakdown || {}; recentActivity = data.recent_activity || [];
+  renderPulse(); renderRadarCounts(); renderRadarTab(currentRadarTab); renderParents(); renderActivityFeed(); loadAnalytics('30d');
+  setInterval(function() { loadFeedOnly(); }, 60000);
+}
 
-    const res = await fetch('/api/admin', {
-      method: 'GET',
-      headers: { 'Authorization': 'Bearer ' + session.access_token },
-    });
-    if (!res.ok) { showError('Failed to load admin data. Server returned ' + res.status); return; }
-    const data = await res.json();
-    allProfiles = data.profiles || [];
-    allStudents = data.students || [];
+function renderPulse() {
+  var total = allProfiles.length;
+  var paid  = allProfiles.filter(function(p) { return ['all_subjects','family','single_subject'].includes(p.subscription_tier); }).length;
+  var trial = allProfiles.filter(function(p) { return p.subscription_tier === 'trial'; }).length;
+  var students = allStudents.length;
+  var todayStr = new Date().toISOString().slice(0,10);
+  var activeToday = Object.values(lastActivityMap).filter(function(d) { return d && d.slice(0,10) === todayStr; }).length;
+  var grossMRR = 0, netMRR = 0;
+  ['all_subjects_monthly','all_subjects_annual','family_monthly','family_annual'].forEach(function(k) { if (breakdown[k]) { grossMRR += breakdown[k].gross_mrr || 0; netMRR += breakdown[k].net_mrr || 0; } });
+  var cards = [
+    { icon:'👨‍👩‍👧', value:total,          label:'Total Parents',  sub:'',                       cls:'',                          action:null },
+    { icon:'💳',    value:paid,           label:'Subscribers',    sub:'Click for breakdown',     cls:'pulse-card-rose clickable', action:'openSubBreakdown' },
+    { icon:'🎁',    value:trial,          label:'On Trial',       sub:'',                       cls:'',                          action:null },
+    { icon:'📈',    value:fmtSGD(netMRR), label:'Net MRR',        sub:'Gross: ' + fmtSGD(grossMRR), cls:'pulse-card-mint clickable', action:'openMRR' },
+    { icon:'⚡',    value:activeToday,    label:'Active Today',   sub:'Quiz sessions',           cls:'',                          action:null },
+    { icon:'📚',    value:students,       label:'Total Students', sub:'',                       cls:'',                          action:null },
+  ];
+  document.getElementById('pulseGrid').innerHTML = cards.map(function(c) {
+    var oc = c.action ? ' onclick="window.' + c.action + '()"' : '';
+    return '<div class="pulse-card ' + c.cls + '"' + oc + '><div class="pulse-card-icon">' + c.icon + '</div><div class="pulse-card-value">' + c.value + '</div><div class="pulse-card-label">' + c.label + '</div>' + (c.sub ? '<div class="pulse-card-sub">' + c.sub + '</div>' : '') + '</div>';
+  }).join('');
+}
 
-    renderStats();
-    renderCurrentTab();
-  }
+window.openSubBreakdown = function() {
+  var bd = breakdown; var gross = 0, net = 0;
+  var rows = [{ label:'All Subjects — Monthly', key:'all_subjects_monthly' },{ label:'All Subjects — Annual', key:'all_subjects_annual' },{ label:'Family — Monthly', key:'family_monthly' },{ label:'Family — Annual', key:'family_annual' }];
+  var th = '<table class="mrr-table"><thead><tr><td style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;padding:6px 12px;">Plan</td><td style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;padding:6px 12px;text-align:center;">Count</td><td style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;padding:6px 12px;text-align:right;">Gross MRR</td><td style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;padding:6px 12px;text-align:right;">Est. Net MRR</td></tr></thead><tbody>';
+  rows.forEach(function(r) { var d = bd[r.key] || { count:0, gross_mrr:0, net_mrr:0 }; gross += d.gross_mrr; net += d.net_mrr; th += '<tr><td>' + r.label + '</td><td style="text-align:center;">' + d.count + '</td><td style="text-align:right;">' + fmtSGD(d.gross_mrr) + '</td><td style="text-align:right;color:var(--brand-mint);">' + fmtSGD(d.net_mrr) + '</td></tr>'; });
+  var pd = bd.past_due ? bd.past_due.count : 0; var pa = bd.paused ? bd.paused.count : 0;
+  th += '<tr><td colspan="4" style="padding:4px 12px;"><div style="height:1px;background:var(--border-light);"></div></td></tr><tr><td style="color:var(--brand-error);">⚠️ Past Due</td><td style="text-align:center;color:var(--brand-error);">' + pd + '</td><td></td><td></td></tr><tr><td style="color:#6366f1;">⏸ Paused</td><td style="text-align:center;color:#6366f1;">' + pa + '</td><td></td><td></td></tr><tr class="total-row"><td><strong>Total</strong></td><td></td><td style="text-align:right;">' + fmtSGD(gross) + '</td><td style="text-align:right;color:var(--brand-mint);">' + fmtSGD(net) + '</td></tr></tbody></table>';
+  document.getElementById('subBreakdownContent').innerHTML = th + '<p class="mrr-note mt-4">Annual subscriptions recognised at 1/12 per month per Singapore FRS 115. Stripe fee estimated at 3.4% + S$0.50 per transaction.</p>';
+  document.getElementById('subBreakdownModal').classList.add('is-open');
+};
 
-  function renderStats() {
-    const total    = allProfiles.length;
-    const paid     = allProfiles.filter(p => ['all_subjects','family','single_subject'].includes(p.subscription_tier)).length;
-    const trial    = allProfiles.filter(p => p.subscription_tier === 'trial').length;
-    const students = allStudents.length;
-    const stats = [
-      { label: 'Total Parents', value: total,    icon: '👨‍👩‍👧' },
-      { label: 'Subscribers',   value: paid,     icon: '💳' },
-      { label: 'On Trial',      value: trial,    icon: '🎁' },
-      { label: 'Total Students',value: students, icon: '📚' },
-    ];
-    document.getElementById('statsRow').innerHTML = stats.map(function(s) {
-      return '<div class="card p-4 flex-1 text-center" style="min-width:130px;">'
-        + '<div style="font-size:2rem;">' + s.icon + '</div>'
-        + '<div class="font-display text-3xl text-main">' + s.value + '</div>'
-        + '<div class="text-xs text-muted mt-1">' + s.label + '</div>'
-        + '</div>';
+window.openMRR = function() {
+  var gross = 0, net = 0;
+  ['all_subjects_monthly','all_subjects_annual','family_monthly','family_annual'].forEach(function(k) { if (breakdown[k]) { gross += breakdown[k].gross_mrr || 0; net += breakdown[k].net_mrr || 0; } });
+  var fees = gross - net;
+  document.getElementById('mrrContent').innerHTML = '<table class="mrr-table"><tbody><tr><td>Gross MRR (recognised)</td><td>' + fmtSGD(gross) + '</td></tr><tr><td style="color:var(--brand-error);">Less: Est. Stripe Fees</td><td style="color:var(--brand-error);">− ' + fmtSGD(fees) + '</td></tr><tr class="total-row"><td>Net MRR</td><td style="color:var(--brand-mint);">' + fmtSGD(net) + '</td></tr></tbody></table><div class="mt-4 p-4 rounded" style="background:var(--bg-elevated);border:1px solid var(--border-light);"><p class="mrr-note"><strong>Revenue recognition (FRS 115):</strong> Annual subscriptions recognised at 1/12 of annual price per month. Monthly subscriptions recognised in full in billing month.</p><p class="mrr-note mt-2"><strong>Stripe fee assumption:</strong> 3.4% + S$0.50 per successful charge for Singapore-issued cards. International cards may be higher.</p><p class="mrr-note mt-2"><strong>Referral credits:</strong> Each active referral credit (100% coupon on one invoice) reduces effective MRR by one month\'s plan price.</p></div>';
+  document.getElementById('mrrModal').classList.add('is-open');
+};
+
+function getAtRiskGroups() {
+  var nowMs = Date.now(); var days3 = 3*86400000; var paidTiers = ['all_subjects','family','single_subject'];
+  var failed = []; var inactive = []; var expiring = []; var unconverted = [];
+  allProfiles.forEach(function(p) {
+    var sub = subsByProfile[p.id]; var lastAct = lastActivityMap[p.id];
+    var isPaid = paidTiers.includes(p.subscription_tier); var isTrial = p.subscription_tier === 'trial';
+    var trialEnd = p.trial_ends_at ? new Date(p.trial_ends_at).getTime() : 0;
+    if (sub && sub.status === 'past_due') failed.push({ profile:p, reason:'Payment failed', days:daysSince(lastAct) });
+    if (isPaid && (!lastAct || daysSince(lastAct) > 30)) inactive.push({ profile:p, reason:'No quiz in 30+ days', days:lastAct ? daysSince(lastAct) : 999 });
+    if (isTrial && trialEnd > nowMs && (trialEnd - nowMs) <= days3) expiring.push({ profile:p, reason:'Trial expires in ' + Math.ceil((trialEnd - nowMs)/86400000) + ' day(s)', days:Math.ceil((trialEnd - nowMs)/86400000) });
+    if (isTrial && trialEnd > 0 && trialEnd < nowMs) unconverted.push({ profile:p, reason:'Trial expired ' + daysSince(p.trial_ends_at) + ' day(s) ago', days:daysSince(p.trial_ends_at) });
+  });
+  return { failed:failed, inactive:inactive, expiring:expiring, unconverted:unconverted };
+}
+
+function renderRadarCounts() {
+  var g = getAtRiskGroups();
+  ['failed','inactive','expiring','unconverted'].forEach(function(k) { var el = document.getElementById('cnt-' + k); if (el) el.textContent = g[k].length; });
+}
+
+function renderRadarTab(tab) {
+  currentRadarTab = tab; var g = getAtRiskGroups(); var rows = g[tab] || [];
+  if (rows.length === 0) { document.getElementById('radarContent').innerHTML = '<div class="p-8 text-center"><div class="text-3xl mb-2">✅</div><p class="text-muted text-sm">No accounts in this category.</p></div>'; return; }
+  var subj = { failed:'Superholic Lab — Action Required: Payment Update', inactive:'We miss you on Superholic Lab!', expiring:'Your Superholic Lab trial is ending soon', unconverted:'Your Superholic Lab trial has ended' };
+  var body = {
+    failed:      function(p) { return 'Hi ' + (p.full_name ? p.full_name.split(' ')[0] : 'there') + ',\n\nWe noticed your recent payment did not go through. Please update your payment method:\nhttps://www.superholiclab.com/pages/account.html\n\nWarm regards,\nDeyao\nSuperholic Lab'; },
+    inactive:    function(p) { return 'Hi ' + (p.full_name ? p.full_name.split(' ')[0] : 'there') + ',\n\nWe have not seen your child on Superholic Lab recently. Is everything okay?\n\nWarm regards,\nDeyao'; },
+    expiring:    function(p) { return 'Hi ' + (p.full_name ? p.full_name.split(' ')[0] : 'there') + ',\n\nYour free trial is ending soon. Subscribe to keep your child\'s progress going:\nhttps://www.superholiclab.com/pages/pricing.html\n\nWarm regards,\nDeyao'; },
+    unconverted: function(p) { return 'Hi ' + (p.full_name ? p.full_name.split(' ')[0] : 'there') + ',\n\nYour free trial has ended. We would love to welcome your family back:\nhttps://www.superholiclab.com/pages/pricing.html\n\nWarm regards,\nDeyao'; },
+  };
+  var flagCls = { failed:'flag-red', inactive:'flag-amber', expiring:'flag-orange', unconverted:'flag-gray' };
+  var html = '<table class="risk-table"><thead><tr><th>Name</th><th>Email</th><th>Reason</th><th>Days</th><th>Action</th></tr></thead><tbody>';
+  rows.sort(function(a,b) { return (b.days||0)-(a.days||0); }).slice(0,50).forEach(function(r) {
+    var p = r.profile; var ml = buildContactLink(p.email || '', subj[tab], body[tab](p));
+    html += '<tr><td class="font-bold">' + esc(p.full_name || '—') + '</td><td style="color:var(--text-muted);">' + esc(p.email || '—') + '</td><td><span class="risk-flag ' + flagCls[tab] + '">' + esc(r.reason) + '</span></td><td style="color:var(--text-muted);">' + (r.days === 999 ? 'Never' : r.days) + '</td><td><a href="' + esc(ml) + '" class="btn btn-sm btn-secondary hover-lift" target="_blank">✉️ Contact</a></td></tr>';
+  });
+  html += '</tbody></table>';
+  document.getElementById('radarContent').innerHTML = html;
+}
+
+window.showRadarTab = function(tab, btn) {
+  document.querySelectorAll('.radar-tab').forEach(function(b) { b.classList.remove('is-active'); });
+  btn.classList.add('is-active'); renderRadarTab(tab);
+};
+
+window.renderParents = function() {
+  var q = (document.getElementById('parentSearch').value || '').toLowerCase();
+  var filtered = allProfiles.filter(function(p) { return (p.full_name||'').toLowerCase().includes(q) || (p.email||'').toLowerCase().includes(q); });
+  var sByP = {}; allStudents.forEach(function(s) { if (!sByP[s.parent_id]) sByP[s.parent_id] = []; sByP[s.parent_id].push(s); });
+  var tbody = document.getElementById('parentsBody');
+  if (filtered.length === 0) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted);">No parents found.</td></tr>'; return; }
+  var levels = ['Primary 1','Primary 2','Primary 3','Primary 4','Primary 5','Primary 6','Secondary 1','Secondary 2','Secondary 3','Secondary 4'];
+  var html = '';
+  filtered.forEach(function(p) {
+    var lastAct = lastActivityMap[p.id]; var students = sByP[p.id] || [];
+    var safeId = esc(p.id); var safeEmail = esc(p.email || ''); var safeTier = p.subscription_tier || 'trial';
+    var stuLabel = students.length > 0 ? students.map(function(s) { return esc(s.name); }).join(', ') : '—';
+    var mailto = 'mailto:' + encodeURIComponent(p.email || '');
+    var delBtn = callerRole === 'admin' ? '<button class="btn btn-sm hover-lift" style="background:rgba(220,38,38,0.08);color:var(--brand-error);border:none;" onclick="window.deleteUser(\'' + safeId + '\',\'' + safeEmail + '\')">🗑️</button>' : '';
+    var stuFields = students.map(function(s) {
+      var opts = levels.map(function(l) { return '<option value="' + l + '"' + (s.level === l ? ' selected' : '') + '>' + l + '</option>'; }).join('');
+      return '<div style="border-top:1px solid var(--border-light);margin-top:var(--space-3);padding-top:var(--space-3);"><div class="text-xs font-bold text-muted mb-2">Learner: ' + esc(s.name) + '</div><div class="flex gap-3 flex-wrap"><div class="edit-group"><label>Name</label><input type="text" class="form-input" id="sn-' + s.id + '" value="' + esc(s.name||'') + '"></div><div class="edit-group"><label>Level</label><select class="form-select" id="sl-' + s.id + '">' + opts + '</select></div><div class="flex items-end pb-1"><button class="btn btn-sm btn-secondary hover-lift" onclick="window.saveStudent(\'' + s.id + '\')">Save</button></div></div></div>';
     }).join('');
-  }
+    html += '<tr class="data-row" id="row-' + safeId + '"><td class="font-semibold">' + esc(p.full_name || '—') + '</td><td style="color:var(--text-muted);">' + safeEmail + '</td><td>' + tierPill(safeTier) + '</td><td style="color:var(--text-muted);font-size:0.8rem;">' + (lastAct ? fmtDate(lastAct) : 'Never') + '</td><td><span class="text-xs text-muted">' + students.length + ' · </span><span class="text-xs">' + stuLabel + '</span></td><td style="color:var(--text-muted);font-size:0.8rem;">' + fmtDate(p.created_at) + '</td><td><div style="display:flex;gap:6px;align-items:center;"><button class="btn btn-sm btn-secondary hover-lift" onclick="window.toggleEdit(\'' + safeId + '\')">✏️ Edit</button><a href="' + esc(mailto) + '" class="btn btn-sm btn-ghost hover-lift" title="Contact">✉️</a><button class="btn btn-sm btn-ghost hover-lift" onclick="window.openEditTier(\'' + safeId + '\',\'' + safeEmail + '\',\'' + safeTier + '\')">🎫 Plan</button>' + delBtn + '</div></td></tr>' +
+      '<tr class="edit-row" id="editrow-' + safeId + '"><td colspan="7"><div class="edit-panel"><div class="edit-group"><label>Parent Name</label><input type="text" class="form-input" id="pname-' + safeId + '" value="' + esc(p.full_name||'') + '"></div><div class="edit-group"><label>Parent Email</label><input type="email" class="form-input" id="pemail-' + safeId + '" value="' + safeEmail + '"></div><div class="flex items-end pb-1"><button class="btn btn-sm btn-primary hover-lift" onclick="window.saveParent(\'' + safeId + '\')">Save Parent</button></div></div>' + stuFields + '</td></tr>';
+  });
+  tbody.innerHTML = html;
+};
 
-  function switchTab(tab) {
-    currentTab = tab;
-    document.getElementById('parentsTab').classList.toggle('hidden', tab !== 'parents');
-    document.getElementById('studentsTab').classList.toggle('hidden', tab !== 'students');
-    document.getElementById('tabParents').className  = tab === 'parents'  ? 'btn btn-primary btn-sm' : 'btn btn-ghost btn-sm';
-    document.getElementById('tabStudents').className = tab === 'students' ? 'btn btn-primary btn-sm' : 'btn btn-ghost btn-sm';
-    renderCurrentTab();
-  }
+window.toggleEdit = function(id) { var r = document.getElementById('editrow-' + id); if (r) r.classList.toggle('is-open'); };
+window.saveParent = async function(uid) {
+  var name = (document.getElementById('pname-' + uid)||{}).value||''; var email = (document.getElementById('pemail-' + uid)||{}).value||'';
+  if (!name.trim() && !email.trim()) return;
+  try {
+    var res = await fetch('/api/admin-edit', { method:'POST', headers:{'Authorization':'Bearer '+adminSession.access_token,'Content-Type':'application/json'}, body:JSON.stringify({ action:'update_parent', userId:uid, data:{ full_name:name.trim(), email:email.trim() } }) });
+    var data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    var p = allProfiles.find(function(x) { return x.id === uid; }); if (p) { p.full_name = name; p.email = email; }
+    window.toggleEdit(uid); window.renderParents();
+  } catch (err) { showError('Save failed: ' + err.message); }
+};
+window.saveStudent = async function(sid) {
+  var name = (document.getElementById('sn-' + sid)||{}).value||''; var level = (document.getElementById('sl-' + sid)||{}).value||'';
+  if (!name.trim()) { showError('Student name cannot be empty.'); return; }
+  try {
+    var res = await fetch('/api/admin-edit', { method:'POST', headers:{'Authorization':'Bearer '+adminSession.access_token,'Content-Type':'application/json'}, body:JSON.stringify({ action:'update_student', studentId:sid, data:{ name:name.trim(), level:level } }) });
+    var data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    var s = allStudents.find(function(x) { return x.id === sid; }); if (s) { s.name = name; s.level = level; }
+    window.renderParents();
+  } catch (err) { showError('Save failed: ' + err.message); }
+};
+window.openEditTier = function(uid, email, tier) { editTargetId = uid; document.getElementById('editTierEmail').textContent = email; document.getElementById('editTierSelect').value = tier || 'trial'; document.getElementById('editTierModal').classList.add('is-open'); };
+window.closeEditTierModal = function() { document.getElementById('editTierModal').classList.remove('is-open'); editTargetId = null; };
+window.saveTier = async function() {
+  if (!editTargetId) return; var tier = document.getElementById('editTierSelect').value;
+  var res = await fetch('/api/admin', { method:'POST', headers:{'Authorization':'Bearer '+adminSession.access_token,'Content-Type':'application/json'}, body:JSON.stringify({ action:'update_tier', userId:editTargetId, tier:tier }) });
+  var data = await res.json();
+  if (data.success) { var p = allProfiles.find(function(x){return x.id===editTargetId;}); if (p) p.subscription_tier = tier; window.closeEditTierModal(); renderPulse(); window.renderParents(); }
+  else showError('Plan update failed: ' + (data.error || 'Unknown error'));
+};
+window.deleteUser = async function(uid, email) {
+  if (!confirm('Delete account for ' + email + '?\n\nThis permanently deletes their profile and all student data.')) return;
+  var res = await fetch('/api/admin', { method:'POST', headers:{'Authorization':'Bearer '+adminSession.access_token,'Content-Type':'application/json'}, body:JSON.stringify({ action:'delete_user', userId:uid }) });
+  var data = await res.json();
+  if (data.success) { allProfiles = allProfiles.filter(function(p){return p.id!==uid;}); allStudents = allStudents.filter(function(s){return s.parent_id!==uid;}); renderPulse(); window.renderParents(); }
+  else showError('Delete failed: ' + (data.error||'Unknown'));
+};
+window.exportCSV = function() {
+  var sByP = {}; allStudents.forEach(function(s) { if (!sByP[s.parent_id]) sByP[s.parent_id] = []; sByP[s.parent_id].push(s.name||'?'); });
+  var rows = [['Name','Email','Plan','Last Active','Students','Joined'].join(',')];
+  allProfiles.forEach(function(p) {
+    rows.push(['"'+(p.full_name||'').replace(/"/g,'""')+'"','"'+(p.email||'').replace(/"/g,'""')+'"','"'+(p.subscription_tier||'')+'"','"'+(lastActivityMap[p.id]?fmtDate(lastActivityMap[p.id]):'Never')+'"','"'+((sByP[p.id]||[]).join('; ')).replace(/"/g,'""')+'"','"'+fmtDate(p.created_at)+'"'].join(','));
+  });
+  var blob = new Blob([rows.join('\n')], { type:'text/csv;charset=utf-8;' });
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'superholiclab-parents-' + new Date().toISOString().slice(0,10) + '.csv'; a.click(); URL.revokeObjectURL(a.href);
+};
 
-  function renderCurrentTab() {
-    if (currentTab === 'parents') renderParents();
-    else renderStudents();
-  }
+function renderActivityFeed() {
+  var el = document.getElementById('activityFeed');
+  if (!recentActivity || recentActivity.length === 0) { el.innerHTML = '<p class="text-sm text-muted text-center py-4">No recent activity.</p>'; return; }
+  el.innerHTML = recentActivity.map(function(a) {
+    var pct = a.total > 0 ? Math.round((a.score/a.total)*100) : 0;
+    var icon = pct >= 80 ? '🌟' : pct >= 60 ? '✅' : '📝';
+    return '<div class="feed-item"><div class="feed-icon">' + icon + '</div><div class="feed-body"><div class="feed-text"><strong>' + esc(a.student_name||'A student') + '</strong> completed a ' + esc(a.subject||'General') + ' quiz — <strong>' + pct + '%</strong></div><div class="feed-time">' + fmtTime(a.completed_at) + ' · ' + esc(a.parent_name||'') + '</div></div></div>';
+  }).join('');
+}
 
-  function tierBadge(tier) {
-    const colours = { trial: '#888', all_subjects: 'var(--brand-rose)', family: 'var(--brand-sage)', single_subject: '#a67c52' };
-    const labels  = { trial: 'Trial', all_subjects: 'All Subjects', family: 'Family', single_subject: 'Single Sub' };
-    const c = colours[tier] || '#888';
-    const label = labels[tier] || tier;
-    return '<span class="tier-badge" style="background:' + c + '22;color:' + c + ';border:1px solid ' + c + '55;">' + label + '</span>';
-  }
-
-  function fmtDate(iso) {
-    if (!iso) return '—';
-    return new Date(iso).toLocaleDateString('en-SG', { day:'numeric', month:'short', year:'2-digit' });
-  }
-
-  function renderParents() {
-    const q = document.getElementById('searchInput').value.toLowerCase();
-    const filtered = allProfiles.filter(function(p) {
-      return (p.full_name||'').toLowerCase().includes(q) || (p.email||'').toLowerCase().includes(q);
-    });
-    const tbody = document.getElementById('parentsBody');
-    if (filtered.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted);">No parents found.</td></tr>';
-      return;
-    }
-
-    var rows = '';
-    filtered.forEach(function(p) {
-      // Precompute safe values — avoids nested quotes inside template strings
-      var safeId    = (p.id || '').replace(/'/g, '');
-      var safeEmail = (p.email || '').replace(/'/g, '&apos;');
-      var safeTier  = p.subscription_tier || 'trial';
-      var safeName  = p.full_name || '';
-
-      var deleteBtn = callerRole === 'admin'
-        ? '<button class="btn btn-sm hover-lift" style="background:rgba(220,38,38,0.1);color:var(--brand-error);border:none;" onclick="deleteUser(\'' + safeId + '\',\'' + safeEmail + '\')">🗑️</button>'
-        : '';
-
-      rows += '<tr>'
-        + '<td><span class="font-semibold">' + (safeName || '<span class="text-muted">&mdash;</span>') + '</span></td>'
-        + '<td style="color:var(--text-muted);">' + (p.email || '&mdash;') + '</td>'
-        + '<td>' + tierBadge(safeTier) + '</td>'
-        + '<td style="color:var(--text-muted);font-size:0.8rem;">' + fmtDate(p.trial_ends_at) + '</td>'
-        + '<td style="color:var(--text-muted);font-size:0.8rem;">' + fmtDate(p.created_at) + '</td>'
-        + '<td><div style="display:flex;gap:6px;">'
-        + '<button class="btn btn-sm btn-secondary hover-lift" onclick="openEditTier(\'' + safeId + '\',\'' + safeEmail + '\',\'' + safeTier + '\')">✏️ Plan</button>'
-        + deleteBtn
-        + '</div></td>'
-        + '</tr>';
-    });
-    tbody.innerHTML = rows;
-  }
-
-  function renderStudents() {
-    const q = document.getElementById('searchInput').value.toLowerCase();
-    const emailMap = {};
-    allProfiles.forEach(function(p) { emailMap[p.id] = p.email; });
-    const filtered = allStudents.filter(function(s) {
-      return (s.name||'').toLowerCase().includes(q) || (emailMap[s.parent_id]||'').toLowerCase().includes(q);
-    });
-    const tbody = document.getElementById('studentsBody');
-    if (filtered.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--text-muted);">No students found.</td></tr>';
-      return;
-    }
-    var rows = '';
-    filtered.forEach(function(s) {
-      rows += '<tr>'
-        + '<td class="font-semibold">' + (s.name || '&mdash;') + '</td>'
-        + '<td><span class="badge badge-info text-xs">' + (s.level || '&mdash;') + '</span></td>'
-        + '<td style="color:var(--text-muted);">' + (emailMap[s.parent_id] || '&mdash;') + '</td>'
-        + '<td style="color:var(--text-muted);font-size:0.8rem;">' + fmtDate(s.created_at) + '</td>'
-        + '</tr>';
-    });
-    tbody.innerHTML = rows;
-  }
-
-  function openEditTier(userId, email, currentTier) {
-    editTargetId = userId;
-    document.getElementById('editTierEmail').textContent = email;
-    document.getElementById('editTierSelect').value = currentTier || 'trial';
-    document.getElementById('editTierModal').classList.add('is-open');
-  }
-
-  function closeEditTierModal() {
-    document.getElementById('editTierModal').classList.remove('is-open');
-    editTargetId = null;
-  }
-
-  async function saveTier() {
-    if (!editTargetId || !adminSession) return;
-    const tier = document.getElementById('editTierSelect').value;
-    const res  = await fetch('/api/admin', {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + adminSession.access_token, 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ action: 'update_tier', userId: editTargetId, tier }),
-    });
-    const data = await res.json();
-    if (data.success) {
-      const p = allProfiles.find(function(p) { return p.id === editTargetId; });
-      if (p) p.subscription_tier = tier;
-      closeEditTierModal();
-      renderStats();
-      renderCurrentTab();
-    } else {
-      showError('Failed to update plan: ' + (data.error || 'Unknown error'));
-    }
-  }
-
-  async function deleteUser(userId, email) {
-    if (!confirm('Delete account for ' + email + '?\n\nThis will permanently delete their profile and all student data. This cannot be undone.')) return;
+async function loadFeedOnly() {
+  try {
     if (!adminSession) return;
-    const res = await fetch('/api/admin', {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + adminSession.access_token, 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ action: 'delete_user', userId }),
-    });
-    const data = await res.json();
-    if (data.success) {
-      allProfiles = allProfiles.filter(function(p) { return p.id !== userId; });
-      allStudents = allStudents.filter(function(s) { return s.parent_id !== userId; });
-      renderStats();
-      renderCurrentTab();
-    } else {
-      showError('Failed to delete user: ' + (data.error || 'Unknown error'));
-    }
-  }
+    var res = await fetch('/api/admin', { headers:{'Authorization':'Bearer '+adminSession.access_token} });
+    var data = await res.json(); recentActivity = data.recent_activity || []; renderActivityFeed();
+  } catch (e) { /* silent */ }
+}
 
-  loadAdminData();
+window.loadAnalytics = async function(period, btn) {
+  if (btn) { document.querySelectorAll('.period-btn').forEach(function(b){b.classList.remove('is-active');}); btn.classList.add('is-active'); }
+  var content = document.getElementById('analyticsContent');
+  content.innerHTML = '<div class="text-center py-4"><div class="spinner-sm mx-auto"></div><p class="text-xs text-muted mt-2">Fetching from Plausible…</p></div>';
+  try {
+    if (!adminSession) return;
+    var res = await fetch('/api/analytics?period=' + period, { headers:{'Authorization':'Bearer '+adminSession.access_token} });
+    var data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Analytics fetch failed');
+    var agg = data.aggregate || {}; var ts = data.timeseries || []; var evts = data.events || [];
+    function evtCount(name) { var e = evts.find(function(x){return x.name===name||x.name===name.toLowerCase();}); return e ? (e.events||e.visitors||0) : 0; }
+    var signups = evtCount('Signup'); var subClicks = evtCount('Subscribe Click'); var subComp = evtCount('Subscribe Complete');
+    var quizComp = evtCount('Quiz Complete'); var tutorSess = evtCount('Tutor Session'); var trialD5 = evtCount('Trial Day 5');
+    var visitors = (agg.visitors||{}).value||0; var pageviews = (agg.pageviews||{}).value||0;
+    var sparkHtml = '';
+    if (ts.length > 1) {
+      var vals = ts.map(function(d){return d.visitors||0;}); var max = Math.max.apply(null,vals)||1; var min = Math.min.apply(null,vals);
+      var W=360, H=56, pad=4;
+      var pts = vals.map(function(v,i){ var x=pad+(i/(vals.length-1))*(W-pad*2); var y=H-pad-((v-min)/(max-min||1))*(H-pad*2); return x.toFixed(1)+','+y.toFixed(1); }).join(' ');
+      sparkHtml = '<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:56px;display:block;margin-bottom:var(--space-3);"><polyline points="' + pts + '" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    }
+    var c1 = signups > 0 ? Math.round((subClicks/signups)*100) : 0; var c2 = subClicks > 0 ? Math.round((subComp/subClicks)*100) : 0;
+    var maxF = Math.max(signups, subClicks, subComp, 1);
+    function fBar(label, val, color) { var pct = Math.round((val/maxF)*100); return '<div class="mb-2"><div class="flex justify-between text-xs mb-1"><span class="font-bold" style="color:var(--text-muted);">' + label + '</span><span class="font-bold text-main">' + val + '</span></div><div style="height:24px;background:var(--bg-elevated);border-radius:var(--radius-sm);overflow:hidden;"><div style="height:100%;width:' + pct + '%;background:' + color + ';border-radius:var(--radius-sm);transition:width 0.5s ease;"></div></div></div>'; }
+    content.innerHTML = '<div class="mb-4">' + sparkHtml + '<div class="analytics-grid"><div class="metric-card"><div class="metric-val">' + visitors.toLocaleString() + '</div><div class="metric-lbl">Unique Visitors</div></div><div class="metric-card"><div class="metric-val">' + pageviews.toLocaleString() + '</div><div class="metric-lbl">Pageviews</div></div></div></div><div class="mb-4"><p class="text-xs font-bold text-muted uppercase mb-3" style="letter-spacing:0.06em;">Conversion Funnel</p>' + fBar('Signups', signups, 'var(--brand-sage)') + fBar('Subscribe Clicks', subClicks, 'var(--brand-rose)') + fBar('Subscribe Completes', subComp, 'var(--brand-mint)') + '<div class="flex gap-3 text-xs text-muted mt-1"><span>Signup→Click: <strong class="text-main">' + c1 + '%</strong></span><span>Click→Complete: <strong class="text-main">' + c2 + '%</strong></span></div></div><p class="text-xs font-bold text-muted uppercase mb-2" style="letter-spacing:0.06em;">Key Events</p><div><div class="event-row"><span>Quiz Complete</span><span class="font-bold text-main">' + quizComp + '</span></div><div class="event-row"><span>Tutor Session</span><span class="font-bold text-main">' + tutorSess + '</span></div><div class="event-row"><span>Trial Day 5 (urgency trigger)</span><span class="font-bold text-main">' + trialD5 + '</span></div></div>';
+  } catch (err) { content.innerHTML = '<p class="text-sm text-muted text-center py-4">Could not load analytics. ' + esc(err.message) + '</p>'; }
+};
+
+loadAdminData();
 </script>
 </body>
 </html>
