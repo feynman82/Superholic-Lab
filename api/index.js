@@ -1,7 +1,7 @@
 /**
  * api/index.js
  * Single API gateway — routes all /api/* traffic to handlers in lib/api/handlers.js.
- * Vercel Hobby plan allows only 12 serverless functions; this file IS the only function.
+ * Vercel Hobby plan: this file IS the only serverless function.
  */
 
 import {
@@ -18,6 +18,12 @@ import {
   handleAnalyzeWeakness,
   handleSummarizeChat,
   handleAdmin,
+  handlePause,
+  handleReferral,
+  handleAnalytics,
+  handleAccountDelete,
+  handleExport,
+  handleAdminEdit,
 } from '../lib/api/handlers.js';
 
 // Disable Vercel's auto body parsing — required for Stripe webhook raw body.
@@ -45,7 +51,21 @@ export default async function handler(req, res) {
     return handleWebhook(req, res);
   }
 
-  // Admin GET requests have no body — parseJsonBody returns {} safely.
+  // Export is a GET with no body
+  if (route === 'export') {
+    return handleExport(req, res);
+  }
+
+  // Analytics is a GET with no body
+  if (route === 'analytics') {
+    return handleAnalytics(req, res);
+  }
+
+  // Admin GET has no body
+  if (route === 'admin' && req.method === 'GET') {
+    return handleAdmin(req, res);
+  }
+
   try {
     req.body = await parseJsonBody(req);
   } catch (err) {
@@ -66,6 +86,11 @@ export default async function handler(req, res) {
     case 'generate-quest':     return handleGenerateQuest(req, res);
     case 'analyze-weakness':   return handleAnalyzeWeakness(req, res);
     case 'summarize-chat':     return handleSummarizeChat(req, res);
+    // v2 routes
+    case 'pause':              return handlePause(req, res);
+    case 'referral':           return handleReferral(req, res);
+    case 'account-delete':     return handleAccountDelete(req, res);
+    case 'admin-edit':         return handleAdminEdit(req, res);
     default:
       return res.status(404).json({ error: `API route not found: ${route}` });
   }
