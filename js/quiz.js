@@ -739,13 +739,16 @@ function buildClozeUI(q) {
       }
     }
 
+    const hasPartsGate = (() => { try { return (typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || [])).length > 0; } catch(e){ return false; } })();
+    const isSplitFormat = q.type === 'comprehension' || q.type === 'visual_text' || (q.type === 'open_ended' && hasPartsGate);
+
     let actionBtn = '';
     if (!state.isAnswered) {
       if (state.feedback && state.feedback.status === 'loading') {
-        if (q.type !== 'word_problem' && q.type !== 'comprehension') {
+        if (q.type !== 'word_problem' && !isSplitFormat) {
            actionBtn = `<button class="btn btn-primary" disabled><span class="spinner-sm inline-block mr-2 border-white"></span> Grading...</button>`;
         }
-      } else if (q.type === 'word_problem' || q.type === 'comprehension') {
+      } else if (q.type === 'word_problem' || isSplitFormat) {
         // Suppress bottom button since progressive formats now use inline buttons
         actionBtn = '';
       }
@@ -873,17 +876,20 @@ function buildClozeUI(q) {
         if (el) ans[num] = el.value;
       });
       state.answers[state.currentIndex] = ans;
-    } else if (q.type === 'word_problem' || q.type === 'comprehension') {
+    const hasPartsGate = (() => { try { return (typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || [])).length > 0; } catch(e){ return false; } })();
+    const isSplitFormat = q.type === 'comprehension' || q.type === 'visual_text' || (q.type === 'open_ended' && hasPartsGate);
+
+    } else if (q.type === 'word_problem' || isSplitFormat) {
       const ans = state.answers[state.currentIndex] || {};
       let parts = [];
       try { parts = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
       parts.forEach((p, idx) => {
-        const pLabel = q.type === 'comprehension' 
-            ? `Q${idx + 1}` 
+        const pLabel = isSplitFormat 
+            ? (p.label || `Q${idx + 1}`) 
             : (p.label || (p.part_id ? `(${p.part_id})` : `Part ${idx + 1}`));
             
         const safeIdLabel = String(pLabel).replace(/[^a-zA-Z0-9]/g, '');
-        const prefix = q.type === 'comprehension' ? 'comp-' : 'wp-';
+        const prefix = isSplitFormat ? 'comp-' : 'wp-';
 
         if (q.type === 'comprehension' && p.part_type !== 'text_box' && p.part_type !== 'mcq') {
            ans[pLabel] = ans[pLabel] || {};

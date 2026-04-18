@@ -28,87 +28,38 @@ const DiagramLibrary = {
    * Catches hallucinated AI experiment functions and renders a clean UI card.
    */
   genericExperiment(params, functionName = '') {
-    const esc = this._esc ? this._esc.bind(this) : (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const esc = this._esc ? this._esc.bind(this) : (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     
-    // Normalize the title
-    let title = functionName.replace(/([A-Z])/g, ' $1').trim();
-    title = title.charAt(0).toUpperCase() + title.slice(1);
-    if (!title.toLowerCase().includes('experiment')) title += ' Setup';
-
-    let html = `<div class="card p-4 mb-4" style="background: rgba(5,150,105,0.03); border: 1.5px solid rgba(5,150,105,0.2);">`;
-    html += `<div class="font-bold text-sm mb-3 flex items-center gap-2" style="color: var(--science-colour);">🔬 ${esc(title)}</div>`;
-
-    // 1. Render Common Conditions (Constants)
-    if (params.commonConditions && params.commonConditions.length > 0) {
-      html += `<div class="mb-4">
-                 <span class="text-xs font-bold text-muted uppercase" style="letter-spacing: 0.05em;">Constant Variables:</span>
-                 <ul class="text-sm text-main list-disc pl-5 mt-1" style="line-height: 1.6;">`;
-      params.commonConditions.forEach(c => html += `<li>${esc(c)}</li>`);
-      html += `  </ul>
-               </div>`;
-    }
-
-    // 2. Render Setups (Variables)
-    if (params.setups && params.setups.length > 0) {
-      html += `<div class="text-xs font-bold text-muted uppercase mb-2" style="letter-spacing: 0.05em;">Experimental Setups:</div>
-               <div style="display: flex; flex-wrap: wrap; gap: var(--space-3); justify-content: center; align-items: stretch; width: 100%;">`;
-      
-      params.setups.forEach((s, idx) => {
-        let label = s.label || `Setup ${idx + 1}`;
-        let conditionHtml = '';
-
-        let condition = s.condition || s.conditions || s.details;
-        
-        if (condition) {
-          // Case A: Variables are nested inside a 'condition' object or string
-          if (typeof condition === 'object') {
-            conditionHtml = Object.entries(condition).map(([k,v]) => `<strong>${esc(k)}:</strong> ${esc(v)}`).join('<br>');
-          } else {
-            conditionHtml = esc(condition);
-          }
-        } else {
-          // 🚀 MASTERCLASS FIX: Variables are placed directly on the setup object!
-          const validKeys = Object.keys(s).filter(k => k !== 'label');
-          
-          if (validKeys.length > 0) {
-            conditionHtml = validKeys.map(k => {
-              const cleanKey = k.replace(/_/g, ' ');
-              const formattedKey = cleanKey.charAt(0).toUpperCase() + cleanKey.slice(1);
-              let val = Array.isArray(s[k]) ? s[k].join(', ') : s[k];
-              if (typeof val === 'object' && val !== null) val = JSON.stringify(val);
-              return `<strong>${esc(formattedKey)}:</strong> ${esc(val)}`;
-            }).join('<br>');
-          } else {
-            conditionHtml = `<span style="word-break: break-all;">${esc(JSON.stringify(s))}</span>`; 
-          }
-        }
-
-        // 🌟 FIX: Applied flex-basis and strict word-wrapping to prevent overlap
-        html += `<div class="p-3 bg-surface rounded-md shadow-sm" style="flex: 1 1 200px; max-width: 100%; min-width: 0; box-sizing: border-box; border: 1px solid var(--border-light);">
-                   <div class="font-bold text-sm text-main mb-1" style="border-bottom: 1px solid var(--border-light); padding-bottom: 4px;">${esc(label)}</div>
-                   <div class="text-sm text-muted mt-2" style="line-height: 1.5; word-wrap: break-word; overflow-wrap: break-word; hyphens: auto;">${conditionHtml}</div>
-                 </div>`;
-      });
-      html += `</div>`;
-    } 
-    // 3. Fallback for weird structures (like the lightPollutionExperiment)
-    else if (params.experimentSetup || params.details) {
-      const details = params.experimentSetup || params.details;
-      html += `<div class="text-sm text-main mt-2 p-3 bg-surface rounded-md border border-light">
-                 <ul class="list-disc pl-4">`;
-      Object.entries(details).forEach(([key, val]) => {
-         let displayVal = Array.isArray(val) ? val.join(', ') : val;
-         html += `<li class="mb-1"><strong class="capitalize">${esc(key.replace(/([A-Z])/g, ' $1'))}:</strong> ${esc(displayVal)}</li>`;
-      });
-      html += `  </ul>
-               </div>`;
+    // Parse nested object into beautifully formatted rows
+    let rowsHtml = '';
+    if (typeof params === 'object' && params !== null) {
+      for (const [key, value] of Object.entries(params)) {
+        const cleanKey = key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
+        const cleanVal = typeof value === 'object' ? JSON.stringify(value) : value;
+        rowsHtml += `
+          <div style="margin-bottom: 12px;">
+            <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">${esc(cleanKey)}</div>
+            <div style="font-size: 15px; color: var(--text-main); line-height: 1.5;">${esc(cleanVal)}</div>
+          </div>`;
+      }
     } else {
-      // Absolute fallback if we don't recognize the keys at all
-      html += `<div class="text-sm text-muted bg-surface p-3 rounded border border-light"><pre style="white-space:pre-wrap; font-family:inherit; margin:0;">${esc(JSON.stringify(params, null, 2))}</pre></div>`;
+       rowsHtml = `<div style="color: var(--text-main); font-size: 15px; line-height: 1.5;">${esc(params)}</div>`;
     }
 
-    html += `</div>`;
-    return html;
+    const htmlContent = `
+      <div xmlns="http://www.w3.org/1999/xhtml" style="width: 100%; height: 100%; padding: 20px; box-sizing: border-box; background: var(--bg-elevated); border: 2px dashed var(--border-light); border-radius: 12px; font-family: 'Plus Jakarta Sans', sans-serif;">
+        <div style="font-weight: 800; font-size: 18px; margin-bottom: 16px; color: var(--brand-sage); display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border-light); padding-bottom: 12px;">
+          <span>🔬</span> Experiment Setup
+        </div>
+        ${rowsHtml}
+      </div>
+    `;
+    
+    return `<svg viewBox="0 0 500 240" width="100%" height="auto" role="img" aria-label="Experiment setup">
+      <foreignObject width="100%" height="100%">
+        ${htmlContent}
+      </foreignObject>
+    </svg>`;
   },
 
 /**
