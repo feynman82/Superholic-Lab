@@ -55,7 +55,7 @@ const DiagramLibrary = {
       </div>
     `;
     
-    return `<svg viewBox="0 0 500 240" width="100%" height="auto" role="img" aria-label="Experiment setup">
+    return `<svg viewBox="0 0 500 240" width="100%" style="height: auto; max-width: 450px; display: block; margin: 0 auto;" role="img" aria-label="Experiment setup">
       <foreignObject width="100%" height="100%">
         ${htmlContent}
       </foreignObject>
