@@ -1,7 +1,6 @@
 /**
  * api/index.js
  * Single API gateway — routes all /api/* traffic to handlers in lib/api/handlers.js.
- * Vercel Hobby plan: this file IS the only serverless function.
  */
 
 import {
@@ -27,7 +26,6 @@ import {
   handleContact,
 } from '../lib/api/handlers.js';
 
-// Disable Vercel's auto body parsing — required for Stripe webhook raw body.
 export const config = { api: { bodyParser: false } };
 
 async function parseJsonBody(req) {
@@ -47,10 +45,7 @@ export default async function handler(req, res) {
   const path  = (req.url || '').split('?')[0];
   const route = path.replace(/^\/api\//, '');
 
-  // Webhook MUST receive unparsed raw body for Stripe signature verification.
-  if (route === 'webhook') {
-    return handleWebhook(req, res);
-  }
+  if (route === 'webhook') return handleWebhook(req, res);
 
   try {
     req.body = await parseJsonBody(req);
@@ -60,12 +55,9 @@ export default async function handler(req, res) {
   }
 
   switch (route) {
-    // ── Core ──
     case 'chat':               return handleChat(req, res);
     case 'checkout':           return handleCheckout(req, res);
     case 'portal':             return handlePortal(req, res);
-    case 'contact':            return handleContact(req, res);
-    // ── Admin & Account ──
     case 'admin':              return handleAdmin(req, res);
     case 'admin-edit':         return handleAdminEdit(req, res);
     case 'analytics':          return handleAnalytics(req, res);
@@ -73,7 +65,7 @@ export default async function handler(req, res) {
     case 'referral':           return handleReferral(req, res);
     case 'account-delete':     return handleAccountDelete(req, res);
     case 'export':             return handleExport(req, res);
-    // ── Question & Exam Engine ──
+    case 'contact':            return handleContact(req, res);
     case 'generate':           return handleGenerate(req, res);
     case 'generate-question':  return handleGenerateQuestion(req, res);
     case 'generate-exam':      return handleGenerateExam(req, res);
