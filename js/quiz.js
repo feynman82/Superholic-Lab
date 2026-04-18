@@ -535,7 +535,7 @@ function buildClozeUI(q) {
               <tbody class="text-lg">
                 ${(part.items || []).map((item, i) => `
                   <tr class="border-b border-slate-200 last:border-0">
-                    <td class="p-4 font-medium text-main align-middle leading-relaxed">${esc(item.word)}</td>
+                    <td class="p-4 font-medium text-main align-middle leading-relaxed text-lg">${esc(item.word)}</td>
                     <td class="p-3 align-middle border-l border-slate-200">
                       <input type="text" id="comp-${safeIdLabel}-ref${i}" class="form-input w-full p-3 text-lg border-2 border-slate-200 rounded-lg focus:border-brand-sage" placeholder="Type here..." value="${esc(savedWorking['ref'+i] || '')}" oninput="window.saveInputState ? window.saveInputState() : null">
                     </td>
@@ -548,7 +548,7 @@ function buildClozeUI(q) {
           interactionUI = `<div class="flex flex-col gap-3 mt-2 text-lg">` + (part.items || []).map((item, i) => `
             <div class="flex items-center gap-4 bg-surface p-3 rounded-lg border border-light shadow-sm">
               <input type="number" id="comp-${safeIdLabel}-seq${i}" class="form-input w-20 p-3 text-lg text-center border-2 border-slate-200 rounded-lg focus:border-brand-sage" min="1" max="3" value="${esc(savedWorking['seq'+i] || '')}" oninput="window.saveInputState ? window.saveInputState() : null">
-              <div class="font-medium text-main leading-relaxed">${esc(item)}</div>
+              <div class="font-medium text-main leading-relaxed text-lg">${esc(item)}</div>
             </div>
           `).join('') + `</div>`;
           
@@ -565,11 +565,11 @@ function buildClozeUI(q) {
               <tbody class="text-lg">
                 ${(part.items || []).map((item, i) => `
                   <tr class="border-b border-slate-200 last:border-0">
-                    <td class="p-4 font-medium text-main align-top leading-relaxed">${esc(item.statement)}</td>
+                    <td class="p-4 font-medium text-main align-top leading-relaxed text-lg">${esc(item.statement)}</td>
                     <td class="p-4 align-top text-center border-l border-slate-200">
                       <div class="flex flex-col gap-3 items-center justify-start mt-2">
-                        <label class="flex items-center gap-2 cursor-pointer font-bold"><input type="radio" name="comp-${safeIdLabel}-tf${i}" value="True" ${savedWorking['tf'+i]==='True'?'checked':''} onchange="window.saveInputState ? window.saveInputState() : null"> True</label>
-                        <label class="flex items-center gap-2 cursor-pointer font-bold"><input type="radio" name="comp-${safeIdLabel}-tf${i}" value="False" ${savedWorking['tf'+i]==='False'?'checked':''} onchange="window.saveInputState ? window.saveInputState() : null"> False</label>
+                        <label class="flex items-center gap-2 cursor-pointer font-bold text-lg"><input type="radio" name="comp-${safeIdLabel}-tf${i}" value="True" ${savedWorking['tf'+i]==='True'?'checked':''} onchange="window.saveInputState ? window.saveInputState() : null"> True</label>
+                        <label class="flex items-center gap-2 cursor-pointer font-bold text-lg"><input type="radio" name="comp-${safeIdLabel}-tf${i}" value="False" ${savedWorking['tf'+i]==='False'?'checked':''} onchange="window.saveInputState ? window.saveInputState() : null"> False</label>
                       </div>
                     </td>
                     <td class="p-3 align-top border-l border-slate-200">
@@ -707,7 +707,10 @@ function buildClozeUI(q) {
     let feedbackHtml = '';
     if (state.isAnswered && state.feedback) {
       const fb = state.feedback;
-      if (fb.isModel) {
+      
+      if (q.type === 'comprehension') {
+         feedbackHtml = ''; // Completely suppress bottom feedback for comprehension
+      } else if (fb.isModel) {
         feedbackHtml = `<div class="card card-rule-mint bg-science-tint p-4 mt-4">
           <div class="font-bold text-sm mb-2 text-success">Worked Solution</div>
           <div class="text-sm text-main leading-relaxed">${window.formatWorkedSolution(q.worked_solution || q.model_answer)}</div>
@@ -1474,7 +1477,7 @@ function buildClozeUI(q) {
       state.totalPossibleScore = state.questions.reduce((sum, q) => {
         if (q.type === 'cloze') return sum + (q.blanks?.length || 1);
         if (q.type === 'editing') return sum + (q.blanks?.length || 1);
-        if (q.type === 'word_problem' || q.type === 'open_ended') return sum + 0;
+        if (q.type === 'word_problem' || q.type === 'comprehension' || q.type === 'open_ended') return sum + (q.marks || 1);
         return sum + 1;
       }, 0);
 
