@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>My Account — Superholic Lab</title>
+  <meta name="robots" content="noindex, nofollow">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="../css/style.css" />
@@ -14,50 +15,111 @@
   <script type="module">
     import { guardPage } from '/js/auth.js';
     window.userProfile = await guardPage(true);
-    if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', () => window.initAccount && window.initAccount()); }
-    else { window.initAccount && window.initAccount(); }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => window.initAccount && window.initAccount());
+    } else {
+      window.initAccount && window.initAccount();
+    }
   </script>
+
+  <style>
+    /* ── Toggle switch ── */
+    .toggle-wrap { display: flex; align-items: center; justify-content: space-between; padding: var(--space-3) 0; border-bottom: 1px solid var(--border-light); }
+    .toggle-wrap:last-child { border-bottom: none; }
+    .toggle-label { font-size: var(--text-sm); font-weight: 600; color: var(--text-main); }
+    .toggle-desc  { font-size: var(--text-xs); color: var(--text-muted); margin-top: 2px; }
+    .toggle { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: var(--border-dark); border-radius: 24px; transition: 0.25s; }
+    .toggle-slider:before { content: ''; position: absolute; height: 18px; width: 18px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.25s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+    input:checked + .toggle-slider { background: var(--brand-sage); }
+    input:checked + .toggle-slider:before { transform: translateX(20px); }
+
+    /* ── Learner card ── */
+    .learner-row { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-3) 0; border-bottom: 1px solid var(--border-light); }
+    .learner-row:last-child { border-bottom: none; }
+    .learner-avatar { width: 40px; height: 40px; border-radius: var(--radius-md); background: var(--brand-sage); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 1.2rem; color: white; flex-shrink: 0; }
+    .learner-edit-row { background: var(--bg-elevated); border-radius: var(--radius-md); padding: var(--space-4); margin-top: var(--space-2); display: none; flex-direction: column; gap: var(--space-3); }
+    .learner-edit-row.is-open { display: flex; }
+
+    /* ── Referral link box ── */
+    .ref-link-box { display: flex; align-items: center; gap: var(--space-2); background: var(--bg-elevated); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); }
+    .ref-link-text { flex: 1; font-size: var(--text-sm); font-weight: 600; color: var(--text-main); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* ── Stat chips ── */
+    .ref-stats { display: flex; gap: var(--space-4); flex-wrap: wrap; margin-top: var(--space-4); }
+    .ref-stat { flex: 1; min-width: 80px; text-align: center; padding: var(--space-3); border-radius: var(--radius-md); background: var(--bg-elevated); }
+    .ref-stat-val { font-family: var(--font-display); font-size: 2rem; color: var(--text-main); line-height: 1; }
+    .ref-stat-lbl { font-size: var(--text-xs); color: var(--text-muted); margin-top: 4px; }
+
+    /* ── Modal overlay ── */
+    .modal-overlay { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); opacity: 0; visibility: hidden; transition: all 0.2s ease; padding: var(--space-4); }
+    .modal-overlay.is-open { opacity: 1; visibility: visible; }
+    .modal-box { width: 100%; max-width: 460px; background: var(--bg-surface); border-radius: var(--radius-lg); padding: var(--space-6); transform: scale(0.95); transition: transform 0.2s ease; }
+    .modal-overlay.is-open .modal-box { transform: scale(1); }
+
+    /* ── Status badges ── */
+    .sub-status-active  { background: rgba(5,150,105,0.1);  color: var(--brand-mint); border: 1px solid rgba(5,150,105,0.25); }
+    .sub-status-paused  { background: rgba(249,115,22,0.1); color: #f97316; border: 1px solid rgba(249,115,22,0.25); }
+    .sub-status-past_due{ background: rgba(220,38,38,0.1);  color: var(--brand-error); border: 1px solid rgba(220,38,38,0.25); }
+    .sub-status-trial   { background: rgba(183,110,121,0.1);color: var(--brand-rose); border: 1px solid rgba(183,110,121,0.25); }
+  </style>
 </head>
+
 <body class="has-bottom-nav bg-page texture-light-grid">
 <global-header></global-header>
 
 <section class="bg-sage texture-dots py-10" style="padding-top: calc(64px + var(--space-8));">
   <div class="container">
-    <h1 class="font-display text-4xl text-white mb-2">My Account</h1>
-    <p style="color: rgba(255,255,255,0.8);">Manage your profile, password, and subscription.</p>
+    <div class="badge badge-glass mb-3">Parent Portal</div>
+    <h1 class="font-display text-4xl text-white mb-1">My Account</h1>
+    <p style="color: rgba(255,255,255,0.75);">Manage your subscription, learners, and preferences.</p>
   </div>
 </section>
 
-<main class="container py-10" style="max-width: 640px;">
+<main class="container py-10" style="max-width: 720px; min-height: 60vh;">
 
-  <div id="successMsg" class="mb-4 p-3 text-sm font-bold rounded hidden" style="background:rgba(81,97,94,0.1);border:1px solid var(--brand-sage);color:var(--brand-sage);"></div>
-  <div id="errorMsg" class="mb-4 p-3 text-sm font-bold rounded hidden" style="background:rgba(220,38,38,0.1);border:1px solid rgba(220,38,38,0.3);color:var(--brand-error);"></div>
+  <!-- Flash messages -->
+  <div id="successMsg" class="mb-4 p-3 text-sm font-bold rounded hidden" style="background:rgba(5,150,105,0.1);border:1px solid rgba(5,150,105,0.25);color:var(--brand-mint);"></div>
+  <div id="errorMsg"   class="mb-4 p-3 text-sm font-bold rounded hidden" style="background:rgba(220,38,38,0.1);border:1px solid rgba(220,38,38,0.3);color:var(--brand-error);"></div>
 
-  <!-- Subscription -->
+  <!-- ═══════════════════ 1. SUBSCRIPTION ═══════════════════ -->
   <div class="card p-6 mb-6">
     <h2 class="font-display text-2xl text-main mb-4">Subscription</h2>
     <div id="subscriptionContent"><div class="spinner-sm"></div></div>
   </div>
 
-  <!-- Profile -->
+  <!-- ═══════════════════ 2. MY LEARNERS ═══════════════════ -->
+  <div class="card p-6 mb-6">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="font-display text-2xl text-main m-0">My Learners</h2>
+      <a href="/pages/setup.html" id="addLearnerBtn" class="btn btn-secondary btn-sm hover-lift">＋ Add Learner</a>
+    </div>
+    <div id="learnersContent"><div class="spinner-sm"></div></div>
+  </div>
+
+  <!-- ═══════════════════ 3. PROFILE ═══════════════════ -->
   <div class="card p-6 mb-6">
     <h2 class="font-display text-2xl text-main mb-4">Profile</h2>
     <div class="flex flex-col gap-4">
+      <div id="profileNudge" class="p-3 rounded hidden" style="background:rgba(183,110,121,0.08);border:1px solid rgba(183,110,121,0.2);">
+        <p class="text-sm text-rose m-0">⚠️ Your display name is missing. Personalised features work better with your name.</p>
+      </div>
       <div class="flex flex-col gap-1">
         <label class="text-sm font-bold text-muted">Display Name</label>
-        <input type="text" id="fullName" class="form-input" placeholder="Your name" />
+        <input type="text" id="fullName" class="form-input" placeholder="e.g. Sarah Tan" />
       </div>
       <div class="flex flex-col gap-1">
         <label class="text-sm font-bold text-muted">Email Address</label>
         <input type="email" id="emailField" class="form-input" placeholder="you@email.com" />
-        <p class="text-xs text-muted mt-1">You'll receive a confirmation email if you change your address.</p>
+        <p class="text-xs text-muted mt-1">You will receive a confirmation email at your new address before the change takes effect.</p>
       </div>
       <button class="btn btn-primary hover-lift" id="saveProfileBtn" onclick="window.saveProfile()">Save Changes</button>
     </div>
   </div>
 
-  <!-- Password -->
-  <div class="card p-6">
+  <!-- ═══════════════════ 4. CHANGE PASSWORD ═══════════════════ -->
+  <div class="card p-6 mb-6">
     <h2 class="font-display text-2xl text-main mb-4">Change Password</h2>
     <div class="flex flex-col gap-4">
       <div class="flex flex-col gap-1">
@@ -72,11 +134,106 @@
     </div>
   </div>
 
+  <!-- ═══════════════════ 5. REFERRAL PROGRAMME ═══════════════════ -->
+  <div class="card p-6 mb-6" style="border-top: 4px solid var(--brand-rose);">
+    <div class="flex items-center gap-3 mb-1">
+      <h2 class="font-display text-2xl text-main m-0">Refer a Friend</h2>
+      <span class="badge badge-success text-xs">Earn 1 Month Free</span>
+    </div>
+    <p class="text-sm text-muted mb-4">When a friend subscribes using your link, you both win — your next month is on us.</p>
+    <div id="referralContent"><div class="spinner-sm"></div></div>
+  </div>
+
+  <!-- ═══════════════════ 6. NOTIFICATIONS ═══════════════════ -->
+  <div class="card p-6 mb-6">
+    <h2 class="font-display text-2xl text-main mb-1">Notifications</h2>
+    <p class="text-sm text-muted mb-4">Choose which emails you'd like to receive from Superholic Lab.</p>
+    <div id="notifContent">
+      <div class="toggle-wrap">
+        <div><div class="toggle-label">Weekly Progress Summary</div><div class="toggle-desc">Your child's AL scores and activity digest every Monday</div></div>
+        <label class="toggle"><input type="checkbox" id="notif_weekly_progress" onchange="window.saveNotifPref(this)"><span class="toggle-slider"></span></label>
+      </div>
+      <div class="toggle-wrap">
+        <div><div class="toggle-label">Trial Expiry Reminder</div><div class="toggle-desc">3-day heads-up before your free trial ends</div></div>
+        <label class="toggle"><input type="checkbox" id="notif_trial_expiry" onchange="window.saveNotifPref(this)"><span class="toggle-slider"></span></label>
+      </div>
+      <div class="toggle-wrap">
+        <div><div class="toggle-label">New Features &amp; Updates</div><div class="toggle-desc">When we ship something new worth knowing about</div></div>
+        <label class="toggle"><input type="checkbox" id="notif_new_features" onchange="window.saveNotifPref(this)"><span class="toggle-slider"></span></label>
+      </div>
+      <div class="toggle-wrap">
+        <div><div class="toggle-label">Miss Wena's Study Tips</div><div class="toggle-desc">Occasional exam-prep tips curated by Miss Wena</div></div>
+        <label class="toggle"><input type="checkbox" id="notif_study_tips" onchange="window.saveNotifPref(this)"><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ 7. PRIVACY & DATA ═══════════════════ -->
+  <div class="card p-6" style="border-top: 4px solid var(--border-dark);">
+    <h2 class="font-display text-2xl text-main mb-1">Privacy &amp; Data</h2>
+    <p class="text-sm text-muted mb-5">Your data is stored on Singapore servers. We do not sell your personal data. This complies with the Singapore Personal Data Protection Act (PDPA).</p>
+    <div class="flex flex-wrap gap-3">
+      <button class="btn btn-secondary hover-lift" onclick="window.exportData()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:inline;vertical-align:middle;margin-right:6px;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download My Data
+      </button>
+      <button class="btn hover-lift" style="background:rgba(220,38,38,0.08);color:var(--brand-error);border:1px solid rgba(220,38,38,0.2);" onclick="document.getElementById('deleteModal').classList.add('is-open')">
+        Delete My Account
+      </button>
+    </div>
+  </div>
+
   <div class="text-center mt-6">
-    <a href="/pages/dashboard.html" class="text-sm text-muted" style="text-decoration: none;">← Back to Dashboard</a>
+    <a href="/pages/dashboard.html" class="text-sm text-muted" style="text-decoration:none;">← Back to Dashboard</a>
   </div>
 
 </main>
+
+<!-- ═══════ PAUSE MODAL ═══════ -->
+<div id="pauseModal" class="modal-overlay" onclick="if(event.target===this)this.classList.remove('is-open')">
+  <div class="modal-box">
+    <h3 class="font-display text-2xl text-main m-0 mb-2">Pause Subscription</h3>
+    <p class="text-sm text-muted mb-4" id="pauseModalDesc">Your subscription will pause at the end of your current billing period. Choose when you'd like it to automatically resume.</p>
+    <div class="flex flex-col gap-1 mb-4">
+      <label class="text-sm font-bold text-muted">Resume Date</label>
+      <input type="date" id="pauseResumeDate" class="form-input" />
+      <p class="text-xs text-muted mt-1">Billing automatically restarts on this date. No action needed.</p>
+    </div>
+    <div class="flex gap-3">
+      <button class="btn btn-ghost flex-1" onclick="document.getElementById('pauseModal').classList.remove('is-open')">Cancel</button>
+      <button class="btn btn-primary flex-1 hover-lift" id="pauseConfirmBtn" onclick="window.confirmPause()">Confirm Pause</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ CANCEL PAUSE MODAL ═══════ -->
+<div id="cancelPauseModal" class="modal-overlay" onclick="if(event.target===this)this.classList.remove('is-open')">
+  <div class="modal-box">
+    <h3 class="font-display text-2xl text-main m-0 mb-2">Cancel Scheduled Pause</h3>
+    <p class="text-sm text-muted mb-5">Your subscription will continue billing normally at the end of this period. The pause will not activate.</p>
+    <div class="flex gap-3">
+      <button class="btn btn-ghost flex-1" onclick="document.getElementById('cancelPauseModal').classList.remove('is-open')">Keep Pause</button>
+      <button class="btn btn-primary flex-1 hover-lift" onclick="window.cancelPause()">Yes, Cancel Pause</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ DELETE ACCOUNT MODAL ═══════ -->
+<div id="deleteModal" class="modal-overlay" onclick="if(event.target===this)this.classList.remove('is-open')">
+  <div class="modal-box" style="border-top: 4px solid var(--brand-error);">
+    <h3 class="font-display text-2xl text-danger m-0 mb-2">Delete My Account</h3>
+    <p class="text-sm text-muted mb-2">This will <strong>permanently delete</strong> your account, all learner profiles, quiz history, and cancel any active subscription. This action cannot be undone.</p>
+    <div class="flex flex-col gap-1 mb-5">
+      <label class="text-sm font-bold text-muted">Type <strong>DELETE</strong> to confirm</label>
+      <input type="text" id="deleteConfirmInput" class="form-input" placeholder="DELETE" />
+    </div>
+    <div class="flex gap-3">
+      <button class="btn btn-ghost flex-1" onclick="document.getElementById('deleteModal').classList.remove('is-open')">Cancel</button>
+      <button class="btn flex-1 hover-lift" id="deleteConfirmBtn" onclick="window.deleteAccount()" style="background:var(--brand-error);color:white;border:none;">Delete Everything</button>
+    </div>
+  </div>
+</div>
+
 <global-footer></global-footer>
 
 <nav class="bottom-nav">
@@ -86,115 +243,464 @@
 </nav>
 
 <script>
-  function showMsg(type, msg) {
-    const ok  = document.getElementById('successMsg');
-    const err = document.getElementById('errorMsg');
-    ok.classList.add('hidden'); err.classList.add('hidden');
-    const el = type === 'success' ? ok : err;
-    el.textContent = msg;
-    el.classList.remove('hidden');
-    setTimeout(() => el.classList.add('hidden'), 6000);
-  }
+/* ─────────── UTILITIES ─────────── */
+function showMsg(type, msg) {
+  const ok  = document.getElementById('successMsg');
+  const err = document.getElementById('errorMsg');
+  ok.classList.add('hidden'); err.classList.add('hidden');
+  const el = type === 'success' ? ok : err;
+  el.textContent = msg;
+  el.classList.remove('hidden');
+  el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  setTimeout(() => el.classList.add('hidden'), 6000);
+}
 
-  window.initAccount = async function() {
-    const profile = window.userProfile;
-    if (!profile) return;
+async function authFetch(url, opts = {}) {
+  const sb = await getSupabase();
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) throw new Error('Not authenticated');
+  return fetch(url, {
+    ...opts,
+    headers: { ...(opts.headers || {}), 'Authorization': 'Bearer ' + session.access_token, 'Content-Type': 'application/json' },
+  });
+}
 
-    document.getElementById('fullName').value  = profile.full_name || '';
-    document.getElementById('emailField').value = profile.email    || '';
+/* ─────────── BOOT ─────────── */
+window.initAccount = async function () {
+  const profile = window.userProfile;
+  if (!profile) return;
 
-    const content    = document.getElementById('subscriptionContent');
-    const tier       = profile.subscription_tier || 'trial';
-    const planLabels = { trial: 'Free Trial', all_subjects: 'All Subjects', family: 'Family Plan', single_subject: 'Single Subject' };
-    const planName   = planLabels[tier] || tier;
+  // Profile section
+  document.getElementById('fullName').value  = profile.full_name || '';
+  document.getElementById('emailField').value = profile.email    || '';
+  if (!profile.full_name) document.getElementById('profileNudge').classList.remove('hidden');
+
+  // Notification toggles
+  const prefs = profile.notification_preferences || {};
+  document.getElementById('notif_weekly_progress').checked = prefs.weekly_progress !== false;
+  document.getElementById('notif_trial_expiry').checked    = prefs.trial_expiry    !== false;
+  document.getElementById('notif_new_features').checked    = !!prefs.new_features;
+  document.getElementById('notif_study_tips').checked      = !!prefs.study_tips;
+
+  // Load sections in parallel
+  await Promise.all([
+    loadSubscription(profile),
+    loadLearners(profile),
+    loadReferral(),
+  ]);
+};
+
+/* ─────────── SUBSCRIPTION ─────────── */
+async function loadSubscription(profile) {
+  const content = document.getElementById('subscriptionContent');
+  const tier    = profile.subscription_tier || 'trial';
+
+  try {
+    const sb = await getSupabase();
+    const { data: sub } = await sb
+      .from('subscriptions')
+      .select('plan_name, billing_cycle, status, current_period_end, paused_at, resumes_at')
+      .eq('profile_id', profile.id)
+      .in('status', ['active', 'past_due', 'paused'])
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
     if (tier === 'trial') {
-      const daysLeft = profile.trial_ends_at ? Math.max(0, Math.ceil((new Date(profile.trial_ends_at) - new Date()) / 86400000)) : 0;
+      const daysLeft = profile.trial_ends_at
+        ? Math.max(0, Math.ceil((new Date(profile.trial_ends_at) - new Date()) / 86400000)) : 0;
       content.innerHTML = `
-        <div class="flex items-center gap-3 p-4 rounded-lg mb-4" style="background: var(--bg-elevated);">
+        <div class="flex items-center gap-3 p-4 rounded-lg mb-4" style="background:var(--bg-elevated);">
           <span class="text-2xl">${daysLeft > 0 ? '🎁' : '⏰'}</span>
           <div class="flex-1">
-            <div class="font-bold text-main">${daysLeft > 0 ? 'Free Trial' : 'Trial Expired'}</div>
-            <div class="text-sm text-muted">${daysLeft > 0 ? `${daysLeft} day${daysLeft !== 1 ? 's' : ''} remaining` : 'Your trial has ended'}</div>
+            <div class="font-bold text-main">${daysLeft > 0 ? 'Free Trial Active' : 'Trial Expired'}</div>
+            <div class="text-sm text-muted">${daysLeft > 0 ? daysLeft + ' day' + (daysLeft !== 1 ? 's' : '') + ' remaining' : 'Your trial has ended'}</div>
           </div>
+          <span class="badge text-xs sub-status-trial">Trial</span>
         </div>
         <a href="/pages/pricing.html" class="btn btn-primary w-full hover-lift">Subscribe Now →</a>
-        <p class="text-xs text-center text-muted mt-2">Cancel anytime · Card charged immediately on subscribe</p>
-      `;
+        <p class="text-xs text-center text-muted mt-2">Card charged immediately on subscribe · Cancel anytime</p>`;
+      return;
+    }
+
+    if (!sub) {
+      content.innerHTML = `<div class="text-sm text-muted">Subscription details loading…</div>`;
+      return;
+    }
+
+    const planLabels = { all_subjects: 'All Subjects', family: 'Family Plan', single_subject: 'Single Subject', paused: 'Paused' };
+    const planName   = planLabels[tier] || planLabels[sub.plan_name] || tier;
+    const cycleLabel = sub.billing_cycle === 'annual' ? 'Annual' : 'Monthly';
+    const isMonthly  = sub.billing_cycle !== 'annual';
+    const isPaused   = tier === 'paused' || sub.status === 'paused';
+    const isPastDue  = sub.status === 'past_due';
+
+    const periodEnd = sub.current_period_end ? new Date(sub.current_period_end) : null;
+    const resumesAt = sub.resumes_at ? new Date(sub.resumes_at) : null;
+
+    let statusBadge = `<span class="badge text-xs sub-status-active">Active</span>`;
+    if (isPaused)  statusBadge = `<span class="badge text-xs sub-status-paused">Paused</span>`;
+    if (isPastDue) statusBadge = `<span class="badge text-xs sub-status-past_due">Payment Failed</span>`;
+
+    const fmtDate = d => d ? d.toLocaleDateString('en-SG', { day:'numeric', month:'long', year:'numeric' }) : '—';
+
+    let pauseSection = '';
+    if (isPaused) {
+      pauseSection = `
+        <div class="p-4 rounded-lg mb-4" style="background:rgba(249,115,22,0.08);border:1px solid rgba(249,115,22,0.2);">
+          <p class="text-sm font-bold" style="color:#f97316;">⏸ Subscription Paused</p>
+          <p class="text-sm text-muted m-0">Auto-resumes on <strong>${fmtDate(resumesAt)}</strong>. No action needed.</p>
+        </div>
+        <button class="btn btn-primary w-full hover-lift mb-2" onclick="window.resumeNow()">Resume Subscription Now</button>`;
+    } else if (isPastDue) {
+      pauseSection = `
+        <div class="p-4 rounded-lg mb-4" style="background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.2);">
+          <p class="text-sm font-bold text-danger">⚠️ Payment Failed</p>
+          <p class="text-sm text-muted m-0">Please update your payment method to continue access.</p>
+        </div>`;
+    } else if (isMonthly) {
+      // Check if pause is scheduled
+      const { data: profileCheck } = await sb.from('profiles').select('pause_scheduled, pause_resume_at').eq('id', profile.id).single();
+      if (profileCheck?.pause_scheduled) {
+        const pauseResume = profileCheck.pause_resume_at ? new Date(profileCheck.pause_resume_at) : null;
+        pauseSection = `
+          <div class="p-4 rounded-lg mb-4" style="background:rgba(249,115,22,0.08);border:1px solid rgba(249,115,22,0.2);">
+            <p class="text-sm font-bold" style="color:#f97316;">⏸ Pause Scheduled</p>
+            <p class="text-sm text-muted m-0">Your subscription will pause on <strong>${fmtDate(periodEnd)}</strong> and resume on <strong>${fmtDate(pauseResume)}</strong>.</p>
+          </div>
+          <button class="btn btn-secondary w-full hover-lift mb-2" onclick="document.getElementById('cancelPauseModal').classList.add('is-open')">Cancel Scheduled Pause</button>`;
+      } else {
+        pauseSection = `<button class="btn btn-ghost w-full mt-2" style="border:1px solid var(--border-light);" onclick="window.openPauseModal('${fmtDate(periodEnd)}')">⏸ Pause Subscription</button>
+        <p class="text-xs text-center text-muted mt-1">Pauses at end of current period · No prorating</p>`;
+      }
     } else {
-      content.innerHTML = `
-        <div class="flex items-center gap-3 p-4 rounded-lg mb-4" style="background: var(--bg-elevated);">
-          <span class="text-2xl">✅</span>
-          <div>
-            <div class="font-bold text-main">${planName}</div>
-            <div class="text-sm text-muted">Active subscription</div>
+      // Annual — no pause option
+      pauseSection = `<p class="text-xs text-muted mt-3" style="text-align:center;">Annual subscriptions cannot be paused. <a href="mailto:linzy@superholiclab.com" class="text-rose">Contact us</a> if needed.</p>`;
+    }
+
+    content.innerHTML = `
+      <div class="flex items-start gap-3 p-4 rounded-lg mb-4" style="background:var(--bg-elevated);">
+        <span class="text-2xl">✅</span>
+        <div class="flex-1">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="font-bold text-main">${planName}</span>
+            <span class="badge text-xs" style="background:var(--bg-page);color:var(--text-muted);border:1px solid var(--border-light);">${cycleLabel}</span>
+            ${statusBadge}
+          </div>
+          ${periodEnd && !isPaused ? `<div class="text-sm text-muted mt-1">Next billing: <strong class="text-main">${fmtDate(periodEnd)}</strong></div>` : ''}
+        </div>
+      </div>
+      ${pauseSection}
+      <button id="openPortalBtn" class="btn btn-secondary w-full hover-lift mt-3" onclick="window.openBillingPortal()">Manage Subscription →</button>
+      <p class="text-xs text-center text-muted mt-2">Change payment method, cancel, or switch plans via Stripe's secure portal.</p>`;
+
+    // Set minimum date for pause modal
+    if (periodEnd) {
+      const minDate = new Date(periodEnd);
+      minDate.setDate(minDate.getDate() + 1);
+      document.getElementById('pauseResumeDate').min = minDate.toISOString().slice(0, 10);
+      document.getElementById('pauseResumeDate').value = (() => {
+        const d = new Date(minDate);
+        d.setDate(d.getDate() + 30);
+        return d.toISOString().slice(0, 10);
+      })();
+    }
+
+  } catch (err) {
+    console.error('[account] loadSubscription error:', err.message);
+    content.innerHTML = `<div class="text-sm text-muted">Could not load subscription details.</div>`;
+  }
+}
+
+window.openPauseModal = function(periodEndStr) {
+  document.getElementById('pauseModalDesc').textContent =
+    `Your subscription will pause at the end of your current billing period (${periodEndStr}). Billing automatically resumes on your chosen date — no action needed.`;
+  document.getElementById('pauseModal').classList.add('is-open');
+};
+
+window.confirmPause = async function() {
+  const resumeAt = document.getElementById('pauseResumeDate').value;
+  if (!resumeAt) { showMsg('error', 'Please choose a resume date.'); return; }
+  const btn = document.getElementById('pauseConfirmBtn');
+  btn.disabled = true; btn.textContent = 'Scheduling…';
+  try {
+    const res  = await authFetch('/api/pause', { method: 'POST', body: JSON.stringify({ action: 'schedule', resumeAt }) });
+    const data = await res.json();
+    if (data.success) {
+      document.getElementById('pauseModal').classList.remove('is-open');
+      showMsg('success', data.message || 'Pause scheduled successfully.');
+      await loadSubscription(window.userProfile);
+    } else { throw new Error(data.error || 'Could not schedule pause'); }
+  } catch (err) { showMsg('error', err.message); }
+  finally { btn.disabled = false; btn.textContent = 'Confirm Pause'; }
+};
+
+window.cancelPause = async function() {
+  try {
+    const res  = await authFetch('/api/pause', { method: 'POST', body: JSON.stringify({ action: 'cancel' }) });
+    const data = await res.json();
+    if (data.success) {
+      document.getElementById('cancelPauseModal').classList.remove('is-open');
+      showMsg('success', data.message || 'Pause cancelled. Your subscription will continue normally.');
+      await loadSubscription(window.userProfile);
+    } else { throw new Error(data.error); }
+  } catch (err) { showMsg('error', err.message); }
+};
+
+window.resumeNow = async function() {
+  if (!confirm('Resume your subscription immediately? Billing will restart today.')) return;
+  try {
+    const res  = await authFetch('/api/pause', { method: 'POST', body: JSON.stringify({ action: 'resume_now' }) });
+    const data = await res.json();
+    if (data.success) {
+      showMsg('success', data.message || 'Subscription resumed!');
+      await loadSubscription(window.userProfile);
+    } else { throw new Error(data.error); }
+  } catch (err) { showMsg('error', err.message); }
+};
+
+/* ─────────── LEARNERS ─────────── */
+let _students = [];
+
+async function loadLearners(profile) {
+  const content = document.getElementById('learnersContent');
+  const sb = await getSupabase();
+  const { data: students } = await sb.from('students').select('*').eq('parent_id', profile.id).order('created_at', { ascending: true });
+  _students = students || [];
+
+  if (_students.length === 0) {
+    content.innerHTML = `<div class="text-sm text-muted py-2">No learners added yet. <a href="/pages/setup.html" class="text-rose font-bold">Add your first learner →</a></div>`;
+    return;
+  }
+
+  const levels = ['Primary 1','Primary 2','Primary 3','Primary 4','Primary 5','Primary 6','Secondary 1','Secondary 2','Secondary 3','Secondary 4'];
+  const levelOpts = levels.map(l => `<option value="${l}">${l}</option>`).join('');
+
+  content.innerHTML = _students.map(s => {
+    const initials = (s.name || '?').charAt(0).toUpperCase();
+    return `
+      <div class="learner-row">
+        <div class="learner-avatar">${initials}</div>
+        <div class="flex-1">
+          <div class="font-bold text-main">${s.name || 'Unnamed'}</div>
+          <div class="flex items-center gap-2 mt-1">
+            <span class="badge badge-info text-xs">${s.level || '—'}</span>
           </div>
         </div>
-        <button id="openPortalBtn" class="btn btn-secondary w-full hover-lift" onclick="window.openBillingPortal()">
-          Manage Subscription →
-        </button>
-        <p class="text-xs text-center text-muted mt-2">Change payment method, cancel, or switch plans via Stripe's secure portal.</p>
-      `;
+        <button class="btn btn-ghost btn-sm" onclick="window.toggleLearnerEdit('${s.id}')">✏️ Edit</button>
+      </div>
+      <div id="edit-${s.id}" class="learner-edit-row">
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-bold text-muted uppercase">First Name</label>
+          <input type="text" id="name-${s.id}" class="form-input" value="${s.name || ''}" placeholder="e.g. Jayden" />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-bold text-muted uppercase">Academic Level</label>
+          <select id="level-${s.id}" class="form-select w-full">
+            ${levels.map(l => `<option value="${l}" ${l === s.level ? 'selected' : ''}>${l}</option>`).join('')}
+          </select>
+        </div>
+        <div class="flex gap-2">
+          <button class="btn btn-ghost btn-sm flex-1" onclick="window.toggleLearnerEdit('${s.id}')">Cancel</button>
+          <button class="btn btn-primary btn-sm flex-1 hover-lift" onclick="window.saveLearner('${s.id}')">Save</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  // Show/hide add button based on plan limit
+  const maxChildren = profile.max_children || 1;
+  if (_students.length >= maxChildren) {
+    const btn = document.getElementById('addLearnerBtn');
+    if (btn) {
+      btn.style.opacity = '0.5';
+      btn.style.pointerEvents = 'none';
+      btn.title = `Your plan supports up to ${maxChildren} learner${maxChildren > 1 ? 's' : ''}`;
     }
-  };
+  }
+}
 
-  window.saveProfile = async function() {
-    const name  = document.getElementById('fullName').value.trim();
-    const email = document.getElementById('emailField').value.trim();
-    const btn   = document.getElementById('saveProfileBtn');
-    if (!name)  { showMsg('error', 'Name cannot be empty.'); return; }
-    if (!email) { showMsg('error', 'Email cannot be empty.'); return; }
-    btn.disabled = true; btn.textContent = 'Saving...';
-    try {
-      const sb = await getSupabase();
-      const { error: dbErr } = await sb.from('profiles').update({ full_name: name, updated_at: new Date().toISOString() }).eq('id', window.userProfile.id);
-      if (dbErr) throw dbErr;
-      if (email !== window.userProfile.email) {
-        const { error: authErr } = await sb.auth.updateUser({ email });
-        if (authErr) throw authErr;
-        showMsg('success', 'Profile saved. Check your new email address for a confirmation link.');
-      } else {
-        showMsg('success', 'Profile saved successfully.');
-      }
-      window.userProfile.full_name = name;
-    } catch (err) { showMsg('error', err.message || 'Failed to save profile.'); }
-    finally { btn.disabled = false; btn.textContent = 'Save Changes'; }
-  };
+window.toggleLearnerEdit = function(id) {
+  const row = document.getElementById('edit-' + id);
+  row.classList.toggle('is-open');
+};
 
-  window.changePassword = async function() {
-    const newPw     = document.getElementById('newPassword').value;
-    const confirmPw = document.getElementById('confirmPassword').value;
-    const btn       = document.getElementById('savePasswordBtn');
-    if (!newPw || newPw.length < 8) { showMsg('error', 'Password must be at least 8 characters.'); return; }
-    if (newPw !== confirmPw)        { showMsg('error', 'Passwords do not match.'); return; }
-    btn.disabled = true; btn.textContent = 'Updating...';
-    try {
-      const sb = await getSupabase();
-      const { error } = await sb.auth.updateUser({ password: newPw });
-      if (error) throw error;
-      showMsg('success', 'Password updated successfully.');
-      document.getElementById('newPassword').value = '';
-      document.getElementById('confirmPassword').value = '';
-    } catch (err) { showMsg('error', err.message || 'Failed to update password.'); }
-    finally { btn.disabled = false; btn.textContent = 'Update Password'; }
-  };
+window.saveLearner = async function(studentId) {
+  const name  = document.getElementById('name-'  + studentId).value.trim();
+  const level = document.getElementById('level-' + studentId).value;
+  if (!name) { showMsg('error', 'Name cannot be empty.'); return; }
+  try {
+    const sb = await getSupabase();
+    const { error } = await sb.from('students').update({ name, level }).eq('id', studentId);
+    if (error) throw error;
+    document.getElementById('edit-' + studentId).classList.remove('is-open');
+    showMsg('success', 'Learner updated.');
+    await loadLearners(window.userProfile);
+  } catch (err) { showMsg('error', err.message || 'Failed to save learner.'); }
+};
 
-  window.openBillingPortal = async function() {
-    const btn = document.getElementById('openPortalBtn');
-    if (btn) { btn.textContent = 'Opening...'; btn.disabled = true; }
-    try {
-      const sb = await getSupabase();
-      const { data: { session } } = await sb.auth.getSession();
-      if (!session) { window.location.href = '/pages/login.html'; return; }
-      const res = await fetch('/api/portal', { method: 'POST', headers: { 'Authorization': `Bearer ${session.access_token}` } });
-      const data = await res.json();
-      if (data.url) { window.location.href = data.url; }
-      else throw new Error(data.error || 'Could not open billing portal');
-    } catch (err) {
-      showMsg('error', 'Could not open billing portal: ' + err.message);
-      if (btn) { btn.textContent = 'Manage Subscription →'; btn.disabled = false; }
+/* ─────────── PROFILE ─────────── */
+window.saveProfile = async function() {
+  const name  = document.getElementById('fullName').value.trim();
+  const email = document.getElementById('emailField').value.trim();
+  const btn   = document.getElementById('saveProfileBtn');
+  if (!name)  { showMsg('error', 'Name cannot be empty.'); return; }
+  if (!email) { showMsg('error', 'Email cannot be empty.'); return; }
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try {
+    const sb = await getSupabase();
+    const { error: dbErr } = await sb.from('profiles').update({ full_name: name, updated_at: new Date().toISOString() }).eq('id', window.userProfile.id);
+    if (dbErr) throw dbErr;
+    if (email !== window.userProfile.email) {
+      const { error: authErr } = await sb.auth.updateUser({ email });
+      if (authErr) throw authErr;
+      showMsg('success', 'Profile saved. Check your new email address for a confirmation link.');
+    } else {
+      showMsg('success', 'Profile saved successfully.');
     }
-  };
+    window.userProfile.full_name = name;
+    document.getElementById('profileNudge').classList.add('hidden');
+  } catch (err) { showMsg('error', err.message || 'Failed to save profile.'); }
+  finally { btn.disabled = false; btn.textContent = 'Save Changes'; }
+};
+
+window.changePassword = async function() {
+  const newPw  = document.getElementById('newPassword').value;
+  const confPw = document.getElementById('confirmPassword').value;
+  const btn    = document.getElementById('savePasswordBtn');
+  if (!newPw || newPw.length < 8) { showMsg('error', 'Password must be at least 8 characters.'); return; }
+  if (newPw !== confPw)           { showMsg('error', 'Passwords do not match.'); return; }
+  btn.disabled = true; btn.textContent = 'Updating…';
+  try {
+    const sb = await getSupabase();
+    const { error } = await sb.auth.updateUser({ password: newPw });
+    if (error) throw error;
+    showMsg('success', 'Password updated successfully.');
+    document.getElementById('newPassword').value = '';
+    document.getElementById('confirmPassword').value = '';
+  } catch (err) { showMsg('error', err.message || 'Failed to update password.'); }
+  finally { btn.disabled = false; btn.textContent = 'Update Password'; }
+};
+
+/* ─────────── REFERRAL ─────────── */
+async function loadReferral() {
+  const content = document.getElementById('referralContent');
+  try {
+    const res  = await authFetch('/api/referral');
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+
+    const url = data.referral_url || '';
+    const waMsg = encodeURIComponent('Hi! My child has been using Superholic Lab for MOE-aligned exam practice. Try it free for 7 days: ' + url);
+    const waUrl = 'https://wa.me/?text=' + waMsg;
+
+    content.innerHTML = `
+      <div class="ref-link-box">
+        <span class="ref-link-text">${url}</span>
+        <button class="btn btn-secondary btn-sm hover-lift" onclick="window.copyRefLink('${url}', this)">Copy</button>
+        <a href="${waUrl}" target="_blank" class="btn btn-sm hover-lift" style="background:#25D366;color:white;border:none;text-decoration:none;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="display:inline;vertical-align:middle;margin-right:4px;"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347"/></svg>
+          WhatsApp
+        </a>
+      </div>
+      <div class="ref-stats">
+        <div class="ref-stat">
+          <div class="ref-stat-val">${data.total_referred || 0}</div>
+          <div class="ref-stat-lbl">Friends Invited</div>
+        </div>
+        <div class="ref-stat">
+          <div class="ref-stat-val">${data.total_subscribed || 0}</div>
+          <div class="ref-stat-lbl">Subscribed</div>
+        </div>
+        <div class="ref-stat">
+          <div class="ref-stat-val">${data.credits_earned || 0}</div>
+          <div class="ref-stat-lbl">Free Months Earned</div>
+        </div>
+      </div>
+      ${data.pending_count > 0 ? `<div class="mt-3 p-3 rounded" style="background:rgba(183,110,121,0.08);border:1px solid rgba(183,110,121,0.2);"><p class="text-xs text-rose m-0">⏳ <strong>${data.pending_count} friend${data.pending_count > 1 ? 's' : ''}</strong> signed up via your link — your free month credit will appear when they subscribe.</p></div>` : ''}
+    `;
+  } catch (err) {
+    content.innerHTML = `<p class="text-sm text-muted">Could not load referral data.</p>`;
+    console.error('[referral] load error:', err.message);
+  }
+}
+
+window.copyRefLink = function(url, btn) {
+  navigator.clipboard.writeText(url).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.textContent = orig; }, 2000);
+  });
+};
+
+/* ─────────── NOTIFICATIONS ─────────── */
+let _savingNotif = false;
+window.saveNotifPref = async function(checkbox) {
+  if (_savingNotif) return;
+  _savingNotif = true;
+  const key = checkbox.id.replace('notif_', '');
+  try {
+    const sb = await getSupabase();
+    const { data: current } = await sb.from('profiles').select('notification_preferences').eq('id', window.userProfile.id).single();
+    const prefs = current?.notification_preferences || {};
+    prefs[key] = checkbox.checked;
+    await sb.from('profiles').update({ notification_preferences: prefs }).eq('id', window.userProfile.id);
+  } catch (err) {
+    console.error('[notif] save error:', err.message);
+    checkbox.checked = !checkbox.checked; // revert on failure
+  } finally { _savingNotif = false; }
+};
+
+/* ─────────── BILLING PORTAL ─────────── */
+window.openBillingPortal = async function() {
+  const btn = document.getElementById('openPortalBtn');
+  if (btn) { btn.textContent = 'Opening…'; btn.disabled = true; }
+  try {
+    const res  = await authFetch('/api/portal', { method: 'POST' });
+    const data = await res.json();
+    if (data.url) { window.location.href = data.url; }
+    else throw new Error(data.error || 'Could not open billing portal');
+  } catch (err) {
+    showMsg('error', 'Could not open billing portal: ' + err.message);
+    if (btn) { btn.textContent = 'Manage Subscription →'; btn.disabled = false; }
+  }
+};
+
+/* ─────────── DATA EXPORT ─────────── */
+window.exportData = async function() {
+  try {
+    const sb = await getSupabase();
+    const { data: { session } } = await sb.auth.getSession();
+    const res = await fetch('/api/export', { headers: { 'Authorization': 'Bearer ' + session.access_token } });
+    if (!res.ok) throw new Error('Export failed');
+    const blob = await res.blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'superholiclab-my-data.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  } catch (err) { showMsg('error', 'Export failed: ' + err.message); }
+};
+
+/* ─────────── ACCOUNT DELETION ─────────── */
+window.deleteAccount = async function() {
+  const input = document.getElementById('deleteConfirmInput').value;
+  if (input !== 'DELETE') { showMsg('error', 'Please type DELETE exactly to confirm.'); return; }
+  const btn = document.getElementById('deleteConfirmBtn');
+  btn.disabled = true; btn.textContent = 'Deleting…';
+  try {
+    const res  = await authFetch('/api/account-delete', { method: 'POST', body: JSON.stringify({ confirmation: 'DELETE' }) });
+    const data = await res.json();
+    if (data.success) {
+      document.getElementById('deleteModal').classList.remove('is-open');
+      const sb = await getSupabase();
+      await sb.auth.signOut();
+      window.location.href = '/?deleted=1';
+    } else { throw new Error(data.error || 'Deletion failed'); }
+  } catch (err) {
+    showMsg('error', err.message);
+    btn.disabled = false; btn.textContent = 'Delete Everything';
+  }
+};
 </script>
 </body>
 </html>
