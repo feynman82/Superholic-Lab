@@ -627,24 +627,38 @@ function buildClozeUI(q) {
         </div>`;
     }).join('');
 
-    // Modal dialog for mobile, hidden on desktop
-    const modalHtml = `
-      <dialog id="passageModal" class="comp-modal-dialog">
-        <div class="sticky top-0 bg-page p-4 border-b border-light flex justify-between items-center z-10">
-          <h3 class="font-display text-xl m-0">Passage</h3>
-          <button class="btn btn-sm btn-ghost" onclick="document.getElementById('passageModal').close()">Close</button>
-        </div>
-        <div class="p-6 text-lg text-main leading-relaxed">${esc(q.passage).replace(/\\n/g, '<br><br>')}</div>
-      </dialog>
-      <button class="mobile-passage-toggle btn btn-primary" onclick="document.getElementById('passageModal').showModal()">📖 Read Passage</button>
+    // Masterclass UX: Vertical Split-Screen for Mobile
+    const mobileStyleOverride = `
+      <style>
+        @media (max-width: 1023px) {
+          .comp-passage-pane { 
+            display: block !important; 
+            width: 100% !important;
+            max-height: 40vh; 
+            overflow-y: auto; 
+            margin-bottom: 1.5rem; 
+            border-bottom: 2px dashed var(--border-light); 
+            border-right: none !important;
+            position: relative !important;
+            top: 0 !important;
+            padding-right: 1.5rem !important;
+          }
+          .comp-questions-pane {
+            width: 100% !important;
+          }
+        }
+      </style>
     `;
 
     return `
+      ${mobileStyleOverride}
       <div class="comp-container">
-        <div class="comp-passage-pane card p-6 text-lg text-main leading-relaxed">${esc(q.passage).replace(/\\n/g, '<br><br>')}</div>
+        <div class="comp-passage-pane card p-6 text-lg text-main leading-relaxed">
+          <div class="text-xs font-bold text-muted uppercase mb-3 sticky top-0 pb-2" style="background: var(--bg-surface); z-index: 5;">📖 Reference Context</div>
+          ${esc(q.passage).replace(/\\n/g, '<br><br>')}
+        </div>
         <div class="comp-questions-pane">${partsHtml}</div>
       </div>
-      ${modalHtml}
     `;
   }
 
@@ -1028,7 +1042,7 @@ function buildClozeUI(q) {
       let partsData = [];
       try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
       const currentPart = partsData[state.activeWPPart];
-      const pLabel = `Q${state.activeWPPart + 1}`;
+      const pLabel = currentPart.label || `Q${state.activeWPPart + 1}`;
       const ans = (state.answers[state.currentIndex] || {})[pLabel] || '';
 
       const isAnsEmptyFast = typeof ans === 'object' ? Object.values(ans).every(v => !v) : !String(ans).trim();
@@ -1057,16 +1071,16 @@ function buildClozeUI(q) {
       // Route B: If it's a text_box, fall through to the API grading block below!
     }
     
-    if (q.type === 'word_problem' || q.type === 'open_ended' || q.type === 'comprehension') { // MODIFIED
+    if (q.type === 'word_problem' || q.type === 'open_ended' || q.type === 'comprehension' || q.type === 'visual_text') {
       let ans = '';
       let currentPart = null;
 
-      if (q.type === 'word_problem' || q.type === 'comprehension') { // MODIFIED
+      if (q.type === 'word_problem' || isSplitScreen) {
         let partsData = [];
         try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
         currentPart = partsData[state.activeWPPart];
-        const pLabel = q.type === 'comprehension' 
-            ? `Q${state.activeWPPart + 1}` 
+        const pLabel = isSplitScreen
+            ? (currentPart.label || `Q${state.activeWPPart + 1}`) 
             : (currentPart.label || (currentPart.part_id ? `(${currentPart.part_id})` : `Part ${state.activeWPPart + 1}`));
         ans = (state.answers[state.currentIndex] || {})[pLabel] || '';
       } else {
@@ -1106,7 +1120,7 @@ function buildClozeUI(q) {
         state.score += data.score;
         if (isCorrect) { state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak; } else state.streak = 0;
 
-        if (q.type === 'word_problem' || q.type === 'comprehension') { // MODIFIED
+        if (q.type === 'word_problem' || isSplitScreen) {
           let partsData = [];
           try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
           state.activeWPPart++;
@@ -1124,7 +1138,7 @@ function buildClozeUI(q) {
         render();
       } catch (err) {
         console.error("AI Grading Error:", err);
-        if (q.type === 'word_problem') {
+        if (q.type === 'word_problem' || isSplitScreen) {
           let partsData = [];
           try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
           state.activeWPPart++;
