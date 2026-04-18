@@ -104,7 +104,7 @@ class GlobalHeader extends HTMLElement {
             if (prof && (prof.role === 'admin' || prof.role === 'sub-admin')) {
               const adminLink = document.createElement('a');
               adminLink.href  = '/pages/admin.html';
-              adminLink.textContent = '\u1F451 Admin Panel';
+              adminLink.textContent = 'Admin Panel';
               adminLink.style.color = 'var(--brand-rose)';
               navLinks.appendChild(adminLink);
             }
