@@ -7,6 +7,12 @@
     { "source": "/api/webhook",            "destination": "/api/index" },
     { "source": "/api/portal",             "destination": "/api/index" },
     { "source": "/api/admin",              "destination": "/api/index" },
+    { "source": "/api/admin-edit",         "destination": "/api/index" },
+    { "source": "/api/analytics",          "destination": "/api/index" },
+    { "source": "/api/pause",              "destination": "/api/index" },
+    { "source": "/api/referral",           "destination": "/api/index" },
+    { "source": "/api/account-delete",     "destination": "/api/index" },
+    { "source": "/api/export",             "destination": "/api/index" },
     { "source": "/api/generate",           "destination": "/api/index" },
     { "source": "/api/generate-question",  "destination": "/api/index" },
     { "source": "/api/generate-exam",      "destination": "/api/index" },
@@ -14,13 +20,7 @@
     { "source": "/api/save-exam-result",   "destination": "/api/index" },
     { "source": "/api/generate-quest",     "destination": "/api/index" },
     { "source": "/api/analyze-weakness",   "destination": "/api/index" },
-    { "source": "/api/summarize-chat",     "destination": "/api/index" },
-    { "source": "/api/pause",              "destination": "/api/index" },
-    { "source": "/api/referral",           "destination": "/api/index" },
-    { "source": "/api/analytics",          "destination": "/api/index" },
-    { "source": "/api/account-delete",     "destination": "/api/index" },
-    { "source": "/api/export",             "destination": "/api/index" },
-    { "source": "/api/admin-edit",         "destination": "/api/index" }
+    { "source": "/api/summarize-chat",     "destination": "/api/index" }
   ],
   "headers": [
     {

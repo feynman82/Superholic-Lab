@@ -51,21 +51,7 @@ export default async function handler(req, res) {
     return handleWebhook(req, res);
   }
 
-  // Export is a GET with no body
-  if (route === 'export') {
-    return handleExport(req, res);
-  }
-
-  // Analytics is a GET with no body
-  if (route === 'analytics') {
-    return handleAnalytics(req, res);
-  }
-
-  // Admin GET has no body
-  if (route === 'admin' && req.method === 'GET') {
-    return handleAdmin(req, res);
-  }
-
+  // analytics uses GET with query params — parse body safely (returns {})
   try {
     req.body = await parseJsonBody(req);
   } catch (err) {
@@ -74,10 +60,19 @@ export default async function handler(req, res) {
   }
 
   switch (route) {
+    // ── Core ──
     case 'chat':               return handleChat(req, res);
     case 'checkout':           return handleCheckout(req, res);
     case 'portal':             return handlePortal(req, res);
+    // ── Admin & Account ──
     case 'admin':              return handleAdmin(req, res);
+    case 'admin-edit':         return handleAdminEdit(req, res);
+    case 'analytics':          return handleAnalytics(req, res);
+    case 'pause':              return handlePause(req, res);
+    case 'referral':           return handleReferral(req, res);
+    case 'account-delete':     return handleAccountDelete(req, res);
+    case 'export':             return handleExport(req, res);
+    // ── Question & Exam Engine ──
     case 'generate':           return handleGenerate(req, res);
     case 'generate-question':  return handleGenerateQuestion(req, res);
     case 'generate-exam':      return handleGenerateExam(req, res);
@@ -86,12 +81,7 @@ export default async function handler(req, res) {
     case 'generate-quest':     return handleGenerateQuest(req, res);
     case 'analyze-weakness':   return handleAnalyzeWeakness(req, res);
     case 'summarize-chat':     return handleSummarizeChat(req, res);
-    // v2 routes
-    case 'pause':              return handlePause(req, res);
-    case 'referral':           return handleReferral(req, res);
-    case 'account-delete':     return handleAccountDelete(req, res);
-    case 'admin-edit':         return handleAdminEdit(req, res);
     default:
-      return res.status(404).json({ error: `API route not found: ${route}` });
+      return res.status(404).json({ error: 'API route not found: ' + route });
   }
 }
