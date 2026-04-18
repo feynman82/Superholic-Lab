@@ -6,6 +6,7 @@
     { "source": "/api/checkout",           "destination": "/api/index" },
     { "source": "/api/webhook",            "destination": "/api/index" },
     { "source": "/api/portal",             "destination": "/api/index" },
+    { "source": "/api/contact",            "destination": "/api/index" },
     { "source": "/api/admin",              "destination": "/api/index" },
     { "source": "/api/admin-edit",         "destination": "/api/index" },
     { "source": "/api/analytics",          "destination": "/api/index" },
