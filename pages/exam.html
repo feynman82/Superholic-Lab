@@ -699,14 +699,14 @@ window.initExamEngine = function () {
           </div>
         </div>
         ${!isDrawMode 
-          ? `<input type="text" id="qInput" class="form-input w-full p-4 text-lg border-2 border-slate-200 focus:border-brand-sage rounded-xl transition-all shadow-sm" placeholder="Type your final answer here (Required for marking)" value="${esc(savedAns)}" autocomplete="off" oninput="window.saveCurrentAnswerState()">`
+          ? `<input type="text" id="qInput" class="form-input w-full p-4 text-lg border-2 border-light focus:border-brand-sage rounded-xl transition-all shadow-sm" placeholder="Type your final answer here (Required for marking)" value="${esc(savedAns)}" autocomplete="off" oninput="window.saveCurrentAnswerState()">`
           : `<div class="scratchpad-container mb-4" style="position: relative; display: block;">
-               <canvas id="canvas-${ansKey}" data-drawkey="${ansKey}" class="scratchpad-canvas bg-white border-2 border-slate-200 rounded-xl w-full shadow-sm" style="min-height: 300px; touch-action: none; cursor: crosshair;"></canvas>
+               <canvas id="canvas-${ansKey}" data-drawkey="${ansKey}" class="scratchpad-canvas bg-white border-2 border-light rounded-xl w-full shadow-sm" style="min-height: 300px; touch-action: none; cursor: crosshair;"></canvas>
                <div style="position: absolute; top: 12px; right: 12px;">
-                  <button class="btn btn-sm btn-ghost bg-white hover-lift border border-slate-200 shadow-sm rounded-lg" onclick="window.clearCanvas('${ansKey}')">🗑️ Clear</button>
+                  <button class="btn btn-sm btn-ghost bg-white hover-lift border border-light shadow-sm rounded-lg" onclick="window.clearCanvas('${ansKey}')">🗑️ Clear</button>
                </div>
              </div>
-             <input type="text" id="qInput" class="form-input w-full p-4 text-lg border-2 border-brand-sage/50 focus:border-brand-sage rounded-xl transition-all shadow-sm bg-sage-50/10" placeholder="Type your final answer here (Required for marking)" value="${esc(savedAns)}" autocomplete="off" oninput="window.saveCurrentAnswerState()">`
+             <input type="text" id="qInput" class="form-input w-full p-4 text-lg border-2 border-brand-sage focus:border-brand-sage rounded-xl transition-all shadow-sm bg-sage-50/10" placeholder="Type your final answer here (Required for marking)" value="${esc(savedAns)}" autocomplete="off" oninput="window.saveCurrentAnswerState()">`
         }
       `;
     } else if (q.type === 'open_ended') {
@@ -720,14 +720,14 @@ window.initExamEngine = function () {
           </div>
         </div>
         ${!isDrawMode 
-          ? `<textarea id="qInput" class="form-input w-full p-4 text-lg border-2 border-slate-200 focus:border-brand-sage rounded-xl transition-all shadow-sm" rows="5" style="height:auto; resize:vertical;" placeholder="Type your detailed working and answer here..." oninput="window.saveCurrentAnswerState()">${esc(savedAns)}</textarea>`
+          ? `<textarea id="qInput" class="form-input w-full p-4 text-lg border-2 border-light focus:border-brand-sage rounded-xl transition-all shadow-sm" rows="5" style="height:auto; resize:vertical;" placeholder="Type your detailed working and answer here..." oninput="window.saveCurrentAnswerState()">${esc(savedAns)}</textarea>`
           : `<div class="scratchpad-container mb-4" style="position: relative; display: block;">
-               <canvas id="canvas-${ansKey}" data-drawkey="${ansKey}" class="scratchpad-canvas bg-white border-2 border-slate-200 rounded-xl w-full shadow-sm" style="min-height: 300px; touch-action: none; cursor: crosshair;"></canvas>
+               <canvas id="canvas-${ansKey}" data-drawkey="${ansKey}" class="scratchpad-canvas bg-white border-2 border-light rounded-xl w-full shadow-sm" style="min-height: 300px; touch-action: none; cursor: crosshair;"></canvas>
                <div style="position: absolute; top: 12px; right: 12px;">
-                  <button class="btn btn-sm btn-ghost bg-white hover-lift border border-slate-200 shadow-sm rounded-lg" onclick="window.clearCanvas('${ansKey}')">🗑️ Clear</button>
+                  <button class="btn btn-sm btn-ghost bg-white hover-lift border border-light shadow-sm rounded-lg" onclick="window.clearCanvas('${ansKey}')">🗑️ Clear</button>
                </div>
              </div>
-             <input type="text" id="qInput" class="form-input w-full p-4 text-lg border-2 border-brand-sage/50 focus:border-brand-sage rounded-xl transition-all shadow-sm bg-sage-50/10" placeholder="Final Answer (Optional)" value="${esc(savedAns)}" autocomplete="off" oninput="window.saveCurrentAnswerState()">`
+             <input type="text" id="qInput" class="form-input w-full p-4 text-lg border-2 border-brand-sage focus:border-brand-sage rounded-xl transition-all shadow-sm bg-sage-50/10" placeholder="Final Answer (Optional)" value="${esc(savedAns)}" autocomplete="off" oninput="window.saveCurrentAnswerState()">`
         }
       `;
     const renderHasParts = (() => { try { return (typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || [])).length > 0; } catch(e){ return false; } })();
@@ -745,7 +745,7 @@ window.initExamEngine = function () {
         let inputUI = '';
         
         if (part.part_type === 'text_box') {
-          inputUI = `<textarea id="comp-${safeIdLabel}" class="form-input w-full p-4 text-lg border-2 border-slate-200 focus:border-brand-sage rounded-xl" rows="3" placeholder="Type answer here..." oninput="window.saveCurrentAnswerState()">${esc(typeof savedWorking === 'string' ? savedWorking : '')}</textarea>`;
+          inputUI = `<textarea id="comp-${safeIdLabel}" class="form-input w-full p-4 text-lg border-2 border-light focus:border-brand-sage rounded-xl" rows="3" placeholder="Type answer here..." oninput="window.saveCurrentAnswerState()">${esc(typeof savedWorking === 'string' ? savedWorking : '')}</textarea>`;
         
         } else if (part.part_type === 'mcq') {
           const letters = ['A','B','C','D'];
@@ -757,8 +757,8 @@ window.initExamEngine = function () {
           
         } else if (part.part_type === 'referent') {
           inputUI = `
-            <table class="w-full text-left border-collapse border border-slate-200 rounded-lg overflow-hidden mt-2 mb-4 bg-surface shadow-sm">
-              <thead class="bg-slate-100 border-b border-slate-200">
+            <table class="w-full text-left border-collapse border border-light rounded-lg overflow-hidden mt-2 mb-4 bg-surface shadow-sm">
+              <thead class="bg-elevated border-b border-light">
                 <tr>
                   <th class="p-3 font-bold text-main w-1/2">Word from passage</th>
                   <th class="p-3 font-bold text-main w-1/2">What it refers to</th>
@@ -766,10 +766,10 @@ window.initExamEngine = function () {
               </thead>
               <tbody>
                 ${(part.items || []).map((item, i) => `
-                  <tr class="border-b border-slate-200 last:border-0">
+                  <tr class="border-b border-light last:border-0">
                     <td class="p-4 font-medium text-main align-middle leading-relaxed">${esc(item.word)}</td>
-                    <td class="p-3 align-middle border-l border-slate-200">
-                      <input type="text" id="comp-${safeIdLabel}-ref${i}" class="form-input w-full p-3 text-lg border-2 border-slate-200 rounded-lg focus:border-brand-sage" placeholder="Type here..." value="${esc(savedWorking['ref'+i] || '')}" oninput="window.saveCurrentAnswerState ? window.saveCurrentAnswerState() : null">
+                    <td class="p-3 align-middle border-l border-light">
+                      <input type="text" id="comp-${safeIdLabel}-ref${i}" class="form-input w-full p-3 text-lg border-2 border-light rounded-lg focus:border-brand-sage" placeholder="Type here..." value="${esc(savedWorking['ref'+i] || '')}" oninput="window.saveCurrentAnswerState ? window.saveCurrentAnswerState() : null">
                     </td>
                   </tr>
                 `).join('')}
@@ -779,32 +779,32 @@ window.initExamEngine = function () {
         } else if (part.part_type === 'sequencing') {
           inputUI = `<div class="flex flex-col gap-3 mt-2">` + (part.items || []).map((item, i) => `
             <div class="flex items-center gap-4 bg-surface p-3 rounded-lg border border-light shadow-sm">
-              <input type="number" id="comp-${safeIdLabel}-seq${i}" class="form-input border-2 border-slate-200 rounded-lg focus:border-brand-sage text-2xl font-bold text-center" style="width: 60px; height: 60px; padding: 0;" min="1" max="3" value="${esc(savedWorking['seq'+i] || '')}" oninput="window.saveInputState ? window.saveInputState() : null">              <div class="font-medium text-main leading-relaxed">${esc(item)}</div>
+              <input type="number" id="comp-${safeIdLabel}-seq${i}" class="form-input border-2 border-light rounded-lg focus:border-brand-sage text-2xl font-bold text-center" style="width: 60px; height: 60px; padding: 0;" min="1" max="3" value="${esc(savedWorking['seq'+i] || '')}" oninput="window.saveInputState ? window.saveInputState() : null">              <div class="font-medium text-main leading-relaxed">${esc(item)}</div>
             </div>
           `).join('') + `</div>`;
           
         } else if (part.part_type === 'true_false') {
           inputUI = `
-            <table class="w-full text-left border-collapse border border-slate-200 rounded-lg overflow-hidden mt-2 mb-4 bg-surface shadow-sm">
-              <thead class="bg-slate-100 border-b border-slate-200">
+            <table class="w-full text-left border-collapse border border-light rounded-lg overflow-hidden mt-2 mb-4 bg-surface shadow-sm">
+              <thead class="bg-elevated border-b border-light">
                 <tr>
                   <th class="p-3 font-bold text-main w-2/5">Statement</th>
-                  <th class="p-3 font-bold text-main text-center w-1/5 whitespace-nowrap border-l border-slate-200">True / False</th>
-                  <th class="p-3 font-bold text-main w-2/5 border-l border-slate-200">Reason</th>
+                  <th class="p-3 font-bold text-main text-center w-1/5 whitespace-nowrap border-l border-light">True / False</th>
+                  <th class="p-3 font-bold text-main w-2/5 border-l border-light">Reason</th>
                 </tr>
               </thead>
               <tbody>
                 ${(part.items || []).map((item, i) => `
-                  <tr class="border-b border-slate-200 last:border-0">
+                  <tr class="border-b border-light last:border-0">
                     <td class="p-4 font-medium text-main align-top leading-relaxed">${esc(item.statement)}</td>
-                    <td class="p-4 align-top text-center border-l border-slate-200">
+                    <td class="p-4 align-top text-center border-l border-light">
                       <div class="flex flex-col gap-3 items-center justify-start mt-2">
                         <label class="flex items-center gap-2 cursor-pointer font-bold"><input type="radio" name="comp-${safeIdLabel}-tf${i}" value="True" ${savedWorking['tf'+i]==='True'?'checked':''} onchange="window.saveCurrentAnswerState ? window.saveCurrentAnswerState() : null"> True</label>
                         <label class="flex items-center gap-2 cursor-pointer font-bold"><input type="radio" name="comp-${safeIdLabel}-tf${i}" value="False" ${savedWorking['tf'+i]==='False'?'checked':''} onchange="window.saveCurrentAnswerState ? window.saveCurrentAnswerState() : null"> False</label>
                       </div>
                     </td>
-                    <td class="p-3 align-top border-l border-slate-200">
-                      <textarea id="comp-${safeIdLabel}-reason${i}" class="form-input w-full p-3 text-base border-2 border-slate-200 rounded-lg focus:border-brand-sage" rows="4" placeholder="Evidence from text..." oninput="window.saveCurrentAnswerState ? window.saveCurrentAnswerState() : null">${esc(savedWorking['reason'+i] || '')}</textarea>
+                    <td class="p-3 align-top border-l border-light">
+                      <textarea id="comp-${safeIdLabel}-reason${i}" class="form-input w-full p-3 text-base border-2 border-light rounded-lg focus:border-brand-sage" rows="4" placeholder="Evidence from text..." oninput="window.saveCurrentAnswerState ? window.saveCurrentAnswerState() : null">${esc(savedWorking['reason'+i] || '')}</textarea>
                     </td>
                   </tr>
                 `).join('')}
@@ -886,14 +886,14 @@ window.initExamEngine = function () {
                 </div>
                 
                 ${!isDrawMode
-                  ? `<textarea id="wp-${safeIdLabel}" data-part="${esc(pLabel)}" class="form-input w-full p-4 text-lg border-2 border-slate-200 focus:border-brand-sage rounded-xl transition-all shadow-sm" rows="3" placeholder="Type your working and answer here..." oninput="window.saveCurrentAnswerState()">${esc(savedWorking)}</textarea>`
+                  ? `<textarea id="wp-${safeIdLabel}" data-part="${esc(pLabel)}" class="form-input w-full p-4 text-lg border-2 border-light focus:border-brand-sage rounded-xl transition-all shadow-sm" rows="3" placeholder="Type your working and answer here..." oninput="window.saveCurrentAnswerState()">${esc(savedWorking)}</textarea>`
                   : `<div class="scratchpad-container mb-4" style="position: relative; display: block;">
-                       <canvas id="canvas-${drawKey}" data-drawkey="${drawKey}" class="scratchpad-canvas bg-white border-2 border-slate-200 rounded-xl w-full shadow-sm" style="min-height: 300px; touch-action: none; cursor: crosshair;"></canvas>
+                       <canvas id="canvas-${drawKey}" data-drawkey="${drawKey}" class="scratchpad-canvas bg-white border-2 border-light rounded-xl w-full shadow-sm" style="min-height: 300px; touch-action: none; cursor: crosshair;"></canvas>
                        <div style="position: absolute; top: 12px; right: 12px;">
-                          <button class="btn btn-sm btn-ghost bg-white hover-lift border border-slate-200 shadow-sm rounded-lg" onclick="window.clearCanvas('${drawKey}')">🗑️ Clear</button>
+                          <button class="btn btn-sm btn-ghost bg-white hover-lift border border-light shadow-sm rounded-lg" onclick="window.clearCanvas('${drawKey}')">🗑️ Clear</button>
                        </div>
                      </div>
-                     <input type="text" id="wp-${safeIdLabel}" data-part="${esc(pLabel)}" class="form-input w-full p-4 text-lg border-2 border-brand-sage/50 focus:border-brand-sage rounded-xl transition-all shadow-sm bg-sage-50/10" placeholder="Final Answer (Required for marking)" value="${esc(savedWorking)}" oninput="window.saveCurrentAnswerState()">`
+                     <input type="text" id="wp-${safeIdLabel}" data-part="${esc(pLabel)}" class="form-input w-full p-4 text-lg border-2 border-brand-sage focus:border-brand-sage rounded-xl transition-all shadow-sm bg-sage-50/10" placeholder="Final Answer (Required for marking)" value="${esc(savedWorking)}" oninput="window.saveCurrentAnswerState()">`
                 }
               </div>
             `;

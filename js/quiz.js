@@ -223,7 +223,7 @@ window.initQuizEngine = function() {
     const placeholderText = isShortAns ? 'Type your final answer here (Required for marking)' : 'Final Answer (Optional)';
     
     const baseInputStyle = "form-input w-full p-4 text-lg border-2 border-slate-200 focus:border-brand-sage rounded-xl transition-all shadow-sm";
-    const drawModeInputStyle = "form-input mt-3 w-full p-4 text-lg border-2 border-brand-sage/50 focus:border-brand-sage rounded-xl transition-all shadow-sm bg-sage-50/10";
+    const drawModeInputStyle = "form-input mt-3 w-full p-4 text-lg border-2 border-brand-sage focus:border-brand-sage rounded-xl transition-all shadow-sm bg-sage-50/10";
 
     const typeModeHTML = isShortAns
       ? `<input type="text" id="qInput" class="${baseInputStyle}" placeholder="Type your answer here..." value="${esc(savedAns)}" ${state.isAnswered ? 'disabled' : ''}>`
@@ -290,7 +290,7 @@ window.initQuizEngine = function() {
       const showModel = isCompleted || (isActive && state.isAnswered);
 
       const baseInputStyle = "form-input w-full p-4 text-lg border-2 border-slate-200 focus:border-brand-sage rounded-xl transition-all shadow-sm";
-      const drawModeInputStyle = "form-input mt-3 w-full p-4 text-lg border-2 border-brand-sage/50 focus:border-brand-sage rounded-xl transition-all shadow-sm bg-sage-50/10";
+      const drawModeInputStyle = "form-input mt-3 w-full p-4 text-lg border-2 border-brand-sage focus:border-brand-sage rounded-xl transition-all shadow-sm bg-sage-50/10";
 
       let interactionUI = '';
       if (!showModel) {
@@ -514,7 +514,7 @@ function buildClozeUI(q) {
         const safeIdLabel = String(pLabel).replace(/[^a-zA-Z0-9]/g, '');
         
         if (part.part_type === 'text_box') {
-          interactionUI = `<textarea id="comp-${safeIdLabel}" class="form-input w-full p-4 text-lg border-2 border-slate-200 focus:border-brand-sage rounded-xl" rows="3" placeholder="Type your answer here...">${esc(typeof savedWorking === 'string' ? savedWorking : '')}</textarea>`;
+          interactionUI = `<textarea id="comp-${safeIdLabel}" class="form-input w-full p-4 text-lg border-2 border-light focus:border-brand-sage rounded-xl" rows="3" placeholder="Type your answer here...">${esc(typeof savedWorking === 'string' ? savedWorking : '')}</textarea>`;
         
         } else if (part.part_type === 'mcq') {
           const letters = ['A','B','C','D'];
@@ -527,7 +527,7 @@ function buildClozeUI(q) {
         } else if (part.part_type === 'referent') {
           interactionUI = `
             <table class="w-full text-left border-collapse border border-slate-200 rounded-lg overflow-hidden mt-2 mb-4 bg-surface shadow-sm">
-              <thead class="bg-slate-100 border-b border-slate-200 text-lg">
+              <thead class="bg-elevated border-b border-light text-lg">
                 <tr>
                   <th class="p-3 font-bold text-main w-1/2">Word from passage</th>
                   <th class="p-3 font-bold text-main w-1/2">What it refers to</th>
@@ -555,8 +555,8 @@ function buildClozeUI(q) {
           
         } else if (part.part_type === 'true_false') {
           interactionUI = `
-            <table class="w-full text-left border-collapse border border-slate-200 rounded-lg overflow-hidden mt-2 mb-4 bg-surface shadow-sm">
-              <thead class="bg-slate-100 border-b border-slate-200 text-lg">
+            <table class="w-full text-left border-collapse border border-light rounded-lg overflow-hidden mt-2 mb-4 bg-surface shadow-sm">
+              <thead class="bg-elevated border-b border-light text-lg">
                 <tr>
                   <th class="p-3 font-bold text-main w-2/5">Statement</th>
                   <th class="p-3 font-bold text-main text-center w-1/5 whitespace-nowrap border-l border-slate-200">True / False</th>
