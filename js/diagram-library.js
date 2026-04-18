@@ -23,10 +23,139 @@
 'use strict';
 
 const DiagramLibrary = {
-/**
+
+  _esc(str) {
+    if (str == null) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  },
+
+  // 🚀 Centralized Router (With Backward-Compatible Fallback)
+  render(payload) {
+    if (!payload || !payload.function_name) return '';
+    const fn = this[payload.function_name];
+    
+    // 1. If the specific engine exists, use it
+    if (typeof fn === 'function') {
+      return fn.call(this, payload.params || {});
+    }
+    
+    // 2. Backward Compatibility: If it's a legacy or hallucinated function, 
+    // route it safely to the genericExperiment fallback!
+    if (typeof this.genericExperiment === 'function') {
+      return this.genericExperiment(payload.params || {}, payload.function_name);
+    }
+    
+    return `<div class="text-amber border border-amber p-4 rounded text-center text-sm">Diagram engine cannot render: "${this._esc(payload.function_name)}"</div>`;
+  },
+
+  /**
+   * 📈 MOE Line Graph Engine (Hardened & Scaled)
+   */
+  lineGraph(params) {
+    let p = params;
+    if (typeof p === 'string') { try { p = JSON.parse(p); } catch(e) { p = {}; } }
+    
+    const title = p.title || '';
+    const xLabel = p.xLabel || '';
+    const yLabel = p.yLabel || '';
+    const yMax = Number(p.yMax) || 100;
+    
+    // Deep parse array to prevent stringified traps
+    let rawPoints = p.points;
+    if (typeof rawPoints === 'string') { try { rawPoints = JSON.parse(rawPoints); } catch(e) { rawPoints = []; } }
+    const points = Array.isArray(rawPoints) ? rawPoints : [];
+
+    const width = 420, height = 260;
+    const padL = 55, padR = 25, padT = 35, padB = 45;
+    const plotW = width - padL - padR;
+    const plotH = height - padT - padB;
+
+    // max-width prevents flexbox blowout
+    let svg = `<svg viewBox="0 0 ${width} ${height}" style="width: 100%; max-width: 420px; height: auto; display: block; margin: 0 auto 1.5rem auto; background: var(--bg-surface); border-radius: 8px; border: 1px solid var(--border-light);" role="img" aria-label="Line Graph">
+      <text x="${width/2}" y="22" text-anchor="middle" font-weight="bold" font-size="14" fill="var(--text-main)" font-family="sans-serif">${this._esc(title)}</text>
+      <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${height - padB}" stroke="var(--border-dark)" stroke-width="2"/>
+      <text x="${padL - 35}" y="${padT + plotH/2}" transform="rotate(-90 ${padL - 35} ${padT + plotH/2})" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-main)" font-family="sans-serif">${this._esc(yLabel)}</text>
+      <line x1="${padL}" y1="${height - padB}" x2="${width - padR}" y2="${height - padB}" stroke="var(--border-dark)" stroke-width="2"/>
+      <text x="${padL + plotW/2}" y="${height - 12}" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-main)" font-family="sans-serif">${this._esc(xLabel)}</text>
+    `;
+
+    if (points.length > 0) {
+      const stepX = plotW / points.length;
+      const coords = points.map((pt, i) => {
+        // Absolute fail-safe math: forces Number() and provides default fallbacks
+        const cx = Number(padL + (stepX * i) + (stepX / 2)) || padL;
+        const safeY = Number(pt.yVal) || 0; 
+        const cy = Number((height - padB) - ((safeY / yMax) * plotH)) || (height - padB);
+        return { cx, cy, label: pt.xText || '', val: safeY };
+      });
+
+      const pathD = `M ${coords.map(c => `${c.cx},${c.cy}`).join(' L ')}`;
+      svg += `<path d="${pathD}" fill="none" stroke="var(--brand-rose)" stroke-width="3" stroke-linejoin="round"/>`;
+
+      coords.forEach(c => {
+        svg += `
+          <circle cx="${c.cx}" cy="${c.cy}" r="4" fill="var(--brand-sage)" stroke="#fff" stroke-width="2"/>
+          <text x="${c.cx}" y="${height - padB + 18}" text-anchor="middle" font-size="11" fill="var(--text-muted)" font-family="sans-serif">${this._esc(c.label)}</text>
+          <text x="${padL - 8}" y="${c.cy + 4}" text-anchor="end" font-size="11" fill="var(--text-muted)" font-family="sans-serif">${c.val}</text>
+          <line x1="${padL-4}" y1="${c.cy}" x2="${padL}" y2="${c.cy}" stroke="var(--border-dark)" stroke-width="1"/>
+        `;
+      });
+    }
+    return svg + `</svg>`;
+  },
+
+  /**
+   * 🕸️ MOE Concept Map Engine (Hardened & Scaled)
+   */
+  conceptMap(params) {
+    let p = params;
+    if (typeof p === 'string') { try { p = JSON.parse(p); } catch(e) { p = {}; } }
+    
+    let rawNodes = p.nodes;
+    if (typeof rawNodes === 'string') { try { rawNodes = JSON.parse(rawNodes); } catch(e) { rawNodes = []; } }
+    const nodes = Array.isArray(rawNodes) ? rawNodes : [];
+
+    let rawEdges = p.edges;
+    if (typeof rawEdges === 'string') { try { rawEdges = JSON.parse(rawEdges); } catch(e) { rawEdges = []; } }
+    const edges = Array.isArray(rawEdges) ? rawEdges : [];
+    
+    const width = 420, height = 260;
+
+    let svg = `<svg viewBox="0 0 ${width} ${height}" style="width: 100%; max-width: 420px; height: auto; display: block; margin: 0 auto 1.5rem auto; background: var(--bg-surface); border-radius: 8px; border: 1px solid var(--border-light);" role="img" aria-label="Concept Map">
+      <defs>
+        <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="24" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="var(--brand-sage)" />
+        </marker>
+      </defs>`;
+
+    edges.forEach(edge => {
+      const fromNode = nodes.find(n => n.id === edge.from);
+      const toNode = nodes.find(n => n.id === edge.to);
+      if (fromNode && toNode) {
+        const x1 = Number((Number(fromNode.x) / 100) * width) || 0;
+        const y1 = Number((Number(fromNode.y) / 100) * height) || 0;
+        const x2 = Number((Number(toNode.x) / 100) * width) || 0;
+        const y2 = Number((Number(toNode.y) / 100) * height) || 0;
+        svg += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--brand-sage)" stroke-width="2" marker-end="url(#arrowhead)"/>`;
+      }
+    });
+
+    nodes.forEach(node => {
+      const nx = Number((Number(node.x) / 100) * width) || 0;
+      const ny = Number((Number(node.y) / 100) * height) || 0;
+      svg += `
+        <rect x="${nx - 40}" y="${ny - 12}" width="80" height="24" rx="12" fill="var(--bg-elevated)" stroke="var(--border-dark)" stroke-width="2"/>
+        <text x="${nx}" y="${ny + 4}" text-anchor="middle" font-size="11" font-weight="bold" fill="var(--text-main)" font-family="sans-serif">${this._esc(node.label)}</text>
+      `;
+    });
+
+    return svg + `</svg>`;
+  },
+  /**
        
 
 * 🚀 SMART FALLBACK: Universal Experiment Renderer
+
    * Catches hallucinated AI experiment functions and renders a clean UI card.
    */
   genericExperiment(params, functionName = '') {
