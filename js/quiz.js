@@ -264,19 +264,6 @@ window.initQuizEngine = function() {
              inlineActionBtn = `<div class="mt-4 pt-4 border-t border-light flex justify-end"><button class="btn btn-primary" disabled><span class="spinner-sm inline-block mr-2 border-white"></span> Grading...</button></div>`;
         } else {
              inlineActionBtn = `<div class="mt-4 pt-4 border-t border-light flex justify-end"><button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">${isLastPart ? 'Submit Final Answer' : 'Submit Part & Continue'}</button></div>`;
-             if (state.feedback) {
-                 const fb = state.feedback;
-                 const isPartial = fb.status === 'partial' || fb.status === 'wrong';
-                 const ruleClass = isPartial ? 'card-rule-amber' : 'card-rule-mint';
-                 const bgClass   = isPartial ? 'bg-amber-tint' : 'bg-science-tint';
-                 const textClass = isPartial ? 'text-amber' : 'text-success';
-                 const icon      = isPartial ? '💡' : '🎉';
-                 inlineFeedbackHtml = `<div class="card ${ruleClass} ${bgClass} p-4 mt-4 mb-2">
-                   <div class="font-bold mb-2 ${textClass}">${icon} Miss Wena says:</div>
-                   <p class="text-sm text-main leading-relaxed">${fb.text}</p>
-                   ${fb.correctAnswer ? `<div class="mt-3 text-sm font-bold text-main">Correct Answer: <span class="text-success">${esc(fb.correctAnswer)}</span></div>` : ''}
-                 </div>`;
-             }
         }
     }
 
@@ -539,13 +526,13 @@ function buildClozeUI(q) {
         } else if (part.part_type === 'referent') {
           interactionUI = `
             <table class="w-full text-left border-collapse border border-slate-200 rounded-lg overflow-hidden mt-2 mb-4 bg-surface shadow-sm">
-              <thead class="bg-slate-100 border-b border-slate-200">
+              <thead class="bg-slate-100 border-b border-slate-200 text-lg">
                 <tr>
                   <th class="p-3 font-bold text-main w-1/2">Word from passage</th>
                   <th class="p-3 font-bold text-main w-1/2">What it refers to</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody class="text-lg">
                 ${(part.items || []).map((item, i) => `
                   <tr class="border-b border-slate-200 last:border-0">
                     <td class="p-4 font-medium text-main align-middle leading-relaxed">${esc(item.word)}</td>
@@ -558,7 +545,7 @@ function buildClozeUI(q) {
             </table>`;
           
         } else if (part.part_type === 'sequencing') {
-          interactionUI = `<div class="flex flex-col gap-3 mt-2">` + (part.items || []).map((item, i) => `
+          interactionUI = `<div class="flex flex-col gap-3 mt-2 text-lg">` + (part.items || []).map((item, i) => `
             <div class="flex items-center gap-4 bg-surface p-3 rounded-lg border border-light shadow-sm">
               <input type="number" id="comp-${safeIdLabel}-seq${i}" class="form-input w-20 p-3 text-lg text-center border-2 border-slate-200 rounded-lg focus:border-brand-sage" min="1" max="3" value="${esc(savedWorking['seq'+i] || '')}" oninput="window.saveInputState ? window.saveInputState() : null">
               <div class="font-medium text-main leading-relaxed">${esc(item)}</div>
@@ -568,14 +555,14 @@ function buildClozeUI(q) {
         } else if (part.part_type === 'true_false') {
           interactionUI = `
             <table class="w-full text-left border-collapse border border-slate-200 rounded-lg overflow-hidden mt-2 mb-4 bg-surface shadow-sm">
-              <thead class="bg-slate-100 border-b border-slate-200">
+              <thead class="bg-slate-100 border-b border-slate-200 text-lg">
                 <tr>
                   <th class="p-3 font-bold text-main w-2/5">Statement</th>
                   <th class="p-3 font-bold text-main text-center w-1/5 whitespace-nowrap border-l border-slate-200">True / False</th>
                   <th class="p-3 font-bold text-main w-2/5 border-l border-slate-200">Reason</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody class="text-lg">
                 ${(part.items || []).map((item, i) => `
                   <tr class="border-b border-slate-200 last:border-0">
                     <td class="p-4 font-medium text-main align-top leading-relaxed">${esc(item.statement)}</td>
@@ -586,7 +573,7 @@ function buildClozeUI(q) {
                       </div>
                     </td>
                     <td class="p-3 align-top border-l border-slate-200">
-                      <textarea id="comp-${safeIdLabel}-reason${i}" class="form-input w-full p-3 text-base border-2 border-slate-200 rounded-lg focus:border-brand-sage" rows="4" placeholder="Evidence from text..." oninput="window.saveInputState ? window.saveInputState() : null">${esc(savedWorking['reason'+i] || '')}</textarea>
+                      <textarea id="comp-${safeIdLabel}-reason${i}" class="form-input w-full p-3 text-lg border-2 border-slate-200 rounded-lg focus:border-brand-sage" rows="4" placeholder="Evidence from text..." oninput="window.saveInputState ? window.saveInputState() : null">${esc(savedWorking['reason'+i] || '')}</textarea>
                     </td>
                   </tr>
                 `).join('')}
@@ -610,12 +597,19 @@ function buildClozeUI(q) {
             interactionUI += inlineFeedbackHtml + inlineActionBtn;
         }
       } else {
-         // Completed State
+         // Completed State - Handles both flat strings and nested JSON table data gracefully
+         let displayAns = '';
+         if (typeof savedWorking === 'object' && savedWorking !== null) {
+             displayAns = Object.values(savedWorking).filter(v => v).map(v => esc(v)).join('<br><br>');
+         } else {
+             displayAns = esc(savedWorking);
+         }
+         
          interactionUI = `
-          <div class="p-4 bg-surface border border-light rounded-xl mb-4 text-main text-lg">${esc(savedWorking) || '<em>No answer provided.</em>'}</div>
+          <div class="p-4 bg-surface border border-light rounded-xl mb-4 text-main text-lg font-medium">${displayAns || '<em>No answer provided.</em>'}</div>
           <div class="ans-block strong p-5 bg-science-tint card-rule-mint rounded-xl">
             <div class="text-xs font-bold mb-2 text-success uppercase tracking-wider">✨ Model Answer / Explanation</div>
-            <div class="text-base text-main font-medium leading-relaxed">${esc(part.model_answer || part.explanation || part.correct_answer)}</div>
+            <div class="text-lg text-main font-bold leading-relaxed">${esc(part.model_answer || part.explanation || part.correct_answer)}</div>
           </div>
         `;
       }
@@ -1021,7 +1015,8 @@ function buildClozeUI(q) {
       const pLabel = `Q${state.activeWPPart + 1}`;
       const ans = (state.answers[state.currentIndex] || {})[pLabel] || '';
 
-      if (!ans) { alert('Please provide an answer before continuing!'); return; }
+      const isAnsEmptyFast = typeof ans === 'object' ? Object.values(ans).every(v => !v) : !String(ans).trim();
+      if (isAnsEmptyFast) { alert('Please provide an answer before continuing!'); return; }
 
       // Route A: Fast Local Grading for MCQ
       if (currentPart.part_type === 'mcq' || currentPart.part_type === 'referent') {
@@ -1062,7 +1057,8 @@ function buildClozeUI(q) {
         ans = state.answers[state.currentIndex] || '';
       }
 
-      if (!ans.trim()) { alert('Please type your final answer or working so Miss Wena can grade it!'); return; }
+      const isAnsEmptyAI = typeof ans === 'object' ? Object.values(ans).every(v => !v) : !String(ans).trim();
+      if (isAnsEmptyAI) { alert('Please type your final answer so it can be graded!'); return; }
 
       state.feedback = { status: 'loading', text: 'Analyzing your logic...' };
       render();
