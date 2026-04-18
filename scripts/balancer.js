@@ -55,15 +55,24 @@ const MOE_SYLLABUS = [
   ...['Matter', 'Life Cycles', 'Heat', 'Light'].map(st => ({ level: 'Primary 4', subject: 'Science', topic: 'Cycles & Energy', sub_topic: st })),
   ...['Water Cycle', 'Reproduction', 'Electrical Circuits', 'Plant Transport'].map(st => ({ level: 'Primary 5', subject: 'Science', topic: 'Cycles & Systems', sub_topic: st })),
   ...['Forces', 'Environment', 'Food Webs', 'Energy Conversions'].map(st => ({ level: 'Primary 6', subject: 'Science', topic: 'Interactions & Energy', sub_topic: st }))
+
+  // English Syllabus (P3-P6)
+  ...['Grammar', 'Vocabulary', 'Visual Text', 'Comprehension', 'Cloze', 'Editing'].map(st => ({ level: 'Primary 3', subject: 'English', topic: 'English Language', sub_topic: st })),
+  ...['Grammar', 'Vocabulary', 'Visual Text', 'Comprehension', 'Cloze', 'Editing'].map(st => ({ level: 'Primary 4', subject: 'English', topic: 'English Language', sub_topic: st })),
+  ...['Grammar', 'Vocabulary', 'Visual Text', 'Comprehension', 'Cloze', 'Editing', 'Synthesis'].map(st => ({ level: 'Primary 5', subject: 'English', topic: 'English Language', sub_topic: st })),
+  ...['Grammar', 'Vocabulary', 'Visual Text', 'Comprehension', 'Cloze', 'Editing', 'Synthesis'].map(st => ({ level: 'Primary 6', subject: 'English', topic: 'English Language', sub_topic: st }))
+];
 ];
 
 const TYPE_RULES = {
   mcq: `\n- Each question must have an "options" array with exactly 4 string values.\n- "correct_answer" MUST be the exact string value. Do NOT use "A", "B", "C", or "D".\n- Include a "wrong_explanations" object.`,  
   short_ans: `\n- Answers must be concise.\n- Include an "accept_also" array for equivalent correct forms.`,
   word_problem: `\n- Include a "parts" array with 2–3 sub-questions (a, b).\n- Each part MUST have "label", "question", "marks", "correct_answer", "worked_solution", and "progressive_hints" (array of 2 strings).`,
-  open_ended: `\n- Include a "parts" array exactly like the 'word_problem' schema for sub-questions (a, b).\n- "correct_answer" in each part should be the ideal scientific phrasing/CER statement.\n- Include "keywords" array and "progressive_hints" to guide the student's reasoning.`,
+  open_ended: `\n- Include a "passage" (experiment setup) and "visual_payload" (diagram object).\n- Include a "parts" array with sub-questions (a, b) using part_type 'text_box' or 'true_false'.\n- "model_answer" in each part should use the CER framework. Include "keywords" array and "rubric".`,
   cloze: `\n- "passage" must have blanks marked as [1], [2].\n- Include "blanks" array with options and correct_answer. DO NOT put options inside the passage.`,
-  editing: `\n- Errors embedded directly in the "passage" using <u>error</u> [1].\n- Include "blanks" array with the correct_answer correction.`
+  editing: `\n- Errors embedded directly in the "passage" using <u>error</u> [1].\n- Include "blanks" array with the correct_answer correction.`,
+  comprehension: `\n- Root 'passage' (300+ words).\n- A 'parts' array of sub-questions using part_type: 'mcq', 'true_false', 'referent', 'sequencing', or 'text_box' (needs rubric and model_answer). Double-escape all SQL quotes.`,
+  visual_text: `\n- Root 'passage' (flyer text) and 'image_url' (placeholder URL).\n- A 'parts' array of 5-8 'mcq' objects (question, options, correct_answer, explanation).`
 };
 
 const masterTemplate = fs.readFileSync(path.join(__dirname, '../data/Master_Question_Template.md'), 'utf8');
@@ -176,9 +185,11 @@ async function runBalancer() {
         subject: target.subject, 
         level: target.level,
         topic: target.topic, 
-        sub_topic: target.sub_topic, // 🚀 FORCE The Sub-Topic
+        sub_topic: target.sub_topic, 
         type: cleanClone.type || randomSeed.type,
-        visual_payload: cleanClone.visual_payload ? JSON.stringify(cleanClone.visual_payload) : null // Ensure stringified
+        image_url: cleanClone.image_url || randomSeed.image_url || null,
+        visual_payload: cleanClone.visual_payload ? JSON.stringify(cleanClone.visual_payload) : null,
+        parts: cleanClone.parts ? JSON.stringify(cleanClone.parts) : null // Ensure polymorphic arrays are stringified for DB
       };
     });
 
