@@ -54,14 +54,13 @@ const MOE_SYLLABUS = [
   ...['Living/Non-Living', 'Materials', 'Human Digestive', 'Magnets'].map(st => ({ level: 'Primary 3', subject: 'Science', topic: 'Diversity & Systems', sub_topic: st })),
   ...['Matter', 'Life Cycles', 'Heat', 'Light'].map(st => ({ level: 'Primary 4', subject: 'Science', topic: 'Cycles & Energy', sub_topic: st })),
   ...['Water Cycle', 'Reproduction', 'Electrical Circuits', 'Plant Transport'].map(st => ({ level: 'Primary 5', subject: 'Science', topic: 'Cycles & Systems', sub_topic: st })),
-  ...['Forces', 'Environment', 'Food Webs', 'Energy Conversions'].map(st => ({ level: 'Primary 6', subject: 'Science', topic: 'Interactions & Energy', sub_topic: st }))
+  ...['Forces', 'Environment', 'Food Webs', 'Energy Conversions'].map(st => ({ level: 'Primary 6', subject: 'Science', topic: 'Interactions & Energy', sub_topic: st })),
 
   // English Syllabus (P3-P6)
   ...['Grammar', 'Vocabulary', 'Visual Text', 'Comprehension', 'Cloze', 'Editing'].map(st => ({ level: 'Primary 3', subject: 'English', topic: 'English Language', sub_topic: st })),
   ...['Grammar', 'Vocabulary', 'Visual Text', 'Comprehension', 'Cloze', 'Editing'].map(st => ({ level: 'Primary 4', subject: 'English', topic: 'English Language', sub_topic: st })),
   ...['Grammar', 'Vocabulary', 'Visual Text', 'Comprehension', 'Cloze', 'Editing', 'Synthesis'].map(st => ({ level: 'Primary 5', subject: 'English', topic: 'English Language', sub_topic: st })),
   ...['Grammar', 'Vocabulary', 'Visual Text', 'Comprehension', 'Cloze', 'Editing', 'Synthesis'].map(st => ({ level: 'Primary 6', subject: 'English', topic: 'English Language', sub_topic: st }))
-];
 ];
 
 const TYPE_RULES = {
