@@ -855,7 +855,12 @@ function buildClozeUI(q) {
   };
 
   window.saveInputState = () => {
+    if (!state.questions || !state.questions[state.currentIndex]) return;
     const q = state.questions[state.currentIndex];
+
+    const hasPartsGate = (() => { try { return (typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || [])).length > 0; } catch(e){ return false; } })();
+    const isSplitFormat = q.type === 'comprehension' || q.type === 'visual_text' || (q.type === 'open_ended' && hasPartsGate);
+
     if (q.type === 'cloze') {
       const ans = {};
       let blanks = [];
@@ -876,9 +881,6 @@ function buildClozeUI(q) {
         if (el) ans[num] = el.value;
       });
       state.answers[state.currentIndex] = ans;
-    const hasPartsGate = (() => { try { return (typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || [])).length > 0; } catch(e){ return false; } })();
-    const isSplitFormat = q.type === 'comprehension' || q.type === 'visual_text' || (q.type === 'open_ended' && hasPartsGate);
-
     } else if (q.type === 'word_problem' || isSplitFormat) {
       const ans = state.answers[state.currentIndex] || {};
       let parts = [];
