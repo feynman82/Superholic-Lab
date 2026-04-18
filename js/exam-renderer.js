@@ -230,6 +230,10 @@ const ExamRenderer = {
       case 'editing':
         bodyHtml += this._renderEditing(question);
         break;
+      case 'comprehension':
+      case 'visual_text':
+        bodyHtml += this._renderComprehension(question);
+        break;
       default:
         bodyHtml += `<p class="text-secondary text-sm">[Question type "${_examEsc(question.type)}" not yet supported in print mode]</p>`;
     }
@@ -351,6 +355,15 @@ const ExamRenderer = {
    * @returns {string} HTML
    */
   _renderOpenEnded(question) {
+    let partsData = [];
+    try { partsData = typeof question.parts === 'string' ? JSON.parse(question.parts) : (question.parts || []); } catch(e) {}
+
+    // If it has parts (a), (b), route it to the multi-part renderer
+    if (partsData.length > 0) {
+      return this._renderWordProblem(question);
+    }
+
+    // Fallback for legacy single-part Science OEQs
     const keywords = question.keywords || [];
     const keywordHint = keywords.length > 0
       ? `<div class="exam-keyword-box mb-3">
@@ -359,14 +372,50 @@ const ExamRenderer = {
          </div>`
       : '';
 
-    // Lined answer space (6 answer lines)
-    const answerLines = Array.from({ length: 6 })
-      .map(() => `<div class="exam-answer-line"></div>`)
-      .join('');
+    const answerLines = Array.from({ length: 6 }).map(() => `<div class="exam-answer-line"></div>`).join('');
+    return `${keywordHint}<div class="exam-answer-area">${answerLines}</div>`;
+  },
 
-    return `
-      ${keywordHint}
-      <div class="exam-answer-area">${answerLines}</div>`;
+  /* ── Comprehension & Visual Text ──────────────────────────────────────── */
+
+  _renderComprehension(question) {
+    let html = '';
+    
+    // 1. Draw Passage or Flyer
+    if (question.type === 'visual_text' && question.image_url) {
+       html += `<div class="mb-4 text-center"><img src="${_examEsc(question.image_url)}" style="max-width: 100%; border: 1px solid var(--border-light);"></div>`;
+    }
+    if (question.passage) {
+       html += `<div class="card-body mb-4" style="background: var(--bg-elevated); border: 1px solid var(--border-light); padding: 15px; border-radius: var(--radius-md); font-size: 14px; line-height: 1.8;">${_examEsc(question.passage).replace(/\n/g, '<br>')}</div>`;
+    }
+
+    // 2. Draw Sub-Questions
+    let partsData = [];
+    try { partsData = typeof question.parts === 'string' ? JSON.parse(question.parts) : (question.parts || []); } catch(e) {}
+
+    const partsHtml = partsData.map((part, idx) => {
+      const pLabel = part.label || `Q${idx + 1}`;
+      const marksText = `[${part.marks} mark${part.marks > 1 ? 's':''}]`;
+      
+      let partHtml = `<div class="mb-5 exam-word-part"><p class="font-semibold mb-3">${_examEsc(pLabel)} ${_examEsc(part.question || part.instructions || '')} <span class="text-secondary text-sm ml-2">${marksText}</span></p>`;
+
+      if (part.part_type === 'mcq') {
+         partHtml += this._renderMCQ(part);
+      } else if (part.part_type === 'true_false') {
+         partHtml += `<table class="w-full text-left border-collapse mt-2" style="border: 1px solid black;"><thead><tr><th class="p-2" style="border: 1px solid black;">Statement</th><th class="p-2 text-center" style="border: 1px solid black;">True/False</th><th class="p-2" style="border: 1px solid black;">Reason</th></tr></thead><tbody>`;
+         (part.items || []).map(item => {
+            partHtml += `<tr><td class="p-2" style="border: 1px solid black; width: 40%;">${_examEsc(item.statement)}</td><td class="p-2" style="border: 1px solid black; width: 15%;"></td><td class="p-2" style="border: 1px solid black; width: 45%;"><div style="height: 60px;"></div></td></tr>`;
+         });
+         partHtml += `</tbody></table>`;
+      } else {
+         // text_box, sequencing, referent
+         partHtml += `<div class="exam-answer-line mt-4"></div><div class="exam-answer-line mt-6"></div>`;
+      }
+      partHtml += `</div>`;
+      return partHtml;
+    }).join('');
+
+    return html + `<div class="exam-word-parts mt-6">${partsHtml}</div>`;
   },
 
   /* ── Cloze ────────────────────────────────────────────────────────────── */
@@ -488,12 +537,19 @@ const ExamRenderer = {
           answerText = safeOptions.map(opt =>
             `<span class="text-secondary">${_examEsc(opt)}</span>`
           ).join('');
-        } else if (q.type === 'word_problem') {
-          answerText = (q.parts || []).map(p =>
-            `${_examEsc(p.label)} ${_examEsc(p.correct_answer)}`
-          ).join(' | ');
-        } else if (q.type === 'open_ended') {
-          answerText = `<em>${_examEsc(q.model_answer || '')}</em>`;
+        } else if (q.type === 'word_problem' || q.type === 'open_ended' || q.type === 'comprehension' || q.type === 'visual_text') {
+          let partsData = [];
+          try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
+          
+          if (partsData.length > 0) {
+             answerText = partsData.map((p, idx) => {
+               const pLabel = p.label || `Q${idx+1}`;
+               const ans = p.model_answer || p.correct_answer || p.worked_solution || '';
+               return `<strong>${_examEsc(pLabel)}</strong>: ${_examEsc(ans)}`;
+             }).join('<br>');
+          } else {
+             answerText = `<em>${_examEsc(q.model_answer || q.correct_answer || '')}</em>`;
+          }
         } else if (q.type === 'cloze') {
           answerText = (q.blanks || []).map(b =>
             `(${b.number}) ${_examEsc(b.correct_answer)}`

@@ -730,13 +730,16 @@ window.initExamEngine = function () {
              <input type="text" id="qInput" class="form-input w-full p-4 text-lg border-2 border-brand-sage/50 focus:border-brand-sage rounded-xl transition-all shadow-sm bg-sage-50/10" placeholder="Final Answer (Optional)" value="${esc(savedAns)}" autocomplete="off" oninput="window.saveCurrentAnswerState()">`
         }
       `;
-    } else if (q.type === 'comprehension') {
+    const renderHasParts = (() => { try { return (typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || [])).length > 0; } catch(e){ return false; } })();
+    const renderIsSplit = q.type === 'comprehension' || q.type === 'visual_text' || (q.type === 'open_ended' && renderHasParts);
+
+    } else if (renderIsSplit) {
       let partsData = [];
       try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
       const savedObj = (typeof savedAns === 'object' && savedAns !== null) ? savedAns : {};
 
       const partsHtml = partsData.map((part, idx) => {
-        const pLabel = `Q${idx + 1}`;
+        const pLabel = part.label || `Q${idx + 1}`;
         const safeIdLabel = String(pLabel).replace(/[^a-zA-Z0-9]/g, '');
         const savedWorking = savedObj[pLabel] || '';
         let inputUI = '';
@@ -976,17 +979,20 @@ window.initExamEngine = function () {
         if (el) ans[l.line_number] = el.value;
       });
       state.answers[ansKey] = ans;
-    } else if (q.type === 'word_problem' || q.type === 'comprehension') {
+    const hasPartsGate = (() => { try { return (typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || [])).length > 0; } catch(e){ return false; } })();
+    const isSplitFormat = q.type === 'comprehension' || q.type === 'visual_text' || (q.type === 'open_ended' && hasPartsGate);
+
+    } else if (q.type === 'word_problem' || isSplitFormat) {
       const ans = state.answers[ansKey] || {};
       let partsData = [];
       try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
       partsData.forEach((p, idx) => {
-        const pLabel = q.type === 'comprehension' 
-            ? `Q${idx + 1}` 
+        const pLabel = isSplitFormat 
+            ? (p.label || `Q${idx + 1}`) 
             : (p.label || (p.part_id ? `(${p.part_id})` : `Part ${idx + 1}`));
             
         const safeIdLabel = String(pLabel).replace(/[^a-zA-Z0-9]/g, '');
-        const prefix = q.type === 'comprehension' ? 'comp-' : 'wp-';
+        const prefix = isSplitFormat ? 'comp-' : 'wp-';
 
         if (q.type === 'comprehension' && p.part_type !== 'text_box' && p.part_type !== 'mcq') {
            ans[pLabel] = ans[pLabel] || {};
@@ -1375,13 +1381,16 @@ window.initExamEngine = function () {
           return `Line ${num}: You: ${esc(selected)} ${isCor ? '✅' : `❌ (Correct: ${esc(l.correct_word)})`}`;
         }).join('<br>');
         ansHtml = `<div class="bg-page p-3 mt-2 text-sm" style="border-radius: var(--radius-sm);">${rows}</div>`;
-      } else if (r.q.type === 'word_problem' || r.q.type === 'comprehension') {
+      const resHasParts = (() => { try { return (typeof r.q.parts === 'string' ? JSON.parse(r.q.parts) : (r.q.parts || [])).length > 0; } catch(e){ return false; } })();
+      const resIsSplit = r.q.type === 'comprehension' || r.q.type === 'visual_text' || (r.q.type === 'open_ended' && resHasParts);
+
+      } else if (r.q.type === 'word_problem' || resIsSplit) {
         let partsData = [];
         try { partsData = typeof r.q.parts === 'string' ? JSON.parse(r.q.parts) : (r.q.parts || []); } catch(e) {}
         
         const rows = partsData.map((p, idx) => {
-          const pLabel = r.q.type === 'comprehension' 
-              ? `Q${idx + 1}` 
+          const pLabel = resIsSplit 
+              ? (p.label || `Q${idx + 1}`) 
               : (p.label || (p.part_id ? `(${p.part_id})` : `Part ${idx + 1}`));
               
           const userAns = (r.sa && typeof r.sa === 'object') ? r.sa[pLabel] : '';

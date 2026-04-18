@@ -385,7 +385,7 @@ DISPLAY RULES:
   - "Check" button reveals answers
 
 ═══════════════════════════════════════════════════════════════
-TYPE 6: COMPREHENSION — (English PSLE)
+TYPE 7: COMPREHENSION — (English PSLE)
 ═══════════════════════════════════════════════════════════════
 
 **Type Code:** `comprehension`
@@ -427,6 +427,55 @@ TYPE 6: COMPREHENSION — (English PSLE)
     }
   ]
 }
+
+═══════════════════════════════════════════════════════════════
+TYPE 8: VISUAL TEXT COMPREHENSION (ENGLISH)
+═══════════════════════════════════════════════════════════════
+
+Used in: English Paper 2 Section A
+
+FORMAT:
+  - A flyer or poster is shown as an image.
+  - Student answers a series of MCQ questions based on the image.
+
+ADDITIONAL JSON FIELDS:
+  "passage": "string — A brief text description or the raw text from the flyer",
+  "image_url": "string — URL of the flyer/poster",
+  "parts": [
+    {
+      "part_type": "mcq",
+      "marks": 1,
+      "question": "string",
+      "options": ["string", "string", "string", "string"],
+      "correct_answer": "string",
+      "explanation": "string"
+    }
+  ]
+
+═══════════════════════════════════════════════════════════════
+TYPE 9: OPEN-ENDED WITH DIAGRAMS (SCIENCE)
+═══════════════════════════════════════════════════════════════
+
+Used in: Science Booklet B (Multi-part experiments)
+
+FORMAT:
+  - An experiment setup or scenario is shown.
+  - Student answers parts (a), (b), (c) in separate text boxes.
+
+ADDITIONAL JSON FIELDS:
+  "passage": "string — The experiment context/setup",
+  "visual_payload": { ... } — Diagram of the experiment (optional),
+  "parts": [
+    {
+      "label": "(a)",
+      "part_type": "text_box",
+      "marks": 2,
+      "question": "string",
+      "model_answer": "string",
+      "rubric": "string",
+      "keywords": ["string"]
+    }
+  ]
 
 ═══════════════════════════════════════════════════════════════
 VISUAL PAYLOAD ENGINES REGISTRY
