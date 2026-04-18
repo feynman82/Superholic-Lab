@@ -256,6 +256,30 @@ window.initQuizEngine = function() {
     try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
     if (partsData.length === 0) return `<div class="text-amber">Legacy format. Please update in database.</div>`;
 
+    let inlineActionBtn = '';
+    let inlineFeedbackHtml = '';
+    if (!state.isAnswered && state.activeWPPart < partsData.length) {
+        const isLastPart = state.activeWPPart >= partsData.length - 1;
+        if (state.feedback && state.feedback.status === 'loading') {
+             inlineActionBtn = `<div class="mt-4 pt-4 border-t border-light flex justify-end"><button class="btn btn-primary" disabled><span class="spinner-sm inline-block mr-2 border-white"></span> Grading...</button></div>`;
+        } else {
+             inlineActionBtn = `<div class="mt-4 pt-4 border-t border-light flex justify-end"><button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">${isLastPart ? 'Submit Final Answer' : 'Submit Part & Continue'}</button></div>`;
+             if (state.feedback) {
+                 const fb = state.feedback;
+                 const isPartial = fb.status === 'partial' || fb.status === 'wrong';
+                 const ruleClass = isPartial ? 'card-rule-amber' : 'card-rule-mint';
+                 const bgClass   = isPartial ? 'bg-amber-tint' : 'bg-science-tint';
+                 const textClass = isPartial ? 'text-amber' : 'text-success';
+                 const icon      = isPartial ? '💡' : '🎉';
+                 inlineFeedbackHtml = `<div class="card ${ruleClass} ${bgClass} p-4 mt-4 mb-2">
+                   <div class="font-bold mb-2 ${textClass}">${icon} Miss Wena says:</div>
+                   <p class="text-sm text-main leading-relaxed">${fb.text}</p>
+                   ${fb.correctAnswer ? `<div class="mt-3 text-sm font-bold text-main">Correct Answer: <span class="text-success">${esc(fb.correctAnswer)}</span></div>` : ''}
+                 </div>`;
+             }
+        }
+    }
+
     return partsData.map((p, partIdx) => {
       const pLabel = p.label || (p.part_id ? `(${p.part_id})` : `Part ${partIdx + 1}`);
       const pQuestion = p.question || p.question_text || '';
@@ -301,7 +325,8 @@ window.initQuizEngine = function() {
                  </div>
                </div>
                <input type="text" id="wp-${esc(pLabel)}" class="${drawModeInputStyle}" placeholder="Final Answer (Required for marking)" value="${esc(savedWorking)}">`
-          }`;
+          }
+          ${isActive ? inlineFeedbackHtml + inlineActionBtn : ''}`;
       } else {
         interactionUI = `
           <div class="p-4 bg-surface border border-light rounded-xl mb-4 text-main whitespace-pre-wrap text-lg">${esc(savedWorking) || '<em>No text answer provided.</em>'}</div>
@@ -459,6 +484,30 @@ function buildClozeUI(q) {
 
     const savedAnsObj = state.answers[state.currentIndex] || {};
 
+    let inlineActionBtn = '';
+    let inlineFeedbackHtml = '';
+    if (!state.isAnswered && state.activeWPPart < partsData.length) {
+        const isLastPart = state.activeWPPart >= partsData.length - 1;
+        if (state.feedback && state.feedback.status === 'loading') {
+             inlineActionBtn = `<div class="mt-4 pt-4 border-t border-light flex justify-end"><button class="btn btn-primary" disabled><span class="spinner-sm inline-block mr-2 border-white"></span> Grading...</button></div>`;
+        } else {
+             inlineActionBtn = `<div class="mt-4 pt-4 border-t border-light flex justify-end"><button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">${isLastPart ? 'Submit Final Answer' : 'Submit Part & Continue'}</button></div>`;
+             if (state.feedback) {
+                 const fb = state.feedback;
+                 const isPartial = fb.status === 'partial' || fb.status === 'wrong';
+                 const ruleClass = isPartial ? 'card-rule-amber' : 'card-rule-mint';
+                 const bgClass   = isPartial ? 'bg-amber-tint' : 'bg-science-tint';
+                 const textClass = isPartial ? 'text-amber' : 'text-success';
+                 const icon      = isPartial ? '💡' : '🎉';
+                 inlineFeedbackHtml = `<div class="card ${ruleClass} ${bgClass} p-4 mt-4 mb-2">
+                   <div class="font-bold mb-2 ${textClass}">${icon} Miss Wena says:</div>
+                   <p class="text-sm text-main leading-relaxed">${fb.text}</p>
+                   ${fb.correctAnswer ? `<div class="mt-3 text-sm font-bold text-main">Correct Answer: <span class="text-success">${esc(fb.correctAnswer)}</span></div>` : ''}
+                 </div>`;
+             }
+        }
+    }
+
     const partsHtml = partsData.map((part, idx) => {
       // Use activeWPPart to track progression, just like word problems
       const isLocked = idx > state.activeWPPart;
@@ -555,6 +604,10 @@ function buildClozeUI(q) {
         
         if (partDiagram) {
             interactionUI = partDiagram + interactionUI;
+        }
+        
+        if (isActive) {
+            interactionUI += inlineFeedbackHtml + inlineActionBtn;
         }
       } else {
          // Completed State
@@ -689,12 +742,12 @@ function buildClozeUI(q) {
     let actionBtn = '';
     if (!state.isAnswered) {
       if (state.feedback && state.feedback.status === 'loading') {
-        actionBtn = `<button class="btn btn-primary" disabled><span class="spinner-sm inline-block mr-2 border-white"></span> Grading...</button>`;
+        if (q.type !== 'word_problem' && q.type !== 'comprehension') {
+           actionBtn = `<button class="btn btn-primary" disabled><span class="spinner-sm inline-block mr-2 border-white"></span> Grading...</button>`;
+        }
       } else if (q.type === 'word_problem' || q.type === 'comprehension') {
-        let partsData = [];
-        try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
-        const isLastPart = state.activeWPPart >= partsData.length - 1;
-        actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">${isLastPart ? 'Submit Final Answer' : 'Submit Part & Continue'}</button>`;
+        // Suppress bottom button since progressive formats now use inline buttons
+        actionBtn = '';
       }
       else if (q.type === 'open_ended') actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">Submit for Grading</button>`;
       else if (q.type === 'cloze' || q.type === 'editing') actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">Check Answers</button>`;
@@ -824,7 +877,7 @@ function buildClozeUI(q) {
       const ans = state.answers[state.currentIndex] || {};
       let parts = [];
       try { parts = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
-      partsData.forEach((p, idx) => {
+      parts.forEach((p, idx) => {
         const pLabel = q.type === 'comprehension' 
             ? `Q${idx + 1}` 
             : (p.label || (p.part_id ? `(${p.part_id})` : `Part ${idx + 1}`));
