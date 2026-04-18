@@ -500,7 +500,8 @@ function buildClozeUI(q) {
       const isLocked = idx > state.activeWPPart;
       const isCompleted = idx < state.activeWPPart;
       const isActive = idx === state.activeWPPart;
-      const pLabel = `Q${idx + 1}`; 
+      // Use custom label for Science (e.g., "(a)"), fallback to Q1 for English
+      const pLabel = part.label || `Q${idx + 1}`; 
 
       if (isLocked) {
         return `<div class="mb-4 p-4" style="opacity: 0.4; pointer-events: none; border-left: 3px solid var(--border-light);"><span class="font-display text-xl text-muted font-bold">🔒 ${pLabel}</span></div>`;
@@ -683,8 +684,7 @@ function buildClozeUI(q) {
 
   function renderQuiz() {
     if (state.questions.length === 0) {
-      const maxWidth = q.type === 'comprehension' ? '1200px' : '680px';
-      app.innerHTML = `<div class="card text-center w-full hover-lift p-6" style="max-width: ${maxWidth}; transition: max-width 0.3s ease;"><div class="text-4xl mb-4">🕵️</div><h2 class="font-display text-2xl text-main">No questions found!</h2><p class="text-muted text-sm my-4">Miss Wena hasn't added questions for this specific combination yet. Check back soon!</p><button class="btn btn-primary hover-lift" onclick="window.location.href='subjects.html'">Return to Subjects</button></div>`;
+      app.innerHTML = `<div class="card text-center w-full hover-lift p-6" style="max-width: 680px; transition: max-width 0.3s ease;"><div class="text-4xl mb-4">🕵️</div><h2 class="font-display text-2xl text-main">No questions found!</h2><p class="text-muted text-sm my-4">Miss Wena hasn't added questions for this specific combination yet. Check back soon!</p><button class="btn btn-primary hover-lift" onclick="window.location.href='subjects.html'">Return to Subjects</button></div>`;
       return;
     }
 
@@ -694,10 +694,13 @@ function buildClozeUI(q) {
     const isModelType = q.type === 'word_problem' || q.type === 'open_ended';
 
     // IN renderQuiz()
+    const hasParts = (() => { try { return (typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || [])).length > 0; } catch(e){ return false; } })();
+    const isSplitScreen = q.type === 'comprehension' || q.type === 'visual_text' || (q.type === 'open_ended' && hasParts);
+
     let inputUi = '';
     if (q.type === 'mcq')           inputUi = buildMCQOptions(q);
     else if (q.type === 'word_problem') inputUi = buildWordProblemUI(q);
-    else if (q.type === 'comprehension') inputUi = buildComprehensionUI(q); // ADDED
+    else if (isSplitScreen)         inputUi = buildComprehensionUI(q);
     else if (q.type === 'cloze')    inputUi = buildClozeUI(q);
     else if (q.type === 'editing')  inputUi = buildEditingUI(q);
     else                            inputUi = buildTextAreaUI(q);
@@ -762,8 +765,8 @@ function buildClozeUI(q) {
 
     const diagramHtml = renderVisualPayload(q.visual_payload);
     
-    // Expand to 1200px for Comprehension split-screen, keep 680px for others
-    const maxWidth = q.type === 'comprehension' ? '1200px' : '680px';
+    // Expand to 1200px for Split-Screen formats, keep 680px for others
+    const maxWidth = isSplitScreen ? '1200px' : '680px';
     
     app.innerHTML = `
       <div class="w-full" style="max-width: ${maxWidth}; transition: max-width 0.3s ease;">
@@ -1011,7 +1014,9 @@ function buildClozeUI(q) {
     }
 
     // IN window.checkAnswer()
-    if (q.type === 'comprehension') {
+    const isSplitScreen = q.type === 'comprehension' || q.type === 'visual_text' || (q.type === 'open_ended' && typeof q.parts === 'string' ? JSON.parse(q.parts || '[]').length > 0 : (q.parts || []).length > 0);
+
+    if (isSplitScreen) {
       let partsData = [];
       try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
       const currentPart = partsData[state.activeWPPart];
