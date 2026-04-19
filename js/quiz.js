@@ -258,7 +258,8 @@ window.initQuizEngine = function() {
         } else {
            // START: The boys
            blueprintHtml = `<div class="font-bold text-brand-rose px-4 py-2 bg-surface rounded shadow-sm text-sm uppercase tracking-widest">${esc(cleanConnector)}</div>${lineBlock}`;
-           if (!savedAns) prefillAns = cleanConnector + ' '; 
+           // 🚀 MASTERCLASS FIX: Use 'savedAns' for quiz.js instead of 'prefillAns'
+           if (!savedAns) savedAns = cleanConnector + ' '; 
         }
 
         synthesisHtml = `
