@@ -309,13 +309,14 @@ const EXAM_TEMPLATES = {
   },
   'english-p3-wa3': {
     displayName: 'Primary 3 English — WA3', level: 'P3', subject: 'English', paperCode: 'WA3',
-    durationMinutes: 50, totalMarks: 30,
+    durationMinutes: 55, totalMarks: 35,
     sections: [
       { id: 'sec-a', label: 'Section A', title: 'Visual Text', instructions: 'Study the flyer carefully and answer the questions.', questionType: 'visual_text', questionCount: 1, marksPerQuestion: 5 },
       { id: 'sec-b', label: 'Section B', title: 'Grammar MCQ', instructions: 'Choose the correct answer.', questionType: 'mcq', questionCount: 5, marksPerQuestion: 1 },
       { id: 'sec-c', label: 'Section C', title: 'Vocabulary MCQ', instructions: 'Choose the correct answer.', questionType: 'mcq', questionCount: 5, marksPerQuestion: 1 },
       { id: 'sec-d', label: 'Section D', title: 'Grammar Cloze', instructions: 'Fill in the blanks.', questionType: 'cloze', questionCount: 5, marksPerQuestion: 1 },
-      { id: 'sec-e', label: 'Section E', title: 'Comprehension Open-Ended', instructions: 'Read the passage carefully.', questionType: 'comprehension', questionCount: 1, marksPerQuestion: 10 }
+      { id: 'sec-e', label: 'Section E', title: 'Synthesis', instructions: 'Rewrite the sentences.', questionType: 'short_ans', questionCount: 5, marksPerQuestion: 1 },
+      { id: 'sec-f', label: 'Section F', title: 'Comprehension Open-Ended', instructions: 'Read the passage carefully.', questionType: 'comprehension', questionCount: 1, marksPerQuestion: 10 }
     ]
   },
   'english-p3-eoy': {
@@ -398,12 +399,13 @@ const EXAM_TEMPLATES = {
   },
   'english-p5-wa3': {
     displayName: 'Primary 5 English — WA3', level: 'P5', subject: 'English', paperCode: 'WA3',
-    durationMinutes: 55, totalMarks: 45,
+    durationMinutes: 60, totalMarks: 50,
     sections: [
       { id: 'sec-a', label: 'Section A', title: 'Visual Text', instructions: 'Study the flyer carefully and answer the questions.', questionType: 'visual_text', questionCount: 1, marksPerQuestion: 8 },
       { id: 'sec-b', label: 'Section B', title: 'Grammar & Vocab MCQ', instructions: 'Choose the correct answer.', questionType: 'mcq', questionCount: 7, marksPerQuestion: 1 },
       { id: 'sec-c', label: 'Section C', title: 'Cloze Passages', instructions: 'Fill in the blanks.', questionType: 'cloze', questionCount: 10, marksPerQuestion: 1 },
-      { id: 'sec-d', label: 'Section D', title: 'Comprehension Open-Ended', instructions: 'Read the passage carefully.', questionType: 'comprehension', questionCount: 1, marksPerQuestion: 20 },
+      { id: 'sec-d', label: 'Section D', title: 'Synthesis', instructions: 'Rewrite the sentences.', questionType: 'short_ans', questionCount: 5, marksPerQuestion: 1 },
+      { id: 'sec-e', label: 'Section E', title: 'Comprehension Open-Ended', instructions: 'Read the passage carefully.', questionType: 'comprehension', questionCount: 1, marksPerQuestion: 20 },
     ]
   },
   'english-p5-eoy': {

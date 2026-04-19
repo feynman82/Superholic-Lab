@@ -108,8 +108,9 @@ window.initQuizEngine = function() {
         return html;
       }
     } catch(e) {}
-    return `<span class="font-sans">${esc(raw).replace(/\n/g, '<br>')}</span>`;
-  };
+      // 🚀 MASTERCLASS FIX: Removed esc() so HTML tags from the database render correctly
+      return `<span class="font-sans">${String(raw).replace(/\n/g, '<br>')}</span>`;
+    };
 
   const state = {
     phase: 'LOAD',
@@ -230,7 +231,8 @@ window.initQuizEngine = function() {
     let isSynthesis = (q.topic || '').toLowerCase() === 'synthesis';
     
     if (isSynthesis && q.question_text) {
-      const displayQuestion = q.question_text;
+      // 🚀 MASTERCLASS FIX: Safely strip any legacy \n\n connectors hiding in the text
+      const displayQuestion = q.question_text.split('\n\n')[0].trim();
       
       // Extract the connector from the single quotes in the instructions (e.g. '... respectively.')
       let rawConnector = '';
@@ -254,7 +256,6 @@ window.initQuizEngine = function() {
 
       synthesisHtml = `
         <div class="card p-5 bg-elevated border border-light mb-6 shadow-sm">
-          <div class="text-xs font-bold text-muted uppercase tracking-wider mb-2">Transform the sentence(s):</div>
           <div class="text-lg text-main font-medium leading-relaxed mb-5">${esc(displayQuestion)}</div>
           <div class="flex items-center gap-3 w-full">${blueprintHtml}</div>
         </div>
