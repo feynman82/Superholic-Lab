@@ -212,7 +212,7 @@ window.initExamEngine = function () {
     if (visual_payload.engine === 'diagram-library') {
       // 🚀 MASTERCLASS FIX: Delegate entirely to the DiagramLibrary's internal router
       // so the smart fallbacks and generic experiment handlers actually trigger.
-      return `<div class="procedural-diagram mb-4 flex justify-center w-full" style="max-width: 100%; overflow-x: auto;">
+      return `<div class="procedural-diagram mb-4 mx-auto flex justify-center w-full" style="max-width: 600px; overflow-x: auto;">
                 ${DiagramLibrary.render(visual_payload)}
               </div>`;
     }
@@ -832,9 +832,9 @@ window.initExamEngine = function () {
         // Sub-question Diagram Support 
         let partDiagram = '';
         if (part.visual_payload && typeof DiagramLibrary !== 'undefined') {
-          partDiagram = `<div class="procedural-diagram mb-4 flex justify-center w-full" style="max-width: 100%; overflow-x: auto;">${DiagramLibrary.render(part.visual_payload)}</div>`;
+          partDiagram = `<div class="procedural-diagram mb-4 mx-auto flex justify-center w-full" style="max-width: 600px; overflow-x: auto;">${DiagramLibrary.render(part.visual_payload)}</div>`;
         } else if (part.image_url) {
-          partDiagram = `<div class="mb-4 flex justify-center w-full"><img src="${esc(part.image_url)}" style="max-height: 220px; max-width: 100%; object-fit: contain; border-radius: var(--radius-md); border: 1px solid var(--border-light);"></div>`;
+          partDiagram = `<div class="mb-4 mx-auto flex justify-center w-full" style="max-width: 600px;"><img src="${esc(part.image_url)}" style="max-height: 220px; max-width: 100%; object-fit: contain; border-radius: var(--radius-md); border: 1px solid var(--border-light);"></div>`;
         }
         
         return `
@@ -910,14 +910,16 @@ window.initExamEngine = function () {
     // 🚀 DYNAMIC DIAGRAM INJECTION
     let diagramHtml = '';
     if (q.image_url) {
-      diagramHtml = `<div class="mb-6 flex justify-center w-full"><img src="${esc(q.image_url)}" style="max-height: 220px; max-width: 100%; object-fit: contain; border-radius: var(--radius-md); border: 1px solid var(--border-light);"></div>`;
+      diagramHtml = `<div class="mb-6 mx-auto flex justify-center w-full" style="max-width: 600px;"><img src="${esc(q.image_url)}" style="max-height: 220px; max-width: 100%; object-fit: contain; border-radius: var(--radius-md); border: 1px solid var(--border-light);"></div>`;
     } else if (q.visual_payload) {
       diagramHtml = renderVisualPayload(q.visual_payload);
     }
 
+    const paneMaxWidth = renderIsSplit ? '100%' : '680px';
+
     app.innerHTML = `
-      <div class="flex flex-wrap gap-6 items-start w-full">
-        <div class="flex-1 flex flex-col" style="min-width: 300px;">
+      <div class="flex flex-wrap gap-6 items-start w-full justify-center">
+        <div class="flex flex-col" style="flex: 1 1 300px; max-width: ${paneMaxWidth}; width: 100%; transition: max-width 0.3s ease;">
           <div class="badge badge-info mb-4 self-start">${esc(q.sectionLabel)}</div>
           
           <div class="card p-6 mb-4 flex-1">

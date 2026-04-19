@@ -156,13 +156,13 @@ window.initQuizEngine = function() {
 
         // Check if the function actually exists in your library
         if (typeof DiagramLibrary[fnName] === 'function') {
-          return `<div class="procedural-diagram mb-4 flex justify-center">
+          return `<div class="procedural-diagram mb-4 mx-auto flex justify-center w-full" style="max-width: 600px; overflow-x: auto;">
                     ${DiagramLibrary[fnName](params)}
                   </div>`;
         } else {
           // The AI invented a function you haven't built yet! Graceful fallback.
           console.warn(`[DiagramLibrary] Missing function requested by AI: ${fnName}`, params);
-          return `<div class="procedural-diagram mb-4 flex justify-center">
+          return `<div class="procedural-diagram mb-4 mx-auto flex justify-center w-full" style="max-width: 600px; overflow-x: auto;">
                     ${DiagramLibrary.placeholder({ 
                       description: `Requires DiagramLibrary.${fnName}()\nParams: ${JSON.stringify(params).substring(0,40)}...` 
                     })}
@@ -170,7 +170,7 @@ window.initQuizEngine = function() {
         }
       } catch (err) {
         console.error("[DiagramLibrary] Rendering crashed:", err);
-        return `<div class="procedural-diagram mb-4 flex justify-center">
+        return `<div class="procedural-diagram mb-4 mx-auto flex justify-center w-full" style="max-width: 600px; overflow-x: auto;">
                   ${DiagramLibrary.placeholder({ description: "Diagram Rendering Error" })}
                 </div>`;
       }
@@ -587,7 +587,7 @@ function buildClozeUI(q) {
         if (part.visual_payload && typeof renderVisualPayload !== 'undefined') {
           partDiagram = renderVisualPayload(part.visual_payload);
         } else if (part.image_url) {
-          partDiagram = `<div class="mb-4 flex justify-center w-full"><img src="${esc(part.image_url)}" style="max-height: 220px; max-width: 100%; object-fit: contain; border-radius: var(--radius-md); border: 1px solid var(--border-light);"></div>`;
+          partDiagram = `<div class="mb-4 mx-auto flex justify-center w-full" style="max-width: 600px;"><img src="${esc(part.image_url)}" style="max-height: 220px; max-width: 100%; object-fit: contain; border-radius: var(--radius-md); border: 1px solid var(--border-light);"></div>`;
         }
         
         if (partDiagram) {
