@@ -710,7 +710,45 @@ window.initExamEngine = function () {
       uiHtml = `<div class="card p-6">${lines}</div>`;
     } else if (q.type === 'short_ans') {
       const isDrawMode = state.drawings[ansKey] && state.drawings[ansKey] !== 'text';
+      
+      // 🚀 MASTERCLASS SYNTHESIS PARSER
+      let synthesisHtml = '';
+      let prefillAns = savedAns;
+      let isSynthesis = (q.topic || '').toLowerCase() === 'synthesis';
+      
+      if (isSynthesis && q.question_text.includes('\n\n')) {
+        const parts = q.question_text.split('\n\n');
+        const displayQuestion = parts[0].trim();
+        const rawConnector = parts[1].trim();
+        const cleanConnector = rawConnector.replace(/^\.\.\.|\.\.\.$|^\(|\)$/g, '').trim(); 
+        
+        let blueprintHtml = '';
+        if (rawConnector.startsWith('...') && rawConnector.endsWith('...')) {
+           // MIDDLE: ... despite ...
+           blueprintHtml = `<div class="flex-1 border-b-2 border-dashed border-dark opacity-30"></div><div class="font-bold text-brand-rose px-3 py-1 bg-surface rounded shadow-sm text-sm uppercase tracking-wide">${esc(cleanConnector)}</div><div class="flex-1 border-b-2 border-dashed border-dark opacity-30"></div>`;
+        } else if (rawConnector.startsWith('(') && rawConnector.endsWith(')')) {
+           // MIDDLE/ANYWHERE: (despite)
+           blueprintHtml = `<div class="flex-1 border-b-2 border-dashed border-dark opacity-30"></div><div class="font-bold text-brand-rose px-3 py-1 bg-surface rounded shadow-sm text-sm uppercase tracking-wide">${esc(cleanConnector)}</div><div class="flex-1 border-b-2 border-dashed border-dark opacity-30"></div>`;
+        } else if (rawConnector.startsWith('...')) {
+           // END: ... respectively.
+           blueprintHtml = `<div class="flex-1 border-b-2 border-dashed border-dark opacity-30"></div><div class="font-bold text-brand-rose px-3 py-1 bg-surface rounded shadow-sm text-sm uppercase tracking-wide">${esc(cleanConnector)}</div>`;
+        } else {
+           // START: The boys
+           blueprintHtml = `<div class="font-bold text-brand-rose px-3 py-1 bg-surface rounded shadow-sm text-sm uppercase tracking-wide">${esc(cleanConnector)}</div><div class="flex-1 border-b-2 border-dashed border-dark opacity-30"></div>`;
+           if (!savedAns) prefillAns = cleanConnector + ' '; 
+        }
+
+        synthesisHtml = `
+          <div class="card p-5 bg-elevated border border-light mb-6 shadow-sm">
+            <div class="text-xs font-bold text-muted uppercase tracking-wider mb-2">Transform the sentence(s):</div>
+            <div class="text-lg text-main font-medium leading-relaxed mb-5">${esc(displayQuestion)}</div>
+            <div class="flex items-center gap-3 w-full">${blueprintHtml}</div>
+          </div>
+        `;
+      }
+
       uiHtml = `
+        ${synthesisHtml}
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
           <span class="text-xs font-bold text-muted uppercase tracking-wider">💡 Tip: Draw your working!</span>
           <div class="flex gap-2 w-full sm:w-auto">
@@ -719,16 +757,17 @@ window.initExamEngine = function () {
           </div>
         </div>
         ${!isDrawMode 
-          ? `<input type="text" id="qInput" class="form-input w-full p-4 text-lg border-2 border-light focus:border-brand-sage rounded-xl transition-all shadow-sm" placeholder="Type your final answer here (Required for marking)" value="${esc(savedAns)}" autocomplete="off" oninput="window.saveCurrentAnswerState()">`
+          ? `<input type="text" id="qInput" class="form-input w-full p-4 text-lg border-2 border-light focus:border-brand-sage rounded-xl transition-all shadow-sm" placeholder="Type your complete sentence here..." value="${esc(prefillAns)}" autocomplete="off" oninput="window.saveCurrentAnswerState()">`
           : `<div class="scratchpad-container mb-4" style="position: relative; display: block;">
                <canvas id="canvas-${ansKey}" data-drawkey="${ansKey}" class="scratchpad-canvas bg-white border-2 border-light rounded-xl w-full shadow-sm" style="min-height: 300px; touch-action: none; cursor: crosshair;"></canvas>
                <div style="position: absolute; top: 12px; right: 12px;">
                   <button class="btn btn-sm btn-ghost bg-white hover-lift border border-light shadow-sm rounded-lg" onclick="window.clearCanvas('${ansKey}')">🗑️ Clear</button>
                </div>
              </div>
-             <input type="text" id="qInput" class="form-input w-full p-4 text-lg border-2 border-brand-sage focus:border-brand-sage rounded-xl transition-all shadow-sm bg-sage-50/10" placeholder="Type your final answer here (Required for marking)" value="${esc(savedAns)}" autocomplete="off" oninput="window.saveCurrentAnswerState()">`
+             <input type="text" id="qInput" class="form-input w-full p-4 text-lg border-2 border-brand-sage focus:border-brand-sage rounded-xl transition-all shadow-sm bg-sage-50/10" placeholder="Type your complete sentence here..." value="${esc(prefillAns)}" autocomplete="off" oninput="window.saveCurrentAnswerState()">`
         }
       `;
+    const renderHasParts = (() => { try { return (typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || [])).length > 0; } catch(e){ return false; } })();
     } else if (q.type === 'open_ended') {
       const isDrawMode = state.drawings[ansKey] && state.drawings[ansKey] !== 'text';
       uiHtml = `
@@ -929,7 +968,7 @@ window.initExamEngine = function () {
             </div>
             
             ${q.sectionInstr ? `<p class="text-sm text-muted italic mb-4">${esc(q.sectionInstr)}</p>` : ''}
-            ${['cloze', 'editing'].includes(q.type) ? '' : `<p class="text-lg text-main font-medium mb-6" style="line-height: 1.6;">${esc(q.question_text)}</p>`}
+            ${['cloze', 'editing'].includes(q.type) || (q.type === 'short_ans' && (q.topic || '').toLowerCase() === 'synthesis') ? '' : `<p class="text-lg text-main font-medium mb-6" style="line-height: 1.6;">${esc(q.question_text)}</p>`}
             
             ${diagramHtml}
             
@@ -1426,7 +1465,11 @@ window.initExamEngine = function () {
             <span class="font-bold text-muted">Q${i+1}</span>
             <span class="font-bold" style="color: ${r.earned > 0 ? 'var(--brand-mint)' : 'var(--text-muted)'}">${r.earned}/${r.max}</span>
           </div>
-          <p class="font-medium mt-2 mb-2">${esc(r.q.question_text)}</p>
+          <p class="font-medium mt-2 mb-2">
+            ${((r.q.topic || '').toLowerCase() === 'synthesis' && r.q.question_text.includes('\\n\\n')) 
+              ? esc(r.q.question_text.split('\\n\\n')[0].trim()) + `<br><span class="text-brand-rose font-bold text-xs uppercase bg-surface px-2 py-1 rounded inline-block mt-2 shadow-sm">${esc(r.q.question_text.split('\\n\\n')[1].replace(/^\\.\\.\\.|\\.\\.\\.$|^\\(|\\)$/g, '').trim())}</span>`
+              : esc(r.q.question_text)}
+          </p>
           ${ansHtml}
           ${drawingHtml}
           ${r.fb ? `<div class="mt-4 p-4 text-sm bg-elevated card-rule-amber" style="border-radius: var(--radius-sm);"><strong class="text-main">Miss Wena's Feedback:</strong><br>${esc(r.fb)}</div>` : ''}
