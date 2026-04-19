@@ -242,18 +242,24 @@ window.initQuizEngine = function() {
       }
       const cleanConnector = rawConnector.replace(/^\.\.\.|\.\.\.$|^\(|\)$/g, '').trim(); 
       
-      let blueprintHtml = '';
-      if (rawConnector.startsWith('...') && rawConnector.endsWith('...')) {
-         blueprintHtml = `<div class="flex-1 border-b-2 border-dashed border-dark opacity-30"></div><div class="font-bold text-brand-rose px-3 py-1 bg-surface rounded shadow-sm text-sm uppercase tracking-wide">${esc(cleanConnector)}</div><div class="flex-1 border-b-2 border-dashed border-dark opacity-30"></div>`;
-      } else if (rawConnector.startsWith('(') && rawConnector.endsWith(')')) {
-         blueprintHtml = `<div class="flex-1 border-b-2 border-dashed border-dark opacity-30"></div><div class="font-bold text-brand-rose px-3 py-1 bg-surface rounded shadow-sm text-sm uppercase tracking-wide">${esc(cleanConnector)}</div><div class="flex-1 border-b-2 border-dashed border-dark opacity-30"></div>`;
-      } else if (rawConnector.startsWith('...')) {
-         blueprintHtml = `<div class="flex-1 border-b-2 border-dashed border-dark opacity-30"></div><div class="font-bold text-brand-rose px-3 py-1 bg-surface rounded shadow-sm text-sm uppercase tracking-wide">${esc(cleanConnector)}</div>`;
-      } else {
-         blueprintHtml = `<div class="font-bold text-brand-rose px-3 py-1 bg-surface rounded shadow-sm text-sm uppercase tracking-wide">${esc(cleanConnector)}</div><div class="flex-1 border-b-2 border-dashed border-dark opacity-30"></div>`;
-         if (!savedAns) savedAns = cleanConnector + ' '; 
-      }
-
+      const lineBlock = `<div class="flex-1" style="border-bottom: 2px solid var(--text-main); margin-bottom: 0.5rem; opacity: 0.6;"></div>`;
+        
+        let blueprintHtml = '';
+        if (rawConnector.startsWith('...') && rawConnector.endsWith('...')) {
+           // MIDDLE: ... despite ...
+           blueprintHtml = `${lineBlock}<div class="font-bold text-brand-rose px-4 py-2 bg-surface rounded shadow-sm text-sm uppercase tracking-widest">${esc(cleanConnector)}</div>${lineBlock}`;
+        } else if (rawConnector.startsWith('(') && rawConnector.endsWith(')')) {
+           // Fallback for legacy bracket formats
+           blueprintHtml = `${lineBlock}<div class="font-bold text-brand-rose px-4 py-2 bg-surface rounded shadow-sm text-sm uppercase tracking-widest">${esc(cleanConnector)}</div>${lineBlock}`;
+        } else if (rawConnector.startsWith('...')) {
+           // END: ... respectively.
+           blueprintHtml = `${lineBlock}<div class="font-bold text-brand-rose px-4 py-2 bg-surface rounded shadow-sm text-sm uppercase tracking-widest">${esc(cleanConnector)}</div>`;
+        } else {
+           // START: The boys
+           blueprintHtml = `<div class="font-bold text-brand-rose px-4 py-2 bg-surface rounded shadow-sm text-sm uppercase tracking-widest">${esc(cleanConnector)}</div>${lineBlock}`;
+           if (!savedAns) prefillAns = cleanConnector + ' '; 
+        }
+        
       synthesisHtml = `
         <div class="card p-5 bg-elevated border border-light mb-6 shadow-sm">
           <div class="text-lg text-main font-medium leading-relaxed mb-5">${esc(displayQuestion)}</div>
@@ -1538,7 +1544,25 @@ function buildClozeUI(q) {
 
       unseenPool = shuffle(unseenPool);
 
-      state.questions = unseenPool.slice(0, 10);
+      // 🚀 MASTERCLASS: The Comprehension Interceptor
+      if (dbSubject.toLowerCase() === 'english language' && (dbTopic || '').toLowerCase() === 'comprehension') {
+        let visualQs = unseenPool.filter(q => q.type === 'visual_text');
+        let textQs = unseenPool.filter(q => q.type === 'comprehension');
+        
+        state.questions = [];
+        // Per Constraints: P3 and P4 do NOT get Visual Text in Training Lab
+        const isUpperPrimary = dbLevel.includes('5') || dbLevel.includes('6');
+        
+        if (isUpperPrimary && visualQs.length > 0) {
+          state.questions.push(visualQs[0]);
+          if (textQs.length > 0) state.questions.push(textQs[0]);
+        } else {
+          // Fallback / Junior Primary: Load 2 Text Comprehensions
+          state.questions = textQs.slice(0, 2);
+        }
+      } else {
+        state.questions = unseenPool.slice(0, 10);
+      }
 
       state.questions.forEach(q => seenIds.push(q.id));
       localStorage.setItem(seenKey, JSON.stringify(seenIds));

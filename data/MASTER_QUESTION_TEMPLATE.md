@@ -15,20 +15,22 @@ The question types are modelled after actual MOE/SEAB exam
 formats used in PSLE, SA1, SA2, and school-based assessments.
 
 ═══════════════════════════════════════════════════════════════
-AI PERSONA & SINGAPORE MOE CONTEXT
+SYSTEM DIRECTIVES: ZERO-HALLUCINATION SQL & DATA SCHEMA
 ═══════════════════════════════════════════════════════════════
 
-When generating questions using this template, you are an Expert Singapore MOE Curriculum Developer. 
-Your questions MUST reflect local Singaporean context:
-- Names: Use standard local names (e.g., Siti, Wei Hao, Jun Jie, Ahmad, Ravi, Auntie Mei, Mr. Tan).
-- Currency: Use Singapore Dollars (SGD / $).
-- Tone/Style: Precise, grammatically flawless, avoiding ambiguous phrasing.
-- Logic: Do not generate physically impossible scenarios or "half-items" for discrete objects (e.g., "2.5 marbles").
+When generating questions using this template, you are an Expert Singapore MOE Curriculum Developer generating data for a PostgreSQL database. 
+Your questions MUST reflect local Singaporean context (e.g., names like Siti, Wei Hao, Ahmad; currency in SGD).
 
-CRITICAL DATABASE RULE (SQL ESCAPING):
-All text output will be injected into a PostgreSQL database. Therefore, EVERY single quote or apostrophe inside your text strings MUST be double-escaped.
-WRONG: "Siti's brother couldn't go."
-RIGHT: "Siti''s brother couldn''t go."
+**CRITICAL DATABASE RULES (SQL ESCAPING & STRICT JSON):**
+1. **Double-Escape Quotes:** EVERY single quote or apostrophe inside your text strings MUST be double-escaped. 
+   - WRONG: "Siti's brother couldn't go."
+   - RIGHT: "Siti''s brother couldn''t go."
+2. **Stringified JSON:** Fields that store arrays or objects (like `parts`, `options`, `visual_payload`, `accept_also`, `wrong_explanations`) MUST be strictly stringified JSON when written in the SQL `INSERT` statement.
+3. **Valid HTML:** Use `<br><br>` for paragraph breaks instead of `\n` in `question_text`, `passage`, and `worked_solution`.
+
+**SUPABASE `question_bank` TABLE FIELDS (Do not invent new columns):**
+You may only populate the following columns in your SQL output:
+`id` (UUID), `seed_id`, `is_ai_cloned` (boolean), `subject`, `level`, `topic`, `sub_topic`, `difficulty`, `type`, `marks`, `question_text`, `options` (JSON), `correct_answer`, `wrong_explanations` (JSON), `worked_solution`, `parts` (JSON), `keywords` (JSON), `model_answer`, `passage`, `blanks` (JSON), `passage_lines`, `examiner_note`, `created_at`, `cognitive_skill`, `progressive_hints` (JSON), `image_url`, `visual_payload` (JSON), `instructions`, `flag_review` (boolean), `accept_also` (JSON).
 
 ═══════════════════════════════════════════════════════════════
 QUESTION TYPES BY SUBJECT
@@ -43,11 +45,13 @@ SCIENCE (2 types)
   Type 1: mcq         — Multiple Choice (Booklet A, 2 marks each)
   Type 2: open_ended  — Open-Ended written answer (Booklet B, 2-5 marks)
 
-ENGLISH (4 types)
-  Type 1: mcq         — Grammar / Vocabulary MCQ
-  Type 2: cloze       — Grammar Cloze (fill blank from options)
-  Type 3: editing     — Spot and correct the error
-  Type 4: comprehension — Read passage, answer question
+ENGLISH (6 types)
+  Type 1: mcq             — Grammar / Vocabulary MCQ
+  Type 2: cloze           — Grammar Cloze (Type 5A) & Comprehension Cloze (Type 5B)
+  Type 3: editing         — Spot and correct the error
+  Type 4: comprehension   — Text passage with multi-part questions (Split-Screen)
+  Type 5: visual_text     — Image/Flyer with multi-part MCQs (Split-Screen)
+  Type 6: synthesis       — Transform sentences using short_ans Visual Blueprints
 
 ═══════════════════════════════════════════════════════════════
 EXHAUSTIVE MOE SYLLABUS TAXONOMY
@@ -66,7 +70,7 @@ You must categorize every question exactly according to these Levels, Subjects, 
   - Measurement: Length (m, cm), Mass (kg, g), Volume (L, ml), Time (Duration).
   - Geometry & Graphs: Angles (Right Angles), Area and Perimeter (Squares/Rectangles), Bar Graphs.
 - SCIENCE Topics: Diversity (Living/Non-Living, Materials), Systems (Human Digestive), Interactions (Magnets).
-- ENGLISH Topics: Grammar, Vocabulary, Comprehension, Cloze, Editing.
+- ENGLISH Topics: Grammar, Vocabulary, Comprehension, Cloze, Editing, Synthesis.
 
 [PRIMARY 4]
 - MATH Topics & Sub-Topics:
@@ -76,7 +80,7 @@ You must categorize every question exactly according to these Levels, Subjects, 
   - Geometry & Measurement: Symmetry, 8-Point Compass, Push-out Perimeter, Composite Area.
   - Graphs: Line Graphs, Tables.
 - SCIENCE Topics: Cycles (Matter, Life Cycles), Energy (Heat, Light), Interactions (Magnets).
-- ENGLISH Topics: Grammar, Vocabulary, Comprehension, Cloze, Editing.
+- ENGLISH Topics: Grammar, Vocabulary, Comprehension, Cloze, Editing, Synthesis.
 
 [PRIMARY 5]
 - MATH Topics & Sub-Topics:
@@ -329,23 +333,33 @@ SAMPLE — SCIENCE OPEN-ENDED:
 
 
 ═══════════════════════════════════════════════════════════════
-TYPE 5: CLOZE — GRAMMAR CLOZE PASSAGE (ENGLISH)
+TYPE 5: CLOZE PASSAGES (ENGLISH)
 ═══════════════════════════════════════════════════════════════
 
-Used in: English Paper 2 (Grammar Cloze section)
+Used in: English Paper 2 (Grammar Cloze and Comprehension Cloze)
 
-FORMAT:
-  - A continuous passage with embedded bracketed numbers for blanks: [1], [2].
-  - DO NOT put options inside the passage string.
-  - Student selects one option per blank from a dropdown.
+**FORMAT RULES:**
+- A continuous `passage` string with embedded bracketed numbers for blanks: `[1]`, `[2]`.
+- DO NOT put options inside the passage string.
 
-ADDITIONAL JSON FIELDS:
-  "passage": "string — the full continuous text with embedded [1], [2] blanks.",
+**TYPE 5A: GRAMMAR CLOZE (Dropdown Selection)**
+To trigger a dropdown, you MUST include the `"options"` array in the blank object.
   "blanks": [
     {
       "number": 1,
-      "options": ["string", "string", "string", "string"],
-      "correct_answer": "string — exact correct option",
+      "options": ["He", "She", "It", "They"],
+      "correct_answer": "It",
+      "explanation": "string"
+    }
+  ]
+
+**TYPE 5B: COMPREHENSION CLOZE (Free-Text Typing)**
+To trigger an empty text input box for the student to type their own answer, you MUST OMIT the `"options"` array.
+  "blanks": [
+    {
+      "number": 1,
+      "correct_answer": "because",
+      "accept_also": ["as", "since"],
       "explanation": "string"
     }
   ]
@@ -384,6 +398,132 @@ DISPLAY RULES:
   - For each underlined word: text input for correction
   - "Check" button reveals answers
 
+═══════════════════════════════════════════════════════════════
+TYPE 7: COMPREHENSION — (English PSLE)
+═══════════════════════════════════════════════════════════════
+
+**Type Code:** `comprehension`
+**Description:** A mixed-format question type featuring a root passage and a polymorphic `parts` array representing different sub-questions (MCQ, True/False tables, Open-Ended text boxes).
+
+**JSON Structure:**
+```json
+{
+  "type": "comprehension",
+  "marks": 9,
+  "passage": "Siti was walking home from school...", 
+  "parts": [
+    {
+      "part_type": "mcq",
+      "marks": 1,
+      "question": "Why did Siti drop her bag?",
+      "options": ["She was tired.", "To save the kitten.", "It fell.", "Her mom told her to."],
+      "correct_answer": "To save the kitten.",
+      "explanation": "She needed to free her hands."
+    },
+    {
+      "part_type": "true_false",
+      "marks": 2,
+      "instructions": "State whether the statement is True or False, and give a reason.",
+      "items": [
+        {
+          "statement": "Siti ignored the kitten.",
+          "correct_answer": "False",
+          "reason_evidence": "The passage states she dropped her bag without hesitation."
+        }
+      ]
+    },
+    {
+      "part_type": "text_box",
+      "marks": 2,
+      "question": "How did Siti keep the kitten warm?",
+      "model_answer": "Siti kept the kitten warm by wrapping it tightly in her jacket.",
+      "rubric": "Award 2 marks for mentioning wrapping in her jacket. 1 mark for jacket only."
+    }
+  ]
+}
+
+═══════════════════════════════════════════════════════════════
+TYPE 8: VISUAL TEXT COMPREHENSION (ENGLISH)
+═══════════════════════════════════════════════════════════════
+
+**Type Code:** `visual_text`
+**Topic MUST be:** "Comprehension"
+**Description:** A Split-Screen question where the left pane renders a flyer/poster image, and the right pane renders an array of sub-questions. (Used for Primary 5 & 6 only).
+
+**CRITICAL DATABASE MAPPING:**
+- `type`: "visual_text"
+- `passage`: MUST BE `null` (The UI uses the image instead of text).
+- `image_url`: "string — URL of the flyer/poster".
+- `question_text`: "Study the flyer carefully and answer the following questions."
+- `parts`: A stringified JSON array containing multiple `mcq` objects.
+
+**JSON Parts Structure:**
+"parts": [
+  {
+    "part_type": "mcq",
+    "label": "Q1",
+    "marks": 1,
+    "question": "string",
+    "options": ["string", "string", "string", "string"],
+    "correct_answer": "string",
+    "explanation": "string"
+  }
+]
+
+═══════════════════════════════════════════════════════════════
+TYPE 9: OPEN-ENDED WITH DIAGRAMS (SCIENCE)
+═══════════════════════════════════════════════════════════════
+
+Used in: Science Booklet B (Multi-part experiments)
+
+FORMAT:
+  - An experiment setup or scenario is shown.
+  - Student answers parts (a), (b), (c) in separate text boxes.
+
+ADDITIONAL JSON FIELDS:
+  "passage": "string — The experiment context/setup",
+  "visual_payload": { ... } — Diagram of the experiment (optional),
+  "parts": [
+    {
+      "label": "(a)",
+      "part_type": "text_box",
+      "marks": 2,
+      "question": "string",
+      "model_answer": "string",
+      "rubric": "string",
+      "keywords": ["string"]
+    }
+  ]
+
+═══════════════════════════════════════════════════════════════
+TYPE 10: SYNTHESIS & TRANSFORMATION (English Only)
+═══════════════════════════════════════════════════════════════
+
+**Type Code:** `short_ans`
+**Topic MUST be:** "Synthesis"
+**Description:** Combines or transforms sentences using a "Visual Blueprint".
+
+**CRITICAL DATABASE MAPPING (The Visual Blueprint Parser):**
+Our UI parses the `instructions` field using Regex to automatically draw visual connector lines. You MUST format the data exactly like this:
+
+1. `question_text`: MUST contain ONLY the original sentences. No line breaks.
+   *Example:* "The boy is my neighbour. His bicycle was stolen."
+2. `instructions`: MUST contain the connector/starter word wrapped in EXACT single quotes.
+3. `correct_answer`: The exact, grammatically perfect complete sentence (including full stop).
+
+**THE 4 CONNECTOR MODES (Format `instructions` to trigger the correct UI):**
+* **Mode 1: Start Connector (Default)**
+    * *Instructions:* Rewrite the sentence beginning with the word ''Unless''.
+    * *UI Result:* `[ Unless ] _______________________`
+* **Mode 2: Middle Connector (Using Dots)**
+    * *Instructions:* Combine the sentences using the phrase ''... even though ...''.
+    * *UI Result:* `__________ [ even though ] __________`
+* **Mode 3: Middle Connector (Using Brackets)**
+    * *Instructions:* Combine the sentences using the word ''(whose)''.
+    * *UI Result:* `__________ [ whose ] __________`
+* **Mode 4: End Connector**
+    * *Instructions:* Combine the sentences using the word ''... respectively.''.
+    * *UI Result:* `_______________________ [ respectively. ]`
 
 ═══════════════════════════════════════════════════════════════
 VISUAL PAYLOAD ENGINES REGISTRY
@@ -436,9 +576,9 @@ CRITICAL RULES (these fix the bugs in the screenshots):
    type === "cloze"         → show passage with dropdown/radio per blank
    type === "editing"       → show passage with text input per underlined word
 
-3. TRUE/FALSE BUTTONS:
-   DO NOT show True/False buttons on ANY question type.
-   There is no true/false question type. Remove these buttons entirely.
+3. TRUE/FALSE HANDLING:
+   NEVER generate standalone True/False questions (e.g., as a root `mcq`). 
+   HOWEVER, you MUST use the `"part_type": "true_false"` schema when building True/False evidence tables INSIDE a Type 7 `comprehension` parts array.
 
 4. FRACTION DISPLAY:
    Fractions in option text MUST render as plain text.
