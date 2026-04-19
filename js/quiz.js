@@ -229,10 +229,15 @@ window.initQuizEngine = function() {
     let synthesisHtml = '';
     let isSynthesis = (q.topic || '').toLowerCase() === 'synthesis';
     
-    if (isSynthesis && q.question_text && q.question_text.includes('\n\n')) {
-      const parts = q.question_text.split('\n\n');
-      const displayQuestion = parts[0].trim();
-      const rawConnector = parts[1].trim();
+    if (isSynthesis && q.question_text) {
+      const displayQuestion = q.question_text;
+      
+      // Extract the connector from the single quotes in the instructions (e.g. '... respectively.')
+      let rawConnector = '';
+      if (q.instructions) {
+         const match = q.instructions.match(/'([^']+)'/);
+         if (match) rawConnector = match[1];
+      }
       const cleanConnector = rawConnector.replace(/^\.\.\.|\.\.\.$|^\(|\)$/g, '').trim(); 
       
       let blueprintHtml = '';
@@ -811,8 +816,8 @@ function buildClozeUI(q) {
       displayInstruction = 'Fill in each blank with the correct word from the Word Bank.';
     } else if (q.type === 'editing') {
       displayInstruction = 'Read the passage and correct each underlined spelling or grammatical error.';
-    } else if (isSynthesis && q.question_text && q.question_text.includes('\n\n')) {
-      // 🚀 Inject the database instructions, or use a perfect default fallback
+    } else if (isSynthesis) {
+      // 🚀 Inject the explicit database instructions
       displayInstruction = q.instructions ? esc(q.instructions) : 'Rewrite the given sentence(s) using the word(s) provided. Your answer must be in one sentence. The meaning of your sentence must be the same as the meaning of the given sentence(s).';
     }
 

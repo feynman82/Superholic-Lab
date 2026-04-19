@@ -716,10 +716,14 @@ window.initExamEngine = function () {
       let prefillAns = savedAns;
       let isSynthesis = (q.topic || '').toLowerCase() === 'synthesis';
       
-      if (isSynthesis && q.question_text.includes('\n\n')) {
-        const parts = q.question_text.split('\n\n');
-        const displayQuestion = parts[0].trim();
-        const rawConnector = parts[1].trim();
+      if (isSynthesis && q.question_text) {
+        const displayQuestion = q.question_text;
+        
+        let rawConnector = '';
+        if (q.instructions) {
+           const match = q.instructions.match(/'([^']+)'/);
+           if (match) rawConnector = match[1];
+        }
         const cleanConnector = rawConnector.replace(/^\.\.\.|\.\.\.$|^\(|\)$/g, '').trim(); 
         
         let blueprintHtml = '';
@@ -968,7 +972,7 @@ window.initExamEngine = function () {
             </div>
             
             ${q.sectionInstr ? `<p class="text-sm text-muted italic mb-4">${esc(q.sectionInstr)}</p>` : ''}
-            ${(q.type === 'short_ans' && (q.topic || '').toLowerCase() === 'synthesis') ? `<p class="text-lg font-bold text-main mb-6 leading-relaxed">${q.instructions ? esc(q.instructions) : 'Rewrite the given sentence(s) using the word(s) provided. Your answer must be in one sentence. The meaning of your sentence must be the same as the meaning of the given sentence(s).'}</p>` : ''}
+            ${(q.type === 'short_ans' && (q.topic || '').toLowerCase() === 'synthesis') ? `<p class="text-xl font-bold text-main mb-6 leading-relaxed">${q.instructions ? esc(q.instructions) : 'Rewrite the given sentence(s) using the word(s) provided. Your answer must be in one sentence. The meaning of your sentence must be the same as the meaning of the given sentence(s).'}</p>` : ''}
             ${['cloze', 'editing'].includes(q.type) || (q.type === 'short_ans' && (q.topic || '').toLowerCase() === 'synthesis') ? '' : `<p class="text-lg text-main font-medium mb-6" style="line-height: 1.6;">${esc(q.question_text)}</p>`}
             
             ${diagramHtml}
