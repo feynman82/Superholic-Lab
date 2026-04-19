@@ -717,7 +717,8 @@ window.initExamEngine = function () {
       let isSynthesis = (q.topic || '').toLowerCase() === 'synthesis';
       
       if (isSynthesis && q.question_text) {
-        const displayQuestion = q.question_text;
+        // 🚀 MASTERCLASS FIX: Safely strip any legacy \n\n connectors hiding in the text
+        const displayQuestion = q.question_text.split(/\n\n|\\n\\n/)[0].trim();
         
         let rawConnector = '';
         if (q.instructions) {
@@ -744,7 +745,6 @@ window.initExamEngine = function () {
 
         synthesisHtml = `
           <div class="card p-5 bg-elevated border border-light mb-6 shadow-sm">
-            <div class="text-xs font-bold text-muted uppercase tracking-wider mb-2">Transform the sentence(s):</div>
             <div class="text-lg text-main font-medium leading-relaxed mb-5">${esc(displayQuestion)}</div>
             <div class="flex items-center gap-3 w-full">${blueprintHtml}</div>
           </div>
@@ -1451,18 +1451,28 @@ window.initExamEngine = function () {
             <div class="mb-3 border-b border-light pb-2 last:border-0 last:pb-0">
               <div class="font-bold" style="color: var(--brand-sage);">${esc(pLabel)}</div>
               <div><span class="font-bold text-muted">Yours:</span> ${esc(userAns || '(blank)')}</div>
-              <div class="mt-1"><span class="font-bold text-success">Model:</span> ${esc(modelAns)}</div>
+              <div class="mt-1"><span class="font-bold text-success">Model:</span> <div class="mt-1 leading-relaxed">${String(modelAns)}</div></div>
             </div>`;
         }).join('');
         ansHtml = `<div class="bg-page p-4 mt-2 text-sm" style="border-radius: var(--radius-sm);">${rows}</div>`;
       } else { 
         const modelAns = r.q.model_answer || r.q.correct_answer || r.q.worked_solution || '';
         const userStr = typeof r.sa === 'object' ? JSON.stringify(r.sa) : r.sa;
-        ansHtml = `<div class="bg-page p-4 mt-2 text-sm" style="border-radius: var(--radius-sm);"><span class="font-bold text-muted">Yours:</span> ${esc(userStr || '(blank)')}<br><span class="font-bold text-success mt-1 inline-block">Model:</span> ${esc(modelAns)}</div>`;
+        ansHtml = `<div class="bg-page p-4 mt-2 text-sm" style="border-radius: var(--radius-sm);"><span class="font-bold text-muted">Yours:</span> ${esc(userStr || '(blank)')}<br><span class="font-bold text-success mt-1 inline-block">Model:</span> <div class="mt-1 leading-relaxed">${String(modelAns)}</div></div>`;
       }
 
       const drawingData = state.drawings[i];
       const drawingHtml = (drawingData && drawingData !== 'init') ? `<div class="mt-2"><p class="text-xs font-bold text-muted mb-1">Your Digital Scratchpad:</p><img src="${drawingData}" style="max-height: 100px; border: 1px solid var(--border-light); border-radius: var(--radius-sm); background: white;"></div>` : '';
+
+      // 🚀 MASTERCLASS FIX: Synthesis parser for Results
+      let resultQText = esc((r.q.question_text || '').split(/\n\n|\\n\\n/)[0].trim());
+      if ((r.q.topic || '').toLowerCase() === 'synthesis' && r.q.instructions) {
+         const match = r.q.instructions.match(/'([^']+)'/);
+         if (match) {
+           const cleanConn = match[1].replace(/^\\.\\.\\.|\\.\\.\\.$|^\\(|\\)$/g, '').trim();
+           resultQText += `<br><span class="text-brand-rose font-bold text-xs uppercase bg-surface px-2 py-1 rounded inline-block mt-2 shadow-sm">${esc(cleanConn)}</span>`;
+         }
+      }
 
       return `
         <div class="card p-6 mb-4 result-item ${cls}">
@@ -1471,13 +1481,11 @@ window.initExamEngine = function () {
             <span class="font-bold" style="color: ${r.earned > 0 ? 'var(--brand-mint)' : 'var(--text-muted)'}">${r.earned}/${r.max}</span>
           </div>
           <p class="font-medium mt-2 mb-2">
-            ${((r.q.topic || '').toLowerCase() === 'synthesis' && r.q.question_text.includes('\\n\\n')) 
-              ? esc(r.q.question_text.split('\\n\\n')[0].trim()) + `<br><span class="text-brand-rose font-bold text-xs uppercase bg-surface px-2 py-1 rounded inline-block mt-2 shadow-sm">${esc(r.q.question_text.split('\\n\\n')[1].replace(/^\\.\\.\\.|\\.\\.\\.$|^\\(|\\)$/g, '').trim())}</span>`
-              : esc(r.q.question_text)}
+            ${resultQText}
           </p>
           ${ansHtml}
           ${drawingHtml}
-          ${r.fb ? `<div class="mt-4 p-4 text-sm bg-elevated card-rule-amber" style="border-radius: var(--radius-sm);"><strong class="text-main">Miss Wena's Feedback:</strong><br>${esc(r.fb)}</div>` : ''}
+          ${r.fb ? `<div class="mt-4 p-4 text-sm bg-elevated card-rule-amber" style="border-radius: var(--radius-sm);"><strong class="text-main">Miss Wena's Feedback:</strong><br>${String(r.fb)}</div>` : ''}
         </div>
       `;
     }).join('');
