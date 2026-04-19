@@ -242,7 +242,8 @@ window.initQuizEngine = function() {
       }
       const cleanConnector = rawConnector.replace(/^\.\.\.|\.\.\.$|^\(|\)$/g, '').trim(); 
       
-      const lineBlock = `<div class="flex-1" style="border-bottom: 2px solid var(--text-main); margin-bottom: 0.5rem; opacity: 0.6;"></div>`;
+      // 🚀 MASTERCLASS FIX: Adjusted margin to sit perfectly on the text baseline
+        const lineBlock = `<div class="flex-1" style="border-bottom: 2px solid var(--text-main); margin-bottom: 0.3rem; opacity: 0.5;"></div>`;
         
         let blueprintHtml = '';
         if (rawConnector.startsWith('...') && rawConnector.endsWith('...')) {
@@ -259,13 +260,13 @@ window.initQuizEngine = function() {
            blueprintHtml = `<div class="font-bold text-brand-rose px-4 py-2 bg-surface rounded shadow-sm text-sm uppercase tracking-widest">${esc(cleanConnector)}</div>${lineBlock}`;
            if (!savedAns) prefillAns = cleanConnector + ' '; 
         }
-        
-      synthesisHtml = `
-        <div class="card p-5 bg-elevated border border-light mb-6 shadow-sm">
-          <div class="text-lg text-main font-medium leading-relaxed mb-5">${esc(displayQuestion)}</div>
-          <div class="flex items-center gap-3 w-full">${blueprintHtml}</div>
-        </div>
-      `;
+
+        synthesisHtml = `
+          <div class="card p-5 bg-elevated border border-light mb-6 shadow-sm">
+            <div class="text-lg text-main font-medium leading-relaxed mb-6">${esc(displayQuestion)}<br><br></div>
+            <div class="flex items-end gap-3 w-full">${blueprintHtml}</div>
+          </div>
+        `;
     }
 
     const typeModeHTML = isShortAns
