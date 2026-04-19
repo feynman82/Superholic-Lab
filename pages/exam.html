@@ -633,6 +633,9 @@ window.initExamEngine = function () {
     const ansKey = state.currentQIdx; 
     const savedAns = state.answers[ansKey] || '';
 
+    const renderHasParts = (() => { try { return (typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || [])).length > 0; } catch(e){ return false; } })();
+    const renderIsSplit = q.type === 'comprehension' || q.type === 'visual_text' || (q.type === 'open_ended' && renderHasParts);
+
     if (q.type === 'mcq') {
       const letters = ['A','B','C','D'];
       let safeOptions = [];
@@ -747,9 +750,6 @@ window.initExamEngine = function () {
              <input type="text" id="qInput" class="form-input w-full p-4 text-lg border-2 border-brand-sage focus:border-brand-sage rounded-xl transition-all shadow-sm bg-sage-50/10" placeholder="Final Answer (Optional)" value="${esc(savedAns)}" autocomplete="off" oninput="window.saveCurrentAnswerState()">`
         }
       `;
-    const renderHasParts = (() => { try { return (typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || [])).length > 0; } catch(e){ return false; } })();
-    const renderIsSplit = q.type === 'comprehension' || q.type === 'visual_text' || (q.type === 'open_ended' && renderHasParts);
-
     } else if (renderIsSplit) {
       let partsData = [];
       try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
@@ -969,6 +969,9 @@ window.initExamEngine = function () {
     const q = state.allQs[state.currentQIdx];
     const ansKey = state.currentQIdx;
     
+    const hasPartsGate = (() => { try { return (typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || [])).length > 0; } catch(e){ return false; } })();
+    const isSplitFormat = q.type === 'comprehension' || q.type === 'visual_text' || (q.type === 'open_ended' && hasPartsGate);
+
     if (q.type === 'cloze') {
       const ans = {};
       (q.blanks || []).forEach(b => {
@@ -984,9 +987,6 @@ window.initExamEngine = function () {
         if (el) ans[l.line_number] = el.value;
       });
       state.answers[ansKey] = ans;
-    const hasPartsGate = (() => { try { return (typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || [])).length > 0; } catch(e){ return false; } })();
-    const isSplitFormat = q.type === 'comprehension' || q.type === 'visual_text' || (q.type === 'open_ended' && hasPartsGate);
-
     } else if (q.type === 'word_problem' || isSplitFormat) {
       const ans = state.answers[ansKey] || {};
       let partsData = [];
@@ -1355,6 +1355,9 @@ window.initExamEngine = function () {
       let cls = r.status === 'correct' ? 'c-ok' : r.status === 'partial' ? 'c-part' : 'c-bad';
       let ansHtml = '';
       
+      const resHasParts = (() => { try { return (typeof r.q.parts === 'string' ? JSON.parse(r.q.parts) : (r.q.parts || [])).length > 0; } catch(e){ return false; } })();
+      const resIsSplit = r.q.type === 'comprehension' || r.q.type === 'visual_text' || (r.q.type === 'open_ended' && resHasParts);
+
       if (r.q.type === 'mcq') {
         let safeOptions = [];
         try { safeOptions = typeof r.q.options === 'string' ? JSON.parse(r.q.options) : (r.q.options || []); } catch(e) {}
@@ -1386,9 +1389,6 @@ window.initExamEngine = function () {
           return `Line ${num}: You: ${esc(selected)} ${isCor ? '✅' : `❌ (Correct: ${esc(l.correct_word)})`}`;
         }).join('<br>');
         ansHtml = `<div class="bg-page p-3 mt-2 text-sm" style="border-radius: var(--radius-sm);">${rows}</div>`;
-      const resHasParts = (() => { try { return (typeof r.q.parts === 'string' ? JSON.parse(r.q.parts) : (r.q.parts || [])).length > 0; } catch(e){ return false; } })();
-      const resIsSplit = r.q.type === 'comprehension' || r.q.type === 'visual_text' || (r.q.type === 'open_ended' && resHasParts);
-
       } else if (r.q.type === 'word_problem' || resIsSplit) {
         let partsData = [];
         try { partsData = typeof r.q.parts === 'string' ? JSON.parse(r.q.parts) : (r.q.parts || []); } catch(e) {}
