@@ -216,20 +216,52 @@ window.initQuizEngine = function() {
   }
 
   function buildTextAreaUI(q) {
-    const savedAns = String(state.answers[state.currentIndex] || '');
+    let savedAns = String(state.answers[state.currentIndex] || '');
     const isDrawMode = state.drawings[state.currentIndex] && state.drawings[state.currentIndex] !== 'text';
     
     const isShortAns = q.type === 'short_ans';
-    const placeholderText = isShortAns ? 'Type your final answer here (Required for marking)' : 'Final Answer (Optional)';
+    const placeholderText = isShortAns ? 'Type your complete sentence here...' : 'Final Answer (Optional)';
     
     const baseInputStyle = "form-input w-full p-4 text-lg border-2 border-slate-200 focus:border-brand-sage rounded-xl transition-all shadow-sm";
     const drawModeInputStyle = "form-input mt-3 w-full p-4 text-lg border-2 border-brand-sage focus:border-brand-sage rounded-xl transition-all shadow-sm bg-sage-50/10";
 
+    // 🚀 MASTERCLASS SYNTHESIS PARSER
+    let synthesisHtml = '';
+    let isSynthesis = (q.topic || '').toLowerCase() === 'synthesis';
+    
+    if (isSynthesis && q.question_text && q.question_text.includes('\n\n')) {
+      const parts = q.question_text.split('\n\n');
+      const displayQuestion = parts[0].trim();
+      const rawConnector = parts[1].trim();
+      const cleanConnector = rawConnector.replace(/^\.\.\.|\.\.\.$|^\(|\)$/g, '').trim(); 
+      
+      let blueprintHtml = '';
+      if (rawConnector.startsWith('...') && rawConnector.endsWith('...')) {
+         blueprintHtml = `<div class="flex-1 border-b-2 border-dashed border-dark opacity-30"></div><div class="font-bold text-brand-rose px-3 py-1 bg-surface rounded shadow-sm text-sm uppercase tracking-wide">${esc(cleanConnector)}</div><div class="flex-1 border-b-2 border-dashed border-dark opacity-30"></div>`;
+      } else if (rawConnector.startsWith('(') && rawConnector.endsWith(')')) {
+         blueprintHtml = `<div class="flex-1 border-b-2 border-dashed border-dark opacity-30"></div><div class="font-bold text-brand-rose px-3 py-1 bg-surface rounded shadow-sm text-sm uppercase tracking-wide">${esc(cleanConnector)}</div><div class="flex-1 border-b-2 border-dashed border-dark opacity-30"></div>`;
+      } else if (rawConnector.startsWith('...')) {
+         blueprintHtml = `<div class="flex-1 border-b-2 border-dashed border-dark opacity-30"></div><div class="font-bold text-brand-rose px-3 py-1 bg-surface rounded shadow-sm text-sm uppercase tracking-wide">${esc(cleanConnector)}</div>`;
+      } else {
+         blueprintHtml = `<div class="font-bold text-brand-rose px-3 py-1 bg-surface rounded shadow-sm text-sm uppercase tracking-wide">${esc(cleanConnector)}</div><div class="flex-1 border-b-2 border-dashed border-dark opacity-30"></div>`;
+         if (!savedAns) savedAns = cleanConnector + ' '; 
+      }
+
+      synthesisHtml = `
+        <div class="card p-5 bg-elevated border border-light mb-6 shadow-sm">
+          <div class="text-xs font-bold text-muted uppercase tracking-wider mb-2">Transform the sentence(s):</div>
+          <div class="text-lg text-main font-medium leading-relaxed mb-5">${esc(displayQuestion)}</div>
+          <div class="flex items-center gap-3 w-full">${blueprintHtml}</div>
+        </div>
+      `;
+    }
+
     const typeModeHTML = isShortAns
-      ? `<input type="text" id="qInput" class="${baseInputStyle}" placeholder="Type your answer here..." value="${esc(savedAns)}" ${state.isAnswered ? 'disabled' : ''}>`
-      : `<textarea id="qInput" class="${baseInputStyle}" rows="4" placeholder="Type your detailed answer or working here..." style="height: auto; resize: vertical;" ${state.isAnswered ? 'disabled' : ''}>${esc(savedAns)}</textarea>`;
+      ? `<input type="text" id="qInput" class="${baseInputStyle}" placeholder="${placeholderText}" value="${esc(savedAns)}" ${state.isAnswered ? 'disabled' : ''} autocomplete="off" oninput="window.saveInputState()">`
+      : `<textarea id="qInput" class="${baseInputStyle}" rows="4" placeholder="Type your detailed answer or working here..." style="height: auto; resize: vertical;" ${state.isAnswered ? 'disabled' : ''} oninput="window.saveInputState()">${esc(savedAns)}</textarea>`;
 
     return `
+      ${synthesisHtml}
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
         <span class="text-xs font-bold text-muted uppercase tracking-wider">💡 Tip: Draw your working!</span>
         <div class="flex gap-2 w-full sm:w-auto">
@@ -773,10 +805,14 @@ function buildClozeUI(q) {
     }
 
     let displayInstruction = esc(q.question_text);
+    let isSynthesis = (q.topic || '').toLowerCase() === 'synthesis';
+    
     if (q.type === 'cloze') {
       displayInstruction = 'Fill in each blank with the correct word from the Word Bank.';
     } else if (q.type === 'editing') {
       displayInstruction = 'Read the passage and correct each underlined spelling or grammatical error.';
+    } else if (isSynthesis && q.question_text && q.question_text.includes('\n\n')) {
+      displayInstruction = ''; // Hiding the raw text since the visual blueprint handles it
     }
 
     const diagramHtml = renderVisualPayload(q.visual_payload);
@@ -802,7 +838,7 @@ function buildClozeUI(q) {
           <div class="badge badge-info absolute top-0 left-8" style="transform:translateY(-50%);">${esc(titleCase(q.topic || 'Mixed'))}</div>
           ${q.difficulty ? `<div class="badge badge-${q.difficulty.toLowerCase()} absolute top-0 right-8" style="transform:translateY(-50%);">${esc(q.difficulty)}</div>` : ''}
 
-          ${diagramHtml}<h3 class="text-xl font-bold text-main mb-6 mt-2 leading-relaxed" style="white-space:pre-line;">${displayInstruction}</h3>
+          ${diagramHtml}${displayInstruction ? `<h3 class="text-xl font-bold text-main mb-6 mt-2 leading-relaxed" style="white-space:pre-line;">${displayInstruction}</h3>` : ''}
 
           <div class="w-full">${inputUi}</div>
 
