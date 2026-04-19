@@ -146,13 +146,21 @@ async function pickQuestions(subject, level, questionType, count) {
 
     if (!db) throw new Error("Supabase client not initialized.");
 
+    // 🚀 MASTERCLASS FIX: Map template slugs to exact database strings
+    let dbSubject = subject;
+    if (subject.toLowerCase() === 'english') dbSubject = 'English Language';
+    else if (subject.toLowerCase() === 'mathematics' || subject.toLowerCase() === 'maths') dbSubject = 'Mathematics';
+    else if (subject.toLowerCase() === 'science') dbSubject = 'Science';
+
+    let dbLevel = level.replace('primary-', 'Primary ');
+
     // Query the database directly for the exact type and limit we need
     // Fetch a large pool of questions without SQL random() to prevent 400 errors
     const { data: pool, error } = await db
       .from('question_bank')
       .select('*')
-      .ilike('subject', subject)
-      .ilike('level', level.replace('primary-', 'Primary ')) // e.g. primary-4 -> Primary 4
+      .ilike('subject', dbSubject)
+      .ilike('level', dbLevel)
       .eq('type', questionType)
       .limit(300); // Grab up to 300 questions to choose from
 

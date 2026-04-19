@@ -893,9 +893,17 @@ window.initExamEngine = function () {
           </div>`;
       }).join('');
 
+      // 🚀 MASTERCLASS: Render image in left pane for Visual Text, otherwise render text passage
+      let passageContent = '';
+      if (q.type === 'visual_text' && q.image_url) {
+          passageContent = `<img src="${esc(q.image_url)}" style="width: 100%; height: auto; object-fit: contain; border-radius: var(--radius-md); border: 1px solid var(--border-light);" alt="Visual Text Flyer">`;
+      } else {
+          passageContent = esc(q.passage || '').replace(/\\n/g, '<br><br>');
+      }
+
       uiHtml = `
         <div class="comp-container">
-          <div class="comp-passage-pane card p-6 text-lg leading-relaxed bg-surface">${esc(q.passage).replace(/\\n/g, '<br><br>')}</div>
+          <div class="comp-passage-pane card p-6 text-lg leading-relaxed bg-surface" style="padding: ${q.type === 'visual_text' ? '0' : 'var(--space-6)'};">${passageContent}</div>
           <div class="comp-questions-pane">${partsHtml}</div>
         </div>
       `;
@@ -952,7 +960,7 @@ window.initExamEngine = function () {
 
     // 🚀 DYNAMIC DIAGRAM INJECTION
     let diagramHtml = '';
-    if (q.image_url) {
+    if (q.image_url && q.type !== 'visual_text') {
       diagramHtml = `<div class="mb-6 mx-auto flex justify-center w-full" style="max-width: 600px;"><img src="${esc(q.image_url)}" style="max-height: 220px; max-width: 100%; object-fit: contain; border-radius: var(--radius-md); border: 1px solid var(--border-light);"></div>`;
     } else if (q.visual_payload) {
       diagramHtml = renderVisualPayload(q.visual_payload);
