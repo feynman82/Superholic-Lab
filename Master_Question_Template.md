@@ -48,6 +48,7 @@ ENGLISH (4 types)
   Type 2: cloze       — Grammar Cloze (fill blank from options)
   Type 3: editing     — Spot and correct the error
   Type 4: comprehension — Read passage, answer question
+  Type 5: synthesis   — short answer format to transform sentences
 
 ═══════════════════════════════════════════════════════════════
 EXHAUSTIVE MOE SYLLABUS TAXONOMY
@@ -66,7 +67,7 @@ You must categorize every question exactly according to these Levels, Subjects, 
   - Measurement: Length (m, cm), Mass (kg, g), Volume (L, ml), Time (Duration).
   - Geometry & Graphs: Angles (Right Angles), Area and Perimeter (Squares/Rectangles), Bar Graphs.
 - SCIENCE Topics: Diversity (Living/Non-Living, Materials), Systems (Human Digestive), Interactions (Magnets).
-- ENGLISH Topics: Grammar, Vocabulary, Comprehension, Cloze, Editing.
+- ENGLISH Topics: Grammar, Vocabulary, Comprehension, Cloze, Editing, Synthesis.
 
 [PRIMARY 4]
 - MATH Topics & Sub-Topics:
@@ -76,7 +77,7 @@ You must categorize every question exactly according to these Levels, Subjects, 
   - Geometry & Measurement: Symmetry, 8-Point Compass, Push-out Perimeter, Composite Area.
   - Graphs: Line Graphs, Tables.
 - SCIENCE Topics: Cycles (Matter, Life Cycles), Energy (Heat, Light), Interactions (Magnets).
-- ENGLISH Topics: Grammar, Vocabulary, Comprehension, Cloze, Editing.
+- ENGLISH Topics: Grammar, Vocabulary, Comprehension, Cloze, Editing, Synthesis.
 
 [PRIMARY 5]
 - MATH Topics & Sub-Topics:
@@ -476,6 +477,29 @@ ADDITIONAL JSON FIELDS:
       "keywords": ["string"]
     }
   ]
+
+═══════════════════════════════════════════════════════════════
+TYPE 10: SYNTHESIS & TRANSFORMATION (English Only)
+═══════════════════════════════════════════════════════════════
+
+**Type Code:** `short_ans`
+**Applicable Levels:** Primary 3 to Primary 6
+**Description:** Combines two sentences into one or transforms a sentence using a provided connector/starter word without changing the original meaning.
+
+**Database Schema Mapping:**
+- `type`: "short_ans"
+- `question_text`: Must contain the original sentence(s), a line break, and the required starting word(s). 
+  *Example:* "The girl is my cousin. She is wearing a red dress.\n\nThe girl who"
+- `correct_answer`: The exact, grammatically perfect complete sentence. 
+  *Example:* "The girl who is wearing a red dress is my cousin."
+- `accept_also`: A JSON array of other acceptable answers (e.g., variations in punctuation or slight acceptable word ordering).
+  *Example:* `["The girl wearing a red dress is my cousin."] `
+- `marks`: 2
+
+**Rules for Synthesis & Transformation:**
+1. **Punctuation:** The `correct_answer` MUST include the ending punctuation (e.g., full stop, question mark).
+2. **Context:** Include common MOE PSLE patterns: Reported Speech (shifting tense back, changing pronouns), Active/Passive voice, Relative Clauses (who/which/whose), and Conditionals (If/Unless).
+3. **No meaning change:** The transformed sentence must preserve the original meaning completely.
 
 ═══════════════════════════════════════════════════════════════
 VISUAL PAYLOAD ENGINES REGISTRY

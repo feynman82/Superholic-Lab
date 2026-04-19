@@ -207,8 +207,8 @@ window.initSubjectsEngine = function() {
     
     'primary-1:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze'],
     'primary-2:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze'],
-    'primary-3:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing'],
-    'primary-4:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing'],
+    'primary-3:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing', 'Synthesis'],
+    'primary-4:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing', 'Synthesis'],
     'primary-5:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing', 'Synthesis'],
     'primary-6:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing', 'Synthesis']
   };
@@ -275,11 +275,12 @@ window.initSubjectsEngine = function() {
   // Topics that map directly to one question type — skip the TYPE step entirely.
   // Key = topic slug, value = type param to pass to quiz URL.
   const TOPIC_TYPE_BYPASS = {
+    'grammar':       'mcq',   
+    'vocabulary':    'mcq',   
     'cloze':         'cloze',
     'editing':       'editing',
-    'comprehension': 'mcq',   // comprehension questions are always MCQ format
-    'grammar':       'mcq',   // grammar questions are always MCQ format
-    'vocabulary':    'mcq',   // vocabulary questions are always MCQ format
+    'comprehension': 'comprehension', // 🚀 FIX: Mapped to the correct split-screen type
+    'synthesis':     'short_ans',     // 🚀 NEW: Mapped exactly to short_ans
   };
 
   function renderTopic() {
@@ -322,11 +323,20 @@ window.initSubjectsEngine = function() {
 
   window.pickTopic = (t) => {
     state.topic = t;
-    // If the topic maps directly to a single type, bypass step 3 and launch immediately
-    if (TOPIC_TYPE_BYPASS[t]) {
+    
+    // 🚀 MASTERCLASS UX: Pure 2-Step Flow for English
+    if (state.subject === 'english') {
+      // If they pick "All Topics" in English, instantly launch a mixed paper.
+      state.qtype = (t === 'all') ? 'mixed' : (TOPIC_TYPE_BYPASS[t] || 'mixed');
+      window.launchQuiz();
+    } 
+    // Math and Science bypass logic
+    else if (TOPIC_TYPE_BYPASS[t]) {
       state.qtype = TOPIC_TYPE_BYPASS[t];
       window.launchQuiz();
-    } else {
+    } 
+    // Proceed to Step 3 for Math/Science
+    else {
       render();
     }
   };
