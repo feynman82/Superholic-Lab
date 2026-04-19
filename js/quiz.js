@@ -812,7 +812,8 @@ function buildClozeUI(q) {
     } else if (q.type === 'editing') {
       displayInstruction = 'Read the passage and correct each underlined spelling or grammatical error.';
     } else if (isSynthesis && q.question_text && q.question_text.includes('\n\n')) {
-      displayInstruction = ''; // Hiding the raw text since the visual blueprint handles it
+      // 🚀 Inject the database instructions, or use a perfect default fallback
+      displayInstruction = q.instructions ? esc(q.instructions) : 'Rewrite the given sentence(s) using the word(s) provided. Your answer must be in one sentence. The meaning of your sentence must be the same as the meaning of the given sentence(s).';
     }
 
     const diagramHtml = renderVisualPayload(q.visual_payload);
