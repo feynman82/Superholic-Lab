@@ -297,9 +297,15 @@ window.initQuizEngine = function() {
       }`;
   }
 
-  function buildWordProblemUI(q) {
+  function buildMultiPartUI(q) {
     let partsData = [];
     try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
+    
+    // 🚀 MASTERCLASS: Auto-wrap single open_ended questions so they use the robust engine
+    if (partsData.length === 0 && q.type === 'open_ended') {
+       partsData = [{ label: "(a)", question: q.question_text, marks: q.marks, model_answer: q.worked_solution || q.model_answer }];
+    }
+    
     if (partsData.length === 0) return `<div class="text-amber">Legacy format. Please update in database.</div>`;
 
     let inlineActionBtn = '';
@@ -354,7 +360,16 @@ window.initQuizEngine = function() {
             : `<div class="scratchpad-container mb-4" style="position: relative; display: block;">
                  <canvas id="scratchpadCanvas" data-drawkey="${drawKey}" class="scratchpad-canvas bg-white border-2 border-slate-200 rounded-xl w-full shadow-sm" style="min-height: 300px; touch-action: none; cursor: crosshair;"></canvas>
                  <div style="position: absolute; top: 12px; right: 12px;">
+     ${!isDrawMode
+            ? `<textarea id="part-${esc(pLabel)}" class="${baseInputStyle}" rows="3" placeholder="Type your detailed working and answer here..." style="height: auto; resize: vertical;"></textarea>`
+            : `<div class="scratchpad-container mb-4" style="position: relative; display: block;">
+                 <canvas id="scratchpadCanvas" data-drawkey="${drawKey}" class="scratchpad-canvas bg-white border-2 border-slate-200 rounded-xl w-full shadow-sm" style="min-height: 300px; touch-action: none; cursor: crosshair;"></canvas>
+                 <div style="position: absolute; top: 12px; right: 12px;">
                     <button class="btn btn-sm btn-ghost bg-white hover-lift border border-slate-200 shadow-sm rounded-lg" onclick="window.clearCanvas()">🗑️ Clear</button>
+                 </div>
+               </div>
+               <input type="text" id="part-${esc(pLabel)}" class="${drawModeInputStyle}" placeholder="Final Answer (Required for marking)" value="${esc(savedWorking)}">`
+          }               <button class="btn btn-sm btn-ghost bg-white hover-lift border border-slate-200 shadow-sm rounded-lg" onclick="window.clearCanvas()">🗑️ Clear</button>
                  </div>
                </div>
                <input type="text" id="wp-${esc(pLabel)}" class="${drawModeInputStyle}" placeholder="Final Answer (Required for marking)" value="${esc(savedWorking)}">`
@@ -752,17 +767,21 @@ function buildClozeUI(q) {
     const isLast = state.currentIndex === state.questions.length - 1;
     const isModelType = q.type === 'word_problem' || q.type === 'open_ended';
 
-    // IN renderQuiz()
-    const hasParts = (() => { try { return (typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || [])).length > 0; } catch(e){ return false; } })();
-    const isSplitScreen = q.type === 'comprehension' || q.type === 'visual_text' || (q.type === 'open_ended' && hasParts);
+    // 🚀 MASTERCLASS: The 3-Tier Universal Router
+    const isSplitScreen = q.type === 'comprehension' || q.type === 'visual_text';
+    const isInlinePassage = q.type === 'cloze' || q.type === 'editing';
+    const isMultiPart = q.type === 'word_problem' || q.type === 'open_ended';
 
     let inputUi = '';
-    if (q.type === 'mcq')           inputUi = buildMCQOptions(q);
-    else if (q.type === 'word_problem') inputUi = buildWordProblemUI(q);
-    else if (isSplitScreen)         inputUi = buildComprehensionUI(q);
-    else if (q.type === 'cloze')    inputUi = buildClozeUI(q);
-    else if (q.type === 'editing')  inputUi = buildEditingUI(q);
-    else                            inputUi = buildTextAreaUI(q);
+    if (isSplitScreen) {
+        inputUi = buildComprehensionUI(q); // Tier 3
+    } else if (isInlinePassage) {
+        inputUi = q.type === 'cloze' ? buildClozeUI(q) : buildEditingUI(q); // Tier 2
+    } else {
+        if (isMultiPart) inputUi = buildMultiPartUI(q); // Tier 1 (Multi-part)
+        else if (q.type === 'mcq') inputUi = buildMCQOptions(q); // Tier 1 (Card)
+        else inputUi = buildTextAreaUI(q); // Tier 1 (Card)
+    }
     
     const hintsUi = buildHintsUI(q);
 
@@ -798,22 +817,22 @@ function buildClozeUI(q) {
       }
     }
 
-    const hasPartsGate = (() => { try { return (typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || [])).length > 0; } catch(e){ return false; } })();
-    const isSplitFormat = q.type === 'comprehension' || q.type === 'visual_text' || (q.type === 'open_ended' && hasPartsGate);
-
     let actionBtn = '';
     if (!state.isAnswered) {
       if (state.feedback && state.feedback.status === 'loading') {
-        if (q.type !== 'word_problem' && !isSplitFormat) {
+        if (!isMultiPart && !isSplitScreen) {
            actionBtn = `<button class="btn btn-primary" disabled><span class="spinner-sm inline-block mr-2 border-white"></span> Grading...</button>`;
         }
-      } else if (q.type === 'word_problem' || isSplitFormat) {
+      } else if (isMultiPart || isSplitScreen) {
         // Suppress bottom button since progressive formats now use inline buttons
         actionBtn = '';
       }
-      else if (q.type === 'open_ended') actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">Submit for Grading</button>`;
-      else if (q.type === 'cloze' || q.type === 'editing') actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">Check Answers</button>`;
-      else if (q.type !== 'mcq') actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">Check Answer</button>`;
+      else if (isInlinePassage) {
+        actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">Check Answers</button>`;
+      }
+      else if (q.type !== 'mcq') {
+        actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">Check Answer</button>`;
+      }
     } else {
       actionBtn = `<button class="btn btn-primary hover-lift" onclick="window.navQuiz(1)">${isLast ? 'Finish Lab →' : 'Next Question →'}</button>`;
     }
@@ -922,8 +941,9 @@ function buildClozeUI(q) {
     if (!state.questions || !state.questions[state.currentIndex]) return;
     const q = state.questions[state.currentIndex];
 
-    const hasPartsGate = (() => { try { return (typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || [])).length > 0; } catch(e){ return false; } })();
-    const isSplitFormat = q.type === 'comprehension' || q.type === 'visual_text' || (q.type === 'open_ended' && hasPartsGate);
+    // 🚀 MASTERCLASS: Unified State Saver
+    const isSplitScreen = q.type === 'comprehension' || q.type === 'visual_text';
+    const isMultiPart = q.type === 'word_problem' || q.type === 'open_ended';
 
     if (q.type === 'cloze') {
       const ans = {};
@@ -945,17 +965,23 @@ function buildClozeUI(q) {
         if (el) ans[num] = el.value;
       });
       state.answers[state.currentIndex] = ans;
-    } else if (q.type === 'word_problem' || isSplitFormat) {
+    } else if (isSplitScreen || isMultiPart) {
       const ans = state.answers[state.currentIndex] || {};
       let parts = [];
       try { parts = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
+      
+      // Auto-wrap open_ended fallback
+      if (parts.length === 0 && q.type === 'open_ended') {
+         parts = [{ label: "(a)" }];
+      }
+
       parts.forEach((p, idx) => {
-        const pLabel = isSplitFormat 
+        const pLabel = isSplitScreen 
             ? (p.label || `Q${idx + 1}`) 
             : (p.label || (p.part_id ? `(${p.part_id})` : `Part ${idx + 1}`));
             
         const safeIdLabel = String(pLabel).replace(/[^a-zA-Z0-9]/g, '');
-        const prefix = isSplitFormat ? 'comp-' : 'wp-';
+        const prefix = isSplitScreen ? 'comp-' : 'part-';
 
         if (q.type === 'comprehension' && p.part_type !== 'text_box' && p.part_type !== 'mcq') {
            ans[pLabel] = ans[pLabel] || {};
@@ -1085,8 +1111,8 @@ function buildClozeUI(q) {
       render(); return;
     }
 
-    // IN window.checkAnswer()
-    const isSplitScreen = q.type === 'comprehension' || q.type === 'visual_text' || (q.type === 'open_ended' && typeof q.parts === 'string' ? JSON.parse(q.parts || '[]').length > 0 : (q.parts || []).length > 0);
+    const isSplitScreen = q.type === 'comprehension' || q.type === 'visual_text';
+    const isMultiPart = q.type === 'word_problem' || q.type === 'open_ended';
 
     if (isSplitScreen) {
       let partsData = [];
@@ -1121,21 +1147,24 @@ function buildClozeUI(q) {
       // Route B: If it's a text_box, fall through to the API grading block below!
     }
     
-    if (q.type === 'word_problem' || q.type === 'open_ended' || q.type === 'comprehension' || q.type === 'visual_text') {
+    if (isMultiPart || isSplitScreen) {
       let ans = '';
       let currentPart = null;
 
-      if (q.type === 'word_problem' || isSplitScreen) {
-        let partsData = [];
-        try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
-        currentPart = partsData[state.activeWPPart];
-        const pLabel = isSplitScreen
-            ? (currentPart.label || `Q${state.activeWPPart + 1}`) 
-            : (currentPart.label || (currentPart.part_id ? `(${currentPart.part_id})` : `Part ${state.activeWPPart + 1}`));
-        ans = (state.answers[state.currentIndex] || {})[pLabel] || '';
-      } else {
-        ans = state.answers[state.currentIndex] || '';
+      let partsData = [];
+      try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
+      
+      if (partsData.length === 0 && q.type === 'open_ended') {
+         partsData = [{ label: "(a)", marks: q.marks, model_answer: q.worked_solution || q.model_answer, question: q.question_text }];
       }
+
+      currentPart = partsData[state.activeWPPart];
+      if (!currentPart) return;
+
+      const pLabel = isSplitScreen
+          ? (currentPart.label || `Q${state.activeWPPart + 1}`) 
+          : (currentPart.label || (currentPart.part_id ? `(${currentPart.part_id})` : `Part ${state.activeWPPart + 1}`));
+      ans = (state.answers[state.currentIndex] || {})[pLabel] || '';
 
       const isAnsEmptyAI = typeof ans === 'object' ? Object.values(ans).every(v => !v) : !String(ans).trim();
       if (isAnsEmptyAI) { alert('Please type your final answer so it can be graded!'); return; }
@@ -1170,30 +1199,28 @@ function buildClozeUI(q) {
         state.score += data.score;
         if (isCorrect) { state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak; } else state.streak = 0;
 
-        if (q.type === 'word_problem' || isSplitScreen) {
-          let partsData = [];
-          try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
-          state.activeWPPart++;
-          
-          if (state.activeWPPart >= partsData.length) {
-            state.isAnswered = true;
-            state.feedback = { status: isCorrect ? 'correct' : 'partial', text: data.feedback + '<br><br><strong>All parts completed!</strong> Review the full model answer.', isModel: false };
-          } else {
-            state.feedback = { status: isCorrect ? 'correct' : 'partial', text: data.feedback + '<br><br><strong>Next part unlocked! Keep going.</strong>', isModel: false };
-          }
-        } else {
+        let partsData = [];
+        try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
+        if (partsData.length === 0 && q.type === 'open_ended') partsData = [{ label: "(a)" }];
+
+        state.activeWPPart++;
+        
+        if (state.activeWPPart >= partsData.length) {
           state.isAnswered = true;
-          state.feedback = { status: isCorrect ? 'correct' : 'partial', text: data.feedback, isModel: false };
+          state.feedback = { status: isCorrect ? 'correct' : 'partial', text: data.feedback + '<br><br><strong>All parts completed!</strong> Review the full model answer.', isModel: false };
+        } else {
+          state.feedback = { status: isCorrect ? 'correct' : 'partial', text: data.feedback + '<br><br><strong>Next part unlocked! Keep going.</strong>', isModel: false };
         }
         render();
       } catch (err) {
         console.error("AI Grading Error:", err);
-        if (q.type === 'word_problem' || isSplitScreen) {
-          let partsData = [];
-          try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
-          state.activeWPPart++;
-          if (state.activeWPPart >= partsData.length) state.isAnswered = true;
-        } else { state.isAnswered = true; }
+        let partsData = [];
+        try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
+        if (partsData.length === 0 && q.type === 'open_ended') partsData = [{ label: "(a)" }];
+        
+        state.activeWPPart++;
+        if (state.activeWPPart >= partsData.length) state.isAnswered = true;
+        
         state.feedback = { status: 'model', text: 'Miss Wena is resting. Here is the model answer.', isModel: true };
         render();
       }
