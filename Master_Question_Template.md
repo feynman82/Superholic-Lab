@@ -66,7 +66,11 @@ You MUST strictly match the `topic` and `type` fields to the combinations below.
 - *P1/P2:* Grammar, Vocabulary, Comprehension, Cloze.
 - *P3/P4:* Adds Editing, Synthesis.
 - *P5/P6:* Adds Visual Text (sub-type of Comprehension).
-
+Cloze sub-types (via sub_topic column):
+  - Grammar (fill-in-the-blank grammar items)
+  - Vocabulary (passage-based word choice)
+  - Comprehension (passage-based free-text blanks)
+  
 ═══════════════════════════════════════════════════════════════
 SECTION 4: THE 8 CORE DATABASE SCHEMAS
 ═══════════════════════════════════════════════════════════════

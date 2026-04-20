@@ -170,7 +170,10 @@ async function pickQuestions(subject, level, questionType, count) {
       console.warn(`[exam-generator] No questions of type '${questionType}' found in database for ${subject} ${level}.`);
       return [];
     }
-
+    // If the template section specifies subTopics, filter by sub_topic
+    if (options && options.subTopics && options.subTopics.length > 0) {
+      query = query.in('sub_topic', options.subTopics);
+    }
     // Masterclass Fix: Shuffle the pool in JavaScript and slice the exact count needed
     const questions = shuffleArray(pool).slice(0, count);
 
@@ -205,8 +208,10 @@ async function generateExam(subject, level, examType) {
   const sectionPromises = template.sections.map(async function(sec) {
     // Trust the template's questionCount 100%
     const exactCount = sec.questionCount;
-    const questions = await pickQuestions(subject, level, sec.questionType, exactCount);
-
+    const questions = await pickQuestions(subject, level, sec.questionType, exactCount, {
+      subTopics: sec.subTopics || null,
+      topics: sec.topics || null
+    });
     if (questions.length < exactCount) {
       console.warn(
         `[exam-generator] Thin bank: ${subject}:${level}:${sec.questionType} — ` +
@@ -265,7 +270,6 @@ function clearExamCache() {
  * @returns {{ subject: string, level: string } | null}
  */
 function _parseTemplateKey(templateKey) {
-  // subject segment is everything before the first '-p' (e.g. 'maths', 'science', 'english')
   const match = templateKey.match(/^(maths|science|english)-(p[3-6])-/i);
   if (!match) return null;
 

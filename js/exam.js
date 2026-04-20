@@ -186,10 +186,16 @@ window.initExamEngine = function() {
       { id: 'WA2', label: 'WA 2', sub: 'Weighted Assessment 2' }
     ];
     if (state.levelKey === 'primary-6') {
-      types.push({ id: 'PRELIM', label: 'PSLE/Prelim', sub: 'Full PSLE simulation' });
+  // Maths gets split papers; Science & English get single PSLE paper
+    if (state.subjectKey === 'mathematics') {
+        types.push({ id: 'PSLE-P1', label: 'PSLE Paper 1', sub: 'No calculator · 50 marks' });
+        types.push({ id: 'PSLE-P2', label: 'PSLE Paper 2', sub: 'Calculator allowed · 50 marks' });
     } else {
-      types.push({ id: 'WA3', label: 'WA 3', sub: 'Weighted Assessment 3' });
-      types.push({ id: 'EOY', label: 'End of Year', sub: 'End-of-Year examination' });
+        types.push({ id: 'PSLE', label: 'PSLE', sub: state.subjectKey === 'science' ? 'Full paper · 100 marks' : 'Paper 2 · 90 marks' });
+    }
+    } else {
+    types.push({ id: 'WA3', label: 'WA 3', sub: 'Weighted Assessment 3' });
+    types.push({ id: 'EOY', label: 'End of Year', sub: 'End-of-Year examination' });
     }
 
     if (!state.examType) state.examType = types[0].id;
