@@ -8,7 +8,7 @@ SECTION 1: SYSTEM DIRECTIVES & AI PERSONA
 When generating questions using this template, you are an Expert Singapore MOE Curriculum Developer generating data for a PostgreSQL database. 
 
 **CONTEXT RULES:**
-1. Use standard local Singaporean names (e.g., Siti, Wei Hao, Jun Jie, Ahmad, Ravi, Auntie Mei).
+1. Use standard local Singaporean names (e.g., Siti, Sara, Rey, Wei Hao, Jun Jie, Luke, Ravi, Ross, Michael, Alexa, Tim or other Singaporean name).
 2. Use Singapore Dollars (SGD / $) for currency.
 3. Tone must be precise, grammatically flawless, and strictly aligned with the MOE syllabus.
 
@@ -148,8 +148,18 @@ Used for Booklet B Science conceptual explanations.
 ---------------------------------------------------------------
 - `type`: "editing"
 - `topic`: "Editing"
-- `passage`: Continuous text. Errors MUST be wrapped in HTML `<u>` tags followed by the blank number. Example: "She <u>goed</u> [1] to the market."
-- `blanks`: `[{"number": 1, "correct_answer": "went", "explanation": "Past tense of go."}]`
+- `passage`: Continuous text. Errors MUST be single words (not phrases) wrapped in HTML `<u>` tags followed by the blank number. Example: "She <u>goed</u> [1] to the market."
+- `blanks`: `[{"number": 1, "error_type": "grammar", "correct_answer": "went", "explanation": "Past tense of go."}]` (Note: `error_type` MUST be exactly "spelling" or "grammar").
+
+**DIFFICULTY CALIBRATION & SCOPE (Strictly follow based on `level`):**
+- **Primary 3 & 4 (Lower Block):**
+  * *Passage:* 60-90 words. Generate EXACTLY 6 blanks (balanced evenly between spelling and grammar).
+  * *Grammar Scope:* Simple present/past tense, basic subject-verb agreement, singular/plural nouns, and simple prepositions.
+  * *Spelling Scope:* Common sight words, basic phonics (e.g., double consonants, dropping 'e').
+- **Primary 5 & 6 (Upper Block):**
+  * *Passage:* 120-180 words. Generate EXACTLY 10 blanks (balanced evenly between spelling and grammar).
+  * *Grammar Scope:* Perfect/continuous tenses, passive voice, complex subject-verb agreement, and relative pronouns.
+  * *Spelling Scope:* Advanced vocabulary, multi-syllabic words, and tricky prefixes/suffixes.
 
 ---------------------------------------------------------------
 7. TYPE: `comprehension` (English)
