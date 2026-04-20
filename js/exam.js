@@ -157,80 +157,78 @@ window.initExamEngine = function() {
   function renderMockPreview(tpl) {
     if (!tpl || !tpl.sections) return '';
 
+    let stripsHtml = '';
     let currentLabel = '';
-    let strips = '';
 
     tpl.sections.forEach(sec => {
-      // 1. Group by Booklet/Section
-      if (sec.label && sec.label !== currentLabel) {
-        currentLabel = sec.label;
-        strips += `<div class="font-bold text-main mt-5 mb-1" style="font-family: var(--font-body); font-size: 1.1rem;">${esc(currentLabel)}</div>`;
-      }
-
       const qType = sec.questionType;
       const qCount = sec.questionCount;
       const marksEach = sec.marksPerQuestion;
       const sectionMarks = sec.totalMarks || (marksEach * qCount);
 
-      // 2. Map Strict 3.0 Colours
+      // 1. Label and Color Mapping (Task 2, 3, 5, 6)
+      let label = qType.toUpperCase();
       let colour = 'var(--sage-light)';
-      if (qType === 'cloze') colour = 'var(--brand-mint)';
-      else if (qType === 'comprehension' || qType === 'visual_text') colour = 'var(--english-colour)';
-      else if (qType === 'mcq') colour = 'var(--brand-rose)';
-      else if (qType === 'editing') colour = 'var(--brand-error)';
-      else if (qType === 'short_ans' || qType === 'word_problem' || qType === 'open_ended') colour = 'var(--maths-colour)';
 
-      // 3. Dynamic Two-Line Labels
-      let label = (qType || '').toUpperCase();
-      if (qType === 'cloze') {
-        const sub = (sec.subTopics && sec.subTopics[0]) ? sec.subTopics[0].toUpperCase() : '';
-        label = sub ? `${sub}<br>CLOZE` : 'CLOZE';
-      } else if (qType === 'visual_text') {
-        label = 'VISUAL TEXT<br>COMPREHENSION';
+      if (qType === 'mcq') {
+        label = 'MCQ';
+        colour = 'var(--brand-rose)';
+      } else if (qType === 'short_ans') {
+        label = 'SHORT ANS';
+        colour = 'var(--maths-colour)';
       } else if (qType === 'word_problem') {
         label = 'WORD<br>PROBLEM';
-      } else if (qType === 'short_ans') {
-        label = 'SHORT<br>ANS';
-      } else if (qType === 'comprehension') {
-        label = 'COMPREHENSION';
+        colour = 'var(--maths-colour)';
       } else if (qType === 'editing') {
         label = 'EDITING';
-      } else if (qType === 'mcq') {
-        label = 'MCQ';
+        colour = 'var(--brand-error)';
       } else if (qType === 'open_ended') {
         label = 'OPEN<br>ENDED';
+        colour = 'var(--english-colour)';
+      } else if (qType === 'comprehension') {
+        label = 'COMPREHENSION';
+        colour = 'var(--english-colour)';
+      } else if (qType === 'visual_text') {
+        label = 'VISUAL TEXT<br>COMPREHENSION';
+        colour = 'var(--english-colour)';
+      } else if (qType === 'cloze') {
+        colour = 'var(--brand-mint)';
+        let sub = (sec.subTopics && sec.subTopics.length > 0) ? sec.subTopics[0].toUpperCase() : '';
+        if (sub) {
+          label = `${sub}<br>CLOZE`;
+        } else {
+          label = 'CLOZE';
+        }
       }
 
-      // 4. Render Circular Pills with Matching Colors
-      const coloredPills = Array.from({ length: qCount }, (_, i) => 
-        `<span style="border: 1.5px solid ${colour}; border-radius: 50%; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; color: ${colour}; background: transparent; font-family: var(--font-body); flex-shrink: 0; box-sizing: border-box;">${i + 1}</span>`
+      // 2. Group by Booklet/Section Subheader (Task 1)
+      if (sec.label && sec.label !== currentLabel) {
+        currentLabel = sec.label;
+        const mt = stripsHtml === '' ? 'mt-2' : 'mt-6';
+        stripsHtml += `<div class="${mt} mb-2 font-bold text-main text-sm">${esc(currentLabel)}</div>`;
+      }
+
+      // 3. Question Pills - Padding removed to enforce perfect circles
+      const pillsHtml = Array.from({ length: qCount }, (_, i) => 
+        `<span class="mock-q-pill" style="border: 1px solid ${colour}; border-radius: 50%; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color:${colour}; background: transparent; padding: 0;">${i + 1}</span>`
       ).join('');
 
-      // 5. Build the Strip (Vertical padding added, marks pushed right)
-      strips += `
+      // 4. Row Construction (Task 4, 7, 8)
+      // - text-sm font-bold applied to label to match duration/marks font
+      // - py-4 added for generous top/bottom padding
+      // - flex-end alignment applied to the pills container
+      stripsHtml += `
         <div class="flex items-center gap-4 py-4" style="border-bottom: 1px dashed var(--border-light);">
-          <div class="font-bold" style="color: ${colour}; width: 125px; flex-shrink: 0; line-height: 1.3; font-family: var(--font-body); font-size: 0.95rem; letter-spacing: 0.02em;">
-            ${label}
-          </div>
-          <div class="flex flex-wrap gap-2 flex-1 items-center">
-            ${coloredPills}
-          </div>
-          <div class="font-bold text-main ml-auto pl-2" style="font-family: var(--font-body); font-size: 1.1rem; flex-shrink: 0;">
-            ${sectionMarks}M
-          </div>
-        </div>
-      `;
+          <div class="text-sm font-bold" style="color: ${colour}; width: 130px; flex-shrink: 0; line-height: 1.3;">${label}</div>
+          <div class="flex flex-wrap gap-1 flex-1" style="justify-content: flex-end;">${pillsHtml}</div>
+          <span class="font-bold text-sm text-main ml-2">${sectionMarks}M</span>
+        </div>`;
     });
 
-    // 6. Return Wrapper (Zero L/R padding so it sits flush)
-    return `
-      <div class="mt-4" style="padding: 1rem 0;">
-        <div class="font-bold uppercase tracking-wider text-muted mb-2 pb-2 border-b border-light" style="font-family: var(--font-body); font-size: 0.85rem;">
-          Paper Format Preview
-        </div>
-        ${strips}
-      </div>
-    `;
+    return `<div class="mt-4 bg-page border border-light rounded-lg p-5">
+              <div class="text-xs font-bold uppercase tracking-wider text-muted mb-2 pb-2 border-b border-light">Paper Format Preview</div>
+              ${stripsHtml}
+            </div>`;
   }
 
   function renderType() {
