@@ -212,14 +212,14 @@ window.initExamEngine = function() {
 
       // 4 & 5. Unbolded text-sm font mapping, flex-1 alignment right, & padding (py-3)
       strips += `
-        <div class="flex items-center gap-4 py-1" style="border-bottom: 1px dashed var(--border-light);">
+        <div class="flex items-center gap-4 py-3" style="border-bottom: 1px dashed var(--border-light);">
           <div class="text-sm uppercase tracking-wide" style="min-width: 140px; white-space: normal; line-height: 1.3; color: ${colour}; font-family: var(--font-body);">${label}</div>
           <div class="flex flex-wrap gap-1 flex-1 justify-start">${pills}</div>
           <div class="font-bold text-sm text-main text-right" style="min-width: 40px;">${sectionMarks}M</div>
         </div>`;
     });
 
-    return `<div class="mt-4 bg-surface border border-light rounded-lg p-6 shadow-sm"><div class="text-xs font-bold uppercase tracking-wider text-muted mb-2 pb-2 border-b border-light">Paper Format Preview</div>${strips}</div>`;
+    return `<div class="mt-4 bg-surface border border-light rounded-lg p-1 shadow-sm"><div class="text-xs font-bold uppercase tracking-wider text-muted mb-2 pb-2 border-b border-light">Paper Format Preview</div>${strips}</div>`;
   }
 
   function renderType() {
