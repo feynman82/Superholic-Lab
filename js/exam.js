@@ -219,7 +219,7 @@ window.initExamEngine = function() {
         </div>`;
     });
 
-    return `<div class="mt-4 bg-surface border border-light rounded-lg p-1 shadow-sm"><div class="text-xs font-bold uppercase tracking-wider text-muted mb-2 pb-2 border-b border-light">Paper Format Preview</div>${strips}</div>`;
+    return `<div class="mt-4 bg-surface border border-light rounded-lg p-1 shadow-sm"><div class="text-xs font-bold uppercase tracking-wider text-muted mb-2 pb-4 pt-4 border-b border-light">Paper Format Preview</div>${strips}</div>`;
   }
 
   function renderType() {
