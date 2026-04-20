@@ -814,9 +814,11 @@ function buildClozeUI(q) {
           <div class="text-sm text-main leading-relaxed">${window.formatWorkedSolution(q.worked_solution || q.model_answer)}</div>
         </div>`;
       } else if (fb.status === 'correct') {
+        // 🚀 MASTERCLASS FIX: Safely render the HTML worked solution below the success message
         feedbackHtml = `<div class="card card-rule-mint bg-science-tint p-4 mt-4">
           <div class="font-bold mb-2 text-success">🎉 Spot on!</div>
-          <p class="text-sm text-main leading-relaxed">${esc(fb.text)}</p>
+          ${fb.text && fb.text !== 'Perfectly executed!' ? `<p class="text-sm text-main leading-relaxed mb-3">${esc(fb.text)}</p>` : ''}
+          ${q.worked_solution ? `<div class="text-sm text-main leading-relaxed mt-3 pt-3" style="border-top: 1px solid rgba(16, 185, 129, 0.2);"><div class="text-xs font-bold text-success uppercase tracking-wider mb-2">Worked Solution</div>${window.formatWorkedSolution(q.worked_solution)}</div>` : ''}
           ${q.examiner_note ? `<p class="text-xs text-muted mt-2 italic">${esc(q.examiner_note)}</p>` : ''}
         </div>`;
       } else {
@@ -1085,7 +1087,8 @@ function buildClozeUI(q) {
       let safeWrongExpl = {};
       try { safeWrongExpl = typeof q.wrong_explanations === 'string' ? JSON.parse(q.wrong_explanations) : (q.wrong_explanations || {}); } catch(e) {}
 
-      const fbText = isCorrect ? (q.worked_solution ? `Correct! ${q.worked_solution.split('\n')[0]}` : 'Perfectly executed!') : (safeWrongExpl[ans] || `The correct answer is ${q.correct_answer}.`);
+      // 🚀 MASTERCLASS FIX: Stop mixing HTML worked_solutions into plain-text feedback
+      const fbText = isCorrect ? 'Perfectly executed!' : (safeWrongExpl[ans] || `The correct answer is ${q.correct_answer}.`);
         
       if (isCorrect) { state.score++; state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak; } else state.streak = 0;
       
