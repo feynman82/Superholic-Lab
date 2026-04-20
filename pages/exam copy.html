@@ -1,0 +1,1530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Practice Paper — Superholic Lab</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="icon" href="../assets/favicon.ico" />
+  <meta name="robots" content="noindex, nofollow" />
+
+  <script src="/js/header.js" defer></script>
+  <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js"></script>
+  <script src="/js/footer.js" defer></script>
+  
+  <script type="module">
+    import { guardPage } from '/js/auth.js';
+    import { initAppShell } from '/js/app-shell.js';
+    
+    async function boot() {
+      try {
+        window.userProfile = await guardPage(true); 
+        await initAppShell(window.userProfile); 
+        
+        if (typeof window.initExamEngine === 'function') {
+          window.initExamEngine();
+        }
+      } catch (err) {
+        console.error('Boot sequence failed:', err);
+      }
+    }
+    boot();
+  </script>
+<style>
+    /* ── Cloze & Editing Component Parity (Synced with quiz.html) ── */
+    .cloze-passage { line-height: 2.2; }
+    .cloze-select {
+      display: inline-block; appearance: none; -webkit-appearance: none;
+      background-color: var(--bg-surface); border: 1px solid var(--border-dark); 
+      border-radius: var(--radius-sm); padding: 2px 24px 2px 8px; 
+      font-family: var(--font-body); font-size: 1rem; font-weight: 600; 
+      color: var(--brand-rose); cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23B76E79' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 6px center; background-size: 14px;
+      margin: 0 4px; vertical-align: baseline; transition: all 0.2s ease;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .cloze-select:focus { outline: none; border-color: var(--brand-rose); box-shadow: 0 0 0 3px rgba(183, 110, 121, 0.2); }
+    
+    .editing-line { 
+      display: flex; align-items: flex-start; gap: var(--space-4); 
+      padding: var(--space-2) 0; border-bottom: 1px solid transparent; 
+    }
+    .editing-input {
+      border: 1px solid var(--border-dark); border-radius: var(--radius-sm);
+      padding: 2px 8px; width: 120px; text-align: center; font-family: var(--font-body);
+      font-size: 1rem; font-weight: 600; color: var(--brand-rose);
+      background: var(--bg-surface); transition: all 0.2s ease; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .editing-input:focus { outline: none; border-color: var(--brand-rose); box-shadow: 0 0 0 3px rgba(183, 110, 121, 0.2); }
+
+    /* ── Exam Dossier Mock Preview ── */
+    .mock-preview {
+      margin-top: var(--space-4); background: var(--bg-page);
+      border: 1px solid var(--border-light); border-radius: var(--radius-md);
+      padding: var(--space-4);
+    }
+    .mock-preview-title {
+      font-size: var(--text-xs); font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: var(--space-3);
+      border-bottom: 1px solid var(--border-light); padding-bottom: var(--space-2);
+    }
+    .mock-section-strip {
+      display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-3);
+      padding: var(--space-2) 0; border-bottom: 1px dashed var(--border-light);
+    }
+    .mock-section-strip:last-child { border-bottom: none; }
+    .mock-section-label {
+      font-weight: 700; font-size: var(--text-sm); color: var(--text-main);
+      min-width: 80px; flex: 1 1 100%; margin-bottom: 2px;
+    }
+    .mock-section-type {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      background: var(--bg-surface); padding: 2px 6px; border-radius: 4px;
+    }
+    .mock-q-pills { display: flex; flex-wrap: wrap; gap: 4px; flex: 1; }
+    .mock-q-pill {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 20px; height: 20px; border: 1px solid; border-radius: 50%;
+      font-size: 10px; font-weight: 700; background: var(--bg-surface);
+    }
+    .mock-section-marks { font-weight: 700; font-size: var(--text-sm); color: var(--text-main); }
+
+    /* ── Print Styles ── */
+    @media print {
+      body { background: white !important; }
+      global-header, global-footer, .bottom-nav, #app { display: none !important; }
+      #print-container { display: block !important; position: absolute; left: 0; top: 0; width: 100%; padding: 20px; }
+    }
+    #print-container { display: none; }
+    @media (max-width: 1023px) {
+    .comp-passage-pane { 
+      display: block !important; 
+      width: 100% !important;
+      max-height: 40vh; 
+      overflow-y: auto; 
+      margin-bottom: 1.5rem; 
+      border-bottom: 2px dashed var(--border-light); 
+      border-right: none !important;
+      position: relative !important;
+      top: 0 !important;
+      padding-right: 1.5rem !important;
+    }
+    .comp-questions-pane {
+      width: 100% !important;
+     }
+    }
+  </style>  
+</head>
+
+<body id="mainBody" class="has-bottom-nav bg-page texture-light-grid">
+
+<global-header></global-header>
+
+<main id="app" class="container flex flex-col items-center w-full" style="padding-top: calc(var(--navbar-h) + var(--space-8)); padding-bottom: var(--space-10); min-height: 80vh; max-width: 1200px;"></main>
+<div id="print-container"></div>
+<global-footer></global-footer>
+
+<nav class="bottom-nav" id="bottomNav" aria-label="Mobile navigation">
+  <a href="subjects.html" class="bottom-nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    Practise
+  </a>
+  <a href="tutor.html" class="bottom-nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+    AI Tutor
+  </a>
+  <a href="exam.html" class="bottom-nav-item is-active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="M9 12h6M9 16h4"/></svg>
+    Exam
+  </a>
+  <a href="progress.html" class="bottom-nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    Progress
+  </a>
+</nav>
+
+<script src="../js/diagram-library.js"></script> 
+<script src="../js/supabase-client.js"></script> 
+<script src="../js/exam-templates.js"></script>  
+<script src="../js/exam-generator.js"></script>  
+<script src="../js/exam-renderer.js"></script>
+
+<script>
+/* ─────────────────────────────────────────────────────────────────────────
+ * EXAM ENGINE 3.0 — The "Focus Room" State Machine
+ * ───────────────────────────────────────────────────────────────────────── */
+window.initExamEngine = function () {
+  'use strict';
+
+  // ── STATE ────────────────────────────────────────────────────────────────
+  const state = {
+    phase:      'INIT',
+    level:      '',      
+    levelKey:   '',      
+    subject:    '',      
+    subjectKey: '',      
+    tier:       '',      
+    examType:   '',      
+    studentId:  null,    
+    paper:      null,
+    allQs:      [],      
+    currentQIdx: 0,
+    answers:    {},      
+    drawings:   {},      
+    flagged:    {},      
+    graded:     null,
+    timerHandle: null,
+    timeLeft:   0,
+  };
+
+  const app = document.getElementById('app');
+  const TYPE_LABELS = { WA1: 'WA 1', WA2: 'WA 2', WA3: 'WA 3', EOY: 'End-of-Year', PSLE: 'PSLE/Prelim' };
+
+  // ── UTILITIES ────────────────────────────────────────────────────────────
+  function esc(str) {
+    if (str == null) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  function setState(updates) {
+    Object.assign(state, updates);
+    render();
+  }
+
+  function normalizeAnswer(str) {
+    if (!str) return '';
+    // Strip all spaces, commas, trailing periods, and invisible zero-width chars
+    let s = String(str).toLowerCase().trim().replace(/[\s,\u200B-\u200D\uFEFF]+/g, '').replace(/\.$/, '');
+    s = s.replace(/hours|hour|hrs|hr/g, 'h').replace(/minutes|minute|mins/g, 'min').replace(/seconds|second|secs|sec/g, 's');
+    s = s.replace(/kilograms|kilogram|kgs/g, 'kg').replace(/grams|gram|gms|gm/g, 'g').replace(/centimetres|centimeters|centimetre|centimeter|cms/g, 'cm').replace(/metres|meters|metre|meter/g, 'm').replace(/litres|liters|litre|liter/g, 'l').replace(/millilitres|milliliters|millilitre|milliliter|mls/g, 'ml');
+    s = s.replace(/dollars|dollar/g, '$').replace(/cents|cent/g, 'c');
+    return s;
+  }
+
+// ── PROCEDURAL DIAGRAM RENDERER (WITH ERROR SHIELD) ──
+  function renderVisualPayload(visual_payload) {
+    if (!visual_payload) return '';
+
+    if (visual_payload.engine === 'diagram-library') {
+      // 🚀 MASTERCLASS FIX: Delegate entirely to the DiagramLibrary's internal router
+      // so the smart fallbacks and generic experiment handlers actually trigger.
+      return `<div class="procedural-diagram mb-4 mx-auto flex justify-center w-full" style="max-width: 600px; overflow-x: auto;">
+                ${DiagramLibrary.render(visual_payload)}
+              </div>`;
+    }
+    
+    // Future handling for mermaid engine
+    if (visual_payload.engine === 'mermaid') {
+       return `<div class="mermaid-diagram mb-4 p-4 bg-page border border-light rounded">${esc(visual_payload.params.code || '')}</div>`;
+    }
+
+    return '';
+  }
+
+  // ── TIMER ────────────────────────────────────────────────────────────────
+  function startTimer(seconds) {
+    state.timeLeft = seconds;
+    clearInterval(state.timerHandle);
+    
+    const timerContainer = document.getElementById('nav-timer-container');
+    if(timerContainer) {
+      // 🚀 MASTERCLASS FIX: Overwrite the 'hidden' class to force flexbox display
+      timerContainer.className = 'flex items-center justify-center mx-4';
+      timerContainer.innerHTML = `<div id="exam-timer" class="timer-pill" style="transition: all 0.3s ease;"></div>`;
+    }
+    
+    tickTimer();
+    state.timerHandle = setInterval(() => {
+      state.timeLeft = Math.max(0, state.timeLeft - 1);
+      tickTimer();
+      if (state.timeLeft === 0) {
+        clearInterval(state.timerHandle);
+        autoSubmit();
+      }
+    }, 1000);
+  }
+
+  function stopTimer() {
+    clearInterval(state.timerHandle);
+    const timerContainer = document.getElementById('nav-timer-container');
+    if(timerContainer) {
+      timerContainer.innerHTML = '';
+      // Cleanly restore the hidden state so the header returns to normal
+      timerContainer.className = 'hidden';
+    }
+  }
+
+  function tickTimer() {
+    const el = document.getElementById('exam-timer');
+    if (!el) return;
+    const m = Math.floor(state.timeLeft / 60);
+    const s = state.timeLeft % 60;
+    el.textContent = `⏱ ${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
+    
+    if (state.timeLeft <= 60) el.className = 'timer-pill danger';
+    else if (state.timeLeft <= 300) el.style.color = 'var(--brand-amber)';
+  }
+
+  function autoSubmit() {
+    saveCurrentAnswerState();
+    submitExam();
+  }
+
+  // ── RENDER DISPATCHER ────────────────────────────────────────────────────
+  function render() {
+    switch (state.phase) {
+      case 'INIT':    renderInit();    break;
+      case 'SUBJECT': renderSubject(); break;
+      case 'TYPE':    renderType();    break;
+      case 'GEN':     renderGenerating(); break;
+      case 'EXAM':    renderFocusExam(); break;
+      case 'RESULTS': renderResults(); break;
+    }
+  }
+
+  // ── PHASE: INIT ──────────────────────────────────────────────────────────
+  async function renderInit() {
+    app.innerHTML = `<div class="card flex flex-col items-center w-full" style="padding: var(--space-8); max-width: 600px;"><div class="spinner-sm mb-4"></div><h2 class="font-display text-2xl text-main">Preparing Exam Room...</h2><p class="text-sm text-muted mt-2">Loading student profile</p></div>`;
+    try {
+      const profile = window.userProfile;
+      if (!profile) { window.location.href = 'login.html?redirect=exam'; return; }
+
+      const sb = await getSupabase();
+      
+      const urlParams = new URLSearchParams(window.location.search);
+      let activeStudentId = urlParams.get('student') || localStorage.getItem('shl_active_student_id');
+
+      const { data: students } = await sb.from('students').select('id,level,selected_subject').eq('parent_id', profile.id);
+      
+      const student = (students || []).find(s => s.id === activeStudentId) || (students || [])[0];
+      
+      if (!student) {
+        app.innerHTML = `<div class="card p-8 text-center w-full" style="max-width: 600px;"><p class="text-amber font-bold mb-4">No student profile found. Please set one up.</p></div>`;
+        return;
+      }
+
+      state.studentId = student.id;
+      localStorage.setItem('shl_active_student_id', student.id);
+
+      const tier = profile.subscription_tier || 'trial';
+      const level = student?.level || 'Primary 4';
+      const levelKey = level.toLowerCase().replace(' ', '-');
+      const studentId = student?.id || null;
+
+      const isJunior = levelKey === 'primary-1' || levelKey === 'primary-2';
+      if (isJunior) {
+        window.location.href = `quiz.html?student=${student.id}`;
+        return; 
+      }
+
+      if (tier === 'single_subject') {
+        const sub = student?.selected_subject || 'Mathematics';
+        setState({ phase: 'TYPE', tier, level, levelKey, subject: sub, subjectKey: sub.toLowerCase(), studentId });
+      } else {
+        setState({ phase: 'SUBJECT', tier, level, levelKey, studentId });
+      }
+    } catch (err) {
+      app.innerHTML = `<div class="card p-8 text-center w-full" style="max-width: 600px;"><p class="text-danger font-bold mb-4">Failed to load profile.</p><button class="btn btn-primary" onclick="location.reload()">Reload</button></div>`;
+    }
+  }
+
+  // ── PHASE: SUBJECT ───────────────────────────────────────────────────────
+  function renderSubject() {
+    const levelNum = state.level.replace('Primary ', '');
+    const subjects = [
+      { name: 'Mathematics', icon: '📐', tag: 'P1–P6' },
+      { name: 'Science', icon: '🔬', tag: 'P3–P6' },
+      { name: 'English', icon: '📖', tag: 'P1–P6' }
+    ];
+
+    const cards = subjects.map(s => `
+      <div class="card hover-lift flex flex-col items-center justify-center p-8 text-center cursor-pointer" onclick="window.selectSubject('${s.name}')">
+        <div class="text-4xl mb-4">${s.icon}</div>
+        <h3 class="font-display text-2xl text-main">${s.name}</h3>
+        <div class="badge badge-info mt-2">${s.tag}</div>
+      </div>
+    `).join('');
+
+    app.innerHTML = `
+      <div class="w-full flex flex-col items-center" style="max-width: 800px;">
+        <div class="text-center mb-8 w-full">
+          <div class="badge badge-info mb-2">Step 1 of 2</div>
+          <h1 class="font-display text-4xl text-main">Choose a Subject</h1>
+          <p class="text-muted text-lg mt-2">Primary ${esc(levelNum)}</p>
+        </div>
+        <div class="w-full" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-6);">
+          ${cards}
+        </div>
+      </div>
+    `;
+
+    window.selectSubject = (sub) => setState({ subject: sub, subjectKey: sub.toLowerCase(), phase: 'TYPE', examType: '' });
+  }
+
+  // ── PHASE: TYPE ──────────────────────────────────────────────────────────
+  function renderMockPreview(tpl) {
+    if (!tpl || !tpl.sections) return '';
+
+    const typeLabel = {
+      mcq:          'MCQ',
+      short_ans:    'Short Ans',
+      word_problem: 'Word Problem',
+      open_ended:   'Open-Ended',
+      cloze:        'Cloze',
+      editing:      'Editing',
+    };
+
+    const typeColour = {
+      mcq:          'var(--brand-rose)',
+      short_ans:    'var(--maths-colour)',
+      word_problem: 'var(--success)',
+      open_ended:   'var(--english-colour)',
+      cloze:        'var(--amber)',
+      editing:      'var(--danger)',
+    };
+
+    const strips = tpl.sections.map(sec => {
+      // 1. Pure, harmonized schema parsing. No fallbacks needed.
+      const qType = sec.questionType;
+      const qCount = sec.questionCount;
+      const marksEach = sec.marksPerQuestion;
+      const sectionMarks = sec.totalMarks || (marksEach * qCount);
+      
+      const colour = typeColour[qType] || 'var(--sage-light)';
+      const label = typeLabel[qType] || qType || 'Questions';
+
+      const pills = Array.from({ length: qCount }, (_, i) =>
+        `<span class="mock-q-pill" style="border-color:${colour};color:${colour};">${i + 1}</span>`
+      ).join('');
+
+      return `
+        <div class="mock-section-strip">
+          <span class="mock-section-label">${esc(sec.label || '')}</span>
+          <span class="mock-section-type" style="color:${colour};">${label}</span>
+          <div class="mock-q-pills">${pills}</div>
+          <span class="mock-section-marks">${sectionMarks}M</span>
+        </div>`;
+    }).join('');
+
+    // 2. Exact Duration Parsing
+    const duration = tpl.durationMinutes || tpl.duration || 0;
+    const durationText = (typeof formatDuration === 'function')
+      ? formatDuration(duration)
+      : `${duration} min`;
+
+    return `
+      <div class="mock-preview">
+        <div class="mock-preview-title">Paper Format Preview — ${esc(durationText)}</div>
+        ${strips}
+      </div>`;
+  }
+
+  function renderType() {
+    let types = [
+      { id: 'WA1', label: 'WA 1', sub: 'Weighted Assessment 1' },
+      { id: 'WA2', label: 'WA 2', sub: 'Weighted Assessment 2' }
+    ];
+    if (state.levelKey === 'primary-6') {
+      types.push({ id: 'PRELIM', label: 'PSLE/Prelim', sub: 'Full PSLE simulation' });
+    } else {
+      types.push({ id: 'WA3', label: 'WA 3', sub: 'Weighted Assessment 3' });
+      types.push({ id: 'EOY', label: 'End of Year', sub: 'End-of-Year examination' });
+    }
+
+    if (!state.examType) state.examType = types[0].id;
+
+    const chips = types.map(t => `
+      <div class="card p-4 flex-1 cursor-pointer hover-lift flex flex-col justify-center ${t.id === state.examType ? 'bg-sage-dark text-white' : 'bg-surface text-main'}" 
+           style="min-width: 140px; border: 2px solid ${t.id === state.examType ? 'var(--brand-mint)' : 'var(--border-light)'};"
+           onclick="window.selectType('${t.id}')">
+        <div class="font-bold text-lg" style="color: inherit;">${esc(t.label)}</div>
+        <div class="text-xs mt-2" style="color: ${t.id === state.examType ? 'var(--sage-dark)' : 'var(--text-muted)'};">${esc(t.sub)}</div>
+      </div>
+    `).join('');
+
+    let tpl = null;
+    if (typeof getTemplate !== 'undefined') {
+      const shortSubj = state.subjectKey === 'mathematics' ? 'maths' : state.subjectKey;
+      const shortLvl = state.levelKey.replace('primary-', 'p');
+      const specificKey = `${shortSubj}-${shortLvl}-${state.examType.toLowerCase()}`;
+      
+      tpl = getTemplate(specificKey) || getTemplate(state.subjectKey, state.levelKey);
+    }
+
+    let blueprintHtml = '<p class="text-muted text-sm">Loading blueprint...</p>';
+    if (tpl) {
+      // 1. Data is the absolute source of truth. No more 0.5 multipliers.
+      const duration = tpl.durationMinutes || tpl.duration || 0;
+      const totalMarks = tpl.totalMarks || 0;
+      
+      const durationText = (typeof formatDuration === 'function')
+        ? formatDuration(duration) : `${duration} mins`;
+
+      const mockPreviewHtml = renderMockPreview(tpl);
+
+      blueprintHtml = `
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="font-display text-2xl text-main m-0">Exam Dossier</h2>
+          <div class="badge badge-info">DRAFT</div>
+        </div>
+        <ul class="flex flex-col gap-2 text-sm text-main mb-4 list-reset">
+          <li class="flex justify-between" style="border-bottom: 1px solid var(--border-light); padding-bottom: var(--space-2);">
+            <span>Total Duration</span> <span class="font-bold">⏱ ${esc(durationText)}</span>
+          </li>
+          <li class="flex justify-between" style="border-bottom: 1px solid var(--border-light); padding-bottom: var(--space-2);">
+            <span>Total Marks</span> <span class="font-bold">${totalMarks} M</span>
+          </li>
+        </ul>
+        ${mockPreviewHtml}
+      `;
+    }
+
+    app.innerHTML = `
+      <div class="w-full flex flex-col items-center" style="max-width: 800px;">
+        <div class="text-center mb-8 w-full">
+          <div class="badge badge-info mb-2">${state.tier === 'single_subject' ? 'Step 1 of 1' : 'Step 2 of 2'}</div>
+          <h1 class="font-display text-4xl text-main">Select Paper Type</h1>
+        </div>
+        
+        <div class="flex flex-wrap gap-6 items-start w-full">
+          <div class="flex-1 flex flex-col gap-4" style="min-width: 300px;">
+            <div class="flex flex-wrap gap-4">
+              ${chips}
+            </div>
+            ${state.tier !== 'single_subject' ? `<div class="text-center mt-4"><button class="btn btn-ghost" onclick="window.backToSubject()">← Back to Subjects</button></div>` : ''}
+          </div>
+          
+          <div class="flex-1" style="min-width: 300px;">
+            <div class="card p-6 bg-page card-rule-mint w-full">
+              ${blueprintHtml}
+              <button id="printPaperBtn" class="btn btn-secondary btn-full mt-4 hover-lift" onclick="window.printBlankPaper()">🖨️ Print Paper</button>
+              <button class="btn btn-primary btn-full mt-4 hover-lift" onclick="window.triggerGen()">Generate Paper →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    window.selectType = (id) => setState({ examType: id });
+    window.backToSubject = () => setState({ phase: 'SUBJECT', examType: '' });
+    window.triggerGen = () => setState({ phase: 'GEN' });
+  }
+
+  window.printBlankPaper = async () => {
+    const btn = document.getElementById('printPaperBtn');
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-sm" style="width:14px;height:14px;border-width:2px;display:inline-block;margin-right:6px;border-top-color:currentColor;"></span> Assembling...';
+    
+    try {
+      const paper = await generateExam(state.subjectKey, state.levelKey, state.examType);
+      const pc = document.getElementById('print-container');
+      if (pc && typeof ExamRenderer !== 'undefined') {
+        pc.innerHTML = '';
+        ExamRenderer.render(paper, pc);
+        setTimeout(() => { 
+          window.print(); 
+          btn.disabled = false; 
+          btn.innerHTML = originalText;
+        }, 150);
+      } else {
+        alert('Print engine not loaded.');
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    } catch (err) {
+      alert('Failed to generate paper: ' + err.message);
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+    }
+  };
+
+  // ── PHASE: GENERATING ────────────────────────────────────────────────────
+ // ── PHASE: GENERATING ────────────────────────────────────────────────────
+  function renderGenerating() {
+    app.innerHTML = `
+      <div class="card flex flex-col items-center justify-center text-center w-full" style="padding: var(--space-8); max-width: 600px;">
+        <div class="spinner-sm mb-6"></div>
+        <h2 class="font-display text-3xl text-main mb-2" id="genMsg">Assembling Paper...</h2>
+        <p class="text-muted text-sm">Applying MOE difficulty calibration</p>
+      </div>
+    `;
+
+    const msgs = ['Gathering questions...', 'Calibrating difficulty...', 'Checking syllabus alignment...'];
+    let m = 0;
+    const int = setInterval(() => { m = (m+1)%msgs.length; const el = document.getElementById('genMsg'); if(el) el.textContent = msgs[m]; }, 1000);
+
+    // ── MASTERCLASS INTERCEPT ──
+    // Temporarily hijack the global getTemplate function so the external generator 
+    // is forced to use your highly-detailed WA/PSLE formats instead of generic fallbacks.
+    const originalGetTemplate = window.getTemplate;
+    const shortSubj = state.subjectKey === 'mathematics' ? 'maths' : state.subjectKey;
+    const shortLvl = state.levelKey.replace('primary-', 'p');
+    const specificKey = `${shortSubj}-${shortLvl}-${state.examType.toLowerCase()}`;
+    
+    let activeTpl = null;
+    if (typeof originalGetTemplate === 'function') {
+      activeTpl = originalGetTemplate(specificKey) || originalGetTemplate(state.subjectKey, state.levelKey);
+      window.getTemplate = function() { return activeTpl; };
+    }
+
+    generateExam(state.subjectKey, state.levelKey, state.examType).then(paper => {
+      clearInterval(int);
+      if (typeof originalGetTemplate === 'function') window.getTemplate = originalGetTemplate; // Restore normal function
+      
+      let flat = [];
+      if (paper && paper.sections) {
+        paper.sections.forEach(sec => {
+          if (sec.questions) {
+            sec.questions.forEach(q => {
+              // Filter out phantom questions
+              if (q) flat.push({ ...q, sectionLabel: sec.label, sectionInstr: sec.instructions });
+            });
+          }
+        });
+      }
+      
+      // ── EMPTY PAPER SHIELD ──
+      // If the generator couldn't find enough questions, show a friendly UI instead of crashing
+      if (flat.length === 0) {
+        app.innerHTML = `
+          <div class="card p-8 text-center w-full hover-lift" style="max-width: 600px;">
+            <div class="text-4xl mb-4">🗂️</div>
+            <h2 class="text-danger font-display text-2xl mb-2">Insufficient Questions</h2>
+            <p class="text-muted mb-6">Miss Wena's database doesn't have enough questions to assemble a full <strong>${esc(state.examType)}</strong> paper for this subject yet.</p>
+            <button class="btn btn-primary hover-lift" onclick="location.reload()">Return to Menu</button>
+          </div>`;
+        return;
+      }
+
+      setState({ phase: 'EXAM', paper, allQs: flat, currentQIdx: 0, answers: {}, drawings: {}, flagged: {} });
+    }).catch(err => {
+      clearInterval(int);
+      if (typeof originalGetTemplate === 'function') window.getTemplate = originalGetTemplate; // Restore normal function
+      app.innerHTML = `<div class="card p-8 text-center w-full" style="max-width: 600px;"><p class="text-danger font-bold mb-4">Error: ${err.message}</p><button class="btn btn-primary hover-lift" onclick="location.reload()">Try Again</button></div>`;
+    });
+  }
+
+  // ── PHASE: EXAM (THE FOCUS ROOM) ─────────────────────────────────────────
+  function renderFocusExam() {
+    if (state.currentQIdx === 0 && !state.timerHandle) {
+      // Safely fallback through the object tree to find the correct duration
+      const totalMinutes = state.paper.duration || state.paper.template?.durationMinutes || 0;
+      startTimer(totalMinutes * 60);
+    }
+
+    const q = state.allQs[state.currentQIdx];
+    const totalQs = state.allQs.length;
+
+    const navPips = state.allQs.map((_, i) => {
+      let classes = 'nav-pip hover-lift';
+      if (i === state.currentQIdx) classes += ' is-active';
+      if (state.flagged[i]) classes += ' is-flagged';
+      else if (state.answers[i] || state.drawings[i]) classes += ' is-answered';
+      
+      return `<button class="${classes}" onclick="window.jumpToQ(${i})">${i+1}</button>`;
+    }).join('');
+
+    let uiHtml = '';
+    const ansKey = state.currentQIdx; 
+    const savedAns = state.answers[ansKey] || '';
+
+    const renderHasParts = (() => { try { return (typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || [])).length > 0; } catch(e){ return false; } })();
+    const renderIsSplit = q.type === 'comprehension' || q.type === 'visual_text' || (q.type === 'open_ended' && renderHasParts);
+
+    if (q.type === 'mcq') {
+      const letters = ['A','B','C','D'];
+      let safeOptions = [];
+      try { safeOptions = typeof q.options === 'string' ? JSON.parse(q.options) : (q.options || []); } catch(e) {}
+      
+      uiHtml = safeOptions.map((opt, i) => {
+        const isSel = savedAns === opt; // Compare EXACT string to prevent false negatives
+        return `
+          <div class="mcq-opt hover-lift ${isSel ? 'is-sel' : ''}" onclick="window.selectMcq(${i})">
+            <span class="mcq-badge">${letters[i]}</span>
+            <span class="font-medium">${esc(opt)}</span>
+          </div>`;
+      }).join('');
+    } else if (q.type === 'cloze') {
+      const blanks = q.blanks || [];
+      const allWords = new Set();
+      blanks.forEach(b => (b.options || []).forEach(w => allWords.add(w)));
+      
+      // UPGRADE: Only show Word Bank if words exist
+      let wordBankHtml = '';
+      if (allWords.size > 0) {
+        const wordBankList = [...allWords].sort().map((w, i) =>
+          `<span class="badge badge-info" style="font-size:0.8rem; padding: 4px 10px;">(${i+1}) ${esc(w)}</span>`
+        ).join('');
+        wordBankHtml = `
+          <div class="card bg-page p-4 mb-4">
+            <div class="text-xs font-bold text-muted uppercase mb-3">Word Bank</div>
+            <div class="flex flex-wrap gap-2">${wordBankList}</div>
+          </div>`;
+      }
+
+      // UPGRADE: Support newlines in passage
+      let passage = esc(q.passage || '').replace(/\n/g, '<br>');
+      
+      blanks.forEach(b => {
+        const num = b.id || b.number;
+        const saved = savedAns[num] || '';
+        let inputHtml = '';
+        
+        // UPGRADE: Use text inputs for empty comprehension cloze
+        if (b.options && b.options.length > 0) {
+          const opts = b.options.map(o => `<option value="${esc(o)}" ${saved === o ? 'selected' : ''}>${esc(o)}</option>`).join('');
+          inputHtml = `<select id="cloze-blank-${num}" class="cloze-select" onchange="window.saveCurrentAnswerState()"><option value="">— pick —</option>${opts}</select>`;
+        } else {
+          inputHtml = `<input type="text" id="cloze-blank-${num}" class="editing-input" value="${esc(saved)}" placeholder="type here" autocomplete="off" oninput="window.saveCurrentAnswerState()" style="width: 120px; display: inline-block; margin: 0 4px;">`;
+        }
+        passage = passage.replace(`[${num}]`, inputHtml);
+      });
+
+      uiHtml = `
+        ${wordBankHtml}
+        <div class="card p-6 cloze-passage text-lg text-main font-medium" style="line-height: 2;">${passage}</div>
+      `;
+    } else if (q.type === 'editing') {
+      const lines = (q.passage_lines || []).map(line => {
+        const saved = savedAns[line.line_number] || '';
+        const rawText = line.text || '';
+        const underlined = line.underlined_word || '';
+        const escapedLine = esc(rawText).replace(
+          esc(underlined),
+          `<u style="text-decoration-color:var(--brand-rose);text-decoration-thickness:2px;font-weight:700;">${esc(underlined)}</u>`
+        );
+        let inputEl = `<input type="text" id="edit-line-${line.line_number}" value="${esc(saved)}" placeholder="${esc(underlined)}" autocomplete="off" class="editing-input" oninput="window.saveCurrentAnswerState()">`;
+        return `
+          <div class="editing-line" style="padding: var(--space-4) 0;">
+            <span class="text-base font-bold text-muted" style="min-width:32px;">${line.line_number}.</span>
+            <span class="text-lg text-main font-medium flex-1" style="line-height: 1.8;">${escapedLine}</span>
+            <div class="flex items-center gap-2" style="position:relative;">${inputEl}</div>
+          </div>`;
+      }).join('');
+
+      uiHtml = `<div class="card p-6">${lines}</div>`;
+    } else if (q.type === 'short_ans') {
+      const isDrawMode = state.drawings[ansKey] && state.drawings[ansKey] !== 'text';
+      
+      // 🚀 MASTERCLASS SYNTHESIS PARSER
+      let synthesisHtml = '';
+      let prefillAns = savedAns;
+      let isSynthesis = (q.topic || '').toLowerCase() === 'synthesis';
+      
+      if (isSynthesis && q.question_text) {
+        // 🚀 MASTERCLASS FIX: Safely strip any legacy \n\n connectors hiding in the text
+        const displayQuestion = q.question_text.split(/\n\n|\\n\\n/)[0].trim();
+        
+        let rawConnector = '';
+        if (q.instructions) {
+           const match = q.instructions.match(/'([^']+)'/);
+           if (match) rawConnector = match[1];
+        }
+        const cleanConnector = rawConnector.replace(/^\.\.\.|\.\.\.$|^\(|\)$/g, '').trim(); 
+        
+        // 🚀 MASTERCLASS FIX: Adjusted margin to sit perfectly on the text baseline
+        const lineBlock = `<div class="flex-1" style="border-bottom: 2px solid var(--text-main); margin-bottom: 0.3rem; opacity: 0.5;"></div>`;
+        
+        let blueprintHtml = '';
+        if (rawConnector.startsWith('...') && rawConnector.endsWith('...')) {
+           // MIDDLE: ... despite ...
+           blueprintHtml = `${lineBlock}<div class="font-bold text-brand-rose px-4 py-2 bg-surface rounded shadow-sm text-sm uppercase tracking-widest">${esc(cleanConnector)}</div>${lineBlock}`;
+        } else if (rawConnector.startsWith('(') && rawConnector.endsWith(')')) {
+           // Fallback for legacy bracket formats
+           blueprintHtml = `${lineBlock}<div class="font-bold text-brand-rose px-4 py-2 bg-surface rounded shadow-sm text-sm uppercase tracking-widest">${esc(cleanConnector)}</div>${lineBlock}`;
+        } else if (rawConnector.startsWith('...')) {
+           // END: ... respectively.
+           blueprintHtml = `${lineBlock}<div class="font-bold text-brand-rose px-4 py-2 bg-surface rounded shadow-sm text-sm uppercase tracking-widest">${esc(cleanConnector)}</div>`;
+        } else {
+           // START: The boys
+           blueprintHtml = `<div class="font-bold text-brand-rose px-4 py-2 bg-surface rounded shadow-sm text-sm uppercase tracking-widest">${esc(cleanConnector)}</div>${lineBlock}`;
+           if (!savedAns) prefillAns = cleanConnector + ' '; 
+        }
+
+        synthesisHtml = `
+          <div class="card p-5 bg-elevated border border-light mb-6 shadow-sm">
+            <div class="text-lg text-main font-medium leading-relaxed mb-6">${esc(displayQuestion)}<br><br></div>
+            <div class="flex items-end gap-3 w-full">${blueprintHtml}</div>
+          </div>
+        `;
+      }
+
+      uiHtml = `
+        ${synthesisHtml}
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+          <span class="text-xs font-bold text-muted uppercase tracking-wider">💡 Tip: Draw your working!</span>
+          <div class="flex gap-2 w-full sm:w-auto">
+            <button class="btn btn-sm ${!isDrawMode ? 'bg-sage-dark text-white' : 'btn-ghost'}" onclick="window.setMode('text')">⌨️ Type</button>
+            <button class="btn btn-sm ${isDrawMode ? 'bg-sage-dark text-white' : 'btn-ghost'}" onclick="window.setMode('draw')">✏️ Pen Tool</button>
+          </div>
+        </div>
+        ${!isDrawMode 
+          ? `<input type="text" id="qInput" class="form-input w-full p-4 text-lg border-2 border-light focus:border-brand-sage rounded-xl transition-all shadow-sm" placeholder="Type your complete sentence here..." value="${esc(prefillAns)}" autocomplete="off" oninput="window.saveCurrentAnswerState()">`
+          : `<div class="scratchpad-container mb-4" style="position: relative; display: block;">
+               <canvas id="canvas-${ansKey}" data-drawkey="${ansKey}" class="scratchpad-canvas bg-white border-2 border-light rounded-xl w-full shadow-sm" style="min-height: 300px; touch-action: none; cursor: crosshair;"></canvas>
+               <div style="position: absolute; top: 12px; right: 12px;">
+                  <button class="btn btn-sm btn-ghost bg-white hover-lift border border-light shadow-sm rounded-lg" onclick="window.clearCanvas('${ansKey}')">🗑️ Clear</button>
+               </div>
+             </div>
+             <input type="text" id="qInput" class="form-input w-full p-4 text-lg border-2 border-brand-sage focus:border-brand-sage rounded-xl transition-all shadow-sm bg-sage-50/10" placeholder="Type your complete sentence here..." value="${esc(prefillAns)}" autocomplete="off" oninput="window.saveCurrentAnswerState()">`
+        }
+      `;
+    const renderHasParts = (() => { try { return (typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || [])).length > 0; } catch(e){ return false; } })();
+    } else if (q.type === 'open_ended') {
+      const isDrawMode = state.drawings[ansKey] && state.drawings[ansKey] !== 'text';
+      uiHtml = `
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+          <span class="text-xs font-bold text-muted uppercase tracking-wider">💡 Tip: Draw your working!</span>
+          <div class="flex gap-2 w-full sm:w-auto">
+            <button class="btn btn-sm ${!isDrawMode ? 'bg-sage-dark text-white' : 'btn-ghost'}" onclick="window.setMode('text')">⌨️ Type</button>
+            <button class="btn btn-sm ${isDrawMode ? 'bg-sage-dark text-white' : 'btn-ghost'}" onclick="window.setMode('draw')">✏️ Pen Tool</button>
+          </div>
+        </div>
+        ${!isDrawMode 
+          ? `<textarea id="qInput" class="form-input w-full p-4 text-lg border-2 border-light focus:border-brand-sage rounded-xl transition-all shadow-sm" rows="5" style="height:auto; resize:vertical;" placeholder="Type your detailed working and answer here..." oninput="window.saveCurrentAnswerState()">${esc(savedAns)}</textarea>`
+          : `<div class="scratchpad-container mb-4" style="position: relative; display: block;">
+               <canvas id="canvas-${ansKey}" data-drawkey="${ansKey}" class="scratchpad-canvas bg-white border-2 border-light rounded-xl w-full shadow-sm" style="min-height: 300px; touch-action: none; cursor: crosshair;"></canvas>
+               <div style="position: absolute; top: 12px; right: 12px;">
+                  <button class="btn btn-sm btn-ghost bg-white hover-lift border border-light shadow-sm rounded-lg" onclick="window.clearCanvas('${ansKey}')">🗑️ Clear</button>
+               </div>
+             </div>
+             <input type="text" id="qInput" class="form-input w-full p-4 text-lg border-2 border-brand-sage focus:border-brand-sage rounded-xl transition-all shadow-sm bg-sage-50/10" placeholder="Final Answer (Optional)" value="${esc(savedAns)}" autocomplete="off" oninput="window.saveCurrentAnswerState()">`
+        }
+      `;
+    } else if (renderIsSplit) {
+      let partsData = [];
+      try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
+      const savedObj = (typeof savedAns === 'object' && savedAns !== null) ? savedAns : {};
+
+      const partsHtml = partsData.map((part, idx) => {
+        const pLabel = part.label || `Q${idx + 1}`;
+        const safeIdLabel = String(pLabel).replace(/[^a-zA-Z0-9]/g, '');
+        const savedWorking = savedObj[pLabel] || '';
+        let inputUI = '';
+        
+        if (part.part_type === 'text_box') {
+          inputUI = `<textarea id="comp-${safeIdLabel}" class="form-input w-full p-4 text-lg border-2 border-light focus:border-brand-sage rounded-xl" rows="3" placeholder="Type answer here..." oninput="window.saveCurrentAnswerState()">${esc(typeof savedWorking === 'string' ? savedWorking : '')}</textarea>`;
+        
+        } else if (part.part_type === 'mcq') {
+          const letters = ['A','B','C','D'];
+          inputUI = (part.options || []).map((opt, i) => `
+            <div class="mcq-opt hover-lift ${savedWorking === opt ? 'is-sel' : ''}" onclick="window.selectCompMcq('${pLabel}', ${i})">
+              <span class="mcq-badge">${letters[i]}</span><span class="font-medium text-main">${esc(opt)}</span>
+            </div>
+          `).join('');
+          
+        } else if (part.part_type === 'referent') {
+          inputUI = `
+            <table class="w-full text-left border-collapse border border-light rounded-lg overflow-hidden mt-2 mb-4 bg-surface shadow-sm">
+              <thead class="bg-elevated border-b border-light">
+                <tr>
+                  <th class="p-3 font-bold text-main w-1/2">Word from passage</th>
+                  <th class="p-3 font-bold text-main w-1/2">What it refers to</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${(part.items || []).map((item, i) => `
+                  <tr class="border-b border-light last:border-0">
+                    <td class="p-4 font-medium text-main align-middle leading-relaxed">${esc(item.word)}</td>
+                    <td class="p-3 align-middle border-l border-light">
+                      <input type="text" id="comp-${safeIdLabel}-ref${i}" class="form-input w-full p-3 text-lg border-2 border-light rounded-lg focus:border-brand-sage" placeholder="Type here..." value="${esc(savedWorking['ref'+i] || '')}" oninput="window.saveCurrentAnswerState ? window.saveCurrentAnswerState() : null">
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>`;
+          
+        } else if (part.part_type === 'sequencing') {
+          inputUI = `<div class="flex flex-col gap-3 mt-2">` + (part.items || []).map((item, i) => `
+            <div class="flex items-center gap-4 bg-surface p-3 rounded-lg border border-light shadow-sm">
+              <input type="number" id="comp-${safeIdLabel}-seq${i}" class="form-input border-2 border-light rounded-lg focus:border-brand-sage text-2xl font-bold text-center" style="width: 60px; height: 60px; padding: 0;" min="1" max="3" value="${esc(savedWorking['seq'+i] || '')}" oninput="window.saveInputState ? window.saveInputState() : null">              <div class="font-medium text-main leading-relaxed">${esc(item)}</div>
+            </div>
+          `).join('') + `</div>`;
+          
+        } else if (part.part_type === 'true_false') {
+          inputUI = `
+            <table class="w-full text-left border-collapse border border-light rounded-lg overflow-hidden mt-2 mb-4 bg-surface shadow-sm">
+              <thead class="bg-elevated border-b border-light">
+                <tr>
+                  <th class="p-3 font-bold text-main w-2/5">Statement</th>
+                  <th class="p-3 font-bold text-main text-center w-1/5 whitespace-nowrap border-l border-light">True / False</th>
+                  <th class="p-3 font-bold text-main w-2/5 border-l border-light">Reason</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${(part.items || []).map((item, i) => `
+                  <tr class="border-b border-light last:border-0">
+                    <td class="p-4 font-medium text-main align-top leading-relaxed">${esc(item.statement)}</td>
+                    <td class="p-4 align-top text-center border-l border-light">
+                      <div class="flex flex-col gap-3 items-center justify-start mt-2">
+                        <label class="flex items-center gap-2 cursor-pointer font-bold"><input type="radio" name="comp-${safeIdLabel}-tf${i}" value="True" ${savedWorking['tf'+i]==='True'?'checked':''} onchange="window.saveCurrentAnswerState ? window.saveCurrentAnswerState() : null"> True</label>
+                        <label class="flex items-center gap-2 cursor-pointer font-bold"><input type="radio" name="comp-${safeIdLabel}-tf${i}" value="False" ${savedWorking['tf'+i]==='False'?'checked':''} onchange="window.saveCurrentAnswerState ? window.saveCurrentAnswerState() : null"> False</label>
+                      </div>
+                    </td>
+                    <td class="p-3 align-top border-l border-light">
+                      <textarea id="comp-${safeIdLabel}-reason${i}" class="form-input w-full p-3 text-base border-2 border-light rounded-lg focus:border-brand-sage" rows="4" placeholder="Evidence from text..." oninput="window.saveCurrentAnswerState ? window.saveCurrentAnswerState() : null">${esc(savedWorking['reason'+i] || '')}</textarea>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>`;
+        }
+
+        // Sub-question Diagram Support 
+        let partDiagram = '';
+        if (part.visual_payload && typeof DiagramLibrary !== 'undefined') {
+          partDiagram = `<div class="procedural-diagram mb-4 mx-auto flex justify-center w-full" style="max-width: 600px; overflow-x: auto;">${DiagramLibrary.render(part.visual_payload)}</div>`;
+        } else if (part.image_url) {
+          partDiagram = `<div class="mb-4 mx-auto flex justify-center w-full" style="max-width: 600px;"><img src="${esc(part.image_url)}" style="max-height: 220px; max-width: 100%; object-fit: contain; border-radius: var(--radius-md); border: 1px solid var(--border-light);"></div>`;
+        }
+        
+        return `
+          <div class="mb-6 pb-6" style="${idx < partsData.length - 1 ? 'border-bottom: 1px dashed var(--border-light);' : ''}">
+            <div class="flex items-center gap-3 mb-3">
+              <span class="font-display text-xl text-main font-bold" style="color: var(--english-colour);">${pLabel}</span>
+              <span class="badge badge-info text-xs">${part.marks} mark${part.marks !== 1 ? 's' : ''}</span>
+            </div>
+            ${part.question ? `<div class="text-lg text-main mb-4 font-medium">${esc(part.question)}</div>` : ''}
+            ${part.instructions ? `<div class="text-lg text-main font-medium mb-4 leading-relaxed">${esc(part.instructions)}</div>` : ''}
+            ${partDiagram}
+            ${inputUI}
+          </div>`;
+      }).join('');
+
+      // 🚀 MASTERCLASS: Render image in left pane for Visual Text, otherwise render text passage
+      let passageContent = '';
+      if (q.type === 'visual_text' && q.image_url) {
+          passageContent = `<img src="${esc(q.image_url)}" style="width: 100%; height: auto; object-fit: contain; border-radius: var(--radius-md); border: 1px solid var(--border-light);" alt="Visual Text Flyer">`;
+      } else {
+          passageContent = esc(q.passage || '').replace(/\\n/g, '<br><br>');
+      }
+
+      uiHtml = `
+        <div class="comp-container">
+          <div class="comp-passage-pane card p-6 text-lg leading-relaxed bg-surface" style="padding: ${q.type === 'visual_text' ? '0' : 'var(--space-6)'};">${passageContent}</div>
+          <div class="comp-questions-pane">${partsHtml}</div>
+        </div>
+      `;
+
+    } else if (q.type === 'word_problem') {
+      let partsData = [];
+      try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
+      
+      const savedObj = (typeof savedAns === 'object' && savedAns !== null) ? savedAns : {};
+      
+      uiHtml = partsData.length === 0 
+        ? `<div class="text-amber">Legacy format detected. Please update database.</div>`
+        : partsData.map((p, idx) => {
+            const pLabel = p.label || (p.part_id ? `(${p.part_id})` : `Part ${idx + 1}`);
+            const pQ = p.question || p.question_text || '';
+            const pMarks = p.marks || 2;
+            const savedWorking = savedObj[pLabel] || '';
+            const drawKey = `${ansKey}_${pLabel}`;
+            const isDrawMode = state.drawings[drawKey] && state.drawings[drawKey] !== 'text';
+            const safeIdLabel = String(pLabel).replace(/[^a-zA-Z0-9]/g, '');
+
+            return `
+              <div class="mb-6 pb-6" style="${idx < partsData.length - 1 ? 'border-bottom: 1px dashed var(--border-light);' : ''}">
+                <div class="flex items-center gap-3 mb-3">
+                  <span class="font-display text-xl text-main font-bold" style="color: var(--brand-sage);">${esc(pLabel)}</span>
+                  <span class="badge badge-info text-xs">${pMarks} mark${pMarks!==1?'s':''}</span>
+                </div>
+                ${pQ ? `<div class="text-lg text-main font-medium mb-4 leading-relaxed">${esc(pQ)}</div>` : ''}
+                
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+                  <span class="text-xs font-bold text-muted uppercase tracking-wider">💡 Tip: Draw your working!</span>
+                  <div class="flex gap-2 w-full sm:w-auto">
+                    <button class="btn btn-sm ${!isDrawMode ? 'bg-sage-dark text-white' : 'btn-ghost'}" onclick="window.setMode('text', '${esc(pLabel)}')">⌨️ Type</button>
+                    <button class="btn btn-sm ${isDrawMode ? 'bg-sage-dark text-white' : 'btn-ghost'}" onclick="window.setMode('draw', '${esc(pLabel)}')">✏️ Pen Tool</button>
+                  </div>
+                </div>
+                
+                ${!isDrawMode
+                  ? `<textarea id="wp-${safeIdLabel}" data-part="${esc(pLabel)}" class="form-input w-full p-4 text-lg border-2 border-light focus:border-brand-sage rounded-xl transition-all shadow-sm" rows="3" placeholder="Type your working and answer here..." oninput="window.saveCurrentAnswerState()">${esc(savedWorking)}</textarea>`
+                  : `<div class="scratchpad-container mb-4" style="position: relative; display: block;">
+                       <canvas id="canvas-${drawKey}" data-drawkey="${drawKey}" class="scratchpad-canvas bg-white border-2 border-light rounded-xl w-full shadow-sm" style="min-height: 300px; touch-action: none; cursor: crosshair;"></canvas>
+                       <div style="position: absolute; top: 12px; right: 12px;">
+                          <button class="btn btn-sm btn-ghost bg-white hover-lift border border-light shadow-sm rounded-lg" onclick="window.clearCanvas('${drawKey}')">🗑️ Clear</button>
+                       </div>
+                     </div>
+                     <input type="text" id="wp-${safeIdLabel}" data-part="${esc(pLabel)}" class="form-input w-full p-4 text-lg border-2 border-brand-sage focus:border-brand-sage rounded-xl transition-all shadow-sm bg-sage-50/10" placeholder="Final Answer (Required for marking)" value="${esc(savedWorking)}" oninput="window.saveCurrentAnswerState()">`
+                }
+              </div>
+            `;
+          }).join('');
+    } else { 
+      uiHtml = `<textarea id="qInput" class="form-input w-full p-4 mt-2" rows="4" style="height:auto; border: 2px solid var(--border-dark); border-radius: var(--radius-md);">${esc(savedAns)}</textarea>`;
+    }
+
+    // 🚀 DYNAMIC DIAGRAM INJECTION
+    let diagramHtml = '';
+    if (q.image_url && q.type !== 'visual_text') {
+      diagramHtml = `<div class="mb-6 mx-auto flex justify-center w-full" style="max-width: 600px;"><img src="${esc(q.image_url)}" style="max-height: 220px; max-width: 100%; object-fit: contain; border-radius: var(--radius-md); border: 1px solid var(--border-light);"></div>`;
+    } else if (q.visual_payload) {
+      diagramHtml = renderVisualPayload(q.visual_payload);
+    }
+
+    const paneMaxWidth = renderIsSplit ? '100%' : '680px';
+
+    app.innerHTML = `
+      <div class="flex flex-wrap gap-6 items-start w-full justify-center">
+        <div class="flex flex-col" style="flex: 1 1 300px; max-width: ${paneMaxWidth}; width: 100%; transition: max-width 0.3s ease;">
+          <div class="badge badge-info mb-4 self-start">${esc(q.sectionLabel)}</div>
+          
+          <div class="card p-6 mb-4 flex-1">
+            <div class="flex justify-between items-center mb-4" style="border-bottom: 1px solid var(--border-light); padding-bottom: var(--space-2);">
+              <div class="font-bold text-muted">Question ${state.currentQIdx + 1} of ${totalQs}</div>
+              <div class="badge badge-amber">${q.marks} mark${q.marks > 1 ? 's' : ''}</div>
+            </div>
+            
+            ${q.sectionInstr ? `<p class="text-sm text-muted italic mb-4">${esc(q.sectionInstr)}</p>` : ''}
+            ${(q.type === 'short_ans' && (q.topic || '').toLowerCase() === 'synthesis') ? `<p class="text-xl font-bold text-main mb-6 leading-relaxed">${q.instructions ? esc(q.instructions) : 'Rewrite the given sentence(s) using the word(s) provided. Your answer must be in one sentence. The meaning of your sentence must be the same as the meaning of the given sentence(s).'}</p>` : ''}
+            ${['cloze', 'editing'].includes(q.type) || (q.type === 'short_ans' && (q.topic || '').toLowerCase() === 'synthesis') ? '' : `<p class="text-lg text-main font-medium mb-6" style="line-height: 1.6;">${esc(q.question_text)}</p>`}
+            
+            ${diagramHtml}
+            
+            <div class="question-ui">${uiHtml}</div>
+          </div>
+
+          <div class="card p-4 flex flex-wrap justify-between items-center bg-surface gap-4">
+            <button class="btn btn-ghost" onclick="window.navExam(-1)" ${state.currentQIdx === 0 ? 'disabled' : ''}>← Previous</button>
+            <button class="btn btn-ghost hover-lift" onclick="window.toggleFlag()" style="color: ${state.flagged[ansKey] ? 'var(--brand-amber)' : 'var(--text-muted)'}; border: 1px solid ${state.flagged[ansKey] ? 'var(--brand-amber)' : 'transparent'};">
+              ${state.flagged[ansKey] ? '🚩 Flagged' : '🚩 Flag for review'}
+            </button>
+            ${state.currentQIdx === totalQs - 1 
+              ? `<button class="btn btn-primary hover-lift" onclick="window.manualSubmit()">Submit Paper →</button>`
+              : `<button class="btn btn-secondary hover-lift" onclick="window.navExam(1)">Next →</button>`
+            }
+          </div>
+        </div>
+
+        <div style="flex: 0 0 280px; width: 100%;">
+          <div class="card p-6" style="position: sticky; top: 100px;">
+            <h3 class="font-bold text-main mb-4 m-0">Exam Navigator</h3>
+            <div class="exam-navigator">${navPips}</div>
+            <div class="flex flex-col gap-2 mt-4 pt-4 text-xs text-muted font-medium" style="border-top: 1px solid var(--border-light);">
+              <div class="flex items-center gap-2"><div style="width: 12px; height: 12px; border-radius: 4px; background: var(--bg-elevated);"></div> Unanswered</div>
+              <div class="flex items-center gap-2"><div style="width: 12px; height: 12px; border-radius: 4px; background: rgba(5, 150, 105, 0.2);"></div> Answered</div>
+              <div class="flex items-center gap-2"><div style="width: 12px; height: 12px; border-radius: 4px; background: rgba(217, 119, 6, 0.2);"></div> Flagged</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // 🚀 MASTERCLASS FIX: setTimeout prevents the 0x0 Canvas rendering bug on mode toggle
+    setTimeout(() => initCanvas(), 50);
+  }
+
+  // ── EXAM INTERACTIONS ────────────────────────────────────────────────────
+  window.saveCurrentAnswerState = () => {
+    const q = state.allQs[state.currentQIdx];
+    const ansKey = state.currentQIdx;
+    
+    const hasPartsGate = (() => { try { return (typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || [])).length > 0; } catch(e){ return false; } })();
+    const isSplitFormat = q.type === 'comprehension' || q.type === 'visual_text' || (q.type === 'open_ended' && hasPartsGate);
+
+    if (q.type === 'cloze') {
+      const ans = {};
+      (q.blanks || []).forEach(b => {
+        const num = b.id || b.number;
+        const el = document.getElementById(`cloze-blank-${num}`);
+        if (el) ans[num] = el.value;
+      });
+      state.answers[ansKey] = ans;
+    } else if (q.type === 'editing') {
+      const ans = {};
+      (q.passage_lines || []).forEach(l => {
+        const el = document.getElementById(`edit-line-${l.line_number}`);
+        if (el) ans[l.line_number] = el.value;
+      });
+      state.answers[ansKey] = ans;
+    } else if (q.type === 'word_problem' || isSplitFormat) {
+      const ans = state.answers[ansKey] || {};
+      let partsData = [];
+      try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
+      partsData.forEach((p, idx) => {
+        const pLabel = isSplitFormat 
+            ? (p.label || `Q${idx + 1}`) 
+            : (p.label || (p.part_id ? `(${p.part_id})` : `Part ${idx + 1}`));
+            
+        const safeIdLabel = String(pLabel).replace(/[^a-zA-Z0-9]/g, '');
+        const prefix = isSplitFormat ? 'comp-' : 'wp-';
+
+        if (q.type === 'comprehension' && p.part_type !== 'text_box' && p.part_type !== 'mcq') {
+           ans[pLabel] = ans[pLabel] || {};
+           if (p.part_type === 'referent') {
+             (p.items || []).forEach((_, i) => {
+               const el = document.getElementById(`comp-${safeIdLabel}-ref${i}`);
+               if (el) ans[pLabel]['ref'+i] = el.value;
+             });
+           } else if (p.part_type === 'sequencing') {
+             (p.items || []).forEach((_, i) => {
+               const el = document.getElementById(`comp-${safeIdLabel}-seq${i}`);
+               if (el) ans[pLabel]['seq'+i] = el.value;
+             });
+           } else if (p.part_type === 'true_false') {
+             (p.items || []).forEach((_, i) => {
+               const checked = document.querySelector(`input[name="comp-${safeIdLabel}-tf${i}"]:checked`);
+               if (checked) ans[pLabel]['tf'+i] = checked.value;
+               const el = document.getElementById(`comp-${safeIdLabel}-reason${i}`);
+               if (el) ans[pLabel]['reason'+i] = el.value;
+             });
+           }
+        } else {
+           // Standard text box extraction
+           const el = document.getElementById(`${prefix}${safeIdLabel}`);
+           if (el && p.part_type !== 'mcq') ans[pLabel] = el.value;
+        }
+      });
+      state.answers[ansKey] = ans;
+    } else if (q.type !== 'mcq') {
+      const inp = document.getElementById('qInput');
+      if (inp) state.answers[ansKey] = inp.value;
+    }
+    
+    // Save ALL canvases currently on screen
+    document.querySelectorAll('.scratchpad-canvas').forEach(canvas => {
+      const drawKey = canvas.getAttribute('data-drawkey');
+      if (drawKey) state.drawings[drawKey] = canvas.toDataURL();
+    });
+  };
+
+  window.navExam = (dir) => {
+    window.saveCurrentAnswerState();
+    const newIdx = state.currentQIdx + dir;
+    if (newIdx >= 0 && newIdx < state.allQs.length) {
+      setState({ currentQIdx: newIdx });
+    }
+  };
+
+  window.jumpToQ = (idx) => {
+    window.saveCurrentAnswerState();
+    setState({ currentQIdx: idx });
+  };
+
+  window.selectMcq = (idx) => {
+    const q = state.allQs[state.currentQIdx];
+    let safeOptions = [];
+    try { safeOptions = typeof q.options === 'string' ? JSON.parse(q.options) : (q.options || []); } catch(e) {}
+    
+    state.answers[state.currentQIdx] = safeOptions[idx]; // Save exact string, not the letter
+    renderFocusExam();
+  };
+
+  window.selectCompMcq = (pLabel, idx) => {
+    const q = state.allQs[state.currentQIdx];
+    let partsData = [];
+    try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
+    
+    const partIndex = parseInt(pLabel.replace('Q', '')) - 1;
+    const partData = partsData[partIndex];
+    if (!partData) return;
+
+    if (!state.answers[state.currentQIdx]) state.answers[state.currentQIdx] = {};
+    state.answers[state.currentQIdx][pLabel] = partData.options[idx];
+    renderFocusExam();
+  };
+
+  window.toggleFlag = () => {
+    window.saveCurrentAnswerState();
+    const k = state.currentQIdx;
+    state.flagged[k] = !state.flagged[k];
+    renderFocusExam();
+  };
+
+  window.setMode = (mode, subKey = null) => {
+    window.saveCurrentAnswerState();
+    const k = subKey ? `${state.currentQIdx}_${subKey}` : state.currentQIdx;
+    if (mode === 'draw') {
+      state.drawings[k] = state.drawings[k] || 'init'; 
+    } else {
+      delete state.drawings[k]; 
+    }
+    renderFocusExam();
+  };
+
+  window.manualSubmit = () => {
+    window.saveCurrentAnswerState();
+    if (confirm("Are you sure you want to submit your paper?")) {
+      submitExam();
+    }
+  };
+
+  // ── CANVAS LOGIC ─────────────────────────────────────────────────────────
+  let isDrawing = false;
+  
+  window.clearCanvas = (drawKey) => {
+    const canvas = document.getElementById(`canvas-${drawKey}`);
+    if (canvas) {
+      const context = canvas.getContext('2d');
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      state.drawings[drawKey] = canvas.toDataURL();
+    }
+  };
+
+  function initCanvas() {
+    document.querySelectorAll('.scratchpad-canvas').forEach(canvas => {
+      if (canvas.isInitialized) return;
+
+      const rect = canvas.parentElement.getBoundingClientRect();
+      canvas.width = rect.width || canvas.parentElement.offsetWidth || 600;
+      canvas.height = 300;
+      
+      const context = canvas.getContext('2d');
+      context.lineWidth = 2.5;
+      context.lineCap = 'round';
+      context.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--border-dark').trim() || '#2C3E3A';
+
+      const drawKey = canvas.getAttribute('data-drawkey');
+
+      if (state.drawings[drawKey] && state.drawings[drawKey] !== 'init' && state.drawings[drawKey] !== 'text') {
+        let img = new Image();
+        img.onload = () => context.drawImage(img, 0, 0);
+        img.src = state.drawings[drawKey];
+      }
+
+      const getPos = (e) => {
+        const r = canvas.getBoundingClientRect();
+        const x = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
+        const y = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
+        return { x, y };
+      };
+
+      const start = (e) => { 
+        isDrawing = true; 
+        const p = getPos(e); 
+        context.beginPath(); 
+        context.moveTo(p.x, p.y); 
+        context.lineTo(p.x, p.y); 
+        context.stroke(); 
+        if (e.cancelable) e.preventDefault(); 
+      };
+      const draw = (e) => { 
+        if (!isDrawing) return; 
+        const p = getPos(e); 
+        context.lineTo(p.x, p.y); 
+        context.stroke(); 
+        if (e.cancelable) e.preventDefault(); 
+      };
+      const stop = () => { 
+        if(isDrawing) { 
+          isDrawing = false; 
+          state.drawings[drawKey] = canvas.toDataURL(); 
+        } 
+      };
+
+      canvas.addEventListener('mousedown', start);
+      canvas.addEventListener('mousemove', draw);
+      canvas.addEventListener('mouseup', stop);
+      canvas.addEventListener('mouseout', stop);
+      canvas.addEventListener('touchstart', start, {passive: false});
+      canvas.addEventListener('touchmove', draw, {passive: false});
+      canvas.addEventListener('touchend', stop);
+      
+      canvas.style.touchAction = 'none';
+      canvas.isInitialized = true;
+    });
+  }
+
+// ── SUBMIT & GRADE ───────────────────────────────────────────────────────
+  async function submitExam() {
+    stopTimer();
+    app.innerHTML = `
+      <div class="card flex flex-col items-center justify-center text-center w-full" style="padding: var(--space-8); max-width: 600px;">
+        <div class="spinner-sm mb-6"></div>
+        <h2 class="font-display text-3xl text-main mb-2">Miss Wena is marking...</h2>
+        <p class="text-muted text-sm" id="gradingStatus">Grading standard questions...</p>
+      </div>
+    `;
+
+    let graded = [];
+    let aiTasks = []; 
+    
+    let sessionToken = null;
+    try {
+      const sb = await window.getSupabase();
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) sessionToken = session.access_token;
+    } catch (e) { console.warn("Could not retrieve session for AI grading", e); }
+
+    state.allQs.forEach((q, i) => {
+      const sa = state.answers[i] || '';
+      let r = { q, sa, earned: 0, max: q.marks, status: 'wrong', fb: '' };
+
+      if (q.type === 'mcq') {
+        const normAns = String(sa).trim().toLowerCase();
+        const normCorrect = String(q.correct_answer).trim().toLowerCase();
+        r.earned = normAns === normCorrect ? q.marks : 0;
+        r.status = normAns === normCorrect ? 'correct' : 'wrong';
+        
+        let safeWrongExpl = {};
+        try { safeWrongExpl = typeof q.wrong_explanations === 'string' ? JSON.parse(q.wrong_explanations) : (q.wrong_explanations || {}); } catch(e) {}
+        r.fb = r.status === 'wrong' && sa ? (safeWrongExpl[sa] || '') : '';
+        graded.push(r);
+      } 
+      else if (q.type === 'cloze') {
+        const blanks = q.blanks || [];
+        let correctCount = 0;
+        let fbArr = [];
+        blanks.forEach(b => {
+          const num = b.id || b.number;
+          const selected = (sa[num] || '').trim();
+          if (selected.toLowerCase() === (b.correct_answer || '').toLowerCase()) { correctCount++; } 
+          else { fbArr.push(`Blank [${num}]: Correct is "${b.correct_answer}"`); }
+        });
+        const pct = blanks.length > 0 ? correctCount / blanks.length : 0;
+        r.earned = Math.round(pct * q.marks);
+        r.status = correctCount === blanks.length ? 'correct' : correctCount > 0 ? 'partial' : 'wrong';
+        r.fb = fbArr.length > 0 ? fbArr.join('<br>') : 'All blanks correct!';
+        graded.push(r);
+      }
+      else if (q.type === 'editing') {
+        const lines = q.passage_lines || [];
+        let correctCount = 0;
+        let fbArr = [];
+        lines.forEach(l => {
+          const userAns = (sa[l.line_number] || '').trim();
+          if (userAns.toLowerCase() === (l.correct_word || '').toLowerCase()) { correctCount++; } 
+          else { fbArr.push(`Line ${l.line_number}: Correct is "${l.correct_word}"`); }
+        });
+        const pct = lines.length > 0 ? correctCount / lines.length : 0;
+        r.earned = Math.round(pct * q.marks);
+        r.status = correctCount === lines.length ? 'correct' : correctCount > 0 ? 'partial' : 'wrong';
+        r.fb = fbArr.length > 0 ? fbArr.join('<br>') : 'All edits correct!';
+        graded.push(r);
+      }
+      else if (q.type === 'short_ans') {
+        const normSa = normalizeAnswer(sa);
+        let safeAccept = [];
+        if (typeof q.accept_also === 'string') {
+          try { safeAccept = JSON.parse(q.accept_also); } catch(e) {}
+        } else if (Array.isArray(q.accept_also)) { safeAccept = q.accept_also; }
+
+        const accepted = [q.correct_answer, ...safeAccept].map(normalizeAnswer);
+        const correct = accepted.includes(normSa);
+        r.earned = correct ? q.marks : 0;
+        r.status = correct ? 'correct' : 'wrong';
+        graded.push(r);
+      }
+      else { 
+        r.status = 'pending';
+        graded.push(r);
+        const idx = graded.length - 1;
+
+        if (!q.model_answer && !q.worked_solution && !q.correct_answer) {
+           graded[idx].status = 'pending';
+           graded[idx].fb = '⚠️ This question is missing its grading rubric. Please review manually.';
+        } else {
+           aiTasks.push({ idx, q, sa });
+        }
+      }
+    });
+
+    // 🚀 SEQUENTIAL AI GRADING (Immune to API Rate Limits)
+    const statusEl = document.getElementById('gradingStatus');
+    for (let i = 0; i < aiTasks.length; i++) {
+      const { idx, q, sa } = aiTasks[i];
+      if (statusEl) statusEl.textContent = `Reading open-ended answer ${i + 1} of ${aiTasks.length}...`;
+      
+      try {
+        const res = await fetch('/api/grade-answer', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            ...(sessionToken ? { 'Authorization': `Bearer ${sessionToken}` } : {})
+          },
+          body: JSON.stringify({
+            questionId: q.id, questionType: q.type, questionText: q.question_text,
+            subject: state.subject, level: state.level,
+            correctAnswer: q.correct_answer || q.model_answer || '',
+            modelAnswer: q.model_answer || '',
+            keywords: q.keywords || [], workedSolution: q.worked_solution || '',
+            parts: q.parts || [],
+            studentAnswer: typeof sa === 'object' ? JSON.stringify(sa) : String(sa || ''),
+            marks: q.marks
+          })
+        });
+        
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+        
+        graded[idx].earned = parseInt(data.score) || 0;
+        if (graded[idx].earned > q.marks) graded[idx].earned = q.marks; 
+        
+        graded[idx].fb = data.feedback || '';
+        graded[idx].status = graded[idx].earned === q.marks ? 'correct' : graded[idx].earned > 0 ? 'partial' : 'wrong';
+      } catch (err) {
+        console.error("AI Grading failed for Q" + (idx+1), err);
+        graded[idx].status = 'pending';
+        graded[idx].fb = 'Miss Wena grading unavailable. Please review the model answer manually.';
+      }
+
+      // Pause for 1.5 seconds to ensure the API doesn't throw a 429 Spam error
+      await new Promise(resolve => setTimeout(resolve, 1500)); 
+    }
+
+    saveExamResult(graded);
+    setState({ phase: 'RESULTS', graded });
+  }
+
+  async function saveExamResult(graded) {
+    if (!state.studentId) return;
+    try {
+      const sb = await window.getSupabase();
+      const earned = graded.reduce((s, r) => s + (r.earned || 0), 0);
+      const possible = graded.reduce((s, r) => s + r.max, 0);
+      const timeTaken = (state.paper?.duration * 60) - state.timeLeft;
+
+      await sb.from('exam_results').insert({
+        student_id: state.studentId, 
+        subject: state.subject, 
+        level: state.level,
+        exam_type: state.examType || 'PRACTICE', 
+        score: earned, 
+        total_marks: possible,
+        questions_attempted: graded.length, 
+        time_taken: timeTaken >= 0 ? timeTaken : null,
+        completed_at: new Date().toISOString() // 🚀 CRITICAL FIX: Required for Progress.js sorting
+      });
+    } catch (err) { console.error('[exam] saveExamResult failed:', err); }
+  }
+
+  // ── PHASE: RESULTS ───────────────────────────────────────────────────────
+  function renderResults() {
+    const graded = state.graded || [];
+    const earned = graded.reduce((s,r) => s + (r.earned || 0), 0);
+    const possible = graded.reduce((s,r) => s + r.max, 0);
+    const pct = possible > 0 ? Math.round(earned / possible * 100) : 0;
+    
+    let gradeStr = 'NEEDS REVIEW';
+    let gradeCol = 'var(--brand-error)';
+    if (pct >= 85) { gradeStr = 'AL1 - DISTINCTION'; gradeCol = 'var(--brand-mint)'; }
+    else if (pct >= 65) { gradeStr = 'MERIT'; gradeCol = 'var(--maths-colour)'; }
+    else if (pct >= 50) { gradeStr = 'PASS'; gradeCol = 'var(--brand-amber)'; }
+
+    const items = graded.map((r, i) => {
+      let cls = r.status === 'correct' ? 'c-ok' : r.status === 'partial' ? 'c-part' : 'c-bad';
+      let ansHtml = '';
+      
+      const resHasParts = (() => { try { return (typeof r.q.parts === 'string' ? JSON.parse(r.q.parts) : (r.q.parts || [])).length > 0; } catch(e){ return false; } })();
+      const resIsSplit = r.q.type === 'comprehension' || r.q.type === 'visual_text' || (r.q.type === 'open_ended' && resHasParts);
+
+      if (r.q.type === 'mcq') {
+        let safeOptions = [];
+        try { safeOptions = typeof r.q.options === 'string' ? JSON.parse(r.q.options) : (r.q.options || []); } catch(e) {}
+        const letters = ['A','B','C','D'];
+        const yourIdx = safeOptions.indexOf(r.sa);
+        const corrIdx = safeOptions.indexOf(r.q.correct_answer);
+        
+        const yourLbl = r.sa ? `${yourIdx >= 0 ? letters[yourIdx] : '?'}: ${esc(r.sa)}` : '(no answer)';
+        const corrLbl = `${corrIdx >= 0 ? letters[corrIdx] : '?'}: ${esc(r.q.correct_answer)}`;
+        
+        ansHtml = `<div class="bg-page p-3 mt-2 text-sm" style="border-radius: var(--radius-sm);"><span class="font-bold">Yours:</span> ${yourLbl}<br><span class="font-bold text-success">Correct:</span> ${corrLbl}</div>`;
+      } 
+      else if (r.q.type === 'cloze') {
+        const blanks = r.q.blanks || [];
+        const rows = blanks.map(b => {
+          const num = b.id || b.number;
+          const selected = (r.sa[num] || '—');
+          const isCor = selected.toLowerCase() === b.correct_answer.toLowerCase();
+          return `[${num}] You: ${esc(selected)} ${isCor ? '✅' : `❌ (Correct: ${esc(b.correct_answer)})`}`;
+        }).join('<br>');
+        ansHtml = `<div class="bg-page p-3 mt-2 text-sm" style="border-radius: var(--radius-sm);">${rows}</div>`;
+      } 
+      else if (r.q.type === 'editing') {
+        const lines = r.q.passage_lines || [];
+        const rows = lines.map(l => {
+          const num = l.line_number;
+          const selected = (r.sa[num] || '—');
+          const isCor = selected.toLowerCase() === l.correct_word.toLowerCase();
+          return `Line ${num}: You: ${esc(selected)} ${isCor ? '✅' : `❌ (Correct: ${esc(l.correct_word)})`}`;
+        }).join('<br>');
+        ansHtml = `<div class="bg-page p-3 mt-2 text-sm" style="border-radius: var(--radius-sm);">${rows}</div>`;
+      } else if (r.q.type === 'word_problem' || resIsSplit) {
+        let partsData = [];
+        try { partsData = typeof r.q.parts === 'string' ? JSON.parse(r.q.parts) : (r.q.parts || []); } catch(e) {}
+        
+        const rows = partsData.map((p, idx) => {
+          const pLabel = resIsSplit 
+              ? (p.label || `Q${idx + 1}`) 
+              : (p.label || (p.part_id ? `(${p.part_id})` : `Part ${idx + 1}`));
+              
+          const userAns = (r.sa && typeof r.sa === 'object') ? r.sa[pLabel] : '';
+          const modelAns = p.model_answer || p.worked_solution || p.correct_answer || '';
+          
+          return `
+            <div class="mb-3 border-b border-light pb-2 last:border-0 last:pb-0">
+              <div class="font-bold" style="color: var(--brand-sage);">${esc(pLabel)}</div>
+              <div><span class="font-bold text-muted">Yours:</span> ${esc(userAns || '(blank)')}</div>
+              <div class="mt-1"><span class="font-bold text-success">Model:</span> <div class="mt-1 leading-relaxed">${String(modelAns)}</div></div>
+            </div>`;
+        }).join('');
+        ansHtml = `<div class="bg-page p-4 mt-2 text-sm" style="border-radius: var(--radius-sm);">${rows}</div>`;
+      } else { 
+        const modelAns = r.q.model_answer || r.q.correct_answer || r.q.worked_solution || '';
+        const userStr = typeof r.sa === 'object' ? JSON.stringify(r.sa) : r.sa;
+        ansHtml = `<div class="bg-page p-4 mt-2 text-sm" style="border-radius: var(--radius-sm);"><span class="font-bold text-muted">Yours:</span> ${esc(userStr || '(blank)')}<br><span class="font-bold text-success mt-1 inline-block">Model:</span> <div class="mt-1 leading-relaxed">${String(modelAns)}</div></div>`;
+      }
+
+      const drawingData = state.drawings[i];
+      const drawingHtml = (drawingData && drawingData !== 'init') ? `<div class="mt-2"><p class="text-xs font-bold text-muted mb-1">Your Digital Scratchpad:</p><img src="${drawingData}" style="max-height: 100px; border: 1px solid var(--border-light); border-radius: var(--radius-sm); background: white;"></div>` : '';
+
+      // 🚀 MASTERCLASS FIX: Synthesis parser for Results
+      let resultQText = esc((r.q.question_text || '').split(/\n\n|\\n\\n/)[0].trim());
+      if ((r.q.topic || '').toLowerCase() === 'synthesis' && r.q.instructions) {
+         const match = r.q.instructions.match(/'([^']+)'/);
+         if (match) {
+           const cleanConn = match[1].replace(/^\\.\\.\\.|\\.\\.\\.$|^\\(|\\)$/g, '').trim();
+           resultQText += `<br><span class="text-brand-rose font-bold text-xs uppercase bg-surface px-2 py-1 rounded inline-block mt-2 shadow-sm">${esc(cleanConn)}</span>`;
+         }
+      }
+
+      return `
+        <div class="card p-6 mb-4 result-item ${cls}">
+          <div class="flex justify-between">
+            <span class="font-bold text-muted">Q${i+1}</span>
+            <span class="font-bold" style="color: ${r.earned > 0 ? 'var(--brand-mint)' : 'var(--text-muted)'}">${r.earned}/${r.max}</span>
+          </div>
+          <p class="font-medium mt-2 mb-2">
+            ${resultQText}
+          </p>
+          ${ansHtml}
+          ${drawingHtml}
+          ${r.fb ? `<div class="mt-4 p-4 text-sm bg-elevated card-rule-amber" style="border-radius: var(--radius-sm);"><strong class="text-main">Miss Wena's Feedback:</strong><br>${String(r.fb)}</div>` : ''}
+        </div>
+      `;
+    }).join('');
+
+    app.innerHTML = `
+      <div class="w-full">
+        <div class="text-center mb-8">
+          <h1 class="font-display text-4xl text-main mb-2">Paper Complete</h1>
+          <div class="card p-6" style="border-top: 4px solid ${gradeCol}; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; min-width: 240px;">
+            <div class="text-5xl font-display" style="color: ${gradeCol};">${earned} <span class="text-3xl text-muted">/ ${possible}</span></div>
+            <div class="font-bold mt-2" style="color: ${gradeCol};">${gradeStr} (${pct}%)</div>
+          </div>
+        </div>
+        
+        <h3 class="font-display text-2xl text-main mb-4 m-0">Question Breakdown</h3>
+        ${items}
+        
+        <div class="flex justify-center flex-wrap gap-4 mt-8">
+          <button class="btn btn-primary hover-lift" onclick="location.reload()">Try Another Paper</button>
+          <a href="tutor.html" class="btn btn-secondary hover-lift">Ask Miss Wena</a>
+        </div>
+      </div>
+    `;
+  }
+
+  render();
+};
+</script>
+
+</body>
+</html>
