@@ -70,7 +70,7 @@ Cloze sub-types (via sub_topic column):
   - Grammar (fill-in-the-blank grammar items)
   - Vocabulary (passage-based word choice)
   - Comprehension (passage-based free-text blanks)
-  
+
 ═══════════════════════════════════════════════════════════════
 SECTION 4: THE 8 CORE DATABASE SCHEMAS
 ═══════════════════════════════════════════════════════════════
@@ -99,11 +99,11 @@ This type behaves differently depending on the Subject.
 
 **FOR ENGLISH (SYNTHESIS & TRANSFORMATION):**
 - `topic`: MUST be "Synthesis"
-- `question_text`: Contains ONLY the two original sentences. No line breaks.
+- `question_text`: This column must contain ONLY the original sentences. DO NOT add `<br><br>`, blank lines, or the connector word here. Just the raw sentences.
 - `correct_answer`: Grammatically perfect complete sentence (with full stop).
-- `worked_solution`: Step-by-step logic MUST be provided. Limit to 3 steps.
-- `instructions`: MUST contain the connector/starter word wrapped in EXACT single quotes to trigger the UI Visual Blueprint.
-   - *Mode 1 (Start):* "Rewrite the sentence beginning with the word ''Unless''."
+- `worked_solution`: You must provide a step-by-step logical breakdown. The final step **MUST ALWAYS BE STEP 3**, and it must explicitly state the final answer.
+- `instructions`: You MUST provide the specific instruction with the connector/starter word wrapped in EXACT single quotes `''` to trigger the frontend UI engine. Do NOT use generic boilerplate.
+   - *Mode 1 (Start):* "Rewrite the sentence beginning with the word ''Despite''."
    - *Mode 2 (Middle):* "Combine the sentences using the phrase ''... even though ...''." (DO NOT use brackets like `(whose)`. Always use dots).
    - *Mode 3 (End):* "Combine the sentences using the word ''... respectively.''."
 
