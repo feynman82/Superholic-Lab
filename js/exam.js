@@ -157,68 +157,74 @@ window.initExamEngine = function() {
   function renderMockPreview(tpl) {
     if (!tpl || !tpl.sections) return '';
     
-    let stripsHtml = '';
     let currentLabel = '';
+    let stripsHtml = '';
 
     tpl.sections.forEach(sec => {
-      const qType = sec.questionType;
-      const qCount = sec.questionCount;
-      const marksEach = sec.marksPerQuestion;
-      const sectionMarks = sec.totalMarks || (marksEach * qCount);
-      
-      let label = qType.toUpperCase();
-      let colour = 'var(--sage-light)';
+      // 1. Output the Booklet / Section subheader ONLY once per group
+      if (sec.label && sec.label !== currentLabel) {
+        currentLabel = sec.label;
+        stripsHtml += `<div class="font-bold text-main mt-5 mb-1 text-base" style="font-family: var(--font-body);">${esc(currentLabel)}</div>`;
+      }
 
-      // 1. Color & Label Mapping (Two-line breaks & Topic formatting)
+      const qType = sec.questionType;
+      const subTopic = sec.subTopics && sec.subTopics.length > 0 ? sec.subTopics[0] : '';
+      const topic = sec.topics && sec.topics.length > 0 ? sec.topics[0] : '';
+      
+      let label = '';
+      let colour = '';
+
+      // 2, 3, 5, 6. Assign custom 2-line labels and 3.0 theme colors
       if (qType === 'cloze') {
-        const sub = (sec.subTopics && sec.subTopics[0]) ? sec.subTopics[0].toUpperCase() : '';
-        label = sub ? `${sub}<br>CLOZE` : 'CLOZE';
+        label = subTopic ? `${subTopic.toUpperCase()}<br>CLOZE` : 'CLOZE';
         colour = 'var(--brand-mint)';
-      } else if (qType === 'mcq') {
-        label = 'MCQ';
-        colour = 'var(--brand-rose)';
-      } else if (qType === 'short_ans') {
-        label = 'SHORT ANS';
-        colour = 'var(--maths-colour)';
-      } else if (qType === 'word_problem') {
-        label = 'WORD<br>PROBLEM';
-        colour = 'var(--maths-colour)';
       } else if (qType === 'comprehension') {
         label = 'COMPREHENSION';
         colour = 'var(--english-colour)';
       } else if (qType === 'visual_text') {
         label = 'VISUAL TEXT<br>COMPREHENSION';
         colour = 'var(--english-colour)';
+      } else if (qType === 'word_problem') {
+        label = 'WORD<br>PROBLEM';
+        colour = 'var(--maths-colour)';
+      } else if (qType === 'short_ans') {
+        label = 'SHORT ANS';
+        colour = 'var(--maths-colour)';
+      } else if (qType === 'mcq') {
+        label = topic === 'Vocabulary' ? 'VOCABULARY<br>MCQ' : 'MCQ';
+        colour = 'var(--brand-rose)';
       } else if (qType === 'editing') {
         label = 'EDITING';
         colour = 'var(--brand-error)';
       } else if (qType === 'open_ended') {
         label = 'OPEN-ENDED';
-        colour = 'var(--science-colour)'; 
+        colour = 'var(--english-colour)';
+      } else {
+        label = (qType || 'Questions').toUpperCase();
+        colour = 'var(--sage-light)';
       }
 
-      // Circular Marks Array
-      const pills = Array.from({ length: qCount }, (_, i) => 
-        `<span style="border: 1px solid ${colour}; border-radius: 50%; width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color:${colour}; background-color: var(--bg-surface); flex-shrink: 0;">${i + 1}</span>`
-      ).join('');
+      const sectionMarks = sec.totalMarks || (sec.marksPerQuestion * sec.questionCount);
       
-      // 2. Group by Booklet/Section (Avoid repeating "Booklet A")
-      const secLabel = sec.label || '';
-      if (secLabel !== currentLabel) {
-         stripsHtml += `<div class="font-bold text-sm text-main mt-4 mb-2 w-full border-b border-light pb-1">${esc(secLabel)}</div>`;
-         currentLabel = secLabel;
-      }
+      // Build perfect circular marks with category border and matching theme background
+      const pills = Array.from({ length: sec.questionCount }, (_, i) => 
+        `<span style="border: 1px solid ${colour}; border-radius: 50%; width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--text-main); background: var(--bg-elevated); margin: 2px; font-family: var(--font-body);">${i + 1}</span>`
+      ).join('');
 
-      // 3. Render Row: Label Left, Pills Right-Aligned, Marks Right
+      // 4. Assemble the row with padding and right-aligned total marks
       stripsHtml += `
-        <div class="flex items-center gap-3 py-3" style="border-bottom: 1px dashed var(--border-light);">
-          <div class="font-display tracking-wide text-sm" style="color:${colour}; white-space: normal; line-height: 1.1; text-align: left; width: 120px; flex-shrink: 0;">${label}</div>
-          <div class="flex flex-wrap gap-1 flex-1 justify-end">${pills}</div>
-          <div class="font-bold text-sm text-main text-right" style="min-width: 40px;">${sectionMarks}M</div>
+        <div class="flex items-center gap-4 py-4" style="border-bottom: 1px dashed var(--border-light);">
+          <div class="font-bold text-sm uppercase" style="color:${colour}; min-width: 130px; line-height: 1.4; letter-spacing: 0.05em; font-family: var(--font-body);">${label}</div>
+          <div class="flex flex-wrap flex-1 gap-1" style="justify-content: flex-start;">${pills}</div>
+          <div class="font-bold text-base text-main text-right" style="min-width: 40px; margin-left: auto; font-family: var(--font-body);">${sectionMarks}M</div>
         </div>`;
     });
 
-    return `<div class="mt-4 bg-page border border-light rounded-lg p-4"><div class="text-xs font-bold uppercase tracking-wider text-muted mb-2">Paper Format Preview</div>${stripsHtml}</div>`;
+    return `
+      <div class="mt-4 bg-page border border-light rounded-lg p-6 shadow-sm">
+        <div class="text-sm font-bold uppercase text-muted mb-2 border-b border-light pb-3" style="letter-spacing: 0.05em; font-family: var(--font-body);">Paper Format Preview</div>
+        ${stripsHtml}
+      </div>`;
   }
 
   function renderType() {
