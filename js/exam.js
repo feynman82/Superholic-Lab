@@ -157,34 +157,34 @@ window.initExamEngine = function() {
   function renderMockPreview(tpl) {
     if (!tpl || !tpl.sections) return '';
 
-    let stripsHtml = '';
     let currentLabel = '';
+    let strips = '';
 
-    tpl.sections.forEach(sec => {
+    tpl.sections.forEach((sec) => {
       const qType = sec.questionType;
       const qCount = sec.questionCount;
       const marksEach = sec.marksPerQuestion;
       const sectionMarks = sec.totalMarks || (marksEach * qCount);
-
-      // 1. Label and Color Mapping (Task 2, 3, 5, 6)
+      
       let label = qType.toUpperCase();
-      let colour = 'var(--sage-light)';
+      let colour = 'var(--text-main)';
 
+      // 1 & 2. Label formatting and CSS 3.0 Colour Mapping
       if (qType === 'mcq') {
         label = 'MCQ';
         colour = 'var(--brand-rose)';
       } else if (qType === 'short_ans') {
-        label = 'SHORT ANS';
+        label = 'SHORT<br>ANS';
         colour = 'var(--maths-colour)';
       } else if (qType === 'word_problem') {
         label = 'WORD<br>PROBLEM';
         colour = 'var(--maths-colour)';
-      } else if (qType === 'editing') {
-        label = 'EDITING';
-        colour = 'var(--brand-error)';
       } else if (qType === 'open_ended') {
         label = 'OPEN<br>ENDED';
         colour = 'var(--english-colour)';
+      } else if (qType === 'editing') {
+        label = 'EDITING';
+        colour = 'var(--brand-error)';
       } else if (qType === 'comprehension') {
         label = 'COMPREHENSION';
         colour = 'var(--english-colour)';
@@ -193,7 +193,7 @@ window.initExamEngine = function() {
         colour = 'var(--english-colour)';
       } else if (qType === 'cloze') {
         colour = 'var(--brand-mint)';
-        let sub = (sec.subTopics && sec.subTopics.length > 0) ? sec.subTopics[0].toUpperCase() : '';
+        const sub = (sec.subTopics && sec.subTopics[0]) ? sec.subTopics[0].toUpperCase() : '';
         if (sub) {
           label = `${sub}<br>CLOZE`;
         } else {
@@ -201,34 +201,25 @@ window.initExamEngine = function() {
         }
       }
 
-      // 2. Group by Booklet/Section Subheader (Task 1)
-      if (sec.label && sec.label !== currentLabel) {
+      // Cleaned up circular styling for transparent outline pills
+      const pills = Array.from({ length: qCount }, (_, i) => `<span class="mock-q-pill" style="border: 1px solid ${colour}; border-radius: 50%; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color:${colour}; background: transparent; padding: 0;">${i + 1}</span>`).join('');
+      
+      // 3. Subheader Grouping (Booklet A, Booklet B, etc.)
+      if (sec.label !== currentLabel) {
+        strips += `<div class="font-bold text-main text-base mt-6 mb-1">${esc(sec.label)}</div>`;
         currentLabel = sec.label;
-        const mt = stripsHtml === '' ? 'mt-2' : 'mt-6';
-        stripsHtml += `<div class="${mt} mb-2 font-bold text-main text-sm">${esc(currentLabel)}</div>`;
       }
 
-      // 3. Question Pills - Padding removed to enforce perfect circles
-      const pillsHtml = Array.from({ length: qCount }, (_, i) => 
-        `<span class="mock-q-pill" style="border: 1px solid ${colour}; border-radius: 50%; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color:${colour}; background: transparent; padding: 0;">${i + 1}</span>`
-      ).join('');
-
-      // 4. Row Construction (Task 4, 7, 8)
-      // - text-sm font-bold applied to label to match duration/marks font
-      // - py-4 added for generous top/bottom padding
-      // - flex-end alignment applied to the pills container
-      stripsHtml += `
-        <div class="flex items-center gap-4 py-4" style="border-bottom: 1px dashed var(--border-light);">
-          <div class="text-sm font-bold" style="color: ${colour}; width: 130px; flex-shrink: 0; line-height: 1.3;">${label}</div>
-          <div class="flex flex-wrap gap-1 flex-1" style="justify-content: flex-end;">${pillsHtml}</div>
-          <span class="font-bold text-sm text-main ml-2">${sectionMarks}M</span>
+      // 4 & 5. Unbolded text-sm font mapping, flex-1 alignment right, & padding (py-3)
+      strips += `
+        <div class="flex items-center gap-4 py-3" style="border-bottom: 1px dashed var(--border-light);">
+          <div class="text-sm uppercase tracking-wide" style="min-width: 140px; white-space: normal; line-height: 1.3; color: ${colour}; font-family: var(--font-body);">${label}</div>
+          <div class="flex flex-wrap gap-1 flex-1 justify-start">${pills}</div>
+          <div class="font-bold text-sm text-main text-right" style="min-width: 40px;">${sectionMarks}M</div>
         </div>`;
     });
 
-    return `<div class="mt-4 bg-page border border-light rounded-lg p-5">
-              <div class="text-xs font-bold uppercase tracking-wider text-muted mb-2 pb-2 border-b border-light">Paper Format Preview</div>
-              ${stripsHtml}
-            </div>`;
+    return `<div class="mt-4 bg-surface border border-light rounded-lg p-6 shadow-sm"><div class="text-xs font-bold uppercase tracking-wider text-muted mb-2 pb-2 border-b border-light">Paper Format Preview</div>${strips}</div>`;
   }
 
   function renderType() {
