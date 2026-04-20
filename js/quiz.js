@@ -99,32 +99,18 @@ window.initQuizEngine = function() {
       if (typeof parsed === 'object' && parsed !== null) {
         let html = '';
         for (const [key, val] of Object.entries(parsed)) {
-           html += `<div class="mb-4 font-sans"><h5 class="font-bold text-brand-dark mb-2">${esc(key)}</h5><div class="text-main leading-relaxed" style="word-wrap: break-word;">${val}</div></div>`;
+           html += `
+            <div class="mb-4 font-sans">
+              <h5 class="font-bold text-brand-dark mb-2">${esc(key)}</h5>
+              <div class="text-main leading-relaxed" style="word-wrap: break-word;">${val}</div>
+            </div>`;
         }
         return html;
       }
     } catch(e) {}
-    return `<span class="font-sans">${String(raw).replace(/\n/g, '<br>')}</span>`;
-  };
-
-  // 🚀 MASTERCLASS TIER 2: Fast Local Math Heuristics
-  function isHeuristicMatch(studentAns, correctAns, acceptAlsoArray, isMath) {
-      if (!correctAns || !studentAns) return false;
-      const norm = (s) => String(s || '').toLowerCase().replace(/\s/g, '');
-      const sNorm = norm(studentAns);
-      const cNorm = norm(correctAns);
-      
-      if (sNorm === cNorm) return true;
-      if (Array.isArray(acceptAlsoArray) && acceptAlsoArray.some(a => norm(a) === sNorm)) return true;
-      
-      if (isMath) {
-         const stripUnits = (s) => s.replace(/[^0-9.\/]/g, ''); 
-         const sVal = stripUnits(sNorm);
-         const cVal = stripUnits(cNorm);
-         if (sVal !== '' && sVal === cVal) return true;
-      }
-      return false;
-  }
+      // 🚀 MASTERCLASS FIX: Removed esc() so HTML tags from the database render correctly
+      return `<span class="font-sans">${String(raw).replace(/\n/g, '<br>')}</span>`;
+    };
 
   const state = {
     phase: 'LOAD',
@@ -171,12 +157,8 @@ window.initQuizEngine = function() {
 
         // Check if the function actually exists in your library
         if (typeof DiagramLibrary[fnName] === 'function') {
-          // 🚀 MASTERCLASS FIX: Crash Shield for bad SVG generation
-          const svgHtml = DiagramLibrary[fnName](params);
-          if (String(svgHtml).includes('NaN')) throw new Error('AI generated invalid geometry (NaN)');
-          
           return `<div class="procedural-diagram mb-4 mx-auto flex justify-center w-full" style="max-width: 600px; overflow-x: auto;">
-                    ${svgHtml}
+                    ${DiagramLibrary[fnName](params)}
                   </div>`;
         } else {
           // The AI invented a function you haven't built yet! Graceful fallback.
@@ -250,7 +232,9 @@ window.initQuizEngine = function() {
     
     if (isSynthesis && q.question_text) {
       // 🚀 MASTERCLASS FIX: Safely strip any legacy \n\n connectors hiding in the text
-      const displayQuestion = esc(q.question_text.split('\n\n')[0].trim()).replace(/&lt;br\s*\/?[&gt;]*>/gi, '<br>');
+      const displayQuestion = q.question_text.split('\n\n')[0].trim();
+      
+      // Extract the connector from the single quotes in the instructions (e.g. '... respectively.')
       let rawConnector = '';
       if (q.instructions) {
          const match = q.instructions.match(/'([^']+)'/);
@@ -258,27 +242,32 @@ window.initQuizEngine = function() {
       }
       const cleanConnector = rawConnector.replace(/^\.\.\.|\.\.\.$|^\(|\)$/g, '').trim(); 
       
-      // 🚀 MASTERCLASS FIX: Force flex lines to connect seamlessly
-      const lineBlock = `<div style="flex-grow: 1; border-bottom: 2px solid var(--text-main); margin-bottom: 0.3rem; opacity: 0.5; min-width: 40px;"></div>`;
+      // 🚀 MASTERCLASS FIX: Adjusted margin to sit perfectly on the text baseline
+        const lineBlock = `<div class="flex-1" style="border-bottom: 2px solid var(--text-main); margin-bottom: 0.3rem; opacity: 0.5;"></div>`;
         
-      let blueprintHtml = '';
-      if (rawConnector.startsWith('...') && rawConnector.endsWith('...')) {
-         blueprintHtml = `${lineBlock}<div class="font-bold text-brand-rose px-4 py-2 bg-surface rounded shadow-sm text-sm uppercase tracking-widest mx-2">${esc(cleanConnector)}</div>${lineBlock}`;
-      } else if (rawConnector.startsWith('(') && rawConnector.endsWith(')')) {
-         blueprintHtml = `${lineBlock}<div class="font-bold text-brand-rose px-4 py-2 bg-surface rounded shadow-sm text-sm uppercase tracking-widest mx-2">${esc(cleanConnector)}</div>${lineBlock}`;
-      } else if (rawConnector.startsWith('...')) {
-         blueprintHtml = `${lineBlock}<div class="font-bold text-brand-rose px-4 py-2 bg-surface rounded shadow-sm text-sm uppercase tracking-widest ml-2">${esc(cleanConnector)}</div>`;
-      } else {
-         blueprintHtml = `<div class="font-bold text-brand-rose px-4 py-2 bg-surface rounded shadow-sm text-sm uppercase tracking-widest mr-2">${esc(cleanConnector)}</div>${lineBlock}`;
-         if (!savedAns) savedAns = cleanConnector + ' '; 
-      }
+        let blueprintHtml = '';
+        if (rawConnector.startsWith('...') && rawConnector.endsWith('...')) {
+           // MIDDLE: ... despite ...
+           blueprintHtml = `${lineBlock}<div class="font-bold text-brand-rose px-4 py-2 bg-surface rounded shadow-sm text-sm uppercase tracking-widest">${esc(cleanConnector)}</div>${lineBlock}`;
+        } else if (rawConnector.startsWith('(') && rawConnector.endsWith(')')) {
+           // Fallback for legacy bracket formats
+           blueprintHtml = `${lineBlock}<div class="font-bold text-brand-rose px-4 py-2 bg-surface rounded shadow-sm text-sm uppercase tracking-widest">${esc(cleanConnector)}</div>${lineBlock}`;
+        } else if (rawConnector.startsWith('...')) {
+           // END: ... respectively.
+           blueprintHtml = `${lineBlock}<div class="font-bold text-brand-rose px-4 py-2 bg-surface rounded shadow-sm text-sm uppercase tracking-widest">${esc(cleanConnector)}</div>`;
+        } else {
+           // START: The boys
+           blueprintHtml = `<div class="font-bold text-brand-rose px-4 py-2 bg-surface rounded shadow-sm text-sm uppercase tracking-widest">${esc(cleanConnector)}</div>${lineBlock}`;
+           // 🚀 MASTERCLASS FIX: Use 'savedAns' for quiz.js instead of 'prefillAns'
+           if (!savedAns) savedAns = cleanConnector + ' '; 
+        }
 
-      synthesisHtml = `
-        <div class="card p-5 bg-elevated border border-light mb-6 shadow-sm">
-          <div class="text-lg text-main font-medium leading-relaxed mb-6">${displayQuestion}<br><br></div>
-          <div class="flex items-end w-full">${blueprintHtml}</div>
-        </div>
-      `;
+        synthesisHtml = `
+          <div class="card p-5 bg-elevated border border-light mb-6 shadow-sm">
+            <div class="text-lg text-main font-medium leading-relaxed mb-6">${esc(displayQuestion)}<br><br></div>
+            <div class="flex items-end gap-3 w-full">${blueprintHtml}</div>
+          </div>
+        `;
     }
 
     const typeModeHTML = isShortAns
@@ -312,10 +301,11 @@ window.initQuizEngine = function() {
     let partsData = [];
     try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
     
-    // 🚀 MASTERCLASS: Auto-wrap single open_ended questions
+    // 🚀 MASTERCLASS: Auto-wrap single open_ended questions so they use the robust engine
     if (partsData.length === 0 && q.type === 'open_ended') {
        partsData = [{ label: "(a)", question: q.question_text, marks: q.marks, model_answer: q.worked_solution || q.model_answer }];
     }
+    
     if (partsData.length === 0) return `<div class="text-amber">Legacy format. Please update in database.</div>`;
 
     let inlineActionBtn = '';
@@ -330,11 +320,7 @@ window.initQuizEngine = function() {
     }
 
     return partsData.map((p, partIdx) => {
-      // 🚀 MASTERCLASS FIX: Unified (a), (b), (c) numbering and safe IDs
-      const alphabetLabel = `(${String.fromCharCode(97 + partIdx)})`;
-      const pLabel = p.label || alphabetLabel;
-      const safeIdLabel = String(pLabel).replace(/[^a-zA-Z0-9]/g, '');
-
+      const pLabel = p.label || (p.part_id ? `(${p.part_id})` : `Part ${partIdx + 1}`);
       const pQuestion = p.question || p.question_text || '';
       const pMarks = p.marks || 2;
       const pModel = p.model_answer || p.worked_solution || p.correct_answer || '';
@@ -344,11 +330,14 @@ window.initQuizEngine = function() {
       const isActive = partIdx === state.activeWPPart;
 
       if (isLocked) {
-        return `<div class="mb-4 p-4" style="opacity: 0.4; pointer-events: none; border-left: 3px solid var(--border-light);"><span class="font-display text-xl text-muted font-bold">🔒 ${esc(pLabel)}</span></div>`;
+        return `
+          <div class="mb-4 p-4" style="opacity: 0.4; pointer-events: none; border-left: 3px solid var(--border-light);">
+            <span class="font-display text-xl text-muted font-bold">🔒 ${esc(pLabel)}</span>
+          </div>`;
       }
 
       const savedWorking = (state.answers[state.currentIndex] || {})[pLabel] || '';
-      const drawKey = `${state.currentIndex}_${safeIdLabel}`;
+      const drawKey = `${state.currentIndex}_${pLabel}`;
       const isDrawMode = state.drawings[drawKey] && state.drawings[drawKey] !== 'text';
       const showModel = isCompleted || (isActive && state.isAnswered);
 
@@ -361,26 +350,36 @@ window.initQuizEngine = function() {
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
             <span class="text-xs font-bold text-muted uppercase tracking-wider">💡 Tip: Draw your working!</span>
             <div class="flex gap-2 w-full sm:w-auto">
-              <button class="btn btn-sm ${!isDrawMode ? 'bg-sage-dark text-white' : 'btn-ghost'}" onclick="window.setMode('text', '${safeIdLabel}')">⌨️ Type</button>
-              <button class="btn btn-sm ${isDrawMode ? 'bg-sage-dark text-white' : 'btn-ghost'}" onclick="window.setMode('draw', '${safeIdLabel}')">✏️ Pen Tool</button>
+              <button class="btn btn-sm ${!isDrawMode ? 'bg-sage-dark text-white' : 'btn-ghost'}" onclick="window.setMode('text', '${pLabel}')">⌨️ Type</button>
+              <button class="btn btn-sm ${isDrawMode ? 'bg-sage-dark text-white' : 'btn-ghost'}" onclick="window.setMode('draw', '${pLabel}')">✏️ Pen Tool</button>
             </div>
           </div>
           
           ${!isDrawMode
-            ? `<textarea id="part-${safeIdLabel}" class="${baseInputStyle}" rows="3" placeholder="Type your detailed working and answer here..." style="height: auto; resize: vertical;"></textarea>`
+            ? `<textarea id="wp-${esc(pLabel)}" class="${baseInputStyle}" rows="3" placeholder="Type your detailed working and answer here..." style="height: auto; resize: vertical;"></textarea>`
+            : `<div class="scratchpad-container mb-4" style="position: relative; display: block;">
+                 <canvas id="scratchpadCanvas" data-drawkey="${drawKey}" class="scratchpad-canvas bg-white border-2 border-slate-200 rounded-xl w-full shadow-sm" style="min-height: 300px; touch-action: none; cursor: crosshair;"></canvas>
+                 <div style="position: absolute; top: 12px; right: 12px;">
+     ${!isDrawMode
+            ? `<textarea id="part-${esc(pLabel)}" class="${baseInputStyle}" rows="3" placeholder="Type your detailed working and answer here..." style="height: auto; resize: vertical;"></textarea>`
             : `<div class="scratchpad-container mb-4" style="position: relative; display: block;">
                  <canvas id="scratchpadCanvas" data-drawkey="${drawKey}" class="scratchpad-canvas bg-white border-2 border-slate-200 rounded-xl w-full shadow-sm" style="min-height: 300px; touch-action: none; cursor: crosshair;"></canvas>
                  <div style="position: absolute; top: 12px; right: 12px;">
                     <button class="btn btn-sm btn-ghost bg-white hover-lift border border-slate-200 shadow-sm rounded-lg" onclick="window.clearCanvas()">🗑️ Clear</button>
                  </div>
                </div>
-               <input type="text" id="part-${safeIdLabel}" class="${drawModeInputStyle}" placeholder="Final Answer (Required for marking)" value="${esc(savedWorking)}">`
+               <input type="text" id="part-${esc(pLabel)}" class="${drawModeInputStyle}" placeholder="Final Answer (Required for marking)" value="${esc(savedWorking)}">`
+          }               <button class="btn btn-sm btn-ghost bg-white hover-lift border border-slate-200 shadow-sm rounded-lg" onclick="window.clearCanvas()">🗑️ Clear</button>
+                 </div>
+               </div>
+               <input type="text" id="wp-${esc(pLabel)}" class="${drawModeInputStyle}" placeholder="Final Answer (Required for marking)" value="${esc(savedWorking)}">`
           }
           ${isActive ? inlineFeedbackHtml + inlineActionBtn : ''}`;
       } else {
         interactionUI = `
           <div class="p-4 bg-surface border border-light rounded-xl mb-4 text-main whitespace-pre-wrap text-lg">${esc(savedWorking) || '<em>No text answer provided.</em>'}</div>
           ${(state.drawings[drawKey] && state.drawings[drawKey] !== 'init' && state.drawings[drawKey] !== 'text') ? `<img src="${state.drawings[drawKey]}" class="mb-4 border-2 border-slate-200 rounded-xl shadow-sm bg-white" style="max-height: 200px;">` : ''}
+          
           <div class="ans-block strong p-5 bg-science-tint card-rule-mint rounded-xl">
             <div class="text-xs font-bold mb-2 text-success uppercase tracking-wider flex items-center gap-2"><span>✨</span> Miss Wena's Model Answer</div>
             <div class="text-base text-main font-medium whitespace-pre-wrap leading-relaxed">${window.formatWorkedSolution(pModel)}</div>
@@ -775,27 +774,46 @@ function buildClozeUI(q) {
 
     let inputUi = '';
     if (isSplitScreen) {
-        inputUi = buildComprehensionUI(q); 
+        inputUi = buildComprehensionUI(q); // Tier 3
     } else if (isInlinePassage) {
-        inputUi = q.type === 'cloze' ? buildClozeUI(q) : buildEditingUI(q); 
+        inputUi = q.type === 'cloze' ? buildClozeUI(q) : buildEditingUI(q); // Tier 2
     } else {
-        if (isMultiPart) inputUi = buildMultiPartUI(q); 
-        else if (q.type === 'mcq') inputUi = buildMCQOptions(q); 
-        else inputUi = buildTextAreaUI(q); 
+        if (isMultiPart) inputUi = buildMultiPartUI(q); // Tier 1 (Multi-part)
+        else if (q.type === 'mcq') inputUi = buildMCQOptions(q); // Tier 1 (Card)
+        else inputUi = buildTextAreaUI(q); // Tier 1 (Card)
     }
     
     const hintsUi = buildHintsUI(q);
 
     let feedbackHtml = '';
-    if (state.isAnswered && state.feedback && q.type !== 'comprehension') {
+    if (state.isAnswered && state.feedback) {
       const fb = state.feedback;
-      if (fb.isModel) {
-        feedbackHtml = `<div class="card card-rule-mint bg-science-tint p-4 mt-4"><div class="font-bold text-sm mb-2 text-success">Worked Solution</div><div class="text-sm text-main leading-relaxed">${window.formatWorkedSolution(q.worked_solution || q.model_answer)}</div></div>`;
+      
+      if (q.type === 'comprehension') {
+         feedbackHtml = ''; // Completely suppress bottom feedback for comprehension
+      } else if (fb.isModel) {
+        feedbackHtml = `<div class="card card-rule-mint bg-science-tint p-4 mt-4">
+          <div class="font-bold text-sm mb-2 text-success">Worked Solution</div>
+          <div class="text-sm text-main leading-relaxed">${window.formatWorkedSolution(q.worked_solution || q.model_answer)}</div>
+        </div>`;
       } else if (fb.status === 'correct') {
-        feedbackHtml = `<div class="card card-rule-mint bg-science-tint p-4 mt-4"><div class="font-bold mb-2 text-success">🎉 Spot on!</div><p class="text-sm text-main leading-relaxed">${fb.text}</p></div>`;
+        feedbackHtml = `<div class="card card-rule-mint bg-science-tint p-4 mt-4">
+          <div class="font-bold mb-2 text-success">🎉 Spot on!</div>
+          <p class="text-sm text-main leading-relaxed">${esc(fb.text)}</p>
+          ${q.examiner_note ? `<p class="text-xs text-muted mt-2 italic">${esc(q.examiner_note)}</p>` : ''}
+        </div>`;
       } else {
         const isPartial = fb.status === 'partial';
-        feedbackHtml = `<div class="card ${isPartial ? 'card-rule-amber bg-amber-tint' : 'card-rule-rose bg-rose-tint'} p-4 mt-4"><div class="font-bold mb-2 ${isPartial ? 'text-amber' : 'text-danger'}">💡 Miss Wena says:</div><p class="text-sm text-main leading-relaxed">${fb.text}</p>${fb.correctAnswer ? `<div class="mt-3 text-sm font-bold text-main">Correct Answer: <span class="text-success">${esc(fb.correctAnswer)}</span></div>` : ''}</div>`;
+        const isLoad = fb.status === 'loading';
+        const ruleClass = isPartial ? 'card-rule-amber' : (isLoad ? 'card-rule-mint' : 'card-rule-rose');
+        const bgClass   = isPartial ? 'bg-amber-tint' : (isLoad ? 'bg-surface' : 'bg-rose-tint');
+        const textClass = isPartial ? 'text-amber' : (isLoad ? 'text-main' : 'text-danger');
+        
+        feedbackHtml = `<div class="card ${ruleClass} ${bgClass} p-4 mt-4">
+          <div class="font-bold mb-2 ${textClass}">${isLoad ? '<span class="spinner-sm inline-block mr-2 border-brand-mint"></span>' : '💡'} Miss Wena says:</div>
+          <p class="text-sm text-main leading-relaxed">${fb.text}</p>
+          ${fb.correctAnswer ? `<div class="mt-3 text-sm font-bold text-main">Correct Answer: <span class="text-success">${esc(fb.correctAnswer)}</span></div>` : ''}
+        </div>`;
       }
     }
 
@@ -927,27 +945,14 @@ function buildClozeUI(q) {
     const isSplitScreen = q.type === 'comprehension' || q.type === 'visual_text';
     const isMultiPart = q.type === 'word_problem' || q.type === 'open_ended';
 
-    if (q.type === 'cloze' || q.type === 'editing') {
+    if (q.type === 'cloze') {
       const ans = {};
-      let blanks = []; try { blanks = typeof q.blanks === 'string' ? JSON.parse(q.blanks) : (q.blanks || []); } catch(e) {}
-      blanks.forEach(b => { const num = b.id || b.number; const el = document.getElementById(`cloze-blank-${num}`); if (el) ans[num] = el.value; });
-      state.answers[state.currentIndex] = ans;
-    } else if (isSplitScreen || isMultiPart) {
-      const ans = state.answers[state.currentIndex] || {};
-      let parts = [];
-      try { parts = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
-      
-      // Auto-wrap open_ended fallback
-      if (parts.length === 0 && q.type === 'open_ended') parts = [{ label: "(a)" }];
-
-      parts.forEach((p, idx) => {
-        const alphabetLabel = `(${String.fromCharCode(97 + idx)})`;
-        const pLabel = isSplitScreen ? (p.label || `Q${idx + 1}`) : (p.label || alphabetLabel);
-            
-        const safeIdLabel = String(pLabel).replace(/[^a-zA-Z0-9]/g, '');
-        const prefix = isSplitScreen ? 'comp-' : 'part-';
-        const el = document.getElementById(`${prefix}${safeIdLabel}`);
-        if (el && p.part_type !== 'mcq') ans[pLabel] = el.value;
+      let blanks = [];
+      try { blanks = typeof q.blanks === 'string' ? JSON.parse(q.blanks) : (q.blanks || []); } catch(e) {}
+      blanks.forEach(b => {
+        const num = b.id || b.number;
+        const el = document.getElementById(`cloze-blank-${num}`);
+        if (el) ans[num] = el.value;
       });
       state.answers[state.currentIndex] = ans;
     } else if (q.type === 'editing') {
@@ -1109,74 +1114,97 @@ function buildClozeUI(q) {
     const isSplitScreen = q.type === 'comprehension' || q.type === 'visual_text';
     const isMultiPart = q.type === 'word_problem' || q.type === 'open_ended';
 
-    if (isMultiPart || isSplitScreen) {
-      let partsData = []; try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
-      if (partsData.length === 0 && q.type === 'open_ended') partsData = [{ label: "(a)", marks: q.marks, model_answer: q.worked_solution || q.model_answer, question: q.question_text }];
-      
+    if (isSplitScreen) {
+      let partsData = [];
+      try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
       const currentPart = partsData[state.activeWPPart];
+      const pLabel = currentPart.label || `Q${state.activeWPPart + 1}`;
+      const ans = (state.answers[state.currentIndex] || {})[pLabel] || '';
+
+      const isAnsEmptyFast = typeof ans === 'object' ? Object.values(ans).every(v => !v) : !String(ans).trim();
+      if (isAnsEmptyFast) { alert('Please provide an answer before continuing!'); return; }
+
+      // Route A: Fast Local Grading for MCQ
+      if (currentPart.part_type === 'mcq' || currentPart.part_type === 'referent') {
+        const isCorrect = String(ans).trim().toLowerCase() === String(currentPart.correct_answer).trim().toLowerCase();
+        
+        state.score += isCorrect ? currentPart.marks : 0;
+        if (isCorrect) { state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak; } else state.streak = 0;
+        
+        state.activeWPPart++;
+        const isLast = state.activeWPPart >= partsData.length;
+        if (isLast) state.isAnswered = true;
+        
+        state.feedback = { 
+          status: isCorrect ? 'correct' : 'wrong', 
+          text: isCorrect ? 'Spot on!' : (currentPart.explanation || `Correct answer: ${currentPart.correct_answer}`),
+          isModel: false
+        };
+        render();
+        return;
+      }
+
+      // Route B: If it's a text_box, fall through to the API grading block below!
+    }
+    
+    if (isMultiPart || isSplitScreen) {
+      let ans = '';
+      let currentPart = null;
+
+      let partsData = [];
+      try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
+      
+      if (partsData.length === 0 && q.type === 'open_ended') {
+         partsData = [{ label: "(a)", marks: q.marks, model_answer: q.worked_solution || q.model_answer, question: q.question_text }];
+      }
+
+      currentPart = partsData[state.activeWPPart];
       if (!currentPart) return;
 
-      const alphabetLabel = `(${String.fromCharCode(97 + state.activeWPPart)})`;
-      const pLabel = isSplitScreen ? (currentPart.label || `Q${state.activeWPPart + 1}`) : (currentPart.label || alphabetLabel);
-      const ans = (state.answers[state.currentIndex] || {})[pLabel] || '';
+      const pLabel = isSplitScreen
+          ? (currentPart.label || `Q${state.activeWPPart + 1}`) 
+          : (currentPart.label || (currentPart.part_id ? `(${currentPart.part_id})` : `Part ${state.activeWPPart + 1}`));
+      ans = (state.answers[state.currentIndex] || {})[pLabel] || '';
 
       const isAnsEmptyAI = typeof ans === 'object' ? Object.values(ans).every(v => !v) : !String(ans).trim();
       if (isAnsEmptyAI) { alert('Please type your final answer so it can be graded!'); return; }
 
-      if (currentPart.part_type === 'mcq') {
-        const isCorrect = String(ans).trim().toLowerCase() === String(currentPart.correct_answer).trim().toLowerCase();
-        state.score += isCorrect ? (currentPart.marks || 1) : 0;
-        if (isCorrect) { state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak; } else state.streak = 0;
-        
-        state.activeWPPart++;
-        if (state.activeWPPart >= partsData.length) state.isAnswered = true;
-        state.feedback = { status: isCorrect ? 'correct' : 'wrong', text: isCorrect ? 'Spot on!' : `Correct answer: ${currentPart.correct_answer}`, isModel: false };
-        render(); return;
-      }
-
-      // 🚀 MASTERCLASS TIER 2: Fast Local Math Heuristics (0ms, $0 API Cost)
-      const subject = new URLSearchParams(window.location.search).get('subject') || 'mathematics';
-      const isMath = subject.toLowerCase() === 'mathematics' || subject.toLowerCase() === 'maths';
-      const correctVal = currentPart.correct_answer || currentPart.model_answer || currentPart.worked_solution;
-      
-      if (isMath && correctVal) {
-          let acceptVals = []; try { acceptVals = JSON.parse(currentPart.accept_also || '[]'); } catch(e){}
-          if (isHeuristicMatch(ans, correctVal, acceptVals, true)) {
-              state.score += (currentPart.marks || 2);
-              state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak;
-              state.activeWPPart++;
-              if (state.activeWPPart >= partsData.length) {
-                state.isAnswered = true;
-                state.feedback = { status: 'correct', text: 'Excellent! Your final answer is correct.<br><br><strong>All parts completed!</strong> Review the full model answer.', isModel: false };
-              } else {
-                state.feedback = { status: 'correct', text: 'Correct!<br><br><strong>Next part unlocked! Keep going.</strong>', isModel: false };
-              }
-              render(); return; // 🛑 EXIT EARLY! NO API CALL!
-          }
-      }
-
-      // Route C: AI Grading
       state.feedback = { status: 'loading', text: 'Analyzing your logic...' };
       render();
 
       try {
         const res = await fetch('/api/grade-answer', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            questionId: q.id, questionType: q.type === 'comprehension' ? 'comprehension' : 'open_ended',
-            questionText: currentPart.question || currentPart.instructions || currentPart.question_text || q.question_text,
-            studentAnswer: typeof ans === 'object' ? JSON.stringify(ans) : String(ans),
-            workedSolution: correctVal,
-            marks: currentPart.marks || 2
+            questionId: q.id, 
+            questionType: q.type === 'comprehension' ? 'comprehension' : 'open_ended', // MODIFIED
+            questionText: currentPart ? (currentPart.question || currentPart.instructions || currentPart.question_text || q.question_text) : q.question_text,
+            subject: new URLSearchParams(window.location.search).get('subject') || 'mathematics',
+            level: new URLSearchParams(window.location.search).get('level') || 'primary-4',
+            studentAnswer: String(ans),
+            workedSolution: currentPart ? (currentPart.worked_solution || currentPart.model_answer || currentPart.correct_answer) : (q.worked_solution || q.model_answer),
+            rubric: currentPart ? currentPart.rubric : null, // NEW FOR COMPREHENSION
+            keywords: q.keywords || [],
+            marks: currentPart ? (currentPart.marks || 2) : (q.marks || 2)
           })
         });
 
         const data = await res.json();
-        const isCorrect = data.score >= (currentPart.marks || 2);
+        if (data.error) throw new Error(data.error);
+
+        const maxM = currentPart ? (currentPart.marks || 2) : (q.marks || 2);
+        const isCorrect = data.score >= maxM;
+        
         state.score += data.score;
         if (isCorrect) { state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak; } else state.streak = 0;
-        
+
+        let partsData = [];
+        try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
+        if (partsData.length === 0 && q.type === 'open_ended') partsData = [{ label: "(a)" }];
+
         state.activeWPPart++;
+        
         if (state.activeWPPart >= partsData.length) {
           state.isAnswered = true;
           state.feedback = { status: isCorrect ? 'correct' : 'partial', text: data.feedback + '<br><br><strong>All parts completed!</strong> Review the full model answer.', isModel: false };
@@ -1186,31 +1214,32 @@ function buildClozeUI(q) {
         render();
       } catch (err) {
         console.error("AI Grading Error:", err);
+        let partsData = [];
+        try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
+        if (partsData.length === 0 && q.type === 'open_ended') partsData = [{ label: "(a)" }];
+        
         state.activeWPPart++;
         if (state.activeWPPart >= partsData.length) state.isAnswered = true;
+        
         state.feedback = { status: 'model', text: 'Miss Wena is resting. Here is the model answer.', isModel: true };
         render();
       }
       return;
     }
 
-    // ── SHORT ANSWER (Tier 1 & Tier 2) ──
+    // ── SHORT ANSWER ──
     const ans = String(state.answers[state.currentIndex] || '').trim();
-    if (!ans) {
-      alert('Please type your final answer in the text box below the canvas so it can be marked!');
-      return;
-    }
+    if (!ans) { alert('Please type your final answer in the text box below the canvas so it can be marked!'); return; }
 
-    // 🚀 MASTERCLASS: Apply the same Heuristic matcher to standard Short Ans!
-    let safeAccept = []; try { safeAccept = typeof q.accept_also === 'string' ? JSON.parse(q.accept_also) : (q.accept_also || []); } catch(e) {}
-    const subject = new URLSearchParams(window.location.search).get('subject') || 'mathematics';
-    const isMath = subject.toLowerCase() === 'mathematics' || subject.toLowerCase() === 'maths';
-    
-    const correct = isHeuristicMatch(ans, q.correct_answer, safeAccept, isMath);
+    const norm = (s) => String(s || '').toLowerCase().replace(/\s+/g, '');
+    let safeAccept = [];
+    try { safeAccept = typeof q.accept_also === 'string' ? JSON.parse(q.accept_also) : (q.accept_also || []); } catch(e) {}
+    const correct = norm(ans) === norm(q.correct_answer) || safeAccept.some(a => norm(ans) === norm(a));
+    const fbText = correct ? 'Excellent!' : `Expected: ${q.correct_answer}.`;
     
     if (correct) { state.score++; state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak; } else state.streak = 0;
     state.isAnswered = true;
-    state.feedback = { status: correct ? 'correct' : 'wrong', text: correct ? 'Excellent!' : `Expected: ${q.correct_answer}.`, isModel: true };
+    state.feedback = { status: correct ? 'correct' : 'wrong', text: fbText, isModel: true };
     render();
   };
 
@@ -1509,15 +1538,6 @@ function buildClozeUI(q) {
       let query = db.from('question_bank').select('*').eq('subject', dbSubject);
       if (dbLevel) query = query.eq('level', dbLevel);
       if (dbTopic) query = query.eq('topic', dbTopic);
-      
-      // 🚀 MASTERCLASS FIX: The Comprehension Supabase Interceptor
-      if (type && type !== 'mixed') {
-          if (type === 'comprehension') {
-              query = query.in('type', ['comprehension', 'visual_text']);
-          } else {
-              query = query.eq('type', type);
-          }
-      }
 
       let { data: fetchedQuestions, error } = await query.limit(1000);
 
