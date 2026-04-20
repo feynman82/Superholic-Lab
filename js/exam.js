@@ -42,85 +42,316 @@ window.initExamEngine = function() {
 
   // ── 🚀 STATE ──
   const state = {
-    phase: 'CONFIG',
-    paper: null,
-    answers: {},
-    drawings: {},
-    results: null,
+    phase:      'INIT',
+    level:      '',      
+    levelKey:   '',      
+    subject:    '',      
+    subjectKey: '',      
+    tier:       '',      
+    examType:   '',      
+    studentId:  new URLSearchParams(window.location.search).get('student'),    
+    paper:      null,
+    answers:    {},      
+    drawings:   {},      
+    results:    null,
     timerSeconds: 0,
-    timerInterval: null,
-    studentId: new URLSearchParams(window.location.search).get('student')
+    timerInterval: null
   };
 
   function render() {
     switch(state.phase) {
-      case 'CONFIG': renderConfig(); break;
-      case 'LOADING': renderLoading(); break;
-      case 'EXAM': renderFocusExam(); break;
+      case 'INIT':    renderInit();    break;
+      case 'SUBJECT': renderSubject(); break;
+      case 'TYPE':    renderType();    break;
+      case 'GEN':     renderGenerating(); break;
+      case 'EXAM':    renderFocusExam(); break;
       case 'RESULTS': renderResults(); break;
     }
   }
 
-  // ── 1. CONFIGURATION PHASE ──
-  function renderConfig() {
+  // ── 1. INITIALISATION & NAVIGATION PHASES ──
+  async function renderInit() {
+    app.innerHTML = `<div class="card flex flex-col items-center w-full" style="padding: var(--space-8); max-width: 600px;"><div class="spinner-sm mb-4"></div><h2 class="font-display text-2xl text-main">Preparing Exam Room...</h2><p class="text-sm text-muted mt-2">Loading student profile</p></div>`;
+    try {
+      const profile = window.userProfile;
+      if (!profile) { window.location.href = 'login.html?redirect=exam'; return; }
+
+      const sb = await window.getSupabase();
+      let activeStudentId = state.studentId || localStorage.getItem('shl_active_student_id');
+
+      const { data: students } = await sb.from('students').select('id,level,selected_subject').eq('parent_id', profile.id);
+      const student = (students || []).find(s => s.id === activeStudentId) || (students || [])[0];
+      
+      if (!student) {
+        app.innerHTML = `<div class="card p-8 text-center w-full" style="max-width: 600px;"><p class="text-amber font-bold mb-4">No student profile found. Please set one up.</p></div>`;
+        return;
+      }
+
+      state.studentId = student.id;
+      localStorage.setItem('shl_active_student_id', student.id);
+
+      state.tier = profile.subscription_tier || 'trial';
+      state.level = student.level || 'Primary 4';
+      state.levelKey = state.level.toLowerCase().replace(' ', '-');
+
+      const isJunior = state.levelKey === 'primary-1' || state.levelKey === 'primary-2';
+      if (isJunior) {
+        window.location.href = `quiz.html?student=${student.id}`;
+        return; 
+      }
+
+      if (state.tier === 'single_subject') {
+        state.subject = student.selected_subject || 'Mathematics';
+        state.subjectKey = state.subject.toLowerCase();
+        state.phase = 'TYPE';
+      } else {
+        state.phase = 'SUBJECT';
+      }
+      render();
+    } catch (err) {
+      app.innerHTML = `<div class="card p-8 text-center w-full" style="max-width: 600px;"><p class="text-danger font-bold mb-4">Failed to load profile.</p><button class="btn btn-primary" onclick="location.reload()">Reload</button></div>`;
+    }
+  }
+
+  function renderSubject() {
+    const levelNum = state.level.replace('Primary ', '');
+    const subjects = [
+      { name: 'Mathematics', icon: '📐', tag: 'P1–P6' },
+      { name: 'Science', icon: '🔬', tag: 'P3–P6' },
+      { name: 'English', icon: '📖', tag: 'P1–P6' }
+    ];
+
+    const cards = subjects.map(s => `
+      <div class="card hover-lift flex flex-col items-center justify-center p-8 text-center cursor-pointer" onclick="window.selectSubject('${s.name}')">
+        <div class="text-4xl mb-4">${s.icon}</div>
+        <h3 class="font-display text-2xl text-main">${s.name}</h3>
+        <div class="badge badge-info mt-2">${s.tag}</div>
+      </div>
+    `).join('');
+
     app.innerHTML = `
-      <div class="card p-8 w-full max-w-lg hover-lift">
-        <div class="text-center mb-8">
-          <div class="text-5xl mb-4">📝</div>
-          <h1 class="font-display text-3xl text-main">Exam Generator</h1>
-          <p class="text-muted mt-2">Generate a full MOE-aligned practice paper.</p>
+      <div class="w-full flex flex-col items-center" style="max-width: 800px;">
+        <div class="text-center mb-8 w-full">
+          <div class="badge badge-info mb-2">Step 1 of 2</div>
+          <h1 class="font-display text-4xl text-main">Choose a Subject</h1>
+          <p class="text-muted text-lg mt-2">Primary ${esc(levelNum)}</p>
         </div>
-        <div class="space-y-6">
-          <div>
-            <label class="block text-sm font-bold text-muted uppercase mb-2">Subject</label>
-            <select id="cfgSubject" class="form-input w-full p-3 rounded-lg border-2 border-light focus:border-brand-sage">
-              <option value="mathematics">Mathematics</option>
-              <option value="science">Science</option>
-              <option value="english">English Language</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-bold text-muted uppercase mb-2">Level</label>
-            <select id="cfgLevel" class="form-input w-full p-3 rounded-lg border-2 border-light focus:border-brand-sage">
-              <option value="primary-3">Primary 3</option>
-              <option value="primary-4" selected>Primary 4</option>
-              <option value="primary-5">Primary 5</option>
-              <option value="primary-6">Primary 6</option>
-            </select>
-          </div>
-          <button class="btn btn-primary w-full py-4 text-lg mt-4 hover-lift" onclick="window.startExamGeneration()">Generate Paper</button>
+        <div class="w-full" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-6);">
+          ${cards}
         </div>
       </div>
     `;
   }
 
-  window.startExamGeneration = async () => {
-    const subject = document.getElementById('cfgSubject').value;
-    const level = document.getElementById('cfgLevel').value;
-    
-    state.phase = 'LOADING';
+  window.selectSubject = (sub) => {
+    state.subject = sub;
+    state.subjectKey = sub.toLowerCase();
+    state.phase = 'TYPE';
+    state.examType = '';
     render();
+  };
 
+  function renderMockPreview(tpl) {
+    if (!tpl || !tpl.sections) return '';
+    const typeLabel = { mcq: 'MCQ', short_ans: 'Short Ans', word_problem: 'Word Problem', open_ended: 'Open-Ended', cloze: 'Cloze', editing: 'Editing' };
+    const typeColour = { mcq: 'var(--brand-rose)', short_ans: 'var(--maths-colour)', word_problem: 'var(--success)', open_ended: 'var(--english-colour)', cloze: 'var(--amber)', editing: 'var(--danger)' };
+
+    const strips = tpl.sections.map(sec => {
+      const qType = sec.questionType;
+      const qCount = sec.questionCount;
+      const marksEach = sec.marksPerQuestion;
+      const sectionMarks = sec.totalMarks || (marksEach * qCount);
+      const colour = typeColour[qType] || 'var(--sage-light)';
+      const label = typeLabel[qType] || qType || 'Questions';
+
+      const pills = Array.from({ length: qCount }, (_, i) => `<span class="mock-q-pill" style="border: 1px solid ${colour}; border-radius: 50%; width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; color:${colour};">${i + 1}</span>`).join('');
+      return `
+        <div class="flex flex-wrap items-center gap-3 py-2" style="border-bottom: 1px dashed var(--border-light);">
+          <span class="font-bold text-sm text-main" style="min-width: 80px; flex: 1 1 100%;">${esc(sec.label || '')}</span>
+          <span class="text-[10px] font-bold uppercase px-2 py-1 rounded bg-surface" style="color:${colour};">${label}</span>
+          <div class="flex flex-wrap gap-1 flex-1">${pills}</div>
+          <span class="font-bold text-sm text-main">${sectionMarks}M</span>
+        </div>`;
+    }).join('');
+
+    return `<div class="mt-4 bg-page border border-light rounded-lg p-4"><div class="text-xs font-bold uppercase tracking-wider text-muted mb-3 pb-2 border-b border-light">Paper Format Preview</div>${strips}</div>`;
+  }
+
+  function renderType() {
+    let types = [
+      { id: 'WA1', label: 'WA 1', sub: 'Weighted Assessment 1' },
+      { id: 'WA2', label: 'WA 2', sub: 'Weighted Assessment 2' }
+    ];
+    if (state.levelKey === 'primary-6') {
+      types.push({ id: 'PRELIM', label: 'PSLE/Prelim', sub: 'Full PSLE simulation' });
+    } else {
+      types.push({ id: 'WA3', label: 'WA 3', sub: 'Weighted Assessment 3' });
+      types.push({ id: 'EOY', label: 'End of Year', sub: 'End-of-Year examination' });
+    }
+
+    if (!state.examType) state.examType = types[0].id;
+
+    const chips = types.map(t => `
+      <div class="card p-4 flex-1 cursor-pointer hover-lift flex flex-col justify-center ${t.id === state.examType ? 'bg-sage-dark text-white' : 'bg-surface text-main'}" 
+           style="min-width: 140px; border: 2px solid ${t.id === state.examType ? 'var(--brand-mint)' : 'var(--border-light)'};"
+           onclick="window.selectType('${t.id}')">
+        <div class="font-bold text-lg" style="color: inherit;">${esc(t.label)}</div>
+        <div class="text-xs mt-2" style="color: ${t.id === state.examType ? 'var(--sage-dark)' : 'var(--text-muted)'};">${esc(t.sub)}</div>
+      </div>
+    `).join('');
+
+    let tpl = null;
+    const shortSubj = state.subjectKey === 'mathematics' ? 'maths' : state.subjectKey;
+    const shortLvl = state.levelKey.replace('primary-', 'p');
+    const specificKey = `${shortSubj}-${shortLvl}-${state.examType.toLowerCase()}`;
+    
+    if (typeof EXAM_TEMPLATES !== 'undefined') {
+      tpl = EXAM_TEMPLATES[specificKey] || EXAM_TEMPLATES[`${shortSubj}-${shortLvl}`];
+    } else if (typeof getTemplate !== 'undefined') {
+      tpl = getTemplate(specificKey) || getTemplate(state.subjectKey, state.levelKey);
+    }
+
+    let blueprintHtml = '<p class="text-muted text-sm">Loading blueprint...</p>';
+    if (tpl) {
+      const duration = tpl.durationMinutes || tpl.duration || 0;
+      const durationText = typeof formatDuration === 'function' ? formatDuration(duration) : `${duration} mins`;
+      blueprintHtml = `
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="font-display text-2xl text-main m-0">Exam Dossier</h2>
+          <div class="badge badge-info">DRAFT</div>
+        </div>
+        <ul class="flex flex-col gap-2 text-sm text-main mb-4 list-reset">
+          <li class="flex justify-between" style="border-bottom: 1px solid var(--border-light); padding-bottom: var(--space-2);">
+            <span>Total Duration</span> <span class="font-bold">⏱ ${esc(durationText)}</span>
+          </li>
+          <li class="flex justify-between" style="border-bottom: 1px solid var(--border-light); padding-bottom: var(--space-2);">
+            <span>Total Marks</span> <span class="font-bold">${tpl.totalMarks || 0} M</span>
+          </li>
+        </ul>
+        ${renderMockPreview(tpl)}
+      `;
+    }
+
+    app.innerHTML = `
+      <div class="w-full flex flex-col items-center" style="max-width: 800px;">
+        <div class="text-center mb-8 w-full">
+          <div class="badge badge-info mb-2">${state.tier === 'single_subject' ? 'Step 1 of 1' : 'Step 2 of 2'}</div>
+          <h1 class="font-display text-4xl text-main">Select Paper Type</h1>
+        </div>
+        <div class="flex flex-wrap gap-6 items-start w-full">
+          <div class="flex-1 flex flex-col gap-4" style="min-width: 300px;">
+            <div class="flex flex-wrap gap-4">${chips}</div>
+            ${state.tier !== 'single_subject' ? `<div class="text-center mt-4"><button class="btn btn-ghost" onclick="window.backToSubject()">← Back to Subjects</button></div>` : ''}
+          </div>
+          <div class="flex-1" style="min-width: 300px;">
+            <div class="card p-6 bg-page card-rule-mint w-full">
+              ${blueprintHtml}
+              <button id="printPaperBtn" class="btn btn-secondary w-full mt-4 hover-lift" onclick="window.printBlankPaper()">🖨️ Print Paper</button>
+              <button class="btn btn-primary w-full mt-4 hover-lift" onclick="window.triggerGen()">Generate Paper →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  window.selectType = (id) => { state.examType = id; render(); };
+  window.backToSubject = () => { state.phase = 'SUBJECT'; state.examType = ''; render(); };
+  window.triggerGen = () => { state.phase = 'GEN'; render(); };
+
+  window.printBlankPaper = async () => {
+    const btn = document.getElementById('printPaperBtn');
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-sm" style="width:14px;height:14px;border-width:2px;display:inline-block;margin-right:6px;border-top-color:currentColor;"></span> Assembling...';
+    
     try {
-      state.paper = await window.ExamGenerator.generateExam(subject, level);
+      const shortSubj = state.subjectKey === 'mathematics' ? 'maths' : state.subjectKey;
+      const shortLvl = state.levelKey.replace('primary-', 'p');
+      const specificKey = `${shortSubj}-${shortLvl}-${state.examType.toLowerCase()}`;
+      
+      let paper;
+      if (window.ExamGenerator && window.ExamGenerator.generate) {
+        paper = await window.ExamGenerator.generate(specificKey, { examType: state.examType });
+      } else {
+        paper = await generateExam(state.subjectKey, state.levelKey, state.examType);
+      }
+
+      const pc = document.getElementById('print-container');
+      if (pc && typeof ExamRenderer !== 'undefined') {
+        pc.innerHTML = '';
+        ExamRenderer.render(paper, pc);
+        setTimeout(() => { 
+          window.print(); 
+          btn.disabled = false; 
+          btn.innerHTML = originalText;
+        }, 150);
+      } else {
+        alert('Print engine not loaded. Check console for details.');
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    } catch (err) {
+      alert('Failed to generate paper: ' + err.message);
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+    }
+  };
+
+  function renderGenerating() {
+    app.innerHTML = `
+      <div class="card flex flex-col items-center justify-center text-center w-full" style="padding: var(--space-8); max-width: 600px;">
+        <div class="spinner-sm mb-6"></div>
+        <h2 class="font-display text-3xl text-main mb-2" id="genMsg">Assembling Paper...</h2>
+        <p class="text-muted text-sm">Applying MOE difficulty calibration</p>
+      </div>
+    `;
+
+    const msgs = ['Gathering questions...', 'Calibrating difficulty...', 'Checking syllabus alignment...'];
+    let m = 0;
+    const int = setInterval(() => { m = (m+1)%msgs.length; const el = document.getElementById('genMsg'); if(el) el.textContent = msgs[m]; }, 1000);
+
+    const shortSubj = state.subjectKey === 'mathematics' ? 'maths' : state.subjectKey;
+    const shortLvl = state.levelKey.replace('primary-', 'p');
+    const specificKey = `${shortSubj}-${shortLvl}-${state.examType.toLowerCase()}`;
+    
+    const genPromise = (window.ExamGenerator && window.ExamGenerator.generate) 
+      ? window.ExamGenerator.generate(specificKey, { examType: state.examType })
+      : (typeof generateExam === 'function' ? generateExam(state.subjectKey, state.levelKey, state.examType) : window.ExamGenerator.generateExam(state.subjectKey, state.levelKey));
+
+    genPromise.then(paper => {
+      clearInterval(int);
+      
+      let hasQuestions = false;
+      if (paper && paper.sections) {
+        hasQuestions = paper.sections.some(sec => sec.questions && sec.questions.length > 0);
+      }
+      
+      if (!hasQuestions) {
+        app.innerHTML = `
+          <div class="card p-8 text-center w-full hover-lift" style="max-width: 600px;">
+            <div class="text-4xl mb-4">🗂️</div>
+            <h2 class="text-danger font-display text-2xl mb-2">Insufficient Questions</h2>
+            <p class="text-muted mb-6">Miss Wena's database doesn't have enough questions to assemble a full <strong>${esc(state.examType)}</strong> paper for this subject yet.</p>
+            <button class="btn btn-primary hover-lift" onclick="location.reload()">Return to Menu</button>
+          </div>`;
+        return;
+      }
+
+      state.paper = paper;
       state.answers = {};
       state.drawings = {};
       state.results = null;
-      state.timerSeconds = state.paper.template.durationMinutes * 60;
+      const totalMinutes = state.paper.duration || state.paper.template?.durationMinutes || 60;
+      state.timerSeconds = totalMinutes * 60;
       
       state.phase = 'EXAM';
       render();
       startTimer();
-    } catch (err) {
-      console.error(err);
-      alert("Failed to generate paper. Check console for details.");
-      state.phase = 'CONFIG';
-      render();
-    }
-  };
-
-  function renderLoading() {
-    app.innerHTML = `<div class="card flex flex-col items-center p-12 text-center max-w-lg mx-auto"><div class="spinner-sm mb-6"></div><h2 class="font-display text-2xl text-main">Assembling Paper...</h2></div>`;
+    }).catch(err => {
+      clearInterval(int);
+      app.innerHTML = `<div class="card p-8 text-center w-full" style="max-width: 600px;"><p class="text-danger font-bold mb-4">Error: ${err.message}</p><button class="btn btn-primary hover-lift" onclick="location.reload()">Try Again</button></div>`;
+    });
   }
 
   // ── TIMER LOGIC ──
@@ -705,47 +936,21 @@ window.initExamEngine = function() {
       let earned = 0, possible = 0;
       Object.values(state.results).forEach(r => { earned += r.score; possible += r.maxScore; });
       
-      const { data: attempt, error: attErr } = await sb.from('quiz_attempts').insert({
-          student_id:         state.studentId,
-          subject:            state.paper.template.subject.toLowerCase() === 'maths' ? 'mathematics' : state.paper.template.subject.toLowerCase(),
-          level:              state.paper.template.level.toLowerCase().replace('p', 'primary-'),
-          topic:              state.paper.template.paperCode || 'Mock Exam',
-          difficulty:         'Mixed',
-          score:              earned,
-          total_questions:    possible,
-          time_taken_seconds: (state.paper.template.durationMinutes * 60) - state.timerSeconds,
-          completed_at:       new Date().toISOString(),
-      }).select('id').single();
-
-      if (attErr) throw attErr;
-
-      const qAttempts = [];
-      state.paper.sections.forEach(sec => {
-         sec.questions.forEach((q, qIdx) => {
-            const globalIdx = `${sec.id}-${qIdx}`;
-            const r = state.results[globalIdx];
-            const ans = state.answers[globalIdx];
-            qAttempts.push({
-               quiz_attempt_id: attempt.id,
-               student_id:      state.studentId,
-               question_text:   (q.question_text || q.passage || 'Diagram/Passage').slice(0, 500),
-               topic:           q.topic || 'Exam',
-               difficulty:      q.difficulty || 'standard',
-               correct:         r.isCorrect,
-               answer_chosen:   (typeof ans === 'object' ? JSON.stringify(ans) : String(ans || '')).slice(0, 200),
-               correct_answer:  String(q.correct_answer || q.model_answer || 'See Solution'),
-            });
-         });
+      const totalMinutes = state.paper.duration || state.paper.template?.durationMinutes || 60;
+      const timeTaken = (totalMinutes * 60) - state.timerSeconds;
+      
+      // 🚀 MASTERCLASS: Restored exact exam_results schema for progress.html compatibility
+      await sb.from('exam_results').insert({
+        student_id: state.studentId, 
+        subject: state.subjectKey === 'mathematics' ? 'Mathematics' : state.subjectKey, 
+        level: state.level,
+        exam_type: state.examType || 'PRACTICE', 
+        score: earned, 
+        total_marks: possible,
+        questions_attempted: Object.keys(state.results).length, 
+        time_taken: timeTaken >= 0 ? timeTaken : null,
+        completed_at: new Date().toISOString() 
       });
-
-      if (qAttempts.length > 0) await sb.from('question_attempts').insert(qAttempts);
-
-      const today = new Date().toISOString().slice(0, 10);
-      const { data: existingUsage } = await sb.from('daily_usage').select('id, questions_attempted').eq('student_id', state.studentId).eq('date', today).maybeSingle();
-      const newCount = (existingUsage?.questions_attempted || 0) + Object.keys(state.results).length;
-
-      if (!existingUsage) await sb.from('daily_usage').insert({ student_id: state.studentId, date: today, questions_attempted: newCount });
-      else await sb.from('daily_usage').update({ questions_attempted: newCount }).eq('id', existingUsage.id);
       
     } catch (e) {
       console.error('Failed to save exam result to Supabase:', e);

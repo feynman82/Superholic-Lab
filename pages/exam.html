@@ -15,10 +15,11 @@
   <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js"></script>
   <script src="/js/footer.js" defer></script>
   
+  <script src="../js/diagram-library.js"></script>
   <script src="../js/supabase-client.js"></script>
   <script src="../js/exam-templates.js"></script>
-  <script src="../js/diagram-library.js"></script>
   <script src="../js/exam-generator.js"></script>
+  <script src="../js/exam-renderer.js"></script>
   <script src="../js/exam.js" defer></script>
   
   <script type="module">
@@ -41,6 +42,13 @@
   </script>
 
   <style>
+    @media print {
+      body { background: white !important; }
+      global-header, global-footer, .bottom-nav, #app { display: none !important; }
+      #print-container { display: block !important; position: absolute; left: 0; top: 0; width: 100%; padding: 20px; }
+    }
+    #print-container { display: none; }
+
     /* Component-Specific Exam Styles (Preserved for safety) */
     .cloze-passage, .editing-passage { line-height: 2.4; }
     .cloze-select {
@@ -76,6 +84,8 @@
   
   <main id="app" class="container flex flex-col items-center w-full" style="padding-top: calc(var(--navbar-h) + var(--space-8)); padding-bottom: var(--space-10); min-height: 80vh; max-width: 1200px;">
     </main>
+
+  <div id="print-container"></div>
 
   <global-footer></global-footer>
 
