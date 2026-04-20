@@ -155,6 +155,7 @@ img {
 .p-6 { padding: var(--space-6); }
 
 /* Vertical Padding Utilities for Section Backgrounds */
+.py-2 { padding-top: var(--space-2); padding-bottom: var(--space-2); }
 .py-6 { padding-top: var(--space-6); padding-bottom: var(--space-6); }
 .py-8 { padding-top: var(--space-8); padding-bottom: var(--space-8); }
 .py-10 { padding-top: var(--space-10); padding-bottom: var(--space-10); }
