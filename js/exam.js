@@ -156,28 +156,69 @@ window.initExamEngine = function() {
 
   function renderMockPreview(tpl) {
     if (!tpl || !tpl.sections) return '';
-    const typeLabel = { mcq: 'MCQ', short_ans: 'Short Ans', word_problem: 'Word Problem', open_ended: 'Open-Ended', cloze: 'Cloze', editing: 'Editing' };
-    const typeColour = { mcq: 'var(--brand-rose)', short_ans: 'var(--maths-colour)', word_problem: 'var(--success)', open_ended: 'var(--english-colour)', cloze: 'var(--amber)', editing: 'var(--danger)' };
+    
+    let stripsHtml = '';
+    let currentLabel = '';
 
-    const strips = tpl.sections.map(sec => {
+    tpl.sections.forEach(sec => {
       const qType = sec.questionType;
       const qCount = sec.questionCount;
       const marksEach = sec.marksPerQuestion;
       const sectionMarks = sec.totalMarks || (marksEach * qCount);
-      const colour = typeColour[qType] || 'var(--sage-light)';
-      const label = typeLabel[qType] || qType || 'Questions';
+      
+      let label = qType.toUpperCase();
+      let colour = 'var(--sage-light)';
 
-      const pills = Array.from({ length: qCount }, (_, i) => `<span class="mock-q-pill" style="border: 1px solid ${colour}; border-radius: 50%; width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; color:${colour};">${i + 1}</span>`).join('');
-      return `
-        <div class="flex flex-wrap items-center gap-3 py-2" style="border-bottom: 1px dashed var(--border-light);">
-          <span class="font-bold text-sm text-main" style="min-width: 80px; flex: 1 1 100%;">${esc(sec.label || '')}</span>
-          <span class="text-[10px] font-bold uppercase px-2 py-1 rounded bg-surface" style="color:${colour};">${label}</span>
-          <div class="flex flex-wrap gap-1 flex-1">${pills}</div>
-          <span class="font-bold text-sm text-main">${sectionMarks}M</span>
+      // 1. Color & Label Mapping (Two-line breaks & Topic formatting)
+      if (qType === 'cloze') {
+        const sub = (sec.subTopics && sec.subTopics[0]) ? sec.subTopics[0].toUpperCase() : '';
+        label = sub ? `${sub}<br>CLOZE` : 'CLOZE';
+        colour = 'var(--brand-mint)';
+      } else if (qType === 'mcq') {
+        label = 'MCQ';
+        colour = 'var(--brand-rose)';
+      } else if (qType === 'short_ans') {
+        label = 'SHORT ANS';
+        colour = 'var(--maths-colour)';
+      } else if (qType === 'word_problem') {
+        label = 'WORD<br>PROBLEM';
+        colour = 'var(--maths-colour)';
+      } else if (qType === 'comprehension') {
+        label = 'COMPREHENSION';
+        colour = 'var(--english-colour)';
+      } else if (qType === 'visual_text') {
+        label = 'VISUAL TEXT<br>COMPREHENSION';
+        colour = 'var(--english-colour)';
+      } else if (qType === 'editing') {
+        label = 'EDITING';
+        colour = 'var(--brand-error)';
+      } else if (qType === 'open_ended') {
+        label = 'OPEN-ENDED';
+        colour = 'var(--science-colour)'; 
+      }
+
+      // Circular Marks Array
+      const pills = Array.from({ length: qCount }, (_, i) => 
+        `<span style="border: 1px solid ${colour}; border-radius: 50%; width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color:${colour}; background-color: var(--bg-surface); flex-shrink: 0;">${i + 1}</span>`
+      ).join('');
+      
+      // 2. Group by Booklet/Section (Avoid repeating "Booklet A")
+      const secLabel = sec.label || '';
+      if (secLabel !== currentLabel) {
+         stripsHtml += `<div class="font-bold text-sm text-main mt-4 mb-2 w-full border-b border-light pb-1">${esc(secLabel)}</div>`;
+         currentLabel = secLabel;
+      }
+
+      // 3. Render Row: Label Left, Pills Right-Aligned, Marks Right
+      stripsHtml += `
+        <div class="flex items-center gap-3 py-3" style="border-bottom: 1px dashed var(--border-light);">
+          <div class="font-display tracking-wide text-sm" style="color:${colour}; white-space: normal; line-height: 1.1; text-align: left; width: 120px; flex-shrink: 0;">${label}</div>
+          <div class="flex flex-wrap gap-1 flex-1 justify-end">${pills}</div>
+          <div class="font-bold text-sm text-main text-right" style="min-width: 40px;">${sectionMarks}M</div>
         </div>`;
-    }).join('');
+    });
 
-    return `<div class="mt-4 bg-page border border-light rounded-lg p-4"><div class="text-xs font-bold uppercase tracking-wider text-muted mb-3 pb-2 border-b border-light">Paper Format Preview</div>${strips}</div>`;
+    return `<div class="mt-4 bg-page border border-light rounded-lg p-4"><div class="text-xs font-bold uppercase tracking-wider text-muted mb-2">Paper Format Preview</div>${stripsHtml}</div>`;
   }
 
   function renderType() {
