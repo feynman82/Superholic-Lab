@@ -17,8 +17,28 @@ window.initExamEngine = function() {
         return html;
       }
     } catch(e) {}
+    // 🚀 MASTERCLASS FIX: Removed esc() so HTML tags from the database render correctly
     return `<span class="font-sans">${String(raw).replace(/\n/g, '<br>')}</span>`;
   };
+
+  // 🚀 MASTERCLASS TIER 2: Fast Local Math Heuristics (0ms, $0 API Cost)
+  function isHeuristicMatch(studentAns, correctAns, acceptAlsoArray, isMath) {
+      if (!correctAns || !studentAns) return false;
+      const norm = (s) => String(s || '').toLowerCase().replace(/\s/g, '');
+      const sNorm = norm(studentAns);
+      const cNorm = norm(correctAns);
+      
+      if (sNorm === cNorm) return true;
+      if (Array.isArray(acceptAlsoArray) && acceptAlsoArray.some(a => norm(a) === sNorm)) return true;
+      
+      if (isMath) {
+         const stripUnits = (s) => s.replace(/[^0-9.\/]/g, ''); 
+         const sVal = stripUnits(sNorm);
+         const cVal = stripUnits(cNorm);
+         if (sVal !== '' && sVal === cVal) return true;
+      }
+      return false;
+  }
 
   // ── 🚀 STATE ──
   const state = {
@@ -160,7 +180,18 @@ window.initExamEngine = function() {
             else inputUi = buildTextAreaUI(q, globalIdx); 
         }
 
-        let qTextHtml = q.question_text ? `<div class="text-lg text-main font-medium mb-4 leading-relaxed">${esc(q.question_text)}</div>` : '';
+        let isSynthesis = (q.topic || '').toLowerCase() === 'synthesis';
+        let qTextHtml = '';
+        if (q.question_text) {
+           if (isSynthesis) {
+             const displayQuestion = esc(q.question_text.split('\n\n')[0].trim()).replace(/&lt;br\s*\/?[&gt;]*>/gi, '<br>');
+             const instructions = q.instructions ? `<div class="text-lg text-main font-bold mb-4 leading-relaxed">${esc(q.instructions)}</div>` : '';
+             qTextHtml = `<div class="text-lg text-main font-medium mb-4 leading-relaxed">${displayQuestion}<br><br></div>${instructions}`;
+           } else {
+             qTextHtml = `<div class="text-lg text-main font-medium mb-4 leading-relaxed">${esc(q.question_text)}</div>`;
+           }
+        }
+        
         const diagramHtml = renderVisualPayload(q.visual_payload);
         
         html += `
@@ -195,9 +226,14 @@ window.initExamEngine = function() {
     try {
       const fnName = visual_payload.function_name;
       if (typeof DiagramLibrary[fnName] === 'function') {
-        return `<div class="mb-4 mx-auto flex justify-center w-full" style="max-width: 600px;">${DiagramLibrary[fnName](visual_payload.params || {})}</div>`;
+        // 🚀 MASTERCLASS FIX: Crash Shield for bad SVG generation
+        const svgHtml = DiagramLibrary[fnName](visual_payload.params || {});
+        if (String(svgHtml).includes('NaN')) throw new Error('AI generated invalid geometry (NaN)');
+        return `<div class="mb-4 mx-auto flex justify-center w-full" style="max-width: 600px; overflow-x: auto;">${svgHtml}</div>`;
       }
-    } catch(e) {}
+    } catch(e) {
+      console.error("[DiagramLibrary] Rendering crashed:", e);
+    }
     return '';
   }
 
@@ -239,15 +275,26 @@ window.initExamEngine = function() {
     
     let synthesisHtml = '';
     if (isSynthesis && q.instructions) {
+        let rawConnector = '';
         const match = q.instructions.match(/'([^']+)'/);
-        const cleanConnector = match ? match[1].replace(/^\.\.\.|\.\.\.$|^\(|\)$/g, '').trim() : ''; 
-        const lineBlock = `<div class="flex-1" style="border-bottom: 2px solid var(--text-main); margin-bottom: 0.3rem; opacity: 0.5;"></div>`;
+        if (match) rawConnector = match[1];
+        const cleanConnector = rawConnector.replace(/^\.\.\.|\.\.\.$|^\(|\)$/g, '').trim(); 
+        
+        // 🚀 MASTERCLASS FIX: Force flex lines to connect seamlessly
+        const lineBlock = `<div style="flex-grow: 1; border-bottom: 2px solid var(--text-main); margin-bottom: 0.3rem; opacity: 0.5; min-width: 40px;"></div>`;
+          
         let blueprintHtml = '';
-        
-        if (q.instructions.includes('...')) blueprintHtml = `${lineBlock}<div class="font-bold text-brand-rose px-4 py-2 bg-surface rounded shadow-sm text-sm uppercase tracking-widest">${esc(cleanConnector)}</div>${lineBlock}`;
-        else blueprintHtml = `<div class="font-bold text-brand-rose px-4 py-2 bg-surface rounded shadow-sm text-sm uppercase tracking-widest">${esc(cleanConnector)}</div>${lineBlock}`;
-        
-        synthesisHtml = `<div class="flex items-end gap-3 w-full mb-4">${blueprintHtml}</div>`;
+        if (rawConnector.startsWith('...') && rawConnector.endsWith('...')) {
+           blueprintHtml = `${lineBlock}<div class="font-bold text-brand-rose px-4 py-2 bg-surface rounded shadow-sm text-sm uppercase tracking-widest mx-2">${esc(cleanConnector)}</div>${lineBlock}`;
+        } else if (rawConnector.startsWith('(') && rawConnector.endsWith(')')) {
+           blueprintHtml = `${lineBlock}<div class="font-bold text-brand-rose px-4 py-2 bg-surface rounded shadow-sm text-sm uppercase tracking-widest mx-2">${esc(cleanConnector)}</div>${lineBlock}`;
+        } else if (rawConnector.startsWith('...')) {
+           blueprintHtml = `${lineBlock}<div class="font-bold text-brand-rose px-4 py-2 bg-surface rounded shadow-sm text-sm uppercase tracking-widest ml-2">${esc(cleanConnector)}</div>`;
+        } else {
+           blueprintHtml = `<div class="font-bold text-brand-rose px-4 py-2 bg-surface rounded shadow-sm text-sm uppercase tracking-widest mr-2">${esc(cleanConnector)}</div>${lineBlock}`;
+        }
+
+        synthesisHtml = `<div class="flex items-end w-full mb-6 mt-2">${blueprintHtml}</div>`;
     }
 
     const typeHtml = isShortAns 
@@ -278,13 +325,16 @@ window.initExamEngine = function() {
   function buildMultiPartUI(q, globalIdx) {
     let partsData = [];
     try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
-    if (partsData.length === 0 && q.type === 'open_ended') partsData = [{ label: "(a)", question: q.question_text }];
+    if (partsData.length === 0 && q.type === 'open_ended') partsData = [{ label: "(a)", question: q.question_text, marks: q.marks, model_answer: q.worked_solution || q.model_answer }];
 
     return partsData.map((p, pIdx) => {
-      const pLabel = p.label || `Part ${pIdx + 1}`;
+      // 🚀 MASTERCLASS FIX: Unified numbering and safe IDs
+      const alphabetLabel = `(${String.fromCharCode(97 + pIdx)})`;
+      const pLabel = p.label || alphabetLabel;
+      const safeIdLabel = String(pLabel).replace(/[^a-zA-Z0-9]/g, '');
       const savedAns = (state.answers[globalIdx] || {})[pLabel] || '';
       
-      const drawKey = `${globalIdx}-${pIdx}`;
+      const drawKey = `${globalIdx}-${safeIdLabel}`;
       const isDrawMode = state.drawings[drawKey] && state.drawings[drawKey] !== 'text';
       const baseStyle = "form-input w-full p-4 text-lg border-2 border-slate-200 focus:border-brand-sage rounded-xl transition-all shadow-sm";
       const drawStyle = "form-input mt-3 w-full p-4 text-lg border-2 border-brand-sage focus:border-brand-sage rounded-xl bg-sage-50/10";
@@ -302,14 +352,14 @@ window.initExamEngine = function() {
             </div>
           </div>
 
-          ${!isDrawMode ? `<textarea id="multi-${globalIdx}-${pIdx}" class="${baseStyle}" rows="3" placeholder="Type answer..." onblur="window.saveAllAnswers()">${esc(savedAns)}</textarea>` : `
+          ${!isDrawMode ? `<textarea id="multi-${globalIdx}-${safeIdLabel}" class="${baseStyle}" rows="3" placeholder="Type answer..." onblur="window.saveAllAnswers()">${esc(savedAns)}</textarea>` : `
             <div class="scratchpad-container mb-4 relative block">
               <canvas id="canvas-${drawKey}" data-drawkey="${drawKey}" class="scratchpad-canvas bg-white border-2 border-slate-200 rounded-xl w-full shadow-sm" style="min-height: 250px; touch-action: none; cursor: crosshair;"></canvas>
               <div class="absolute top-3 right-3">
                  <button class="btn btn-sm btn-ghost bg-white shadow-sm rounded-lg" onclick="window.clearExamCanvas('${drawKey}')">🗑️ Clear</button>
               </div>
             </div>
-            <input type="text" id="multi-${globalIdx}-${pIdx}" class="${drawStyle}" placeholder="Final Answer (Optional)" value="${esc(savedAns)}" onblur="window.saveAllAnswers()">
+            <input type="text" id="multi-${globalIdx}-${safeIdLabel}" class="${drawStyle}" placeholder="Final Answer (Optional)" value="${esc(savedAns)}" onblur="window.saveAllAnswers()">
           `}
         </div>`;
     }).join('');
@@ -461,8 +511,11 @@ window.initExamEngine = function() {
            
            if (!state.answers[globalIdx]) state.answers[globalIdx] = {};
            pData.forEach((p, i) => {
-             const el = document.getElementById(`multi-${globalIdx}-${i}`);
-             if (el) state.answers[globalIdx][p.label || `Part ${i+1}`] = el.value;
+             const alphabetLabel = `(${String.fromCharCode(97 + i)})`;
+             const pLabel = p.label || alphabetLabel;
+             const safeIdLabel = String(pLabel).replace(/[^a-zA-Z0-9]/g, '');
+             const el = document.getElementById(`multi-${globalIdx}-${safeIdLabel}`);
+             if (el) state.answers[globalIdx][pLabel] = el.value;
            });
         }
         else if (q.type === 'cloze' || q.type === 'editing') {
@@ -510,9 +563,9 @@ window.initExamEngine = function() {
            state.results[globalIdx] = { isCorrect, score: isCorrect ? q.marks : 0, maxScore: q.marks, text: isCorrect ? 'Spot on!' : `Expected: ${q.correct_answer}`, workedSolution: q.worked_solution };
         } 
         else if (q.type === 'short_ans') {
-           const norm = (s) => String(s||'').toLowerCase().replace(/\s/g,'');
            let accept = []; try { accept = JSON.parse(q.accept_also || '[]'); } catch(e){}
-           const isCorrect = norm(ans) === norm(q.correct_answer) || accept.some(a => norm(ans) === norm(a));
+           const isMath = state.paper.template.subject.toLowerCase() === 'mathematics' || state.paper.template.subject.toLowerCase() === 'maths';
+           const isCorrect = isHeuristicMatch(ans, q.correct_answer, accept, isMath);
            state.results[globalIdx] = { isCorrect, score: isCorrect ? q.marks : 0, maxScore: q.marks, text: isCorrect ? 'Excellent!' : `Expected: ${q.correct_answer}`, workedSolution: q.worked_solution };
         }
         else if (q.type === 'cloze' || q.type === 'editing') {

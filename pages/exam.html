@@ -17,6 +17,7 @@
   
   <script src="../js/supabase-client.js"></script>
   <script src="../js/exam-templates.js"></script>
+  <script src="../js/diagram-library.js"></script>
   <script src="../js/exam-generator.js"></script>
   <script src="../js/exam.js" defer></script>
   
@@ -70,7 +71,7 @@
     }
   </style>
 </head>
-<body class="bg-page text-main font-sans antialiased flex flex-col min-h-screen">
+<body id="mainBody" class="has-bottom-nav bg-page texture-light-grid">
   <global-header></global-header>
   
   <main id="app" class="container flex flex-col items-center w-full" style="padding-top: calc(var(--navbar-h) + var(--space-8)); padding-bottom: var(--space-10); min-height: 80vh; max-width: 1200px;">
