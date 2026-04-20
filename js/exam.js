@@ -51,6 +51,9 @@ window.initExamEngine = function() {
     examType:   '',      
     studentId:  new URLSearchParams(window.location.search).get('student'),    
     paper:      null,
+    allQs:      [],          // 🚀 Added for Focus Room Pagination
+    currentQIdx: 0,          // 🚀 Added for Focus Room Pagination
+    flagged:    {},          // 🚀 Added for Focus Room Pagination
     answers:    {},      
     drawings:   {},      
     results:    null,
@@ -322,12 +325,19 @@ window.initExamEngine = function() {
     genPromise.then(paper => {
       clearInterval(int);
       
-      let hasQuestions = false;
+      // 🚀 MASTERCLASS: Flatten sections into a single array for pagination
+      let flat = [];
       if (paper && paper.sections) {
-        hasQuestions = paper.sections.some(sec => sec.questions && sec.questions.length > 0);
+        paper.sections.forEach(sec => {
+          if (sec.questions) {
+            sec.questions.forEach((q, qIdx) => {
+              if (q) flat.push({ ...q, sectionLabel: sec.label, sectionInstr: sec.instructions, globalIdx: `${sec.id}-${qIdx}` });
+            });
+          }
+        });
       }
       
-      if (!hasQuestions) {
+      if (flat.length === 0) {
         app.innerHTML = `
           <div class="card p-8 text-center w-full hover-lift" style="max-width: 600px;">
             <div class="text-4xl mb-4">🗂️</div>
@@ -339,6 +349,9 @@ window.initExamEngine = function() {
       }
 
       state.paper = paper;
+      state.allQs = flat;
+      state.currentQIdx = 0;
+      state.flagged = {};
       state.answers = {};
       state.drawings = {};
       state.results = null;
@@ -370,85 +383,149 @@ window.initExamEngine = function() {
     }, 1000);
   }
 
-  // ── 2. THE EXAM ENGINE (3-TIER ROUTER) ──
+  // ── 2. THE EXAM ENGINE (FOCUS ROOM + 3-TIER ROUTER) ──
   function renderFocusExam() {
     const p = state.paper;
+    const q = state.allQs[state.currentQIdx];
+    const totalQs = state.allQs.length;
+    const globalIdx = q.globalIdx;
+
+    // 🚀 MASTERCLASS: The Focus Room Side Navigator Map
+    const navPips = state.allQs.map((_, i) => {
+      let classes = 'nav-pip hover-lift';
+      // Fallback styling in case style.css misses nav-pip
+      let inlineStyle = 'display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:8px; font-weight:bold; border:2px solid var(--border-light); background:var(--bg-surface); cursor:pointer; color:var(--text-main); transition:all 0.2s ease;';
+      
+      if (i === state.currentQIdx) {
+          classes += ' is-active';
+          inlineStyle += ' border-color:var(--brand-sage); background:var(--brand-sage); color:white;';
+      }
+      else if (state.flagged[i]) {
+          classes += ' is-flagged';
+          inlineStyle += ' border-color:var(--brand-amber); background:rgba(217,119,6,0.1); color:var(--brand-amber);';
+      }
+      else if (state.answers[state.allQs[i].globalIdx] && Object.keys(state.answers[state.allQs[i].globalIdx]).length !== 0) {
+          classes += ' is-answered';
+          inlineStyle += ' border-color:var(--brand-mint); background:rgba(5,150,105,0.1); color:var(--brand-mint);';
+      }
+      return `<button class="${classes}" style="${inlineStyle}" onclick="window.jumpToQ(${i})">${i+1}</button>`;
+    }).join('');
+
+    // 🚀 3-TIER ROUTER (Applied to Single Question)
+    const isSplitScreen = q.type === 'comprehension' || q.type === 'visual_text';
+    const isInlinePassage = q.type === 'cloze' || q.type === 'editing';
+    const isMultiPart = q.type === 'word_problem' || q.type === 'open_ended';
+
+    let inputUi = '';
+    if (isSplitScreen) inputUi = buildComprehensionUI(q, globalIdx); 
+    else if (isInlinePassage) inputUi = q.type === 'cloze' ? buildClozeUI(q, globalIdx) : buildEditingUI(q, globalIdx);
+    else {
+        if (isMultiPart) inputUi = buildMultiPartUI(q, globalIdx); 
+        else if (q.type === 'mcq') inputUi = buildMCQOptions(q, globalIdx); 
+        else inputUi = buildTextAreaUI(q, globalIdx); 
+    }
+
+    let isSynthesis = (q.topic || '').toLowerCase() === 'synthesis';
+    let qTextHtml = '';
+    if (q.question_text) {
+       if (isSynthesis) {
+         const displayQuestion = esc(q.question_text.split('\n\n')[0].trim()).replace(/&lt;br\s*\/?[&gt;]*>/gi, '<br>');
+         const instructions = q.instructions ? `<div class="text-lg text-main font-bold mb-4 leading-relaxed">${esc(q.instructions)}</div>` : '';
+         qTextHtml = `<div class="text-lg text-main font-medium mb-4 leading-relaxed">${displayQuestion}<br><br></div>${instructions}`;
+       } else {
+         qTextHtml = `<div class="text-lg text-main font-medium mb-4 leading-relaxed" style="white-space:pre-line;">${esc(q.question_text)}</div>`;
+       }
+    }
     
-    let html = `
-      <div class="sticky top-[var(--navbar-h)] z-40 bg-surface border-b border-light w-full p-4 mb-6 shadow-sm flex justify-between items-center rounded-xl">
+    const diagramHtml = renderVisualPayload(q.visual_payload);
+    const paneMaxWidth = isSplitScreen ? '100%' : '680px';
+
+    app.innerHTML = `
+      <div class="sticky top-[var(--navbar-h)] z-40 bg-surface border-b border-light w-full p-4 mb-6 shadow-sm flex justify-between items-center rounded-xl max-w-[1200px]">
         <div>
-          <h2 class="font-display text-xl text-main m-0">${p.template.displayName}</h2>
-          <div class="text-sm text-muted">${p.template.totalMarks} Marks • ${p.template.durationMinutes} mins</div>
+          <h2 class="font-display text-xl text-main m-0">${p.template.displayName || p.displayName}</h2>
+          <div class="text-sm text-muted">${p.template.totalMarks || p.totalMarks} Marks • ${p.template.durationMinutes || p.duration} mins</div>
         </div>
         <div class="text-2xl font-display font-bold text-main" id="examTimer">--:--</div>
       </div>
-      <div class="w-full space-y-8 max-w-[1200px]">
-    `;
 
-    p.sections.forEach((sec) => {
-      html += `
-        <div class="mb-8">
-          <div class="bg-elevated border-l-4 border-brand-sage p-4 rounded-r-xl mb-6 shadow-sm">
-            <h3 class="font-display text-2xl text-main m-0">${sec.label}: ${sec.title}</h3>
-            <p class="text-muted mt-1 font-medium">${sec.instructions}</p>
-          </div>
-      `;
-
-      sec.questions.forEach((q, qIndex) => {
-        const globalIdx = `${sec.id}-${qIndex}`;
-        
-        // 🚀 MASTERCLASS ROUTER
-        const isSplitScreen = q.type === 'comprehension' || q.type === 'visual_text';
-        const isInlinePassage = q.type === 'cloze' || q.type === 'editing';
-        const isMultiPart = q.type === 'word_problem' || q.type === 'open_ended';
-
-        let inputUi = '';
-        if (isSplitScreen) inputUi = buildComprehensionUI(q, globalIdx); 
-        else if (isInlinePassage) inputUi = q.type === 'cloze' ? buildClozeUI(q, globalIdx) : buildEditingUI(q, globalIdx);
-        else {
-            if (isMultiPart) inputUi = buildMultiPartUI(q, globalIdx); 
-            else if (q.type === 'mcq') inputUi = buildMCQOptions(q, globalIdx); 
-            else inputUi = buildTextAreaUI(q, globalIdx); 
-        }
-
-        let isSynthesis = (q.topic || '').toLowerCase() === 'synthesis';
-        let qTextHtml = '';
-        if (q.question_text) {
-           if (isSynthesis) {
-             const displayQuestion = esc(q.question_text.split('\n\n')[0].trim()).replace(/&lt;br\s*\/?[&gt;]*>/gi, '<br>');
-             const instructions = q.instructions ? `<div class="text-lg text-main font-bold mb-4 leading-relaxed">${esc(q.instructions)}</div>` : '';
-             qTextHtml = `<div class="text-lg text-main font-medium mb-4 leading-relaxed">${displayQuestion}<br><br></div>${instructions}`;
-           } else {
-             qTextHtml = `<div class="text-lg text-main font-medium mb-4 leading-relaxed">${esc(q.question_text)}</div>`;
-           }
-        }
-        
-        const diagramHtml = renderVisualPayload(q.visual_payload);
-        
-        html += `
-          <div class="card p-6 mb-6 hover-lift relative" id="q-container-${globalIdx}">
+      <div class="flex flex-wrap gap-6 items-start w-full justify-center max-w-[1200px]">
+        <div class="flex flex-col" style="flex: 1 1 300px; max-width: ${paneMaxWidth}; width: 100%; transition: max-width 0.3s ease;">
+          <div class="badge badge-info mb-4 self-start">${esc(q.sectionLabel || 'Exam')}</div>
+          
+          <div class="card p-6 mb-4 flex-1 relative">
             <div class="absolute top-6 right-6 badge badge-info">${q.marks} mark${q.marks>1?'s':''}</div>
-            <h4 class="font-bold text-brand-sage mb-4 text-lg">Question ${qIndex + 1}</h4>
+            <div class="flex justify-between items-center mb-4" style="border-bottom: 1px solid var(--border-light); padding-bottom: var(--space-2);">
+              <div class="font-bold text-brand-sage text-lg">Question ${state.currentQIdx + 1} of ${totalQs}</div>
+            </div>
+            
+            ${q.sectionInstr ? `<p class="text-sm text-muted italic mb-4">${esc(q.sectionInstr)}</p>` : ''}
+            
             ${diagramHtml}
             ${!isSplitScreen && !isInlinePassage ? qTextHtml : ''}
             ${inputUi}
           </div>
-        `;
-      });
-      html += `</div>`;
-    });
 
-    html += `
-        <div class="card p-6 flex justify-between items-center bg-elevated shadow-sm mt-8">
-          <div class="text-muted text-sm font-medium">Review your answers before submitting.</div>
-          <button class="btn btn-primary text-lg px-8 py-3 shadow-lg hover-lift" onclick="window.submitExam()">Submit Paper</button>
+          <div class="card p-4 flex flex-wrap justify-between items-center bg-surface gap-4">
+            <button class="btn btn-ghost" onclick="window.navExam(-1)" ${state.currentQIdx === 0 ? 'disabled' : ''}>← Previous</button>
+            <button class="btn btn-ghost hover-lift" onclick="window.toggleFlag()" style="color: ${state.flagged[state.currentQIdx] ? 'var(--brand-amber)' : 'var(--text-muted)'}; border: 1px solid ${state.flagged[state.currentQIdx] ? 'var(--brand-amber)' : 'transparent'};">
+              ${state.flagged[state.currentQIdx] ? '🚩 Flagged' : '🚩 Flag for review'}
+            </button>
+            ${state.currentQIdx === totalQs - 1 
+              ? `<button class="btn btn-primary hover-lift" onclick="window.manualSubmit()">Submit Paper →</button>`
+              : `<button class="btn btn-secondary hover-lift" onclick="window.navExam(1)">Next →</button>`
+            }
+          </div>
+        </div>
+
+        <div style="flex: 0 0 280px; width: 100%;">
+          <div class="card p-6" style="position: sticky; top: 100px;">
+            <h3 class="font-bold text-main mb-4 m-0">Exam Navigator</h3>
+            <div class="exam-navigator flex flex-wrap gap-2">${navPips}</div>
+            <div class="flex flex-col gap-2 mt-4 pt-4 text-xs text-muted font-medium" style="border-top: 1px solid var(--border-light);">
+              <div class="flex items-center gap-2"><div style="width: 12px; height: 12px; border-radius: 4px; background: var(--bg-elevated); border:1px solid var(--border-light);"></div> Unanswered</div>
+              <div class="flex items-center gap-2"><div style="width: 12px; height: 12px; border-radius: 4px; background: rgba(5, 150, 105, 0.1); border:1px solid var(--brand-mint);"></div> Answered</div>
+              <div class="flex items-center gap-2"><div style="width: 12px; height: 12px; border-radius: 4px; background: rgba(217, 119, 6, 0.1); border:1px solid var(--brand-amber);"></div> Flagged</div>
+            </div>
+          </div>
         </div>
       </div>
     `;
 
-    app.innerHTML = html;
-    setTimeout(initAllCanvases, 100);
+    setTimeout(() => {
+        if(typeof initAllCanvases === 'function') initAllCanvases();
+        else initCanvas(globalIdx);
+    }, 100);
   }
+
+  // ── EXAM INTERACTIONS ──
+  window.navExam = (dir) => {
+    window.saveAllAnswers();
+    const newIdx = state.currentQIdx + dir;
+    if (newIdx >= 0 && newIdx < state.allQs.length) {
+      state.currentQIdx = newIdx;
+      renderFocusExam();
+    }
+  };
+
+  window.jumpToQ = (idx) => {
+    window.saveAllAnswers();
+    state.currentQIdx = idx;
+    renderFocusExam();
+  };
+
+  window.toggleFlag = () => {
+    window.saveAllAnswers();
+    state.flagged[state.currentQIdx] = !state.flagged[state.currentQIdx];
+    renderFocusExam();
+  };
+
+  window.manualSubmit = () => {
+    window.saveAllAnswers();
+    if (confirm("Are you sure you want to submit your paper?")) {
+      window.submitExam();
+    }
+  };
 
   // ── UI BUILDERS ──
   
@@ -483,16 +560,15 @@ window.initExamEngine = function() {
   }
 
   window.selectExamMcq = (qIndex, optIdx) => {
-    window.saveAllAnswers(); // Preserve other inputs
-    const qParts = qIndex.split('-'); 
-    const sec = state.paper.sections.find(s => s.id === `${qParts[0]}-${qParts[1]}`);
-    const q = sec.questions[parseInt(qParts[2])];
+    window.saveAllAnswers(); 
+    const q = state.allQs.find(x => x.globalIdx === qIndex);
+    if (!q) return;
     
     let safeOptions = [];
     try { safeOptions = typeof q.options === 'string' ? JSON.parse(q.options) : (q.options || []); } catch(e) {}
     
     state.answers[qIndex] = safeOptions[optIdx];
-    renderFocusExam(); // Re-render to show selection visually
+    renderFocusExam(); 
   };
 
   function buildTextAreaUI(q, globalIdx) {
@@ -657,9 +733,8 @@ window.initExamEngine = function() {
 
   window.selectCompMcq = (globalIdx, pLabel, optIdx) => {
     window.saveAllAnswers();
-    const qParts = globalIdx.split('-'); 
-    const sec = state.paper.sections.find(s => s.id === `${qParts[0]}-${qParts[1]}`);
-    const q = sec.questions[parseInt(qParts[2])];
+    const q = state.allQs.find(x => x.globalIdx === globalIdx);
+    if (!q) return;
     
     let pData = [];
     try { pData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
@@ -727,14 +802,15 @@ window.initExamEngine = function() {
 
   // ── STATE EXTRACTION ──
   window.saveAllAnswers = () => {
-    state.paper.sections.forEach(sec => {
-      sec.questions.forEach((q, qIdx) => {
-        const globalIdx = `${sec.id}-${qIdx}`;
+    if (!state.allQs || state.allQs.length === 0) return;
+    const q = state.allQs[state.currentQIdx];
+    if (!q) return;
+    const globalIdx = q.globalIdx;
         
-        if (q.type === 'short_ans' || (q.type === 'word_problem' && !q.parts)) {
-           const el = document.getElementById(`input-${globalIdx}`);
-           if (el) state.answers[globalIdx] = el.value;
-        } 
+    if (q.type === 'short_ans' || (q.type === 'word_problem' && !q.parts)) {
+       const el = document.getElementById(`input-${globalIdx}`);
+       if (el && el.value) state.answers[globalIdx] = el.value;
+    } 
         else if (q.type === 'word_problem' || q.type === 'open_ended') {
            let pData = [];
            try { pData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
@@ -760,18 +836,16 @@ window.initExamEngine = function() {
            });
         }
         else if (q.type === 'comprehension' || q.type === 'visual_text') {
-           let pData = [];
-           try { pData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
-           if (!state.answers[globalIdx]) state.answers[globalIdx] = {};
-           pData.forEach((p, i) => {
-             if (p.part_type !== 'mcq') {
-               const el = document.getElementById(`comp-${globalIdx}-${i}`);
-               if (el) state.answers[globalIdx][p.label || `Q${i+1}`] = el.value;
-             }
-           });
-        }
-      });
-    });
+       let pData = [];
+       try { pData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
+       if (!state.answers[globalIdx]) state.answers[globalIdx] = {};
+       pData.forEach((p, i) => {
+         if (p.part_type !== 'mcq') {
+           const el = document.getElementById(`comp-${globalIdx}-${i}`);
+           if (el) state.answers[globalIdx][p.label || `Q${i+1}`] = el.value;
+         }
+       });
+    }
   };
 
   // ── 3. THE GRADING ENGINE ──
@@ -784,9 +858,8 @@ window.initExamEngine = function() {
     state.results = {};
     const aiPromises = [];
 
-    state.paper.sections.forEach(sec => {
-      sec.questions.forEach((q, qIdx) => {
-        const globalIdx = `${sec.id}-${qIdx}`;
+    state.allQs.forEach((q) => {
+        const globalIdx = q.globalIdx;
         const ans = state.answers[globalIdx] || '';
         
         if (q.type === 'mcq') {
@@ -835,7 +908,6 @@ window.initExamEngine = function() {
            });
            aiPromises.push(p);
         }
-      });
     });
 
     await Promise.allSettled(aiPromises);
@@ -853,10 +925,11 @@ window.initExamEngine = function() {
     let earned = 0;
     let possible = 0;
     
-    const items = state.paper.sections.map(sec => {
-      return sec.questions.map((q, qIdx) => {
-        const globalIdx = `${sec.id}-${qIdx}`;
+    const items = state.allQs.map((q, i) => {
+        const globalIdx = q.globalIdx;
         const r = state.results[globalIdx];
+        const secLabel = q.sectionLabel || 'Section';
+        
         earned += r.score;
         possible += r.maxScore;
         
@@ -883,7 +956,7 @@ window.initExamEngine = function() {
         return `
           <div class="card p-6 mb-4 ${bgClass} ${ruleClass}">
             <div class="flex justify-between items-center mb-2">
-              <span class="font-bold text-lg text-main">${sec.label} Q${qIdx + 1}</span>
+              <span class="font-bold text-lg text-main">${secLabel} Q${i + 1}</span>
               <span class="badge ${r.isCorrect ? 'badge-success' : 'badge-danger'} font-bold">${icon} ${r.score} / ${r.maxScore}</span>
             </div>
             <div class="text-main font-medium leading-relaxed mb-3">${esc(q.question_text || 'See passage/diagram')}</div>
@@ -893,7 +966,6 @@ window.initExamEngine = function() {
             ${r.workedSolution ? `<div class="mt-3 p-4 text-sm bg-white border border-light rounded-xl"><strong>Worked Solution:</strong><br>${window.formatWorkedSolution(r.workedSolution)}</div>` : ''}
           </div>
         `;
-      }).join('');
     }).join('');
 
     const pct = Math.round((earned / possible) * 100);
