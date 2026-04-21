@@ -721,10 +721,28 @@ window.initExamEngine = function() {
   }
 
   function buildClozeUI(q, globalIdx) {
-     let passage = esc(q.passage || '').replace(/\n/g, '<br>');
+     let passage = esc(q.passage || '').replace(/\n/g, '<br>').replace(/&lt;br\s*\/?[&gt;]*>/gi, '<br>');
      let blanks = [];
      try { blanks = typeof q.blanks === 'string' ? JSON.parse(q.blanks) : (q.blanks || []); } catch(e) {}
      
+     let wordBankHtml = '';
+     const isGrammar = (q.sub_topic || '').toLowerCase() === 'grammar';
+     
+     if (isGrammar) {
+       const allWords = new Set();
+       blanks.forEach(b => (b.options || []).forEach(w => allWords.add(w)));
+       if (allWords.size > 0) {
+         const wordBankList = [...allWords].sort().map((w, i) =>
+           `<span class="badge bg-surface border border-light text-main" style="font-size:0.9rem; padding: 6px 12px; font-weight: 500;">(${i+1}) ${esc(w)}</span>`
+         ).join('');
+         wordBankHtml = `
+           <div class="card bg-page p-4 mb-4">
+             <div class="text-xs font-bold text-muted uppercase mb-3">Word Bank</div>
+             <div class="flex flex-wrap gap-2">${wordBankList}</div>
+           </div>`;
+       }
+     }
+
      blanks.forEach(b => {
         const num = b.number || b.id;
         const saved = (state.answers[globalIdx] || {})[num] || '';
@@ -737,7 +755,8 @@ window.initExamEngine = function() {
         }
         passage = passage.replace(new RegExp(`_*\\s*(\\[|\\()${num}(\\]|\\))\\s*_*`, 'g'), inputHtml);
      });
-     return `<div class="card p-6 bg-surface text-lg leading-relaxed cloze-passage">${passage}</div>`;
+     
+     return `${wordBankHtml}<div class="card p-6 bg-surface text-lg leading-relaxed cloze-passage">${passage}</div>`;
   }
 
   function buildEditingUI(q, globalIdx) {

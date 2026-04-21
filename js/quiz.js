@@ -421,22 +421,29 @@ function buildClozeUI(q) {
     let blanks = [];
     try { blanks = typeof q.blanks === 'string' ? JSON.parse(q.blanks) : (q.blanks || []); } catch(e) {}
 
-    const allWords = new Set();
-    blanks.forEach(b => (b.options || []).forEach(w => allWords.add(w)));
-    
     let wordBankHtml = '';
-    if (allWords.size > 0) {
-      const wordBankList = [...allWords].sort().map((w, i) =>
-        `<span class="badge bg-surface border border-light text-main" style="font-size:0.9rem; padding: 6px 12px; font-weight: 500;">(${i+1}) ${esc(w)}</span>`
-      ).join('');
-      wordBankHtml = `
-        <div class="card bg-page p-4 mb-4">
-          <div class="text-xs font-bold text-muted uppercase mb-3">Word Bank</div>
-          <div class="flex flex-wrap gap-2">${wordBankList}</div>
-        </div>`;
+    
+    // 🚀 MASTERCLASS: Sub-Topic UI Router for Cloze
+    const isGrammar = (q.sub_topic || '').toLowerCase() === 'grammar';
+    
+    // Only build a Word Bank if it is explicitly a Grammar Cloze
+    if (isGrammar) {
+      const allWords = new Set();
+      blanks.forEach(b => (b.options || []).forEach(w => allWords.add(w)));
+      
+      if (allWords.size > 0) {
+        const wordBankList = [...allWords].sort().map((w, i) =>
+          `<span class="badge bg-surface border border-light text-main" style="font-size:0.9rem; padding: 6px 12px; font-weight: 500;">(${i+1}) ${esc(w)}</span>`
+        ).join('');
+        wordBankHtml = `
+          <div class="card bg-page p-4 mb-4">
+            <div class="text-xs font-bold text-muted uppercase mb-3">Word Bank</div>
+            <div class="flex flex-wrap gap-2">${wordBankList}</div>
+          </div>`;
+      }
     }
 
-    // 🚀 MASTERCLASS FIX: Safely restore HTML line breaks after escaping
+    // 🚀 MASTERCLASS FIX: Safely restore HTML line breaks in passage
     let passage = esc(q.passage || '').replace(/\n/g, '<br>').replace(/&lt;br\s*\/?[&gt;]*>/gi, '<br>');
     
     blanks.forEach(b => {
