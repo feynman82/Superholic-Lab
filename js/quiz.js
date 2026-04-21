@@ -714,11 +714,14 @@ function buildClozeUI(q) {
              displayAns = esc(savedWorking);
          }
          
+         // 🚀 MASTERCLASS FIX: Extract and parse nested arrays/objects for the model answer
+         const extractedModel = window.extractPartModelAnswer(part) || 'Model answer not provided.';
+         
          interactionUI = `
           <div class="p-4 bg-surface border border-light rounded-xl mb-4 text-main text-lg font-medium">${displayAns || '<em>No answer provided.</em>'}</div>
           <div class="ans-block strong p-5 bg-science-tint card-rule-mint rounded-xl">
             <div class="text-xs font-bold mb-2 text-success uppercase tracking-wider">✨ Model Answer / Explanation</div>
-            <div class="text-lg text-main font-bold leading-relaxed">${esc(part.model_answer || part.explanation || part.correct_answer)}</div>
+            <div class="text-lg text-main font-bold leading-relaxed">${esc(extractedModel).replace(/\n/g, '<br>')}</div>
           </div>
         `;
       }
