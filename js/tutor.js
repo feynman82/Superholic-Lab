@@ -419,7 +419,7 @@
       }
 
       // Fetch Limit
-      const { data: profile } = await sb.from('users').select('subscription_tier').eq('id', session.user.id).single();
+      const { data: profile } = await sb.from('profiles').select('subscription_tier').eq('id', session.user.id).single();
       const isTrial = !profile || profile.subscription_tier === 'trial';
       
       if (isTrial && currentStudentId) {
