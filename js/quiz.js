@@ -108,9 +108,31 @@ window.initQuizEngine = function() {
         return html;
       }
     } catch(e) {}
-      // 🚀 MASTERCLASS FIX: Removed esc() so HTML tags from the database render correctly
-      return `<span class="font-sans">${String(raw).replace(/\n/g, '<br>')}</span>`;
-    };
+    // 🚀 MASTERCLASS FIX: Removed esc() so HTML tags from the database render correctly
+    return `<span class="font-sans">${String(raw).replace(/\n/g, '<br>')}</span>`;
+  };
+
+  // 🚀 MASTERCLASS: Deep JSON Parser for Complex Comprehension Parts
+  window.extractPartModelAnswer = function(part) {
+    if (!part) return '';
+    if (part.model_answer) return String(part.model_answer);
+    if (part.correct_answer) return String(part.correct_answer);
+    if (part.explanation) return String(part.explanation);
+    if (part.worked_solution) return String(part.worked_solution);
+    
+    let constructed = [];
+    if (part.part_type === 'referent' && Array.isArray(part.items)) {
+        part.items.forEach(item => constructed.push(`• ${item.word} → ${item.correct_answer}`));
+    } else if (part.part_type === 'sequencing' && Array.isArray(part.correct_order)) {
+        constructed.push(`Correct order: ${part.correct_order.join(', ')}`);
+    } else if (part.part_type === 'true_false' && Array.isArray(part.items)) {
+        part.items.forEach(item => constructed.push(`• "${item.statement}" → ${item.correct_answer} (Reason: ${item.reason_evidence})`));
+    } else if (Array.isArray(part.items)) {
+        constructed.push(JSON.stringify(part.items));
+    }
+    
+    return constructed.length > 0 ? constructed.join('\n') : '';
+  };
 
   // 🚀 MASTERCLASS TIER 2: Fast Local Math Heuristics (0ms, $0 API Cost)
   function isHeuristicMatch(studentAns, correctAns, acceptAlsoArray, isMath) {
@@ -350,7 +372,7 @@ window.initQuizEngine = function() {
 
       const pQuestion = p.question || p.question_text || '';
       const pMarks = p.marks || 2;
-      const pModel = p.model_answer || p.worked_solution || p.correct_answer || '';
+      const pModel = window.extractPartModelAnswer(p);
 
       const isLocked = partIdx > state.activeWPPart;
       const isCompleted = partIdx < state.activeWPPart;
@@ -1164,7 +1186,7 @@ function buildClozeUI(q) {
       // 🚀 MASTERCLASS TIER 2: Fast Local Math Heuristics (0ms, $0 API Cost)
       const subject = new URLSearchParams(window.location.search).get('subject') || 'mathematics';
       const isMath = subject.toLowerCase() === 'mathematics' || subject.toLowerCase() === 'maths';
-      const correctVal = currentPart.correct_answer || currentPart.model_answer || currentPart.worked_solution;
+      const correctVal = window.extractPartModelAnswer(currentPart);
       
       if (isMath && correctVal) {
           let acceptVals = []; try { acceptVals = JSON.parse(currentPart.accept_also || '[]'); } catch(e){}

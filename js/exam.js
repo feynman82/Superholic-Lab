@@ -21,6 +21,28 @@ window.initExamEngine = function() {
     return `<span class="font-sans">${String(raw).replace(/\n/g, '<br>')}</span>`;
   };
 
+  // 🚀 MASTERCLASS: Deep JSON Parser for Complex Comprehension Parts
+  window.extractPartModelAnswer = function(part) {
+    if (!part) return '';
+    if (part.model_answer) return String(part.model_answer);
+    if (part.correct_answer) return String(part.correct_answer);
+    if (part.explanation) return String(part.explanation);
+    if (part.worked_solution) return String(part.worked_solution);
+    
+    let constructed = [];
+    if (part.part_type === 'referent' && Array.isArray(part.items)) {
+        part.items.forEach(item => constructed.push(`• ${item.word} → ${item.correct_answer}`));
+    } else if (part.part_type === 'sequencing' && Array.isArray(part.correct_order)) {
+        constructed.push(`Correct order: ${part.correct_order.join(', ')}`);
+    } else if (part.part_type === 'true_false' && Array.isArray(part.items)) {
+        part.items.forEach(item => constructed.push(`• "${item.statement}" → ${item.correct_answer} (Reason: ${item.reason_evidence})`));
+    } else if (Array.isArray(part.items)) {
+        constructed.push(JSON.stringify(part.items));
+    }
+    
+    return constructed.length > 0 ? constructed.join('\n') : '';
+  };
+
   // 🚀 MASTERCLASS TIER 2: Fast Local Math Heuristics (0ms, $0 API Cost)
   function isHeuristicMatch(studentAns, correctAns, acceptAlsoArray, isMath) {
       if (!correctAns || !studentAns) return false;
@@ -968,14 +990,23 @@ window.initExamEngine = function() {
         else {
            // AI Grading for Open Ended / Word Problem / Comprehension text
            let userAnsStr = typeof ans === 'object' ? JSON.stringify(ans) : String(ans);
+           
+           // 🚀 MASTERCLASS FIX: Combine global worked solution with specific part answers for the AI Grader & UI
+           let combinedWorkedSolution = q.worked_solution || q.model_answer || '';
+           let pData = []; try { pData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
+           if (pData.length > 0) {
+               let extractedParts = pData.map(p => `<strong>${esc(p.label || '')}</strong>: ` + window.extractPartModelAnswer(p)).join('\n\n');
+               combinedWorkedSolution += (combinedWorkedSolution ? '\n\n' : '') + extractedParts;
+           }
+
            const p = fetch('/api/grade-answer', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ questionId: q.id, questionType: q.type, questionText: q.question_text, studentAnswer: userAnsStr, workedSolution: q.worked_solution || q.model_answer, marks: q.marks || 2 })
+              body: JSON.stringify({ questionId: q.id, questionType: q.type, questionText: q.question_text, studentAnswer: userAnsStr, workedSolution: combinedWorkedSolution, marks: q.marks || 2 })
            }).then(res => res.json()).then(data => {
-              state.results[globalIdx] = { isCorrect: data.score === (q.marks||2), isPartial: data.score > 0 && data.score < (q.marks||2), score: data.score || 0, maxScore: q.marks || 2, text: data.feedback, workedSolution: q.worked_solution || q.model_answer };
+              state.results[globalIdx] = { isCorrect: data.score === (q.marks||2), isPartial: data.score > 0 && data.score < (q.marks||2), score: data.score || 0, maxScore: q.marks || 2, text: data.feedback, workedSolution: combinedWorkedSolution };
            }).catch(() => {
-              state.results[globalIdx] = { isCorrect: false, score: 0, maxScore: q.marks, text: "AI Grading unavailable.", workedSolution: q.worked_solution || q.model_answer };
+              state.results[globalIdx] = { isCorrect: false, score: 0, maxScore: q.marks, text: "AI Grading unavailable.", workedSolution: combinedWorkedSolution };
            });
            aiPromises.push(p);
         }
