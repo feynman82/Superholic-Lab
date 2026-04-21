@@ -526,25 +526,21 @@ function buildClozeUI(q) {
     });
 
     let editFeedback = '';
-    if (state.isAnswered) {
-      const wrongBlanks = blanks.filter(b => {
-        const saved = savedAns[b.number] || '';
+    if (state.isAnswered && state.feedback && state.feedback.blankResults) {
+      const rows = blanks.map(b => {
+        const num = b.id || b.number;
+        const res = state.feedback.blankResults[num] || {};
         const correctAns = b.correct_answer || b.correct_word || '';
-        return saved.toLowerCase() !== correctAns.toLowerCase();
-      });
-      
-      if (wrongBlanks.length > 0) {
-        editFeedback = `<div class="card bg-page p-6 mt-6">
-          <div class="text-sm font-bold text-muted uppercase mb-4">Explanations</div>
-          ${wrongBlanks.map(b => {
-            const correctAns = b.correct_answer || b.correct_word || '';
-            return `
-            <div class="text-lg text-main py-3" style="border-bottom: 1px solid var(--border-light);">
-              <span class="font-bold">[${b.number}] → <span class="text-success">${esc(correctAns)}</span>:</span> ${esc(b.explanation)}
-            </div>
-          `}).join('')}
+        const icon = res.isCorrect ? '✅' : '❌';
+        
+        return `<div class="flex gap-3 items-start text-sm py-2" style="border-bottom: 1px solid var(--border-light);">
+          <span class="font-bold" style="min-width:24px;">[${num}]</span>
+          <span>${icon} <strong style="color:var(--text-main);">${esc(res.selected || '—')}</strong> ${!res.isCorrect ? `→ <strong class="text-success">${esc(correctAns)}</strong>` : ''}</span>
+          ${!res.isCorrect && b.explanation ? `<span class="text-muted text-xs ml-auto" style="max-width:60%; text-align:right;">${esc(b.explanation)}</span>` : ''}
         </div>`;
-      }
+      }).join('');
+      
+      editFeedback = `<div class="card bg-page p-4 mt-4">${rows}</div>`;
     }
 
     return `<div class="card p-6 editing-passage text-lg text-main font-normal" style="line-height: 2.4;">${html}</div>${editFeedback}`;
