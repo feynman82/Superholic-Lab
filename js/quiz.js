@@ -740,7 +740,7 @@ function buildClozeUI(q) {
       ${mobileStyleOverride}
       <div class="comp-container">
         <div class="comp-passage-pane card p-6 text-lg text-main leading-relaxed">
-          ${esc(q.passage).replace(/\\n/g, '<br><br>')}
+          ${esc(q.passage).replace(/&lt;br\s*\/?&gt;/gi, '<br>').replace(/\\n/g, '<br><br>').replace(/\\"/g, '"')}
         </div>
         <div class="comp-questions-pane">${partsHtml}</div>
       </div>

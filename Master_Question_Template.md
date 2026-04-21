@@ -179,25 +179,68 @@ For all cloze formats, `topic` MUST be "Cloze". You MUST specify the `sub_topic`
 ---------------------------------------------------------------
 7. TYPE: `comprehension` (English)
 ---------------------------------------------------------------
-A Split-Screen format. Left pane has the text, right pane has multi-part questions.
+A Split-Screen format used for Comprehension Open-Ended (and sometimes Comprehension MCQ). The left pane contains the text, and the right pane contains a `parts` array of sub-questions.
 
+**Required Fields:**
 - `type`: "comprehension"
-- `passage`: The story/text (Use `<br><br>` for paragraphs).
-- `parts`: Array of sub-questions. Can include `mcq`, `text_box`, and `true_false`.
-  *(Note on True/False: NEVER generate standalone T/F questions. You may ONLY use them inside this parts array as a `true_false` part_type for PSLE evidence tables).*
+- `topic`: "Comprehension"
+- `passage`: The story/text. You MUST use `<br><br>` for paragraph breaks. DO NOT use `\n`.
+- `parts`: Stringified JSON array of sub-questions. 
+
+**PERMITTED `part_type` VALUES:**
+1. `mcq`: Provide `options` (array of 4 strings) and `correct_answer`.
+2. `text_box`: Provide `model_answer` and `rubric`.
+3. `true_false`: Must include an `items` array. Each item needs `statement`, `correct_answer` ("True"/"False"), and `reason_evidence`.
+4. `referent`: Table matching a pronoun to its subject. `items` array with `word` (e.g., "It (paragraph 2)") and `correct_answer`.
+5. `sequencing`: Ordering events. `items` array of 3 string events. `correct_order` array (e.g., `[3, 1, 2]`).
+
+**DIFFICULTY CALIBRATION & SCOPE (Strictly follow based on `level`):**
+
+* **Primary 1 & 2 (Lower Block):**
+    * *Passage:* 80-120 words. Simple narrative.
+    * *Structure:* 5 marks total. Exactly 5 sub-questions (1 mark each).
+    * *Part Types:* Mostly `mcq` to build confidence, ending with 1 or 2 simple `text_box` retrieval questions (e.g., "Where did Tom go?"). Do NOT use referent or sequencing.
+* **Primary 3 & 4 (Middle Block):**
+    * *Passage:* 150-250 words. Introduced to descriptive paragraphs.
+    * *Structure (WA):* 10 marks total. Mix of 1m and 2m questions.
+    * *Structure (EOY):* 16-20 marks total.
+    * *Part Types:* `mcq`, `text_box` (direct retrieval and basic inference). Introduce basic `true_false` tables (without the reason column).
+* **Primary 5 & 6 (Upper Block / PSLE SEAB Code 0001):**
+    * *Passage:* 350-450 words. Complex narrative with emotional beats, dialogue, and advanced vocabulary (e.g., *palpable, meticulously*).
+    * *Structure:* Exactly 20 marks. Usually 8 to 10 sub-questions.
+    * *Part Types Required:* You MUST include a diverse mix to hit 20 marks:
+        - 1x `text_box` asking for a specific vocabulary word (1m).
+        - 1x `referent` table (2 items, 2m).
+        - 1x `sequencing` (3 items, 1m).
+        - 1x `true_false` table WITH the `reason_evidence` column required (3 items, 3m).
+        - Remaining marks distributed across 2m and 3m `text_box` questions requiring deep inference and the CER (Claim, Evidence, Reasoning) framework in the rubric.
 
 ---------------------------------------------------------------
 8. TYPE: `visual_text` (English)
 ---------------------------------------------------------------
-A Split-Screen format. Left pane has an image flyer, right pane has MCQs.
+A sub-type of comprehension used for Section A of Paper 2. A Split-Screen format where the left pane displays a flyer/poster and the right pane contains MCQs.
 
+**Required Fields:**
 - `type`: "visual_text"
 - `topic`: "Comprehension"
-- `passage`: MUST BE `null`.
-- `image_url`: MUST BE `null`.
-- `examiner_note`: **IMAGE PROMPT GENERATION:** You must write a highly detailed text-to-image prompt (e.g., for DALL-E) so the developer can generate the flyer. Prefix it with `IMAGE PROMPT: `. (Example: "IMAGE PROMPT: A colourful flyer for a baking competition. Main header reads 'SG Junior Bakers'. Includes a box saying 'Free Registration'...")
-- `question_text`: "Study the flyer carefully and answer the following questions."
-- `parts`: Array of `mcq` sub-questions.
+- `passage`: MUST BE `null`. (The text is inside the image).
+- `image_url`: point to data/images/image_XXX.png`. (The developer will generate this later).
+- `examiner_note`: **IMAGE PROMPT GENERATION:** You MUST write a highly detailed text-to-image prompt so the developer can generate the flyer using an AI image generator. Prefix it with `IMAGE PROMPT: `. 
+  *(Example: "IMAGE PROMPT: A colourful flyer for a baking competition. Main header reads 'SG Junior Bakers'. Includes a box saying 'Free Registration' and a footnote with an asterisk saying 'Tools not provided'.")*
+- `question_text`: "Study the visual text carefully and answer the following questions."
+- `parts`: Stringified JSON array. ALL parts MUST be `part_type`: "mcq".
+
+**DIFFICULTY CALIBRATION & SCOPE (Strictly follow based on `level`):**
+
+* **Primary 1 & 2:**
+    * *Structure:* 3 to 4 marks (3-4 MCQs, 1m each).
+    * *Focus:* Direct visual retrieval. "What time does the party start?", "Where is the event?".
+* **Primary 3 & 4:**
+    * *Structure:* 5 marks (5 MCQs, 1m each).
+    * *Focus:* Retrieving details from different sections of the flyer, basic purpose of the flyer.
+* **Primary 5 & 6 (PSLE SEAB Code 0001):**
+    * *Structure:* 5 marks (Booklet A standard) or 8 marks (School EOY standard). All 1m each.
+    * *Focus:* Deep inference. Why was an asterisk (*) used? Who is the target audience? What is the *main* purpose of the event? Which statement is True/False based on the fine print?
 
 ═══════════════════════════════════════════════════════════════
 SECTION 5: VISUAL PAYLOAD API & QUALITY CHECK

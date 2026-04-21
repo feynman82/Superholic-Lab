@@ -490,22 +490,22 @@ const EXAM_TEMPLATES = {
   // ── P6 ENGLISH (WA + PSLE 2026) ──
   'english-p6-wa1': {
     displayName: 'Primary 6 English — WA1', level: 'P6', subject: 'English', paperCode: 'WA1',
-    durationMinutes: 50, totalMarks: 37,
+    durationMinutes: 60, totalMarks: 47,
     sections: [
       { id: 'sec-b', label: 'Section A', title: 'Grammar & Vocab MCQ', instructions: 'Choose the correct answer.', questionType: 'mcq', topics: ['Grammar', 'Vocabulary'], questionCount: 7, marksPerQuestion: 1 },
       { id: 'sec-c', label: 'Section B', title: 'Grammar Cloze', instructions: 'Fill in the blanks.', questionType: 'cloze', topics: ['Cloze'], subTopics: ['Grammar'], questionCount: 10, marksPerQuestion: 1 },
       { id: 'sec-d', label: 'Section C', title: 'Editing', instructions: 'Correct the errors.', questionType: 'editing', topics: ['Editing'], questionCount: 10, marksPerQuestion: 1 },
-      { id: 'sec-e', label: 'Section D', title: 'Comprehension Open-Ended', instructions: 'Read the passage carefully.', questionType: 'comprehension', topics: ['Comprehension'], questionCount: 1, marksPerQuestion: 10 }
+      { id: 'sec-e', label: 'Section D', title: 'Comprehension Open-Ended', instructions: 'Read the passage carefully.', questionType: 'comprehension', topics: ['Comprehension'], questionCount: 1, marksPerQuestion: 20 }
     ]
   },
   'english-p6-wa2': {
     displayName: 'Primary 6 English — WA2', level: 'P6', subject: 'English', paperCode: 'WA2',
-    durationMinutes: 50, totalMarks: 37,
+    durationMinutes: 60, totalMarks: 47,
     sections: [
       { id: 'sec-b', label: 'Section A', title: 'Grammar & Vocab MCQ', instructions: 'Choose the correct answer.', questionType: 'mcq', topics: ['Grammar', 'Vocabulary'], questionCount: 12, marksPerQuestion: 1 },
       { id: 'sec-c', label: 'Section B', title: 'Editing', instructions: 'Correct the errors.', questionType: 'editing', topics: ['Editing'], questionCount: 10, marksPerQuestion: 1 },
       { id: 'sec-d', label: 'Section C', title: 'Synthesis', instructions: 'Rewrite the sentences.', questionType: 'short_ans', topics: ['Synthesis'], questionCount: 5, marksPerQuestion: 2 },
-      { id: 'sec-e', label: 'Section D', title: 'Comprehension Open-Ended', instructions: 'Read the passage carefully.', questionType: 'comprehension', topics: ['Comprehension'], questionCount: 1, marksPerQuestion: 10 }
+      { id: 'sec-e', label: 'Section D', title: 'Comprehension Open-Ended', instructions: 'Read the passage carefully.', questionType: 'comprehension', topics: ['Comprehension'], questionCount: 1, marksPerQuestion: 20 }
     ]
   },
 
