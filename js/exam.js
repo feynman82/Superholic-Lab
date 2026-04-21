@@ -442,13 +442,15 @@ window.initExamEngine = function() {
     clearInterval(state.timerInterval);
     state.timerInterval = setInterval(() => {
       if (state.timerSeconds > 0) state.timerSeconds--;
-      const el = document.getElementById('examTimer');
+      // 🚀 MASTERCLASS FIX: Target the header.js container and inject a styled badge
+      const el = document.getElementById('nav-timer-container');
       if (el) {
         const h = Math.floor(state.timerSeconds / 3600);
         const m = Math.floor((state.timerSeconds % 3600) / 60);
         const s = state.timerSeconds % 60;
-        el.innerText = h > 0 ? `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}` : `${m}:${s.toString().padStart(2, '0')}`;
-        if (state.timerSeconds < 300) el.style.color = 'var(--brand-error)';
+        const timeStr = h > 0 ? `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}` : `${m}:${s.toString().padStart(2, '0')}`;
+        el.innerHTML = `<div class="badge bg-elevated border border-light text-main font-bold shadow-sm" style="font-size: 1rem; padding: 6px 16px;">⏱ ${timeStr}</div>`;
+        if (state.timerSeconds < 300) el.querySelector('.badge').style.color = 'var(--brand-error)';
       }
     }, 1000);
   }
@@ -511,12 +513,9 @@ window.initExamEngine = function() {
     const paneMaxWidth = isSplitScreen ? '100%' : '680px';
 
     app.innerHTML = `
-      <div class="sticky top-[var(--navbar-h)] z-40 bg-surface border-b border-light w-full p-4 mb-6 shadow-sm flex justify-between items-center rounded-xl max-w-[1200px]">
-        <div>
-          <h2 class="font-display text-xl text-main m-0">${p.template.displayName || p.displayName}</h2>
-          <div class="text-sm text-muted">${p.template.totalMarks || p.totalMarks} Marks • ${p.template.durationMinutes || p.duration} mins</div>
-        </div>
-        <div class="text-2xl font-display font-bold text-main" id="examTimer">--:--</div>
+      <div class="sticky top-[var(--navbar-h)] z-40 bg-surface border-b border-light w-full p-4 mb-6 shadow-sm flex flex-col justify-center items-center text-center rounded-xl max-w-[1200px]">
+        <h2 class="font-display text-xl text-main m-0">${p.template.displayName || p.displayName}</h2>
+        <div class="text-sm text-muted mt-1">${p.template.totalMarks || p.totalMarks} Marks • ${p.template.durationMinutes || p.duration} mins</div>
       </div>
 
       <div class="flex flex-wrap gap-6 items-start w-full justify-center max-w-[1200px]">
@@ -803,15 +802,37 @@ window.initExamEngine = function() {
     
     const partsHtml = partsData.map((p, pIdx) => {
        const pLabel = p.label || `Q${pIdx + 1}`;
-       const saved = (state.answers[globalIdx] || {})[pLabel] || '';
+       const safeIdLabel = String(pLabel).replace(/[^a-zA-Z0-9]/g, '');
+       const savedObj = state.answers[globalIdx] || {};
        let inter = '';
        
        if (p.part_type === 'mcq') {
+          const saved = savedObj[pLabel] || '';
           inter = (p.options||[]).map((opt, i) => `<div class="mcq-opt hover-lift ${saved===opt?'is-sel':''}" onclick="window.selectCompMcq('${globalIdx}', '${pLabel}', ${i})"><span class="mcq-badge">${['A','B','C','D'][i]}</span><span>${esc(opt)}</span></div>`).join('');
+       } else if (p.part_type === 'referent' && Array.isArray(p.items)) {
+          const rows = p.items.map((item, i) => {
+             const saved = (savedObj[pLabel] || {})[`ref_${i}`] || '';
+             return `<tr><td class="p-3 border border-light font-medium">${esc(item.word)}</td><td class="p-3 border border-light"><input type="text" id="comp-${globalIdx}-${safeIdLabel}-ref_${i}" class="form-input w-full p-2" value="${esc(saved)}" onblur="window.saveAllAnswers()"></td></tr>`;
+          }).join('');
+          inter = `<table class="w-full text-left border-collapse mt-2 text-main bg-white rounded-lg overflow-hidden shadow-sm"><thead><tr><th class="p-3 border border-light bg-surface font-bold text-sm uppercase text-muted">Word from passage</th><th class="p-3 border border-light bg-surface font-bold text-sm uppercase text-muted">What it refers to</th></tr></thead><tbody>${rows}</tbody></table>`;
+       } else if (p.part_type === 'true_false' && Array.isArray(p.items)) {
+          const rows = p.items.map((item, i) => {
+             const savedAns = (savedObj[pLabel] || {})[`tf_${i}_ans`] || '';
+             const savedRsn = (savedObj[pLabel] || {})[`tf_${i}_rsn`] || '';
+             return `<tr><td class="p-3 border border-light font-medium text-base leading-relaxed">${esc(item.statement)}</td><td class="p-3 border border-light"><select id="comp-${globalIdx}-${safeIdLabel}-tf_${i}_ans" class="form-input w-full p-2 mb-2" onchange="window.saveAllAnswers()"><option value="" disabled ${!savedAns?'selected':''}>Select...</option><option value="True" ${savedAns==='True'?'selected':''}>True</option><option value="False" ${savedAns==='False'?'selected':''}>False</option></select><input type="text" id="comp-${globalIdx}-${safeIdLabel}-tf_${i}_rsn" class="form-input w-full p-2 text-sm" placeholder="Reason..." value="${esc(savedRsn)}" onblur="window.saveAllAnswers()"></td></tr>`;
+          }).join('');
+          inter = `<table class="w-full text-left border-collapse mt-2 text-main bg-white rounded-lg overflow-hidden shadow-sm"><thead><tr><th class="p-3 border border-light bg-surface font-bold text-sm uppercase text-muted">Statement</th><th class="p-3 border border-light bg-surface font-bold text-sm uppercase text-muted">True / False & Reason</th></tr></thead><tbody>${rows}</tbody></table>`;
+       } else if (p.part_type === 'sequencing' && Array.isArray(p.items)) {
+          const rows = p.items.map((item, i) => {
+             const saved = (savedObj[pLabel] || {})[`seq_${i}`] || '';
+             return `<div class="flex items-center gap-4 mb-3 p-3 bg-white border border-light rounded-lg shadow-sm"><input type="number" id="comp-${globalIdx}-${safeIdLabel}-seq_${i}" class="form-input p-2 w-16 text-center font-bold text-lg" min="1" max="${p.items.length}" value="${esc(saved)}" onblur="window.saveAllAnswers()"><span class="font-medium text-base leading-relaxed">${esc(item)}</span></div>`;
+          }).join('');
+          inter = `<div class="mt-2">${rows}</div>`;
        } else {
-          inter = `<textarea id="comp-${globalIdx}-${pIdx}" class="form-input w-full p-4 text-lg border-2 border-slate-200 focus:border-brand-sage rounded-xl" rows="3" placeholder="Type answer..." onblur="window.saveAllAnswers()">${esc(saved)}</textarea>`;
+          const saved = savedObj[pLabel] || '';
+          inter = `<textarea id="comp-${globalIdx}-${safeIdLabel}" class="form-input w-full p-4 text-lg border-2 border-slate-200 focus:border-brand-sage rounded-xl" rows="3" placeholder="Type answer..." onblur="window.saveAllAnswers()">${esc(saved)}</textarea>`;
        }
-       return `<div class="mb-6"><div class="font-display text-xl text-brand-sage mb-2">${pLabel}</div><div class="mb-3 text-main font-medium leading-relaxed">${esc(p.question)}</div>${inter}</div>`;
+       return `<div class="mb-8"><div class="flex items-center gap-3 mb-3"><span class="font-display text-xl text-main font-bold" style="color: var(--english-colour);">${pLabel}</span><span class="badge badge-info text-xs">${p.marks || 1} mark${(p.marks||1) !== 1 ? 's' : ''}</span></div><div class="mb-4 text-main font-medium leading-relaxed">${esc(p.question)}</div>${inter}</div>`;
     }).join('');
 
     return `
@@ -932,10 +953,36 @@ window.initExamEngine = function() {
        let pData = [];
        try { pData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
        if (!state.answers[globalIdx]) state.answers[globalIdx] = {};
+       
        pData.forEach((p, i) => {
-         if (p.part_type !== 'mcq') {
-           const el = document.getElementById(`comp-${globalIdx}-${i}`);
-           if (el) state.answers[globalIdx][p.label || `Q${i+1}`] = el.value;
+         const pLabel = p.label || `Q${i + 1}`;
+         const safeIdLabel = String(pLabel).replace(/[^a-zA-Z0-9]/g, '');
+         
+         if (p.part_type === 'mcq') {
+             // MCQ is handled instantly by selectCompMcq
+         } else if (p.part_type === 'referent' && Array.isArray(p.items)) {
+             if (!state.answers[globalIdx][pLabel]) state.answers[globalIdx][pLabel] = {};
+             p.items.forEach((_, itemIdx) => {
+                 const el = document.getElementById(`comp-${globalIdx}-${safeIdLabel}-ref_${itemIdx}`);
+                 if (el) state.answers[globalIdx][pLabel][`ref_${itemIdx}`] = el.value;
+             });
+         } else if (p.part_type === 'true_false' && Array.isArray(p.items)) {
+             if (!state.answers[globalIdx][pLabel]) state.answers[globalIdx][pLabel] = {};
+             p.items.forEach((_, itemIdx) => {
+                 const elAns = document.getElementById(`comp-${globalIdx}-${safeIdLabel}-tf_${itemIdx}_ans`);
+                 const elRsn = document.getElementById(`comp-${globalIdx}-${safeIdLabel}-tf_${itemIdx}_rsn`);
+                 if (elAns) state.answers[globalIdx][pLabel][`tf_${itemIdx}_ans`] = elAns.value;
+                 if (elRsn) state.answers[globalIdx][pLabel][`tf_${itemIdx}_rsn`] = elRsn.value;
+             });
+         } else if (p.part_type === 'sequencing' && Array.isArray(p.items)) {
+             if (!state.answers[globalIdx][pLabel]) state.answers[globalIdx][pLabel] = {};
+             p.items.forEach((_, itemIdx) => {
+                 const el = document.getElementById(`comp-${globalIdx}-${safeIdLabel}-seq_${itemIdx}`);
+                 if (el) state.answers[globalIdx][pLabel][`seq_${itemIdx}`] = el.value;
+             });
+         } else {
+             const el = document.getElementById(`comp-${globalIdx}-${safeIdLabel}`);
+             if (el) state.answers[globalIdx][pLabel] = el.value;
          }
        });
     }
