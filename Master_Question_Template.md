@@ -133,15 +133,25 @@ Used for Booklet B Science conceptual explanations.
 ---------------------------------------------------------------
 5. TYPE: `cloze` (English)
 ---------------------------------------------------------------
-**FOR GRAMMAR CLOZE (Dropdowns):**
-- `topic`: "Grammar Cloze"
-- `passage`: Continuous text with embedded `[1]`, `[2]`.
-- `blanks`: `[{"number": 1, "options": ["He", "She", "It"], "correct_answer": "He", "explanation": "..."}]`
+For all cloze formats, `topic` MUST be "Cloze". You MUST specify the `sub_topic` as "Grammar", "Vocabulary", or "Comprehension". The `passage` must contain embedded blanks like `[1]`, `[2]`.
 
-**FOR COMPREHENSION CLOZE (Free-Text Typing):**
-- `topic`: "Comprehension Cloze"
-- `passage`: Continuous text with embedded `[1]`, `[2]`.
-- `blanks`: `[{"number": 1, "correct_answer": "because", "accept_also": ["as"], "explanation": "..."}]` (Note: `options` is OMITTED).
+**SUB-TOPIC: Grammar (Shared Word Bank)**
+- `blanks` rules: You must create a shared Word Bank (Correct Answers + Distractors). You MUST inject this exact same full array into the `options` key of **every single blank**.
+- *Lower Block (P1-P4):* Passage: 60-120 words. Blanks: 5 to 8. Word Bank: Total blanks + 2 distractors.
+- *Upper Block (P5-P6):* Passage: 150-200 words. Blanks: EXACTLY 10. Word Bank: 15 words total (10 correct + 5 distractors).
+- *Format:* `[{"number": 1, "options": ["is", "are", "was", "were", ...all 15 words], "correct_answer": "is", "explanation": "..."}]`
+
+**SUB-TOPIC: Vocabulary (Localized Dropdowns)**
+- `blanks` rules: Do NOT use a shared word bank. Provide EXACTLY 4 specific options per blank.
+- *Lower Block (P1-P4):* Passage: 80-120 words. Blanks: 4 to 5. 
+- *Upper Block (P5-P6):* Passage: 120-150 words. Blanks: EXACTLY 5.
+- *Format:* `[{"number": 1, "options": ["scurried", "strolled", "sprinted", "meandered"], "correct_answer": "sprinted", "explanation": "..."}]`
+
+**SUB-TOPIC: Comprehension (Free-Text Typing)**
+- `blanks` rules: You MUST entirely OMIT the `options` key. This forces a free-text input box.
+- *Lower Block (P1-P4):* Passage: 100-150 words. Blanks: 5 to 8.
+- *Upper Block (P5-P6):* Passage: 200-250 words. Blanks: EXACTLY 15.
+- *Format:* `[{"number": 1, "correct_answer": "because", "accept_also": ["as", "since"], "explanation": "..."}]`
 
 ---------------------------------------------------------------
 6. TYPE: `editing` (English)
