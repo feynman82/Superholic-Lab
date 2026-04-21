@@ -556,6 +556,22 @@ async function generateQuest(db, session, student, topic, subject, score, attemp
   btnEl.disabled     = true;
   btnEl.textContent  = 'Generating…';
 
+  // 🚀 UI POLISH: Inject Skeleton Loader 
+  const questMapContainer = document.getElementById('quest-map-container') || document.querySelector('.quest-container');
+  if (questMapContainer) {
+    questMapContainer.innerHTML = `
+      <div class="card p-6 border-sage animate-pulse">
+        <div class="h-6 bg-light rounded w-1/3 mb-6"></div>
+        <div class="flex flex-col gap-4">
+          <div class="h-16 bg-light rounded w-full"></div>
+          <div class="h-16 bg-light rounded w-full"></div>
+          <div class="h-16 bg-light rounded w-full"></div>
+        </div>
+      </div>
+    `;
+    questMapContainer.style.display = 'block';
+  }
+
   try {
     const levelSlug = (student.level || 'primary-4').toLowerCase().replace(/\s+/g, '-');
 
