@@ -182,7 +182,43 @@
     messageQueue = [];
 
     history.forEach(msg => msg.image = null);
+
+    // DEEP TECH ENGINE: Inject Cognitive Diagnostic Context (Runs once per session)
+    if (currentStudentId && !history.some(m => m.role === 'system' && m.content.includes('[Diagnostic Alert]'))) {
+      try {
+        const db = await getSupabase();
+        // Dynamic import of the weakness engine
+        const { runCognitiveDiagnosis } = await import('../js/analyze-weakness.js');
+        const diagnostic = await runCognitiveDiagnosis(db, currentStudentId, currentSubjectContext);
+        
+        if (diagnostic) {
+          history.push({ 
+            role: 'system', 
+            content: `[Diagnostic Alert] The engine has detected the student's root weakness is ${diagnostic.identified_weakness} with a mastery score of ${diagnostic.mastery_score}. Their specific failed skills are: ${diagnostic.failed_skills.join(', ')}. If they ask for help, guide them towards mastering these prerequisites first.` 
+          });
+        }
+      } catch (err) {
+        console.error('Failed to load cognitive diagnostic engine:', err);
+      }
+    }
+
     history.push({ role: 'user', content: combinedText, image: lastImage });
+
+    // AI LOGGING: Store the user's combined batched prompt
+    if (currentStudentId) {
+      try {
+        const db = await getSupabase(); 
+        await db.from('ai_tutor_logs').insert([{
+          student_id: currentStudentId,
+          role: 'user',
+          content: combinedText,
+          subject: currentSubjectContext,
+          topic: currentTopicContext
+        }]);
+      } catch (err) {
+        console.error('Failed to log user tutor interaction:', err);
+      }
+    }
 
     try {
       const res = await fetch('/api/chat', {
@@ -210,6 +246,22 @@
       } else {
         appendBubble('tutor', data.reply);
         history.push({ role: 'assistant', content: data.reply });
+        
+        // AI LOGGING: Store Miss Wena's final response
+        if (currentStudentId) {
+          try {
+            const db = await getSupabase(); 
+            await db.from('ai_tutor_logs').insert([{
+              student_id: currentStudentId,
+              role: 'assistant',
+              content: data.reply,
+              subject: currentSubjectContext,
+              topic: currentTopicContext
+            }]);
+          } catch (err) {
+            console.error('Failed to log assistant tutor interaction:', err);
+          }
+        }
         
         if (saveBtn && history.filter(m => m.role === 'user').length >= 1) {
           saveBtn.classList.remove('hidden');

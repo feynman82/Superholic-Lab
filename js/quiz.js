@@ -1373,6 +1373,8 @@ function buildClozeUI(q) {
            student_id:      studentId,
            question_text:   (q.question_text || '').slice(0, 500),
            topic:           q.topic || primaryTopic,
+           sub_topic:       q.sub_topic || null,
+           cognitive_skill: q.cognitive_skill || null,
            difficulty:      q.difficulty || 'standard',
            correct:         isCorrect,
            answer_chosen:   String(ans || '').slice(0, 200),
