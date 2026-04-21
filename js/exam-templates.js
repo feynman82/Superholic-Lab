@@ -490,21 +490,21 @@ const EXAM_TEMPLATES = {
   // ── P6 ENGLISH (WA + PSLE 2026) ──
   'english-p6-wa1': {
     displayName: 'Primary 6 English — WA1', level: 'P6', subject: 'English', paperCode: 'WA1',
-    durationMinutes: 60, totalMarks: 47,
+    durationMinutes: 50, totalMarks: 47,
     sections: [
       { id: 'sec-b', label: 'Section A', title: 'Grammar & Vocab MCQ', instructions: 'Choose the correct answer.', questionType: 'mcq', topics: ['Grammar', 'Vocabulary'], questionCount: 7, marksPerQuestion: 1 },
-      { id: 'sec-c', label: 'Section B', title: 'Grammar Cloze', instructions: 'Fill in the blanks.', questionType: 'cloze', topics: ['Cloze'], subTopics: ['Grammar'], questionCount: 10, marksPerQuestion: 1 },
-      { id: 'sec-d', label: 'Section C', title: 'Editing', instructions: 'Correct the errors.', questionType: 'editing', topics: ['Editing'], questionCount: 10, marksPerQuestion: 1 },
+      { id: 'sec-c', label: 'Section B', title: 'Grammar Cloze', instructions: 'Fill in the blanks.', questionType: 'cloze', topics: ['Cloze'], subTopics: ['Grammar'], questionCount: 1, marksPerQuestion: 10 },
+      { id: 'sec-d', label: 'Section C', title: 'Editing', instructions: 'Correct the errors.', questionType: 'editing', topics: ['Editing'], questionCount: 1, marksPerQuestion: 10 },
       { id: 'sec-e', label: 'Section D', title: 'Comprehension Open-Ended', instructions: 'Read the passage carefully.', questionType: 'comprehension', topics: ['Comprehension'], questionCount: 1, marksPerQuestion: 20 }
     ]
   },
   'english-p6-wa2': {
     displayName: 'Primary 6 English — WA2', level: 'P6', subject: 'English', paperCode: 'WA2',
-    durationMinutes: 60, totalMarks: 47,
+    durationMinutes: 60, totalMarks: 62,
     sections: [
       { id: 'sec-b', label: 'Section A', title: 'Grammar & Vocab MCQ', instructions: 'Choose the correct answer.', questionType: 'mcq', topics: ['Grammar', 'Vocabulary'], questionCount: 12, marksPerQuestion: 1 },
-      { id: 'sec-c', label: 'Section B', title: 'Editing', instructions: 'Correct the errors.', questionType: 'editing', topics: ['Editing'], questionCount: 10, marksPerQuestion: 1 },
-      { id: 'sec-d', label: 'Section C', title: 'Synthesis', instructions: 'Rewrite the sentences.', questionType: 'short_ans', topics: ['Synthesis'], questionCount: 5, marksPerQuestion: 2 },
+      { id: 'sec-c', label: 'Section B', title: 'Editing', instructions: 'Correct the errors.', questionType: 'editing', topics: ['Editing'], questionCount: 1, marksPerQuestion: 10 },
+      { id: 'sec-d', label: 'Section C', title: 'Synthesis', instructions: 'Rewrite the sentences.', questionType: 'short_ans', topics: ['Synthesis'], questionCount: 2, marksPerQuestion: 10 },
       { id: 'sec-e', label: 'Section D', title: 'Comprehension Open-Ended', instructions: 'Read the passage carefully.', questionType: 'comprehension', topics: ['Comprehension'], questionCount: 1, marksPerQuestion: 20 }
     ]
   },
@@ -517,15 +517,15 @@ const EXAM_TEMPLATES = {
     displayName: 'PSLE English Language — Paper 2', level: 'P6', subject: 'English', paperCode: 'PSLE',
     durationMinutes: 110, totalMarks: 90,
     sections: [
-      // ── Booklet A (25 marks) ──
-      { id: 'bka-grammar',   label: 'Booklet A', title: 'Grammar',               instructions: 'Fill in each blank with a suitable word.',       questionType: 'cloze',       topics: ['Cloze'], subTopics: ['Grammar'],        questionCount: 10, marksPerQuestion: 1 },
+      // ── Booklet A (30 marks) ──
+      { id: 'bka-grammar',   label: 'Booklet A', title: 'Grammar',               instructions: 'Fill in each blank with a suitable word.',       questionType: 'cloze',       topics: ['Cloze'], subTopics: ['Grammar'],        questionCount: 1, marksPerQuestion: 10 },
       { id: 'bka-vocab',     label: 'Booklet A', title: 'Vocabulary MCQ',         instructions: 'Choose the correct answer.',                     questionType: 'mcq',         topics: ['Vocabulary'],                           questionCount: 5,  marksPerQuestion: 1 },
-      { id: 'bka-vocabcloze',label: 'Booklet A', title: 'Vocabulary Cloze',       instructions: 'Choose the most suitable word for each blank.',   questionType: 'cloze',       topics: ['Cloze'], subTopics: ['Vocabulary'],      questionCount: 5,  marksPerQuestion: 1 },
+      { id: 'bka-vocabcloze',label: 'Booklet A', title: 'Vocabulary Cloze',       instructions: 'Choose the most suitable word for each blank.',   questionType: 'cloze',       topics: ['Cloze'], subTopics: ['Vocabulary'],      questionCount: 2,  marksPerQuestion: 10 },
       { id: 'bka-visual',    label: 'Booklet A', title: 'Visual Text Comprehension', instructions: 'Study the visual text and answer the questions.', questionType: 'visual_text', topics: ['Comprehension'],                     questionCount: 1,  marksPerQuestion: 5 },
-      // ── Booklet B (65 marks) ──
-      { id: 'bkb-gramcloze', label: 'Booklet B', title: 'Grammar Cloze',          instructions: 'Fill in each blank with a suitable word.',       questionType: 'cloze',       topics: ['Cloze'], subTopics: ['Grammar'],        questionCount: 10, marksPerQuestion: 1 },
-      { id: 'bkb-editing',   label: 'Booklet B', title: 'Editing',                instructions: 'Correct the spelling and grammar errors.',        questionType: 'editing',     topics: ['Editing'],                              questionCount: 10, marksPerQuestion: 1 },
-      { id: 'bkb-compcloze', label: 'Booklet B', title: 'Comprehension Cloze',    instructions: 'Fill in each blank with a suitable word.',       questionType: 'cloze',       topics: ['Cloze'], subTopics: ['Comprehension'],  questionCount: 15, marksPerQuestion: 1 },
+      // ── Booklet B (60 marks) ──
+      { id: 'bkb-gramcloze', label: 'Booklet B', title: 'Grammar Cloze',          instructions: 'Fill in each blank with a suitable word.',       questionType: 'cloze',       topics: ['Cloze'], subTopics: ['Grammar'],        questionCount: 1, marksPerQuestion: 10 },
+      { id: 'bkb-editing',   label: 'Booklet B', title: 'Editing',                instructions: 'Correct the spelling and grammar errors.',        questionType: 'editing',     topics: ['Editing'],                              questionCount: 1, marksPerQuestion: 10 },
+      { id: 'bkb-compcloze', label: 'Booklet B', title: 'Comprehension Cloze',    instructions: 'Fill in each blank with a suitable word.',       questionType: 'cloze',       topics: ['Cloze'], subTopics: ['Comprehension'],  questionCount: 1, marksPerQuestion: 10 },
       { id: 'bkb-synthesis', label: 'Booklet B', title: 'Synthesis & Transformation', instructions: 'Rewrite the sentences as instructed.',       questionType: 'short_ans',   topics: ['Synthesis'],                            questionCount: 5,  marksPerQuestion: 2 },
       { id: 'bkb-compoe',    label: 'Booklet B', title: 'Comprehension Open-Ended', instructions: 'Read the passage carefully and answer the questions.', questionType: 'comprehension', topics: ['Comprehension'],                questionCount: 1,  marksPerQuestion: 20 },
     ]
