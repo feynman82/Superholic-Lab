@@ -47,8 +47,8 @@ You may only populate the following columns in your SQL output. Do not invent ne
 - `visual_payload`: JSON Object
 - `instructions`: String
 - `accept_also`: JSON Array
-- `sub_topic`: A specific subset of the topic (e.g., 'Improper Fractions').
-- `cognitive_skill`: A short phrase describing the exact mental model tested (e.g., 'Linking Fractions to Ratios').
+- `sub_topic`: A specific subset of the topic (e.g., 'Improper Fractions', 'Model Drawing', 'Inference').
+- `cognitive_skill`: MUST be strictly chosen from this exact list: 'Factual Recall', 'Conceptual Understanding', 'Routine Application', 'Non-Routine / Heuristics', 'Inferential Reasoning', or 'Synthesis & Evaluation'. Do not invent new skills. Cannot be null.
 
 ═══════════════════════════════════════════════════════════════
 SECTION 3: THE UNIFIED SYLLABUS MAP (TAXONOMY)

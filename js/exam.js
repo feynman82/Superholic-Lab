@@ -1082,8 +1082,8 @@ window.initExamEngine = function() {
       const totalMinutes = state.paper.duration || state.paper.template?.durationMinutes || 60;
       const timeTaken = (totalMinutes * 60) - state.timerSeconds;
       
-      // 🚀 MASTERCLASS: Restored exact exam_results schema for progress.html compatibility
-      await sb.from('exam_results').insert({
+      // 1. Save Aggregated Exam Result and retrieve the ID
+      const { data: examData, error: examError } = await sb.from('exam_results').insert({
         student_id: state.studentId, 
         subject: state.subjectKey === 'mathematics' ? 'Mathematics' : state.subjectKey, 
         level: state.level,
@@ -1093,7 +1093,33 @@ window.initExamEngine = function() {
         questions_attempted: Object.keys(state.results).length, 
         time_taken: timeTaken >= 0 ? timeTaken : null,
         completed_at: new Date().toISOString() 
+      }).select('id').single();
+
+      if (examError) throw examError;
+
+      // 2. 🚀 DEEP TECH ENGINE: Log individual question attempts
+      const qAttempts = state.allQs.map((q) => {
+        const globalIdx = q.globalIdx;
+        const result = state.results[globalIdx];
+        const ans = state.answers[globalIdx];
+        
+        return {
+           exam_result_id: examData?.id || null,
+           student_id:     state.studentId,
+           question_text:  (q.question_text || '').slice(0, 500),
+           topic:          q.topic || 'mixed',
+           sub_topic:      q.sub_topic || null,
+           cognitive_skill: q.cognitive_skill || null,
+           difficulty:     q.difficulty || 'standard',
+           correct:        result ? result.isCorrect : false,
+           answer_chosen:  String(ans || '').slice(0, 200),
+           correct_answer: String(q.correct_answer || ''),
+        };
       });
+
+      if (qAttempts.length > 0) {
+        await sb.from('question_attempts').insert(qAttempts);
+      }
       
     } catch (e) {
       console.error('Failed to save exam result to Supabase:', e);
