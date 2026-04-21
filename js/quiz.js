@@ -1631,15 +1631,15 @@ function buildClozeUI(q) {
 
       unseenPool = shuffle(unseenPool);
 
-      // 🚀 MASTERCLASS: The Comprehension Interceptor
+      // 🚀 MASTERCLASS: The Comprehension & Passage Interceptors
+      const isUpperPrimary = dbLevel && (dbLevel.includes('5') || dbLevel.includes('6'));
+
       if (dbSubject.toLowerCase() === 'english language' && (dbTopic || '').toLowerCase() === 'comprehension') {
         let visualQs = unseenPool.filter(q => q.type === 'visual_text');
         let textQs = unseenPool.filter(q => q.type === 'comprehension');
         
         state.questions = [];
         // Per Constraints: P3 and P4 do NOT get Visual Text in Training Lab
-        const isUpperPrimary = dbLevel.includes('5') || dbLevel.includes('6');
-        
         if (isUpperPrimary && visualQs.length > 0) {
           state.questions.push(visualQs[0]);
           if (textQs.length > 0) state.questions.push(textQs[0]);
@@ -1647,6 +1647,9 @@ function buildClozeUI(q) {
           // Fallback / Junior Primary: Load 2 Text Comprehensions
           state.questions = textQs.slice(0, 2);
         }
+      } else if (type === 'cloze' || type === 'editing' || (dbTopic && (dbTopic.toLowerCase().includes('cloze') || dbTopic.toLowerCase().includes('editing')))) {
+        // 🚀 MASTERCLASS FIX: Limit passage-heavy questions so students are not overwhelmed
+        state.questions = unseenPool.slice(0, isUpperPrimary ? 2 : 3);
       } else {
         state.questions = unseenPool.slice(0, 10);
       }
