@@ -436,7 +436,8 @@ function buildClozeUI(q) {
         </div>`;
     }
 
-    let passage = esc(q.passage || '').replace(/\n/g, '<br>');
+    // 🚀 MASTERCLASS FIX: Safely restore HTML line breaks after escaping
+    let passage = esc(q.passage || '').replace(/\n/g, '<br>').replace(/&lt;br\s*\/?[&gt;]*>/gi, '<br>');
     
     blanks.forEach(b => {
       const num = b.id || b.number;
