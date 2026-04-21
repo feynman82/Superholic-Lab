@@ -432,7 +432,9 @@ function buildClozeUI(q) {
       blanks.forEach(b => (b.options || []).forEach(w => allWords.add(w)));
       
       if (allWords.size > 0) {
-        const wordBankList = [...allWords].sort().map((w, i) =>
+        // 🚀 MASTERCLASS FIX: Case-insensitive alphabetical sort prevents UI jumping and breaks AI patterns
+        const sortedWords = [...allWords].sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+        const wordBankList = sortedWords.map((w, i) =>
           `<span class="badge bg-surface border border-light text-main" style="font-size:0.9rem; padding: 6px 12px; font-weight: 500;">(${i+1}) ${esc(w)}</span>`
         ).join('');
         wordBankHtml = `
@@ -463,7 +465,9 @@ function buildClozeUI(q) {
         }
       } else {
         if (b.options && b.options.length > 0) {
-          const opts = (b.options || []).map(o =>
+          // 🚀 MASTERCLASS FIX: Sort dropdown options alphabetically to destroy predictable patterns
+          const sortedOpts = [...b.options].sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+          const opts = sortedOpts.map(o =>
             `<option value="${esc(o)}" ${saved === o ? 'selected' : ''}>${esc(o)}</option>`
           ).join('');
           inputHtml = `<select id="cloze-blank-${num}" class="cloze-select" onchange="window.saveInputState()" style="min-width: 100px;">

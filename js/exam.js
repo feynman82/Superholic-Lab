@@ -732,7 +732,9 @@ window.initExamEngine = function() {
        const allWords = new Set();
        blanks.forEach(b => (b.options || []).forEach(w => allWords.add(w)));
        if (allWords.size > 0) {
-         const wordBankList = [...allWords].sort().map((w, i) =>
+         // 🚀 MASTERCLASS FIX: Case-insensitive alphabetical sort
+         const sortedWords = [...allWords].sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+         const wordBankList = sortedWords.map((w, i) =>
            `<span class="badge bg-surface border border-light text-main" style="font-size:0.9rem; padding: 6px 12px; font-weight: 500;">(${i+1}) ${esc(w)}</span>`
          ).join('');
          wordBankHtml = `
@@ -748,7 +750,9 @@ window.initExamEngine = function() {
         const saved = (state.answers[globalIdx] || {})[num] || '';
         let inputHtml = '';
         if (b.options && b.options.length > 0) {
-           const opts = b.options.map(o => `<option value="${esc(o)}" ${saved===o?'selected':''}>${esc(o)}</option>`).join('');
+           // 🚀 MASTERCLASS FIX: Sort dropdown options alphabetically
+           const sortedOpts = [...b.options].sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+           const opts = sortedOpts.map(o => `<option value="${esc(o)}" ${saved===o?'selected':''}>${esc(o)}</option>`).join('');
            inputHtml = `<select id="inline-${globalIdx}-${num}" class="cloze-select" style="min-width:100px;" onchange="window.saveAllAnswers()"><option value="" disabled ${!saved?'selected':''}>Select...</option>${opts}</select>`;
         } else {
            inputHtml = `<input type="text" id="inline-${globalIdx}-${num}" class="editing-input" placeholder="type here" value="${esc(saved)}" onblur="window.saveAllAnswers()">`;
