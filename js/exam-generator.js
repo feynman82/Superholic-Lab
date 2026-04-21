@@ -137,7 +137,7 @@ const _questionCache = {};
  * @param {number} count
  * @returns {Promise<Array>} array of question objects
  */
-async function pickQuestions(subject, level, questionType, count) {
+async function pickQuestions(subject, level, questionType, count, options = {}) {
   try {
     // Dynamically import Supabase client (assuming it's available globally via window)
     const db = typeof window !== 'undefined' && typeof window.getSupabase === 'function' 
@@ -154,15 +154,24 @@ async function pickQuestions(subject, level, questionType, count) {
 
     let dbLevel = level.replace('primary-', 'Primary ');
 
-    // Query the database directly for the exact type and limit we need
-    // Fetch a large pool of questions without SQL random() to prevent 400 errors
-    const { data: pool, error } = await db
+    // Build the base query object first without awaiting
+    let query = db
       .from('question_bank')
       .select('*')
       .ilike('subject', dbSubject)
       .ilike('level', dbLevel)
-      .eq('type', questionType)
-      .limit(300); // Grab up to 300 questions to choose from
+      .eq('type', questionType);
+
+    // If the template section specifies topics/subTopics, append filters
+    if (options.subTopics && options.subTopics.length > 0) {
+      query = query.in('sub_topic', options.subTopics);
+    }
+    if (options.topics && options.topics.length > 0) {
+      query = query.in('topic', options.topics);
+    }
+
+    // Fetch a large pool of questions without SQL random() to prevent 400 errors
+    const { data: pool, error } = await query.limit(300);
 
     if (error) throw error;
 
@@ -170,10 +179,7 @@ async function pickQuestions(subject, level, questionType, count) {
       console.warn(`[exam-generator] No questions of type '${questionType}' found in database for ${subject} ${level}.`);
       return [];
     }
-    // If the template section specifies subTopics, filter by sub_topic
-    if (options && options.subTopics && options.subTopics.length > 0) {
-      query = query.in('sub_topic', options.subTopics);
-    }
+    
     // Masterclass Fix: Shuffle the pool in JavaScript and slice the exact count needed
     const questions = shuffleArray(pool).slice(0, count);
 
