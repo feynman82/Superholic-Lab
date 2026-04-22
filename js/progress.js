@@ -160,6 +160,34 @@ async function init() {
     const { data: examResults } = await db.from('exam_results').select('id, subject, level, exam_type, score, total_marks, questions_attempted, time_taken, completed_at').eq('student_id', student.id).order('completed_at', { ascending: false }).limit(20);
     const activeQuest = await loadActiveQuest(db, student.id);
 
+    // ── 🚀 Fetch Question Attempts for Cognitive Skill (AO) Analysis ──
+    const { data: qAttempts } = await db.from('question_attempts')
+      .select('cognitive_skill, correct, marks_earned, marks_total')
+      .eq('student_id', student.id)
+      .order('created_at', { ascending: false })
+      .limit(500);
+
+    const aoStats = {
+      AO1: { earned: 0, total: 0, label: 'AO1 (Recall & Concepts)' },
+      AO2: { earned: 0, total: 0, label: 'AO2 (Application)' },
+      AO3: { earned: 0, total: 0, label: 'AO3 (Heuristics & Reasoning)' }
+    };
+
+    (qAttempts || []).forEach(att => {
+      if (!att.cognitive_skill) return;
+      let ao = null;
+      if (['Factual Recall', 'Conceptual Understanding'].includes(att.cognitive_skill)) ao = 'AO1';
+      else if (['Routine Application', 'Non-Routine / Heuristics'].includes(att.cognitive_skill)) ao = 'AO2';
+      else if (['Inferential Reasoning', 'Synthesis & Evaluation', 'HOTS'].includes(att.cognitive_skill)) ao = 'AO3';
+      
+      if (ao) {
+        let possible = att.marks_total || 1;
+        let earned = att.marks_earned !== null ? att.marks_earned : (att.correct ? possible : 0);
+        aoStats[ao].total += possible;
+        aoStats[ao].earned += earned;
+      }
+    });
+
     // ── Fetch Study Notes for Revision Vault ──
     const { data: studyNotes } = await db.from('study_notes').select('id, title, subject, topic, created_at, content_html, is_read').eq('student_id', student.id).order('created_at', { ascending: false }).limit(10);
     if (studyNotes && studyNotes.length > 0) {
@@ -240,6 +268,7 @@ async function init() {
 
     // Fire the new Action Plan renderer
     renderActionPlanUI(totalSeconds, questionsMastered, overallPct, advancedSubjectStats, weakTopics, student, session, activeQuest, allActivity, improvedText);
+    insertAOMasteryUI(aoStats);
 
     // Fire legacy bottom history renderers
     if (activeQuest) renderQuestMap(activeQuest, db);
@@ -341,6 +370,53 @@ window.openVaultNote = async (noteId) => {
     }
   }
 };
+
+// ── COGNITIVE SKILL (AO) UI INJECTION ──
+function insertAOMasteryUI(aoStats) {
+  const weakAreasContainer = document.getElementById('areas-of-weakness-list');
+  if (!weakAreasContainer) return;
+  
+  const aoContainer = document.createElement('div');
+  aoContainer.id = 'ao-mastery-container';
+  aoContainer.style.marginBottom = 'var(--space-8)';
+  
+  const aoHtml = Object.keys(aoStats).map(key => {
+    const stat = aoStats[key];
+    const pct = stat.total > 0 ? Math.round((stat.earned / stat.total) * 100) : 0;
+    if (pct === 0 && stat.total === 0) return '';
+    const color = pct >= 75 ? 'var(--mint)' : pct >= 50 ? 'var(--amber)' : 'var(--danger)';
+    return `
+      <div style="margin-bottom: var(--space-4);">
+        <div style="display:flex; justify-content:space-between; margin-bottom: 6px; font-size: 0.95rem;">
+          <span style="font-weight: 600; color: var(--text-main);">${stat.label}</span>
+          <span style="font-weight: 700; color: ${color};">${pct}%</span>
+        </div>
+        <div style="height: 8px; background: var(--glass-border); border-radius: 4px; overflow: hidden;">
+          <div style="height: 100%; width: ${pct}%; background: ${color}; transition: width 1s ease-out;"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  if (aoHtml) {
+    aoContainer.innerHTML = `
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="font-display text-2xl text-main m-0 uppercase">Skill Mastery</h2>
+        <span class="badge" style="background: rgba(81,97,94,0.1); color: var(--sage-dark);">MOE Analytics</span>
+      </div>
+      <div class="card p-6 bg-surface border border-light shadow-sm">
+        ${aoHtml}
+        <div class="mt-4 pt-3 border-t border-light flex gap-2 items-start">
+          <span style="font-size: 1.2rem;">🧠</span>
+          <p class="text-xs text-muted mb-0" style="line-height: 1.5;">
+            <strong>AO1</strong> (Concepts) is the foundation. <strong>AO2</strong> (Application) tests standard problem-solving. <strong>AO3</strong> (Reasoning) tests complex heuristics and synthesis.
+          </p>
+        </div>
+      </div>
+    `;
+    weakAreasContainer.parentNode.insertBefore(aoContainer, weakAreasContainer.previousElementSibling);
+  }
+}
 
 // ── Quest: load ────────────────────────────────────────────────────────────────
 

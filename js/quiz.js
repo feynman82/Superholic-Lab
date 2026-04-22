@@ -1534,13 +1534,24 @@ function buildClozeUI(q) {
 
       const qAttempts = state.questions.map(q => {
          const r = state.resultsObj[q.id] || {};
+         
+         // 🚀 MASTERCLASS: Capture precise marks and cognitive skills for BKT Engine
+         let marksTotal = q.marks || 1;
+         if (q.type === 'cloze' || q.type === 'editing') {
+           try { marksTotal = typeof q.blanks === 'string' ? JSON.parse(q.blanks).length : (q.blanks.length || 1); } catch(e){}
+         }
+         let marksEarned = r.isCorrect ? marksTotal : 0;
+
          return {
             quiz_attempt_id: attempt.id,
             student_id:      state.studentId,
             question_text:   (q.question_text || q.passage || 'Diagram/Passage').slice(0, 500),
             topic:           q.topic || 'Quiz',
+            cognitive_skill: q.cognitive_skill || null,
             difficulty:      q.difficulty || 'standard',
             correct:         !!r.isCorrect,
+            marks_earned:    marksEarned,
+            marks_total:     marksTotal,
             answer_chosen:   String(r.studentAns || '').slice(0, 200),
             correct_answer:  String(r.correctAns || q.correct_answer || 'See Solution')
          };
