@@ -466,6 +466,9 @@ window.initExamEngine = function() {
     const totalQs = state.allQs.length;
     const globalIdx = q.globalIdx;
 
+    // 🚀 MASTERCLASS FIX: Dynamically expand the parent container for the Focus Room so split-screen isn't squished
+    if (app) app.style.maxWidth = '1440px';
+
     // 🚀 MASTERCLASS: The Focus Room Side Navigator Map
     const navPips = state.allQs.map((_, i) => {
       let classes = 'nav-pip hover-lift';
@@ -518,12 +521,12 @@ window.initExamEngine = function() {
     const paneMaxWidth = isSplitScreen ? '100%' : '680px';
 
     app.innerHTML = `
-      <div class="sticky top-[var(--navbar-h)] z-40 bg-surface border-b border-light w-full p-4 mb-6 shadow-sm flex flex-col justify-center items-center text-center rounded-xl max-w-[1200px]">
+      <div class="sticky top-[var(--navbar-h)] z-40 bg-surface border-b border-light w-full p-4 mb-6 shadow-sm flex flex-col justify-center items-center text-center rounded-xl max-w-[1440px]">
         <h2 class="font-display text-xl text-main m-0">${p.template.displayName || p.displayName}</h2>
         <div class="text-sm text-muted mt-1">${p.template.totalMarks || p.totalMarks} Marks • ${p.template.durationMinutes || p.duration} mins</div>
       </div>
 
-      <div class="flex flex-wrap gap-6 items-start w-full justify-center max-w-[1200px]">
+      <div class="flex flex-wrap gap-6 items-start w-full justify-center max-w-[1440px]">
         <div class="flex flex-col" style="flex: 1 1 300px; max-width: ${paneMaxWidth}; width: 100%; transition: max-width 0.3s ease;">
           <div class="badge badge-info mb-4 self-start">${esc(q.sectionLabel || 'Exam')}</div>
           
@@ -835,20 +838,21 @@ window.initExamEngine = function() {
                 inter = `<div class="mt-4">${rows}</div>`;
              } else {
                 const saved = savedObj[pLabel] || '';
-                inter = `<textarea id="comp-${globalIdx}-${safeIdLabel}" class="form-input w-full p-5 text-lg border-2 border-slate-200 focus:border-brand-sage rounded-2xl shadow-sm transition-all" rows="4" placeholder="Type answer here..." onblur="window.saveAllAnswers()">${esc(saved)}</textarea>`;
+                 inter = `<textarea id="comp-${globalIdx}-${safeIdLabel}" class="form-input w-full p-4 text-lg border-2 border-slate-200 focus:border-brand-sage rounded-xl" rows="3" placeholder="Type answer..." onblur="window.saveAllAnswers()">${esc(saved)}</textarea>`;
              }
-             return `<div class="mb-8"><div class="flex items-center gap-3 mb-3"><span class="font-display text-xl text-main font-bold" style="color: var(--english-colour);">${pLabel}</span><span class="badge badge-info text-xs">${p.marks || 1} mark${(p.marks||1) !== 1 ? 's' : ''}</span></div><div class="mb-4 text-main font-medium leading-relaxed">${esc(p.question)}</div>${inter}</div>`;
-          }).join('');
+             // 🚀 MASTERCLASS FIX: Align question UI with quiz.js (dashed borders, proper spacing)
+              return `<div class="mb-6 pb-6 ${pIdx < partsData.length - 1 ? 'border-b border-light border-dashed' : ''}"><div class="flex items-center gap-3 mb-3"><span class="font-display text-xl text-main font-bold" style="color: var(--english-colour);">${pLabel}</span><span class="badge badge-info text-xs">${p.marks || 1} mark${(p.marks||1) !== 1 ? 's' : ''}</span></div>${p.question ? `<div class="text-lg text-main font-medium mb-4 leading-relaxed">${esc(p.question)}</div>` : ''}${inter}</div>`;
+            }).join('');
 
-          return `
-            <div class="flex flex-col lg:flex-row gap-6 comp-container">
-              <div class="lg:w-1/2 card p-6 text-lg leading-relaxed bg-surface comp-passage-pane">
-                 ${q.type === 'visual_text' && q.image_url ? `<img src="${q.image_url}" class="w-full rounded border border-light">` : esc(q.passage || '').replace(/\n/g, '<br><br>').replace(/&lt;br\s*\/?[&gt;]*>/gi, '<br>')}
+         return `
+             <div class="flex flex-col lg:flex-row gap-6 comp-container">
+               <div class="lg:w-1/2 card p-6 text-lg leading-relaxed bg-surface comp-passage-pane">
+                  ${q.type === 'visual_text' && q.image_url ? `<img src="${q.image_url}" class="w-full rounded border border-light">` : esc(q.passage || '').replace(/\n/g, '<br><br>').replace(/&lt;br\s*\/?[&gt;]*>/gi, '<br>')}
               </div>
-        <div class="lg:w-1/2 comp-questions-pane">${partsHtml}</div>
-      </div>
-    `;
-  }
+               <div class="lg:w-1/2 comp-questions-pane">${partsHtml}</div>
+              </div>
+          `;
+          }
 
   window.selectCompMcq = (globalIdx, pLabel, optIdx) => {
     window.saveAllAnswers();
