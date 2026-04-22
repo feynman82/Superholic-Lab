@@ -202,7 +202,6 @@ A Split-Screen format used for Comprehension Open-Ended (and sometimes Comprehen
     * *Part Types:* Mostly `mcq` to build confidence, ending with 1 or 2 simple `text_box` retrieval questions (e.g., "Where did Tom go?"). Do NOT use referent or sequencing.
 * **Primary 3 & 4 (Middle Block):**
     * *Passage:* 150-250 words. Introduced to descriptive paragraphs.
-    * *Structure (WA):* 10 marks total. Mix of 1m and 2m questions.
     * *Structure (EOY):* 16 marks total.
     * *Part Types:* `mcq`, `text_box` (direct retrieval and basic inference). Introduce basic `true_false` tables (without the reason column).
 * **Primary 5 & 6 (Upper Block / PSLE SEAB Code 0001):**
