@@ -830,11 +830,7 @@ window.initExamEngine = function() {
        } else if (p.part_type === 'sequencing' && Array.isArray(p.items)) {
           const rows = p.items.map((item, i) => {
              const saved = (savedObj[pLabel] || {})[`seq_${i}`] || '';
-             return `
-             <div class="flex items-center gap-4 bg-surface p-3 rounded-lg border border-light shadow-sm">
-              <input type="number" id="comp-${safeIdLabel}-seq${i}" class="form-input border-2 border-slate-200 rounded-lg focus:border-brand-sage text-2xl font-bold text-center" style="width: 60px; height: 60px; padding: 0;" min="1" max="3" value="${esc(savedWorking['seq'+i] || '')}" oninput="window.saveInputState ? window.saveInputState() : null">
-              <div class="font-medium text-main leading-relaxed text-lg">${esc(item)}</div>
-            </div>`;
+             return `<div class="flex items-center gap-4 mb-3 p-4 bg-white border border-light rounded-xl shadow-sm"><input type="number" id="comp-${globalIdx}-${safeIdLabel}-seq_${i}" class="form-input p-3 w-20 text-center font-bold text-xl text-brand-sage" min="1" max="${p.items.length}" value="${esc(saved)}" onblur="window.saveAllAnswers()"><span class="font-medium text-lg text-main leading-relaxed">${esc(item)}</span></div>`;
           }).join('');
           inter = `<div class="mt-4">${rows}</div>`;
        } else {
