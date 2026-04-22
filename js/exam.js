@@ -440,11 +440,12 @@ window.initExamEngine = function() {
   // ── TIMER LOGIC ──
   function startTimer() {
     clearInterval(state.timerInterval);
-    state.timerInterval = setInterval(() => {
+    
+    const updateTimer = () => {
       if (state.timerSeconds > 0) state.timerSeconds--;
-      // 🚀 MASTERCLASS FIX: Target the header.js container and inject a styled badge
       const el = document.getElementById('nav-timer-container');
       if (el) {
+        el.classList.remove('hidden'); // Force show if hidden by header.js
         const h = Math.floor(state.timerSeconds / 3600);
         const m = Math.floor((state.timerSeconds % 3600) / 60);
         const s = state.timerSeconds % 60;
@@ -452,7 +453,10 @@ window.initExamEngine = function() {
         el.innerHTML = `<div class="badge bg-elevated border border-light text-main font-bold shadow-sm" style="font-size: 1rem; padding: 6px 16px;">⏱ ${timeStr}</div>`;
         if (state.timerSeconds < 300) el.querySelector('.badge').style.color = 'var(--brand-error)';
       }
-    }, 1000);
+    };
+    
+    updateTimer(); // Trigger immediately
+    state.timerInterval = setInterval(updateTimer, 1000);
   }
 
   // ── 2. THE EXAM ENGINE (FOCUS ROOM + 3-TIER ROUTER) ──
@@ -622,7 +626,7 @@ window.initExamEngine = function() {
 
     return safeOptions.map((opt, i) => {
       const isSel = savedAns === opt;
-      return `<div class="mcq-opt${isSel?' is-sel':''}" onclick="window.selectExamMcq('${qIndex}', ${i})">
+      return `<div class="mcq-opt hover-lift ${isSel?' is-sel':''}" onclick="window.selectExamMcq('${qIndex}', ${i})">
         <span class="mcq-badge">${letters[i]}</span><span class="font-medium text-main">${esc(opt)}</span>
       </div>`;
     }).join('');
@@ -785,7 +789,7 @@ window.initExamEngine = function() {
   }
 
   function buildEditingUI(q, globalIdx) {
-     let passage = esc(q.passage || '').replace(/\n/g, '<br><br>').replace(/&lt;u&gt;/gi, '<u>').replace(/&lt;\/u&gt;/gi, '</u>');
+     let passage = esc(q.passage || '').replace(/\n/g, '<br><br>').replace(/&lt;u&gt;/gi, '<u>').replace(/&lt;\/u&gt;/gi, '</u>').replace(/&lt;br\s*\/?[&gt;]*>/gi, '<br>');
      const savedAns = state.answers[globalIdx] || {};
      
      passage = passage.replace(/\[(\d+)\]/g, (match, numStr) => {
@@ -832,13 +836,13 @@ window.initExamEngine = function() {
           const saved = savedObj[pLabel] || '';
           inter = `<textarea id="comp-${globalIdx}-${safeIdLabel}" class="form-input w-full p-4 text-lg border-2 border-slate-200 focus:border-brand-sage rounded-xl" rows="3" placeholder="Type answer..." onblur="window.saveAllAnswers()">${esc(saved)}</textarea>`;
        }
-       return `<div class="mb-8"><div class="flex items-center gap-3 mb-3"><span class="font-display text-xl text-main font-bold" style="color: var(--english-colour);">${pLabel}</span><span class="badge badge-info text-xs">${p.marks || 1} mark${(p.marks||1) !== 1 ? 's' : ''}</span></div><div class="mb-4 text-main font-medium leading-relaxed">${esc(p.question)}</div>${inter}</div>`;
+       return `<div class="mb-6 pb-6 ${pIdx < partsData.length - 1 ? 'border-b border-light border-dashed' : ''}"><div class="flex items-center gap-3 mb-3"><span class="font-display text-xl text-main font-bold" style="color: var(--english-colour);">${pLabel}</span><span class="badge badge-info text-xs">${p.marks || 1} mark${(p.marks||1) !== 1 ? 's' : ''}</span></div>${p.question ? `<div class="text-lg text-main font-medium mb-4 leading-relaxed">${esc(p.question)}</div>` : ''}${inter}</div>`;
     }).join('');
 
     return `
       <div class="flex flex-col lg:flex-row gap-6 comp-container">
         <div class="lg:w-1/2 card p-6 text-lg leading-relaxed bg-surface comp-passage-pane">
-           ${q.type === 'visual_text' && q.image_url ? `<img src="${q.image_url}" class="w-full rounded border border-light">` : esc(q.passage).replace(/\n/g, '<br><br>')}
+           ${q.type === 'visual_text' && q.image_url ? `<img src="${q.image_url}" class="w-full rounded border border-light">` : esc(q.passage || '').replace(/\n/g, '<br><br>').replace(/&lt;br\s*\/?[&gt;]*>/gi, '<br>')}
         </div>
         <div class="lg:w-1/2 comp-questions-pane">${partsHtml}</div>
       </div>
