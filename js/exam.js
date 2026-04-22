@@ -509,7 +509,8 @@ window.initExamEngine = function() {
          const instructions = q.instructions ? `<div class="text-lg text-main font-bold mb-4 leading-relaxed">${esc(q.instructions)}</div>` : '';
          qTextHtml = `<div class="text-lg text-main font-medium mb-4 leading-relaxed">${displayQuestion}<br><br></div>${instructions}`;
        } else {
-         qTextHtml = `<div class="text-lg text-main font-medium mb-4 leading-relaxed" style="white-space:pre-line;">${esc(q.question_text)}</div>`;
+         // 🚀 MASTERCLASS FIX: Safely parse <br> tags in standard questions
+         qTextHtml = `<div class="text-lg text-main font-medium mb-4 leading-relaxed" style="white-space:pre-line;">${esc(q.question_text).replace(/&lt;br\s*\/?[&gt;]*>/gi, '<br>')}</div>`;
        }
     }
     
@@ -722,7 +723,7 @@ window.initExamEngine = function() {
       return `
         <div class="mb-6">
           <div class="font-display text-xl text-brand-sage mb-2">${esc(pLabel)}</div>
-          ${p.question ? `<div class="mb-4 text-main font-medium leading-relaxed">${esc(p.question)}</div>` : ''}
+          ${p.question ? `<div class="mb-4 text-main font-medium leading-relaxed">${esc(p.question).replace(/&lt;br\s*\/?[&gt;]*>/gi, '<br>')}</div>` : ''}
           
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
             <span class="text-xs font-bold text-muted uppercase tracking-wider">💡 Tip: Draw your working!</span>
@@ -816,33 +817,38 @@ window.initExamEngine = function() {
        } else if (p.part_type === 'referent' && Array.isArray(p.items)) {
           const rows = p.items.map((item, i) => {
              const saved = (savedObj[pLabel] || {})[`ref_${i}`] || '';
-             return `<tr><td class="p-3 border border-light font-medium">${esc(item.word)}</td><td class="p-3 border border-light"><input type="text" id="comp-${globalIdx}-${safeIdLabel}-ref_${i}" class="form-input w-full p-2" value="${esc(saved)}" onblur="window.saveAllAnswers()"></td></tr>`;
+             return `<tr><td class="p-4 border-b border-light font-medium text-main w-1/2">${esc(item.word)}</td><td class="p-3 border-b border-light w-1/2"><input type="text" id="comp-${globalIdx}-${safeIdLabel}-ref_${i}" class="form-input w-full p-3 text-lg" value="${esc(saved)}" onblur="window.saveAllAnswers()"></td></tr>`;
           }).join('');
-          inter = `<table class="w-full text-left border-collapse mt-2 text-main bg-white rounded-lg overflow-hidden shadow-sm"><thead><tr><th class="p-3 border border-light bg-surface font-bold text-sm uppercase text-muted">Word from passage</th><th class="p-3 border border-light bg-surface font-bold text-sm uppercase text-muted">What it refers to</th></tr></thead><tbody>${rows}</tbody></table>`;
+          inter = `<table class="w-full text-left border-collapse mt-2 bg-white rounded-xl overflow-hidden shadow-sm border border-light"><thead><tr><th class="p-4 bg-surface font-bold text-sm uppercase text-muted border-b border-light">Word from passage</th><th class="p-4 bg-surface font-bold text-sm uppercase text-muted border-b border-light">What it refers to</th></tr></thead><tbody>${rows}</tbody></table>`;
        } else if (p.part_type === 'true_false' && Array.isArray(p.items)) {
           const rows = p.items.map((item, i) => {
              const savedAns = (savedObj[pLabel] || {})[`tf_${i}_ans`] || '';
              const savedRsn = (savedObj[pLabel] || {})[`tf_${i}_rsn`] || '';
-             return `<tr><td class="p-3 border border-light font-medium text-base leading-relaxed">${esc(item.statement)}</td><td class="p-3 border border-light"><select id="comp-${globalIdx}-${safeIdLabel}-tf_${i}_ans" class="form-input w-full p-2 mb-2" onchange="window.saveAllAnswers()"><option value="" disabled ${!savedAns?'selected':''}>Select...</option><option value="True" ${savedAns==='True'?'selected':''}>True</option><option value="False" ${savedAns==='False'?'selected':''}>False</option></select><input type="text" id="comp-${globalIdx}-${safeIdLabel}-tf_${i}_rsn" class="form-input w-full p-2 text-sm" placeholder="Reason..." value="${esc(savedRsn)}" onblur="window.saveAllAnswers()"></td></tr>`;
+             return `<tr><td class="p-4 border-b border-light font-medium text-main text-base leading-relaxed w-1/2">${esc(item.statement)}</td><td class="p-3 border-b border-light w-1/2"><select id="comp-${globalIdx}-${safeIdLabel}-tf_${i}_ans" class="form-input w-full p-3 mb-3 text-lg font-bold" onchange="window.saveAllAnswers()"><option value="" disabled ${!savedAns?'selected':''}>Select...</option><option value="True" ${savedAns==='True'?'selected':''}>True</option><option value="False" ${savedAns==='False'?'selected':''}>False</option></select><textarea id="comp-${globalIdx}-${safeIdLabel}-tf_${i}_rsn" class="form-input w-full p-3 text-base" rows="2" placeholder="Reason from passage..." onblur="window.saveAllAnswers()">${esc(savedRsn)}</textarea></td></tr>`;
           }).join('');
-          inter = `<table class="w-full text-left border-collapse mt-2 text-main bg-white rounded-lg overflow-hidden shadow-sm"><thead><tr><th class="p-3 border border-light bg-surface font-bold text-sm uppercase text-muted">Statement</th><th class="p-3 border border-light bg-surface font-bold text-sm uppercase text-muted">True / False & Reason</th></tr></thead><tbody>${rows}</tbody></table>`;
+          inter = `<table class="w-full text-left border-collapse mt-2 bg-white rounded-xl overflow-hidden shadow-sm border border-light"><thead><tr><th class="p-4 bg-surface font-bold text-sm uppercase text-muted border-b border-light">Statement</th><th class="p-4 bg-surface font-bold text-sm uppercase text-muted border-b border-light">True / False & Reason</th></tr></thead><tbody>${rows}</tbody></table>`;
        } else if (p.part_type === 'sequencing' && Array.isArray(p.items)) {
           const rows = p.items.map((item, i) => {
              const saved = (savedObj[pLabel] || {})[`seq_${i}`] || '';
-             return `<div class="flex items-center gap-4 mb-3 p-3 bg-white border border-light rounded-lg shadow-sm"><input type="number" id="comp-${globalIdx}-${safeIdLabel}-seq_${i}" class="form-input p-2 w-16 text-center font-bold text-lg" min="1" max="${p.items.length}" value="${esc(saved)}" onblur="window.saveAllAnswers()"><span class="font-medium text-base leading-relaxed">${esc(item)}</span></div>`;
+             return `<div class="flex items-center gap-4 mb-3 p-4 bg-white border border-light rounded-xl shadow-sm"><input type="number" id="comp-${globalIdx}-${safeIdLabel}-seq_${i}" class="form-input p-3 w-20 text-center font-bold text-xl text-brand-sage" min="1" max="${p.items.length}" value="${esc(saved)}" onblur="window.saveAllAnswers()"><span class="font-medium text-lg text-main leading-relaxed">${esc(item)}</span></div>`;
           }).join('');
-          inter = `<div class="mt-2">${rows}</div>`;
+          inter = `<div class="mt-4">${rows}</div>`;
        } else {
           const saved = savedObj[pLabel] || '';
-          inter = `<textarea id="comp-${globalIdx}-${safeIdLabel}" class="form-input w-full p-4 text-lg border-2 border-slate-200 focus:border-brand-sage rounded-xl" rows="3" placeholder="Type answer..." onblur="window.saveAllAnswers()">${esc(saved)}</textarea>`;
+          inter = `<textarea id="comp-${globalIdx}-${safeIdLabel}" class="form-input w-full p-4 text-lg border-2 border-slate-200 focus:border-brand-sage rounded-xl transition-all shadow-sm" rows="3" placeholder="Type answer..." onblur="window.saveAllAnswers()">${esc(saved)}</textarea>`;
        }
-       return `<div class="mb-6 pb-6 ${pIdx < partsData.length - 1 ? 'border-b border-light border-dashed' : ''}"><div class="flex items-center gap-3 mb-3"><span class="font-display text-xl text-main font-bold" style="color: var(--english-colour);">${pLabel}</span><span class="badge badge-info text-xs">${p.marks || 1} mark${(p.marks||1) !== 1 ? 's' : ''}</span></div>${p.question ? `<div class="text-lg text-main font-medium mb-4 leading-relaxed">${esc(p.question)}</div>` : ''}${inter}</div>`;
+       
+       const qTextHtml = p.question ? esc(p.question).replace(/&lt;br\s*\/?[&gt;]*>/gi, '<br>') : '';
+       return `<div class="mb-6 pb-6 ${pIdx < partsData.length - 1 ? 'border-b border-light border-dashed' : ''}"><div class="flex items-center gap-3 mb-3"><span class="font-display text-xl text-main font-bold" style="color: var(--english-colour);">${pLabel}</span><span class="badge badge-info text-xs">${p.marks || 1} mark${(p.marks||1) !== 1 ? 's' : ''}</span></div>${qTextHtml ? `<div class="mb-4 text-main font-medium leading-relaxed">${qTextHtml}</div>` : ''}${inter}</div>`;
     }).join('');
+
+    // 🚀 MASTERCLASS FIX: Safely restore HTML line breaks in passage
+    const cleanPassage = esc(q.passage || '').replace(/\n/g, '<br><br>').replace(/&lt;br\s*\/?[&gt;]*>/gi, '<br>');
 
     return `
       <div class="flex flex-col lg:flex-row gap-6 comp-container">
         <div class="lg:w-1/2 card p-6 text-lg leading-relaxed bg-surface comp-passage-pane">
-           ${q.type === 'visual_text' && q.image_url ? `<img src="${q.image_url}" class="w-full rounded border border-light">` : esc(q.passage || '').replace(/\n/g, '<br><br>').replace(/&lt;br\s*\/?[&gt;]*>/gi, '<br>')}
+           ${q.type === 'visual_text' && q.image_url ? `<img src="${q.image_url}" class="w-full rounded border border-light">` : cleanPassage}
         </div>
         <div class="lg:w-1/2 comp-questions-pane">${partsHtml}</div>
       </div>
