@@ -856,7 +856,9 @@ window.initExamEngine = function() {
          return `
              <div class="flex flex-col lg:flex-row gap-6 comp-container">
                <div class="lg:w-1/2 card p-6 text-lg leading-relaxed bg-surface comp-passage-pane">
-                  ${q.type === 'visual_text' && q.image_url ? `<img src="${q.image_url}" class="w-full rounded border border-light">` : esc(q.passage || '').replace(/\n/g, '<br><br>').replace(/&lt;br\s*\/?\s*&gt;/gi, '<br>')}
+                  ${(q.type === 'visual_text' || q.topic === 'Visual Text') && q.image_url ? `<img src="${q.image_url}" class="w-full rounded border border-light mb-4">` : ''}
+                  ${q.passage ? esc(q.passage).replace(/\n/g, '<br><br>').replace(/&lt;br\s*\/?\s*&gt;/gi, '<br>'): ''}
+                  
               </div>
                <div class="lg:w-1/2 comp-questions-pane">${partsHtml}</div>
               </div>

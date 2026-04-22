@@ -48,8 +48,10 @@ You may only populate the following columns in your SQL output. Do not invent ne
 - `instructions`: String
 - `accept_also`: JSON Array
 - `sub_topic`: A specific subset of the topic (e.g., 'Improper Fractions', 'Model Drawing', 'Inference').
-- `cognitive_skill`: MUST be strictly chosen from this exact list: 'Factual Recall', 'Conceptual Understanding', 'Routine Application', 'Non-Routine / Heuristics', 'Inferential Reasoning', or 'Synthesis & Evaluation'. Do not invent new skills. Cannot be null.
-
+- `cognitive_skill`: MUST map strictly to MOE Assessment Objectives (AO):
+  * **AO1 (Knowledge with Understanding):** Use 'Factual Recall' or 'Conceptual Understanding'.
+  * **AO2 (Application of Knowledge):** Use 'Routine Application' (Standard) or 'Non-Routine / Heuristics' (HOTS).
+  * **AO3 (Analysis & Evaluation):** Use 'Inferential Reasoning' or 'Synthesis & Evaluation' (HOTS).
 ═══════════════════════════════════════════════════════════════
 SECTION 3: THE UNIFIED SYLLABUS MAP (TAXONOMY)
 ═══════════════════════════════════════════════════════════════
@@ -84,10 +86,17 @@ Requires exactly 4 options. Options must be full sentences for Science/English.
 
 **Required Fields:**
 - `type`: "mcq"
-- `options`: `["Option 1", "Option 2", "Option 3", "Option 4"]`
-- `correct_answer`: Must exactly match one string from the options array.
-- `wrong_explanations`: `{"Option 1": "Why this is wrong...", ...}` (Keys must match the strings, do not use "A, B, C").
+- `cognitive_skill`: Use the AO mapping defined in Section 2.
+- `sub_topic`: MUST be a granular micro-concept (e.g., "Unit Cost", "Experimental Fairness", "Subject-Verb Agreement").
+- `options`: `["Option A", "Option B", "Option C", "Option D"]`
+- `correct_answer`: Must be one of the strings in `options`.
+- `wrong_explanations`: MUST include a diagnostic `type` for BKT analysis.
+  * *Format:* `{"Option A": {"text": "Explanation...", "type": "misconception | calc_error | partial_logic"}}`
 
+**SCIENCE EXPERIMENTAL MCQS:**
+- `visual_payload`: MUST include experimental variables if the question involves a setup.
+  * *Example:* `{"function_name": "genericExperiment", "params": {"Setup A": "30ml water, black cloth", "Setup B": "30ml water, white cloth", "independent_variable": "color of cloth", "dependent_variable": "temperature change"}}`
+  
 ---------------------------------------------------------------
 2. TYPE: `short_ans` (Mathematics vs. English Synthesis)
 ---------------------------------------------------------------
