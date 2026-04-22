@@ -508,12 +508,12 @@ window.initExamEngine = function() {
     let qTextHtml = '';
     if (q.question_text) {
        if (isSynthesis) {
-         const displayQuestion = esc(q.question_text.split('\n\n')[0].trim()).replace(/&lt;br\s*\/?[&gt;]*>/gi, '<br>');
+         const displayQuestion = esc(q.question_text.split('\n\n')[0].trim()).replace(/&lt;br\s*\/?\s*&gt;/gi, '<br>');
          const instructions = q.instructions ? `<div class="text-lg text-main font-bold mb-4 leading-relaxed">${esc(q.instructions)}</div>` : '';
          qTextHtml = `<div class="text-lg text-main font-medium mb-4 leading-relaxed">${displayQuestion}<br><br></div>${instructions}`;
        } else {
          // 🚀 MASTERCLASS FIX: Safely parse <br> tags in standard questions
-         qTextHtml = `<div class="text-lg text-main font-medium mb-4 leading-relaxed" style="white-space:pre-line;">${esc(q.question_text).replace(/&lt;br\s*\/?[&gt;]*>/gi, '<br>')}</div>`;
+         qTextHtml = `<div class="text-lg text-main font-medium mb-4 leading-relaxed" style="white-space:pre-line;">${esc(q.question_text).replace(/&lt;br\s*\/?\s*&gt;/gi, '<br>')}</div>`;
        }
     }
     
@@ -726,7 +726,7 @@ window.initExamEngine = function() {
       return `
         <div class="mb-6">
           <div class="font-display text-xl text-brand-sage mb-2">${esc(pLabel)}</div>
-          ${p.question ? `<div class="mb-4 text-main font-medium leading-relaxed">${esc(p.question).replace(/&lt;br\s*\/?[&gt;]*>/gi, '<br>')}</div>` : ''}
+          ${p.question ? `<div class="mb-4 text-main font-medium leading-relaxed">${esc(p.question).replace(/&lt;br\s*\/?\s*&gt;/gi, '<br>')}</div>` : ''}
           
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
             <span class="text-xs font-bold text-muted uppercase tracking-wider">💡 Tip: Draw your working!</span>
@@ -750,7 +750,7 @@ window.initExamEngine = function() {
   }
 
   function buildClozeUI(q, globalIdx) {
-     let passage = esc(q.passage || '').replace(/\n/g, '<br>').replace(/&lt;br\s*\/?[&gt;]*>/gi, '<br>');
+     let passage = esc(q.passage || '').replace(/\n/g, '<br>').replace(/&lt;br\s*\/?\s*&gt;/gi, '<br>');
      let blanks = [];
      try { blanks = typeof q.blanks === 'string' ? JSON.parse(q.blanks) : (q.blanks || []); } catch(e) {}
      
@@ -793,7 +793,7 @@ window.initExamEngine = function() {
   }
 
   function buildEditingUI(q, globalIdx) {
-     let passage = esc(q.passage || '').replace(/\n/g, '<br><br>').replace(/&lt;u&gt;/gi, '<u>').replace(/&lt;\/u&gt;/gi, '</u>').replace(/&lt;br\s*\/?[&gt;]*>/gi, '<br>');
+     let passage = esc(q.passage || '').replace(/\n/g, '<br><br>').replace(/&lt;u&gt;/gi, '<u>').replace(/&lt;\/u&gt;/gi, '</u>').replace(/&lt;br\s*\/?\s*&gt;/gi, '<br>');
      const savedAns = state.answers[globalIdx] || {};
      
      passage = passage.replace(/\[(\d+)\]/g, (match, numStr) => {
@@ -856,7 +856,7 @@ window.initExamEngine = function() {
          return `
              <div class="flex flex-col lg:flex-row gap-6 comp-container">
                <div class="lg:w-1/2 card p-6 text-lg leading-relaxed bg-surface comp-passage-pane">
-                  ${q.type === 'visual_text' && q.image_url ? `<img src="${q.image_url}" class="w-full rounded border border-light">` : esc(q.passage || '').replace(/\n/g, '<br><br>').replace(/&lt;br\s*\/?[&gt;]*>/gi, '<br>')}
+                  ${q.type === 'visual_text' && q.image_url ? `<img src="${q.image_url}" class="w-full rounded border border-light">` : esc(q.passage || '').replace(/\n/g, '<br><br>').replace(/&lt;br\s*\/?\s*&gt;/gi, '<br>')}
               </div>
                <div class="lg:w-1/2 comp-questions-pane">${partsHtml}</div>
               </div>
