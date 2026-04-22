@@ -812,44 +812,39 @@ window.initExamEngine = function() {
        let inter = '';
        
        if (p.part_type === 'mcq') {
-          const saved = savedObj[pLabel] || '';
-          inter = (p.options||[]).map((opt, i) => `<div class="mcq-opt hover-lift ${saved===opt?'is-sel':''}" onclick="window.selectCompMcq('${globalIdx}', '${pLabel}', ${i})"><span class="mcq-badge">${['A','B','C','D'][i]}</span><span>${esc(opt)}</span></div>`).join('');
-       } else if (p.part_type === 'referent' && Array.isArray(p.items)) {
-          const rows = p.items.map((item, i) => {
-             const saved = (savedObj[pLabel] || {})[`ref_${i}`] || '';
-             return `<tr><td class="p-4 border-b border-light font-medium text-main w-1/2">${esc(item.word)}</td><td class="p-3 border-b border-light w-1/2"><input type="text" id="comp-${globalIdx}-${safeIdLabel}-ref_${i}" class="form-input w-full p-3 text-lg" value="${esc(saved)}" onblur="window.saveAllAnswers()"></td></tr>`;
+                const saved = savedObj[pLabel] || '';
+                inter = (p.options||[]).map((opt, i) => `<div class="mcq-opt hover-lift ${saved===opt?'is-sel':''}" onclick="window.selectCompMcq('${globalIdx}', '${pLabel}', ${i})"><span class="mcq-badge">${['A','B','C','D'][i]}</span><span>${esc(opt)}</span></div>`).join('');
+             } else if (p.part_type === 'referent' && Array.isArray(p.items)) {
+                const rows = p.items.map((item, i) => {
+                   const saved = (savedObj[pLabel] || {})[`ref_${i}`] || '';
+                   return `<tr><td class="p-4 border border-light font-medium">${esc(item.word)}</td><td class="p-4 border border-light"><input type="text" id="comp-${globalIdx}-${safeIdLabel}-ref_${i}" class="form-input w-full p-3 bg-surface" placeholder="Type referent..." value="${esc(saved)}" onblur="window.saveAllAnswers()"></td></tr>`;
+                }).join('');
+                inter = `<table class="w-full text-left border-collapse text-main bg-white rounded-xl overflow-hidden shadow-sm"><thead><tr><th class="p-4 border border-light bg-page font-bold text-sm uppercase text-muted">Word from passage</th><th class="p-4 border border-light bg-page font-bold text-sm uppercase text-muted">What it refers to</th></tr></thead><tbody>${rows}</tbody></table>`;
+             } else if (p.part_type === 'true_false' && Array.isArray(p.items)) {
+                const rows = p.items.map((item, i) => {
+                   const savedAns = (savedObj[pLabel] || {})[`tf_${i}_ans`] || '';
+                   const savedRsn = (savedObj[pLabel] || {})[`tf_${i}_rsn`] || '';
+                   return `<tr><td class="p-4 border border-light font-medium text-base leading-relaxed w-1/2">${esc(item.statement)}</td><td class="p-4 border border-light w-1/2"><div class="flex gap-4 mb-3"><label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="comp-${globalIdx}-${safeIdLabel}-tf_${i}" value="True" ${savedAns==='True'?'checked':''} onchange="window.saveAllAnswers()"> True</label><label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="comp-${globalIdx}-${safeIdLabel}-tf_${i}" value="False" ${savedAns==='False'?'checked':''} onchange="window.saveAllAnswers()"> False</label></div><textarea id="comp-${globalIdx}-${safeIdLabel}-tf_${i}_rsn" class="form-input w-full p-3 text-sm bg-surface" rows="2" placeholder="Type reason from passage..." onblur="window.saveAllAnswers()">${esc(savedRsn)}</textarea></td></tr>`;
+                }).join('');
+                inter = `<table class="w-full text-left border-collapse text-main bg-white rounded-xl overflow-hidden shadow-sm"><thead><tr><th class="p-4 border border-light bg-page font-bold text-sm uppercase text-muted">Statement</th><th class="p-4 border border-light bg-page font-bold text-sm uppercase text-muted">True / False & Reason</th></tr></thead><tbody>${rows}</tbody></table>`;
+             } else if (p.part_type === 'sequencing' && Array.isArray(p.items)) {
+                const rows = p.items.map((item, i) => {
+                   const saved = (savedObj[pLabel] || {})[`seq_${i}`] || '';
+                   return `<div class="flex items-center gap-4 mb-4 p-4 bg-white border border-light rounded-xl shadow-sm"><input type="number" id="comp-${globalIdx}-${safeIdLabel}-seq_${i}" class="form-input p-3 text-center font-display text-xl w-20" min="1" max="${p.items.length}" value="${esc(saved)}" onblur="window.saveAllAnswers()"><span class="font-medium text-lg leading-relaxed">${esc(item)}</span></div>`;
+                }).join('');
+                inter = `<div class="mt-4">${rows}</div>`;
+             } else {
+                const saved = savedObj[pLabel] || '';
+                inter = `<textarea id="comp-${globalIdx}-${safeIdLabel}" class="form-input w-full p-5 text-lg border-2 border-slate-200 focus:border-brand-sage rounded-2xl shadow-sm transition-all" rows="4" placeholder="Type answer here..." onblur="window.saveAllAnswers()">${esc(saved)}</textarea>`;
+             }
+             return `<div class="mb-8"><div class="flex items-center gap-3 mb-3"><span class="font-display text-xl text-main font-bold" style="color: var(--english-colour);">${pLabel}</span><span class="badge badge-info text-xs">${p.marks || 1} mark${(p.marks||1) !== 1 ? 's' : ''}</span></div><div class="mb-4 text-main font-medium leading-relaxed">${esc(p.question)}</div>${inter}</div>`;
           }).join('');
-          inter = `<table class="w-full text-left border-collapse mt-2 bg-white rounded-xl overflow-hidden shadow-sm border border-light"><thead><tr><th class="p-4 bg-surface font-bold text-sm uppercase text-muted border-b border-light">Word from passage</th><th class="p-4 bg-surface font-bold text-sm uppercase text-muted border-b border-light">What it refers to</th></tr></thead><tbody>${rows}</tbody></table>`;
-       } else if (p.part_type === 'true_false' && Array.isArray(p.items)) {
-          const rows = p.items.map((item, i) => {
-             const savedAns = (savedObj[pLabel] || {})[`tf_${i}_ans`] || '';
-             const savedRsn = (savedObj[pLabel] || {})[`tf_${i}_rsn`] || '';
-             return `<tr><td class="p-4 border-b border-light font-medium text-main text-base leading-relaxed w-1/2">${esc(item.statement)}</td><td class="p-3 border-b border-light w-1/2"><select id="comp-${globalIdx}-${safeIdLabel}-tf_${i}_ans" class="form-input w-full p-3 mb-3 text-lg font-bold" onchange="window.saveAllAnswers()"><option value="" disabled ${!savedAns?'selected':''}>Select...</option><option value="True" ${savedAns==='True'?'selected':''}>True</option><option value="False" ${savedAns==='False'?'selected':''}>False</option></select><textarea id="comp-${globalIdx}-${safeIdLabel}-tf_${i}_rsn" class="form-input w-full p-3 text-base" rows="2" placeholder="Reason from passage..." onblur="window.saveAllAnswers()">${esc(savedRsn)}</textarea></td></tr>`;
-          }).join('');
-          inter = `<table class="w-full text-left border-collapse mt-2 bg-white rounded-xl overflow-hidden shadow-sm border border-light"><thead><tr><th class="p-4 bg-surface font-bold text-sm uppercase text-muted border-b border-light">Statement</th><th class="p-4 bg-surface font-bold text-sm uppercase text-muted border-b border-light">True / False & Reason</th></tr></thead><tbody>${rows}</tbody></table>`;
-       } else if (p.part_type === 'sequencing' && Array.isArray(p.items)) {
-          const rows = p.items.map((item, i) => {
-             const saved = (savedObj[pLabel] || {})[`seq_${i}`] || '';
-             return `<div class="flex items-center gap-4 mb-3 p-4 bg-white border border-light rounded-xl shadow-sm"><input type="number" id="comp-${globalIdx}-${safeIdLabel}-seq_${i}" class="form-input p-3 w-20 text-center font-bold text-xl text-brand-sage" min="1" max="${p.items.length}" value="${esc(saved)}" onblur="window.saveAllAnswers()"><span class="font-medium text-lg text-main leading-relaxed">${esc(item)}</span></div>`;
-          }).join('');
-          inter = `<div class="mt-4">${rows}</div>`;
-       } else {
-          const saved = savedObj[pLabel] || '';
-          inter = `<textarea id="comp-${globalIdx}-${safeIdLabel}" class="form-input w-full p-4 text-lg border-2 border-slate-200 focus:border-brand-sage rounded-xl transition-all shadow-sm" rows="3" placeholder="Type answer..." onblur="window.saveAllAnswers()">${esc(saved)}</textarea>`;
-       }
-       
-       const qTextHtml = p.question ? esc(p.question).replace(/&lt;br\s*\/?[&gt;]*>/gi, '<br>') : '';
-       return `<div class="mb-6 pb-6 ${pIdx < partsData.length - 1 ? 'border-b border-light border-dashed' : ''}"><div class="flex items-center gap-3 mb-3"><span class="font-display text-xl text-main font-bold" style="color: var(--english-colour);">${pLabel}</span><span class="badge badge-info text-xs">${p.marks || 1} mark${(p.marks||1) !== 1 ? 's' : ''}</span></div>${qTextHtml ? `<div class="mb-4 text-main font-medium leading-relaxed">${qTextHtml}</div>` : ''}${inter}</div>`;
-    }).join('');
 
-    // 🚀 MASTERCLASS FIX: Safely restore HTML line breaks in passage
-    const cleanPassage = esc(q.passage || '').replace(/\n/g, '<br><br>').replace(/&lt;br\s*\/?[&gt;]*>/gi, '<br>');
-
-    return `
-      <div class="flex flex-col lg:flex-row gap-6 comp-container">
-        <div class="lg:w-1/2 card p-6 text-lg leading-relaxed bg-surface comp-passage-pane">
-           ${q.type === 'visual_text' && q.image_url ? `<img src="${q.image_url}" class="w-full rounded border border-light">` : cleanPassage}
-        </div>
+          return `
+            <div class="flex flex-col lg:flex-row gap-6 comp-container">
+              <div class="lg:w-1/2 card p-6 text-lg leading-relaxed bg-surface comp-passage-pane">
+                 ${q.type === 'visual_text' && q.image_url ? `<img src="${q.image_url}" class="w-full rounded border border-light">` : esc(q.passage || '').replace(/\n/g, '<br><br>').replace(/&lt;br\s*\/?[&gt;]*>/gi, '<br>')}
+              </div>
         <div class="lg:w-1/2 comp-questions-pane">${partsHtml}</div>
       </div>
     `;
@@ -979,7 +974,8 @@ window.initExamEngine = function() {
          } else if (p.part_type === 'true_false' && Array.isArray(p.items)) {
              if (!state.answers[globalIdx][pLabel]) state.answers[globalIdx][pLabel] = {};
              p.items.forEach((_, itemIdx) => {
-                 const elAns = document.getElementById(`comp-${globalIdx}-${safeIdLabel}-tf_${itemIdx}_ans`);
+                 // 🚀 MASTERCLASS FIX: Use querySelector to locate the selected radio button by name
+                 const elAns = document.querySelector(`input[name="comp-${globalIdx}-${safeIdLabel}-tf_${itemIdx}"]:checked`);
                  const elRsn = document.getElementById(`comp-${globalIdx}-${safeIdLabel}-tf_${itemIdx}_rsn`);
                  if (elAns) state.answers[globalIdx][pLabel][`tf_${itemIdx}_ans`] = elAns.value;
                  if (elRsn) state.answers[globalIdx][pLabel][`tf_${itemIdx}_rsn`] = elRsn.value;
