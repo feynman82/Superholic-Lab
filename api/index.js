@@ -54,6 +54,7 @@ export default async function handler(req, res) {
     req.body = {};
   }
 
+// 🚀 MASTERCLASS: Strict API Routing Map
   switch (route) {
     case 'chat':               return handleChat(req, res);
     case 'checkout':           return handleCheckout(req, res);
@@ -71,10 +72,16 @@ export default async function handler(req, res) {
     case 'generate-exam':      return handleGenerateExam(req, res);
     case 'grade-answer':       return handleGradeAnswer(req, res);
     case 'save-exam-result':   return handleSaveExamResult(req, res);
+    
+    // Core AI & Progression Modules
     case 'generate-quest':     return handleGenerateQuest(req, res);
     case 'analyze-weakness':   return handleAnalyzeWeakness(req, res);
     case 'summarize-chat':     return handleSummarizeChat(req, res);
+    
+    // Fallback for dead routes
     default:
-      return res.status(404).json({ error: 'API route not found: ' + route });
+      console.warn(`[api/index] 404 Not Found: Unmapped route requested -> /api/${route}`);
+      return res.status(404).json({ error: `Route /api/${route} not found in gateway.` });
   }
 }
+
