@@ -14,6 +14,7 @@
     { "source": "/api/account-delete",     "destination": "/api/index" },
     { "source": "/api/export",             "destination": "/api/index" },
     { "source": "/api/contact",            "destination": "/api/index" },
+    { "source": "/api/qa-questions",       "destination": "/api/index" },
     { "source": "/api/generate",           "destination": "/api/index" },
     { "source": "/api/generate-question",  "destination": "/api/index" },
     { "source": "/api/generate-exam",      "destination": "/api/index" },
@@ -21,8 +22,7 @@
     { "source": "/api/save-exam-result",   "destination": "/api/index" },
     { "source": "/api/generate-quest",     "destination": "/api/index" },
     { "source": "/api/analyze-weakness",   "destination": "/api/index" },
-    { "source": "/api/summarize-chat",     "destination": "/api/index" },
-    { "source": "/api/(.*)",               "destination": "/api/index" }
+    { "source": "/api/summarize-chat",     "destination": "/api/index" }
   ],
   "headers": [
     {
