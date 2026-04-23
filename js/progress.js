@@ -20,12 +20,12 @@ document.addEventListener('DOMContentLoaded', init);
 
 async function init() {
   const loadingEl = document.getElementById('progress-loading');
-  const statsEl   = document.getElementById('progress-stats') || document.getElementById('progress-content');
-  const emptyEl   = document.getElementById('progress-empty');
-  const errorEl   = document.getElementById('progress-error');
+  const statsEl = document.getElementById('progress-stats') || document.getElementById('progress-content');
+  const emptyEl = document.getElementById('progress-empty');
+  const errorEl = document.getElementById('progress-error');
 
   try {
-    const db   = await getSupabase();
+    const db = await getSupabase();
     const { data: { user }, error: userErr } = await db.auth.getUser();
     if (userErr) throw userErr;
     if (!user) return; // guardPage in the module tag will redirect
@@ -34,10 +34,10 @@ async function init() {
     const { data: { session } } = await db.auth.getSession();
 
     // ── Quest return tracking: detect ?quest_id=X&step=N from deep-link return ──
-    const urlParams       = new URLSearchParams(window.location.search);
-    const returnQuestId   = urlParams.get('quest_id');
-    const returnStep      = urlParams.get('step');
-    const urlStudentId    = urlParams.get('student');
+    const urlParams = new URLSearchParams(window.location.search);
+    const returnQuestId = urlParams.get('quest_id');
+    const returnStep = urlParams.get('step');
+    const urlStudentId = urlParams.get('student');
 
     if (returnQuestId && returnStep !== null) {
       // Advance before loading the rest so the UI reflects the new state
@@ -60,31 +60,31 @@ async function init() {
 
     if (!students || students.length === 0) {
       loadingEl.hidden = true;
-      emptyEl.hidden   = false;
+      emptyEl.hidden = false;
       return;
     }
 
     // --- UNIFIED STATE RESOLVER ---
     let activeStudentId = urlStudentId || localStorage.getItem('shl_active_student_id');
     const student = students.find(s => s.id === activeStudentId) || students[0];
-    
+
     // Persist the truth
     localStorage.setItem('shl_active_student_id', student.id);
     // ------------------------------
 
     // --- JUNIOR GUARDRAIL: Hide Exam Tab for P1 & P2 ---
     const isJunior = student.level.toLowerCase().includes('primary 1') || student.level.toLowerCase().includes('primary 2');
-    
+
     document.querySelectorAll('.bottom-nav-item').forEach(link => {
       const url = new URL(link.href, window.location.origin);
       url.searchParams.set('student', student.id);
       link.href = url.pathname + url.search;
-      
+
       if (isJunior && link.getAttribute('href').includes('exam.html')) {
         link.style.display = 'none';
       }
     });
-    
+
     if (isJunior) {
       const nav = document.getElementById('bottomNav');
       if (nav) nav.style.justifyContent = 'space-evenly';
@@ -107,7 +107,7 @@ async function init() {
 
     if (!attempts || attempts.length === 0) {
       loadingEl.hidden = true;
-      emptyEl.hidden   = false;
+      emptyEl.hidden = false;
       return;
     }
 
@@ -123,8 +123,8 @@ async function init() {
 
     // ── Calculate stats ───────────────────────────────────────────────────────
     const totalQuestions = attempts.reduce((s, a) => s + (a.total_questions || 0), 0);
-    const totalCorrect   = attempts.reduce((s, a) => s + (a.score || 0), 0);
-    const overallPct     = totalQuestions > 0
+    const totalCorrect = attempts.reduce((s, a) => s + (a.score || 0), 0);
+    const overallPct = totalQuestions > 0
       ? Math.round((totalCorrect / totalQuestions) * 100)
       : 0;
     const streak = calculateStreak(attempts);
@@ -137,7 +137,7 @@ async function init() {
       const sc = subAttempts.reduce((s, a) => s + (a.score || 0), 0);
       subjectStats[sub] = {
         accuracy: sq > 0 ? Math.round((sc / sq) * 100) : null,
-        quizzes:  subAttempts.length,
+        quizzes: subAttempts.length,
       };
     });
 
@@ -148,7 +148,7 @@ async function init() {
       const key = `${a.subject}::${a.topic}`;
       if (!topicMap[key]) topicMap[key] = { subject: a.subject, topic: a.topic, correct: 0, total: 0, lastAttemptId: a.id };
       topicMap[key].correct += a.score || 0;
-      topicMap[key].total   += a.total_questions || 0;
+      topicMap[key].total += a.total_questions || 0;
     });
     const weakTopics = Object.values(topicMap)
       .filter(t => t.total >= 5)
@@ -179,7 +179,7 @@ async function init() {
       if (['Factual Recall', 'Conceptual Understanding'].includes(att.cognitive_skill)) ao = 'AO1';
       else if (['Routine Application', 'Non-Routine / Heuristics'].includes(att.cognitive_skill)) ao = 'AO2';
       else if (['Inferential Reasoning', 'Synthesis & Evaluation', 'HOTS'].includes(att.cognitive_skill)) ao = 'AO3';
-      
+
       if (ao) {
         let possible = att.marks_total || 1;
         let earned = att.marks_earned !== null ? att.marks_earned : (att.correct ? possible : 0);
@@ -200,31 +200,31 @@ async function init() {
     allActivity.sort((a, b) => new Date(b.completed_at) - new Date(a.completed_at));
 
     const totalSeconds = allActivity.reduce((sum, a) => sum + (a.time_taken || a.time_taken_seconds || 0), 0);
-    
+
     // ── Apply Advanced 14-Day / 1000-Mark / 3-Paper Rule ──
     const fourteenDaysMs = 14 * 24 * 60 * 60 * 1000;
     const nowMs = Date.now();
-    
-    const advancedSubjectStats = { 
-      mathematics: { earned: 0, total: 0, count: 0, quizzes: 0 }, 
-      science: { earned: 0, total: 0, count: 0, quizzes: 0 }, 
-      english: { earned: 0, total: 0, count: 0, quizzes: 0 } 
+
+    const advancedSubjectStats = {
+      mathematics: { earned: 0, total: 0, count: 0, quizzes: 0 },
+      science: { earned: 0, total: 0, count: 0, quizzes: 0 },
+      english: { earned: 0, total: 0, count: 0, quizzes: 0 }
     };
 
     allActivity.forEach(act => {
       const sub = act.subject?.toLowerCase();
       if (!advancedSubjectStats[sub]) return;
       const stats = advancedSubjectStats[sub];
-      
+
       const actDateMs = new Date(act.completed_at || act.created_at).getTime();
       if (stats.total >= 1000 || (nowMs - actDateMs > fourteenDaysMs)) return;
-      
+
       stats.total += (act.total_marks || act.total_questions || 1);
       stats.earned += (act.score || 0);
       stats.count += 1;
-      stats.quizzes = stats.count; 
+      stats.quizzes = stats.count;
     });
-    
+
     let questionsMastered = 0;
     allActivity.forEach(a => {
       // For Exams: Use questions_attempted
@@ -239,7 +239,7 @@ async function init() {
     const topicStatsThisWeek = {};
     const topicStatsLastWeek = {};
 
-    (attempts || []).forEach(q => { 
+    (attempts || []).forEach(q => {
       if (!q.topic || q.topic === 'all') return;
       const key = `${q.subject}:${q.topic}`;
       const qDate = new Date(q.completed_at || q.created_at);
@@ -261,7 +261,7 @@ async function init() {
         if (alThis < alLast) {
           const t = topicStatsThisWeek[key];
           improvedText = `<span style="text-transform:capitalize;">${t.subject}</span>: ${t.topic.replace(/-/g, ' ')} improved from ${alLast} to ${alThis}`;
-          break; 
+          break;
         }
       }
     }
@@ -273,11 +273,11 @@ async function init() {
     // Fire legacy bottom history renderers
     if (activeQuest) renderQuestMap(activeQuest, db);
     renderRecentHistory(attempts.slice(0, 10));
-    
+
     if (!isJunior) renderExamHistory(examResults || []);
 
     loadingEl.hidden = true;
-    statsEl.hidden   = false;
+    statsEl.hidden = false;
 
   } catch (err) {
     console.error('[progress] Full error:', err);
@@ -285,7 +285,7 @@ async function init() {
     console.error('[progress] Error code:', err?.code);
     if (loadingEl) loadingEl.hidden = true;
     if (errorEl) {
-      errorEl.hidden      = false;
+      errorEl.hidden = false;
       errorEl.textContent = `Could not load progress data: ${err?.message || err}. Check console for details.`;
     }
   }
@@ -295,14 +295,14 @@ async function init() {
 function insertRevisionVault(notes) {
   const weakAreasContainer = document.getElementById('areas-of-weakness-list');
   if (!weakAreasContainer) return;
-  
+
   // Create the vault container above weak areas
   const vaultContainer = document.createElement('div');
   vaultContainer.id = 'revision-vault-container';
   vaultContainer.style.marginBottom = 'var(--space-8)';
-  
+
   const cardsHtml = notes.map(n => `
-    <div class="glass-panel-2 p-5 hover-lift relative" style="min-width: 240px; max-width: 280px; scroll-snap-align: start; cursor: pointer; border-top: 3px solid var(--brand-rose);" onclick="openVaultNote('${n.id}')">
+    <div class="glass-panel-2 p-6 hover-lift relative" style="min-width: 240px; max-width: 280px; scroll-snap-align: start; cursor: pointer; border-top: 3px solid var(--brand-rose);" onclick="openVaultNote('${n.id}')">
       ${!n.is_read ? `<div class="absolute top-2 right-2 w-3 h-3 rounded-full bg-rose"></div>` : ''}
       <div class="badge badge-info mb-2 text-[10px] uppercase">${n.subject}</div>
       <h3 class="font-bold text-main mb-2 leading-tight" style="font-size: 1rem;">${n.title.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</h3>
@@ -321,7 +321,7 @@ function insertRevisionVault(notes) {
   `;
 
   weakAreasContainer.parentNode.insertBefore(vaultContainer, weakAreasContainer.previousElementSibling);
-  
+
   // Inject the viewer modal to the DOM dynamically if not present
   if (!document.getElementById('vaultViewerModal')) {
     const modal = document.createElement('div');
@@ -350,8 +350,8 @@ window.openVaultNote = async (noteId) => {
 
   document.getElementById('vaultNoteTitle').textContent = note.title;
   document.getElementById('vaultNoteSubject').textContent = note.subject.toUpperCase();
-  document.getElementById('vaultNoteHtml').innerHTML = note.content_html; 
-  
+  document.getElementById('vaultNoteHtml').innerHTML = note.content_html;
+
   const modal = document.getElementById('vaultViewerModal');
   modal.classList.remove('opacity-0', 'pointer-events-none');
   modal.classList.add('opacity-100', 'pointer-events-auto');
@@ -360,8 +360,8 @@ window.openVaultNote = async (noteId) => {
   if (!note.is_read) {
     const sb = await getSupabase();
     await sb.from('study_notes').update({ is_read: true }).eq('id', noteId);
-    note.is_read = true; 
-    
+    note.is_read = true;
+
     // Visually remove the red dot
     const targetCard = Array.from(document.querySelectorAll('#revision-vault-list .glass-panel-2')).find(c => c.innerHTML.includes(note.title));
     if (targetCard) {
@@ -375,11 +375,11 @@ window.openVaultNote = async (noteId) => {
 function insertAOMasteryUI(aoStats) {
   const weakAreasContainer = document.getElementById('areas-of-weakness-list');
   if (!weakAreasContainer) return;
-  
+
   const aoContainer = document.createElement('div');
   aoContainer.id = 'ao-mastery-container';
   aoContainer.style.marginBottom = 'var(--space-8)';
-  
+
   const aoHtml = Object.keys(aoStats).map(key => {
     const stat = aoStats[key];
     const pct = stat.total > 0 ? Math.round((stat.earned / stat.total) * 100) : 0;
@@ -460,7 +460,7 @@ function renderQuestMap(quest, db) {
   const section = document.getElementById('quest-map-section');
   if (!section) return;
 
-  const steps       = quest.steps || [];
+  const steps = quest.steps || [];
   const currentStep = quest.current_step || 0;
 
   // ── Card wrapper ────────────────────────────────────────────────────────────
@@ -503,7 +503,7 @@ function renderQuestMap(quest, db) {
   timeline.style.cssText = 'display:flex; align-items:center; gap:0; margin-bottom: var(--space-6);';
 
   steps.forEach((step, i) => {
-    const isDone   = i < currentStep;
+    const isDone = i < currentStep;
     const isActive = i === currentStep;
 
     // Node
@@ -541,7 +541,7 @@ function renderQuestMap(quest, db) {
 
   steps.forEach((step, i) => {
     const isActive = i === currentStep;
-    const isDone   = i < currentStep;
+    const isDone = i < currentStep;
 
     const labelWrap = document.createElement('div');
     labelWrap.style.cssText = `
@@ -593,7 +593,7 @@ function renderQuestMap(quest, db) {
   // CTA — deep-link with quest tracking params appended
   const ctaUrl = `${activeStepData.action_url}&quest_id=${encodeURIComponent(quest.id)}&step=${currentStep}`;
   const cta = document.createElement('a');
-  cta.href      = ctaUrl;
+  cta.href = ctaUrl;
   cta.className = 'btn btn-primary';
   cta.textContent = `Start Day ${activeStepData.day} →`;
 
@@ -629,8 +629,8 @@ async function generateQuest(db, session, student, topic, subject, score, attemp
   }
 
   const originalText = btnEl.textContent;
-  btnEl.disabled     = true;
-  btnEl.textContent  = 'Generating…';
+  btnEl.disabled = true;
+  btnEl.textContent = 'Generating…';
 
   // 🚀 UI POLISH: Inject Skeleton Loader 
   const questMapContainer = document.getElementById('quest-map-container') || document.querySelector('.quest-container');
@@ -652,17 +652,17 @@ async function generateQuest(db, session, student, topic, subject, score, attemp
     const levelSlug = (student.level || 'primary-4').toLowerCase().replace(/\s+/g, '-');
 
     const res = await fetch('/api/generate-quest', {
-      method:  'POST',
+      method: 'POST',
       headers: {
-        'Content-Type':  'application/json',
+        'Content-Type': 'application/json',
         'Authorization': `Bearer ${session.access_token}`,
       },
       body: JSON.stringify({
-        student_id:         student.id,
-        subject:            subject.toLowerCase(),
-        level:              levelSlug,
-        topic:              topic.toLowerCase(),
-        trigger_score:      score,
+        student_id: student.id,
+        subject: subject.toLowerCase(),
+        level: levelSlug,
+        topic: topic.toLowerCase(),
+        trigger_score: score,
         trigger_attempt_id: attemptId || null,
       }),
     });
@@ -671,7 +671,7 @@ async function generateQuest(db, session, student, topic, subject, score, attemp
 
     if (!res.ok || !json.quest) {
       showBtnError(btnEl, json.error || 'Could not generate quest.');
-      btnEl.disabled    = false;
+      btnEl.disabled = false;
       btnEl.textContent = originalText;
       return;
     }
@@ -683,7 +683,7 @@ async function generateQuest(db, session, student, topic, subject, score, attemp
   } catch (err) {
     console.error('[progress] generateQuest error:', err.message);
     showBtnError(btnEl, 'Network error. Please try again.');
-    btnEl.disabled    = false;
+    btnEl.disabled = false;
     btnEl.textContent = originalText;
   }
 }
@@ -743,7 +743,7 @@ async function abandonQuest(db, questId, sectionEl) {
     // Hide the quest map and re-enable all Generate Quest buttons
     if (sectionEl) sectionEl.style.display = 'none';
     document.querySelectorAll('[data-quest-btn]').forEach(btn => {
-      btn.disabled    = false;
+      btn.disabled = false;
       btn.textContent = '+ Generate Quest';
     });
 
@@ -769,7 +769,7 @@ function showBtnError(btnEl, message) {
 function disableAllQuestButtons(tooltipText) {
   document.querySelectorAll('[data-quest-btn]').forEach(btn => {
     btn.disabled = true;
-    btn.title    = tooltipText || '';
+    btn.title = tooltipText || '';
   });
 }
 
@@ -780,22 +780,22 @@ function disableAllQuestButtons(tooltipText) {
  */
 function populateStudentSelector(students, activeId) {
   const selectorDiv = document.getElementById('student-selector');
-  const selectEl    = document.getElementById('student-select');
+  const selectEl = document.getElementById('student-select');
   if (!selectorDiv || !selectEl) return;
 
   selectEl.innerHTML = '';
-  students.forEach(function(s) {
+  students.forEach(function (s) {
     const opt = document.createElement('option');
-    opt.value       = s.id;
+    opt.value = s.id;
     opt.textContent = s.name + ' (' + s.level + ')';
     if (s.id === activeId) opt.selected = true;
     selectEl.appendChild(opt);
   });
 
-  selectEl.addEventListener('change', function() {
+  selectEl.addEventListener('change', function () {
     // Force the new truth immediately 
     localStorage.setItem('shl_active_student_id', selectEl.value);
-    
+
     const params = new URLSearchParams(window.location.search);
     params.set('student', selectEl.value);
     window.location.search = params.toString();
@@ -812,10 +812,10 @@ function updateStudentLabel(student) {
 }
 
 function renderSummaryStats(total, pct, streak, questionsToday) {
-  setText('stat-total',    total.toLocaleString());
+  setText('stat-total', total.toLocaleString());
   setText('stat-accuracy', pct + '%');
-  setText('stat-streak',   streak + (streak === 1 ? ' day' : ' days'));
-  setText('stat-today',    questionsToday.toString());
+  setText('stat-streak', streak + (streak === 1 ? ' day' : ' days'));
+  setText('stat-today', questionsToday.toString());
 
   const accEl = document.getElementById('stat-accuracy');
   if (accEl) {
@@ -823,17 +823,17 @@ function renderSummaryStats(total, pct, streak, questionsToday) {
   }
 
   const bars = [
-    { id: 'bar-total',    target: Math.min(100, Math.round((total / 500) * 100)) },
+    { id: 'bar-total', target: Math.min(100, Math.round((total / 500) * 100)) },
     { id: 'bar-accuracy', target: pct },
-    { id: 'bar-streak',   target: Math.min(100, Math.round((streak / 30) * 100)) },
-    { id: 'bar-today',    target: Math.min(100, Math.round((questionsToday / 20) * 100)) },
+    { id: 'bar-streak', target: Math.min(100, Math.round((streak / 30) * 100)) },
+    { id: 'bar-today', target: Math.min(100, Math.round((questionsToday / 20) * 100)) },
   ];
-  setTimeout(function() {
-    bars.forEach(function(bar) {
+  setTimeout(function () {
+    bars.forEach(function (bar) {
       const el = document.getElementById(bar.id);
       if (el) {
         el.style.transition = 'width 1.1s cubic-bezier(0.4, 0, 0.2, 1)';
-        el.style.width      = bar.target + '%';
+        el.style.width = bar.target + '%';
       }
     });
   }, 200);
@@ -844,11 +844,11 @@ function renderSubjectBars(stats) {
   if (!container) return;
   container.innerHTML = '';
 
-  const labels  = { mathematics: 'Mathematics', science: 'Science', english: 'English' };
+  const labels = { mathematics: 'Mathematics', science: 'Science', english: 'English' };
   const colours = {
     mathematics: 'var(--maths-colour)',
-    science:     'var(--science-colour)',
-    english:     'var(--english-colour)',
+    science: 'var(--science-colour)',
+    english: 'var(--english-colour)',
   };
 
   Object.entries(stats).forEach(([sub, data]) => {
@@ -862,12 +862,12 @@ function renderSubjectBars(stats) {
 
     const nameSpan = document.createElement('span');
     nameSpan.style.fontWeight = '500';
-    nameSpan.textContent      = labels[sub];
+    nameSpan.textContent = labels[sub];
 
     const pctSpan = document.createElement('span');
-    pctSpan.style.color    = 'var(--text-secondary)';
+    pctSpan.style.color = 'var(--text-secondary)';
     pctSpan.style.fontSize = '0.875rem';
-    pctSpan.textContent    = pct !== null
+    pctSpan.textContent = pct !== null
       ? `${pct}% (${data.quizzes} ${data.quizzes === 1 ? 'quiz' : 'quizzes'})`
       : 'No quizzes yet';
 
@@ -912,7 +912,7 @@ function renderWeakTopics(topics, activeQuest, student, session) {
     const badge = document.createElement('span');
     badge.className = `badge badge-${t.pct >= 80 ? 'success' : t.pct >= 60 ? 'amber' : 'danger'}`;
     badge.style.cssText = 'min-width:44px; justify-content:center;';
-    badge.textContent   = `${t.pct}%`;
+    badge.textContent = `${t.pct}%`;
 
     // Topic info
     const info = document.createElement('div');
@@ -931,7 +931,7 @@ function renderWeakTopics(topics, activeQuest, student, session) {
 
     // Practise link
     const link = document.createElement('a');
-    link.href      = 'subjects.html';
+    link.href = 'subjects.html';
     link.className = 'btn btn-secondary btn-sm';
     link.textContent = 'Practise';
 
@@ -939,18 +939,18 @@ function renderWeakTopics(topics, activeQuest, student, session) {
     const questBtn = document.createElement('button');
     questBtn.className = 'btn btn-ghost btn-sm';
     questBtn.setAttribute('data-quest-btn', '');
-    questBtn.setAttribute('data-topic',   t.topic);
+    questBtn.setAttribute('data-topic', t.topic);
     questBtn.setAttribute('data-subject', t.subject || 'mathematics');
-    questBtn.setAttribute('data-score',   String(t.pct));
+    questBtn.setAttribute('data-score', String(t.pct));
     questBtn.textContent = '+ Quest';
     questBtn.style.color = 'var(--mint)';
 
     if (hasActiveQuest) {
       questBtn.disabled = true;
-      questBtn.title    = 'Complete your active quest first';
+      questBtn.title = 'Complete your active quest first';
     }
 
-    questBtn.addEventListener('click', async function() {
+    questBtn.addEventListener('click', async function () {
       const dbClient = await getSupabase();
       await generateQuest(
         dbClient,
@@ -986,9 +986,9 @@ function renderRecentHistory(attempts) {
     row.style.cssText = 'padding: var(--space-3) 0; border-bottom: 1px solid var(--border); flex-wrap:wrap; row-gap:var(--space-2);';
 
     const dateEl = document.createElement('span');
-    dateEl.className    = 'text-secondary text-sm';
+    dateEl.className = 'text-secondary text-sm';
     dateEl.style.cssText = 'min-width:80px;';
-    dateEl.textContent  = formatDate(a.completed_at);
+    dateEl.textContent = formatDate(a.completed_at);
 
     const info = document.createElement('div');
     info.style.flex = '1';
@@ -1022,7 +1022,7 @@ function calculateStreak(attempts) {
     attempts.map(a => a.completed_at.slice(0, 10))
   )].sort().reverse();
 
-  const today     = new Date().toISOString().slice(0, 10);
+  const today = new Date().toISOString().slice(0, 10);
   const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
 
   if (uniqueDates[0] !== today && uniqueDates[0] !== yesterday) return 0;
@@ -1049,46 +1049,46 @@ function formatDate(iso) {
  */
 function renderExamHistory(exams) {
   const emptyEl = document.getElementById('exam-history-empty');
-  const listEl  = document.getElementById('exam-history-list');
+  const listEl = document.getElementById('exam-history-list');
   if (!emptyEl || !listEl) return;
 
   if (!exams || exams.length === 0) {
     emptyEl.hidden = false;
-    listEl.hidden  = true;
+    listEl.hidden = true;
     return;
   }
 
   emptyEl.hidden = true;
-  listEl.hidden  = false;
+  listEl.hidden = false;
   listEl.innerHTML = '';
 
-  const typeLabels = { WA1:'WA1', WA2:'WA2', EOY:'EOY', PRELIM:'Prelim', PRACTICE:'Practice' };
+  const typeLabels = { WA1: 'WA1', WA2: 'WA2', EOY: 'EOY', PRELIM: 'Prelim', PRACTICE: 'Practice' };
   const subColours = {
     mathematics: 'var(--maths-colour)',
-    science:     'var(--science-colour)',
-    english:     'var(--english-colour)',
+    science: 'var(--science-colour)',
+    english: 'var(--english-colour)',
   };
 
   const grouped = {};
-  exams.forEach(function(e) {
+  exams.forEach(function (e) {
     const sub = (e.subject || 'other').toLowerCase();
     if (!grouped[sub]) grouped[sub] = [];
     grouped[sub].push(e);
   });
 
-  Object.entries(grouped).forEach(function([sub, subExams]) {
+  Object.entries(grouped).forEach(function ([sub, subExams]) {
     const subLabel = sub.charAt(0).toUpperCase() + sub.slice(1);
-    const colour   = subColours[sub] || 'var(--cream)';
+    const colour = subColours[sub] || 'var(--cream)';
 
     const heading = document.createElement('p');
     heading.style.cssText = `font-weight:700; font-size:.875rem; color:${colour}; margin-bottom:var(--space-2); margin-top:var(--space-4);`;
     heading.textContent = subLabel;
     listEl.appendChild(heading);
 
-    subExams.forEach(function(e) {
-      const pct   = e.total_marks > 0 ? Math.round((e.score / e.total_marks) * 100) : 0;
+    subExams.forEach(function (e) {
+      const pct = e.total_marks > 0 ? Math.round((e.score / e.total_marks) * 100) : 0;
       const label = typeLabels[e.exam_type] || e.exam_type || 'Paper';
-      const mins  = e.time_taken ? Math.round(e.time_taken / 60) + ' min' : '';
+      const mins = e.time_taken ? Math.round(e.time_taken / 60) + ' min' : '';
 
       const row = document.createElement('div');
       row.style.cssText = 'padding:var(--space-3) 0; border-bottom:1px solid var(--glass-border); display:flex; align-items:center; gap:var(--space-3); flex-wrap:wrap;';
@@ -1134,7 +1134,7 @@ function setText(id, value) {
 }
 // ── ACTION PLAN RENDERER (NEW UI/UX) ──────────────────────────────────────────
 
-function renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subjectStats, weakTopics, student, session, activeQuest, allActivity, improvedText) {  
+function renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subjectStats, weakTopics, student, session, activeQuest, allActivity, improvedText) {
   // 1. LAYER 1: Subject Proficiency
   const subjects = ['mathematics', 'science', 'english'];
   subjects.forEach(sub => {
@@ -1163,7 +1163,7 @@ function renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subject
   const weaknessList = document.getElementById('areas-of-weakness-list');
   if (weaknessList) {
     const weakHtml = [];
-    
+
     subjects.forEach(sub => {
       const subTopics = weakTopics
         .filter(t => t.subject.toLowerCase() === sub && t.pct < 85)
@@ -1173,7 +1173,7 @@ function renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subject
       if (subTopics.length > 0) {
         const colorVar = `var(--${sub === 'mathematics' ? 'maths' : sub}-colour)`;
         weakHtml.push(`<h3 style="color:${colorVar}; font-size:0.9rem; text-transform:uppercase; letter-spacing:1px; margin:var(--space-2) 0 0 0;">${sub}</h3>`);
-        
+
         subTopics.forEach(t => {
           const topicLabel = t.topic.replace(/-/g, ' ');
           weakHtml.push(`
@@ -1203,7 +1203,7 @@ function renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subject
       if (pct === 0 && stats.total === 0) return '';
       const band = getALBand(pct);
       const colour = pct >= 75 ? 'var(--mint)' : pct >= 50 ? 'var(--amber)' : 'var(--danger)';
-      
+
       return `
         <div class="glass-panel-1" style="padding:var(--space-4);">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-2);">
@@ -1223,7 +1223,7 @@ function renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subject
         </div>
       `;
     }).join('');
-    
+
     subjectBreakdownList.innerHTML = subjectHtml || '<p class="text-secondary">No subject data yet.</p>';
   }
 
@@ -1233,17 +1233,17 @@ function renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subject
   setText('stat-time-new', totalHours > 0 ? `${totalHours}h ${totalMins}m` : `${totalMins}m`);
   setText('stat-mastered-new', questionsMastered.toString());
   setText('stat-papers', allActivity ? allActivity.length.toString() : '0');
-  
+
   const improvedEl = document.getElementById('stat-improved');
   if (improvedEl) {
     improvedEl.innerHTML = improvedText;
-    improvedEl.style.fontSize = '1.1rem'; 
+    improvedEl.style.fontSize = '1.1rem';
     improvedEl.style.lineHeight = '1.3';
   }
 }
 
 // ── Global Helper for + Plan Quest Button ──
-window.handlePlanQuest = async function(btnEl, studentId, studentLevel, topic, subject, score, attemptId) {
+window.handlePlanQuest = async function (btnEl, studentId, studentLevel, topic, subject, score, attemptId) {
   try {
     const db = await getSupabase();
     const { data: { session } } = await db.auth.getSession();
@@ -1268,15 +1268,15 @@ function getALBand(pct) {
 
 // ── AI ACCORDION TOGGLE (LIVE GEMINI ENGINE) ──────────────────────────────────
 
-window.toggleDeepDive = async function(studentId, subject, btnEl, quizCount) {
+window.toggleDeepDive = async function (studentId, subject, btnEl, quizCount) {
   const container = document.getElementById(`deep-dive-${subject}`);
-  
+
   if (container.style.display === 'block') {
     container.style.display = 'none';
     btnEl.innerHTML = 'View More Details ↓';
     return;
   }
-  
+
   container.style.display = 'block';
   btnEl.innerHTML = 'Hide Details ↑';
   if (container.dataset.loaded) return;
@@ -1291,14 +1291,14 @@ window.toggleDeepDive = async function(studentId, subject, btnEl, quizCount) {
     // FIXED: Safely await the database client before reading the session
     const db = await window.getSupabase();
     const { data: { session } } = await db.auth.getSession();
-    
+
     // Call our new backend endpoint
     const res = await fetch('/api/analyze-weakness', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
       body: JSON.stringify({ student_id: studentId, subject: subject })
     });
-    
+
     const data = await res.json();
     if (data.error) throw new Error(data.error);
 

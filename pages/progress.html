@@ -1,29 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>My Progress — Superholic Lab</title>
-  
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="icon" href="../assets/favicon.ico" />
   <meta name="robots" content="noindex, nofollow" />
-  
+
   <script src="/js/header.js" defer></script>
   <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js"></script>
   <script src="/js/footer.js" defer></script>
-  
+
   <script type="module">
     import { guardPage } from '/js/auth.js';
     import { initAppShell } from '/js/app-shell.js';
-    
+
     // Boot sequence: Ensure profile loads BEFORE we trigger DOM manipulations
     async function boot() {
       try {
-        window.userProfile = await guardPage(true); 
-        await initAppShell(window.userProfile); 
+        window.userProfile = await guardPage(true);
+        await initAppShell(window.userProfile);
       } catch (err) {
         console.error('Boot sequence failed:', err);
       }
@@ -36,13 +37,16 @@
 
   <global-header></global-header>
 
-  <div class="bg-sage texture-dots py-10" style="padding-top: calc(var(--navbar-h) + var(--space-8)); position:relative; overflow:hidden;">
-    
-    <div id="student-selector" class="animate-in delay-2 mb-4 relative z-10" style="display:none; max-width: 240px; margin: 0 auto 1rem auto;">
-      <select id="student-select" class="form-select form-select-sm form-select-glass" style="font-weight: 600; text-align-last: center;">
+  <div class="bg-sage texture-dots py-20"
+    style="padding-top: calc(var(--navbar-h) + var(--space-8)); position:relative; overflow:hidden;">
+
+    <div id="student-selector" class="animate-in delay-2 mb-4 relative z-10"
+      style="display:none; max-width: 240px; margin: 0 auto 1rem auto;">
+      <select id="student-select" class="form-select form-select-sm form-select-glass"
+        style="font-weight: 600; text-align-last: center;">
       </select>
     </div>
-    
+
     <div class="container relative z-10 text-center flex flex-col items-center">
       <div class="badge badge-glass mb-4">Mission Report</div>
       <h1 class="font-display text-4xl text-white mb-2" style="font-size: 3rem;">
@@ -51,44 +55,48 @@
     </div>
   </div>
 
-  <main id="app" class="container py-10 flex flex-col items-center" style="max-width:800px; min-height: 80vh;">
-    
-    <div id="progress-loading" class="w-full text-center py-10">
+  <main id="app" class="container py-20 flex flex-col items-center" style="max-width:800px; min-height: 80vh;">
+
+    <div id="progress-loading" class="w-full text-center py-20">
       <div class="spinner-sm mx-auto mb-4"></div>
       <h2 class="font-display text-2xl text-main">Crunching Data...</h2>
       <p class="text-sm text-muted mt-2">Loading your latest mission report</p>
     </div>
 
     <div id="progress-empty" class="w-full" hidden>
-      <div class="glass-panel-1 p-10 text-center hover-lift" style="max-width: 600px; margin: 0 auto;">
+      <div class="glass-panel-1 p-20 text-center hover-lift" style="max-width: 600px; margin: 0 auto;">
         <div class="text-4xl mb-4">🚀</div>
         <h2 class="font-display text-2xl text-main mb-2">Ready for Liftoff!</h2>
-        <p class="text-muted text-sm mb-6">Complete your first practice paper or quiz to unlock your personalized Action Plan.</p>
+        <p class="text-muted text-sm mb-6">Complete your first practice paper or quiz to unlock your personalized Action
+          Plan.</p>
         <a href="subjects.html" class="btn btn-primary hover-lift">Start Practising</a>
       </div>
     </div>
 
     <div id="progress-content" class="w-full" hidden>
-      
+
       <h2 class="font-display text-2xl text-main mb-4 uppercase">Subject Proficiency</h2>
-      
+
       <div class="flex flex-wrap gap-4 mb-8">
         <div class="glass-panel-1 flex-1 p-6 text-center hover-lift bg-maths-tint" style="min-width: 200px;">
-          <div class="text-sm mb-2 uppercase font-bold tracking-wider" style="color: var(--maths-colour);">Mathematics</div>
+          <div class="text-sm mb-2 uppercase font-bold tracking-wider" style="color: var(--maths-colour);">Mathematics
+          </div>
           <div class="flex justify-center items-baseline gap-3">
             <div class="font-display text-4xl text-main" id="stat-mathematics-pct">-</div>
             <div id="stat-mathematics-al" class="badge text-sm">-</div>
           </div>
         </div>
         <div class="glass-panel-1 flex-1 p-6 text-center hover-lift bg-science-tint" style="min-width: 200px;">
-          <div class="text-sm mb-2 uppercase font-bold tracking-wider" style="color: var(--science-colour);">Science</div>
+          <div class="text-sm mb-2 uppercase font-bold tracking-wider" style="color: var(--science-colour);">Science
+          </div>
           <div class="flex justify-center items-baseline gap-3">
             <div class="font-display text-4xl text-main" id="stat-science-pct">-</div>
             <div id="stat-science-al" class="badge text-sm">-</div>
           </div>
         </div>
         <div class="glass-panel-1 flex-1 p-6 text-center hover-lift bg-english-tint" style="min-width: 200px;">
-          <div class="text-sm mb-2 uppercase font-bold tracking-wider" style="color: var(--english-colour);">English</div>
+          <div class="text-sm mb-2 uppercase font-bold tracking-wider" style="color: var(--english-colour);">English
+          </div>
           <div class="flex justify-center items-baseline gap-3">
             <div class="font-display text-4xl text-main" id="stat-english-pct">-</div>
             <div id="stat-english-al" class="badge text-sm">-</div>
@@ -121,7 +129,7 @@
         <div class="glass-panel-2 flex-1 p-6 text-center hover-lift" style="min-width: 200px;">
           <div class="text-muted text-sm mb-2 uppercase font-bold tracking-wider">Topics Improved</div>
           <div class="font-bold text-lg text-amber"><span id="stat-improved">-</span></div>
-          <div class="text-muted text-xs uppercase font-bold mt-1">vs Last Week</div>
+          <div class="text-muted text-xs uppercase font-bold mt-2">vs Last Week</div>
         </div>
       </div>
 
@@ -137,27 +145,27 @@
   <nav class="bottom-nav" id="bottomNav" aria-label="Mobile navigation">
     <a href="subjects.html" class="bottom-nav-item">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
-        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
       </svg>
       Practise
     </a>
     <a href="tutor.html" class="bottom-nav-item">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
-        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
       </svg>
       AI Tutor
     </a>
     <a href="exam.html" class="bottom-nav-item">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
-        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
-        <rect x="9" y="3" width="6" height="4" rx="2"/>
-        <path d="M9 12h6M9 16h4"/>
+        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
+        <rect x="9" y="3" width="6" height="4" rx="2" />
+        <path d="M9 12h6M9 16h4" />
       </svg>
       Exam
     </a>
     <a href="progress.html" class="bottom-nav-item is-active" aria-current="page">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
-        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
       </svg>
       Progress
     </a>
@@ -167,4 +175,5 @@
   <script src="../js/progress.js"></script>
 
 </body>
+
 </html>

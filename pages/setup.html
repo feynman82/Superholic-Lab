@@ -31,7 +31,7 @@
   </header>
 
   <!-- ═══════════════════ SETUP CARD ═══════════════════ -->
-  <main class="flex-1 flex items-center justify-center p-4 py-10">
+  <main class="flex-1 flex items-center justify-center p-4 py-20">
     <div class="glass-panel-1 p-6 hover-lift w-full" style="max-width: 480px; background: var(--bg-surface);">
 
       <!-- Step Indicator -->
@@ -52,12 +52,12 @@
         </div>
 
         <div class="flex flex-col gap-4">
-          <div class="flex flex-col gap-1">
+          <div class="flex flex-col gap-2">
             <label class="text-sm font-bold text-muted" for="childName">Child's name</label>
             <input class="form-input" type="text" id="childName" placeholder="e.g. Kai" autocomplete="off" />
           </div>
 
-          <div class="flex flex-col gap-1">
+          <div class="flex flex-col gap-2">
             <label class="text-sm font-bold text-muted" for="childLevel">Primary level</label>
             <select class="form-input" id="childLevel" style="cursor: pointer;">
               <option value="">Select level…</option>
@@ -70,7 +70,7 @@
             </select>
           </div>
 
-          <div class="flex flex-col gap-1" id="subjectGroup" style="display:none">
+          <div class="flex flex-col gap-2" id="subjectGroup" style="display:none">
             <label class="text-sm font-bold text-muted" for="childSubject">Subject</label>
             <select class="form-input" id="childSubject" style="cursor: pointer;">
               <option value="">Select subject…</option>
@@ -78,7 +78,7 @@
               <option value="Science" id="scienceOption">Science</option>
               <option value="English">English</option>
             </select>
-            <p class="text-xs text-amber font-bold mt-1" id="scienceHint" style="display:none">Science is available from
+            <p class="text-xs text-amber font-bold mt-2" id="scienceHint" style="display:none">Science is available from
               Primary 3 onwards.</p>
           </div>
         </div>
@@ -228,7 +228,7 @@
       ];
 
       document.getElementById('summaryCard').innerHTML = rows.map(([label, value], index) => `
-      <div class="flex justify-between items-center py-3 ${index !== rows.length - 1 ? 'border-b border-light' : ''}" style="border-bottom: ${index !== rows.length - 1 ? '1px solid var(--border-dark)' : 'none'};">
+      <div class="flex justify-between items-center py-2 ${index !== rows.length - 1 ? 'border-b border-light' : ''}" style="border-bottom: ${index !== rows.length - 1 ? '1px solid var(--border-dark)' : 'none'};">
         <span class="text-sm font-bold text-muted">${label}</span>
         <span class="text-sm font-bold text-main">${escapeHtml(String(value))}</span>
       </div>

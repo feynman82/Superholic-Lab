@@ -228,7 +228,7 @@ window.initExamEngine = function () {
 
       // 3. Subheader Grouping (Booklet A, Booklet B, etc.)
       if (sec.label !== currentLabel) {
-        strips += `<div class="font-bold text-main text-base mt-6 mb-1">${esc(sec.label)}</div>`;
+        strips += `<div class="font-bold text-main text-base mt-6 mb-2">${esc(sec.label)}</div>`;
         currentLabel = sec.label;
       }
 
@@ -236,7 +236,7 @@ window.initExamEngine = function () {
       strips += `
         <div class="flex items-center gap-2 py-2" style="border-bottom: 1px dashed var(--border-light);">
           <div class="text-sm uppercase tracking-wide" style="min-width: 140px; white-space: normal; line-height: 1.3; color: ${colour}; font-family: var(--font-body);">${label}</div>
-          <div class="flex flex-wrap gap-1 flex-1 justify-start">${pills}</div>
+          <div class="flex flex-wrap gap-2 flex-1 justify-start">${pills}</div>
           <div class="font-bold text-sm text-main text-right" style="min-width: 40px;">${sectionMarks}M</div>
         </div>`;
     });
@@ -523,7 +523,7 @@ window.initExamEngine = function () {
     app.innerHTML = `
       <div class="sticky top-[var(--navbar-h)] z-40 glass-panel-2 w-full p-4 mb-6 flex flex-col justify-center items-center text-center max-w-[1440px]">
         <h2 class="font-display text-xl text-main m-0">${p.template.displayName || p.displayName}</h2>
-        <div class="text-sm text-muted mt-1">${p.template.totalMarks || p.totalMarks} Marks • ${p.template.durationMinutes || p.duration} mins</div>
+        <div class="text-sm text-muted mt-2">${p.template.totalMarks || p.totalMarks} Marks • ${p.template.durationMinutes || p.duration} mins</div>
       </div>
 
       <div class="flex flex-wrap gap-6 items-start w-full justify-center max-w-[1440px]">
@@ -655,7 +655,7 @@ window.initExamEngine = function () {
     const isDrawMode = state.drawings[globalIdx] && state.drawings[globalIdx] !== 'text';
 
     const baseStyle = "form-input w-full p-4 text-lg border-2 border-slate-200 focus:border-brand-sage rounded-xl transition-all shadow-sm";
-    const drawStyle = "form-input mt-3 w-full p-4 text-lg border-2 border-brand-sage focus:border-brand-sage rounded-xl transition-all shadow-sm bg-sage-50/10";
+    const drawStyle = "form-input mt-4 w-full p-4 text-lg border-2 border-brand-sage focus:border-brand-sage rounded-xl transition-all shadow-sm bg-sage-50/10";
 
     let synthesisHtml = '';
     if (isSynthesis && q.instructions) {
@@ -721,7 +721,7 @@ window.initExamEngine = function () {
       const drawKey = `${globalIdx}-${safeIdLabel}`;
       const isDrawMode = state.drawings[drawKey] && state.drawings[drawKey] !== 'text';
       const baseStyle = "form-input w-full p-4 text-lg border-2 border-slate-200 focus:border-brand-sage rounded-xl transition-all shadow-sm";
-      const drawStyle = "form-input mt-3 w-full p-4 text-lg border-2 border-brand-sage focus:border-brand-sage rounded-xl bg-sage-50/10";
+      const drawStyle = "form-input mt-4 w-full p-4 text-lg border-2 border-brand-sage focus:border-brand-sage rounded-xl bg-sage-50/10";
 
       return `
         <div class="mb-6">
@@ -768,7 +768,7 @@ window.initExamEngine = function () {
         ).join('');
         wordBankHtml = `
            <div class="glass-panel-2 p-4 mb-4">
-             <div class="text-xs font-bold text-muted uppercase mb-3">Word Bank</div>
+             <div class="text-xs font-bold text-muted uppercase mb-4">Word Bank</div>
              <div class="flex flex-wrap gap-2">${wordBankList}</div>
            </div>`;
       }
@@ -820,14 +820,14 @@ window.initExamEngine = function () {
       } else if (p.part_type === 'referent' && Array.isArray(p.items)) {
         const rows = p.items.map((item, i) => {
           const saved = (savedObj[pLabel] || {})[`ref_${i}`] || '';
-          return `<tr><td class="p-4 border border-light font-medium">${esc(item.word)}</td><td class="p-4 border border-light"><input type="text" id="comp-${globalIdx}-${safeIdLabel}-ref_${i}" class="form-input w-full p-3 bg-surface" placeholder="Type referent..." value="${esc(saved)}" onblur="window.saveAllAnswers()"></td></tr>`;
+          return `<tr><td class="p-4 border border-light font-medium">${esc(item.word)}</td><td class="p-4 border border-light"><input type="text" id="comp-${globalIdx}-${safeIdLabel}-ref_${i}" class="form-input w-full p-4 bg-surface" placeholder="Type referent..." value="${esc(saved)}" onblur="window.saveAllAnswers()"></td></tr>`;
         }).join('');
         inter = `<table class="w-full text-left border-collapse text-main bg-white rounded-xl overflow-hidden shadow-sm"><thead><tr><th class="p-4 border border-light bg-page font-bold text-sm uppercase text-muted">Word from passage</th><th class="p-4 border border-light bg-page font-bold text-sm uppercase text-muted">What it refers to</th></tr></thead><tbody>${rows}</tbody></table>`;
       } else if (p.part_type === 'true_false' && Array.isArray(p.items)) {
         const rows = p.items.map((item, i) => {
           const savedAns = (savedObj[pLabel] || {})[`tf_${i}_ans`] || '';
           const savedRsn = (savedObj[pLabel] || {})[`tf_${i}_rsn`] || '';
-          return `<tr><td class="p-4 border border-light font-medium text-base leading-relaxed w-1/2">${esc(item.statement)}</td><td class="p-4 border border-light w-1/2"><div class="flex gap-4 mb-3"><label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="comp-${globalIdx}-${safeIdLabel}-tf_${i}" value="True" ${savedAns === 'True' ? 'checked' : ''} onchange="window.saveAllAnswers()"> True</label><label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="comp-${globalIdx}-${safeIdLabel}-tf_${i}" value="False" ${savedAns === 'False' ? 'checked' : ''} onchange="window.saveAllAnswers()"> False</label></div><textarea id="comp-${globalIdx}-${safeIdLabel}-tf_${i}_rsn" class="form-input w-full p-3 text-sm bg-surface" rows="2" placeholder="Type reason from passage..." onblur="window.saveAllAnswers()">${esc(savedRsn)}</textarea></td></tr>`;
+          return `<tr><td class="p-4 border border-light font-medium text-base leading-relaxed w-1/2">${esc(item.statement)}</td><td class="p-4 border border-light w-1/2"><div class="flex gap-4 mb-4"><label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="comp-${globalIdx}-${safeIdLabel}-tf_${i}" value="True" ${savedAns === 'True' ? 'checked' : ''} onchange="window.saveAllAnswers()"> True</label><label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="comp-${globalIdx}-${safeIdLabel}-tf_${i}" value="False" ${savedAns === 'False' ? 'checked' : ''} onchange="window.saveAllAnswers()"> False</label></div><textarea id="comp-${globalIdx}-${safeIdLabel}-tf_${i}_rsn" class="form-input w-full p-4 text-sm bg-surface" rows="2" placeholder="Type reason from passage..." onblur="window.saveAllAnswers()">${esc(savedRsn)}</textarea></td></tr>`;
         }).join('');
         inter = `<table class="w-full text-left border-collapse text-main bg-white rounded-xl overflow-hidden shadow-sm"><thead><tr><th class="p-4 border border-light bg-page font-bold text-sm uppercase text-muted">Statement</th><th class="p-4 border border-light bg-page font-bold text-sm uppercase text-muted">True / False & Reason</th></tr></thead><tbody>${rows}</tbody></table>`;
       } else if (p.part_type === 'sequencing' && Array.isArray(p.items)) {
@@ -837,7 +837,7 @@ window.initExamEngine = function () {
                         <input type="number" 
                                 id="comp-${globalIdx}-${safeIdLabel}-seq_${i}" 
                                 style="width: 60px; flex-shrink: 0;" 
-                                class="form-input p-3 text-center font-display text-xl" 
+                                class="form-input p-4 text-center font-display text-xl" 
                                 min="1" max="${p.items.length}" 
                                 value="${esc(saved)}" 
                                 onblur="window.saveAllAnswers()">
@@ -850,7 +850,7 @@ window.initExamEngine = function () {
         inter = `<textarea id="comp-${globalIdx}-${safeIdLabel}" class="form-input w-full p-4 text-lg border-2 border-slate-200 focus:border-brand-sage rounded-xl" rows="3" placeholder="Type answer..." onblur="window.saveAllAnswers()">${esc(saved)}</textarea>`;
       }
       // 🚀 MASTERCLASS FIX: Align question UI with quiz.js (dashed borders, proper spacing)
-      return `<div class="mb-6 pb-6 ${pIdx < partsData.length - 1 ? 'border-b border-light border-dashed' : ''}"><div class="flex items-center gap-3 mb-3"><span class="font-display text-xl text-main font-bold" style="color: var(--english-colour);">${pLabel}</span><span class="badge badge-info text-xs">${p.marks || 1} mark${(p.marks || 1) !== 1 ? 's' : ''}</span></div>${p.question ? `<div class="text-lg text-main font-medium mb-4 leading-relaxed">${esc(p.question)}</div>` : ''}${inter}</div>`;
+      return `<div class="mb-6 pb-6 ${pIdx < partsData.length - 1 ? 'border-b border-light border-dashed' : ''}"><div class="flex items-center gap-3 mb-4"><span class="font-display text-xl text-main font-bold" style="color: var(--english-colour);">${pLabel}</span><span class="badge badge-info text-xs">${p.marks || 1} mark${(p.marks || 1) !== 1 ? 's' : ''}</span></div>${p.question ? `<div class="text-lg text-main font-medium mb-4 leading-relaxed">${esc(p.question)}</div>` : ''}${inter}</div>`;
     }).join('');
 
     return `
@@ -1014,7 +1014,7 @@ window.initExamEngine = function () {
     window.saveAllAnswers();
     clearInterval(state.timerInterval);
 
-    app.innerHTML = `<div class="glass-panel-1 flex flex-col items-center p-12 text-center w-full max-w-lg mx-auto mt-10"><div class="spinner-sm mb-6"></div><h2 class="font-display text-2xl text-main">Grading Paper...</h2><p class="text-muted mt-2">Miss Wena is reviewing your answers. This may take a minute.</p></div>`;
+    app.innerHTML = `<div class="glass-panel-1 flex flex-col items-center p-22 text-center w-full max-w-lg mx-auto mt-20"><div class="spinner-sm mb-6"></div><h2 class="font-display text-2xl text-main">Grading Paper...</h2><p class="text-muted mt-2">Miss Wena is reviewing your answers. This may take a minute.</p></div>`;
 
     state.results = {};
     const aiPromises = [];
@@ -1119,7 +1119,7 @@ window.initExamEngine = function () {
       let drawingHtml = '';
       Object.keys(state.drawings).filter(k => k.startsWith(globalIdx)).forEach(k => {
         if (state.drawings[k] !== 'init' && state.drawings[k] !== 'text') {
-          drawingHtml += `<div class="mt-2"><span class="text-xs font-bold text-muted uppercase">Working Drawing:</span><br><img src="${state.drawings[k]}" class="mt-1 border border-light rounded bg-white shadow-sm" style="max-height:150px;"></div>`;
+          drawingHtml += `<div class="mt-2"><span class="text-xs font-bold text-muted uppercase">Working Drawing:</span><br><img src="${state.drawings[k]}" class="mt-2 border border-light rounded bg-white shadow-sm" style="max-height:150px;"></div>`;
         }
       });
 
@@ -1129,11 +1129,11 @@ window.initExamEngine = function () {
               <span class="font-bold text-lg text-main">${secLabel} Q${i + 1}</span>
               <span class="badge ${r.isCorrect ? 'badge-success' : 'badge-danger'} font-bold">${icon} ${r.score} / ${r.maxScore}</span>
             </div>
-            <div class="text-main font-medium leading-relaxed mb-3">${esc(q.question_text || 'See passage/diagram')}</div>
+            <div class="text-main font-medium leading-relaxed mb-4">${esc(q.question_text || 'See passage/diagram')}</div>
             ${ansHtml}
             ${drawingHtml}
             ${r.text ? `<div class="mt-4 p-4 text-sm bg-elevated border border-light rounded-xl"><strong class="text-brand-sage">Miss Wena's Feedback:</strong><br>${r.text}</div>` : ''}
-            ${r.workedSolution ? `<div class="mt-3 p-4 text-sm bg-white border border-light rounded-xl"><strong>Worked Solution:</strong><br>${window.formatWorkedSolution(r.workedSolution)}</div>` : ''}
+            ${r.workedSolution ? `<div class="mt-4 p-4 text-sm bg-white border border-light rounded-xl"><strong>Worked Solution:</strong><br>${window.formatWorkedSolution(r.workedSolution)}</div>` : ''}
           </div>
         `;
     }).join('');
@@ -1151,7 +1151,7 @@ window.initExamEngine = function () {
 
     app.innerHTML = `
       <div class="w-full">
-        <div class="text-center mb-10 mt-6">
+        <div class="text-center mb-20 mt-6">
           <h1 class="font-display text-4xl text-main mb-4">Paper Complete</h1>
           <div class="glass-panel-1 p-6 inline-flex flex-col items-center justify-center min-w-[280px]" style="border-top: 6px solid ${gradeCol};">
             <div class="text-6xl font-display mb-2" style="color: ${gradeCol};">${earned} <span class="text-3xl text-muted">/ ${possible}</span></div>
@@ -1162,9 +1162,9 @@ window.initExamEngine = function () {
         <h3 class="font-display text-2xl text-main mb-6 border-b border-light pb-2">Question Breakdown</h3>
         ${items}
         
-        <div class="flex justify-center flex-wrap gap-4 mt-10">
-          <button class="btn btn-primary px-8 py-3 text-lg hover-lift" onclick="location.reload()">Take Another Paper</button>
-          <button class="btn btn-secondary px-8 py-3 text-lg hover-lift" onclick="window.location.href='dashboard.html'">Mission Control</button>
+        <div class="flex justify-center flex-wrap gap-4 mt-20">
+          <button class="btn btn-primary px-8 py-2 text-lg hover-lift" onclick="location.reload()">Take Another Paper</button>
+          <button class="btn btn-secondary px-8 py-2 text-lg hover-lift" onclick="window.location.href='dashboard.html'">Mission Control</button>
         </div>
       </div>
     `;

@@ -1,27 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI Tutor — Superholic Lab</title>
-  
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="icon" href="../assets/favicon.ico" />
   <meta name="robots" content="noindex, nofollow" />
-  
+
   <script src="/js/header.js" defer></script>
   <script src="/js/footer.js" defer></script>
   <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js"></script>
-  
+
   <script type="module">
     import { guardPage } from '/js/auth.js';
     import { initAppShell } from '/js/app-shell.js';
-    
+
     async function boot() {
       const profile = await guardPage(true);
-      await initAppShell(profile); 
+      await initAppShell(profile);
     }
     boot();
   </script>
@@ -31,68 +32,83 @@
 
   <global-header></global-header>
 
-  <main id="app" class="container flex flex-col items-center w-full" style="padding-top: calc(var(--navbar-h) + var(--space-8)); padding-bottom: var(--space-10); min-height: 85vh; max-width: 800px;">
-    
+  <main id="app" class="container flex flex-col items-center w-full"
+    style="padding-top: calc(var(--navbar-h) + var(--space-8)); padding-bottom: var(--space-10); min-height: 85vh; max-width: 800px;">
+
     <div id="tutor-limit-banner" class="glass-panel-2 card-rule-amber bg-amber-tint p-4 w-full mb-6" hidden>
-      <div class="font-bold text-sm text-amber mb-1">Daily Limit Reached</div>
-      <p class="text-sm text-main m-0">You have used your 10 free AI Tutor messages today. <a href="pricing.html" class="text-amber font-bold" style="text-decoration: underline;">Upgrade to continue</a>.</p>
+      <div class="font-bold text-sm text-amber mb-2">Daily Limit Reached</div>
+      <p class="text-sm text-main m-0">You have used your 10 free AI Tutor messages today. <a href="pricing.html"
+          class="text-amber font-bold" style="text-decoration: underline;">Upgrade to continue</a>.</p>
     </div>
 
-    <div id="remedial-banner" class="glass-panel-2 card-rule-mint bg-science-tint p-4 w-full mb-6 flex flex-wrap justify-between items-center gap-4" hidden>
+    <div id="remedial-banner"
+      class="glass-panel-2 card-rule-mint bg-science-tint p-4 w-full mb-6 flex flex-wrap justify-between items-center gap-4"
+      hidden>
       <p class="m-0 text-sm text-main">
-        🗺️ <strong class="text-success">Remedial Quest Active</strong> — Ask Miss Wena about <strong id="quest-topic-name" style="text-transform: capitalize;"></strong>
+        🗺️ <strong class="text-success">Remedial Quest Active</strong> — Ask Miss Wena about <strong
+          id="quest-topic-name" style="text-transform: capitalize;"></strong>
       </p>
       <a href="progress.html" class="btn btn-ghost btn-sm hover-lift">← Quest Map</a>
     </div>
 
     <div class="glass-panel-1 w-full flex flex-col mb-6 p-0 overflow-hidden" style="height: 80vh; min-height: 700px;">
-      
+
       <div class="p-4 flex items-center justify-between bg-surface border-b border-light" style="z-index: 10;">
-         <div class="flex items-center gap-3">
-            <img src="../assets/images/miss_wena.png" alt="Miss Wena" class="wena-avatar" style="width: 48px; height: 48px; border-width: 2px;">
-            <div>
-               <div class="font-display text-xl text-main m-0 tracking-wide">Miss Wena</div>
-               <div class="text-xs font-bold text-success flex items-center gap-1">✨ Verified MOE-Aligned Superholic Tutor</div>
+        <div class="flex items-center gap-3">
+          <img src="../assets/images/miss_wena.png" alt="Miss Wena" class="wena-avatar"
+            style="width: 48px; height: 48px; border-width: 2px;">
+          <div>
+            <div class="font-display text-xl text-main m-0 tracking-wide">Miss Wena</div>
+            <div class="text-xs font-bold text-success flex items-center gap-2">✨ Verified MOE-Aligned Superholic Tutor
             </div>
-         </div>
-         <div class="flex items-center gap-3">
-            <button id="saveChatBtn" class="btn btn-secondary btn-sm hover-lift hidden">💾 Save Notes</button>
-            <span class="badge badge-success hidden sm:inline-flex">Online</span>
-         </div>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <button id="saveChatBtn" class="btn btn-secondary btn-sm hover-lift hidden">💾 Save Notes</button>
+          <span class="badge badge-success hidden sm:inline-flex">Online</span>
+        </div>
       </div>
 
-      <div id="chat-messages" class="flex-1 p-4 md:p-6 flex flex-col gap-4 overflow-y-auto" style="min-height: 0; scroll-behavior: smooth;">
-         </div>
+      <div id="chat-messages" class="flex-1 p-4 md:p-6 flex flex-col gap-4 overflow-y-auto"
+        style="min-height: 0; scroll-behavior: smooth;">
+      </div>
 
-      <div class="p-4 bg-surface relative" style="border-top: 1px solid var(--border-light); flex-shrink: 0; z-index: 10;">
-         
-         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
-            <span class="text-xs font-bold text-muted uppercase tracking-wider">💡 Tip: Draw your working to get better help!</span>
-            <div class="flex gap-2 w-full sm:w-auto">
-               <button id="modeTextBtn" class="btn btn-primary btn-sm">⌨️ Type</button>
-               <button id="modeDrawBtn" class="btn btn-ghost btn-sm">✏️ Pen Tool</button>
-            </div>
-         </div>
-         
-         <div id="drawArea" class="scratchpad-container mb-4" style="display: none;">
-            <canvas id="tutorCanvas" class="scratchpad-canvas"></canvas>
-            <div style="position: absolute; top: 8px; right: 8px;">
-               <button class="btn btn-sm btn-ghost bg-surface hover-lift border border-light" onclick="window.clearCanvas()">🗑️ Clear</button>
-            </div>
-         </div>
+      <div class="p-4 bg-surface relative"
+        style="border-top: 1px solid var(--border-light); flex-shrink: 0; z-index: 10;">
 
-         <div class="flex gap-3 items-end w-full">
-            <textarea id="chat-input" class="form-input flex-1 p-3" rows="1" placeholder="Ask your tutor anything..." autocomplete="off" style="resize: none; max-height: 120px; overflow-y: auto;"></textarea>
-            <button id="chat-send" class="btn btn-primary hover-lift" style="height: 48px; padding: 0 var(--space-6);">Send</button>
-         </div>
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+          <span class="text-xs font-bold text-muted uppercase tracking-wider">💡 Tip: Draw your working to get better
+            help!</span>
+          <div class="flex gap-2 w-full sm:w-auto">
+            <button id="modeTextBtn" class="btn btn-primary btn-sm">⌨️ Type</button>
+            <button id="modeDrawBtn" class="btn btn-ghost btn-sm">✏️ Pen Tool</button>
+          </div>
+        </div>
+
+        <div id="drawArea" class="scratchpad-container mb-4" style="display: none;">
+          <canvas id="tutorCanvas" class="scratchpad-canvas"></canvas>
+          <div style="position: absolute; top: 8px; right: 8px;">
+            <button class="btn btn-sm btn-ghost bg-surface hover-lift border border-light"
+              onclick="window.clearCanvas()">🗑️ Clear</button>
+          </div>
+        </div>
+
+        <div class="flex gap-3 items-end w-full">
+          <textarea id="chat-input" class="form-input flex-1 p-4" rows="1" placeholder="Ask your tutor anything..."
+            autocomplete="off" style="resize: none; max-height: 120px; overflow-y: auto;"></textarea>
+          <button id="chat-send" class="btn btn-primary hover-lift"
+            style="height: 48px; padding: 0 var(--space-6);">Send</button>
+        </div>
       </div>
     </div>
 
     <div class="w-full mb-8">
       <p class="text-xs font-bold text-muted uppercase tracking-wider mb-4">Try asking about any subject:</p>
       <div class="flex flex-wrap gap-3">
-        <button class="btn btn-secondary btn-sm starter-prompt hover-lift">How do I draw a before-after bar model?</button>
-        <button class="btn btn-secondary btn-sm starter-prompt hover-lift">Test my Science Claim-Evidence-Reasoning!</button>
+        <button class="btn btn-secondary btn-sm starter-prompt hover-lift">How do I draw a before-after bar
+          model?</button>
+        <button class="btn btn-secondary btn-sm starter-prompt hover-lift">Test my Science
+          Claim-Evidence-Reasoning!</button>
         <button class="btn btn-secondary btn-sm starter-prompt hover-lift">Check my grammar for this sentence.</button>
       </div>
     </div>
@@ -102,19 +118,29 @@
 
   <nav class="bottom-nav" id="bottomNav" aria-label="Mobile navigation">
     <a href="subjects.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+      </svg>
       Practise
     </a>
     <a href="tutor.html" class="bottom-nav-item is-active">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+      </svg>
       AI Tutor
     </a>
     <a href="exam.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="M9 12h6M9 16h4"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
+        <rect x="9" y="3" width="6" height="4" rx="2" />
+        <path d="M9 12h6M9 16h4" />
+      </svg>
       Exam
     </a>
     <a href="progress.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+      </svg>
       Progress
     </a>
   </nav>
@@ -122,4 +148,5 @@
   <script src="../js/supabase-client.js"></script>
   <script src="../js/tutor.js"></script>
 </body>
+
 </html>

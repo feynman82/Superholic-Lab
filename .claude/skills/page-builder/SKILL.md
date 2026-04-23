@@ -65,7 +65,7 @@ Every page MUST follow this structure:
       </nav>
 
       <!-- Loading state -->
-      <div id="page-loading" class="text-center mt-10">Loading…</div>
+      <div id="page-loading" class="text-center mt-20">Loading…</div>
 
       <!-- Error state -->
       <div id="page-error" class="alert alert-danger mt-6" hidden></div>

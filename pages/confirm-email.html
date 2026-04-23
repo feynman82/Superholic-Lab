@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -10,31 +11,37 @@
   <link rel="icon" href="../assets/favicon.ico" />
 </head>
 
-<body class="bg-page texture-light-grid flex items-center justify-center" style="min-height: 100vh; padding: var(--space-4);">
+<body class="bg-page texture-light-grid flex items-center justify-center"
+  style="min-height: 100vh; padding: var(--space-4);">
 
-  <main class="card p-8 w-full hover-lift flex flex-col items-center text-center" style="max-width: 480px; background: var(--bg-surface);">
+  <main class="card p-8 w-full hover-lift flex flex-col items-center text-center"
+    style="max-width: 480px; background: var(--bg-surface);">
 
-    <div class="w-full bg-sage-dark mb-6 py-3 flex justify-center items-center" style="border-radius: var(--radius-md); border-bottom: 3px solid var(--brand-rose);">
-      <a href="../index.html" class="flex items-center gap-2 font-display text-2xl text-white" style="text-decoration: none;">
-        <img src="../assets/logo.svg" width="32" height="32" alt="" aria-hidden="true" style="border-radius: var(--radius-sm); flex-shrink:0;">
+    <div class="w-full bg-sage-dark mb-6 py-2 flex justify-center items-center"
+      style="border-radius: var(--radius-md); border-bottom: 3px solid var(--brand-rose);">
+      <a href="../index.html" class="flex items-center gap-2 font-display text-2xl text-white"
+        style="text-decoration: none;">
+        <img src="../assets/logo.svg" width="32" height="32" alt="" aria-hidden="true"
+          style="border-radius: var(--radius-sm); flex-shrink:0;">
         Superholic Lab
       </a>
     </div>
 
     <div style="font-size: 3.5rem; margin-bottom: 1rem;">📬</div>
 
-    <h1 class="font-display text-3xl text-main mb-3">Check your inbox</h1>
+    <h1 class="font-display text-3xl text-main mb-4">Check your inbox</h1>
     <br>
     <p class="text-muted mb-2" style="max-width: 360px; text-align: justify;">
       We've sent a confirmation link to <strong id="emailDisplay" class="text-main">your email address</strong>.
     </p>
     <br>
     <p class="text-muted mb-6" style="max-width: 360px; font-size: 0.9rem; text-align: justify;">
-      Click the link in the email to verify your account and complete setup. 
+      Click the link in the email to verify your account and complete setup.
       The link expires in 24 hours.
     </p>
 
-    <div class="card w-full p-4 mb-6" style="background: var(--bg-elevated); border: 1px solid var(--border-light); text-align: left;">
+    <div class="card w-full p-4 mb-6"
+      style="background: var(--bg-elevated); border: 1px solid var(--border-light); text-align: left;">
       <p class="text-sm font-bold text-muted mb-2">Didn't get the email?</p>
       <ul class="text-sm text-muted flex flex-col gap-2" style="padding-left: 1.25rem;">
         <li>Check your <strong class="text-main">spam or junk folder</strong></li>
@@ -61,16 +68,16 @@
   <script>
     // Show the email address from the URL query param
     const params = new URLSearchParams(window.location.search);
-    const email  = params.get('email');
+    const email = params.get('email');
     if (email) {
       document.getElementById('emailDisplay').textContent = email;
     }
 
     async function resendEmail() {
-      const btn     = document.getElementById('resendBtn');
-      const msgEl   = document.getElementById('resendMsg');
-      const appUrl  = window.location.origin;
-      const plan    = localStorage.getItem('pendingPlan') || 'all_subjects';
+      const btn = document.getElementById('resendBtn');
+      const msgEl = document.getElementById('resendMsg');
+      const appUrl = window.location.origin;
+      const plan = localStorage.getItem('pendingPlan') || 'all_subjects';
 
       if (!email) {
         msgEl.textContent = 'Could not determine your email. Please sign up again.';
@@ -78,13 +85,13 @@
         return;
       }
 
-      btn.disabled    = true;
+      btn.disabled = true;
       btn.textContent = 'Sending…';
 
       try {
         const sb = await getSupabase();
         const { error } = await sb.auth.resend({
-          type:  'signup',
+          type: 'signup',
           email,
           options: {
             emailRedirectTo: `${appUrl}/pages/setup.html?plan=${encodeURIComponent(plan)}`,
@@ -93,20 +100,21 @@
 
         if (error) throw error;
 
-        msgEl.textContent    = '✓ Confirmation email resent. Check your inbox.';
-        msgEl.style.color    = 'var(--brand-sage)';
-        msgEl.style.display  = 'block';
-        btn.textContent      = 'Resend confirmation email';
-        btn.disabled         = false;
+        msgEl.textContent = '✓ Confirmation email resent. Check your inbox.';
+        msgEl.style.color = 'var(--brand-sage)';
+        msgEl.style.display = 'block';
+        btn.textContent = 'Resend confirmation email';
+        btn.disabled = false;
 
       } catch (err) {
-        msgEl.textContent   = 'Could not resend: ' + (err.message || 'please try again.');
-        msgEl.style.color   = 'var(--brand-error)';
+        msgEl.textContent = 'Could not resend: ' + (err.message || 'please try again.');
+        msgEl.style.color = 'var(--brand-error)';
         msgEl.style.display = 'block';
-        btn.textContent     = 'Resend confirmation email';
-        btn.disabled        = false;
+        btn.textContent = 'Resend confirmation email';
+        btn.disabled = false;
       }
     }
   </script>
 </body>
+
 </html>

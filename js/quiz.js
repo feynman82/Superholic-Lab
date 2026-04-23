@@ -274,7 +274,7 @@ window.initQuizEngine = function () {
     const placeholderText = isShortAns ? 'Type your complete sentence here...' : 'Final Answer (Optional)';
 
     const baseInputStyle = "form-input w-full p-4 text-lg border-2 border-slate-200 focus:border-brand-sage rounded-xl transition-all shadow-sm";
-    const drawModeInputStyle = "form-input mt-3 w-full p-4 text-lg border-2 border-brand-sage focus:border-brand-sage rounded-xl transition-all shadow-sm bg-sage-50/10";
+    const drawModeInputStyle = "form-input mt-4 w-full p-4 text-lg border-2 border-brand-sage focus:border-brand-sage rounded-xl transition-all shadow-sm bg-sage-50/10";
 
     // 🚀 MASTERCLASS SYNTHESIS PARSER
     let synthesisHtml = '';
@@ -308,7 +308,7 @@ window.initQuizEngine = function () {
       }
 
       synthesisHtml = `
-        <div class="glass-panel-1 p-5 mb-6">
+        <div class="glass-panel-1 p-6 mb-6">
           <div class="text-lg text-main font-medium leading-relaxed mb-6">${displayQuestion}<br><br></div>
           <div class="flex items-end w-full">${blueprintHtml}</div>
         </div>
@@ -391,7 +391,7 @@ window.initQuizEngine = function () {
       const showModel = isCompleted || (isActive && state.isAnswered);
 
       const baseInputStyle = "form-input w-full p-4 text-lg border-2 border-slate-200 focus:border-brand-sage rounded-xl transition-all shadow-sm";
-      const drawModeInputStyle = "form-input mt-3 w-full p-4 text-lg border-2 border-brand-sage focus:border-brand-sage rounded-xl transition-all shadow-sm bg-sage-50/10";
+      const drawModeInputStyle = "form-input mt-4 w-full p-4 text-lg border-2 border-brand-sage focus:border-brand-sage rounded-xl transition-all shadow-sm bg-sage-50/10";
 
       let interactionUI = '';
       if (!showModel) {
@@ -419,7 +419,7 @@ window.initQuizEngine = function () {
         interactionUI = `
           <div class="p-4 bg-surface border border-light rounded-xl mb-4 text-main whitespace-pre-wrap text-lg">${esc(savedWorking) || '<em>No text answer provided.</em>'}</div>
           ${(state.drawings[drawKey] && state.drawings[drawKey] !== 'init' && state.drawings[drawKey] !== 'text') ? `<img src="${state.drawings[drawKey]}" class="mb-4 border-2 border-slate-200 rounded-xl shadow-sm bg-white" style="max-height: 200px;">` : ''}
-          <div class="ans-block strong p-5 bg-science-tint card-rule-mint rounded-xl">
+          <div class="ans-block strong p-6 bg-science-tint card-rule-mint rounded-xl">
             <div class="text-xs font-bold mb-2 text-success uppercase tracking-wider flex items-center gap-2"><span>✨</span> Miss Wena's Model Answer</div>
             <div class="text-base text-main font-medium whitespace-pre-wrap leading-relaxed">${window.formatWorkedSolution(pModel)}</div>
           </div>
@@ -428,7 +428,7 @@ window.initQuizEngine = function () {
 
       return `
         <div class="mb-6">
-          <div class="flex items-center gap-3 mb-3">
+          <div class="flex items-center gap-3 mb-4">
             <span class="font-display text-xl text-main font-bold" style="color: var(--brand-sage);">${esc(pLabel)}</span>
             <span class="badge badge-info text-xs">${pMarks} mark${pMarks !== 1 ? 's' : ''}</span>
           </div>
@@ -461,7 +461,7 @@ window.initQuizEngine = function () {
         ).join('');
         wordBankHtml = `
           <div class="glass-panel-1 p-4 mb-4">
-            <div class="text-xs font-bold text-muted uppercase mb-3">Word Bank</div>
+            <div class="text-xs font-bold text-muted uppercase mb-4">Word Bank</div>
             <div class="flex flex-wrap gap-2">${wordBankList}</div>
           </div>`;
       }
@@ -597,7 +597,7 @@ window.initQuizEngine = function () {
           inlineFeedbackHtml = `<div class="glass-panel-2 ${ruleClass} ${bgClass} p-4 mt-4 mb-2">
                    <div class="font-bold mb-2 ${textClass}">${icon} Miss Wena says:</div>
                    <p class="text-sm text-main leading-relaxed">${fb.text}</p>
-                   ${fb.correctAnswer ? `<div class="mt-3 text-sm font-bold text-main">Correct Answer: <span class="text-success">${esc(fb.correctAnswer)}</span></div>` : ''}
+                   ${fb.correctAnswer ? `<div class="mt-4 text-sm font-bold text-main">Correct Answer: <span class="text-success">${esc(fb.correctAnswer)}</span></div>` : ''}
                  </div>`;
         }
       }
@@ -646,7 +646,7 @@ window.initQuizEngine = function () {
                   <tr class="border-b border-slate-200 last:border-0">
                     <td class="p-4 font-medium text-main align-middle leading-relaxed text-lg">${esc(item.word)}</td>
                     <td class="p-3 align-middle border-l border-slate-200">
-                      <input type="text" id="comp-${safeIdLabel}-ref${i}" class="form-input w-full p-3 text-lg border-2 border-slate-200 rounded-lg focus:border-brand-sage" placeholder="Type here..." value="${esc(savedWorking['ref' + i] || '')}" oninput="window.saveInputState ? window.saveInputState() : null">
+                      <input type="text" id="comp-${safeIdLabel}-ref${i}" class="form-input w-full p-4 text-lg border-2 border-slate-200 rounded-lg focus:border-brand-sage" placeholder="Type here..." value="${esc(savedWorking['ref' + i] || '')}" oninput="window.saveInputState ? window.saveInputState() : null">
                     </td>
                   </tr>
                 `).join('')}
@@ -655,7 +655,7 @@ window.initQuizEngine = function () {
 
         } else if (part.part_type === 'sequencing') {
           interactionUI = `<div class="flex flex-col gap-3 mt-2 text-lg">` + (part.items || []).map((item, i) => `
-            <div class="flex items-center gap-4 bg-surface p-3 rounded-lg border border-light shadow-sm">
+            <div class="flex items-center gap-4 bg-surface p-4 rounded-lg border border-light shadow-sm">
               <input type="number" id="comp-${safeIdLabel}-seq${i}" class="form-input border-2 border-slate-200 rounded-lg focus:border-brand-sage text-2xl font-bold text-center" style="width: 60px; height: 60px; padding: 0;" min="1" max="3" value="${esc(savedWorking['seq' + i] || '')}" oninput="window.saveInputState ? window.saveInputState() : null">
               <div class="font-medium text-main leading-relaxed text-lg">${esc(item)}</div>
             </div>
@@ -682,7 +682,7 @@ window.initQuizEngine = function () {
                       </div>
                     </td>
                     <td class="p-3 align-top border-l border-slate-200">
-                      <textarea id="comp-${safeIdLabel}-reason${i}" class="form-input w-full p-3 text-lg border-2 border-slate-200 rounded-lg focus:border-brand-sage" rows="4" placeholder="Evidence from text..." oninput="window.saveInputState ? window.saveInputState() : null">${esc(savedWorking['reason' + i] || '')}</textarea>
+                      <textarea id="comp-${safeIdLabel}-reason${i}" class="form-input w-full p-4 text-lg border-2 border-slate-200 rounded-lg focus:border-brand-sage" rows="4" placeholder="Evidence from text..." oninput="window.saveInputState ? window.saveInputState() : null">${esc(savedWorking['reason' + i] || '')}</textarea>
                     </td>
                   </tr>
                 `).join('')}
@@ -719,7 +719,7 @@ window.initQuizEngine = function () {
 
         interactionUI = `
           <div class="p-4 bg-surface border border-light rounded-xl mb-4 text-main text-lg font-medium">${displayAns || '<em>No answer provided.</em>'}</div>
-          <div class="ans-block strong p-5 bg-science-tint card-rule-mint rounded-xl">
+          <div class="ans-block strong p-6 bg-science-tint card-rule-mint rounded-xl">
             <div class="text-xs font-bold mb-2 text-success uppercase tracking-wider">✨ Model Answer / Explanation</div>
             <div class="text-lg text-main font-bold leading-relaxed">${esc(extractedModel).replace(/\n/g, '<br>')}</div>
           </div>
@@ -728,7 +728,7 @@ window.initQuizEngine = function () {
 
       return `
         <div class="mb-6 pb-6 ${idx < partsData.length - 1 ? 'border-b border-light border-dashed' : ''}">
-          <div class="flex items-center gap-3 mb-3">
+          <div class="flex items-center gap-3 mb-4">
             <span class="font-display text-xl text-main font-bold" style="color: var(--english-colour);">${pLabel}</span>
             <span class="badge badge-info text-xs">${part.marks} mark${part.marks !== 1 ? 's' : ''}</span>
           </div>
@@ -784,7 +784,7 @@ window.initQuizEngine = function () {
       revealedHints.forEach((hint, index) => {
         hintsHtml += `
           <div class="glass-panel-2 p-4 text-sm text-main font-medium border-l-4" style="border-left-color: var(--brand-amber); box-shadow: none;">
-            <div class="text-amber font-bold mb-1 flex items-center gap-2">
+            <div class="text-amber font-bold mb-2 flex items-center gap-2">
               <span>💡</span> Miss Wena's Hint ${index + 1}
             </div>
             <div class="leading-relaxed whitespace-pre-wrap">${esc(hint)}</div>
@@ -850,8 +850,8 @@ window.initQuizEngine = function () {
         // 🚀 MASTERCLASS FIX: Safely render the HTML worked solution below the success message
         feedbackHtml = `<div class="glass-panel-2 card-rule-mint bg-science-tint p-4 mt-4">
           <div class="font-bold mb-2 text-success">🎉 Spot on!</div>
-          ${fb.text && fb.text !== 'Perfectly executed!' ? `<p class="text-sm text-main leading-relaxed mb-3">${esc(fb.text)}</p>` : ''}
-          ${q.worked_solution ? `<div class="text-sm text-main leading-relaxed mt-3 pt-3" style="border-top: 1px solid rgba(16, 185, 129, 0.2);"><div class="text-xs font-bold text-success uppercase tracking-wider mb-2">Worked Solution</div>${window.formatWorkedSolution(q.worked_solution)}</div>` : ''}
+          ${fb.text && fb.text !== 'Perfectly executed!' ? `<p class="text-sm text-main leading-relaxed mb-4">${esc(fb.text)}</p>` : ''}
+          ${q.worked_solution ? `<div class="text-sm text-main leading-relaxed mt-4 pt-3" style="border-top: 1px solid rgba(16, 185, 129, 0.2);"><div class="text-xs font-bold text-success uppercase tracking-wider mb-2">Worked Solution</div>${window.formatWorkedSolution(q.worked_solution)}</div>` : ''}
           ${q.examiner_note ? `<p class="text-xs text-muted mt-2 italic">${esc(q.examiner_note)}</p>` : ''}
         </div>`;
       } else {
@@ -864,7 +864,7 @@ window.initQuizEngine = function () {
         feedbackHtml = `<div class="glass-panel-2 ${ruleClass} ${bgClass} p-4 mt-4">
           <div class="font-bold mb-2 ${textClass}">${isLoad ? '<span class="spinner-sm inline-block mr-2 border-brand-mint"></span>' : '💡'} Miss Wena says:</div>
           <p class="text-sm text-main leading-relaxed">${fb.text}</p>
-          ${fb.correctAnswer ? `<div class="mt-3 text-sm font-bold text-main">Correct Answer: <span class="text-success">${esc(fb.correctAnswer)}</span></div>` : ''}
+          ${fb.correctAnswer ? `<div class="mt-4 text-sm font-bold text-main">Correct Answer: <span class="text-success">${esc(fb.correctAnswer)}</span></div>` : ''}
         </div>`;
       }
     }
@@ -909,7 +909,7 @@ window.initQuizEngine = function () {
     app.innerHTML = `
       <div class="w-full" style="max-width: ${maxWidth}; transition: max-width 0.3s ease;">
         <div class="flex justify-between items-center mb-6">
-          <div class="flex flex-col gap-1">
+          <div class="flex flex-col gap-2">
             <div class="text-xs font-bold text-muted uppercase">Question ${state.currentIndex + 1} of ${state.questions.length}</div>
             <div class="quiz-progress-bar" style="width:120px;height:6px;">
               <div class="quiz-progress-fill" style="width:${((state.currentIndex) / state.questions.length) * 100}%;background:var(--brand-rose);"></div>
@@ -1293,12 +1293,12 @@ window.initQuizEngine = function () {
           <div class="glass-panel-1 p-6 flex-1 bg-page" style="border: none; max-width: 200px;">
             <div class="text-sm font-bold text-muted uppercase">Score</div>
             <div class="font-display text-5xl text-success mt-2">${pct}%</div>
-            <div class="text-sm text-main mt-1">${state.score} / ${maxScore} Marks</div>
+            <div class="text-sm text-main mt-2">${state.score} / ${maxScore} Marks</div>
           </div>
           <div class="glass-panel-1 p-6 flex-1 bg-amber-tint" style="border: none; max-width: 200px;">
             <div class="text-sm font-bold text-amber uppercase">Best Streak</div>
             <div class="font-display text-5xl text-amber mt-2">🔥 ${state.maxStreak}</div>
-            <div class="text-sm text-amber mt-1">In a row!</div>
+            <div class="text-sm text-amber mt-2">In a row!</div>
           </div>
         </div>
 
