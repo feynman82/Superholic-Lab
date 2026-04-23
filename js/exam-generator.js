@@ -208,9 +208,10 @@ async function pickQuestions(subject, level, questionType, count, options = {}) 
  * @returns {Promise<object>} ExamPaper
  */
 async function generateExam(subject, level, examType) {
-  const template = getTemplate(subject, level);
+  // 🚀 MASTERCLASS FIX: Pass the exact examType to getTemplate to prevent it from defaulting to WA1
+  const template = getTemplate(subject, level, examType);
   if (!template) {
-    throw new Error(`No exam template found for ${subject} ${level}.`);
+    throw new Error(`No exam template found for ${subject} ${level} (${examType || 'Default'}).`);
   }
 
   const resolvedType = examType || 'PRACTICE';

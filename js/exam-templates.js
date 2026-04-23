@@ -543,33 +543,20 @@ const EXAM_TEMPLATES = {
  * Supports both new-format keys ('maths-p6-psle-p1') and legacy two-arg
  * format (subject, level).
  */
-function getTemplate(keyOrSubject, levelStr, examType) {
-  // 1. Direct template key match (e.g., 'english-p6-psle')
-  if (EXAM_TEMPLATES[keyOrSubject]) {
-    return EXAM_TEMPLATES[keyOrSubject];
-  }
-
+function getTemplate(keyOrSubject, levelStr, examTypeStr) {
   if (levelStr) {
-    const s = keyOrSubject === 'mathematics' ? 'maths' : String(keyOrSubject).toLowerCase();
-    const l = String(levelStr).toLowerCase().replace('primary-', 'p').replace(' ', '');
+    const s = keyOrSubject === 'mathematics' ? 'maths' : keyOrSubject;
+    const l = levelStr.replace('primary-', 'p');
 
-    // 🚀 MASTERCLASS FIX: Auto-detect the requested exam type from arguments or URL
-    let type = examType;
-    if (!type && typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      type = params.get('exam_type') || params.get('type') || params.get('paper');
+    // 🚀 MASTERCLASS FIX: Do not default to WA1 if a specific exam type is requested
+    if (examTypeStr) {
+      const specificKey = `${s}-${l}-${examTypeStr.toLowerCase()}`;
+      if (EXAM_TEMPLATES[specificKey]) return EXAM_TEMPLATES[specificKey];
     }
 
-    if (type) {
-      const t = String(type).toLowerCase();
-      if (EXAM_TEMPLATES[`${s}-${l}-${t}`]) return EXAM_TEMPLATES[`${s}-${l}-${t}`];
-    }
-
-    // Fallback only if type is invalid or missing
     return EXAM_TEMPLATES[`${s}-${l}-wa1`] || EXAM_TEMPLATES[`${s}-${l}-eoy`] || null;
   }
-
-  return null;
+  return EXAM_TEMPLATES[keyOrSubject] || null;
 }
 
 function getTemplatesForLevel(levelCode) {
