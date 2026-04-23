@@ -1,0 +1,530 @@
+[
+  {
+    "subject": "Science",
+    "level": "Primary 4",
+    "topic": "Life Cycles",
+    "difficulty": "easy",
+    "type": "short_ans",
+    "marks": 0,
+    "instructions": "Unscramble the letters to solve the riddles.",
+    "question_text": "I am a pattern that living things go through and I repeat myself continuously. Unscramble: FELI CCLYE",
+    "options": null,
+    "correct_answer": "Life cycle",
+    "model_answer": "Life cycle",
+    "passage": null,
+    "blanks": null,
+    "passage_lines": null,
+    "source_pdf": "past_year_papers/P4_Primary4/Science/P4 Science 2025 WA1 - ACS Primary.pdf"
+  },
+  {
+    "subject": "Science",
+    "level": "Primary 4",
+    "topic": "Life Cycles",
+    "difficulty": "easy",
+    "type": "short_ans",
+    "marks": 0,
+    "instructions": "Unscramble the letters to solve the riddles.",
+    "question_text": "I lay my eggs in water. My eggs have jelly-like covering. Unscramble: GORF",
+    "options": null,
+    "correct_answer": "Frog",
+    "model_answer": "Frog",
+    "passage": null,
+    "blanks": null,
+    "passage_lines": null,
+    "source_pdf": "past_year_papers/P4_Primary4/Science/P4 Science 2025 WA1 - ACS Primary.pdf"
+  },
+  {
+    "subject": "Science",
+    "level": "Primary 4",
+    "topic": "Life Cycles",
+    "difficulty": "easy",
+    "type": "short_ans",
+    "marks": 0,
+    "instructions": "Unscramble the letters to solve the riddles.",
+    "question_text": "At this stage, I look like the adult but I am smaller and do not have wings. Unscramble: PHYMN",
+    "options": null,
+    "correct_answer": "Nymph",
+    "model_answer": "Nymph",
+    "passage": null,
+    "blanks": null,
+    "passage_lines": null,
+    "source_pdf": "past_year_papers/P4_Primary4/Science/P4 Science 2025 WA1 - ACS Primary.pdf"
+  },
+  {
+    "subject": "Science",
+    "level": "Primary 4",
+    "topic": "Life Cycles",
+    "difficulty": "easy",
+    "type": "short_ans",
+    "marks": 0,
+    "instructions": "Unscramble the letters to solve the riddles.",
+    "question_text": "During this process, the young of some animals grow a new skin and shed their old skin. Unscramble: LUTOMING",
+    "options": null,
+    "correct_answer": "Moulting",
+    "model_answer": "Moulting",
+    "passage": null,
+    "blanks": null,
+    "passage_lines": null,
+    "source_pdf": "past_year_papers/P4_Primary4/Science/P4 Science 2025 WA1 - ACS Primary.pdf"
+  },
+  {
+    "subject": "Science",
+    "level": "Primary 4",
+    "topic": "Life Cycles",
+    "difficulty": "medium",
+    "type": "cloze",
+    "marks": 2,
+    "instructions": "Write the answers to the cloze passage in the crossword puzzle below.",
+    "question_text": "An adult mosquito lays its eggs in (i)________ water. As it (ii)________, it sheds its skin several times and eats a lot. When it changes into a pupa, it also breathes through an air (iii)________ that pierces through the water surface. During this stage, it does not feed and it hardly (iv)________.",
+    "options": null,
+    "correct_answer": null,
+    "model_answer": "i) still, ii) grow, iii) tube, iv) moves",
+    "passage": "An adult mosquito lays its eggs in (i)________ water. As it (ii)________, it sheds its skin several times and eats a lot. When it changes into a pupa, it also breathes through an air (iii)________ that pierces through the water surface. During this stage, it does not feed and it hardly (iv)________.",
+    "blanks": [
+      {
+        "number": "i",
+        "options": [],
+        "correct_answer": "still"
+      },
+      {
+        "number": "ii",
+        "options": [],
+        "correct_answer": "grow"
+      },
+      {
+        "number": "iii",
+        "options": [],
+        "correct_answer": "tube"
+      },
+      {
+        "number": "iv",
+        "options": [],
+        "correct_answer": "moves"
+      }
+    ],
+    "passage_lines": null,
+    "source_pdf": "past_year_papers/P4_Primary4/Science/P4 Science 2025 WA1 - ACS Primary.pdf"
+  },
+  {
+    "subject": "Science",
+    "level": "Primary 4",
+    "topic": "Life Cycles",
+    "difficulty": "medium",
+    "type": "short_ans",
+    "marks": 1,
+    "instructions": "Complete the diagram by filling in the boxes for (i) and (ii).",
+    "question_text": "Study the classification diagram. Complete the diagram by filling in the boxes for (i) and (ii).",
+    "options": null,
+    "correct_answer": "i) The young does not look like its adult. ii) Takes place in water and land",
+    "model_answer": "i) The young does not look like its adult. ii) Takes place in water and land",
+    "passage": null,
+    "blanks": null,
+    "passage_lines": null,
+    "source_pdf": "past_year_papers/P4_Primary4/Science/P4 Science 2025 WA1 - ACS Primary.pdf",
+    "visual_payload": {
+      "engine": "diagram-library",
+      "function_name": "animalLifeCycleClassification",
+      "params": {
+        "title": "Animals",
+        "categories": [
+          {
+            "name": "3-stage Life Cycle",
+            "characteristics": [
+              "The young looks like the adult"
+            ],
+            "examples": [
+              "Chicken",
+              "Frog"
+            ],
+            "blank_i": ""
+          },
+          {
+            "name": "4-stage Life Cycle",
+            "characteristics": [
+              "Takes place on land only"
+            ],
+            "examples": [
+              "Butterfly",
+              "Mosquito"
+            ],
+            "blank_ii": ""
+          }
+        ]
+      }
+    }
+  },
+  {
+    "subject": "Science",
+    "level": "Primary 4",
+    "topic": "Life Cycles",
+    "difficulty": "medium",
+    "type": "open_ended",
+    "marks": 1,
+    "instructions": null,
+    "question_text": "The life cycle of a mealworm beetle is most similar to the life cycle of a butterfly. Based on the diagram above, give two reasons why.",
+    "options": null,
+    "correct_answer": "1) Both life cycle has four stages. 2) Both life cycle take place on land.",
+    "model_answer": "1) Both life cycle has four stages. 2) Both life cycle take place on land.",
+    "passage": null,
+    "blanks": null,
+    "passage_lines": null,
+    "source_pdf": "past_year_papers/P4_Primary4/Science/P4 Science 2025 WA1 - ACS Primary.pdf"
+  },
+  {
+    "subject": "Science",
+    "level": "Primary 4",
+    "topic": "Life Cycles",
+    "difficulty": "easy",
+    "type": "short_ans",
+    "marks": 1,
+    "instructions": "Answer part (a) based on the graph.",
+    "question_text": "How many weeks does the grasshopper stay in its egg stage?",
+    "options": null,
+    "correct_answer": "4",
+    "model_answer": "4",
+    "passage": null,
+    "blanks": null,
+    "passage_lines": null,
+    "source_pdf": "past_year_papers/P4_Primary4/Science/P4 Science 2025 WA1 - ACS Primary.pdf",
+    "visual_payload": {
+      "engine": "diagram-library",
+      "function_name": "barChart",
+      "params": {
+        "title": "Number of weeks that a grasshopper stays at the different stages of its life cycle",
+        "x_axis_label": "Stage",
+        "y_axis_label": "Number of weeks",
+        "data": [
+          {
+            "label": "Adult",
+            "value": 10
+          },
+          {
+            "label": "Egg",
+            "value": 4
+          },
+          {
+            "label": "Nymph",
+            "value": 9
+          }
+        ]
+      }
+    }
+  },
+  {
+    "subject": "Science",
+    "level": "Primary 4",
+    "topic": "Life Cycles",
+    "difficulty": "medium",
+    "type": "short_ans",
+    "marks": 1,
+    "instructions": "Answer part (a) based on the graph.",
+    "question_text": "How many weeks does an egg take to become an adult?",
+    "options": null,
+    "correct_answer": "13",
+    "model_answer": "13",
+    "passage": null,
+    "blanks": null,
+    "passage_lines": null,
+    "source_pdf": "past_year_papers/P4_Primary4/Science/P4 Science 2025 WA1 - ACS Primary.pdf",
+    "visual_payload": {
+      "engine": "diagram-library",
+      "function_name": "barChart",
+      "params": {
+        "title": "Number of weeks that a grasshopper stays at the different stages of its life cycle",
+        "x_axis_label": "Stage",
+        "y_axis_label": "Number of weeks",
+        "data": [
+          {
+            "label": "Adult",
+            "value": 10
+          },
+          {
+            "label": "Egg",
+            "value": 4
+          },
+          {
+            "label": "Nymph",
+            "value": 9
+          }
+        ]
+      }
+    }
+  },
+  {
+    "subject": "Science",
+    "level": "Primary 4",
+    "topic": "Life Cycles",
+    "difficulty": "medium",
+    "type": "open_ended",
+    "marks": 1,
+    "instructions": null,
+    "question_text": "State a difference between the nymph and the adult grasshopper. (Do not compare size)",
+    "options": null,
+    "correct_answer": "The adult grasshopper have wings but the nymph does not have wings.",
+    "model_answer": "The adult grasshopper have wings but the nymph does not have wings.",
+    "passage": null,
+    "blanks": null,
+    "passage_lines": null,
+    "source_pdf": "past_year_papers/P4_Primary4/Science/P4 Science 2025 WA1 - ACS Primary.pdf"
+  },
+  {
+    "subject": "Science",
+    "level": "Primary 4",
+    "topic": "Plant Growth",
+    "difficulty": "easy",
+    "type": "short_ans",
+    "marks": 1,
+    "instructions": "Arrange parts W, X and Z of the plant in the order that they start growing.",
+    "question_text": "The diagram shows the growth of a brinjal plant. Different parts of a plant start growing during different stages of its life cycle. Arrange parts W, X and Z of the plant in the order that they start growing.",
+    "options": null,
+    "correct_answer": "Z -> X -> W -> Y",
+    "model_answer": "Z -> X -> W -> Y",
+    "passage": null,
+    "blanks": null,
+    "passage_lines": null,
+    "source_pdf": "past_year_papers/P4_Primary4/Science/P4 Science 2025 WA1 - ACS Primary.pdf",
+    "visual_payload": {
+      "engine": "diagram-library",
+      "function_name": "plantGrowthStages",
+      "params": {
+        "stages": [
+          {
+            "label": "part Z",
+            "description": "seed with small root"
+          },
+          {
+            "label": "part X",
+            "description": "seedling with roots and small shoot"
+          },
+          {
+            "label": "part W",
+            "description": "more developed seedling with leaves and roots"
+          },
+          {
+            "label": "Y",
+            "description": "blank stage"
+          }
+        ],
+        "sequence": "Z -> X -> W -> Y"
+      }
+    }
+  },
+  {
+    "subject": "Science",
+    "level": "Primary 4",
+    "topic": "Plant Growth",
+    "difficulty": "medium",
+    "type": "open_ended",
+    "marks": 1,
+    "instructions": null,
+    "question_text": "How did the plant get food before part W developed?",
+    "options": null,
+    "correct_answer": "From the seed leaves.",
+    "model_answer": "From the seed leaves.",
+    "passage": null,
+    "blanks": null,
+    "passage_lines": null,
+    "source_pdf": "past_year_papers/P4_Primary4/Science/P4 Science 2025 WA1 - ACS Primary.pdf"
+  },
+  {
+    "subject": "Science",
+    "level": "Primary 4",
+    "topic": "Plant Life Cycle",
+    "difficulty": "easy",
+    "type": "short_ans",
+    "marks": 1,
+    "instructions": "Name the stages of its life cycle by filling in the boxes A, B and C.",
+    "question_text": "The life cycle of a plant is shown. Name the stages of its life cycle by filling in the boxes A, B and C.",
+    "options": null,
+    "correct_answer": "A: seed, B: young plant, C: Adult plant",
+    "model_answer": "A: seed, B: young plant, C: Adult plant",
+    "passage": null,
+    "blanks": null,
+    "passage_lines": null,
+    "source_pdf": "past_year_papers/P4_Primary4/Science/P4 Science 2025 WA1 - ACS Primary.pdf",
+    "visual_payload": {
+      "engine": "diagram-library",
+      "function_name": "plantLifeCycle",
+      "params": {
+        "stages": [
+          {
+            "label": "Seed",
+            "position": "top"
+          },
+          {
+            "label": "A",
+            "description": "blank box, after seed"
+          },
+          {
+            "label": "B",
+            "description": "blank box, a seedling"
+          },
+          {
+            "label": "C",
+            "description": "blank box, a mature plant"
+          }
+        ],
+        "flow": [
+          "Seed -> A",
+          "A -> B",
+          "B -> C",
+          "C -> Seed"
+        ]
+      }
+    }
+  },
+  {
+    "subject": "Science",
+    "level": "Primary 4",
+    "topic": "Plant Life Cycle",
+    "difficulty": "medium",
+    "type": "open_ended",
+    "marks": 1,
+    "instructions": null,
+    "question_text": "At which stages, A, B and/or C, is the plant able to make food? Explain why.",
+    "options": null,
+    "correct_answer": "C and B. Because stages C and B have leaves.",
+    "model_answer": "C and B. Because stages C and B have leaves.",
+    "passage": null,
+    "blanks": null,
+    "passage_lines": null,
+    "source_pdf": "past_year_papers/P4_Primary4/Science/P4 Science 2025 WA1 - ACS Primary.pdf"
+  },
+  {
+    "subject": "Science",
+    "level": "Primary 4",
+    "topic": "Germination",
+    "difficulty": "easy",
+    "type": "open_ended",
+    "marks": 1,
+    "instructions": null,
+    "question_text": "May wanted to find out if seeds need light to germinate. She placed some seeds into two identical pots, A and B, and watered them daily. She placed pot A near an open window and pot B inside a dark cupboard. She observed the growth of the seeds over four days. State all the conditions necessary for the seeds to germinate.",
+    "options": null,
+    "correct_answer": "Warmth, air and water.",
+    "model_answer": "Warmth, air and water.",
+    "passage": "May wanted to find out if seeds need light to germinate. She placed some seeds into two identical pots, A and B, and watered them daily. She placed pot A near an open window and pot B inside a dark cupboard. She observed the growth of the seeds over four days.",
+    "blanks": null,
+    "passage_lines": null,
+    "source_pdf": "past_year_papers/P4_Primary4/Science/P4 Science 2025 WA1 - ACS Primary.pdf",
+    "visual_payload": {
+      "engine": "diagram-library",
+      "function_name": "seedGerminationExperiment",
+      "params": {
+        "pots": [
+          {
+            "label": "Pot A",
+            "location": "near open window",
+            "contents": "seeds, soil"
+          },
+          {
+            "label": "Pot B",
+            "location": "inside dark cupboard",
+            "contents": "seeds, soil"
+          }
+        ],
+        "variables": {
+          "independent": "light exposure",
+          "controlled": [
+            "identical pots",
+            "same type of seeds",
+            "watered daily"
+          ],
+          "observed": "growth of seeds over four days"
+        }
+      }
+    }
+  },
+  {
+    "subject": "Science",
+    "level": "Primary 4",
+    "topic": "Germination",
+    "difficulty": "medium",
+    "type": "open_ended",
+    "marks": 1,
+    "instructions": null,
+    "question_text": "May's brother said that the seeds in Pot B will not germinate as they did not receive sunlight. Do you agree? Explain why.",
+    "options": null,
+    "correct_answer": "No. Because the seeds don't have leaves yet and only leaves need the sunlight.",
+    "model_answer": "No. Because the seeds don't have leaves yet and only leaves need the sunlight.",
+    "passage": "May wanted to find out if seeds need light to germinate. She placed some seeds into two identical pots, A and B, and watered them daily. She placed pot A near an open window and pot B inside a dark cupboard. She observed the growth of the seeds over four days.",
+    "blanks": null,
+    "passage_lines": null,
+    "source_pdf": "past_year_papers/P4_Primary4/Science/P4 Science 2025 WA1 - ACS Primary.pdf",
+    "visual_payload": {
+      "engine": "diagram-library",
+      "function_name": "seedGerminationExperiment",
+      "params": {
+        "pots": [
+          {
+            "label": "Pot A",
+            "location": "near open window",
+            "contents": "seeds, soil"
+          },
+          {
+            "label": "Pot B",
+            "location": "inside dark cupboard",
+            "contents": "seeds, soil"
+          }
+        ],
+        "variables": {
+          "independent": "light exposure",
+          "controlled": [
+            "identical pots",
+            "same type of seeds",
+            "watered daily"
+          ],
+          "observed": "growth of seeds over four days"
+        }
+      }
+    }
+  },
+  {
+    "subject": "Science",
+    "level": "Primary 4",
+    "topic": "Germination",
+    "difficulty": "easy",
+    "type": "short_ans",
+    "marks": 1,
+    "instructions": "Tick (✓) the variables which should be kept the same for May to test the aim of the experiment.",
+    "question_text": "Tick (✓) the variables which should be kept the same for May to test the aim of the experiment. Variables: Type of seeds, Location of pots, Amount of water, Number of seeds.",
+    "options": [
+      "Type of seeds",
+      "Location of pots",
+      "Amount of water",
+      "Number of seeds"
+    ],
+    "correct_answer": "Type of seeds, Amount of water, Number of seeds",
+    "model_answer": "Type of seeds, Amount of water, Number of seeds",
+    "passage": "May wanted to find out if seeds need light to germinate. She placed some seeds into two identical pots, A and B, and watered them daily. She placed pot A near an open window and pot B inside a dark cupboard. She observed the growth of the seeds over four days.",
+    "blanks": null,
+    "passage_lines": null,
+    "source_pdf": "past_year_papers/P4_Primary4/Science/P4 Science 2025 WA1 - ACS Primary.pdf",
+    "visual_payload": {
+      "engine": "diagram-library",
+      "function_name": "seedGerminationExperiment",
+      "params": {
+        "pots": [
+          {
+            "label": "Pot A",
+            "location": "near open window",
+            "contents": "seeds, soil"
+          },
+          {
+            "label": "Pot B",
+            "location": "inside dark cupboard",
+            "contents": "seeds, soil"
+          }
+        ],
+        "variables": {
+          "independent": "light exposure",
+          "controlled": [
+            "identical pots",
+            "same type of seeds",
+            "watered daily"
+          ],
+          "observed": "growth of seeds over four days"
+        }
+      }
+    }
+  }
+]

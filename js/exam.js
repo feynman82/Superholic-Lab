@@ -96,7 +96,7 @@ window.initExamEngine = function() {
 
   // ── 1. INITIALISATION & NAVIGATION PHASES ──
   async function renderInit() {
-    app.innerHTML = `<div class="card flex flex-col items-center w-full" style="padding: var(--space-8); max-width: 600px;"><div class="spinner-sm mb-4"></div><h2 class="font-display text-2xl text-main">Preparing Exam Room...</h2><p class="text-sm text-muted mt-2">Loading student profile</p></div>`;
+    app.innerHTML = `<div class="glass-panel-1 flex flex-col items-center w-full" style="padding: var(--space-8); max-width: 600px;"><div class="spinner-sm mb-4"></div><h2 class="font-display text-2xl text-main">Preparing Exam Room...</h2><p class="text-sm text-muted mt-2">Loading student profile</p></div>`;
     try {
       const profile = window.userProfile;
       if (!profile) { window.location.href = 'login.html?redirect=exam'; return; }
@@ -108,7 +108,7 @@ window.initExamEngine = function() {
       const student = (students || []).find(s => s.id === activeStudentId) || (students || [])[0];
       
       if (!student) {
-        app.innerHTML = `<div class="card p-8 text-center w-full" style="max-width: 600px;"><p class="text-amber font-bold mb-4">No student profile found. Please set one up.</p></div>`;
+        app.innerHTML = `<div class="glass-panel-1 p-8 text-center w-full" style="max-width: 600px;"><p class="text-amber font-bold mb-4">No student profile found. Please set one up.</p></div>`;
         return;
       }
 
@@ -134,7 +134,7 @@ window.initExamEngine = function() {
       }
       render();
     } catch (err) {
-      app.innerHTML = `<div class="card p-8 text-center w-full" style="max-width: 600px;"><p class="text-danger font-bold mb-4">Failed to load profile.</p><button class="btn btn-primary" onclick="location.reload()">Reload</button></div>`;
+      app.innerHTML = `<div class="glass-panel-1 p-8 text-center w-full" style="max-width: 600px;"><p class="text-danger font-bold mb-4">Failed to load profile.</p><button class="btn btn-primary" onclick="location.reload()">Reload</button></div>`;
     }
   }
 
@@ -147,7 +147,7 @@ window.initExamEngine = function() {
     ];
 
     const cards = subjects.map(s => `
-      <div class="card hover-lift flex flex-col items-center justify-center p-8 text-center cursor-pointer" onclick="window.selectSubject('${s.name}')">
+      <div class="glass-panel-1 hover-lift flex flex-col items-center justify-center p-8 text-center cursor-pointer" onclick="window.selectSubject('${s.name}')">
         <div class="text-4xl mb-4">${s.icon}</div>
         <h3 class="font-display text-2xl text-main">${s.name}</h3>
         <div class="badge badge-info mt-2">${s.tag}</div>
@@ -241,7 +241,7 @@ window.initExamEngine = function() {
         </div>`;
     });
 
-    return `<div class="mt-4 bg-surface border border-light rounded-lg p-1 shadow-sm"><div class="text-xs font-bold uppercase tracking-wider text-muted mb-2 pb-4 pt-4 border-b border-light">Paper Format Preview</div>${strips}</div>`;
+    return `<div class="mt-4 glass-panel-2 p-4"><div class="text-xs font-bold uppercase tracking-wider text-muted mb-2 pb-4 pt-4 border-b border-light">Paper Format Preview</div>${strips}</div>`;
   }
 
   function renderType() {
@@ -265,7 +265,7 @@ window.initExamEngine = function() {
     if (!state.examType) state.examType = types[0].id;
 
     const chips = types.map(t => `
-      <div class="card p-4 flex-1 cursor-pointer hover-lift flex flex-col justify-center ${t.id === state.examType ? 'bg-sage-dark text-white' : 'bg-surface text-main'}" 
+      <div class="glass-panel-1 p-4 flex-1 cursor-pointer hover-lift flex flex-col justify-center ${t.id === state.examType ? 'bg-sage-dark text-white' : 'text-main'}" 
            style="min-width: 140px; border: 2px solid ${t.id === state.examType ? 'var(--brand-mint)' : 'var(--border-light)'};"
            onclick="window.selectType('${t.id}')">
         <div class="font-bold text-lg" style="color: inherit;">${esc(t.label)}</div>
@@ -317,7 +317,7 @@ window.initExamEngine = function() {
             ${state.tier !== 'single_subject' ? `<div class="text-center mt-4"><button class="btn btn-ghost" onclick="window.backToSubject()">← Back to Subjects</button></div>` : ''}
           </div>
           <div class="flex-1" style="min-width: 300px;">
-            <div class="card p-6 bg-page card-rule-mint w-full">
+            <div class="glass-panel-1 p-6 card-rule-mint w-full">
               ${blueprintHtml}
               <button id="printPaperBtn" class="btn btn-secondary w-full mt-4 hover-lift" onclick="window.printBlankPaper()">🖨️ Print Paper</button>
               <button class="btn btn-primary w-full mt-4 hover-lift" onclick="window.triggerGen()">Generate Paper →</button>
@@ -373,7 +373,7 @@ window.initExamEngine = function() {
 
   function renderGenerating() {
     app.innerHTML = `
-      <div class="card flex flex-col items-center justify-center text-center w-full" style="padding: var(--space-8); max-width: 600px;">
+      <div class="glass-panel-1 flex flex-col items-center justify-center text-center w-full" style="padding: var(--space-8); max-width: 600px;">
         <div class="spinner-sm mb-6"></div>
         <h2 class="font-display text-3xl text-main mb-2" id="genMsg">Assembling Paper...</h2>
         <p class="text-muted text-sm">Applying MOE difficulty calibration</p>
@@ -409,7 +409,7 @@ window.initExamEngine = function() {
       
       if (flat.length === 0) {
         app.innerHTML = `
-          <div class="card p-8 text-center w-full hover-lift" style="max-width: 600px;">
+          <div class="glass-panel-1 p-8 text-center w-full hover-lift" style="max-width: 600px;">
             <div class="text-4xl mb-4">🗂️</div>
             <h2 class="text-danger font-display text-2xl mb-2">Insufficient Questions</h2>
             <p class="text-muted mb-6">Miss Wena's database doesn't have enough questions to assemble a full <strong>${esc(state.examType)}</strong> paper for this subject yet.</p>
@@ -433,7 +433,7 @@ window.initExamEngine = function() {
       startTimer();
     }).catch(err => {
       clearInterval(int);
-      app.innerHTML = `<div class="card p-8 text-center w-full" style="max-width: 600px;"><p class="text-danger font-bold mb-4">Error: ${err.message}</p><button class="btn btn-primary hover-lift" onclick="location.reload()">Try Again</button></div>`;
+      app.innerHTML = `<div class="glass-panel-1 p-8 text-center w-full" style="max-width: 600px;"><p class="text-danger font-bold mb-4">Error: ${err.message}</p><button class="btn btn-primary hover-lift" onclick="location.reload()">Try Again</button></div>`;
     });
   }
 
@@ -521,7 +521,7 @@ window.initExamEngine = function() {
     const paneMaxWidth = isSplitScreen ? '100%' : '680px';
 
     app.innerHTML = `
-      <div class="sticky top-[var(--navbar-h)] z-40 bg-surface border-b border-light w-full p-4 mb-6 shadow-sm flex flex-col justify-center items-center text-center rounded-xl max-w-[1440px]">
+      <div class="sticky top-[var(--navbar-h)] z-40 glass-panel-2 w-full p-4 mb-6 flex flex-col justify-center items-center text-center max-w-[1440px]">
         <h2 class="font-display text-xl text-main m-0">${p.template.displayName || p.displayName}</h2>
         <div class="text-sm text-muted mt-1">${p.template.totalMarks || p.totalMarks} Marks • ${p.template.durationMinutes || p.duration} mins</div>
       </div>
@@ -530,7 +530,7 @@ window.initExamEngine = function() {
         <div class="flex flex-col" style="flex: 1 1 300px; max-width: ${paneMaxWidth}; width: 100%; transition: max-width 0.3s ease;">
           <div class="badge badge-info mb-4 self-start">${esc(q.sectionLabel || 'Exam')}</div>
           
-          <div class="card p-6 mb-4 flex-1 relative">
+          <div class="glass-panel-1 p-6 mb-4 flex-1 relative">
             <div class="absolute top-6 right-6 badge badge-info">${q.marks} mark${q.marks>1?'s':''}</div>
             <div class="flex justify-between items-center mb-4" style="border-bottom: 1px solid var(--border-light); padding-bottom: var(--space-2);">
               <div class="font-bold text-brand-sage text-lg">Question ${state.currentQIdx + 1} of ${totalQs}</div>
@@ -543,7 +543,7 @@ window.initExamEngine = function() {
             ${inputUi}
           </div>
 
-          <div class="card p-4 flex flex-wrap justify-between items-center bg-surface gap-4">
+          <div class="glass-panel-2 p-4 flex flex-wrap justify-between items-center gap-4">
             <button class="btn btn-ghost" onclick="window.navExam(-1)" ${state.currentQIdx === 0 ? 'disabled' : ''}>← Previous</button>
             <button class="btn btn-ghost hover-lift" onclick="window.toggleFlag()" style="color: ${state.flagged[state.currentQIdx] ? 'var(--brand-amber)' : 'var(--text-muted)'}; border: 1px solid ${state.flagged[state.currentQIdx] ? 'var(--brand-amber)' : 'transparent'};">
               ${state.flagged[state.currentQIdx] ? '🚩 Flagged' : '🚩 Flag for review'}
@@ -556,7 +556,7 @@ window.initExamEngine = function() {
         </div>
 
         <div style="flex: 0 0 280px; width: 100%;">
-          <div class="card p-6" style="position: sticky; top: 100px;">
+          <div class="glass-panel-1 p-6" style="position: sticky; top: 100px;">
             <h3 class="font-bold text-main mb-4 m-0">Exam Navigator</h3>
             <div class="exam-navigator flex flex-wrap gap-2">${navPips}</div>
             <div class="flex flex-col gap-2 mt-4 pt-4 text-xs text-muted font-medium" style="border-top: 1px solid var(--border-light);">
@@ -767,7 +767,7 @@ window.initExamEngine = function() {
            `<span class="badge bg-surface border border-light text-main" style="font-size:0.9rem; padding: 6px 12px; font-weight: 500;">(${i+1}) ${esc(w)}</span>`
          ).join('');
          wordBankHtml = `
-           <div class="card bg-page p-4 mb-4">
+           <div class="glass-panel-2 p-4 mb-4">
              <div class="text-xs font-bold text-muted uppercase mb-3">Word Bank</div>
              <div class="flex flex-wrap gap-2">${wordBankList}</div>
            </div>`;
@@ -789,7 +789,7 @@ window.initExamEngine = function() {
         passage = passage.replace(new RegExp(`_*\\s*(\\[|\\()${num}(\\]|\\))\\s*_*`, 'g'), inputHtml);
      });
      
-     return `${wordBankHtml}<div class="card p-6 bg-surface text-lg leading-relaxed cloze-passage">${passage}</div>`;
+     return `${wordBankHtml}<div class="glass-panel-1 p-6 text-lg leading-relaxed cloze-passage">${passage}</div>`;
   }
 
   function buildEditingUI(q, globalIdx) {
@@ -801,7 +801,7 @@ window.initExamEngine = function() {
         const saved = savedAns[num] || '';
         return `<input type="text" id="inline-${globalIdx}-${num}" value="${esc(saved)}" autocomplete="off" class="editing-inline-input" onblur="window.saveAllAnswers()">`;
      });
-     return `<div class="card p-6 editing-passage text-lg leading-relaxed bg-surface">${passage}</div>`;
+     return `<div class="glass-panel-1 p-6 editing-passage text-lg leading-relaxed">${passage}</div>`;
   }
 
   function buildComprehensionUI(q, globalIdx) {
@@ -855,7 +855,7 @@ window.initExamEngine = function() {
 
          return `
              <div class="flex flex-col lg:flex-row gap-6 comp-container">
-               <div class="lg:w-1/2 card p-6 text-lg leading-relaxed bg-surface comp-passage-pane">
+               <div class="lg:w-1/2 glass-panel-1 p-6 text-lg leading-relaxed comp-passage-pane">
                   ${(q.type === 'visual_text' || q.topic === 'Visual Text') && q.image_url ? `<img src="${q.image_url}" class="w-full rounded border border-light mb-4">` : ''}
                   ${q.passage ? esc(q.passage).replace(/\n/g, '<br><br>').replace(/&lt;br\s*\/?\s*&gt;/gi, '<br>'): ''}
                   
@@ -1014,7 +1014,7 @@ window.initExamEngine = function() {
     window.saveAllAnswers();
     clearInterval(state.timerInterval);
     
-    app.innerHTML = `<div class="card flex flex-col items-center p-12 text-center w-full max-w-lg mx-auto mt-10"><div class="spinner-sm mb-6"></div><h2 class="font-display text-2xl text-main">Grading Paper...</h2><p class="text-muted mt-2">Miss Wena is reviewing your answers. This may take a minute.</p></div>`;
+    app.innerHTML = `<div class="glass-panel-1 flex flex-col items-center p-12 text-center w-full max-w-lg mx-auto mt-10"><div class="spinner-sm mb-6"></div><h2 class="font-display text-2xl text-main">Grading Paper...</h2><p class="text-muted mt-2">Miss Wena is reviewing your answers. This may take a minute.</p></div>`;
 
     state.results = {};
     const aiPromises = [];
@@ -1124,7 +1124,7 @@ window.initExamEngine = function() {
         });
 
         return `
-          <div class="card p-6 mb-4 ${bgClass} ${ruleClass}">
+          <div class="glass-panel-1 p-6 mb-4 ${bgClass} ${ruleClass}">
             <div class="flex justify-between items-center mb-2">
               <span class="font-bold text-lg text-main">${secLabel} Q${i + 1}</span>
               <span class="badge ${r.isCorrect ? 'badge-success' : 'badge-danger'} font-bold">${icon} ${r.score} / ${r.maxScore}</span>
@@ -1153,7 +1153,7 @@ window.initExamEngine = function() {
       <div class="w-full">
         <div class="text-center mb-10 mt-6">
           <h1 class="font-display text-4xl text-main mb-4">Paper Complete</h1>
-          <div class="card p-8 bg-elevated shadow-sm inline-flex flex-col items-center justify-center min-w-[280px]" style="border-top: 6px solid ${gradeCol};">
+          <div class="glass-panel-1 p-8 inline-flex flex-col items-center justify-center min-w-[280px]" style="border-top: 6px solid ${gradeCol};">
             <div class="text-6xl font-display mb-2" style="color: ${gradeCol};">${earned} <span class="text-3xl text-muted">/ ${possible}</span></div>
             <div class="font-bold text-xl uppercase tracking-wider" style="color: ${gradeCol};">Grade: ${gradeStr} (${pct}%)</div>
           </div>

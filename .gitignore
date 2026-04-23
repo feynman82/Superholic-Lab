@@ -19,3 +19,5 @@ node_modules/
 
 # Keep .claude/rules/ and .claude/commands/ tracked (ECC framework)
 # They are NOT ignored — only settings.local.json is
+
+data/past_year_papers/**/*.pdf

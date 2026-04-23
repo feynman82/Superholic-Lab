@@ -89,13 +89,13 @@
     </div>
   </div>
   <div id="cardsGrid" class="flex flex-wrap gap-6 w-full items-start">
-    <div class="card w-full flex justify-center items-center p-8 bg-page"><div class="spinner-sm"></div></div>
+    <div class="glass-panel-1 w-full flex justify-center items-center p-8"><div class="spinner-sm"></div></div>
   </div>
 </main>
 
 <!-- Edit Modal -->
 <div id="editModal" class="modal-overlay" onclick="window.closeModalOnBgClick(event, 'editModal')">
-  <div class="card p-6 modal-content flex flex-col gap-4">
+  <div class="glass-panel-1 p-6 modal-content flex flex-col gap-4">
     <h3 class="font-display text-2xl text-main m-0">Edit Learner</h3>
     <div class="flex flex-col gap-1">
       <label class="text-sm font-bold text-muted">First Name</label>
@@ -120,7 +120,7 @@
 
 <!-- Delete Modal -->
 <div id="deleteModal" class="modal-overlay" onclick="window.closeModalOnBgClick(event, 'deleteModal')">
-  <div class="card p-6 modal-content flex flex-col gap-4" style="border-top: 4px solid var(--brand-error);">
+  <div class="glass-panel-1 p-6 modal-content flex flex-col gap-4" style="border-top: 4px solid var(--brand-error);">
     <h3 class="font-display text-2xl text-danger m-0">Remove Learner?</h3>
     <p class="text-sm text-muted m-0">Are you sure you want to delete <strong id="deleteTargetName" class="text-main">this learner</strong>? This permanently erases their profile and all practice history.</p>
     <div class="flex gap-3 mt-4">
@@ -132,7 +132,7 @@
 
 <!-- Backpack Modal -->
 <div id="backpackModal" class="modal-overlay" onclick="window.closeModalOnBgClick(event, 'backpackModal')">
-  <div class="card p-6 modal-content flex flex-col gap-4">
+  <div class="glass-panel-1 p-6 modal-content flex flex-col gap-4">
     <div class="flex justify-between items-center border-b border-light pb-4 mb-2">
       <h3 class="font-display text-2xl text-main m-0">🎢 Learner Backpack</h3>
       <button class="btn btn-ghost btn-sm text-xl p-1" style="line-height: 1;" onclick="window.closeModals()">×</button>
@@ -143,7 +143,7 @@
 
 <!-- Note Viewer Modal -->
 <div id="noteViewerModal" class="modal-overlay" onclick="window.closeModalOnBgClick(event, 'noteViewerModal')">
-  <div class="card p-6 modal-content flex flex-col gap-4" style="max-width: 600px;">
+  <div class="glass-panel-1 p-6 modal-content flex flex-col gap-4" style="max-width: 600px;">
     <div class="flex justify-between items-start border-b border-light pb-4">
       <div>
         <div class="badge badge-info mb-2 text-xs" id="noteSubjectBadge">Maths</div>
@@ -312,7 +312,7 @@ function renderGrid(unreadMap) {
   const grid = document.getElementById('cardsGrid');
   grid.innerHTML = '';
   if (currentStudents.length === 0) {
-    grid.innerHTML = `<div class="card w-full text-center flex flex-col items-center justify-center p-10 bg-page" style="border: 2px dashed var(--border-dark); box-shadow: none;"><div class="text-4xl mb-4">🚀</div><h3 class="font-bold text-lg mb-2">No learners added yet</h3><p class="text-sm text-muted">Click "＋ Add Learner" above to get started.</p></div>`;
+    grid.innerHTML = `<div class="glass-panel-1 w-full text-center flex flex-col items-center justify-center p-10" style="border: 2px dashed var(--border-dark); box-shadow: none;"><div class="text-4xl mb-4">🚀</div><h3 class="font-bold text-lg mb-2">No learners added yet</h3><p class="text-sm text-muted">Click "＋ Add Learner" above to get started.</p></div>`;
     return;
   }
   currentStudents.forEach(student => {
@@ -322,7 +322,7 @@ function renderGrid(unreadMap) {
       ? `<img src="${escapeHtml(student.photo_url)}" alt="${escapeHtml(student.name)}" style="width:56px;height:56px;border-radius:var(--radius-md);object-fit:cover;">`
       : `<div class="flex justify-center items-center font-display text-2xl text-white bg-sage" style="width:56px;height:56px;border-radius:var(--radius-md);flex-shrink:0;">${initials}</div>`;
     const card = document.createElement('div');
-    card.className = 'card hover-lift flex flex-col gap-4 p-6 bg-page';
+    card.className = 'glass-panel-1 hover-lift flex flex-col gap-4 p-6';
     card.style = 'max-width: 280px; flex: 1; border-top: 4px solid var(--brand-sage);';
     card.innerHTML = `
       <div class="flex justify-between items-start mb-2">
@@ -425,10 +425,10 @@ window.openBackpackModal = async (studentId) => {
   try {
     const sb = await getSupabase();
     const { data: notes } = await sb.from('study_notes').select('*').eq('student_id', studentId).order('created_at', { ascending: false });
-    if (!notes || notes.length === 0) { content.innerHTML = `<div class="card bg-surface border border-light text-center p-8"><span class="text-3xl mb-2 block">📚</span><p class="text-sm text-main font-bold">Backpack is empty!</p><p class="text-xs text-muted mt-1">Ask Miss Wena questions and save notes to build your collection.</p></div>`; return; }
+    if (!notes || notes.length === 0) { content.innerHTML = `<div class="glass-panel-2 text-center p-8"><span class="text-3xl mb-2 block">📚</span><p class="text-sm text-main font-bold">Backpack is empty!</p><p class="text-xs text-muted mt-1">Ask Miss Wena questions and save notes to build your collection.</p></div>`; return; }
     window.cachedNotes = notes;
     content.innerHTML = notes.map(n => `
-      <div class="card hover-lift p-4 flex justify-between items-center cursor-pointer bg-surface" style="${!n.is_read ? 'border-left:3px solid var(--brand-rose);' : 'border:1px solid var(--border-light);'}" onclick="viewStudyNote('${n.id}')">
+      <div class="glass-panel-2 hover-lift p-4 flex justify-between items-center cursor-pointer" style="${!n.is_read ? 'border-left:3px solid var(--brand-rose);' : 'border:1px solid var(--border-light);'}" onclick="viewStudyNote('${n.id}')">
         <div>
           <div class="flex items-center gap-2 mb-1">
             <span class="badge badge-info text-[10px] uppercase">${escapeHtml(n.subject)}</span>

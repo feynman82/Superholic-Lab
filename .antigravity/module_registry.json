@@ -1,0 +1,77 @@
+[
+  {
+    "module": "api",
+    "keywords": [
+      "api"
+    ],
+    "top_paths": [
+      "analyze-weakness.js",
+      "cron\\fill-bank.js",
+      "generate-quest.js",
+      "index.js",
+      "summarize-chat.js"
+    ],
+    "status": "partial",
+    "summary": "api"
+  },
+  {
+    "module": "data",
+    "keywords": [],
+    "top_paths": [
+      "download_test_papers.py"
+    ],
+    "status": "partial",
+    "summary": "data"
+  },
+  {
+    "module": "js",
+    "keywords": [],
+    "top_paths": [
+      "app-shell.js",
+      "auth.js",
+      "diagram-library.js",
+      "exam-generator.js",
+      "exam-renderer.js",
+      "exam-templates.js",
+      "exam.js",
+      "footer.js"
+    ],
+    "status": "partial",
+    "summary": "js"
+  },
+  {
+    "module": "lib",
+    "keywords": [
+      "lib"
+    ],
+    "top_paths": [
+      "api\\handlers.js",
+      "api\\prompts\\cloze.js",
+      "api\\prompts\\editing.js",
+      "api\\prompts\\mcq.js",
+      "api\\prompts\\open-ended.js",
+      "api\\prompts\\short-ans.js",
+      "api\\prompts\\word-problem.js"
+    ],
+    "status": "partial",
+    "summary": "lib"
+  },
+  {
+    "module": "scripts",
+    "keywords": [
+      "scripts"
+    ],
+    "top_paths": [
+      "balancer.js",
+      "batch_processor.py",
+      "bulk-clone.js",
+      "crawler.js",
+      "db_seeder.py",
+      "diagram_salvager.js",
+      "extractor.py",
+      "fix-maths-options.js"
+    ],
+    "status": "partial",
+    "summary": "scripts"
+  }
+]

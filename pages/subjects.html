@@ -249,7 +249,7 @@ window.initSubjectsEngine = function() {
     const cards = subjects.map(s => {
       const locked = state.tier === 'single_subject' && s.id !== state.subject;
       return `
-        <div class="card hover-lift flex flex-col items-center justify-center p-8 text-center ${locked ? 'opacity-50' : 'cursor-pointer'}" 
+        <div class="glass-panel-1 hover-lift flex flex-col items-center justify-center p-8 text-center ${locked ? 'opacity-50' : 'cursor-pointer'}" 
              ${locked ? '' : `onclick="window.pickSubject('${s.id}')"`}>
           <div class="text-4xl mb-4">${s.icon}</div>
           <h3 class="font-display text-2xl text-main">${s.label}</h3>
@@ -289,7 +289,7 @@ window.initSubjectsEngine = function() {
     const stepText = state.tier === 'single_subject' ? 'Step 1 of 2' : 'Step 2 of 3';
 
     const buildCard = (id, title, sub, isSelected, isLocked) => `
-      <div class="card p-6 ${isLocked ? 'opacity-50' : 'cursor-pointer hover-lift'} flex flex-col justify-center text-center relative" 
+      <div class="glass-panel-1 p-6 ${isLocked ? 'opacity-50' : 'cursor-pointer hover-lift'} flex flex-col justify-center text-center relative" 
            style="border: 2px solid ${isSelected ? 'var(--brand-mint)' : 'var(--border-light)'}; background: ${isSelected ? 'var(--bg-elevated)' : 'var(--bg-surface)'};"
            ${isLocked ? '' : `onclick="window.pickTopic('${id}')"`}>
         ${isLocked ? '<div class="absolute top-2 right-2 text-xs text-muted" title="More questions coming soon">🔒</div>' : ''}
@@ -347,7 +347,7 @@ window.initSubjectsEngine = function() {
     const stepText = state.tier === 'single_subject' ? 'Step 2 of 2' : 'Step 3 of 3';
 
     const buildCard = (id, title, sub, isSelected, isLocked) => `
-      <div class="card p-6 ${isLocked ? 'opacity-50' : 'cursor-pointer hover-lift'} flex flex-col justify-center text-center relative" 
+      <div class="glass-panel-1 p-6 ${isLocked ? 'opacity-50' : 'cursor-pointer hover-lift'} flex flex-col justify-center text-center relative" 
            style="border: 2px solid ${isSelected ? 'var(--brand-mint)' : 'var(--border-light)'}; background: ${isSelected ? 'var(--bg-elevated)' : 'var(--bg-surface)'};"
            ${isLocked ? '' : `onclick="window.pickType('${id}')"`}>
         ${isLocked ? '<div class="absolute top-2 right-2 text-xs text-muted" title="More questions coming soon">🔒</div>' : ''}
@@ -412,7 +412,7 @@ window.initSubjectsEngine = function() {
       let student = (students || []).find(s => s.id === activeStudentId) || (students || [])[0];
       
       if (!student) {
-        app.innerHTML = `<div class="card p-8 text-center text-amber font-bold">No learners found. Please set up a profile.</div>`;
+        app.innerHTML = `<div class="glass-panel-1 p-8 text-center text-amber font-bold">No learners found. Please set up a profile.</div>`;
         return;
       }
 
@@ -450,7 +450,7 @@ window.initSubjectsEngine = function() {
       render();
     } catch (err) {
       console.error(err);
-      app.innerHTML = `<div class="card p-8 text-center text-danger font-bold">Could not load profile. Please refresh.</div>`;
+      app.innerHTML = `<div class="glass-panel-1 p-8 text-center text-danger font-bold">Could not load profile. Please refresh.</div>`;
     }
   }
   

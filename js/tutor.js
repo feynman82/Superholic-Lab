@@ -110,8 +110,8 @@
   function setMode(mode) {
     isDrawMode = (mode === 'draw');
     if (isDrawMode) {
-      modeDrawBtn.className = 'btn btn-sm bg-sage-dark text-white';
-      modeTextBtn.className = 'btn btn-sm btn-ghost';
+      modeDrawBtn.className = 'btn btn-primary btn-sm';
+      modeTextBtn.className = 'btn btn-ghost btn-sm';
       drawArea.style.display = 'block';
       
       // Resize canvas safely after display block
@@ -129,8 +129,8 @@
         }
       }, 50);
     } else {
-      modeTextBtn.className = 'btn btn-sm bg-sage-dark text-white';
-      modeDrawBtn.className = 'btn btn-sm btn-ghost';
+      modeTextBtn.className = 'btn btn-primary btn-sm';
+      modeDrawBtn.className = 'btn btn-ghost btn-sm';
       drawArea.style.display = 'none';
     }
   }
@@ -321,7 +321,7 @@
     avatar.style.flexShrink = '0';
 
     const bubble = document.createElement('div');
-    bubble.className = isUser ? 'chat-bubble-user text-sm' : 'chat-bubble-tutor text-sm';
+    bubble.className = isUser ? 'chat-bubble-user text-sm' : 'glass-panel-2 chat-bubble-tutor text-sm';
     
     if (imageBase64) {
       const img = document.createElement('img');
@@ -378,7 +378,7 @@
     avatar.style.flexShrink = '0';
 
     const bubble = document.createElement('div');
-    bubble.className = 'chat-bubble-tutor text-sm flex items-center justify-center';
+    bubble.className = 'glass-panel-2 chat-bubble-tutor text-sm flex items-center justify-center';
     bubble.style.minWidth = '60px';
     bubble.style.height = '40px';
     

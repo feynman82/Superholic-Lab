@@ -189,7 +189,7 @@ window.initQuizEngine = function() {
   }
 
   function renderLoading() {
-    app.innerHTML = `<div class="card flex flex-col items-center w-full p-6" style="max-width: 600px;"><div class="spinner-sm mb-4"></div><h2 class="font-display text-2xl text-main">Preparing Training Lab...</h2><p class="text-sm text-muted mt-2">Loading MOE-aligned questions</p></div>`;
+    app.innerHTML = `<div class="glass-panel-1 flex flex-col items-center w-full p-6" style="max-width: 600px;"><div class="spinner-sm mb-4"></div><h2 class="font-display text-2xl text-main">Preparing Training Lab...</h2><p class="text-sm text-muted mt-2">Loading MOE-aligned questions</p></div>`;
   }
 
 // ── PROCEDURAL DIAGRAM RENDERER (WITH ERROR SHIELD) ──
@@ -308,7 +308,7 @@ window.initQuizEngine = function() {
       }
 
       synthesisHtml = `
-        <div class="card p-5 bg-elevated border border-light mb-6 shadow-sm">
+        <div class="glass-panel-1 p-5 mb-6">
           <div class="text-lg text-main font-medium leading-relaxed mb-6">${displayQuestion}<br><br></div>
           <div class="flex items-end w-full">${blueprintHtml}</div>
         </div>
@@ -324,8 +324,8 @@ window.initQuizEngine = function() {
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
         <span class="text-xs font-bold text-muted uppercase tracking-wider">💡 Tip: Draw your working!</span>
         <div class="flex gap-2 w-full sm:w-auto">
-          <button class="btn btn-sm ${!isDrawMode ? 'bg-sage-dark text-white' : 'btn-ghost'}" onclick="window.setMode('text')" ${state.isAnswered ? 'disabled' : ''}>⌨️ Type</button>
-          <button class="btn btn-sm ${isDrawMode ? 'bg-sage-dark text-white' : 'btn-ghost'}" onclick="window.setMode('draw')" ${state.isAnswered ? 'disabled' : ''}>✏️ Pen Tool</button>
+          <button class="btn btn-sm ${!isDrawMode ? 'btn-primary' : 'btn-ghost'}" onclick="window.setMode('text')" ${state.isAnswered ? 'disabled' : ''}>⌨️ Type</button>
+          <button class="btn btn-sm ${isDrawMode ? 'btn-primary' : 'btn-ghost'}" onclick="window.setMode('draw')" ${state.isAnswered ? 'disabled' : ''}>✏️ Pen Tool</button>
         </div>
       </div>
       
@@ -335,7 +335,7 @@ window.initQuizEngine = function() {
              <canvas id="scratchpadCanvas" class="scratchpad-canvas bg-white border-2 border-slate-200 rounded-xl w-full shadow-sm" style="min-height: 300px; touch-action: none; cursor: crosshair; ${state.isAnswered ? 'pointer-events:none;' : ''}"></canvas>
              ${!state.isAnswered ? `
              <div style="position: absolute; top: 12px; right: 12px;">
-                <button class="btn btn-sm btn-ghost bg-white hover-lift border border-slate-200 shadow-sm rounded-lg" onclick="window.clearCanvas()">🗑️ Clear</button>
+                <button class="btn btn-sm btn-outlined bg-white" onclick="window.clearCanvas()">🗑️ Clear</button>
              </div>` : ''}
            </div>
            <input type="text" id="qInput" class="${drawModeInputStyle}" placeholder="${placeholderText}" value="${esc(savedAns)}" ${state.isAnswered ? 'disabled' : ''}>`
@@ -399,8 +399,8 @@ window.initQuizEngine = function() {
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
             <span class="text-xs font-bold text-muted uppercase tracking-wider">💡 Tip: Draw your working!</span>
             <div class="flex gap-2 w-full sm:w-auto">
-              <button class="btn btn-sm ${!isDrawMode ? 'bg-sage-dark text-white' : 'btn-ghost'}" onclick="window.setMode('text', '${safeIdLabel}')">⌨️ Type</button>
-              <button class="btn btn-sm ${isDrawMode ? 'bg-sage-dark text-white' : 'btn-ghost'}" onclick="window.setMode('draw', '${safeIdLabel}')">✏️ Pen Tool</button>
+              <button class="btn btn-sm ${!isDrawMode ? 'btn-primary' : 'btn-ghost'}" onclick="window.setMode('text', '${safeIdLabel}')">⌨️ Type</button>
+              <button class="btn btn-sm ${isDrawMode ? 'btn-primary' : 'btn-ghost'}" onclick="window.setMode('draw', '${safeIdLabel}')">✏️ Pen Tool</button>
             </div>
           </div>
           
@@ -409,7 +409,7 @@ window.initQuizEngine = function() {
             : `<div class="scratchpad-container mb-4" style="position: relative; display: block;">
                  <canvas id="scratchpadCanvas" data-drawkey="${drawKey}" class="scratchpad-canvas bg-white border-2 border-slate-200 rounded-xl w-full shadow-sm" style="min-height: 300px; touch-action: none; cursor: crosshair;"></canvas>
                  <div style="position: absolute; top: 12px; right: 12px;">
-                    <button class="btn btn-sm btn-ghost bg-white hover-lift border border-slate-200 shadow-sm rounded-lg" onclick="window.clearCanvas()">🗑️ Clear</button>
+                    <button class="btn btn-sm btn-outlined bg-white" onclick="window.clearCanvas()">🗑️ Clear</button>
                  </div>
                </div>
                <input type="text" id="part-${safeIdLabel}" class="${drawModeInputStyle}" placeholder="Final Answer (Required for marking)" value="${esc(savedWorking)}" oninput="window.saveInputState()">`
@@ -460,7 +460,7 @@ function buildClozeUI(q) {
           `<span class="badge bg-surface border border-light text-main" style="font-size:0.9rem; padding: 6px 12px; font-weight: 500;">(${i+1}) ${esc(w)}</span>`
         ).join('');
         wordBankHtml = `
-          <div class="card bg-page p-4 mb-4">
+          <div class="glass-panel-1 p-4 mb-4">
             <div class="text-xs font-bold text-muted uppercase mb-3">Word Bank</div>
             <div class="flex flex-wrap gap-2">${wordBankList}</div>
           </div>`;
@@ -514,12 +514,12 @@ function buildClozeUI(q) {
           ${!res.isCorrect && b.explanation ? `<span class="text-muted text-xs ml-auto" style="max-width:60%; text-align:right;">${esc(b.explanation)}</span>` : ''}
         </div>`;
       }).join('');
-      blankFeedback = `<div class="card bg-page p-4 mt-4">${rows}</div>`;
+      blankFeedback = `<div class="glass-panel-2 p-4 mt-4">${rows}</div>`;
     }
 
     return `
       ${wordBankHtml}
-      <div class="card p-6 cloze-passage text-lg text-main font-normal">${passage}</div>
+      <div class="glass-panel-1 p-6 cloze-passage text-lg text-main font-normal">${passage}</div>
       ${blankFeedback}`;
   }
 
@@ -566,10 +566,10 @@ function buildClozeUI(q) {
         </div>`;
       }).join('');
       
-      editFeedback = `<div class="card bg-page p-4 mt-4">${rows}</div>`;
+      editFeedback = `<div class="glass-panel-2 p-4 mt-4">${rows}</div>`;
     }
 
-    return `<div class="card p-6 editing-passage text-lg text-main font-normal" style="line-height: 2.4;">${html}</div>${editFeedback}`;
+    return `<div class="glass-panel-1 p-6 editing-passage text-lg text-main font-normal" style="line-height: 2.4;">${html}</div>${editFeedback}`;
   }
 
   function buildComprehensionUI(q) {
@@ -594,7 +594,7 @@ function buildClozeUI(q) {
                  const bgClass   = isPartial ? 'bg-amber-tint' : 'bg-science-tint';
                  const textClass = isPartial ? 'text-amber' : 'text-success';
                  const icon      = isPartial ? '💡' : '🎉';
-                 inlineFeedbackHtml = `<div class="card ${ruleClass} ${bgClass} p-4 mt-4 mb-2">
+                 inlineFeedbackHtml = `<div class="glass-panel-2 ${ruleClass} ${bgClass} p-4 mt-4 mb-2">
                    <div class="font-bold mb-2 ${textClass}">${icon} Miss Wena says:</div>
                    <p class="text-sm text-main leading-relaxed">${fb.text}</p>
                    ${fb.correctAnswer ? `<div class="mt-3 text-sm font-bold text-main">Correct Answer: <span class="text-success">${esc(fb.correctAnswer)}</span></div>` : ''}
@@ -764,7 +764,7 @@ function buildClozeUI(q) {
     return `
       ${mobileStyleOverride}
       <div class="comp-container">
-        <div class="comp-passage-pane card p-6 text-lg text-main leading-relaxed">
+        <div class="comp-passage-pane glass-panel-1 p-6 text-lg text-main leading-relaxed">
           ${esc(q.passage).replace(/&lt;br\s*\/?&gt;/gi, '<br>').replace(/\\n/g, '<br><br>').replace(/\\"/g, '"')}
         </div>
         <div class="comp-questions-pane">${partsHtml}</div>
@@ -783,7 +783,7 @@ function buildClozeUI(q) {
       hintsHtml += `<div class="mt-4 flex flex-col gap-3">`;
       revealedHints.forEach((hint, index) => {
         hintsHtml += `
-          <div class="card bg-amber-tint p-4 text-sm text-main font-medium border-l-4" style="border-left-color: var(--brand-amber); box-shadow: none;">
+          <div class="glass-panel-2 p-4 text-sm text-main font-medium border-l-4" style="border-left-color: var(--brand-amber); box-shadow: none;">
             <div class="text-amber font-bold mb-1 flex items-center gap-2">
               <span>💡</span> Miss Wena's Hint ${index + 1}
             </div>
@@ -808,7 +808,7 @@ function buildClozeUI(q) {
 
   function renderQuiz() {
     if (state.questions.length === 0) {
-      app.innerHTML = `<div class="card text-center w-full hover-lift p-6" style="max-width: 680px; transition: max-width 0.3s ease;"><div class="text-4xl mb-4">🕵️</div><h2 class="font-display text-2xl text-main">No questions found!</h2><p class="text-muted text-sm my-4">Miss Wena hasn't added questions for this specific combination yet. Check back soon!</p><button class="btn btn-primary hover-lift" onclick="window.location.href='subjects.html'">Return to Subjects</button></div>`;
+      app.innerHTML = `<div class="glass-panel-1 text-center w-full hover-lift p-6" style="max-width: 680px; transition: max-width 0.3s ease;"><div class="text-4xl mb-4">🕵️</div><h2 class="font-display text-2xl text-main">No questions found!</h2><p class="text-muted text-sm my-4">Miss Wena hasn't added questions for this specific combination yet. Check back soon!</p><button class="btn btn-primary hover-lift" onclick="window.location.href='subjects.html'">Return to Subjects</button></div>`;
       return;
     }
 
@@ -842,13 +842,13 @@ function buildClozeUI(q) {
       if (q.type === 'comprehension') {
          feedbackHtml = ''; // Completely suppress bottom feedback for comprehension
       } else if (fb.isModel) {
-        feedbackHtml = `<div class="card card-rule-mint bg-science-tint p-4 mt-4">
+        feedbackHtml = `<div class="glass-panel-2 card-rule-mint bg-science-tint p-4 mt-4">
           <div class="font-bold text-sm mb-2 text-success">Worked Solution</div>
           <div class="text-sm text-main leading-relaxed">${window.formatWorkedSolution(q.worked_solution || q.model_answer)}</div>
         </div>`;
       } else if (fb.status === 'correct') {
         // 🚀 MASTERCLASS FIX: Safely render the HTML worked solution below the success message
-        feedbackHtml = `<div class="card card-rule-mint bg-science-tint p-4 mt-4">
+        feedbackHtml = `<div class="glass-panel-2 card-rule-mint bg-science-tint p-4 mt-4">
           <div class="font-bold mb-2 text-success">🎉 Spot on!</div>
           ${fb.text && fb.text !== 'Perfectly executed!' ? `<p class="text-sm text-main leading-relaxed mb-3">${esc(fb.text)}</p>` : ''}
           ${q.worked_solution ? `<div class="text-sm text-main leading-relaxed mt-3 pt-3" style="border-top: 1px solid rgba(16, 185, 129, 0.2);"><div class="text-xs font-bold text-success uppercase tracking-wider mb-2">Worked Solution</div>${window.formatWorkedSolution(q.worked_solution)}</div>` : ''}
@@ -861,7 +861,7 @@ function buildClozeUI(q) {
         const bgClass   = isPartial ? 'bg-amber-tint' : (isLoad ? 'bg-surface' : 'bg-rose-tint');
         const textClass = isPartial ? 'text-amber' : (isLoad ? 'text-main' : 'text-danger');
         
-        feedbackHtml = `<div class="card ${ruleClass} ${bgClass} p-4 mt-4">
+        feedbackHtml = `<div class="glass-panel-2 ${ruleClass} ${bgClass} p-4 mt-4">
           <div class="font-bold mb-2 ${textClass}">${isLoad ? '<span class="spinner-sm inline-block mr-2 border-brand-mint"></span>' : '💡'} Miss Wena says:</div>
           <p class="text-sm text-main leading-relaxed">${fb.text}</p>
           ${fb.correctAnswer ? `<div class="mt-3 text-sm font-bold text-main">Correct Answer: <span class="text-success">${esc(fb.correctAnswer)}</span></div>` : ''}
@@ -920,7 +920,7 @@ function buildClozeUI(q) {
           </div>
         </div>
 
-        <div class="card p-6 hover-lift w-full relative">
+        <div class="glass-panel-1 p-6 hover-lift w-full relative">
           <div class="badge badge-info absolute top-0 left-8" style="transform:translateY(-50%);">${esc(titleCase(q.topic || 'Mixed'))}</div>
           ${q.difficulty ? `<div class="badge badge-${q.difficulty.toLowerCase()} absolute top-0 right-8" style="transform:translateY(-50%);">${esc(q.difficulty)}</div>` : ''}
 
@@ -1285,17 +1285,17 @@ function buildClozeUI(q) {
     if (window.plausible) window.plausible('Quiz Complete', { props: { score: pct, subject: new URLSearchParams(window.location.search).get('subject') || 'mixed' } });
     
     app.innerHTML = `
-      <div class="card flex flex-col items-center text-center w-full hover-lift p-6 card-rule-mint" style="max-width: 600px;">
+      <div class="glass-panel-1 flex flex-col items-center text-center w-full hover-lift p-6 card-rule-mint" style="max-width: 600px;">
         <h1 class="font-display text-4xl text-main mb-2">Training Complete!</h1>
         <p class="text-muted text-lg mb-6">You've successfully completed the lab session.</p>
         
         <div class="flex flex-wrap gap-6 mb-6 w-full justify-center">
-          <div class="card p-6 flex-1 bg-page" style="border: none; max-width: 200px;">
+          <div class="glass-panel-1 p-6 flex-1 bg-page" style="border: none; max-width: 200px;">
             <div class="text-sm font-bold text-muted uppercase">Score</div>
             <div class="font-display text-5xl text-success mt-2">${pct}%</div>
             <div class="text-sm text-main mt-1">${state.score} / ${maxScore} Marks</div>
           </div>
-          <div class="card p-6 flex-1 bg-amber-tint" style="border: none; max-width: 200px;">
+          <div class="glass-panel-1 p-6 flex-1 bg-amber-tint" style="border: none; max-width: 200px;">
             <div class="text-sm font-bold text-amber uppercase">Best Streak</div>
             <div class="font-display text-5xl text-amber mt-2">🔥 ${state.maxStreak}</div>
             <div class="text-sm text-amber mt-1">In a row!</div>

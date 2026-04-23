@@ -75,25 +75,25 @@ const ExamRenderer = {
       .join('');
 
     const el = document.createElement('div');
-    el.className = 'exam-cover card mb-6 no-print-break';
+    el.className = 'exam-cover glass-panel-1 p-8 mb-8 no-print-break';
     el.innerHTML = `
-      <div class="card-header text-center">
-        <p class="text-sm text-secondary mb-1" style="font-family:var(--font-body);letter-spacing:0.08em;text-transform:uppercase;">
+      <div class="text-center mb-6">
+        <p class="text-sm text-secondary mb-2" style="font-family:var(--font-body);letter-spacing:0.08em;text-transform:uppercase;">
           ${_examEsc(template.level || '')} &nbsp;·&nbsp; ${_examEsc(template.subject || '')}
         </p>
-        <h1 class="text-xl font-bold" style="color:var(--cream);">
+        <h1 class="text-3xl font-bold text-main">
           ${_examEsc(paper.displayName || template.displayName || 'Exam Paper')}
         </h1>
       </div>
-      <div class="card-body">
-        <div class="exam-cover-meta">
+      <div>
+        <div class="exam-cover-meta flex justify-center gap-6 text-lg">
           <span><strong>Duration:</strong> ${_examEsc(durationText)}</span>
           <span><strong>Total Marks:</strong> ${_examEsc(String(paper.totalMarks || template.totalMarks || 0))}</span>
           ${template.calculatorAllowed
             ? '<span class="badge badge-success">Calculator Allowed</span>'
             : '<span class="badge badge-danger">No Calculator</span>'}
         </div>
-        ${instructionLines ? `<ol class="exam-instructions mt-4">${instructionLines}</ol>` : ''}
+        ${instructionLines ? `<ol class="exam-instructions mt-6 text-lg pl-6">${instructionLines}</ol>` : ''}
       </div>
     `;
     container.appendChild(el);
@@ -113,18 +113,18 @@ const ExamRenderer = {
   renderSection(section, sectionIndex, startNumber, container) {
     // Section header
     const header = document.createElement('div');
-    header.className = 'exam-section-header card mb-4';
+    header.className = 'exam-section-header glass-panel-2 p-6 mb-6';
     header.innerHTML = `
-      <div class="card-body py-3">
-        <div class="flex-between">
-          <h2 class="font-bold" style="color:var(--mint);">
+      <div>
+        <div class="flex justify-between items-center mb-2">
+          <h2 class="font-bold text-2xl" style="color:var(--brand-sage);">
             ${_examEsc(section.label || `Section ${sectionIndex + 1}`)}
             ${section.title ? ` — ${_examEsc(section.title)}` : ''}
           </h2>
-          <span class="badge badge-info">${_examEsc(String(section.sectionMarks || section.totalMarks || 0))} marks</span>
+          <span class="badge badge-info text-sm py-1 px-3">${_examEsc(String(section.sectionMarks || section.totalMarks || 0))} marks</span>
         </div>
         ${section.instructions
-          ? `<p class="text-sm text-secondary mt-2">${_examEsc(section.instructions)}</p>`
+          ? `<p class="text-lg text-secondary mt-2">${_examEsc(section.instructions)}</p>`
           : ''}
       </div>
     `;
@@ -152,21 +152,21 @@ const ExamRenderer = {
    */
   renderQuestion(question, number, container) {
     const wrap = document.createElement('div');
-    wrap.className = 'exam-question card mb-4 no-print-break';
+    wrap.className = 'exam-question glass-panel-1 p-6 mb-6 no-print-break';
     wrap.setAttribute('data-q-id', _examEsc(question.id || ''));
     wrap.setAttribute('data-q-type', _examEsc(question.type || ''));
 
     // Question header: number + marks badge
     const marks = question.marks || (question.parts || []).reduce((s, p) => s + (p.marks || 1), 0);
     const headerHtml = `
-      <div class="card-header py-3 flex-between">
-        <span class="font-bold" style="color:var(--cream);">Question ${number}</span>
+      <div class="flex justify-between items-center mb-4 border-b border-light pb-4">
+        <span class="font-bold text-xl text-main">Question ${number}</span>
         <span class="badge badge-info">${marks} mark${marks !== 1 ? 's' : ''}</span>
       </div>
     `;
 
     // Diagram (if present) + question text
-    let bodyHtml = headerHtml + '<div class="card-body">';
+    let bodyHtml = headerHtml + '<div>';
 
     // 🚀 HYBRID DIAGRAM RENDERING for Exams
     let dynamicDiagramHtml = '';
@@ -238,7 +238,7 @@ const ExamRenderer = {
         bodyHtml += `<p class="text-secondary text-sm">[Question type "${_examEsc(question.type)}" not yet supported in print mode]</p>`;
     }
 
-    bodyHtml += '</div>'; // card-body
+    bodyHtml += '</div>'; // end inner wrap
     wrap.innerHTML = bodyHtml;
     container.appendChild(wrap);
   },
@@ -383,10 +383,10 @@ const ExamRenderer = {
     
     // 1. Draw Passage or Flyer
     if (question.type === 'visual_text' && question.image_url) {
-       html += `<div class="mb-4 text-center"><img src="${_examEsc(question.image_url)}" style="max-width: 100%; border: 1px solid var(--border-light);"></div>`;
+       html += `<div class="mb-4 text-center"><img src="${_examEsc(question.image_url)}" style="max-width: 100%; border: 1px solid var(--border-light); border-radius: var(--radius-md);"></div>`;
     }
     if (question.passage) {
-       html += `<div class="card-body mb-4" style="background: var(--bg-elevated); border: 1px solid var(--border-light); padding: 15px; border-radius: var(--radius-md); font-size: 14px; line-height: 1.8;">${_examEsc(question.passage).replace(/\n/g, '<br>')}</div>`;
+       html += `<div class="glass-panel-2 mb-6" style="padding: var(--space-6); font-size: 1.125rem; line-height: 1.8;">${_examEsc(question.passage).replace(/\n/g, '<br>')}</div>`;
     }
 
     // 2. Draw Sub-Questions
@@ -459,8 +459,8 @@ const ExamRenderer = {
     }).join('');
 
     return `
-      <div class="cloze-passage card-body mb-4" style="pointer-events:none;">${passage}</div>
-      ${blanks.length > 0 ? `<table class="exam-cloze-options text-sm"><tbody>${optionRows}</tbody></table>` : ''}`;
+      <div class="glass-panel-2 p-6 mb-6 cloze-passage text-lg font-normal" style="pointer-events:none;">${passage}</div>
+      ${blanks.length > 0 ? `<table class="exam-cloze-options text-lg"><tbody>${optionRows}</tbody></table>` : ''}`;
   },
 
   /* ── Editing ──────────────────────────────────────────────────────────── */
@@ -508,10 +508,10 @@ const ExamRenderer = {
    */
   renderMarkingScheme(paper, container) {
     const heading = document.createElement('div');
-    heading.className = 'exam-marking-heading card mb-4';
+    heading.className = 'exam-marking-heading glass-panel-1 p-6 mb-8';
     heading.innerHTML = `
-      <div class="card-header">
-        <h2 class="font-bold" style="color:var(--brand-rose);">Marking Scheme — ${_examEsc(paper.displayName || '')}</h2>
+      <div class="border-b border-light pb-4">
+        <h2 class="font-bold text-2xl" style="color:var(--brand-rose);">Marking Scheme — ${_examEsc(paper.displayName || '')}</h2>
       </div>`;
     container.appendChild(heading);
 

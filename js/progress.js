@@ -302,7 +302,7 @@ function insertRevisionVault(notes) {
   vaultContainer.style.marginBottom = 'var(--space-8)';
   
   const cardsHtml = notes.map(n => `
-    <div class="card p-5 hover-lift relative" style="min-width: 240px; max-width: 280px; scroll-snap-align: start; cursor: pointer; border-top: 3px solid var(--brand-rose);" onclick="openVaultNote('${n.id}')">
+    <div class="glass-panel-2 p-5 hover-lift relative" style="min-width: 240px; max-width: 280px; scroll-snap-align: start; cursor: pointer; border-top: 3px solid var(--brand-rose);" onclick="openVaultNote('${n.id}')">
       ${!n.is_read ? `<div class="absolute top-2 right-2 w-3 h-3 rounded-full bg-rose"></div>` : ''}
       <div class="badge badge-info mb-2 text-[10px] uppercase">${n.subject}</div>
       <h3 class="font-bold text-main mb-2 leading-tight" style="font-size: 1rem;">${n.title.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</h3>
@@ -330,7 +330,7 @@ function insertRevisionVault(notes) {
     modal.style.background = 'rgba(44, 62, 58, 0.6)';
     modal.style.backdropFilter = 'blur(4px)';
     modal.innerHTML = `
-      <div class="card modal-card p-6 flex flex-col gap-4 transform translate-y-4 transition-transform duration-300 w-full max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <div class="glass-panel-1 modal-card p-6 flex flex-col gap-4 transform translate-y-4 transition-transform duration-300 w-full max-w-[600px] max-h-[90vh] overflow-y-auto">
         <div class="flex justify-between items-center border-b border-light pb-2">
           <div class="badge badge-info" id="vaultNoteSubject">Maths</div>
           <button class="btn btn-ghost btn-sm text-xl" onclick="document.getElementById('vaultViewerModal').classList.remove('opacity-100', 'pointer-events-auto'); document.getElementById('vaultViewerModal').classList.add('opacity-0', 'pointer-events-none');">×</button>
@@ -363,7 +363,7 @@ window.openVaultNote = async (noteId) => {
     note.is_read = true; 
     
     // Visually remove the red dot
-    const targetCard = Array.from(document.querySelectorAll('#revision-vault-list .card')).find(c => c.innerHTML.includes(note.title));
+    const targetCard = Array.from(document.querySelectorAll('#revision-vault-list .glass-panel-2')).find(c => c.innerHTML.includes(note.title));
     if (targetCard) {
       const dot = targetCard.querySelector('.bg-rose');
       if (dot && dot.classList.contains('rounded-full')) dot.remove();
@@ -404,7 +404,7 @@ function insertAOMasteryUI(aoStats) {
         <h2 class="font-display text-2xl text-main m-0 uppercase">Skill Mastery</h2>
         <span class="badge" style="background: rgba(81,97,94,0.1); color: var(--sage-dark);">MOE Analytics</span>
       </div>
-      <div class="card p-6 bg-surface border border-light shadow-sm">
+      <div class="glass-panel-1 p-6 border border-light shadow-sm">
         ${aoHtml}
         <div class="mt-4 pt-3 border-t border-light flex gap-2 items-start">
           <span style="font-size: 1.2rem;">🧠</span>
@@ -465,7 +465,7 @@ function renderQuestMap(quest, db) {
 
   // ── Card wrapper ────────────────────────────────────────────────────────────
   const card = document.createElement('div');
-  card.className = 'card';
+  card.className = 'glass-panel-1';
   card.style.cssText = 'border-top: 3px solid var(--mint); margin-bottom: var(--space-6);';
 
   // ── Card header ─────────────────────────────────────────────────────────────
@@ -636,7 +636,7 @@ async function generateQuest(db, session, student, topic, subject, score, attemp
   const questMapContainer = document.getElementById('quest-map-container') || document.querySelector('.quest-container');
   if (questMapContainer) {
     questMapContainer.innerHTML = `
-      <div class="card p-6 border-sage animate-pulse">
+      <div class="glass-panel-1 p-6 border-sage animate-pulse">
         <div class="h-6 bg-light rounded w-1/3 mb-6"></div>
         <div class="flex flex-col gap-4">
           <div class="h-16 bg-light rounded w-full"></div>
@@ -1177,7 +1177,7 @@ function renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subject
         subTopics.forEach(t => {
           const topicLabel = t.topic.replace(/-/g, ' ');
           weakHtml.push(`
-            <div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:var(--space-3) var(--space-4); flex-wrap:wrap; gap:10px;">
+            <div class="glass-panel-2" style="display:flex; justify-content:space-between; align-items:center; padding:var(--space-3) var(--space-4); flex-wrap:wrap; gap:10px;">
               <div>
                 <span style="font-size:1.2rem; margin-right:8px;">${t.pct < 45 ? '🔴' : '🟠'}</span>
                 <strong style="color:var(--text-main); text-transform:capitalize;">${topicLabel}</strong> 
@@ -1192,7 +1192,7 @@ function renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subject
       }
     });
 
-    weaknessList.innerHTML = weakHtml.length > 0 ? weakHtml.join('') : '<div class="card" style="padding:var(--space-4); text-align:center; color:var(--mint);">🎉 Excellent! No weak areas detected (All topics AL1).</div>';
+    weaknessList.innerHTML = weakHtml.length > 0 ? weakHtml.join('') : '<div class="glass-panel-2" style="padding:var(--space-4); text-align:center; color:var(--mint);">🎉 Excellent! No weak areas detected (All topics AL1).</div>';
   }
 
   // 3. LAYER 3: Subject Breakdown & Deep Dive
@@ -1205,7 +1205,7 @@ function renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subject
       const colour = pct >= 75 ? 'var(--mint)' : pct >= 50 ? 'var(--amber)' : 'var(--danger)';
       
       return `
-        <div class="card" style="padding:var(--space-4);">
+        <div class="glass-panel-1" style="padding:var(--space-4);">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-2);">
             <strong style="font-size:1.2rem; color:var(--text-main); text-transform:capitalize;">${sub}</strong>
             <span class="badge ${pct >= 75 ? 'badge-success' : pct >= 50 ? 'badge-amber' : 'badge-danger'}">${pct}% correct · ${band}</span>
