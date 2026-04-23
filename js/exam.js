@@ -530,7 +530,7 @@ window.initExamEngine = function () {
         <div class="flex flex-col" style="flex: 1 1 300px; max-width: ${paneMaxWidth}; width: 100%; transition: max-width 0.3s ease;">
           <div class="badge badge-info mb-4 self-start">${esc(q.sectionLabel || 'Exam')}</div>
           
-          <div class="glass-panel-1 p-6 mb-4 flex-1 relative">
+          <div class="glass-panel-1 p-4 mb-4 flex-1 relative">
             <div class="absolute top-6 right-6 badge badge-info">${q.marks} mark${q.marks > 1 ? 's' : ''}</div>
             <div class="flex justify-between items-center mb-4" style="border-bottom: 1px solid var(--border-light); padding-bottom: var(--space-2);">
               <div class="font-bold text-brand-sage text-lg">Question ${state.currentQIdx + 1} of ${totalQs}</div>
