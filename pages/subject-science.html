@@ -1,257 +1,335 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Primary Science — MOE Syllabus P3–P6 | Superholic Lab</title>
-<meta name="description" content="Understand the MOE Primary Science syllabus — 5 themes across P3–P6, the CER method, and how Superholic Lab's AI question bank and Miss Wena build PSLE Science mastery.">
-<link rel="canonical" href="https://www.superholiclab.com/pages/subject-science.html">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="../css/style.css">
-<link rel="icon" href="../assets/favicon.ico">
-<script src="/js/header.js" defer></script>
-<script src="/js/footer.js" defer></script>
-<script src="../js/supabase-client.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Primary Science — MOE Syllabus P3–P6 | Superholic Lab</title>
+  <meta name="description"
+    content="Understand the MOE Primary Science syllabus — 5 themes across P3–P6, the CER method, and how Superholic Lab's AI question bank and Miss Wena build PSLE Science mastery.">
+  <link rel="canonical" href="https://www.superholiclab.com/pages/subject-science.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="../assets/favicon.ico">
+  <script src="/js/header.js" defer></script>
+  <script src="/js/footer.js" defer></script>
+  <script src="../js/supabase-client.js"></script>
 
-<script type="module">
-  import { guardPage } from '/js/auth.js';
-  import { initAppShell } from '/js/app-shell.js';
-  
-  async function boot() {
-    try {
-      // 2. Fetch session (false = let guests browse safely)
-      window.userProfile = await guardPage(false); 
-      
-      // 3. Initialize the Bottom Navigation and global shell UI
-      if (typeof initAppShell === 'function') {
-        initAppShell(window.userProfile);
+  <script type="module">
+    import { guardPage } from '/js/auth.js';
+    import { initAppShell } from '/js/app-shell.js';
+
+    async function boot() {
+      try {
+        // 2. Fetch session (false = let guests browse safely)
+        window.userProfile = await guardPage(false);
+
+        // 3. Initialize the Bottom Navigation and global shell UI
+        if (typeof initAppShell === 'function') {
+          initAppShell(window.userProfile);
+        }
+
+        // Note: We no longer need to manually swap the "Log In" button here 
+        // because your global <global-header> Web Component handles it automatically!
+
+      } catch (err) {
+        console.error('Boot sequence failed:', err);
       }
-      
-      // Note: We no longer need to manually swap the "Log In" button here 
-      // because your global <global-header> Web Component handles it automatically!
-      
-    } catch (err) {
-      console.error('Boot sequence failed:', err);
     }
-  }
-  
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', boot);
-  } else {
-    boot();
-  }
-</script>
-<style>
-/* ── Subject Breadcrumb (Local component until globalized) ── */
-.subject-nav { display: flex; gap: var(--space-3); flex-wrap: wrap; align-items: center; margin-bottom: var(--space-6); }
-.subject-nav a { font-size: var(--text-sm); color: rgba(255,255,255,0.65); text-decoration: none; }
-.subject-nav a:hover { color: var(--cream); }
-.subject-nav-sep { color: rgba(255,255,255,0.35); font-size: var(--text-sm); }
-.subject-nav .active { color: var(--science-colour); font-weight: 700; }
-</style>
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', boot);
+    } else {
+      boot();
+    }
+  </script>
+  <style>
+    /* ── Subject Breadcrumb (Local component until globalized) ── */
+    .subject-nav {
+      display: flex;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: var(--space-6);
+    }
+
+    .subject-nav a {
+      font-size: var(--text-sm);
+      color: rgba(255, 255, 255, 0.65);
+      text-decoration: none;
+    }
+
+    .subject-nav a:hover {
+      color: var(--cream);
+    }
+
+    .subject-nav-sep {
+      color: rgba(255, 255, 255, 0.35);
+      font-size: var(--text-sm);
+    }
+
+    .subject-nav .active {
+      color: var(--science-colour);
+      font-weight: 700;
+    }
+  </style>
 </head>
+
 <body class="has-bottom-nav">
-<global-header></global-header>
+  <global-header></global-header>
 
-<section class="bg-sage texture-dots py-10" style="padding-top: calc(64px + var(--space-8)); position: relative;">
-  <div class="container">
-    <div class="flex flex-wrap items-start gap-8">
-      <div class="flex-1 flex flex-col gap-4" style="min-width: 300px;">
-        <h1 class="font-display text-4xl">
-          Science Begins at P3.<br>
-          <span class="text-rose">And It Demands Precision From Day One.</span>
-        </h1>
-        <p class="text-muted text-lg" style="max-width: 480px;">
-          Your child spends P1 and P2 building language and number foundations. Then P3 arrives — and suddenly there is a new subject, five themes, a marking scheme, and a way of writing answers that school simply does not have time to drill. Science at PSLE is not just about knowing facts. It is about using them precisely, in the language examiners are trained to reward.
-        </p>
-        <div class="flex flex-wrap gap-3">
-          <div class="badge badge-glass">5 Themes · P3–P6</div>
-          <div class="badge badge-glass">CER Method</div>
-          <div class="badge badge-glass">MOE 2023 Updated Syllabus</div>
+  <section class="bg-sage texture-dots py-10" style="padding-top: calc(64px + var(--space-8)); position: relative;">
+    <div class="container">
+      <div class="flex flex-wrap items-start gap-8">
+        <div class="flex-1 flex flex-col gap-4" style="min-width: 300px;">
+          <h1 class="font-display text-4xl">
+            Science Begins at P3.<br>
+            <span class="text-rose">And It Demands Precision From Day One.</span>
+          </h1>
+          <p class="text-muted text-lg" style="max-width: 480px;">
+            Your child spends P1 and P2 building language and number foundations. Then P3 arrives — and suddenly there
+            is a new subject, five themes, a marking scheme, and a way of writing answers that school simply does not
+            have time to drill. Science at PSLE is not just about knowing facts. It is about using them precisely, in
+            the language examiners are trained to reward.
+          </p>
+          <div class="flex flex-wrap gap-3">
+            <div class="badge badge-glass">5 Themes · P3–P6</div>
+            <div class="badge badge-glass">CER Method</div>
+            <div class="badge badge-glass">MOE 2023 Updated Syllabus</div>
+          </div>
+          <div class="flex flex-wrap gap-4">
+            <a href="/pages/signup.html?subject=science&mode=trial" class="btn btn-primary hover-lift">Start Free
+              Science Practice →</a>
+            <a href="#themes" class="btn btn-glass hover-lift">Explore the 5 Themes</a>
+          </div>
         </div>
-        <div class="flex flex-wrap gap-4">
-          <a href="/pages/signup.html?subject=science&mode=trial" class="btn btn-primary hover-lift">Start Free Science Practice →</a>
-          <a href="#themes" class="btn btn-glass hover-lift">Explore the 5 Themes</a>
+        <div class="flex-1" style="min-width: 280px; max-width: 440px;">
+          <img src="../assets/images/boys-science.png" alt="Singapore student studying Primary Science"
+            style="width:100%; border-radius:var(--radius-lg); box-shadow:var(--shadow-md);">
         </div>
-      </div>
-      <div class="flex-1" style="min-width: 280px; max-width: 440px;">
-        <img src="../assets/images/boys-science.png" alt="Singapore student studying Primary Science" style="width:100%; border-radius:var(--radius-lg); box-shadow:var(--shadow-md);">
       </div>
     </div>
-  </div>
-  <div class="hero-pet-track"><div class="walking-dog">🐕</div></div>
-</section>
-
-<section class="bg-white py-10" id="themes">
-  <div class="container">
-    <div class="flex flex-col items-center text-center mb-8">
-      <div class="badge badge-info mb-2">MOE Science Curriculum Framework</div>
-      <h2 class="font-display text-3xl mb-2 text-main">Five Themes. Every Topic Belongs to One.</h2>
-      <p class="text-muted text-lg prose-cap">MOE organises the entire P3–P6 Science curriculum across five themes. Understanding the theme behind each topic helps children connect ideas across years.</p>
+    <div class="hero-pet-track">
+      <div class="walking-dog">🐕</div>
     </div>
-    <div class="flex flex-wrap gap-4">
+  </section>
 
-      <div class="glass-panel-1 flex flex-col gap-3 flex-1 p-6 bg-science-tint hover-lift" style="min-width: 180px;">
-        <div class="flex items-center gap-3">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--science-colour)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8"/><line x1="12" y1="4" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="20"/><line x1="4" y1="12" x2="2" y2="12"/><line x1="22" y1="12" x2="20" y2="12"/></svg>
-          <div class="font-bold text-main">Diversity</div>
-        </div>
-        <p class="text-muted text-sm">Living vs non-living things, types of animals and plants, classification, and diversity of materials. Builds the ability to observe and compare systematically.</p>
+  <section class="bg-white py-10" id="themes">
+    <div class="container">
+      <div class="flex flex-col items-center text-center mb-8">
+        <div class="badge badge-info mb-2">MOE Science Curriculum Framework</div>
+        <h2 class="font-display text-3xl mb-2 text-main">Five Themes. Every Topic Belongs to One.</h2>
+        <p class="text-muted text-lg prose-cap">MOE organises the entire P3–P6 Science curriculum across five themes.
+          Understanding the theme behind each topic helps children connect ideas across years.</p>
       </div>
-      
-      <div class="glass-panel-1 flex flex-col gap-3 flex-1 p-6 bg-science-tint hover-lift" style="min-width: 180px;">
-        <div class="flex items-center gap-3">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--science-colour)" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 11-6.219-8.56"/><polyline points="21 3 21 9 15 9"/></svg>
-          <div class="font-bold text-main">Cycles</div>
-        </div>
-        <p class="text-muted text-sm">Life cycles of animals and plants, the water cycle, states of matter, and reproduction. Understanding that patterns of change repeat helps students predict natural events.</p>
-      </div>
-      
-      <div class="glass-panel-1 flex flex-col gap-3 flex-1 p-6 bg-science-tint hover-lift" style="min-width: 180px;">
-        <div class="flex items-center gap-3">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--science-colour)" stroke-width="2" stroke-linecap="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3l-4 4-4-4"/></svg>
-          <div class="font-bold text-main">Systems</div>
-        </div>
-        <p class="text-muted text-sm">Plant systems, human digestive, respiratory, and circulatory systems, and electrical systems. Questions always ask how each part's function contributes to the whole.</p>
-      </div>
-      
-    </div>
-  </div>
-</section>
+      <div class="flex flex-wrap gap-4">
 
-<section class="bg-page texture-light-grid py-10">
-  <div class="container">
-    <div class="flex flex-col items-center text-center mb-8">
-      <div class="badge badge-amber mb-2">Level-by-Level Syllabus</div>
-      <h2 class="font-display text-3xl mb-2 text-main">What Changes at Every Level.</h2>
-      <p class="text-muted text-lg prose-cap">From 2024, each primary level has its own dedicated Science syllabus — there is no longer a shared "lower block."</p>
-    </div>
-    <div class="flex flex-wrap gap-6">
-      
-      <div class="glass-panel-1 flex flex-col gap-3 flex-1 p-6 bg-maths-tint" style="min-width: 220px;">
-        <div class="flex items-center gap-2 mb-2">
-          <div class="font-display text-xl" style="color:var(--maths-colour);">P3</div>
-          <div class="badge badge-info">First Year of Science</div>
+        <div class="glass-panel-1 flex flex-col gap-3 flex-1 p-6 bg-science-tint hover-lift" style="min-width: 180px;">
+          <div class="flex items-center gap-3">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--science-colour)" stroke-width="2"
+              stroke-linecap="round">
+              <circle cx="12" cy="12" r="3" />
+              <circle cx="12" cy="12" r="8" />
+              <line x1="12" y1="4" x2="12" y2="2" />
+              <line x1="12" y1="22" x2="12" y2="20" />
+              <line x1="4" y1="12" x2="2" y2="12" />
+              <line x1="22" y1="12" x2="20" y2="12" />
+            </svg>
+            <div class="font-bold text-main">Diversity</div>
+          </div>
+          <p class="text-muted text-sm">Living vs non-living things, types of animals and plants, classification, and
+            diversity of materials. Builds the ability to observe and compare systematically.</p>
         </div>
-        <p class="text-muted text-sm">Science is a new subject at P3. The vocabulary of classification, characteristics, and functions must be learnt from the start.</p>
-        <div class="topic-grid">
-          <span class="topic-chip science">Living &amp; non-living things</span>
-          <span class="topic-chip science">Diversity of materials</span>
-          <span class="topic-chip science">Magnets</span>
-        </div>
-      </div>
-      
-      <div class="glass-panel-1 flex flex-col gap-3 flex-1 p-6 bg-rose-tint" style="min-width: 220px;">
-        <div class="flex items-center gap-2 mb-2">
-          <div class="font-display text-xl" style="color:var(--brand-rose);">P4</div>
-          <div class="badge badge-amber">Systems Introduced</div>
-        </div>
-        <p class="text-muted text-sm">P4 introduces the first "systems" — plant parts and human digestion — which require students to name parts and describe functions.</p>
-        <div class="topic-grid">
-          <span class="topic-chip science">Plant system</span>
-          <span class="topic-chip science">Human digestive system</span>
-          <span class="topic-chip science">Light & Heat</span>
-        </div>
-      </div>
-      
-      <div class="glass-panel-1 flex flex-col gap-3 flex-1 p-6 bg-amber-tint" style="min-width: 220px;">
-        <div class="flex items-center gap-2 mb-2">
-          <div class="font-display text-xl" style="color:var(--brand-amber);">P5</div>
-          <div class="badge badge-amber">Heaviest Content Year</div>
-        </div>
-        <p class="text-muted text-sm">P5 is the most content-dense Science year. Reproduction, water cycle details, two body systems, electrical systems, and photosynthesis.</p>
-        <div class="topic-grid">
-          <span class="topic-chip science">Water cycle</span>
-          <span class="topic-chip science">Respiratory & Circulatory systems</span>
-          <span class="topic-chip science">Photosynthesis</span>
-        </div>
-      </div>
-      
-      <div class="glass-panel-1 flex flex-col gap-3 flex-1 p-6 bg-science-tint" style="min-width: 220px;">
-        <div class="flex items-center gap-2 mb-2">
-          <div class="font-display text-xl" style="color:var(--science-colour);">P6</div>
-          <div class="badge badge-dark-mint">PSLE Year</div>
-        </div>
-        <p class="text-muted text-sm">P6 Science is dominated by forces and ecology. PSLE open-ended questions require precise vocabulary and the CER structure.</p>
-        <div class="topic-grid">
-          <span class="topic-chip science">Forces</span>
-          <span class="topic-chip science">Adaptation</span>
-          <span class="topic-chip science">Food webs</span>
-        </div>
-      </div>
-      
-    </div>
-  </div>
-</section>
 
-<section class="bg-sage-dark texture-grid py-10">
-  <div class="container">
-    <div class="flex flex-col items-center text-center mb-8">
-      <div class="badge badge-success mb-2">Superholic Lab's Science Differentiator</div>
-      <h2 class="font-display text-3xl mb-2 text-white">The CER Method — What Examiners Are Looking For.</h2>
-      <p class="text-muted text-lg prose-cap">Most students know the content. The ones who lose marks write the right idea in the wrong structure. PSLE Science open-ended answers must follow Claim → Evidence → Reasoning to score full marks.</p>
-    </div>
+        <div class="glass-panel-1 flex flex-col gap-3 flex-1 p-6 bg-science-tint hover-lift" style="min-width: 180px;">
+          <div class="flex items-center gap-3">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--science-colour)" stroke-width="2"
+              stroke-linecap="round">
+              <path d="M21 12a9 9 0 11-6.219-8.56" />
+              <polyline points="21 3 21 9 15 9" />
+            </svg>
+            <div class="font-bold text-main">Cycles</div>
+          </div>
+          <p class="text-muted text-sm">Life cycles of animals and plants, the water cycle, states of matter, and
+            reproduction. Understanding that patterns of change repeat helps students predict natural events.</p>
+        </div>
 
-    <div class="flex flex-wrap gap-6 mb-8">
-      <div class="glass-panel-1 flex flex-col gap-3 flex-1" style="min-width: 180px;">
-        <div class="flex items-center gap-3">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--maths-colour)" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><line x1="8" y1="13" x2="16" y2="13"/></svg>
-          <div class="font-bold text-white">C — Claim</div>
+        <div class="glass-panel-1 flex flex-col gap-3 flex-1 p-6 bg-science-tint hover-lift" style="min-width: 180px;">
+          <div class="flex items-center gap-3">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--science-colour)" stroke-width="2"
+              stroke-linecap="round">
+              <rect x="2" y="7" width="20" height="14" rx="2" />
+              <path d="M16 3l-4 4-4-4" />
+            </svg>
+            <div class="font-bold text-main">Systems</div>
+          </div>
+          <p class="text-muted text-sm">Plant systems, human digestive, respiratory, and circulatory systems, and
+            electrical systems. Questions always ask how each part's function contributes to the whole.</p>
         </div>
-        <p class="text-muted text-sm">A direct answer to the question. No hedging. No "I think." One clear statement of what happened or why.</p>
-      </div>
-      <div class="glass-panel-1 flex flex-col gap-3 flex-1" style="min-width: 180px;">
-        <div class="flex items-center gap-3">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--brand-amber)" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          <div class="font-bold text-white">E — Evidence</div>
-        </div>
-        <p class="text-muted text-sm">Data or observations from the question that support the claim. Must reference the specific information provided.</p>
-      </div>
-      <div class="glass-panel-1 flex flex-col gap-3 flex-1" style="min-width: 180px;">
-        <div class="flex items-center gap-3">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--brand-mint)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>
-          <div class="font-bold text-white">R — Reasoning</div>
-        </div>
-        <p class="text-muted text-sm">The science concept that explains WHY the evidence supports the claim. This is where PSLE marks are won or lost.</p>
+
       </div>
     </div>
+  </section>
 
-    <div class="glass-panel-1 p-6">
-      <div class="text-xs font-bold label-spaced mb-4" style="color:var(--brand-mint);">Question: Why did the plant in Pot A grow taller than the plant in Pot B?</div>
+  <section class="bg-page texture-light-grid py-10">
+    <div class="container">
+      <div class="flex flex-col items-center text-center mb-8">
+        <div class="badge badge-amber mb-2">Level-by-Level Syllabus</div>
+        <h2 class="font-display text-3xl mb-2 text-main">What Changes at Every Level.</h2>
+        <p class="text-muted text-lg prose-cap">From 2024, each primary level has its own dedicated Science syllabus —
+          there is no longer a shared "lower block."</p>
+      </div>
       <div class="flex flex-wrap gap-6">
-        <div class="flex-1" style="min-width: 240px;">
-          <div class="ans-tag weak">❌ 0 marks — Common student answer</div>
-          <div class="ans-block weak">
-            <p class="text-sm text-cream">"Because Pot A had more sunlight and sunlight helps plants grow."</p>
+
+        <div class="glass-panel-1 flex flex-col gap-3 flex-1 p-6 bg-maths-tint" style="min-width: 220px;">
+          <div class="flex items-center gap-2 mb-2">
+            <div class="font-display text-xl" style="color:var(--maths-colour);">P3</div>
+            <div class="badge badge-info">First Year of Science</div>
           </div>
-          <p class="text-xs text-muted mt-2">No evidence from the table. No mechanism explained.</p>
+          <p class="text-muted text-sm">Science is a new subject at P3. The vocabulary of classification,
+            characteristics, and functions must be learnt from the start.</p>
+          <div class="topic-grid">
+            <span class="topic-chip science">Living &amp; non-living things</span>
+            <span class="topic-chip science">Diversity of materials</span>
+            <span class="topic-chip science">Magnets</span>
+          </div>
         </div>
-        <div class="flex-1" style="min-width: 240px;">
-          <div class="ans-tag strong">✓ 3 marks — CER structure</div>
-          <div class="ans-block strong">
-            <p class="text-sm text-cream">"Plant A grew taller because it received more sunlight. The table shows Pot A reached 24 cm while Pot B reached only 15 cm. Sunlight provides energy for photosynthesis..."</p>
+
+        <div class="glass-panel-1 flex flex-col gap-3 flex-1 p-6 bg-rose-tint" style="min-width: 220px;">
+          <div class="flex items-center gap-2 mb-2">
+            <div class="font-display text-xl" style="color:var(--brand-rose);">P4</div>
+            <div class="badge badge-amber">Systems Introduced</div>
           </div>
-          <p class="text-xs text-muted mt-2">Claim stated clearly. Evidence cited. Reasoning linked.</p>
+          <p class="text-muted text-sm">P4 introduces the first "systems" — plant parts and human digestion — which
+            require students to name parts and describe functions.</p>
+          <div class="topic-grid">
+            <span class="topic-chip science">Plant system</span>
+            <span class="topic-chip science">Human digestive system</span>
+            <span class="topic-chip science">Light & Heat</span>
+          </div>
+        </div>
+
+        <div class="glass-panel-1 flex flex-col gap-3 flex-1 p-6 bg-amber-tint" style="min-width: 220px;">
+          <div class="flex items-center gap-2 mb-2">
+            <div class="font-display text-xl" style="color:var(--brand-amber);">P5</div>
+            <div class="badge badge-amber">Heaviest Content Year</div>
+          </div>
+          <p class="text-muted text-sm">P5 is the most content-dense Science year. Reproduction, water cycle details,
+            two body systems, electrical systems, and photosynthesis.</p>
+          <div class="topic-grid">
+            <span class="topic-chip science">Water cycle</span>
+            <span class="topic-chip science">Respiratory & Circulatory systems</span>
+            <span class="topic-chip science">Photosynthesis</span>
+          </div>
+        </div>
+
+        <div class="glass-panel-1 flex flex-col gap-3 flex-1 p-6 bg-science-tint" style="min-width: 220px;">
+          <div class="flex items-center gap-2 mb-2">
+            <div class="font-display text-xl" style="color:var(--science-colour);">P6</div>
+            <div class="badge badge-dark-mint">PSLE Year</div>
+          </div>
+          <p class="text-muted text-sm">P6 Science is dominated by forces and ecology. PSLE open-ended questions require
+            precise vocabulary and the CER structure.</p>
+          <div class="topic-grid">
+            <span class="topic-chip science">Forces</span>
+            <span class="topic-chip science">Adaptation</span>
+            <span class="topic-chip science">Food webs</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-sage-dark texture-grid py-10">
+    <div class="container">
+      <div class="flex flex-col items-center text-center mb-8">
+        <div class="badge badge-success mb-2">Superholic Lab's Science Differentiator</div>
+        <h2 class="font-display text-3xl mb-2 text-white">The CER Method — What Examiners Are Looking For.</h2>
+        <p class="text-muted text-lg prose-cap">Most students know the content. The ones who lose marks write the right
+          idea in the wrong structure. PSLE Science open-ended answers must follow Claim → Evidence → Reasoning to score
+          full marks.</p>
+      </div>
+
+      <div class="flex flex-wrap gap-6 mb-8">
+        <div class="glass-panel-1 p-6 flex flex-col gap-3 flex-1" style="min-width: 180px;">
+          <div class="flex items-center gap-3">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--maths-colour)" stroke-width="2"
+              stroke-linecap="round">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+              <line x1="8" y1="13" x2="16" y2="13" />
+            </svg>
+            <div class="font-bold text-white">C — Claim</div>
+          </div>
+          <p class="text-muted text-sm">A direct answer to the question. No hedging. No "I think." One clear statement
+            of what happened or why.</p>
+        </div>
+        <div class="glass-panel-1 p-6 flex flex-col gap-3 flex-1" style="min-width: 180px;">
+          <div class="flex items-center gap-3">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--brand-amber)" stroke-width="2"
+              stroke-linecap="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+            <div class="font-bold text-white">E — Evidence</div>
+          </div>
+          <p class="text-muted text-sm">Data or observations from the question that support the claim. Must reference
+            the specific information provided.</p>
+        </div>
+        <div class="glass-panel-1 p-6 flex flex-col gap-3 flex-1" style="min-width: 180px;">
+          <div class="flex items-center gap-3">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--brand-mint)" stroke-width="2"
+              stroke-linecap="round">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M9 12l2 2 4-4" />
+            </svg>
+            <div class="font-bold text-white">R — Reasoning</div>
+          </div>
+          <p class="text-muted text-sm">The science concept that explains WHY the evidence supports the claim. This is
+            where PSLE marks are won or lost.</p>
+        </div>
+      </div>
+
+      <div class="glass-panel-1 p-6">
+        <div class="text-xs font-bold label-spaced mb-4" style="color:var(--brand-mint);">Question: Why did the plant in
+          Pot A grow taller than the plant in Pot B?</div>
+        <div class="flex flex-wrap gap-6">
+          <div class="flex-1" style="min-width: 240px;">
+            <div class="ans-tag weak">❌ 0 marks — Common student answer</div>
+            <div class="ans-block weak">
+              <p class="text-sm text-cream">"Because Pot A had more sunlight and sunlight helps plants grow."</p>
+            </div>
+            <p class="text-xs text-muted mt-2">No evidence from the table. No mechanism explained.</p>
+          </div>
+          <div class="flex-1" style="min-width: 240px;">
+            <div class="ans-tag strong">✓ 3 marks — CER structure</div>
+            <div class="ans-block strong">
+              <p class="text-sm text-cream">"Plant A grew taller because it received more sunlight. The table shows Pot
+                A reached 24 cm while Pot B reached only 15 cm. Sunlight provides energy for photosynthesis..."</p>
+            </div>
+            <p class="text-xs text-muted mt-2">Claim stated clearly. Evidence cited. Reasoning linked.</p>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<section class="bg-rose py-10">
-  <div class="container flex flex-col items-center text-center gap-4">
-    <h2 class="font-display text-4xl text-white">Build PSLE Science Confidence — Topic by Topic.</h2>
-    <p class="text-muted text-lg mb-4" style="max-width: 520px;">MCQ with wrong-answer explanations. Open-ended with CER coaching. Miss Wena as your child's personal Science tutor. 7-day free trial — no credit card required.</p>
-    <div class="flex flex-wrap gap-4 justify-center">
-      <a href="/pages/signup.html?subject=science&mode=trial" class="btn btn-white hover-lift">Start 7-Day Free Trial</a>
-      <a href="subject-english.html" class="btn btn-outline-white hover-lift">Explore English</a>
+  <section class="bg-rose py-10">
+    <div class="container flex flex-col items-center text-center gap-4">
+      <h2 class="font-display text-4xl text-white">Build PSLE Science Confidence — Topic by Topic.</h2>
+      <p class="text-muted text-lg mb-4" style="max-width: 520px;">MCQ with wrong-answer explanations. Open-ended with
+        CER coaching. Miss Wena as your child's personal Science tutor. 7-day free trial — no credit card required.</p>
+      <div class="flex flex-wrap gap-4 justify-center">
+        <a href="/pages/signup.html?subject=science&mode=trial" class="btn btn-white hover-lift">Start 7-Day Free
+          Trial</a>
+        <a href="subject-english.html" class="btn btn-outline-white hover-lift">Explore English</a>
+      </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<global-footer></global-footer>
+  <global-footer></global-footer>
 
 
 </body>
+
 </html>
