@@ -181,7 +181,7 @@ const EXAM_TEMPLATES = {
     sections: [
       { id: 'p1-a1', label: 'Booklet A', title: 'Multiple Choice (1 mark)', instructions: 'Choose the correct answer. No calculator.', questionType: 'mcq', questionCount: 10, marksPerQuestion: 1 },
       { id: 'p1-a2', label: 'Booklet A', title: 'Multiple Choice (2 marks)', instructions: 'Choose the correct answer. No calculator.', questionType: 'mcq', questionCount: 8, marksPerQuestion: 2 },
-      { id: 'p1-b',  label: 'Booklet B', title: 'Short Answer (2 marks)', instructions: 'Write your answer. Show working where applicable. No calculator.', questionType: 'short_ans', questionCount: 12, marksPerQuestion: 2 },
+      { id: 'p1-b', label: 'Booklet B', title: 'Short Answer (2 marks)', instructions: 'Write your answer. Show working where applicable. No calculator.', questionType: 'short_ans', questionCount: 12, marksPerQuestion: 2 },
     ]
   },
 
@@ -353,7 +353,7 @@ const EXAM_TEMPLATES = {
   // The `topics` array in each section tells exam-generator.js which 
   // topic/sub_topic to filter by when querying Supabase.
 
-    // ── P3 ENGLISH ──
+  // ── P3 ENGLISH ──
   'english-p3-wa1': {
     displayName: 'Primary 3 English — WA1', level: 'P3', subject: 'English', paperCode: 'WA1',
     durationMinutes: 30, totalMarks: 20,
@@ -521,16 +521,16 @@ const EXAM_TEMPLATES = {
     durationMinutes: 110, totalMarks: 90,
     sections: [
       // ── Booklet A (30 marks) ──
-      { id: 'bka-grammar',   label: 'Booklet A', title: 'Grammar',                instructions: 'Fill in each blank with a suitable word.',       questionType: 'cloze',       topics: ['Cloze'], subTopics: ['Grammar'],        questionCount: 1, marksPerQuestion: 10 },
-      { id: 'bka-vocab',     label: 'Booklet A', title: 'Vocabulary MCQ',         instructions: 'Choose the correct answer.',                     questionType: 'mcq',         topics: ['Vocabulary'],                           questionCount: 5, marksPerQuestion: 1 },
-      { id: 'bka-vocabcloze',label: 'Booklet A', title: 'Vocabulary Cloze',       instructions: 'Choose the most suitable word for each blank.',  questionType: 'cloze',       topics: ['Cloze'], subTopics: ['Vocabulary'],     questionCount: 1, marksPerQuestion: 10 },
-      { id: 'bka-visual',    label: 'Booklet A', title: 'Visual Text Comprehension', instructions: 'Study the visual text and answer the questions.', questionType: 'visual_text', topics: ['Comprehension'],                    questionCount: 1, marksPerQuestion: 5 },
+      { id: 'bka-grammar', label: 'Booklet A', title: 'Grammar', instructions: 'Fill in each blank with a suitable word.', questionType: 'cloze', topics: ['Cloze'], subTopics: ['Grammar'], questionCount: 1, marksPerQuestion: 10 },
+      { id: 'bka-vocab', label: 'Booklet A', title: 'Vocabulary MCQ', instructions: 'Choose the correct answer.', questionType: 'mcq', topics: ['Vocabulary'], questionCount: 5, marksPerQuestion: 1 },
+      { id: 'bka-vocabcloze', label: 'Booklet A', title: 'Vocabulary Cloze', instructions: 'Choose the most suitable word for each blank.', questionType: 'cloze', topics: ['Cloze'], subTopics: ['Vocabulary'], questionCount: 1, marksPerQuestion: 10 },
+      { id: 'bka-visual', label: 'Booklet A', title: 'Visual Text Comprehension', instructions: 'Study the visual text and answer the questions.', questionType: 'visual_text', topics: ['Comprehension'], questionCount: 1, marksPerQuestion: 5 },
       // ── Booklet B (60 marks) ──
-      { id: 'bkb-gramcloze', label: 'Booklet B', title: 'Grammar Cloze',          instructions: 'Fill in each blank with a suitable word.',       questionType: 'cloze',       topics: ['Cloze'], subTopics: ['Grammar'],        questionCount: 1, marksPerQuestion: 10 },
-      { id: 'bkb-editing',   label: 'Booklet B', title: 'Editing',                instructions: 'Correct the spelling and grammar errors.',       questionType: 'editing',     topics: ['Editing'],                              questionCount: 1, marksPerQuestion: 10 },
-      { id: 'bkb-compcloze', label: 'Booklet B', title: 'Comprehension Cloze',    instructions: 'Fill in each blank with a suitable word.',       questionType: 'cloze',       topics: ['Cloze'], subTopics: ['Comprehension'],  questionCount: 1, marksPerQuestion: 10 },
-      { id: 'bkb-synthesis', label: 'Booklet B', title: 'Synthesis & Transformation', instructions: 'Rewrite the sentences as instructed.',       questionType: 'short_ans',   topics: ['Synthesis'],                            questionCount: 5, marksPerQuestion: 2 },
-      { id: 'bkb-compoe',    label: 'Booklet B', title: 'Comprehension Open-Ended', instructions: 'Read the passage carefully and answer the questions.', questionType: 'comprehension', topics: ['Comprehension'],              questionCount: 1, marksPerQuestion: 20 },
+      { id: 'bkb-gramcloze', label: 'Booklet B', title: 'Grammar Cloze', instructions: 'Fill in each blank with a suitable word.', questionType: 'cloze', topics: ['Cloze'], subTopics: ['Grammar'], questionCount: 1, marksPerQuestion: 10 },
+      { id: 'bkb-editing', label: 'Booklet B', title: 'Editing', instructions: 'Correct the spelling and grammar errors.', questionType: 'editing', topics: ['Editing'], questionCount: 1, marksPerQuestion: 10 },
+      { id: 'bkb-compcloze', label: 'Booklet B', title: 'Comprehension Cloze', instructions: 'Fill in each blank with a suitable word.', questionType: 'cloze', topics: ['Cloze'], subTopics: ['Comprehension'], questionCount: 1, marksPerQuestion: 10 },
+      { id: 'bkb-synthesis', label: 'Booklet B', title: 'Synthesis & Transformation', instructions: 'Rewrite the sentences as instructed.', questionType: 'short_ans', topics: ['Synthesis'], questionCount: 5, marksPerQuestion: 2 },
+      { id: 'bkb-compoe', label: 'Booklet B', title: 'Comprehension Open-Ended', instructions: 'Read the passage carefully and answer the questions.', questionType: 'comprehension', topics: ['Comprehension'], questionCount: 1, marksPerQuestion: 20 },
     ]
   },
 
@@ -543,13 +543,33 @@ const EXAM_TEMPLATES = {
  * Supports both new-format keys ('maths-p6-psle-p1') and legacy two-arg
  * format (subject, level).
  */
-function getTemplate(keyOrSubject, levelStr) {
+function getTemplate(keyOrSubject, levelStr, examType) {
+  // 1. Direct template key match (e.g., 'english-p6-psle')
+  if (EXAM_TEMPLATES[keyOrSubject]) {
+    return EXAM_TEMPLATES[keyOrSubject];
+  }
+
   if (levelStr) {
-    const s = keyOrSubject === 'mathematics' ? 'maths' : keyOrSubject;
-    const l = levelStr.replace('primary-', 'p');
+    const s = keyOrSubject === 'mathematics' ? 'maths' : String(keyOrSubject).toLowerCase();
+    const l = String(levelStr).toLowerCase().replace('primary-', 'p').replace(' ', '');
+
+    // 🚀 MASTERCLASS FIX: Auto-detect the requested exam type from arguments or URL
+    let type = examType;
+    if (!type && typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      type = params.get('exam_type') || params.get('type') || params.get('paper');
+    }
+
+    if (type) {
+      const t = String(type).toLowerCase();
+      if (EXAM_TEMPLATES[`${s}-${l}-${t}`]) return EXAM_TEMPLATES[`${s}-${l}-${t}`];
+    }
+
+    // Fallback only if type is invalid or missing
     return EXAM_TEMPLATES[`${s}-${l}-wa1`] || EXAM_TEMPLATES[`${s}-${l}-eoy`] || null;
   }
-  return EXAM_TEMPLATES[keyOrSubject] || null;
+
+  return null;
 }
 
 function getTemplatesForLevel(levelCode) {
