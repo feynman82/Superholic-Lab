@@ -265,8 +265,8 @@ window.initExamEngine = function () {
     if (!state.examType) state.examType = types[0].id;
 
     const chips = types.map(t => `
-      <div class="glass-panel-1 p-4 flex-1 cursor-pointer hover-lift flex flex-col justify-center ${t.id === state.examType ? 'bg-sage-dark text-white' : 'text-main'}" 
-           style="min-width: 140px; border: 2px solid ${t.id === state.examType ? 'var(--brand-mint)' : 'var(--border-light)'};"
+      <div class="glass-panel-1 p-4 flex-1 cursor-pointer hover-lift flex flex-col justify-center ${t.id === state.examType ? 'bg-white text-rose' : 'text-main'}" 
+           style="min-width: 140px; border: 2px solid ${t.id === state.examType ? 'var(--brand-rose)' : 'var(--border-light)'};"
            onclick="window.selectType('${t.id}')">
         <div class="font-bold text-lg" style="color: inherit;">${esc(t.label)}</div>
         <div class="text-xs mt-2" style="color: ${t.id === state.examType ? 'var(--sage-dark)' : 'var(--text-muted)'};">${esc(t.sub)}</div>
