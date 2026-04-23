@@ -920,7 +920,7 @@ window.initQuizEngine = function () {
           </div>
         </div>
 
-        <div class="glass-panel-1 p-6 hover-lift w-full relative">
+        <div class="glass-panel-1 p-4 hover-lift w-full relative">
           <div class="badge badge-info absolute top-0 left-8" style="transform:translateY(-50%);">${esc(titleCase(q.topic || 'Mixed'))}</div>
           ${q.difficulty ? `<div class="badge badge-${q.difficulty.toLowerCase()} absolute top-0 right-8" style="transform:translateY(-50%);">${esc(q.difficulty)}</div>` : ''}
 
