@@ -40,32 +40,32 @@
  */
 const EXAM_FILE_MAP = {
   // ── P3 ──
-  'mathematics:primary-3:broad':   'p3-mathematics-whole-numbers.json',
-  'science:primary-3:broad':       'p3-science-diversity.json',
-  'english:primary-3:broad':       'p3-english-grammar.json',
-  'english:primary-3:cloze':       'p3-english-grammar.json',
-  'english:primary-3:editing':     'p3-english-grammar.json',
+  'mathematics:primary-3:broad': 'p3-mathematics-whole-numbers.json',
+  'science:primary-3:broad': 'p3-science-diversity.json',
+  'english:primary-3:broad': 'p3-english-grammar.json',
+  'english:primary-3:cloze': 'p3-english-grammar.json',
+  'english:primary-3:editing': 'p3-english-grammar.json',
 
   // ── P4 ──
-  'mathematics:primary-4:broad':   'p4-mathematics.json',
-  'science:primary-4:broad':       'p4-science.json',
-  'english:primary-4:broad':       'p4-english.json',
-  'english:primary-4:cloze':       'p4-english-cloze.json',
-  'english:primary-4:editing':     'p4-english-editing.json',
+  'mathematics:primary-4:broad': 'p4-mathematics.json',
+  'science:primary-4:broad': 'p4-science.json',
+  'english:primary-4:broad': 'p4-english.json',
+  'english:primary-4:cloze': 'p4-english-cloze.json',
+  'english:primary-4:editing': 'p4-english-editing.json',
 
   // ── P5 ──
-  'mathematics:primary-5:broad':   'p5-mathematics.json',
-  'science:primary-5:broad':       'p5-science.json',
-  'english:primary-5:broad':       'p5-english-grammar.json',
-  'english:primary-5:cloze':       'p5-english-grammar.json',
-  'english:primary-5:editing':     'p5-english-grammar.json',
+  'mathematics:primary-5:broad': 'p5-mathematics.json',
+  'science:primary-5:broad': 'p5-science.json',
+  'english:primary-5:broad': 'p5-english-grammar.json',
+  'english:primary-5:cloze': 'p5-english-grammar.json',
+  'english:primary-5:editing': 'p5-english-grammar.json',
 
   // ── P6 ──
-  'mathematics:primary-6:broad':   'p6-mathematics-fractions.json',
-  'science:primary-6:broad':       'p6-science-cells.json',
-  'english:primary-6:broad':       'p6-english-grammar.json',
-  'english:primary-6:cloze':       'p6-english-cloze.json',
-  'english:primary-6:editing':     'p6-english-editing.json',
+  'mathematics:primary-6:broad': 'p6-mathematics-fractions.json',
+  'science:primary-6:broad': 'p6-science-cells.json',
+  'english:primary-6:broad': 'p6-english-grammar.json',
+  'english:primary-6:cloze': 'p6-english-cloze.json',
+  'english:primary-6:editing': 'p6-english-editing.json',
 };
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -140,8 +140,8 @@ const _questionCache = {};
 async function pickQuestions(subject, level, questionType, count, options = {}) {
   try {
     // Dynamically import Supabase client (assuming it's available globally via window)
-    const db = typeof window !== 'undefined' && typeof window.getSupabase === 'function' 
-      ? await window.getSupabase() 
+    const db = typeof window !== 'undefined' && typeof window.getSupabase === 'function'
+      ? await window.getSupabase()
       : null;
 
     if (!db) throw new Error("Supabase client not initialized.");
@@ -162,12 +162,17 @@ async function pickQuestions(subject, level, questionType, count, options = {}) 
       .ilike('level', dbLevel)
       .eq('type', questionType);
 
-    // If the template section specifies topics/subTopics, append filters
-    if (options.subTopics && options.subTopics.length > 0) {
-      query = query.in('sub_topic', options.subTopics);
-    }
-    if (options.topics && options.topics.length > 0) {
+    // 🚀 MASTERCLASS FIX: Support both singular (topic) and array (topics) template formats
+    if (options.topic) {
+      query = query.eq('topic', options.topic);
+    } else if (options.topics && options.topics.length > 0) {
       query = query.in('topic', options.topics);
+    }
+
+    if (options.sub_topic) {
+      query = query.eq('sub_topic', options.sub_topic);
+    } else if (options.subTopics && options.subTopics.length > 0) {
+      query = query.in('sub_topic', options.subTopics);
     }
 
     // Fetch a large pool of questions without SQL random() to prevent 400 errors
@@ -179,7 +184,7 @@ async function pickQuestions(subject, level, questionType, count, options = {}) 
       console.warn(`[exam-generator] No questions of type '${questionType}' found in database for ${subject} ${level}.`);
       return [];
     }
-    
+
     // Masterclass Fix: Shuffle the pool in JavaScript and slice the exact count needed
     const questions = shuffleArray(pool).slice(0, count);
 
@@ -211,7 +216,7 @@ async function generateExam(subject, level, examType) {
   const resolvedType = examType || 'PRACTICE';
 
   // Build each section by picking questions in parallel
-  const sectionPromises = template.sections.map(async function(sec) {
+  const sectionPromises = template.sections.map(async function (sec) {
     // Trust the template's questionCount 100%
     const exactCount = sec.questionCount;
     const questions = await pickQuestions(subject, level, sec.questionType, exactCount, {
@@ -227,25 +232,25 @@ async function generateExam(subject, level, examType) {
 
     return {
       ...sec,
-      questionCount: exactCount, 
+      questionCount: exactCount,
       questions,
-      sectionMarks: questions.length * sec.marksPerQuestion, 
+      sectionMarks: questions.length * sec.marksPerQuestion,
     };
   });
 
   const sections = await Promise.all(sectionPromises);
 
   // Calculate actual total marks (may differ from template if questions are missing)
-  const actualTotal = sections.reduce(function(sum, s) { return sum + s.sectionMarks; }, 0);
+  const actualTotal = sections.reduce(function (sum, s) { return sum + s.sectionMarks; }, 0);
 
   return {
     template,
-    examType:     resolvedType,
+    examType: resolvedType,
     sections,
-    totalMarks:   template.totalMarks,
-    actualMarks:  actualTotal,
-    duration:     template.durationMinutes || template.duration, // use durationMinutes from new templates
-    generatedAt:  new Date().toISOString(),
+    totalMarks: template.totalMarks,
+    actualMarks: actualTotal,
+    duration: template.durationMinutes || template.duration, // use durationMinutes from new templates
+    generatedAt: new Date().toISOString(),
   };
 }
 
@@ -254,7 +259,7 @@ async function generateExam(subject, level, examType) {
  * Call this if the user navigates away and comes back, to re-randomise.
  */
 function clearExamCache() {
-  Object.keys(_questionCache).forEach(function(k) { delete _questionCache[k]; });
+  Object.keys(_questionCache).forEach(function (k) { delete _questionCache[k]; });
 }
 
 // TEST: generateExam('mathematics', 'primary-4').then(p => console.log(p.sections.map(s => s.questions.length)))
@@ -280,7 +285,7 @@ function _parseTemplateKey(templateKey) {
   if (!match) return null;
 
   const subjectMap = {
-    maths:   'mathematics',
+    maths: 'mathematics',
     science: 'science',
     english: 'english',
   };
@@ -292,7 +297,7 @@ function _parseTemplateKey(templateKey) {
   };
 
   const subject = subjectMap[match[1].toLowerCase()];
-  const level   = levelMap[match[2].toLowerCase()];
+  const level = levelMap[match[2].toLowerCase()];
   return subject && level ? { subject, level } : null;
 }
 
