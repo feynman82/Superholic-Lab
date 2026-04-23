@@ -317,7 +317,7 @@ window.initExamEngine = function () {
             ${state.tier !== 'single_subject' ? `<div class="text-center mt-4"><button class="btn btn-ghost" onclick="window.backToSubject()">← Back to Subjects</button></div>` : ''}
           </div>
           <div class="flex-1" style="min-width: 300px;">
-            <div class="glass-panel-1 p-6 card-rule-mint w-full">
+            <div class="glass-panel-1 p-4 card-rule-mint w-full">
               ${blueprintHtml}
               <button id="printPaperBtn" class="btn btn-secondary w-full mt-4 hover-lift" onclick="window.printBlankPaper()">🖨️ Print Paper</button>
               <button class="btn btn-primary w-full mt-4 hover-lift" onclick="window.triggerGen()">Generate Paper →</button>
