@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Choose a Subject — Superholic Lab</title>
   <meta name="description" content="Choose a subject and topic to start practising MOE-aligned questions." />
-  
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="../css/style.css" />
@@ -16,12 +17,12 @@
   <script type="module">
     import { guardPage } from '/js/auth.js';
     import { initAppShell } from '/js/app-shell.js';
-    
+
     async function boot() {
       try {
-        window.userProfile = await guardPage(true); 
+        window.userProfile = await guardPage(true);
         const runInit = () => {
-          if (typeof initAppShell === 'function') initAppShell(window.userProfile); 
+          if (typeof initAppShell === 'function') initAppShell(window.userProfile);
           if (typeof window.initSubjectsEngine === 'function') window.initSubjectsEngine();
         };
 
@@ -40,224 +41,235 @@
 
 <body id="mainBody" class="has-bottom-nav bg-page texture-light-grid">
 
-<global-header></global-header>
+  <global-header></global-header>
 
-<!-- ═══════════════════ MAIN WIZARD APP ═══════════════════ -->
-<main id="app" class="container py-10 flex flex-col items-center" style="padding-top: calc(64px + var(--space-10)); min-height: 80vh; max-width: 800px;"></main>
+  <!-- ═══════════════════ MAIN WIZARD APP ═══════════════════ -->
+  <main id="app" class="container py-10 flex flex-col items-center"
+    style="padding-top: calc(64px + var(--space-10)); min-height: 80vh; max-width: 800px;"></main>
 
-<!-- ═══════════════════ GLOBAL FOOTER ═══════════════════ -->
-<global-footer></global-footer>
+  <!-- ═══════════════════ GLOBAL FOOTER ═══════════════════ -->
+  <global-footer></global-footer>
 
-<!-- ═══════════════════ BOTTOM NAV ═══════════════════ -->
-<nav class="bottom-nav" id="bottomNav" aria-label="Mobile navigation">
-  <a href="subjects.html" class="bottom-nav-item is-active">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-    Practise
-  </a>
-  <a href="tutor.html" class="bottom-nav-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-    AI Tutor
-  </a>
-  <a href="exam.html" class="bottom-nav-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="M9 12h6M9 16h4"/></svg>
-    Exam
-  </a>
-  <a href="progress.html" class="bottom-nav-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-    Progress
-  </a>
-</nav>
+  <!-- ═══════════════════ BOTTOM NAV ═══════════════════ -->
+  <nav class="bottom-nav" id="bottomNav" aria-label="Mobile navigation">
+    <a href="subjects.html" class="bottom-nav-item is-active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+      </svg>
+      Practise
+    </a>
+    <a href="tutor.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+      </svg>
+      AI Tutor
+    </a>
+    <a href="exam.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
+        <rect x="9" y="3" width="6" height="4" rx="2" />
+        <path d="M9 12h6M9 16h4" />
+      </svg>
+      Exam
+    </a>
+    <a href="progress.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+      </svg>
+      Progress
+    </a>
+  </nav>
 
-<script src="../js/supabase-client.js"></script>
-<script>
-// ── ROBUST EVENT DELEGATION FOR NAVBAR ──
-document.addEventListener('click', (e) => {
-  const toggleBtn = e.target.closest('#navToggle');
-  const dropdown = document.getElementById('navDropdown');
-  
-  if (toggleBtn && dropdown) {
-    e.stopPropagation();
-    dropdown.classList.toggle('is-open');
-    toggleBtn.classList.toggle('is-active'); 
-    return;
-  }
+  <script src="../js/supabase-client.js"></script>
+  <script>
+    // ── ROBUST EVENT DELEGATION FOR NAVBAR ──
+    document.addEventListener('click', (e) => {
+      const toggleBtn = e.target.closest('#navToggle');
+      const dropdown = document.getElementById('navDropdown');
 
-  if (dropdown && dropdown.classList.contains('is-open') && !dropdown.contains(e.target)) {
-    dropdown.classList.remove('is-open');
-    const actualToggle = document.getElementById('navToggle');
-    if (actualToggle) actualToggle.classList.remove('is-active');
-  }
+      if (toggleBtn && dropdown) {
+        e.stopPropagation();
+        dropdown.classList.toggle('is-open');
+        toggleBtn.classList.toggle('is-active');
+        return;
+      }
 
-  const signOutBtn = e.target.closest('#navSignOut');
-  if (signOutBtn) {
-    e.preventDefault();
-    getSupabase().then(async (sb) => {
-      await sb.auth.signOut();
-      window.location.href = '../index.html';
+      if (dropdown && dropdown.classList.contains('is-open') && !dropdown.contains(e.target)) {
+        dropdown.classList.remove('is-open');
+        const actualToggle = document.getElementById('navToggle');
+        if (actualToggle) actualToggle.classList.remove('is-active');
+      }
+
+      const signOutBtn = e.target.closest('#navSignOut');
+      if (signOutBtn) {
+        e.preventDefault();
+        getSupabase().then(async (sb) => {
+          await sb.auth.signOut();
+          window.location.href = '../index.html';
+        });
+      }
     });
-  }
-});
 
-// Auto-Light Up Active Nav Icon
-(function() {
-  const currentPath = window.location.pathname;
-  document.querySelectorAll('.bottom-nav-item').forEach(link => {
-    const href = link.getAttribute('href');
-    if (href && currentPath.includes(href)) {
-      link.classList.add('is-active');
-    }
-  });
-})();
+    // Auto-Light Up Active Nav Icon
+    (function () {
+      const currentPath = window.location.pathname;
+      document.querySelectorAll('.bottom-nav-item').forEach(link => {
+        const href = link.getAttribute('href');
+        if (href && currentPath.includes(href)) {
+          link.classList.add('is-active');
+        }
+      });
+    })();
 
-window.initSubjectsEngine = function() {
-  'use strict';
+    window.initSubjectsEngine = function () {
+      'use strict';
 
-  const TOPIC_MAP = {
-    'primary-1:mathematics': ['whole-numbers'],
-    'primary-3:science':     ['diversity'],
-    'primary-4:mathematics': ['fractions','decimals','geometry','whole-numbers'],
-    'primary-4:science':     ['heat','light','magnets','matter'],
-    'primary-4:english':     ['grammar','cloze','editing','vocabulary','comprehension'],
-    'primary-6:mathematics': ['fractions'],
-    'primary-6:science':     ['cells'],
-    'primary-6:english':     ['grammar','cloze','editing'],
-  };
+      const TOPIC_MAP = {
+        'primary-1:mathematics': ['whole-numbers'],
+        'primary-3:science': ['diversity'],
+        'primary-4:mathematics': ['fractions', 'decimals', 'geometry', 'whole-numbers'],
+        'primary-4:science': ['heat', 'light', 'magnets', 'matter'],
+        'primary-4:english': ['grammar', 'cloze', 'editing', 'vocabulary', 'comprehension'],
+        'primary-6:mathematics': ['fractions'],
+        'primary-6:science': ['cells'],
+        'primary-6:english': ['grammar', 'cloze', 'editing'],
+      };
 
-  // ── SYLLABUS_MAP ─────────────────────────────────────────────────────────
-  // Verified against MOE Primary Mathematics Syllabus (2021, updated Oct 2025).
-  // Topic names must match subject-mathematics.html panel chips.
-  // Slugs derived as: name.toLowerCase().replace(/ /g, '-')
-  // ─────────────────────────────────────────────────────────────────────────
-  const SYLLABUS_MAP = {
-    // Mathematics — P1 to P6 (MOE 2021, Oct 2025 update)
-    // P1: No formal WA/EOY. Times tables not yet introduced (concepts only).
-    'primary-1:mathematics': [
-      'Whole Numbers',
-      'Addition and Subtraction',
-      'Multiplication and Division',
-      'Money',
-      'Length and Mass',
-      'Shapes and Patterns',
-      'Picture Graphs'
-    ],
-    // P2: Times tables introduced (×2,×3,×4,×5,×10). Fractions (½,¼,¾).
-    //     Standard units of measurement. 3D shapes. No formal WA/EOY.
-    'primary-2:mathematics': [
-      'Whole Numbers',
-      'Multiplication Tables',
-      'Fractions',
-      'Money',
-      'Time',
-      'Length, Mass and Volume',
-      'Shapes',
-      'Picture Graphs'
-    ],
-    // P3: WAs begin. 24-hour clock, angles, perpendicular/parallel lines added.
-    'primary-3:mathematics': [
-      'Whole Numbers',
-      'Fractions',
-      'Length, Mass and Volume',
-      'Time',
-      'Angles',
-      'Area and Perimeter',
-      'Bar Graphs'
-    ],
-    // P4: Factors/multiples, mixed number fractions, decimals, angles (measuring).
-    'primary-4:mathematics': [
-      'Whole Numbers',
-      'Factors and Multiples',
-      'Fractions',
-      'Decimals',
-      'Angles',
-      'Area and Perimeter',
-      'Symmetry',
-      'Data Analysis'
-    ],
-    // P5: Most content-dense year. Ratio, Percentage, Rate all new.
-    //     Triangle area, volume of solids, parallelogram/rhombus/trapezium.
-    'primary-5:mathematics': [
-      'Whole Numbers',
-      'Fractions',
-      'Decimals',
-      'Percentage',
-      'Ratio',
-      'Rate',
-      'Area of Triangle',
-      'Volume',
-      'Angles and Geometry',
-      'Average'
-    ],
-    // P6: PSLE year. Algebra and Circles new. Speed, complex Ratio, Percentage.
-    'primary-6:mathematics': [
-      'Fractions',
-      'Percentage',
-      'Ratio',
-      'Speed',
-      'Algebra',
-      'Circles',
-      'Volume',
-      'Geometry',
-      'Pie Charts'
-    ],
-    
-    'primary-3:science': ['Diversity', 'Systems', 'Interactions'],
-    'primary-4:science': ['Cycles', 'Energy', 'Heat', 'Light', 'Magnets', 'Matter'],
-    'primary-5:science': ['Cycles', 'Systems', 'Energy', 'Interactions'],
-    'primary-6:science': ['Interactions', 'Energy', 'Cells', 'Forces'],
-    
-    'primary-1:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze'],
-    'primary-2:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze'],
-    'primary-3:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing', 'Synthesis'],
-    'primary-4:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing', 'Synthesis'],
-    'primary-5:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing', 'Synthesis'],
-    'primary-6:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing', 'Synthesis']
-  };
+      // ── SYLLABUS_MAP ─────────────────────────────────────────────────────────
+      // Verified against MOE Primary Mathematics Syllabus (2021, updated Oct 2025).
+      // Topic names must match subject-mathematics.html panel chips.
+      // Slugs derived as: name.toLowerCase().replace(/ /g, '-')
+      // ─────────────────────────────────────────────────────────────────────────
+      const SYLLABUS_MAP = {
+        // Mathematics — P1 to P6 (MOE 2021, Oct 2025 update)
+        // P1: No formal WA/EOY. Times tables not yet introduced (concepts only).
+        'primary-1:mathematics': [
+          'Whole Numbers',
+          'Addition and Subtraction',
+          'Multiplication and Division',
+          'Money',
+          'Length and Mass',
+          'Shapes and Patterns',
+          'Picture Graphs'
+        ],
+        // P2: Times tables introduced (×2,×3,×4,×5,×10). Fractions (½,¼,¾).
+        //     Standard units of measurement. 3D shapes. No formal WA/EOY.
+        'primary-2:mathematics': [
+          'Whole Numbers',
+          'Multiplication Tables',
+          'Fractions',
+          'Money',
+          'Time',
+          'Length, Mass and Volume',
+          'Shapes',
+          'Picture Graphs'
+        ],
+        // P3: WAs begin. 24-hour clock, angles, perpendicular/parallel lines added.
+        'primary-3:mathematics': [
+          'Whole Numbers',
+          'Fractions',
+          'Length, Mass and Volume',
+          'Time',
+          'Angles',
+          'Area and Perimeter',
+          'Bar Graphs'
+        ],
+        // P4: Factors/multiples, mixed number fractions, decimals, angles (measuring).
+        'primary-4:mathematics': [
+          'Whole Numbers',
+          'Factors and Multiples',
+          'Fractions',
+          'Decimals',
+          'Angles',
+          'Area and Perimeter',
+          'Symmetry',
+          'Data Analysis'
+        ],
+        // P5: Most content-dense year. Ratio, Percentage, Rate all new.
+        //     Triangle area, volume of solids, parallelogram/rhombus/trapezium.
+        'primary-5:mathematics': [
+          'Whole Numbers',
+          'Fractions',
+          'Decimals',
+          'Percentage',
+          'Ratio',
+          'Rate',
+          'Area of Triangle',
+          'Volume',
+          'Angles and Geometry',
+          'Average'
+        ],
+        // P6: PSLE year. Algebra and Circles new. Speed, complex Ratio, Percentage.
+        'primary-6:mathematics': [
+          'Fractions',
+          'Percentage',
+          'Ratio',
+          'Speed',
+          'Algebra',
+          'Circles',
+          'Volume',
+          'Geometry',
+          'Pie Charts'
+        ],
 
-  const TYPE_MAP = {
-    mathematics: ['mcq','short_ans','word_problem'],
-    science:     ['mcq','open_ended'],
-    english:     ['mcq','cloze','editing'],
-  };
+        'primary-3:science': ['Diversity', 'Systems', 'Interactions'],
+        'primary-4:science': ['Cycles', 'Energy', 'Heat', 'Light', 'Magnets', 'Matter'],
+        'primary-5:science': ['Cycles', 'Systems', 'Energy', 'Interactions'],
+        'primary-6:science': ['Interactions', 'Energy', 'Cells', 'Forces'],
 
-  const ALL_TYPES = {
-    mathematics: [{id: 'mcq', label: 'MCQ'}, {id: 'short_ans', label: 'Short Answer'}, {id: 'word_problem', label: 'Word Problem'}],
-    science: [{id: 'mcq', label: 'MCQ'}, {id: 'open_ended', label: 'Open-Ended'}],
-    english: [{id: 'mcq', label: 'MCQ'}, {id: 'cloze', label: 'Cloze'}, {id: 'editing', label: 'Editing'}, {id: 'comprehension', label: 'Comprehension'}]
-  };
+        'primary-1:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze'],
+        'primary-2:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze'],
+        'primary-3:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing', 'Synthesis'],
+        'primary-4:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing', 'Synthesis'],
+        'primary-5:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing', 'Synthesis'],
+        'primary-6:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing', 'Synthesis']
+      };
 
-  const state = { phase: 'INIT', level: '', subject: '', tier: '', topic: '', qtype: '', studentId: null };
-  const app = document.getElementById('app');
+      const TYPE_MAP = {
+        mathematics: ['mcq', 'short_ans', 'word_problem'],
+        science: ['mcq', 'open_ended'],
+        english: ['mcq', 'cloze', 'editing'],
+      };
 
-  function render() {
-    if (state.phase === 'SUBJECT') renderSubject();
-    else if (state.phase === 'TOPIC') renderTopic();
-    else if (state.phase === 'TYPE') renderType();
-  }
+      const ALL_TYPES = {
+        mathematics: [{ id: 'mcq', label: 'MCQ' }, { id: 'short_ans', label: 'Short Answer' }, { id: 'word_problem', label: 'Word Problem' }],
+        science: [{ id: 'mcq', label: 'MCQ' }, { id: 'open_ended', label: 'Open-Ended' }],
+        english: [{ id: 'mcq', label: 'MCQ' }, { id: 'cloze', label: 'Cloze' }, { id: 'editing', label: 'Editing' }, { id: 'comprehension', label: 'Comprehension' }]
+      };
 
-  function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-  function titleCase(s) { return s.replace(/-/g,' ').replace(/\b\w/g, c => c.toUpperCase()); }
+      const state = { phase: 'INIT', level: '', subject: '', tier: '', topic: '', qtype: '', studentId: null };
+      const app = document.getElementById('app');
 
-  function renderSubject() {
-    const isJunior = state.level.toLowerCase().includes('primary 1') || state.level.toLowerCase().includes('primary 2');
-    
-    const subjects = [
-      { id: 'mathematics', icon: '📐', label: 'Mathematics', tag: 'P1–P6' },
-      ...(isJunior ? [] : [{ id: 'science', icon: '🔬', label: 'Science', tag: 'P3–P6' }]),
-      { id: 'english', icon: '📖', label: 'English', tag: 'P1–P6' }
-    ];
+      function render() {
+        if (state.phase === 'SUBJECT') renderSubject();
+        else if (state.phase === 'TOPIC') renderTopic();
+        else if (state.phase === 'TYPE') renderType();
+      }
 
-    const cards = subjects.map(s => {
-      const locked = state.tier === 'single_subject' && s.id !== state.subject;
-      return `
-        <div class="glass-panel-1 hover-lift flex flex-col items-center justify-center p-8 text-center ${locked ? 'opacity-50' : 'cursor-pointer'}" 
+      function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+      function titleCase(s) { return s.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()); }
+
+      function renderSubject() {
+        const isJunior = state.level.toLowerCase().includes('primary 1') || state.level.toLowerCase().includes('primary 2');
+
+        const subjects = [
+          { id: 'mathematics', icon: '📐', label: 'Mathematics', tag: 'P1–P6' },
+          ...(isJunior ? [] : [{ id: 'science', icon: '🔬', label: 'Science', tag: 'P3–P6' }]),
+          { id: 'english', icon: '📖', label: 'English', tag: 'P1–P6' }
+        ];
+
+        const cards = subjects.map(s => {
+          const locked = state.tier === 'single_subject' && s.id !== state.subject;
+          return `
+        <div class="glass-panel-1 hover-lift flex flex-col items-center justify-center p-6 text-center ${locked ? 'opacity-50' : 'cursor-pointer'}" 
              ${locked ? '' : `onclick="window.pickSubject('${s.id}')"`}>
           <div class="text-4xl mb-4">${s.icon}</div>
           <h3 class="font-display text-2xl text-main">${s.label}</h3>
           <div class="badge ${locked ? 'badge-danger' : 'badge-info'} mt-2">${locked ? '🔒 Locked to Plan' : s.tag}</div>
         </div>`;
-    }).join('');
+        }).join('');
 
-    app.innerHTML = `
+        app.innerHTML = `
       <div class="text-center mb-8 w-full">
         <div class="badge badge-info mb-2">Step 1 of 3</div>
         <h1 class="font-display text-4xl text-main">Choose a Subject</h1>
@@ -266,29 +278,29 @@ window.initSubjectsEngine = function() {
       <div class="w-full" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-6);">
         ${cards}
       </div>`;
-  }
+      }
 
-  window.pickSubject = (subj) => {
-    state.subject = subj; state.topic = ''; state.qtype = ''; state.phase = 'TOPIC'; render();
-  };
+      window.pickSubject = (subj) => {
+        state.subject = subj; state.topic = ''; state.qtype = ''; state.phase = 'TOPIC'; render();
+      };
 
-  // Topics that map directly to one question type — skip the TYPE step entirely.
-  // Key = topic slug, value = type param to pass to quiz URL.
-  const TOPIC_TYPE_BYPASS = {
-    'grammar':       'mcq',   
-    'vocabulary':    'mcq',   
-    'cloze':         'cloze',
-    'editing':       'editing',
-    'comprehension': 'comprehension', // 🚀 FIX: Mapped to the correct split-screen type
-    'synthesis':     'short_ans',     // 🚀 NEW: Mapped exactly to short_ans
-  };
+      // Topics that map directly to one question type — skip the TYPE step entirely.
+      // Key = topic slug, value = type param to pass to quiz URL.
+      const TOPIC_TYPE_BYPASS = {
+        'grammar': 'mcq',
+        'vocabulary': 'mcq',
+        'cloze': 'cloze',
+        'editing': 'editing',
+        'comprehension': 'comprehension', // 🚀 FIX: Mapped to the correct split-screen type
+        'synthesis': 'short_ans',     // 🚀 NEW: Mapped exactly to short_ans
+      };
 
-  function renderTopic() {
-    const key = state.level.toLowerCase().replace(' ','-') + ':' + state.subject;
-    const allTopicsForSubj = SYLLABUS_MAP[key] || [];
-    const stepText = state.tier === 'single_subject' ? 'Step 1 of 2' : 'Step 2 of 3';
+      function renderTopic() {
+        const key = state.level.toLowerCase().replace(' ', '-') + ':' + state.subject;
+        const allTopicsForSubj = SYLLABUS_MAP[key] || [];
+        const stepText = state.tier === 'single_subject' ? 'Step 1 of 2' : 'Step 2 of 3';
 
-    const buildCard = (id, title, sub, isSelected, isLocked) => `
+        const buildCard = (id, title, sub, isSelected, isLocked) => `
       <div class="glass-panel-1 p-6 ${isLocked ? 'opacity-50' : 'cursor-pointer hover-lift'} flex flex-col justify-center text-center relative" 
            style="border: 2px solid ${isSelected ? 'var(--brand-mint)' : 'var(--border-light)'}; background: ${isSelected ? 'var(--bg-elevated)' : 'var(--bg-surface)'};"
            ${isLocked ? '' : `onclick="window.pickTopic('${id}')"`}>
@@ -297,16 +309,16 @@ window.initSubjectsEngine = function() {
         <div class="text-xs text-muted mt-1">${esc(sub)}</div>
       </div>`;
 
-    const allBtn = buildCard('all', '📚 All Topics', 'Practise everything', state.topic === 'all', false);
-    const topicBtns = allTopicsForSubj.map(t => {
-      const slug = t.toLowerCase().replace(/ /g, '-');
-      const isLocked = false; // 🌟 FIX: Instantly unlock all topics
-      return buildCard(slug, t, 'Focused topic practice', state.topic === slug, isLocked);
-    }).join('');
+        const allBtn = buildCard('all', '📚 All Topics', 'Practise everything', state.topic === 'all', false);
+        const topicBtns = allTopicsForSubj.map(t => {
+          const slug = t.toLowerCase().replace(/ /g, '-');
+          const isLocked = false; // 🌟 FIX: Instantly unlock all topics
+          return buildCard(slug, t, 'Focused topic practice', state.topic === slug, isLocked);
+        }).join('');
 
-    // Show "Choose Question Type" button only when the selected topic is NOT auto-bypassed
-    const selectedHasBypass = state.topic && TOPIC_TYPE_BYPASS[state.topic];
-    app.innerHTML = `
+        // Show "Choose Question Type" button only when the selected topic is NOT auto-bypassed
+        const selectedHasBypass = state.topic && TOPIC_TYPE_BYPASS[state.topic];
+        app.innerHTML = `
       <div class="text-center mb-8 w-full">
         <div class="badge badge-info mb-2">${stepText}</div>
         <h1 class="font-display text-4xl text-main">Choose a Topic</h1>
@@ -319,34 +331,34 @@ window.initSubjectsEngine = function() {
         ${!selectedHasBypass ? `<button class="btn btn-primary btn-lg w-full hover-lift" ${!state.topic ? 'disabled' : ''} onclick="window.goToType()">Choose Question Type →</button>` : ''}
         ${state.tier !== 'single_subject' ? `<button class="btn btn-ghost" onclick="window.goBack('SUBJECT')">← Back to Subjects</button>` : ''}
       </div>`;
-  }
+      }
 
-  window.pickTopic = (t) => {
-    state.topic = t;
-    
-    // 🚀 MASTERCLASS UX: Pure 2-Step Flow for English
-    if (state.subject === 'english') {
-      // If they pick "All Topics" in English, instantly launch a mixed paper.
-      state.qtype = (t === 'all') ? 'mixed' : (TOPIC_TYPE_BYPASS[t] || 'mixed');
-      window.launchQuiz();
-    } 
-    // Math and Science bypass logic
-    else if (TOPIC_TYPE_BYPASS[t]) {
-      state.qtype = TOPIC_TYPE_BYPASS[t];
-      window.launchQuiz();
-    } 
-    // Proceed to Step 3 for Math/Science
-    else {
-      render();
-    }
-  };
-  window.goToType = () => { if (state.topic) { state.qtype = ''; state.phase = 'TYPE'; render(); } };
+      window.pickTopic = (t) => {
+        state.topic = t;
 
-  function renderType() {
-    const allTypesForSubj = ALL_TYPES[state.subject] || [];
-    const stepText = state.tier === 'single_subject' ? 'Step 2 of 2' : 'Step 3 of 3';
+        // 🚀 MASTERCLASS UX: Pure 2-Step Flow for English
+        if (state.subject === 'english') {
+          // If they pick "All Topics" in English, instantly launch a mixed paper.
+          state.qtype = (t === 'all') ? 'mixed' : (TOPIC_TYPE_BYPASS[t] || 'mixed');
+          window.launchQuiz();
+        }
+        // Math and Science bypass logic
+        else if (TOPIC_TYPE_BYPASS[t]) {
+          state.qtype = TOPIC_TYPE_BYPASS[t];
+          window.launchQuiz();
+        }
+        // Proceed to Step 3 for Math/Science
+        else {
+          render();
+        }
+      };
+      window.goToType = () => { if (state.topic) { state.qtype = ''; state.phase = 'TYPE'; render(); } };
 
-    const buildCard = (id, title, sub, isSelected, isLocked) => `
+      function renderType() {
+        const allTypesForSubj = ALL_TYPES[state.subject] || [];
+        const stepText = state.tier === 'single_subject' ? 'Step 2 of 2' : 'Step 3 of 3';
+
+        const buildCard = (id, title, sub, isSelected, isLocked) => `
       <div class="glass-panel-1 p-6 ${isLocked ? 'opacity-50' : 'cursor-pointer hover-lift'} flex flex-col justify-center text-center relative" 
            style="border: 2px solid ${isSelected ? 'var(--brand-mint)' : 'var(--border-light)'}; background: ${isSelected ? 'var(--bg-elevated)' : 'var(--bg-surface)'};"
            ${isLocked ? '' : `onclick="window.pickType('${id}')"`}>
@@ -355,13 +367,13 @@ window.initSubjectsEngine = function() {
         <div class="text-xs text-muted mt-1">${esc(sub)}</div>
       </div>`;
 
-    const mixedBtn = buildCard('mixed', '🎲 Mixed', 'A balanced mix of questions', state.qtype === 'mixed', false);
-    const typeBtns = allTypesForSubj.map(t => {
-      const isLocked = false; // 🌟 FIX: Instantly unlock all types
-      return buildCard(t.id, t.label, 'Specific question format', state.qtype === t.id, isLocked);
-    }).join('');
+        const mixedBtn = buildCard('mixed', '🎲 Mixed', 'A balanced mix of questions', state.qtype === 'mixed', false);
+        const typeBtns = allTypesForSubj.map(t => {
+          const isLocked = false; // 🌟 FIX: Instantly unlock all types
+          return buildCard(t.id, t.label, 'Specific question format', state.qtype === t.id, isLocked);
+        }).join('');
 
-    app.innerHTML = `
+        app.innerHTML = `
       <div class="text-center mb-8 w-full">
         <div class="badge badge-info mb-2">${stepText}</div>
         <h1 class="font-display text-4xl text-main">Question Format</h1>
@@ -374,88 +386,89 @@ window.initSubjectsEngine = function() {
         <button class="btn btn-primary btn-lg w-full hover-lift" ${!state.qtype ? 'disabled' : ''} onclick="window.launchQuiz()">Enter Training Lab →</button>
         <button class="btn btn-ghost" onclick="window.goBack('TOPIC')">← Back to Topics</button>
       </div>`;
-  }
-
-  window.pickType = (t) => { state.qtype = t; render(); };
-  window.goBack = (phase) => {
-    if (phase === 'SUBJECT') { state.subject = ''; state.topic = ''; state.qtype = ''; state.phase = 'SUBJECT'; }
-    else if (phase === 'TOPIC') { state.qtype = ''; state.phase = 'TOPIC'; }
-    render();
-  };
-
-  window.launchQuiz = function () {
-    if (!state.qtype) return;
-    const levelSlug = state.level.toLowerCase().replace(' ','-');
-    const params = new URLSearchParams({ subject: state.subject, level: levelSlug });
-    if (state.studentId) params.set('student', state.studentId);
-    if (state.topic && state.topic !== 'all') params.set('topic', state.topic);
-    if (state.qtype && state.qtype !== 'mixed') params.set('type', state.qtype);
-    window.location.href = 'quiz.html?' + params.toString();
-  };
-
-  async function init() {
-    app.innerHTML = `<div class="flex flex-col items-center justify-center p-10"><div class="spinner-sm mb-4"></div><p class="text-muted font-bold">Loading mission files...</p></div>`;
-    try {
-      const profile = window.userProfile;
-      if (!profile) return;
-      
-      const sb = await getSupabase();
-      
-      // --- UNIFIED STATE RESOLVER ---
-      const urlParams = new URLSearchParams(window.location.search);
-      let activeStudentId = urlParams.get('student') || localStorage.getItem('shl_active_student_id');
-      
-      // Fetch all children for this parent
-      const { data: students } = await sb.from('students').select('id, level, selected_subject').eq('parent_id', profile.id);
-      
-      // Find the specific student, or fallback to the first one
-      let student = (students || []).find(s => s.id === activeStudentId) || (students || [])[0];
-      
-      if (!student) {
-        app.innerHTML = `<div class="glass-panel-1 p-8 text-center text-amber font-bold">No learners found. Please set up a profile.</div>`;
-        return;
       }
 
-      // Persist the truth
-      state.studentId = student.id;
-      localStorage.setItem('shl_active_student_id', student.id);
-      // ------------------------------
+      window.pickType = (t) => { state.qtype = t; render(); };
+      window.goBack = (phase) => {
+        if (phase === 'SUBJECT') { state.subject = ''; state.topic = ''; state.qtype = ''; state.phase = 'SUBJECT'; }
+        else if (phase === 'TOPIC') { state.qtype = ''; state.phase = 'TOPIC'; }
+        render();
+      };
 
-      state.level = student.level || 'Primary 4';
-      state.tier = profile.subscription_tier || 'trial';
+      window.launchQuiz = function () {
+        if (!state.qtype) return;
+        const levelSlug = state.level.toLowerCase().replace(' ', '-');
+        const params = new URLSearchParams({ subject: state.subject, level: levelSlug });
+        if (state.studentId) params.set('student', state.studentId);
+        if (state.topic && state.topic !== 'all') params.set('topic', state.topic);
+        if (state.qtype && state.qtype !== 'mixed') params.set('type', state.qtype);
+        window.location.href = 'quiz.html?' + params.toString();
+      };
 
-      const isJunior = state.level.toLowerCase().includes('primary 1') || state.level.toLowerCase().includes('primary 2');
-      
-      document.querySelectorAll('.bottom-nav-item').forEach(link => {
-        const url = new URL(link.href, window.location.origin);
-        url.searchParams.set('student', state.studentId);
-        link.href = url.pathname + url.search;
-        
-        if (isJunior && link.getAttribute('href').includes('exam.html')) {
-          link.style.display = 'none';
+      async function init() {
+        app.innerHTML = `<div class="flex flex-col items-center justify-center p-10"><div class="spinner-sm mb-4"></div><p class="text-muted font-bold">Loading mission files...</p></div>`;
+        try {
+          const profile = window.userProfile;
+          if (!profile) return;
+
+          const sb = await getSupabase();
+
+          // --- UNIFIED STATE RESOLVER ---
+          const urlParams = new URLSearchParams(window.location.search);
+          let activeStudentId = urlParams.get('student') || localStorage.getItem('shl_active_student_id');
+
+          // Fetch all children for this parent
+          const { data: students } = await sb.from('students').select('id, level, selected_subject').eq('parent_id', profile.id);
+
+          // Find the specific student, or fallback to the first one
+          let student = (students || []).find(s => s.id === activeStudentId) || (students || [])[0];
+
+          if (!student) {
+            app.innerHTML = `<div class="glass-panel-1 p-8 text-center text-amber font-bold">No learners found. Please set up a profile.</div>`;
+            return;
+          }
+
+          // Persist the truth
+          state.studentId = student.id;
+          localStorage.setItem('shl_active_student_id', student.id);
+          // ------------------------------
+
+          state.level = student.level || 'Primary 4';
+          state.tier = profile.subscription_tier || 'trial';
+
+          const isJunior = state.level.toLowerCase().includes('primary 1') || state.level.toLowerCase().includes('primary 2');
+
+          document.querySelectorAll('.bottom-nav-item').forEach(link => {
+            const url = new URL(link.href, window.location.origin);
+            url.searchParams.set('student', state.studentId);
+            link.href = url.pathname + url.search;
+
+            if (isJunior && link.getAttribute('href').includes('exam.html')) {
+              link.style.display = 'none';
+            }
+          });
+
+          if (isJunior) {
+            const nav = document.getElementById('bottomNav');
+            if (nav) nav.style.justifyContent = 'space-evenly';
+          }
+
+          if (state.tier === 'single_subject' && student.selected_subject) {
+            state.subject = student.selected_subject.toLowerCase();
+            state.phase = 'TOPIC';
+          } else {
+            state.phase = 'SUBJECT';
+          }
+          render();
+        } catch (err) {
+          console.error(err);
+          app.innerHTML = `<div class="glass-panel-1 p-8 text-center text-danger font-bold">Could not load profile. Please refresh.</div>`;
         }
-      });
-      
-      if (isJunior) {
-        const nav = document.getElementById('bottomNav');
-        if (nav) nav.style.justifyContent = 'space-evenly';
       }
 
-      if (state.tier === 'single_subject' && student.selected_subject) {
-        state.subject = student.selected_subject.toLowerCase();
-        state.phase = 'TOPIC';
-      } else {
-        state.phase = 'SUBJECT';
-      }
-      render();
-    } catch (err) {
-      console.error(err);
-      app.innerHTML = `<div class="glass-panel-1 p-8 text-center text-danger font-bold">Could not load profile. Please refresh.</div>`;
-    }
-  }
-  
-  setTimeout(init, 100);
-};
-</script>
+      setTimeout(init, 100);
+    };
+  </script>
 </body>
+
 </html>

@@ -1,13 +1,13 @@
-window.initQuizEngine = function() {
+window.initQuizEngine = function () {
   'use strict';
 
   // 🚀 GLOBAL UTILITY: The Vanilla JS Pen Tool Engine
-  window.togglePenTool = function(canvasId) {
+  window.togglePenTool = function (canvasId) {
     const container = document.getElementById(canvasId + '-container');
     if (!container) return;
-    
+
     container.classList.toggle('hidden');
-    
+
     const canvas = document.getElementById(canvasId);
     if (!canvas) return;
 
@@ -19,14 +19,14 @@ window.initQuizEngine = function() {
       // Only set dimensions and listeners on the FIRST time it is opened
       if (!canvas.isInitialized) {
         const rect = container.getBoundingClientRect();
-        
+
         // Ensure it gets a real width, not 0
         canvas.width = rect.width || container.offsetWidth || 800;
         canvas.height = Math.max(rect.height || container.offsetHeight, 300); // Min height of 300px
-        
+
         const ctx = canvas.getContext('2d');
-        ctx.lineWidth = 2; 
-        ctx.lineCap = 'round'; 
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
         ctx.strokeStyle = 'var(--brand-sage, #51615E)'; // Match UI theme
 
         let isDrawing = false, lastX = 0, lastY = 0;
@@ -36,9 +36,9 @@ window.initQuizEngine = function() {
           // Safely handle both mouse and touch coordinates
           const clientX = e.touches && e.touches.length > 0 ? e.touches[0].clientX : e.clientX;
           const clientY = e.touches && e.touches.length > 0 ? e.touches[0].clientY : e.clientY;
-          return { 
-            x: clientX - r.left, 
-            y: clientY - r.top 
+          return {
+            x: clientX - r.left,
+            y: clientY - r.top
           };
         }
 
@@ -75,9 +75,9 @@ window.initQuizEngine = function() {
         canvas.addEventListener('mouseout', stopDrawing);
 
         // Mobile Touch Events (passive: false is CRITICAL to prevent screen scrolling)
-        canvas.addEventListener('touchstart', (e) => { 
-          if (e.cancelable) e.preventDefault(); 
-          startDrawing(e); 
+        canvas.addEventListener('touchstart', (e) => {
+          if (e.cancelable) e.preventDefault();
+          startDrawing(e);
         }, { passive: false });
         canvas.addEventListener('touchmove', draw, { passive: false });
         canvas.addEventListener('touchend', stopDrawing);
@@ -85,21 +85,21 @@ window.initQuizEngine = function() {
 
         // Hardware-level scroll prevention
         canvas.style.touchAction = 'none';
-        
+
         canvas.isInitialized = true;
       }
     }, 10);
   };
 
   // 🚀 GLOBAL UTILITY: Smart Rubric Formatter (Font-Consistent)
-  window.formatWorkedSolution = function(raw) {
+  window.formatWorkedSolution = function (raw) {
     if (!raw) return '<em class="font-sans">No step-by-step solution provided.</em>';
     try {
       const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
       if (typeof parsed === 'object' && parsed !== null) {
         let html = '';
         for (const [key, val] of Object.entries(parsed)) {
-           html += `
+          html += `
             <div class="mb-4 font-sans">
               <h5 class="font-bold text-brand-dark mb-2">${esc(key)}</h5>
               <div class="text-main leading-relaxed" style="word-wrap: break-word;">${val}</div>
@@ -107,50 +107,50 @@ window.initQuizEngine = function() {
         }
         return html;
       }
-    } catch(e) {}
+    } catch (e) { }
     // 🚀 MASTERCLASS FIX: Removed esc() so HTML tags from the database render correctly
     return `<span class="font-sans">${String(raw).replace(/\n/g, '<br>')}</span>`;
   };
 
   // 🚀 MASTERCLASS: Deep JSON Parser for Complex Comprehension Parts
-  window.extractPartModelAnswer = function(part) {
+  window.extractPartModelAnswer = function (part) {
     if (!part) return '';
     if (part.model_answer) return String(part.model_answer);
     if (part.correct_answer) return String(part.correct_answer);
     if (part.explanation) return String(part.explanation);
     if (part.worked_solution) return String(part.worked_solution);
-    
+
     let constructed = [];
     if (part.part_type === 'referent' && Array.isArray(part.items)) {
-        part.items.forEach(item => constructed.push(`• ${item.word} → ${item.correct_answer}`));
+      part.items.forEach(item => constructed.push(`• ${item.word} → ${item.correct_answer}`));
     } else if (part.part_type === 'sequencing' && Array.isArray(part.correct_order)) {
-        constructed.push(`Correct order: ${part.correct_order.join(', ')}`);
+      constructed.push(`Correct order: ${part.correct_order.join(', ')}`);
     } else if (part.part_type === 'true_false' && Array.isArray(part.items)) {
-        part.items.forEach(item => constructed.push(`• "${item.statement}" → ${item.correct_answer} (Reason: ${item.reason_evidence})`));
+      part.items.forEach(item => constructed.push(`• "${item.statement}" → ${item.correct_answer} (Reason: ${item.reason_evidence})`));
     } else if (Array.isArray(part.items)) {
-        constructed.push(JSON.stringify(part.items));
+      constructed.push(JSON.stringify(part.items));
     }
-    
+
     return constructed.length > 0 ? constructed.join('\n') : '';
   };
 
   // 🚀 MASTERCLASS TIER 2: Fast Local Math Heuristics (0ms, $0 API Cost)
   function isHeuristicMatch(studentAns, correctAns, acceptAlsoArray, isMath) {
-      if (!correctAns || !studentAns) return false;
-      const norm = (s) => String(s || '').toLowerCase().replace(/\s/g, '');
-      const sNorm = norm(studentAns);
-      const cNorm = norm(correctAns);
-      
-      if (sNorm === cNorm) return true;
-      if (Array.isArray(acceptAlsoArray) && acceptAlsoArray.some(a => norm(a) === sNorm)) return true;
-      
-      if (isMath) {
-         const stripUnits = (s) => s.replace(/[^0-9.\/]/g, ''); 
-         const sVal = stripUnits(sNorm);
-         const cVal = stripUnits(cNorm);
-         if (sVal !== '' && sVal === cVal) return true;
-      }
-      return false;
+    if (!correctAns || !studentAns) return false;
+    const norm = (s) => String(s || '').toLowerCase().replace(/\s/g, '');
+    const sNorm = norm(studentAns);
+    const cNorm = norm(correctAns);
+
+    if (sNorm === cNorm) return true;
+    if (Array.isArray(acceptAlsoArray) && acceptAlsoArray.some(a => norm(a) === sNorm)) return true;
+
+    if (isMath) {
+      const stripUnits = (s) => s.replace(/[^0-9.\/]/g, '');
+      const sVal = stripUnits(sNorm);
+      const cVal = stripUnits(cNorm);
+      if (sVal !== '' && sVal === cVal) return true;
+    }
+    return false;
   }
 
   const state = {
@@ -161,10 +161,10 @@ window.initQuizEngine = function() {
     maxStreak: 0,
     score: 0,
     totalPossibleScore: 0,
-    answers: {},       
+    answers: {},
     drawings: {},
-    resultsObj: {},      
-    isAnswered: false, 
+    resultsObj: {},
+    isAnswered: false,
     feedback: null,
     currentType: null,
     quizStartTime: null,
@@ -177,11 +177,11 @@ window.initQuizEngine = function() {
   };
 
   const app = document.getElementById('app');
-  function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-  function titleCase(s) { return s.replace(/-/g,' ').replace(/\b\w/g, c => c.toUpperCase()); }
+  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  function titleCase(s) { return s.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()); }
 
   function render() {
-    switch(state.phase) {
+    switch (state.phase) {
       case 'LOAD': renderLoading(); break;
       case 'QUIZ': renderQuiz(); break;
       case 'DONE': renderResults(); break;
@@ -192,7 +192,7 @@ window.initQuizEngine = function() {
     app.innerHTML = `<div class="glass-panel-1 flex flex-col items-center w-full p-6" style="max-width: 600px;"><div class="spinner-sm mb-4"></div><h2 class="font-display text-2xl text-main">Preparing Training Lab...</h2><p class="text-sm text-muted mt-2">Loading MOE-aligned questions</p></div>`;
   }
 
-// ── PROCEDURAL DIAGRAM RENDERER (WITH ERROR SHIELD) ──
+  // ── PROCEDURAL DIAGRAM RENDERER (WITH ERROR SHIELD) ──
   function renderVisualPayload(visual_payload) {
     if (!visual_payload) return '';
 
@@ -206,7 +206,7 @@ window.initQuizEngine = function() {
           // 🚀 MASTERCLASS FIX: Crash Shield for bad SVG generation
           const svgHtml = DiagramLibrary[fnName](params);
           if (String(svgHtml).includes('NaN')) throw new Error('AI generated invalid geometry (NaN)');
-          
+
           return `<div class="procedural-diagram mb-4 mx-auto flex justify-center w-full" style="max-width: 600px; overflow-x: auto;">
                     ${svgHtml}
                   </div>`;
@@ -214,9 +214,9 @@ window.initQuizEngine = function() {
           // The AI invented a function you haven't built yet! Graceful fallback.
           console.warn(`[DiagramLibrary] Missing function requested by AI: ${fnName}`, params);
           return `<div class="procedural-diagram mb-4 mx-auto flex justify-center w-full" style="max-width: 600px; overflow-x: auto;">
-                    ${DiagramLibrary.placeholder({ 
-                      description: `Requires DiagramLibrary.${fnName}()\nParams: ${JSON.stringify(params).substring(0,40)}...` 
-                    })}
+                    ${DiagramLibrary.placeholder({
+            description: `Requires DiagramLibrary.${fnName}()\nParams: ${JSON.stringify(params).substring(0, 40)}...`
+          })}
                   </div>`;
         }
       } catch (err) {
@@ -226,10 +226,10 @@ window.initQuizEngine = function() {
                 </div>`;
       }
     }
-    
+
     // Future handling for mermaid engine
     if (visual_payload.engine === 'mermaid') {
-       return `<div class="mermaid-diagram mb-4 p-4 bg-page border border-light rounded">${esc(visual_payload.params.code || '')}</div>`;
+      return `<div class="mermaid-diagram mb-4 p-4 bg-page border border-light rounded">${esc(visual_payload.params.code || '')}</div>`;
     }
 
     return '';
@@ -238,16 +238,16 @@ window.initQuizEngine = function() {
   // ── BUILD INPUT UI BY TYPE ──
 
   function buildMCQOptions(q) {
-    const letters = ['A','B','C','D'];
-    const savedAns = state.answers[state.currentIndex] || ''; 
-    
+    const letters = ['A', 'B', 'C', 'D'];
+    const savedAns = state.answers[state.currentIndex] || '';
+
     let safeOptions = [];
-    try { safeOptions = typeof q.options === 'string' ? JSON.parse(q.options) : (q.options || []); } catch(e) {}
+    try { safeOptions = typeof q.options === 'string' ? JSON.parse(q.options) : (q.options || []); } catch (e) { }
 
     return safeOptions.map((opt, i) => {
       const letter = letters[i];
       const isSel = savedAns === opt; // Compare exact string
-      
+
       let extraStyle = '';
       if (state.isAnswered) {
         // Safe string normalization
@@ -255,12 +255,12 @@ window.initQuizEngine = function() {
         const normAns = String(q.correct_answer).trim().toLowerCase();
 
         if (normOpt === normAns) extraStyle = 'border-color:var(--brand-mint);background:rgba(5,150,105,0.1);';
-        else if (isSel)          extraStyle = 'border-color:var(--brand-error);background:rgba(220,38,38,0.1);opacity:0.8;';
-        else                     extraStyle = 'opacity:0.45;pointer-events:none;';
+        else if (isSel) extraStyle = 'border-color:var(--brand-error);background:rgba(220,38,38,0.1);opacity:0.8;';
+        else extraStyle = 'opacity:0.45;pointer-events:none;';
       }
-      
+
       // Pass the array index to avoid quotation-mark escaping crashes in HTML
-      return `<div class="mcq-opt${isSel?' is-sel':''}" style="${extraStyle}${state.isAnswered?'pointer-events:none;':''}" onclick="window.selectMcq(${i})">
+      return `<div class="mcq-opt${isSel ? ' is-sel' : ''}" style="${extraStyle}${state.isAnswered ? 'pointer-events:none;' : ''}" onclick="window.selectMcq(${i})">
         <span class="mcq-badge">${letter}</span><span class="font-medium text-main">${esc(opt)}</span>
       </div>`;
     }).join('');
@@ -269,42 +269,42 @@ window.initQuizEngine = function() {
   function buildTextAreaUI(q) {
     let savedAns = String(state.answers[state.currentIndex] || '');
     const isDrawMode = state.drawings[state.currentIndex] && state.drawings[state.currentIndex] !== 'text';
-    
+
     const isShortAns = q.type === 'short_ans';
     const placeholderText = isShortAns ? 'Type your complete sentence here...' : 'Final Answer (Optional)';
-    
+
     const baseInputStyle = "form-input w-full p-4 text-lg border-2 border-slate-200 focus:border-brand-sage rounded-xl transition-all shadow-sm";
     const drawModeInputStyle = "form-input mt-3 w-full p-4 text-lg border-2 border-brand-sage focus:border-brand-sage rounded-xl transition-all shadow-sm bg-sage-50/10";
 
     // 🚀 MASTERCLASS SYNTHESIS PARSER
     let synthesisHtml = '';
     let isSynthesis = (q.topic || '').toLowerCase() === 'synthesis';
-    
+
     if (isSynthesis && q.question_text) {
       // 🚀 MASTERCLASS FIX: Safely preserve HTML line breaks but strip old \n\n
       const displayQuestion = esc(q.question_text.split('\n\n')[0].trim()).replace(/&lt;br\s*\/?[&gt;]*>/gi, '<br>');
-      
+
       // Extract the connector from the single quotes in the instructions (e.g. '... respectively.')
       let rawConnector = '';
       if (q.instructions) {
-         const match = q.instructions.match(/'([^']+)'/);
-         if (match) rawConnector = match[1];
+        const match = q.instructions.match(/'([^']+)'/);
+        if (match) rawConnector = match[1];
       }
-      const cleanConnector = rawConnector.replace(/^\.\.\.|\.\.\.$|^\(|\)$/g, '').trim(); 
-      
+      const cleanConnector = rawConnector.replace(/^\.\.\.|\.\.\.$|^\(|\)$/g, '').trim();
+
       // 🚀 MASTERCLASS FIX: Force flex lines to connect seamlessly
       const lineBlock = `<div style="flex-grow: 1; border-bottom: 2px solid var(--text-main); margin-bottom: 0.3rem; opacity: 0.5; min-width: 40px;"></div>`;
-        
+
       let blueprintHtml = '';
       if (rawConnector.startsWith('...') && rawConnector.endsWith('...')) {
-         blueprintHtml = `${lineBlock}<div class="font-bold text-brand-rose px-4 py-2 bg-surface rounded shadow-sm text-sm uppercase tracking-widest mx-2">${esc(cleanConnector)}</div>${lineBlock}`;
+        blueprintHtml = `${lineBlock}<div class="font-bold text-brand-rose px-4 py-2 bg-surface rounded shadow-sm text-sm uppercase tracking-widest mx-2">${esc(cleanConnector)}</div>${lineBlock}`;
       } else if (rawConnector.startsWith('(') && rawConnector.endsWith(')')) {
-         blueprintHtml = `${lineBlock}<div class="font-bold text-brand-rose px-4 py-2 bg-surface rounded shadow-sm text-sm uppercase tracking-widest mx-2">${esc(cleanConnector)}</div>${lineBlock}`;
+        blueprintHtml = `${lineBlock}<div class="font-bold text-brand-rose px-4 py-2 bg-surface rounded shadow-sm text-sm uppercase tracking-widest mx-2">${esc(cleanConnector)}</div>${lineBlock}`;
       } else if (rawConnector.startsWith('...')) {
-         blueprintHtml = `${lineBlock}<div class="font-bold text-brand-rose px-4 py-2 bg-surface rounded shadow-sm text-sm uppercase tracking-widest ml-2">${esc(cleanConnector)}</div>`;
+        blueprintHtml = `${lineBlock}<div class="font-bold text-brand-rose px-4 py-2 bg-surface rounded shadow-sm text-sm uppercase tracking-widest ml-2">${esc(cleanConnector)}</div>`;
       } else {
-         blueprintHtml = `<div class="font-bold text-brand-rose px-4 py-2 bg-surface rounded shadow-sm text-sm uppercase tracking-widest mr-2">${esc(cleanConnector)}</div>${lineBlock}`;
-         if (!savedAns) savedAns = cleanConnector + ' '; 
+        blueprintHtml = `<div class="font-bold text-brand-rose px-4 py-2 bg-surface rounded shadow-sm text-sm uppercase tracking-widest mr-2">${esc(cleanConnector)}</div>${lineBlock}`;
+        if (!savedAns) savedAns = cleanConnector + ' ';
       }
 
       synthesisHtml = `
@@ -344,24 +344,24 @@ window.initQuizEngine = function() {
 
   function buildMultiPartUI(q) {
     let partsData = [];
-    try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
-    
+    try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch (e) { }
+
     // 🚀 MASTERCLASS: Auto-wrap single open_ended questions so they use the robust engine
     if (partsData.length === 0 && q.type === 'open_ended') {
-       partsData = [{ label: "(a)", question: q.question_text, marks: q.marks, model_answer: q.worked_solution || q.model_answer }];
+      partsData = [{ label: "(a)", question: q.question_text, marks: q.marks, model_answer: q.worked_solution || q.model_answer }];
     }
-    
+
     if (partsData.length === 0) return `<div class="text-amber">Legacy format. Please update in database.</div>`;
 
     let inlineActionBtn = '';
     let inlineFeedbackHtml = '';
     if (!state.isAnswered && state.activeWPPart < partsData.length) {
-        const isLastPart = state.activeWPPart >= partsData.length - 1;
-        if (state.feedback && state.feedback.status === 'loading') {
-             inlineActionBtn = `<div class="mt-4 pt-4 border-t border-light flex justify-end"><button class="btn btn-primary" disabled><span class="spinner-sm inline-block mr-2 border-white"></span> Grading...</button></div>`;
-        } else {
-             inlineActionBtn = `<div class="mt-4 pt-4 border-t border-light flex justify-end"><button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">${isLastPart ? 'Submit Final Answer' : 'Submit Part & Continue'}</button></div>`;
-        }
+      const isLastPart = state.activeWPPart >= partsData.length - 1;
+      if (state.feedback && state.feedback.status === 'loading') {
+        inlineActionBtn = `<div class="mt-4 pt-4 border-t border-light flex justify-end"><button class="btn btn-primary" disabled><span class="spinner-sm inline-block mr-2 border-white"></span> Grading...</button></div>`;
+      } else {
+        inlineActionBtn = `<div class="mt-4 pt-4 border-t border-light flex justify-end"><button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">${isLastPart ? 'Submit Final Answer' : 'Submit Part & Continue'}</button></div>`;
+      }
     }
 
     return partsData.map((p, partIdx) => {
@@ -430,7 +430,7 @@ window.initQuizEngine = function() {
         <div class="mb-6">
           <div class="flex items-center gap-3 mb-3">
             <span class="font-display text-xl text-main font-bold" style="color: var(--brand-sage);">${esc(pLabel)}</span>
-            <span class="badge badge-info text-xs">${pMarks} mark${pMarks!==1?'s':''}</span>
+            <span class="badge badge-info text-xs">${pMarks} mark${pMarks !== 1 ? 's' : ''}</span>
           </div>
           ${pQuestion ? `<div class="text-lg text-main font-medium mb-4 leading-relaxed">${esc(pQuestion)}</div>` : ''}
           ${interactionUI}
@@ -438,26 +438,26 @@ window.initQuizEngine = function() {
     }).join('');
   }
 
-function buildClozeUI(q) {
+  function buildClozeUI(q) {
     const savedAns = state.answers[state.currentIndex] || {};
     let blanks = [];
-    try { blanks = typeof q.blanks === 'string' ? JSON.parse(q.blanks) : (q.blanks || []); } catch(e) {}
+    try { blanks = typeof q.blanks === 'string' ? JSON.parse(q.blanks) : (q.blanks || []); } catch (e) { }
 
     let wordBankHtml = '';
-    
+
     // 🚀 MASTERCLASS: Sub-Topic UI Router for Cloze
     const isGrammar = (q.sub_topic || '').toLowerCase() === 'grammar';
-    
+
     // Only build a Word Bank if it is explicitly a Grammar Cloze
     if (isGrammar) {
       const allWords = new Set();
       blanks.forEach(b => (b.options || []).forEach(w => allWords.add(w)));
-      
+
       if (allWords.size > 0) {
         // 🚀 MASTERCLASS FIX: Case-insensitive alphabetical sort prevents UI jumping and breaks AI patterns
         const sortedWords = [...allWords].sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
         const wordBankList = sortedWords.map((w, i) =>
-          `<span class="badge bg-surface border border-light text-main" style="font-size:0.9rem; padding: 6px 12px; font-weight: 500;">(${i+1}) ${esc(w)}</span>`
+          `<span class="badge bg-surface border border-light text-main" style="font-size:0.9rem; padding: 6px 12px; font-weight: 500;">(${i + 1}) ${esc(w)}</span>`
         ).join('');
         wordBankHtml = `
           <div class="glass-panel-1 p-4 mb-4">
@@ -469,19 +469,19 @@ function buildClozeUI(q) {
 
     // 🚀 MASTERCLASS FIX: Safely restore HTML line breaks in passage
     let passage = esc(q.passage || '').replace(/\n/g, '<br>').replace(/&lt;br\s*\/?[&gt;]*>/gi, '<br>');
-    
+
     blanks.forEach(b => {
       const num = b.id || b.number;
       const saved = savedAns[num] || '';
       let inputHtml = '';
-      
+
       if (state.isAnswered) {
         const isCorrect = (savedAns[num] || '').toLowerCase() === (b.correct_answer || '').toLowerCase();
         const stateClass = isCorrect ? 'is-correct' : 'is-wrong';
-        
+
         if (b.options && b.options.length > 0) {
           inputHtml = `<select id="cloze-blank-${num}" class="cloze-select ${stateClass}" disabled style="min-width: 100px;">
-            <option value="${esc(saved)}">${esc(saved||'—')}</option></select>`;
+            <option value="${esc(saved)}">${esc(saved || '—')}</option></select>`;
         } else {
           inputHtml = `<input type="text" id="cloze-blank-${num}" class="editing-input ${stateClass}" value="${esc(saved)}" disabled style="width: 120px; display: inline-block; margin: 0 4px;">`;
         }
@@ -510,7 +510,7 @@ function buildClozeUI(q) {
         const icon = res.isCorrect ? '✅' : '❌';
         return `<div class="flex gap-3 items-start text-sm py-2" style="border-bottom: 1px solid var(--border-light);">
           <span class="font-bold" style="min-width:24px;">[${num}]</span>
-          <span>${icon} <strong style="color:var(--text-main);">${esc(res.selected||'—')}</strong> ${!res.isCorrect?`→ <strong class="text-success">${esc(b.correct_answer)}</strong>`:''}</span>
+          <span>${icon} <strong style="color:var(--text-main);">${esc(res.selected || '—')}</strong> ${!res.isCorrect ? `→ <strong class="text-success">${esc(b.correct_answer)}</strong>` : ''}</span>
           ${!res.isCorrect && b.explanation ? `<span class="text-muted text-xs ml-auto" style="max-width:60%; text-align:right;">${esc(b.explanation)}</span>` : ''}
         </div>`;
       }).join('');
@@ -526,7 +526,7 @@ function buildClozeUI(q) {
   function buildEditingUI(q) {
     const savedAns = state.answers[state.currentIndex] || {};
     let blanks = [];
-    try { blanks = typeof q.blanks === 'string' ? JSON.parse(q.blanks) : (q.blanks || []); } catch(e) {}
+    try { blanks = typeof q.blanks === 'string' ? JSON.parse(q.blanks) : (q.blanks || []); } catch (e) { }
 
     let html = esc(q.passage || '')
       .replace(/\n/g, '<br><br>')
@@ -536,14 +536,14 @@ function buildClozeUI(q) {
     html = html.replace(/\[(\d+)\]/g, (match, numStr) => {
       const num = parseInt(numStr, 10);
       const saved = savedAns[num] || '';
-      
+
       const blankDef = blanks.find(b => b.number == num) || {};
       const correctAns = blankDef.correct_answer || blankDef.correct_word || '';
 
       if (state.isAnswered) {
         const isCorrect = saved.toLowerCase() === correctAns.toLowerCase();
         const stateClass = isCorrect ? 'is-correct' : 'is-wrong';
-        
+
         return `<input type="text" value="${esc(saved)}" disabled class="editing-inline-input ${stateClass}">
                 ${!isCorrect ? `<span class="text-lg font-bold text-success ml-2 align-middle">(${esc(correctAns)})</span>` : ''}`;
       } else {
@@ -558,14 +558,14 @@ function buildClozeUI(q) {
         const res = state.feedback.blankResults[num] || {};
         const correctAns = b.correct_answer || b.correct_word || '';
         const icon = res.isCorrect ? '✅' : '❌';
-        
+
         return `<div class="flex gap-3 items-start text-sm py-2" style="border-bottom: 1px solid var(--border-light);">
           <span class="font-bold" style="min-width:24px;">[${num}]</span>
           <span>${icon} <strong style="color:var(--text-main);">${esc(res.selected || '—')}</strong> ${!res.isCorrect ? `→ <strong class="text-success">${esc(correctAns)}</strong>` : ''}</span>
           ${!res.isCorrect && b.explanation ? `<span class="text-muted text-xs ml-auto" style="max-width:60%; text-align:right;">${esc(b.explanation)}</span>` : ''}
         </div>`;
       }).join('');
-      
+
       editFeedback = `<div class="glass-panel-2 p-4 mt-4">${rows}</div>`;
     }
 
@@ -574,7 +574,7 @@ function buildClozeUI(q) {
 
   function buildComprehensionUI(q) {
     let partsData = [];
-    try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
+    try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch (e) { }
     if (partsData.length === 0) return `<div class="text-amber">No questions found for this passage.</div>`;
 
     const savedAnsObj = state.answers[state.currentIndex] || {};
@@ -582,25 +582,25 @@ function buildClozeUI(q) {
     let inlineActionBtn = '';
     let inlineFeedbackHtml = '';
     if (!state.isAnswered && state.activeWPPart < partsData.length) {
-        const isLastPart = state.activeWPPart >= partsData.length - 1;
-        if (state.feedback && state.feedback.status === 'loading') {
-             inlineActionBtn = `<div class="mt-4 pt-4 border-t border-light flex justify-end"><button class="btn btn-primary" disabled><span class="spinner-sm inline-block mr-2 border-white"></span> Grading...</button></div>`;
-        } else {
-             inlineActionBtn = `<div class="mt-4 pt-4 border-t border-light flex justify-end"><button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">${isLastPart ? 'Submit Final Answer' : 'Submit Part & Continue'}</button></div>`;
-             if (state.feedback) {
-                 const fb = state.feedback;
-                 const isPartial = fb.status === 'partial' || fb.status === 'wrong';
-                 const ruleClass = isPartial ? 'card-rule-amber' : 'card-rule-mint';
-                 const bgClass   = isPartial ? 'bg-amber-tint' : 'bg-science-tint';
-                 const textClass = isPartial ? 'text-amber' : 'text-success';
-                 const icon      = isPartial ? '💡' : '🎉';
-                 inlineFeedbackHtml = `<div class="glass-panel-2 ${ruleClass} ${bgClass} p-4 mt-4 mb-2">
+      const isLastPart = state.activeWPPart >= partsData.length - 1;
+      if (state.feedback && state.feedback.status === 'loading') {
+        inlineActionBtn = `<div class="mt-4 pt-4 border-t border-light flex justify-end"><button class="btn btn-primary" disabled><span class="spinner-sm inline-block mr-2 border-white"></span> Grading...</button></div>`;
+      } else {
+        inlineActionBtn = `<div class="mt-4 pt-4 border-t border-light flex justify-end"><button class="btn btn-primary hover-lift" onclick="window.checkAnswer()">${isLastPart ? 'Submit Final Answer' : 'Submit Part & Continue'}</button></div>`;
+        if (state.feedback) {
+          const fb = state.feedback;
+          const isPartial = fb.status === 'partial' || fb.status === 'wrong';
+          const ruleClass = isPartial ? 'card-rule-amber' : 'card-rule-mint';
+          const bgClass = isPartial ? 'bg-amber-tint' : 'bg-science-tint';
+          const textClass = isPartial ? 'text-amber' : 'text-success';
+          const icon = isPartial ? '💡' : '🎉';
+          inlineFeedbackHtml = `<div class="glass-panel-2 ${ruleClass} ${bgClass} p-4 mt-4 mb-2">
                    <div class="font-bold mb-2 ${textClass}">${icon} Miss Wena says:</div>
                    <p class="text-sm text-main leading-relaxed">${fb.text}</p>
                    ${fb.correctAnswer ? `<div class="mt-3 text-sm font-bold text-main">Correct Answer: <span class="text-success">${esc(fb.correctAnswer)}</span></div>` : ''}
                  </div>`;
-             }
         }
+      }
     }
 
     const partsHtml = partsData.map((part, idx) => {
@@ -609,29 +609,29 @@ function buildClozeUI(q) {
       const isCompleted = idx < state.activeWPPart;
       const isActive = idx === state.activeWPPart;
       // Use custom label for Science (e.g., "(a)"), fallback to Q1 for English
-      const pLabel = part.label || `Q${idx + 1}`; 
+      const pLabel = part.label || `Q${idx + 1}`;
 
       if (isLocked) {
         return `<div class="mb-4 p-4" style="opacity: 0.4; pointer-events: none; border-left: 3px solid var(--border-light);"><span class="font-display text-xl text-muted font-bold">🔒 ${pLabel}</span></div>`;
       }
 
       const savedWorking = savedAnsObj[pLabel] || '';
-      
+
       let interactionUI = '';
       if (!isCompleted) {
         const safeIdLabel = String(pLabel).replace(/[^a-zA-Z0-9]/g, '');
-        
+
         if (part.part_type === 'text_box') {
           interactionUI = `<textarea id="comp-${safeIdLabel}" class="form-input w-full p-4 text-lg border-2 border-light focus:border-brand-sage rounded-xl" rows="3" placeholder="Type your answer here...">${esc(typeof savedWorking === 'string' ? savedWorking : '')}</textarea>`;
-        
+
         } else if (part.part_type === 'mcq') {
-          const letters = ['A','B','C','D'];
+          const letters = ['A', 'B', 'C', 'D'];
           interactionUI = (part.options || []).map((opt, i) => `
             <div class="mcq-opt hover-lift ${savedWorking === opt ? 'is-sel' : ''}" onclick="window.selectCompMcq('${pLabel}', ${i})">
               <span class="mcq-badge">${letters[i]}</span><span class="font-medium text-main">${esc(opt)}</span>
             </div>
           `).join('');
-          
+
         } else if (part.part_type === 'referent') {
           interactionUI = `
             <table class="w-full text-left border-collapse border border-slate-200 rounded-lg overflow-hidden mt-2 mb-4 bg-surface shadow-sm">
@@ -646,21 +646,21 @@ function buildClozeUI(q) {
                   <tr class="border-b border-slate-200 last:border-0">
                     <td class="p-4 font-medium text-main align-middle leading-relaxed text-lg">${esc(item.word)}</td>
                     <td class="p-3 align-middle border-l border-slate-200">
-                      <input type="text" id="comp-${safeIdLabel}-ref${i}" class="form-input w-full p-3 text-lg border-2 border-slate-200 rounded-lg focus:border-brand-sage" placeholder="Type here..." value="${esc(savedWorking['ref'+i] || '')}" oninput="window.saveInputState ? window.saveInputState() : null">
+                      <input type="text" id="comp-${safeIdLabel}-ref${i}" class="form-input w-full p-3 text-lg border-2 border-slate-200 rounded-lg focus:border-brand-sage" placeholder="Type here..." value="${esc(savedWorking['ref' + i] || '')}" oninput="window.saveInputState ? window.saveInputState() : null">
                     </td>
                   </tr>
                 `).join('')}
               </tbody>
             </table>`;
-          
+
         } else if (part.part_type === 'sequencing') {
           interactionUI = `<div class="flex flex-col gap-3 mt-2 text-lg">` + (part.items || []).map((item, i) => `
             <div class="flex items-center gap-4 bg-surface p-3 rounded-lg border border-light shadow-sm">
-              <input type="number" id="comp-${safeIdLabel}-seq${i}" class="form-input border-2 border-slate-200 rounded-lg focus:border-brand-sage text-2xl font-bold text-center" style="width: 60px; height: 60px; padding: 0;" min="1" max="3" value="${esc(savedWorking['seq'+i] || '')}" oninput="window.saveInputState ? window.saveInputState() : null">
+              <input type="number" id="comp-${safeIdLabel}-seq${i}" class="form-input border-2 border-slate-200 rounded-lg focus:border-brand-sage text-2xl font-bold text-center" style="width: 60px; height: 60px; padding: 0;" min="1" max="3" value="${esc(savedWorking['seq' + i] || '')}" oninput="window.saveInputState ? window.saveInputState() : null">
               <div class="font-medium text-main leading-relaxed text-lg">${esc(item)}</div>
             </div>
           `).join('') + `</div>`;
-          
+
         } else if (part.part_type === 'true_false') {
           interactionUI = `
             <table class="w-full text-left border-collapse border border-light rounded-lg overflow-hidden mt-2 mb-4 bg-surface shadow-sm">
@@ -677,12 +677,12 @@ function buildClozeUI(q) {
                     <td class="p-4 font-medium text-main align-top leading-relaxed text-lg">${esc(item.statement)}</td>
                     <td class="p-4 align-top text-center border-l border-slate-200">
                       <div class="flex flex-col gap-3 items-center justify-start mt-2">
-                        <label class="flex items-center gap-2 cursor-pointer font-bold text-lg"><input type="radio" name="comp-${safeIdLabel}-tf${i}" value="True" ${savedWorking['tf'+i]==='True'?'checked':''} onchange="window.saveInputState ? window.saveInputState() : null"> True</label>
-                        <label class="flex items-center gap-2 cursor-pointer font-bold text-lg"><input type="radio" name="comp-${safeIdLabel}-tf${i}" value="False" ${savedWorking['tf'+i]==='False'?'checked':''} onchange="window.saveInputState ? window.saveInputState() : null"> False</label>
+                        <label class="flex items-center gap-2 cursor-pointer font-bold text-lg"><input type="radio" name="comp-${safeIdLabel}-tf${i}" value="True" ${savedWorking['tf' + i] === 'True' ? 'checked' : ''} onchange="window.saveInputState ? window.saveInputState() : null"> True</label>
+                        <label class="flex items-center gap-2 cursor-pointer font-bold text-lg"><input type="radio" name="comp-${safeIdLabel}-tf${i}" value="False" ${savedWorking['tf' + i] === 'False' ? 'checked' : ''} onchange="window.saveInputState ? window.saveInputState() : null"> False</label>
                       </div>
                     </td>
                     <td class="p-3 align-top border-l border-slate-200">
-                      <textarea id="comp-${safeIdLabel}-reason${i}" class="form-input w-full p-3 text-lg border-2 border-slate-200 rounded-lg focus:border-brand-sage" rows="4" placeholder="Evidence from text..." oninput="window.saveInputState ? window.saveInputState() : null">${esc(savedWorking['reason'+i] || '')}</textarea>
+                      <textarea id="comp-${safeIdLabel}-reason${i}" class="form-input w-full p-3 text-lg border-2 border-slate-200 rounded-lg focus:border-brand-sage" rows="4" placeholder="Evidence from text..." oninput="window.saveInputState ? window.saveInputState() : null">${esc(savedWorking['reason' + i] || '')}</textarea>
                     </td>
                   </tr>
                 `).join('')}
@@ -697,27 +697,27 @@ function buildClozeUI(q) {
         } else if (part.image_url) {
           partDiagram = `<div class="mb-4 mx-auto flex justify-center w-full" style="max-width: 600px;"><img src="${esc(part.image_url)}" style="max-height: 220px; max-width: 100%; object-fit: contain; border-radius: var(--radius-md); border: 1px solid var(--border-light);"></div>`;
         }
-        
+
         if (partDiagram) {
-            interactionUI = partDiagram + interactionUI;
+          interactionUI = partDiagram + interactionUI;
         }
-        
+
         if (isActive) {
-            interactionUI += inlineFeedbackHtml + inlineActionBtn;
+          interactionUI += inlineFeedbackHtml + inlineActionBtn;
         }
       } else {
-         // Completed State - Handles both flat strings and nested JSON table data gracefully
-         let displayAns = '';
-         if (typeof savedWorking === 'object' && savedWorking !== null) {
-             displayAns = Object.values(savedWorking).filter(v => v).map(v => esc(v)).join('<br><br>');
-         } else {
-             displayAns = esc(savedWorking);
-         }
-         
-         // 🚀 MASTERCLASS FIX: Extract and parse nested arrays/objects for the model answer
-         const extractedModel = window.extractPartModelAnswer(part) || 'Model answer not provided.';
-         
-         interactionUI = `
+        // Completed State - Handles both flat strings and nested JSON table data gracefully
+        let displayAns = '';
+        if (typeof savedWorking === 'object' && savedWorking !== null) {
+          displayAns = Object.values(savedWorking).filter(v => v).map(v => esc(v)).join('<br><br>');
+        } else {
+          displayAns = esc(savedWorking);
+        }
+
+        // 🚀 MASTERCLASS FIX: Extract and parse nested arrays/objects for the model answer
+        const extractedModel = window.extractPartModelAnswer(part) || 'Model answer not provided.';
+
+        interactionUI = `
           <div class="p-4 bg-surface border border-light rounded-xl mb-4 text-main text-lg font-medium">${displayAns || '<em>No answer provided.</em>'}</div>
           <div class="ans-block strong p-5 bg-science-tint card-rule-mint rounded-xl">
             <div class="text-xs font-bold mb-2 text-success uppercase tracking-wider">✨ Model Answer / Explanation</div>
@@ -772,12 +772,12 @@ function buildClozeUI(q) {
     `;
   }
 
-// 🚀 NEW: Hint Renderer
+  // 🚀 NEW: Hint Renderer
   function buildHintsUI(q) {
     if (!q.progressive_hints || !Array.isArray(q.progressive_hints) || q.progressive_hints.length === 0) return '';
 
     let hintsHtml = '';
-    
+
     if (state.hintLevel > 0) {
       const revealedHints = q.progressive_hints.slice(0, state.hintLevel);
       hintsHtml += `<div class="mt-4 flex flex-col gap-3">`;
@@ -808,7 +808,7 @@ function buildClozeUI(q) {
 
   function renderQuiz() {
     if (state.questions.length === 0) {
-      app.innerHTML = `<div class="glass-panel-1 text-center w-full hover-lift p-6" style="max-width: 680px; transition: max-width 0.3s ease;"><div class="text-4xl mb-4">🕵️</div><h2 class="font-display text-2xl text-main">No questions found!</h2><p class="text-muted text-sm my-4">Miss Wena hasn't added questions for this specific combination yet. Check back soon!</p><button class="btn btn-primary hover-lift" onclick="window.location.href='subjects.html'">Return to Subjects</button></div>`;
+      app.innerHTML = `<div class="glass-panel-1 text-center w-full hover-lift p-4" style="max-width: 680px; transition: max-width 0.3s ease;"><div class="text-4xl mb-4">🕵️</div><h2 class="font-display text-2xl text-main">No questions found!</h2><p class="text-muted text-sm my-4">Miss Wena hasn't added questions for this specific combination yet. Check back soon!</p><button class="btn btn-primary hover-lift" onclick="window.location.href='subjects.html'">Return to Subjects</button></div>`;
       return;
     }
 
@@ -824,23 +824,23 @@ function buildClozeUI(q) {
 
     let inputUi = '';
     if (isSplitScreen) {
-        inputUi = buildComprehensionUI(q); // Tier 3
+      inputUi = buildComprehensionUI(q); // Tier 3
     } else if (isInlinePassage) {
-        inputUi = q.type === 'cloze' ? buildClozeUI(q) : buildEditingUI(q); // Tier 2
+      inputUi = q.type === 'cloze' ? buildClozeUI(q) : buildEditingUI(q); // Tier 2
     } else {
-        if (isMultiPart) inputUi = buildMultiPartUI(q); // Tier 1 (Multi-part)
-        else if (q.type === 'mcq') inputUi = buildMCQOptions(q); // Tier 1 (Card)
-        else inputUi = buildTextAreaUI(q); // Tier 1 (Card)
+      if (isMultiPart) inputUi = buildMultiPartUI(q); // Tier 1 (Multi-part)
+      else if (q.type === 'mcq') inputUi = buildMCQOptions(q); // Tier 1 (Card)
+      else inputUi = buildTextAreaUI(q); // Tier 1 (Card)
     }
-    
+
     const hintsUi = buildHintsUI(q);
 
     let feedbackHtml = '';
     if (state.isAnswered && state.feedback) {
       const fb = state.feedback;
-      
+
       if (q.type === 'comprehension') {
-         feedbackHtml = ''; // Completely suppress bottom feedback for comprehension
+        feedbackHtml = ''; // Completely suppress bottom feedback for comprehension
       } else if (fb.isModel) {
         feedbackHtml = `<div class="glass-panel-2 card-rule-mint bg-science-tint p-4 mt-4">
           <div class="font-bold text-sm mb-2 text-success">Worked Solution</div>
@@ -858,9 +858,9 @@ function buildClozeUI(q) {
         const isPartial = fb.status === 'partial';
         const isLoad = fb.status === 'loading';
         const ruleClass = isPartial ? 'card-rule-amber' : (isLoad ? 'card-rule-mint' : 'card-rule-rose');
-        const bgClass   = isPartial ? 'bg-amber-tint' : (isLoad ? 'bg-surface' : 'bg-rose-tint');
+        const bgClass = isPartial ? 'bg-amber-tint' : (isLoad ? 'bg-surface' : 'bg-rose-tint');
         const textClass = isPartial ? 'text-amber' : (isLoad ? 'text-main' : 'text-danger');
-        
+
         feedbackHtml = `<div class="glass-panel-2 ${ruleClass} ${bgClass} p-4 mt-4">
           <div class="font-bold mb-2 ${textClass}">${isLoad ? '<span class="spinner-sm inline-block mr-2 border-brand-mint"></span>' : '💡'} Miss Wena says:</div>
           <p class="text-sm text-main leading-relaxed">${fb.text}</p>
@@ -873,7 +873,7 @@ function buildClozeUI(q) {
     if (!state.isAnswered) {
       if (state.feedback && state.feedback.status === 'loading') {
         if (!isMultiPart && !isSplitScreen) {
-           actionBtn = `<button class="btn btn-primary" disabled><span class="spinner-sm inline-block mr-2 border-white"></span> Grading...</button>`;
+          actionBtn = `<button class="btn btn-primary" disabled><span class="spinner-sm inline-block mr-2 border-white"></span> Grading...</button>`;
         }
       } else if (isMultiPart || isSplitScreen) {
         // Suppress bottom button since progressive formats now use inline buttons
@@ -891,7 +891,7 @@ function buildClozeUI(q) {
 
     let displayInstruction = esc(q.question_text);
     let isSynthesis = (q.topic || '').toLowerCase() === 'synthesis';
-    
+
     if (q.type === 'cloze') {
       displayInstruction = 'Fill in each blank with the correct word from the Word Bank.';
     } else if (q.type === 'editing') {
@@ -902,17 +902,17 @@ function buildClozeUI(q) {
     }
 
     const diagramHtml = renderVisualPayload(q.visual_payload);
-    
+
     // Expand to 1200px for Split-Screen formats, keep 680px for others
     const maxWidth = isSplitScreen ? '1200px' : '680px';
-    
+
     app.innerHTML = `
       <div class="w-full" style="max-width: ${maxWidth}; transition: max-width 0.3s ease;">
         <div class="flex justify-between items-center mb-6">
           <div class="flex flex-col gap-1">
             <div class="text-xs font-bold text-muted uppercase">Question ${state.currentIndex + 1} of ${state.questions.length}</div>
             <div class="quiz-progress-bar" style="width:120px;height:6px;">
-              <div class="quiz-progress-fill" style="width:${((state.currentIndex)/state.questions.length)*100}%;background:var(--brand-rose);"></div>
+              <div class="quiz-progress-fill" style="width:${((state.currentIndex) / state.questions.length) * 100}%;background:var(--brand-rose);"></div>
             </div>
           </div>
           <div class="badge ${state.streak >= 3 ? 'badge-amber' : 'badge-info'}" style="font-size:1rem; padding:6px 12px;">
@@ -956,8 +956,8 @@ function buildClozeUI(q) {
     if (state.isAnswered) return;
     const q = state.questions[state.currentIndex];
     let safeOptions = [];
-    try { safeOptions = typeof q.options === 'string' ? JSON.parse(q.options) : (q.options || []); } catch(e) {}
-    
+    try { safeOptions = typeof q.options === 'string' ? JSON.parse(q.options) : (q.options || []); } catch (e) { }
+
     state.answers[state.currentIndex] = safeOptions[idx];
     window.checkAnswer();
   };
@@ -966,8 +966,8 @@ function buildClozeUI(q) {
     if (state.isAnswered) return;
     const q = state.questions[state.currentIndex];
     let partsData = [];
-    try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
-    
+    try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch (e) { }
+
     // Find the specific part data
     const partIndex = parseInt(pLabel.replace('Q', '')) - 1;
     const partData = partsData[partIndex];
@@ -975,7 +975,7 @@ function buildClozeUI(q) {
 
     // Initialize object if empty
     if (!state.answers[state.currentIndex]) state.answers[state.currentIndex] = {};
-    
+
     // Save the exact string of the option
     state.answers[state.currentIndex][pLabel] = partData.options[idx];
     render(); // Re-render to show selection
@@ -1000,7 +1000,7 @@ function buildClozeUI(q) {
     if (q.type === 'cloze') {
       const ans = {};
       let blanks = [];
-      try { blanks = typeof q.blanks === 'string' ? JSON.parse(q.blanks) : (q.blanks || []); } catch(e) {}
+      try { blanks = typeof q.blanks === 'string' ? JSON.parse(q.blanks) : (q.blanks || []); } catch (e) { }
       blanks.forEach(b => {
         const num = b.id || b.number;
         const el = document.getElementById(`cloze-blank-${num}`);
@@ -1010,7 +1010,7 @@ function buildClozeUI(q) {
     } else if (q.type === 'editing') {
       const ans = {};
       let blanks = [];
-      try { blanks = typeof q.blanks === 'string' ? JSON.parse(q.blanks) : (q.blanks || []); } catch(e) {}
+      try { blanks = typeof q.blanks === 'string' ? JSON.parse(q.blanks) : (q.blanks || []); } catch (e) { }
       blanks.forEach(b => {
         const num = b.number || b.id;
         const el = document.getElementById(`cloze-blank-${num}`);
@@ -1020,45 +1020,45 @@ function buildClozeUI(q) {
     } else if (isSplitScreen || isMultiPart) {
       const ans = state.answers[state.currentIndex] || {};
       let parts = [];
-      try { parts = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
-      
+      try { parts = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch (e) { }
+
       // Auto-wrap open_ended fallback
       if (parts.length === 0 && q.type === 'open_ended') {
-         parts = [{ label: "(a)" }];
+        parts = [{ label: "(a)" }];
       }
 
       parts.forEach((p, idx) => {
-        const pLabel = isSplitScreen 
-            ? (p.label || `Q${idx + 1}`) 
-            : (p.label || (p.part_id ? `(${p.part_id})` : `Part ${idx + 1}`));
-            
+        const pLabel = isSplitScreen
+          ? (p.label || `Q${idx + 1}`)
+          : (p.label || (p.part_id ? `(${p.part_id})` : `Part ${idx + 1}`));
+
         const safeIdLabel = String(pLabel).replace(/[^a-zA-Z0-9]/g, '');
         const prefix = isSplitScreen ? 'comp-' : 'part-';
 
         if (q.type === 'comprehension' && p.part_type !== 'text_box' && p.part_type !== 'mcq') {
-           ans[pLabel] = ans[pLabel] || {};
-           if (p.part_type === 'referent') {
-             (p.items || []).forEach((_, i) => {
-               const el = document.getElementById(`comp-${safeIdLabel}-ref${i}`);
-               if (el) ans[pLabel]['ref'+i] = el.value;
-             });
-           } else if (p.part_type === 'sequencing') {
-             (p.items || []).forEach((_, i) => {
-               const el = document.getElementById(`comp-${safeIdLabel}-seq${i}`);
-               if (el) ans[pLabel]['seq'+i] = el.value;
-             });
-           } else if (p.part_type === 'true_false') {
-             (p.items || []).forEach((_, i) => {
-               const checked = document.querySelector(`input[name="comp-${safeIdLabel}-tf${i}"]:checked`);
-               if (checked) ans[pLabel]['tf'+i] = checked.value;
-               const el = document.getElementById(`comp-${safeIdLabel}-reason${i}`);
-               if (el) ans[pLabel]['reason'+i] = el.value;
-             });
-           }
+          ans[pLabel] = ans[pLabel] || {};
+          if (p.part_type === 'referent') {
+            (p.items || []).forEach((_, i) => {
+              const el = document.getElementById(`comp-${safeIdLabel}-ref${i}`);
+              if (el) ans[pLabel]['ref' + i] = el.value;
+            });
+          } else if (p.part_type === 'sequencing') {
+            (p.items || []).forEach((_, i) => {
+              const el = document.getElementById(`comp-${safeIdLabel}-seq${i}`);
+              if (el) ans[pLabel]['seq' + i] = el.value;
+            });
+          } else if (p.part_type === 'true_false') {
+            (p.items || []).forEach((_, i) => {
+              const checked = document.querySelector(`input[name="comp-${safeIdLabel}-tf${i}"]:checked`);
+              if (checked) ans[pLabel]['tf' + i] = checked.value;
+              const el = document.getElementById(`comp-${safeIdLabel}-reason${i}`);
+              if (el) ans[pLabel]['reason' + i] = el.value;
+            });
+          }
         } else {
-           // Standard text box extraction
-           const el = document.getElementById(`${prefix}${safeIdLabel}`);
-           if (el && p.part_type !== 'mcq') ans[pLabel] = el.value;
+          // Standard text box extraction
+          const el = document.getElementById(`${prefix}${safeIdLabel}`);
+          if (el && p.part_type !== 'mcq') ans[pLabel] = el.value;
         }
       });
       state.answers[state.currentIndex] = ans;
@@ -1088,11 +1088,11 @@ function buildClozeUI(q) {
     if (state.currentIndex === state.questions.length - 1) {
       // 🚀 MASTERCLASS RESTORED: Trigger Database Saving!
       if (typeof window.saveQuizResult === 'function') {
-         window.saveQuizResult().then(() => {
-            state.phase = 'DONE'; render(); 
-         });
+        window.saveQuizResult().then(() => {
+          state.phase = 'DONE'; render();
+        });
       } else {
-         state.phase = 'DONE'; render();
+        state.phase = 'DONE'; render();
       }
       return;
     }
@@ -1112,21 +1112,21 @@ function buildClozeUI(q) {
     if (q.type === 'mcq') {
       const ans = state.answers[state.currentIndex];
       if (!ans) { alert('Please select an answer!'); return; }
-      
+
       const normAns = String(ans).trim().toLowerCase();
       const normCorrect = String(q.correct_answer).trim().toLowerCase();
       const isCorrect = normAns === normCorrect;
 
       let safeWrongExpl = {};
-      try { safeWrongExpl = typeof q.wrong_explanations === 'string' ? JSON.parse(q.wrong_explanations) : (q.wrong_explanations || {}); } catch(e) {}
+      try { safeWrongExpl = typeof q.wrong_explanations === 'string' ? JSON.parse(q.wrong_explanations) : (q.wrong_explanations || {}); } catch (e) { }
 
       // 🚀 MASTERCLASS FIX: Stop mixing HTML worked_solutions into plain-text feedback
       const fbText = isCorrect ? 'Perfectly executed!' : (safeWrongExpl[ans] || `The correct answer is ${q.correct_answer}.`);
-        
+
       if (isCorrect) { state.score++; state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak; } else state.streak = 0;
-      
+
       state.resultsObj[q.id] = { isCorrect, correctAns: q.correct_answer, studentAns: ans };
-      state.isAnswered = true; 
+      state.isAnswered = true;
       state.feedback = { status: isCorrect ? 'correct' : 'wrong', text: fbText, correctAnswer: isCorrect ? null : q.correct_answer };
       render(); return;
     }
@@ -1134,7 +1134,7 @@ function buildClozeUI(q) {
     if (q.type === 'cloze' || q.type === 'editing') {
       const ans = state.answers[state.currentIndex] || {};
       let blanks = [];
-      try { blanks = typeof q.blanks === 'string' ? JSON.parse(q.blanks) : (q.blanks || []); } catch(e) {}
+      try { blanks = typeof q.blanks === 'string' ? JSON.parse(q.blanks) : (q.blanks || []); } catch (e) { }
       let correctCount = 0;
       const blankResults = {};
       blanks.forEach(b => {
@@ -1148,9 +1148,9 @@ function buildClozeUI(q) {
       const allCorrect = correctCount === blanks.length && blanks.length > 0;
       state.score += correctCount;
       if (allCorrect) { state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak; } else state.streak = 0;
-      
+
       state.resultsObj[q.id] = { isCorrect: allCorrect, correctAns: 'Passage format', studentAns: JSON.stringify(ans) };
-      state.isAnswered = true; 
+      state.isAnswered = true;
       state.feedback = { status: allCorrect ? 'correct' : 'partial', text: allCorrect ? `All ${blanks.length} blanks correct!` : `${correctCount} of ${blanks.length} correct. Review the highlighted answers below.`, blankResults };
       render(); return;
     }
@@ -1159,9 +1159,9 @@ function buildClozeUI(q) {
     const isMultiPart = q.type === 'word_problem' || q.type === 'open_ended';
 
     if (isMultiPart || isSplitScreen) {
-      let partsData = []; try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
+      let partsData = []; try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch (e) { }
       if (partsData.length === 0 && q.type === 'open_ended') partsData = [{ label: "(a)", marks: q.marks, model_answer: q.worked_solution || q.model_answer, question: q.question_text }];
-      
+
       const currentPart = partsData[state.activeWPPart];
       if (!currentPart) return;
 
@@ -1176,7 +1176,7 @@ function buildClozeUI(q) {
         const isCorrect = String(ans).trim().toLowerCase() === String(currentPart.correct_answer).trim().toLowerCase();
         state.score += isCorrect ? (currentPart.marks || 1) : 0;
         if (isCorrect) { state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak; } else state.streak = 0;
-        
+
         state.activeWPPart++;
         if (state.activeWPPart >= partsData.length) {
           state.resultsObj[q.id] = { isCorrect: true, correctAns: 'Completed multi-part', studentAns: JSON.stringify(state.answers[state.currentIndex]) };
@@ -1190,22 +1190,22 @@ function buildClozeUI(q) {
       const subject = new URLSearchParams(window.location.search).get('subject') || 'mathematics';
       const isMath = subject.toLowerCase() === 'mathematics' || subject.toLowerCase() === 'maths';
       const correctVal = window.extractPartModelAnswer(currentPart);
-      
+
       if (isMath && correctVal) {
-          let acceptVals = []; try { acceptVals = JSON.parse(currentPart.accept_also || '[]'); } catch(e){}
-          if (isHeuristicMatch(ans, correctVal, acceptVals, true)) {
-              state.score += (currentPart.marks || 2);
-              state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak;
-              state.activeWPPart++;
-              if (state.activeWPPart >= partsData.length) {
-                state.resultsObj[q.id] = { isCorrect: true, correctAns: 'Completed multi-part', studentAns: JSON.stringify(state.answers[state.currentIndex]) };
-                state.isAnswered = true;
-                state.feedback = { status: 'correct', text: 'Excellent! Your final answer is correct.<br><br><strong>All parts completed!</strong> Review the full model answer.', isModel: false };
-              } else {
-                state.feedback = { status: 'correct', text: 'Correct!<br><br><strong>Next part unlocked! Keep going.</strong>', isModel: false };
-              }
-              render(); return; 
+        let acceptVals = []; try { acceptVals = JSON.parse(currentPart.accept_also || '[]'); } catch (e) { }
+        if (isHeuristicMatch(ans, correctVal, acceptVals, true)) {
+          state.score += (currentPart.marks || 2);
+          state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak;
+          state.activeWPPart++;
+          if (state.activeWPPart >= partsData.length) {
+            state.resultsObj[q.id] = { isCorrect: true, correctAns: 'Completed multi-part', studentAns: JSON.stringify(state.answers[state.currentIndex]) };
+            state.isAnswered = true;
+            state.feedback = { status: 'correct', text: 'Excellent! Your final answer is correct.<br><br><strong>All parts completed!</strong> Review the full model answer.', isModel: false };
+          } else {
+            state.feedback = { status: 'correct', text: 'Correct!<br><br><strong>Next part unlocked! Keep going.</strong>', isModel: false };
           }
+          render(); return;
+        }
       }
 
       state.feedback = { status: 'loading', text: 'Analyzing your logic...' };
@@ -1231,7 +1231,7 @@ function buildClozeUI(q) {
         const isCorrect = data.score >= (currentPart.marks || q.marks || 2);
         state.score += data.score || 0;
         if (isCorrect) { state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak; } else state.streak = 0;
-        
+
         state.activeWPPart++;
         if (state.activeWPPart >= partsData.length) {
           state.resultsObj[q.id] = { isCorrect, correctAns: 'AI Graded', studentAns: JSON.stringify(state.answers[state.currentIndex]) };
@@ -1244,12 +1244,12 @@ function buildClozeUI(q) {
       } catch (err) {
         console.error("AI Grading Error:", err);
         let partsData = [];
-        try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch(e) {}
+        try { partsData = typeof q.parts === 'string' ? JSON.parse(q.parts) : (q.parts || []); } catch (e) { }
         if (partsData.length === 0 && q.type === 'open_ended') partsData = [{ label: "(a)" }];
-        
+
         state.activeWPPart++;
         if (state.activeWPPart >= partsData.length) state.isAnswered = true;
-        
+
         state.feedback = { status: 'model', text: 'Miss Wena is resting. Here is the model answer.', isModel: true };
         render();
       }
@@ -1260,15 +1260,15 @@ function buildClozeUI(q) {
     const ans = String(state.answers[state.currentIndex] || '').trim();
     if (!ans) { alert('Please type your final answer in the text box below the canvas so it can be marked!'); return; }
 
-    let safeAccept = []; try { safeAccept = typeof q.accept_also === 'string' ? JSON.parse(q.accept_also) : (q.accept_also || []); } catch(e) {}
+    let safeAccept = []; try { safeAccept = typeof q.accept_also === 'string' ? JSON.parse(q.accept_also) : (q.accept_also || []); } catch (e) { }
     const subject = new URLSearchParams(window.location.search).get('subject') || 'mathematics';
     const isMath = subject.toLowerCase() === 'mathematics' || subject.toLowerCase() === 'maths';
-    
+
     // 🚀 Use the new Heuristic matcher!
     const correct = isHeuristicMatch(ans, q.correct_answer, safeAccept, isMath);
-    
+
     if (correct) { state.score++; state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak; } else state.streak = 0;
-    
+
     state.resultsObj[q.id] = { isCorrect: correct, correctAns: q.correct_answer, studentAns: ans };
     state.isAnswered = true;
     state.feedback = { status: correct ? 'correct' : 'wrong', text: correct ? 'Excellent!' : `Expected: ${q.correct_answer}.`, isModel: true };
@@ -1276,14 +1276,14 @@ function buildClozeUI(q) {
   };
 
   function renderResults() {
-    saveQuizResult(); 
-    
+    saveQuizResult();
+
     // UPGRADE: Use total possible marks for percentage
     const maxScore = state.totalPossibleScore > 0 ? state.totalPossibleScore : 1;
     const pct = Math.round((state.score / maxScore) * 100);
     // Analytics: record quiz session completion
     if (window.plausible) window.plausible('Quiz Complete', { props: { score: pct, subject: new URLSearchParams(window.location.search).get('subject') || 'mixed' } });
-    
+
     app.innerHTML = `
       <div class="glass-panel-1 flex flex-col items-center text-center w-full hover-lift p-6 card-rule-mint" style="max-width: 600px;">
         <h1 class="font-display text-4xl text-main mb-2">Training Complete!</h1>
@@ -1315,12 +1315,12 @@ function buildClozeUI(q) {
     const broadMap = {
       'primary-1:mathematics': '../data/questions/p1-mathematics-whole-numbers.json',
       'primary-2:mathematics': '../data/questions/p2-mathematics.json',
-      'primary-2:english':     '../data/questions/p2-english.json',
+      'primary-2:english': '../data/questions/p2-english.json',
       'primary-4:mathematics': '../data/questions/p4-mathematics.json',
-      'primary-4:science':     '../data/questions/p4-science.json',
-      'primary-4:english':     '../data/questions/p4-english.json',
+      'primary-4:science': '../data/questions/p4-science.json',
+      'primary-4:english': '../data/questions/p4-english.json',
       'primary-5:mathematics': '../data/questions/p5-mathematics.json',
-      'primary-5:science':     '../data/questions/p5-science.json',
+      'primary-5:science': '../data/questions/p5-science.json',
     };
 
     if (subject === 'english' && state.currentType && ['cloze', 'editing'].includes(state.currentType)) {
@@ -1357,7 +1357,7 @@ function buildClozeUI(q) {
 
     try {
       const sb = await getSupabase();
-      
+
       const topicCounts = {};
       state.questions.forEach(q => {
         if (q.topic) topicCounts[q.topic] = (topicCounts[q.topic] || 0) + 1;
@@ -1367,15 +1367,15 @@ function buildClozeUI(q) {
       const { data: attempt, error: attErr } = await sb
         .from('quiz_attempts')
         .insert({
-          student_id:         studentId,
-          subject:            params.get('subject') || 'mathematics',
-          level:              params.get('level') || 'primary-4',
-          topic:              primaryTopic,
-          difficulty:         'Mixed',
-          score:              state.score,
-          total_questions:    state.totalPossibleScore > 0 ? state.totalPossibleScore : state.questions.length,
+          student_id: studentId,
+          subject: params.get('subject') || 'mathematics',
+          level: params.get('level') || 'primary-4',
+          topic: primaryTopic,
+          difficulty: 'Mixed',
+          score: state.score,
+          total_questions: state.totalPossibleScore > 0 ? state.totalPossibleScore : state.questions.length,
           time_taken_seconds: state.quizStartTime ? Math.round((Date.now() - state.quizStartTime) / 1000) : null,
-          completed_at:       new Date().toISOString(),
+          completed_at: new Date().toISOString(),
         })
         .select('id')
         .single();
@@ -1383,28 +1383,28 @@ function buildClozeUI(q) {
       if (attErr) throw attErr;
 
       const qAttempts = state.questions.map((q, i) => {
-         const ans = state.answers[i];
-         let isCorrect = false;
-         
-         if (q.type === 'mcq') {
-           isCorrect = (ans === q.correct_answer);
-         } else {
-           const norm = (s) => String(s || '').toLowerCase().replace(/\s/g,'');
-           isCorrect = (norm(ans) === norm(q.correct_answer));
-         }
-         
-         return {
-           quiz_attempt_id: attempt.id,
-           student_id:      studentId,
-           question_text:   (q.question_text || '').slice(0, 500),
-           topic:           q.topic || primaryTopic,
-           sub_topic:       q.sub_topic || null,
-           cognitive_skill: q.cognitive_skill || null,
-           difficulty:      q.difficulty || 'standard',
-           correct:         isCorrect,
-           answer_chosen:   String(ans || '').slice(0, 200),
-           correct_answer:  String(q.correct_answer || ''),
-         };
+        const ans = state.answers[i];
+        let isCorrect = false;
+
+        if (q.type === 'mcq') {
+          isCorrect = (ans === q.correct_answer);
+        } else {
+          const norm = (s) => String(s || '').toLowerCase().replace(/\s/g, '');
+          isCorrect = (norm(ans) === norm(q.correct_answer));
+        }
+
+        return {
+          quiz_attempt_id: attempt.id,
+          student_id: studentId,
+          question_text: (q.question_text || '').slice(0, 500),
+          topic: q.topic || primaryTopic,
+          sub_topic: q.sub_topic || null,
+          cognitive_skill: q.cognitive_skill || null,
+          difficulty: q.difficulty || 'standard',
+          correct: isCorrect,
+          answer_chosen: String(ans || '').slice(0, 200),
+          correct_answer: String(q.correct_answer || ''),
+        };
       });
 
       if (qAttempts.length > 0) {
@@ -1423,8 +1423,8 @@ function buildClozeUI(q) {
 
       if (!existingUsage) {
         await sb.from('daily_usage').insert({
-          student_id:          studentId,
-          date:                today,
+          student_id: studentId,
+          date: today,
           questions_attempted: newCount,
         });
       } else {
@@ -1432,7 +1432,7 @@ function buildClozeUI(q) {
           .update({ questions_attempted: newCount })
           .eq('id', existingUsage.id);
       }
-      
+
     } catch (e) {
       console.error('Failed to save quiz result:', e);
     }
@@ -1440,7 +1440,7 @@ function buildClozeUI(q) {
 
   // ── CANVAS LOGIC ──
   let ctx, isDrawing = false;
-  
+
   window.clearCanvas = () => {
     const canvas = document.getElementById('scratchpadCanvas');
     if (canvas) {
@@ -1455,12 +1455,12 @@ function buildClozeUI(q) {
     setTimeout(() => {
       const canvas = document.getElementById('scratchpadCanvas');
       if (!canvas) return;
-      
+
       const rect = canvas.parentElement.getBoundingClientRect();
-      
+
       canvas.width = rect.width || canvas.parentElement.offsetWidth || 600;
       canvas.height = 300;
-      
+
       ctx = canvas.getContext('2d');
       ctx.lineWidth = 2.5;
       ctx.lineCap = 'round';
@@ -1474,7 +1474,7 @@ function buildClozeUI(q) {
         img.src = state.drawings[drawKey];
       }
 
-      if (state.isAnswered) return; 
+      if (state.isAnswered) return;
 
       const getPos = (e) => {
         const r = canvas.getBoundingClientRect();
@@ -1483,30 +1483,30 @@ function buildClozeUI(q) {
         return { x, y };
       };
 
-      const start = (e) => { 
-        isDrawing = true; 
-        const p = getPos(e); 
-        ctx.beginPath(); 
-        ctx.moveTo(p.x, p.y); 
+      const start = (e) => {
+        isDrawing = true;
+        const p = getPos(e);
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
         ctx.lineTo(p.x, p.y);
-        ctx.stroke(); 
-        if (e.cancelable) e.preventDefault(); 
+        ctx.stroke();
+        if (e.cancelable) e.preventDefault();
       };
-      const draw = (e) => { 
-        if (!isDrawing) return; 
-        const p = getPos(e); 
-        ctx.lineTo(p.x, p.y); 
-        ctx.stroke(); 
-        if (e.cancelable) e.preventDefault(); 
+      const draw = (e) => {
+        if (!isDrawing) return;
+        const p = getPos(e);
+        ctx.lineTo(p.x, p.y);
+        ctx.stroke();
+        if (e.cancelable) e.preventDefault();
       };
-      const stop = () => { if(isDrawing) { isDrawing = false; state.drawings[drawKey] = canvas.toDataURL(); } };
+      const stop = () => { if (isDrawing) { isDrawing = false; state.drawings[drawKey] = canvas.toDataURL(); } };
 
       canvas.addEventListener('mousedown', start);
       canvas.addEventListener('mousemove', draw);
       canvas.addEventListener('mouseup', stop);
       canvas.addEventListener('mouseout', stop);
-      canvas.addEventListener('touchstart', start, {passive: false});
-      canvas.addEventListener('touchmove', draw, {passive: false});
+      canvas.addEventListener('touchstart', start, { passive: false });
+      canvas.addEventListener('touchmove', draw, { passive: false });
       canvas.addEventListener('touchend', stop);
     }, 50);
   }
@@ -1517,44 +1517,44 @@ function buildClozeUI(q) {
     try {
       const sb = await window.getSupabase();
       const timeTaken = state.quizStartTime ? Math.floor((Date.now() - state.quizStartTime) / 1000) : 0;
-      
+
       const { data: attempt, error: attErr } = await sb.from('quiz_attempts').insert({
-          student_id:         state.studentId,
-          subject:            (state.dbSubject || 'mathematics').toLowerCase(),
-          level:              (state.dbLevel || 'primary 4').toLowerCase().replace(' ', '-'),
-          topic:              state.dbTopic || 'Mixed',
-          difficulty:         state.currentType || 'Mixed',
-          score:              state.score,
-          total_questions:    state.totalPossibleScore,
-          time_taken_seconds: timeTaken,
-          completed_at:       new Date().toISOString(),
+        student_id: state.studentId,
+        subject: (state.dbSubject || 'mathematics').toLowerCase(),
+        level: (state.dbLevel || 'primary 4').toLowerCase().replace(' ', '-'),
+        topic: state.dbTopic || 'Mixed',
+        difficulty: state.currentType || 'Mixed',
+        score: state.score,
+        total_questions: state.totalPossibleScore,
+        time_taken_seconds: timeTaken,
+        completed_at: new Date().toISOString(),
       }).select('id').single();
 
       if (attErr) throw attErr;
 
       const qAttempts = state.questions.map(q => {
-         const r = state.resultsObj[q.id] || {};
-         
-         // 🚀 MASTERCLASS: Capture precise marks and cognitive skills for BKT Engine
-         let marksTotal = q.marks || 1;
-         if (q.type === 'cloze' || q.type === 'editing') {
-           try { marksTotal = typeof q.blanks === 'string' ? JSON.parse(q.blanks).length : (q.blanks.length || 1); } catch(e){}
-         }
-         let marksEarned = r.isCorrect ? marksTotal : 0;
+        const r = state.resultsObj[q.id] || {};
 
-         return {
-            quiz_attempt_id: attempt.id,
-            student_id:      state.studentId,
-            question_text:   (q.question_text || q.passage || 'Diagram/Passage').slice(0, 500),
-            topic:           q.topic || 'Quiz',
-            cognitive_skill: q.cognitive_skill || null,
-            difficulty:      q.difficulty || 'standard',
-            correct:         !!r.isCorrect,
-            marks_earned:    marksEarned,
-            marks_total:     marksTotal,
-            answer_chosen:   String(r.studentAns || '').slice(0, 200),
-            correct_answer:  String(r.correctAns || q.correct_answer || 'See Solution')
-         };
+        // 🚀 MASTERCLASS: Capture precise marks and cognitive skills for BKT Engine
+        let marksTotal = q.marks || 1;
+        if (q.type === 'cloze' || q.type === 'editing') {
+          try { marksTotal = typeof q.blanks === 'string' ? JSON.parse(q.blanks).length : (q.blanks.length || 1); } catch (e) { }
+        }
+        let marksEarned = r.isCorrect ? marksTotal : 0;
+
+        return {
+          quiz_attempt_id: attempt.id,
+          student_id: state.studentId,
+          question_text: (q.question_text || q.passage || 'Diagram/Passage').slice(0, 500),
+          topic: q.topic || 'Quiz',
+          cognitive_skill: q.cognitive_skill || null,
+          difficulty: q.difficulty || 'standard',
+          correct: !!r.isCorrect,
+          marks_earned: marksEarned,
+          marks_total: marksTotal,
+          answer_chosen: String(r.studentAns || '').slice(0, 200),
+          correct_answer: String(r.correctAns || q.correct_answer || 'See Solution')
+        };
       });
 
       if (qAttempts.length > 0) await sb.from('question_attempts').insert(qAttempts);
@@ -1565,7 +1565,7 @@ function buildClozeUI(q) {
 
       if (!existingUsage) await sb.from('daily_usage').insert({ student_id: state.studentId, date: today, questions_attempted: newCount });
       else await sb.from('daily_usage').update({ questions_attempted: newCount }).eq('id', existingUsage.id);
-      
+
     } catch (e) { console.error('Failed to save quiz result to Supabase:', e); }
   };
 
@@ -1578,30 +1578,30 @@ function buildClozeUI(q) {
       const topic = params.get('topic');
       const type = params.get('type');
       const studentId = params.get('student');
-      
+
       state.currentType = type;
 
       if (studentId) {
         const isJunior = levelSlug.includes('primary-1') || levelSlug.includes('primary-2') || levelSlug === 'p1' || levelSlug === 'p2';
-        
+
         document.querySelectorAll('.bottom-nav-item').forEach(link => {
           const url = new URL(link.href, window.location.origin);
           url.searchParams.set('student', studentId);
           link.href = url.pathname + url.search;
-          
+
           if (isJunior && link.getAttribute('href').includes('exam.html')) {
             link.style.display = 'none';
           }
         });
-        
+
         if (isJunior) {
           const nav = document.getElementById('bottomNav');
           if (nav) nav.style.justifyContent = 'space-evenly';
         }
       }
-      
+
       const db = await window.getSupabase();
-      
+
       let dbSubject = subject;
       if (subject === 'mathematics') dbSubject = 'Mathematics';
       if (subject === 'science') dbSubject = 'Science';
@@ -1618,29 +1618,29 @@ function buildClozeUI(q) {
         'Percentage', 'Ratio', 'Rate', 'Area of Triangle', 'Volume', 'Angles and Geometry', 'Average', 'Synthesis',
         'Cells', 'Forces', 'Speed', 'Algebra', 'Circles', 'Geometry', 'Pie Charts'
       ];
-      
+
       let dbTopic = null;
       if (topic && topic !== 'all' && topic !== 'mixed') {
-         const decoded = decodeURIComponent(topic);
-         const matched = MOE_TOPICS.find(t => t.toLowerCase().replace(/ /g, '-').replace(/,/g, '') === decoded);
-         dbTopic = matched || decoded;
+        const decoded = decodeURIComponent(topic);
+        const matched = MOE_TOPICS.find(t => t.toLowerCase().replace(/ /g, '-').replace(/,/g, '') === decoded);
+        dbTopic = matched || decoded;
       }
 
       state.dbSubject = dbSubject;
       state.dbLevel = dbLevel;
       state.dbTopic = dbTopic;
-      
+
       let query = db.from('question_bank').select('*').eq('subject', dbSubject);
       if (dbLevel) query = query.eq('level', dbLevel);
       if (dbTopic) query = query.eq('topic', dbTopic);
 
       // 🚀 MASTERCLASS FIX: The Comprehension Supabase Interceptor
       if (type && type !== 'mixed') {
-          if (type === 'comprehension') {
-              query = query.in('type', ['comprehension', 'visual_text']);
-          } else {
-              query = query.eq('type', type);
-          }
+        if (type === 'comprehension') {
+          query = query.in('type', ['comprehension', 'visual_text']);
+        } else {
+          query = query.eq('type', type);
+        }
       }
 
       let { data: fetchedQuestions, error } = await query.limit(1000);
@@ -1657,13 +1657,13 @@ function buildClozeUI(q) {
         return;
       }
 
-      let pool = type && type !== 'mixed' 
-        ? fetchedQuestions.filter(q => q.type === type) 
+      let pool = type && type !== 'mixed'
+        ? fetchedQuestions.filter(q => q.type === type)
         : fetchedQuestions;
 
       const seenKey = `shl_seen_${state.studentId}_${dbLevel}_${dbSubject}_${dbTopic || 'all'}_${type || 'mixed'}`;
       let seenIds = [];
-      try { seenIds = JSON.parse(localStorage.getItem(seenKey)) || []; } catch(e) {}
+      try { seenIds = JSON.parse(localStorage.getItem(seenKey)) || []; } catch (e) { }
 
       let unseenPool = pool.filter(q => !seenIds.includes(q.id));
 
@@ -1683,7 +1683,7 @@ function buildClozeUI(q) {
       if (dbSubject.toLowerCase() === 'english language' && (dbTopic || '').toLowerCase() === 'comprehension') {
         let visualQs = unseenPool.filter(q => q.type === 'visual_text');
         let textQs = unseenPool.filter(q => q.type === 'comprehension');
-        
+
         state.questions = [];
         // Per Constraints: P3 and P4 do NOT get Visual Text in Training Lab
         if (isUpperPrimary && visualQs.length > 0) {
@@ -1702,7 +1702,7 @@ function buildClozeUI(q) {
 
       state.questions.forEach(q => seenIds.push(q.id));
       localStorage.setItem(seenKey, JSON.stringify(seenIds));
-      
+
       state.totalPossibleScore = state.questions.reduce((sum, q) => {
         if (q.type === 'cloze') return sum + (q.blanks?.length || 1);
         if (q.type === 'editing') return sum + (q.blanks?.length || 1);
