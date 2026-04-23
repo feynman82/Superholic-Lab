@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -30,301 +31,456 @@
     boot();
   </script>
   <style>
-    .modal-overlay { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); opacity: 0; visibility: hidden; transition: all 0.2s ease; padding: var(--space-4); }
-    .modal-overlay.is-open { opacity: 1; visibility: visible; }
-    .modal-content { width: 100%; max-width: 500px; background: var(--bg-surface); transform: scale(0.95); transition: transform 0.2s ease; max-height: 90vh; overflow-y: auto; }
-    .modal-overlay.is-open .modal-content { transform: scale(1); }
-    .context-menu { display: none; position: absolute; right: 0; top: calc(20% + 4px); background: var(--sage-dark); border: 1px solid rgba(255,255,255,0.12); border-radius: var(--radius-md); padding: 6px; min-width: 160px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); z-index: 50; flex-direction: column; gap: 2px; }
-    .context-menu.is-open { display: flex; animation: fadeDown 0.2s ease; }
-    @keyframes fadeDown { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
-    .context-menu button { text-align: left; width: 100%; color: rgba(255,255,255,0.85); padding: 8px 12px; border-radius: var(--radius-sm); border: none; background: transparent; font-size: var(--text-sm); font-weight: 500; cursor: pointer; transition: background 0.2s; }
-    .context-menu button:hover { background: rgba(255,255,255,0.1); color: var(--cream); }
-    .context-menu button.text-danger:hover { color: var(--brand-error); }
-    .note-viewer-content h3 { font-family: var(--font-display); font-size: 1.5rem; margin-top: 1rem; margin-bottom: 0.5rem; color: var(--text-main); }
-    .note-viewer-content p { font-size: 0.95rem; color: var(--text-muted); margin-bottom: 1rem; }
-    .note-viewer-content ul { padding-left: 1.5rem; margin-bottom: 1rem; }
-    .note-viewer-content li { margin-bottom: 0.5rem; font-size: 0.95rem; color: var(--text-main); }
-    #checkoutToast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--sage-dark); color: white; padding: 16px 28px; border-radius: var(--radius-lg); z-index: 9999; box-shadow: 0 12px 32px rgba(0,0,0,0.35); text-align: center; max-width: min(420px, 90vw); border: 1px solid rgba(255,255,255,0.15); display: none; }
-    #checkoutToast .toast-title { font-weight: 700; margin-bottom: 4px; }
-    #checkoutToast .toast-status { font-size: 0.85rem; opacity: 0.85; }
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.2s ease;
+      padding: var(--space-4);
+    }
+
+    .modal-overlay.is-open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-content {
+      width: 100%;
+      max-width: 500px;
+      background: var(--bg-surface);
+      transform: scale(0.95);
+      transition: transform 0.2s ease;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-overlay.is-open .modal-content {
+      transform: scale(1);
+    }
+
+    .context-menu {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: calc(20% + 4px);
+      background: var(--sage-dark);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: var(--radius-md);
+      padding: 6px;
+      min-width: 160px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      z-index: 50;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .context-menu.is-open {
+      display: flex;
+      animation: fadeDown 0.2s ease;
+    }
+
+    @keyframes fadeDown {
+      from {
+        opacity: 0;
+        transform: translateY(-6px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .context-menu button {
+      text-align: left;
+      width: 100%;
+      color: rgba(255, 255, 255, 0.85);
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      border: none;
+      background: transparent;
+      font-size: var(--text-sm);
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .context-menu button:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--cream);
+    }
+
+    .context-menu button.text-danger:hover {
+      color: var(--brand-error);
+    }
+
+    .note-viewer-content h3 {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      margin-top: 1rem;
+      margin-bottom: 0.5rem;
+      color: var(--text-main);
+    }
+
+    .note-viewer-content p {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+    }
+
+    .note-viewer-content ul {
+      padding-left: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .note-viewer-content li {
+      margin-bottom: 0.5rem;
+      font-size: 0.95rem;
+      color: var(--text-main);
+    }
+
+    #checkoutToast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--sage-dark);
+      color: white;
+      padding: 16px 28px;
+      border-radius: var(--radius-lg);
+      z-index: 9999;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+      text-align: center;
+      max-width: min(420px, 90vw);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      display: none;
+    }
+
+    #checkoutToast .toast-title {
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    #checkoutToast .toast-status {
+      font-size: 0.85rem;
+      opacity: 0.85;
+    }
   </style>
 </head>
 
 <body id="mainBody" class="has-bottom-nav bg-page texture-light-grid">
 
-<div id="checkoutToast">
-  <div class="toast-title">🎉 Payment successful!</div>
-  <div class="toast-status" id="checkoutToastStatus">Activating your subscription — just a moment...</div>
-</div>
+  <div id="checkoutToast">
+    <div class="toast-title">🎉 Payment successful!</div>
+    <div class="toast-status" id="checkoutToastStatus">Activating your subscription — just a moment...</div>
+  </div>
 
-<global-header></global-header>
+  <global-header></global-header>
 
-<section class="bg-sage texture-dots py-10" style="padding-top: calc(64px + var(--space-8));">
-  <div class="container flex flex-wrap items-center justify-between gap-6">
-    <div class="flex-1 flex flex-col items-start gap-4" style="min-width: 300px;">
-      <div id="trialBanner" class="badge badge-amber hidden mb-2">
-        🎁 <span id="trialDaysLeft" class="font-bold mx-1"></span> left in free trial.
-        <a href="pricing.html" class="underline ml-1" style="color: inherit;">Upgrade</a>
+  <section class="bg-sage texture-dots py-10" style="padding-top: calc(64px + var(--space-8));">
+    <div class="container flex flex-wrap items-center justify-between gap-6">
+      <div class="flex-1 flex flex-col items-start gap-4" style="min-width: 300px;">
+        <div id="trialBanner" class="badge badge-amber hidden mb-2">
+          🎁 <span id="trialDaysLeft" class="font-bold mx-1"></span> left in free trial.
+          <a href="pricing.html" class="underline ml-1" style="color: inherit;">Upgrade</a>
+        </div>
+        <h1 class="font-display text-4xl text-white m-0" id="welcomeMsg">Welcome back 👋</h1>
+        <p class="text-lg mb-4" style="color: rgba(255,255,255,0.8); max-width: 500px;">Mission Control is ready. Manage
+          your learners, track progress, and start practising.</p>
+        <div class="flex flex-wrap gap-3 items-center">
+          <a href="/pages/setup.html" id="addChildBtn" class="btn btn-secondary hover-lift">＋ Add Learner</a>
+          <button id="manageBillingBtn" class="btn btn-ghost hover-lift hidden"
+            style="border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.8);">Manage Billing</button>
+        </div>
       </div>
-      <h1 class="font-display text-4xl text-white m-0" id="welcomeMsg">Welcome back 👋</h1>
-      <p class="text-lg mb-4" style="color: rgba(255,255,255,0.8); max-width: 500px;">Mission Control is ready. Manage your learners, track progress, and start practising.</p>
-      <div class="flex flex-wrap gap-3 items-center">
-        <a href="/pages/setup.html" id="addChildBtn" class="btn btn-secondary hover-lift">＋ Add Learner</a>
-        <button id="manageBillingBtn" class="btn btn-ghost hover-lift hidden" style="border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.8);">Manage Billing</button>
+      <div class="flex-1 flex justify-center items-end hidden sm:flex relative"
+        style="min-width: 300px; height: 200px;">
+        <img src="../assets/images/student_welcome.png" alt="Happy Student"
+          style="max-height: 260px; position: absolute; bottom: -48px; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.2));"
+          onerror="this.style.display='none'">
       </div>
     </div>
-    <div class="flex-1 flex justify-center items-end hidden sm:flex relative" style="min-width: 300px; height: 200px;">
-      <img src="../assets/images/student_welcome.png" alt="Happy Student" style="max-height: 260px; position: absolute; bottom: -48px; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.2));" onerror="this.style.display='none'">
-    </div>
-  </div>
-</section>
+  </section>
 
-<main id="app" class="container py-10 flex flex-col w-full gap-6" style="max-width: 1000px; min-height: 60vh;">
-  <div class="flex justify-between items-center mb-4">
-    <h2 class="font-display text-3xl text-main m-0">Your Learners</h2>
-    <div class="admin-panel hidden" id="adminPanel">
-      <a href="/pages/admin.html" class="btn btn-secondary btn-sm hover-lift flex items-center gap-2">
-        👑 Admin Panel <span id="adminStats"></span>
-      </a>
-    </div>
-  </div>
-  <div id="cardsGrid" class="flex flex-wrap gap-6 w-full items-start">
-    <div class="glass-panel-1 w-full flex justify-center items-center p-8"><div class="spinner-sm"></div></div>
-  </div>
-</main>
-
-<!-- Edit Modal -->
-<div id="editModal" class="modal-overlay" onclick="window.closeModalOnBgClick(event, 'editModal')">
-  <div class="glass-panel-1 p-6 modal-content flex flex-col gap-4">
-    <h3 class="font-display text-2xl text-main m-0">Edit Learner</h3>
-    <div class="flex flex-col gap-1">
-      <label class="text-sm font-bold text-muted">First Name</label>
-      <input type="text" id="editName" class="form-input" placeholder="e.g., Jayden">
-    </div>
-    <div class="flex flex-col gap-1">
-      <label class="text-sm font-bold text-muted">Academic Level</label>
-      <select id="editLevel" class="form-select w-full">
-        <option value="Primary 1">Primary 1</option><option value="Primary 2">Primary 2</option>
-        <option value="Primary 3">Primary 3</option><option value="Primary 4">Primary 4</option>
-        <option value="Primary 5">Primary 5</option><option value="Primary 6">Primary 6</option>
-        <option value="Secondary 1">Secondary 1</option><option value="Secondary 2">Secondary 2</option>
-        <option value="Secondary 3">Secondary 3</option><option value="Secondary 4">Secondary 4</option>
-      </select>
-    </div>
-    <div class="flex gap-3 mt-4">
-      <button class="btn btn-ghost flex-1" onclick="window.closeModals()">Cancel</button>
-      <button class="btn btn-primary flex-1 hover-lift" id="saveEditBtn" onclick="saveEdit()">Save Changes</button>
-    </div>
-  </div>
-</div>
-
-<!-- Delete Modal -->
-<div id="deleteModal" class="modal-overlay" onclick="window.closeModalOnBgClick(event, 'deleteModal')">
-  <div class="glass-panel-1 p-6 modal-content flex flex-col gap-4" style="border-top: 4px solid var(--brand-error);">
-    <h3 class="font-display text-2xl text-danger m-0">Remove Learner?</h3>
-    <p class="text-sm text-muted m-0">Are you sure you want to delete <strong id="deleteTargetName" class="text-main">this learner</strong>? This permanently erases their profile and all practice history.</p>
-    <div class="flex gap-3 mt-4">
-      <button class="btn btn-ghost flex-1" onclick="window.closeModals()">Cancel</button>
-      <button class="btn flex-1 hover-lift" id="confirmDeleteBtn" onclick="confirmDelete()" style="background: var(--brand-error); color: white; border: none;">Yes, Delete</button>
-    </div>
-  </div>
-</div>
-
-<!-- Backpack Modal -->
-<div id="backpackModal" class="modal-overlay" onclick="window.closeModalOnBgClick(event, 'backpackModal')">
-  <div class="glass-panel-1 p-6 modal-content flex flex-col gap-4">
-    <div class="flex justify-between items-center border-b border-light pb-4 mb-2">
-      <h3 class="font-display text-2xl text-main m-0">🎢 Learner Backpack</h3>
-      <button class="btn btn-ghost btn-sm text-xl p-1" style="line-height: 1;" onclick="window.closeModals()">×</button>
-    </div>
-    <div id="backpackContent" class="flex flex-col gap-3"></div>
-  </div>
-</div>
-
-<!-- Note Viewer Modal -->
-<div id="noteViewerModal" class="modal-overlay" onclick="window.closeModalOnBgClick(event, 'noteViewerModal')">
-  <div class="glass-panel-1 p-6 modal-content flex flex-col gap-4" style="max-width: 600px;">
-    <div class="flex justify-between items-start border-b border-light pb-4">
-      <div>
-        <div class="badge badge-info mb-2 text-xs" id="noteSubjectBadge">Maths</div>
-        <h2 class="font-display text-2xl text-main m-0" id="noteTitleView"></h2>
+  <main id="app" class="container py-10 flex flex-col w-full gap-6" style="max-width: 1000px; min-height: 60vh;">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="font-display text-3xl text-main m-0">Your Learners</h2>
+      <div class="admin-panel hidden" id="adminPanel">
+        <a href="/pages/admin.html" class="btn btn-secondary btn-sm hover-lift flex items-center gap-2">
+          👑 Admin Panel <span id="adminStats"></span>
+        </a>
       </div>
-      <button class="btn btn-ghost btn-sm text-xl p-1" style="line-height: 1;" onclick="document.getElementById('noteViewerModal').classList.remove('is-open')">×</button>
     </div>
-    <div id="noteHtmlView" class="note-viewer-content mt-2 mb-4 bg-page p-6 rounded border border-light"></div>
-    <button class="btn btn-secondary w-full hover-lift" onclick="document.getElementById('noteViewerModal').classList.remove('is-open')">Close</button>
+    <div id="cardsGrid" class="flex flex-wrap gap-6 w-full items-start">
+      <div class="glass-panel-1 w-full flex justify-center items-center p-8">
+        <div class="spinner-sm"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Edit Modal -->
+  <div id="editModal" class="modal-overlay" onclick="window.closeModalOnBgClick(event, 'editModal')">
+    <div class="glass-panel-1 p-6 modal-content flex flex-col gap-4">
+      <h3 class="font-display text-2xl text-main m-0">Edit Learner</h3>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-bold text-muted">First Name</label>
+        <input type="text" id="editName" class="form-input" placeholder="e.g., Jayden">
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-bold text-muted">Academic Level</label>
+        <select id="editLevel" class="form-select w-full">
+          <option value="Primary 1">Primary 1</option>
+          <option value="Primary 2">Primary 2</option>
+          <option value="Primary 3">Primary 3</option>
+          <option value="Primary 4">Primary 4</option>
+          <option value="Primary 5">Primary 5</option>
+          <option value="Primary 6">Primary 6</option>
+          <option value="Secondary 1">Secondary 1</option>
+          <option value="Secondary 2">Secondary 2</option>
+          <option value="Secondary 3">Secondary 3</option>
+          <option value="Secondary 4">Secondary 4</option>
+        </select>
+      </div>
+      <div class="flex gap-3 mt-4">
+        <button class="btn btn-ghost flex-1" onclick="window.closeModals()">Cancel</button>
+        <button class="btn btn-primary flex-1 hover-lift" id="saveEditBtn" onclick="saveEdit()">Save Changes</button>
+      </div>
+    </div>
   </div>
-</div>
 
-<global-footer></global-footer>
+  <!-- Delete Modal -->
+  <div id="deleteModal" class="modal-overlay" onclick="window.closeModalOnBgClick(event, 'deleteModal')">
+    <div class="glass-panel-1 p-6 modal-content flex flex-col gap-4" style="border-top: 4px solid var(--brand-error);">
+      <h3 class="font-display text-2xl text-danger m-0">Remove Learner?</h3>
+      <p class="text-sm text-muted m-0">Are you sure you want to delete <strong id="deleteTargetName"
+          class="text-main">this learner</strong>? This permanently erases their profile and all practice history.</p>
+      <div class="flex gap-3 mt-4">
+        <button class="btn btn-ghost flex-1" onclick="window.closeModals()">Cancel</button>
+        <button class="btn flex-1 hover-lift" id="confirmDeleteBtn" onclick="confirmDelete()"
+          style="background: var(--brand-error); color: white; border: none;">Yes, Delete</button>
+      </div>
+    </div>
+  </div>
 
-<nav class="bottom-nav" id="bottomNav">
-  <a href="subjects.html" class="bottom-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>Practise</a>
-  <a href="tutor.html" class="bottom-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>AI Tutor</a>
-  <a href="exam.html" class="bottom-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="M9 12h6M9 16h4"/></svg>Exam</a>
-  <a href="progress.html" class="bottom-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Progress</a>
-</nav>
+  <!-- Backpack Modal -->
+  <div id="backpackModal" class="modal-overlay" onclick="window.closeModalOnBgClick(event, 'backpackModal')">
+    <div class="glass-panel-1 p-6 modal-content flex flex-col gap-4">
+      <div class="flex justify-between items-center border-b border-light pb-4 mb-2">
+        <h3 class="font-display text-2xl text-main m-0">🎢 Learner Backpack</h3>
+        <button class="btn btn-ghost btn-sm text-xl p-1" style="line-height: 1;"
+          onclick="window.closeModals()">×</button>
+      </div>
+      <div id="backpackContent" class="flex flex-col gap-3"></div>
+    </div>
+  </div>
 
-<script>
-(function() {
-  const p = window.location.pathname;
-  document.querySelectorAll('.bottom-nav-item').forEach(l => { if (l.getAttribute('href') && p.includes(l.getAttribute('href'))) l.classList.add('is-active'); });
-})();
+  <!-- Note Viewer Modal -->
+  <div id="noteViewerModal" class="modal-overlay" onclick="window.closeModalOnBgClick(event, 'noteViewerModal')">
+    <div class="glass-panel-1 p-6 modal-content flex flex-col gap-4" style="max-width: 600px;">
+      <div class="flex justify-between items-start border-b border-light pb-4">
+        <div>
+          <div class="badge badge-info mb-2 text-xs" id="noteSubjectBadge">Maths</div>
+          <h2 class="font-display text-2xl text-main m-0" id="noteTitleView"></h2>
+        </div>
+        <button class="btn btn-ghost btn-sm text-xl p-1" style="line-height: 1;"
+          onclick="document.getElementById('noteViewerModal').classList.remove('is-open')">×</button>
+      </div>
+      <div id="noteHtmlView" class="note-viewer-content mt-2 mb-4 bg-page p-6 rounded border border-light"></div>
+      <button class="btn btn-secondary w-full hover-lift"
+        onclick="document.getElementById('noteViewerModal').classList.remove('is-open')">Close</button>
+    </div>
+  </div>
 
-let currentStudents = [];
-let targetStudentId = null;
+  <global-footer></global-footer>
 
-function escapeHtml(str) {
-  if (!str) return '';
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
+  <nav class="bottom-nav" id="bottomNav">
+    <a href="subjects.html" class="bottom-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="1.75">
+        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+      </svg>Practise</a>
+    <a href="tutor.html" class="bottom-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="1.75">
+        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+      </svg>AI Tutor</a>
+    <a href="exam.html" class="bottom-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="1.75">
+        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
+        <rect x="9" y="3" width="6" height="4" rx="2" />
+        <path d="M9 12h6M9 16h4" />
+      </svg>Exam</a>
+    <a href="progress.html" class="bottom-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="1.75">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+      </svg>Progress</a>
+  </nav>
 
-// ── Checkout success polling ──
-// Polls Supabase every 3s (max 8 attempts = 24s) after returning from Stripe.
-// When the webhook updates subscription_tier, the UI auto-updates.
-async function pollSubscriptionUpdate(attempt) {
-  if (attempt >= 8) {
-    const statusEl = document.getElementById('checkoutToastStatus');
-    if (statusEl) statusEl.textContent = 'Reload the page to see your updated plan.';
-    return;
-  }
-  await new Promise(r => setTimeout(r, 3000));
-  try {
-    const sb = await getSupabase();
-    const { data: { session } } = await sb.auth.getSession();
-    if (!session) return;
-    const { data: p } = await sb.from('profiles')
-      .select('subscription_tier, stripe_customer_id, max_children')
-      .eq('id', session.user.id)
-      .single();
-    if (p && p.subscription_tier !== 'trial') {
-      // Webhook came through — update profile state
-      Object.assign(window.userProfile, p);
-      // Analytics: record the confirmed subscription activation
-      if (window.plausible) window.plausible('Subscribe Complete', { props: { plan: p.subscription_tier } });
-      // Hide trial banner
-      const banner = document.getElementById('trialBanner');
-      if (banner) banner.style.display = 'none';
-      // Show Manage Billing button
-      if (p.stripe_customer_id) {
-        const btn = document.getElementById('manageBillingBtn');
-        if (btn) btn.classList.remove('hidden');
-      }
-      // Update toast
-      const planNames = { all_subjects: 'All Subjects', family: 'Family Plan', single_subject: 'Single Subject' };
-      const statusEl = document.getElementById('checkoutToastStatus');
-      if (statusEl) statusEl.textContent = `✓ You're now on ${planNames[p.subscription_tier] || p.subscription_tier}!`;
-      setTimeout(() => { const t = document.getElementById('checkoutToast'); if (t) t.style.display = 'none'; }, 4000);
-    } else {
-      pollSubscriptionUpdate(attempt + 1);
+  <script>
+    (function () {
+      const p = window.location.pathname;
+      document.querySelectorAll('.bottom-nav-item').forEach(l => { if (l.getAttribute('href') && p.includes(l.getAttribute('href'))) l.classList.add('is-active'); });
+    })();
+
+    let currentStudents = [];
+    let targetStudentId = null;
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
-  } catch (e) {
-    pollSubscriptionUpdate(attempt + 1);
-  }
-}
 
-window.initDashboard = async function() {
-  const profile = window.userProfile;
-  if (!profile) return;
-
-  const firstName = profile.full_name?.split(' ')[0] || 'Parent';
-  document.getElementById('welcomeMsg').textContent = `Welcome back, ${escapeHtml(firstName)} 👋`;
-
-  const badge = document.getElementById('planBadge');
-  if (badge) {
-    const planLabels = { trial: '🎁 Free Trial', single_subject: 'Single Subject', all_subjects: 'All Subjects', family: 'Family' };
-    badge.textContent = profile.role === 'admin' ? '👑 Admin' : (planLabels[profile.subscription_tier] || profile.subscription_tier || 'Free Trial');
-  }
-
-  // Trial countdown + urgency analytics
-  if (profile.subscription_tier === 'trial' && profile.trial_ends_at) {
-    const daysLeft = Math.ceil((new Date(profile.trial_ends_at) - new Date()) / 86400000);
-    if (daysLeft > 0) {
-      const trialBanner = document.getElementById('trialBanner');
-      trialBanner.classList.remove('hidden');
-      trialBanner.style.display = 'inline-flex';
-      document.getElementById('trialDaysLeft').textContent = `${daysLeft} day${daysLeft !== 1 ? 's' : ''}`;
-      // Analytics: fire Trial Day 5 when ≤2 days remain (last urgency window)
-      if (daysLeft <= 2) {
-        if (window.plausible) window.plausible('Trial Day 5');
+    // ── Checkout success polling ──
+    // Polls Supabase every 3s (max 8 attempts = 24s) after returning from Stripe.
+    // When the webhook updates subscription_tier, the UI auto-updates.
+    async function pollSubscriptionUpdate(attempt) {
+      if (attempt >= 8) {
+        const statusEl = document.getElementById('checkoutToastStatus');
+        if (statusEl) statusEl.textContent = 'Reload the page to see your updated plan.';
+        return;
+      }
+      await new Promise(r => setTimeout(r, 3000));
+      try {
+        const sb = await getSupabase();
+        const { data: { session } } = await sb.auth.getSession();
+        if (!session) return;
+        const { data: p } = await sb.from('profiles')
+          .select('subscription_tier, stripe_customer_id, max_children')
+          .eq('id', session.user.id)
+          .single();
+        if (p && p.subscription_tier !== 'trial') {
+          // Webhook came through — update profile state
+          Object.assign(window.userProfile, p);
+          // Analytics: record the confirmed subscription activation
+          if (window.plausible) window.plausible('Subscribe Complete', { props: { plan: p.subscription_tier } });
+          // Hide trial banner
+          const banner = document.getElementById('trialBanner');
+          if (banner) banner.style.display = 'none';
+          // Show Manage Billing button
+          if (p.stripe_customer_id) {
+            const btn = document.getElementById('manageBillingBtn');
+            if (btn) btn.classList.remove('hidden');
+          }
+          // Update toast
+          const planNames = { all_subjects: 'All Subjects', family: 'Family Plan', single_subject: 'Single Subject' };
+          const statusEl = document.getElementById('checkoutToastStatus');
+          if (statusEl) statusEl.textContent = `✓ You're now on ${planNames[p.subscription_tier] || p.subscription_tier}!`;
+          setTimeout(() => { const t = document.getElementById('checkoutToast'); if (t) t.style.display = 'none'; }, 4000);
+        } else {
+          pollSubscriptionUpdate(attempt + 1);
+        }
+      } catch (e) {
+        pollSubscriptionUpdate(attempt + 1);
       }
     }
-  }
 
-  // Admin panel
-  if (profile.role === 'admin' || profile.role === 'sub-admin') {
-    document.getElementById('adminPanel').classList.remove('hidden');
-  }
+    window.initDashboard = async function () {
+      const profile = window.userProfile;
+      if (!profile) return;
 
-  // Manage Billing button (subscribers who have gone through checkout)
-  if (profile.stripe_customer_id) {
-    document.getElementById('manageBillingBtn').classList.remove('hidden');
-  }
+      const firstName = profile.full_name?.split(' ')[0] || 'Parent';
+      document.getElementById('welcomeMsg').textContent = `Welcome back, ${escapeHtml(firstName)} 👋`;
 
-  await loadStudents();
+      const badge = document.getElementById('planBadge');
+      if (badge) {
+        const planLabels = { trial: '🎁 Free Trial', single_subject: 'Single Subject', all_subjects: 'All Subjects', family: 'Family' };
+        badge.textContent = profile.role === 'admin' ? '👑 Admin' : (planLabels[profile.subscription_tier] || profile.subscription_tier || 'Free Trial');
+      }
 
-  // ── Checkout success detection ──
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('checkout') === 'success') {
-    window.history.replaceState({}, '', window.location.pathname);
-    const toast = document.getElementById('checkoutToast');
-    if (toast) toast.style.display = 'block';
-    setTimeout(() => pollSubscriptionUpdate(0), 2000);
-  }
-};
+      // Trial countdown + urgency analytics
+      if (profile.subscription_tier === 'trial' && profile.trial_ends_at) {
+        const daysLeft = Math.ceil((new Date(profile.trial_ends_at) - new Date()) / 86400000);
+        if (daysLeft > 0) {
+          const trialBanner = document.getElementById('trialBanner');
+          trialBanner.classList.remove('hidden');
+          trialBanner.style.display = 'inline-flex';
+          document.getElementById('trialDaysLeft').textContent = `${daysLeft} day${daysLeft !== 1 ? 's' : ''}`;
+          // Analytics: fire Trial Day 5 when ≤2 days remain (last urgency window)
+          if (daysLeft <= 2) {
+            if (window.plausible) window.plausible('Trial Day 5');
+          }
+        }
+      }
 
-async function loadStudents() {
-  const profile = window.userProfile;
-  const sb = await getSupabase();
-  const query = profile.role === 'admin'
-    ? sb.from('students').select('*').order('created_at', { ascending: true })
-    : sb.from('students').select('*').eq('parent_id', profile.id).order('created_at', { ascending: true });
-  const { data: students } = await query;
-  currentStudents = students || [];
-  if (profile.role === 'admin') document.getElementById('adminStats').textContent = `(${currentStudents.length})`;
-  const studentIds = currentStudents.map(s => s.id);
-  let unreadMap = {};
-  if (studentIds.length > 0) {
-    const { data: notes } = await sb.from('study_notes').select('student_id, is_read').in('student_id', studentIds);
-    (notes || []).forEach(n => { if (!unreadMap[n.student_id]) unreadMap[n.student_id] = 0; if (!n.is_read) unreadMap[n.student_id]++; });
-  }
-  renderGrid(unreadMap);
-  const addBtn = document.getElementById('addChildBtn');
-  if (profile.role !== 'admin' && currentStudents.length >= (profile.max_children || 1)) addBtn.style.display = 'none';
-  else addBtn.style.display = 'inline-flex';
-}
+      // Admin panel
+      if (profile.role === 'admin' || profile.role === 'sub-admin') {
+        document.getElementById('adminPanel').classList.remove('hidden');
+      }
 
-window.handlePhotoUpload = async (event, studentId) => {
-  const file = event.target.files[0];
-  if (!file) return;
-  try {
-    const sb = await getSupabase();
-    const fileName = `${studentId}-${Date.now()}.${file.name.split('.').pop()}`;
-    const { error: uploadError } = await sb.storage.from('avatars').upload(fileName, file, { cacheControl: '3600', upsert: true });
-    if (uploadError) throw uploadError;
-    const { data: { publicUrl } } = sb.storage.from('avatars').getPublicUrl(fileName);
-    await sb.from('students').update({ photo_url: publicUrl }).eq('id', studentId);
-    await loadStudents();
-  } catch (err) { alert('Failed to upload photo: ' + err.message); }
-};
+      // Manage Billing button (subscribers who have gone through checkout)
+      if (profile.stripe_customer_id) {
+        document.getElementById('manageBillingBtn').classList.remove('hidden');
+      }
 
-function renderGrid(unreadMap) {
-  const grid = document.getElementById('cardsGrid');
-  grid.innerHTML = '';
-  if (currentStudents.length === 0) {
-    grid.innerHTML = `<div class="glass-panel-1 w-full text-center flex flex-col items-center justify-center p-10" style="border: 2px dashed var(--border-dark); box-shadow: none;"><div class="text-4xl mb-4">🚀</div><h3 class="font-bold text-lg mb-2">No learners added yet</h3><p class="text-sm text-muted">Click "＋ Add Learner" above to get started.</p></div>`;
-    return;
-  }
-  currentStudents.forEach(student => {
-    const initials = student.name?.charAt(0).toUpperCase() || '?';
-    const unreadCount = unreadMap ? (unreadMap[student.id] || 0) : 0;
-    const avatarHtml = student.photo_url
-      ? `<img src="${escapeHtml(student.photo_url)}" alt="${escapeHtml(student.name)}" style="width:56px;height:56px;border-radius:var(--radius-md);object-fit:cover;">`
-      : `<div class="flex justify-center items-center font-display text-2xl text-white bg-sage" style="width:56px;height:56px;border-radius:var(--radius-md);flex-shrink:0;">${initials}</div>`;
-    const card = document.createElement('div');
-    card.className = 'glass-panel-1 hover-lift flex flex-col gap-4 p-6';
-    card.style = 'max-width: 280px; flex: 1; border-top: 4px solid var(--brand-sage);';
-    card.innerHTML = `
+      await loadStudents();
+
+      // ── Checkout success detection ──
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('checkout') === 'success') {
+        window.history.replaceState({}, '', window.location.pathname);
+        const toast = document.getElementById('checkoutToast');
+        if (toast) toast.style.display = 'block';
+        setTimeout(() => pollSubscriptionUpdate(0), 2000);
+      }
+    };
+
+    async function loadStudents() {
+      const profile = window.userProfile;
+      const sb = await getSupabase();
+      const query = profile.role === 'admin'
+        ? sb.from('students').select('*').order('created_at', { ascending: true })
+        : sb.from('students').select('*').eq('parent_id', profile.id).order('created_at', { ascending: true });
+      const { data: students } = await query;
+      currentStudents = students || [];
+      if (profile.role === 'admin') document.getElementById('adminStats').textContent = `(${currentStudents.length})`;
+      const studentIds = currentStudents.map(s => s.id);
+      let unreadMap = {};
+      if (studentIds.length > 0) {
+        const { data: notes } = await sb.from('study_notes').select('student_id, is_read').in('student_id', studentIds);
+        (notes || []).forEach(n => { if (!unreadMap[n.student_id]) unreadMap[n.student_id] = 0; if (!n.is_read) unreadMap[n.student_id]++; });
+      }
+      renderGrid(unreadMap);
+      const addBtn = document.getElementById('addChildBtn');
+      if (profile.role !== 'admin' && currentStudents.length >= (profile.max_children || 1)) addBtn.style.display = 'none';
+      else addBtn.style.display = 'inline-flex';
+    }
+
+    window.handlePhotoUpload = async (event, studentId) => {
+      const file = event.target.files[0];
+      if (!file) return;
+      try {
+        const sb = await getSupabase();
+        const fileName = `${studentId}-${Date.now()}.${file.name.split('.').pop()}`;
+        const { error: uploadError } = await sb.storage.from('avatars').upload(fileName, file, { cacheControl: '3600', upsert: true });
+        if (uploadError) throw uploadError;
+        const { data: { publicUrl } } = sb.storage.from('avatars').getPublicUrl(fileName);
+        await sb.from('students').update({ photo_url: publicUrl }).eq('id', studentId);
+        await loadStudents();
+      } catch (err) { alert('Failed to upload photo: ' + err.message); }
+    };
+
+    function renderGrid(unreadMap) {
+      const grid = document.getElementById('cardsGrid');
+      grid.innerHTML = '';
+      if (currentStudents.length === 0) {
+        grid.innerHTML = `<div class="glass-panel-1 w-full text-center flex flex-col items-center justify-center p-10" style="border: 2px dashed var(--border-dark); box-shadow: none;"><div class="text-4xl mb-4">🚀</div><h3 class="font-bold text-lg mb-2">No learners added yet</h3><p class="text-sm text-muted">Click "＋ Add Learner" above to get started.</p></div>`;
+        return;
+      }
+      currentStudents.forEach(student => {
+        const initials = student.name?.charAt(0).toUpperCase() || '?';
+        const unreadCount = unreadMap ? (unreadMap[student.id] || 0) : 0;
+        const avatarHtml = student.photo_url
+          ? `<img src="${escapeHtml(student.photo_url)}" alt="${escapeHtml(student.name)}" style="width:56px;height:56px;border-radius:var(--radius-md);object-fit:cover;">`
+          : `<div class="flex justify-center items-center font-display text-2xl text-white bg-sage" style="width:56px;height:56px;border-radius:var(--radius-md);flex-shrink:0;">${initials}</div>`;
+        const card = document.createElement('div');
+        card.className = 'glass-panel-1 hover-lift flex flex-col gap-4 p-4';
+        card.style = 'max-width: 280px; flex: 1; border-top: 4px solid var(--brand-sage);';
+        card.innerHTML = `
       <div class="flex justify-between items-start mb-2">
         <div class="flex items-center gap-4">
           ${avatarHtml}
@@ -354,80 +510,80 @@ function renderGrid(unreadMap) {
         <a href="/pages/subjects.html?student=${student.id}" class="btn btn-primary w-full hover-lift">Enter Lab →</a>
       </div>
     `;
-    grid.appendChild(card);
-  });
-}
+        grid.appendChild(card);
+      });
+    }
 
-window.toggleDropdown = (e, id) => {
-  e.stopPropagation();
-  const dropdown = document.getElementById(`dropdown-${id}`);
-  const isHidden = !dropdown.classList.contains('is-open');
-  document.querySelectorAll('.context-menu').forEach(d => d.classList.remove('is-open'));
-  if (isHidden) dropdown.classList.add('is-open');
-};
+    window.toggleDropdown = (e, id) => {
+      e.stopPropagation();
+      const dropdown = document.getElementById(`dropdown-${id}`);
+      const isHidden = !dropdown.classList.contains('is-open');
+      document.querySelectorAll('.context-menu').forEach(d => d.classList.remove('is-open'));
+      if (isHidden) dropdown.classList.add('is-open');
+    };
 
-document.addEventListener('click', () => { document.querySelectorAll('.context-menu').forEach(d => d.classList.remove('is-open')); });
+    document.addEventListener('click', () => { document.querySelectorAll('.context-menu').forEach(d => d.classList.remove('is-open')); });
 
-window.closeModals = () => { document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('is-open')); targetStudentId = null; };
-window.closeModalOnBgClick = (e, id) => { if (e.target.id === id) window.closeModals(); };
+    window.closeModals = () => { document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('is-open')); targetStudentId = null; };
+    window.closeModalOnBgClick = (e, id) => { if (e.target.id === id) window.closeModals(); };
 
-window.openEditModal = (id) => {
-  const student = currentStudents.find(s => s.id === id);
-  if (!student) return;
-  targetStudentId = id;
-  document.getElementById('editName').value = student.name;
-  document.getElementById('editLevel').value = student.level;
-  document.getElementById('editModal').classList.add('is-open');
-  document.querySelectorAll('.context-menu').forEach(d => d.classList.remove('is-open'));
-};
+    window.openEditModal = (id) => {
+      const student = currentStudents.find(s => s.id === id);
+      if (!student) return;
+      targetStudentId = id;
+      document.getElementById('editName').value = student.name;
+      document.getElementById('editLevel').value = student.level;
+      document.getElementById('editModal').classList.add('is-open');
+      document.querySelectorAll('.context-menu').forEach(d => d.classList.remove('is-open'));
+    };
 
-window.openDeleteModal = (id) => {
-  const student = currentStudents.find(s => s.id === id);
-  if (!student) return;
-  targetStudentId = id;
-  document.getElementById('deleteTargetName').textContent = student.name;
-  document.getElementById('deleteModal').classList.add('is-open');
-  document.querySelectorAll('.context-menu').forEach(d => d.classList.remove('is-open'));
-};
+    window.openDeleteModal = (id) => {
+      const student = currentStudents.find(s => s.id === id);
+      if (!student) return;
+      targetStudentId = id;
+      document.getElementById('deleteTargetName').textContent = student.name;
+      document.getElementById('deleteModal').classList.add('is-open');
+      document.querySelectorAll('.context-menu').forEach(d => d.classList.remove('is-open'));
+    };
 
-window.saveEdit = async () => {
-  const name = document.getElementById('editName').value.trim();
-  const level = document.getElementById('editLevel').value;
-  if (!name || !level || !targetStudentId) return;
-  const btn = document.getElementById('saveEditBtn');
-  btn.disabled = true; btn.textContent = 'Saving...';
-  const sb = await getSupabase();
-  await sb.from('students').update({ name, level }).eq('id', targetStudentId);
-  await loadStudents();
-  closeModals();
-  btn.disabled = false; btn.textContent = 'Save Changes';
-};
+    window.saveEdit = async () => {
+      const name = document.getElementById('editName').value.trim();
+      const level = document.getElementById('editLevel').value;
+      if (!name || !level || !targetStudentId) return;
+      const btn = document.getElementById('saveEditBtn');
+      btn.disabled = true; btn.textContent = 'Saving...';
+      const sb = await getSupabase();
+      await sb.from('students').update({ name, level }).eq('id', targetStudentId);
+      await loadStudents();
+      closeModals();
+      btn.disabled = false; btn.textContent = 'Save Changes';
+    };
 
-window.confirmDelete = async () => {
-  if (!targetStudentId) return;
-  const btn = document.getElementById('confirmDeleteBtn');
-  btn.disabled = true; btn.textContent = 'Deleting...';
-  const sb = await getSupabase();
-  await sb.from('students').delete().eq('id', targetStudentId);
-  await loadStudents();
-  closeModals();
-  btn.disabled = false; btn.textContent = 'Yes, Delete';
-};
+    window.confirmDelete = async () => {
+      if (!targetStudentId) return;
+      const btn = document.getElementById('confirmDeleteBtn');
+      btn.disabled = true; btn.textContent = 'Deleting...';
+      const sb = await getSupabase();
+      await sb.from('students').delete().eq('id', targetStudentId);
+      await loadStudents();
+      closeModals();
+      btn.disabled = false; btn.textContent = 'Yes, Delete';
+    };
 
-document.getElementById('manageBillingBtn').addEventListener('click', () => {
-  window.location.href = '/pages/account.html';
-});
+    document.getElementById('manageBillingBtn').addEventListener('click', () => {
+      window.location.href = '/pages/account.html';
+    });
 
-window.openBackpackModal = async (studentId) => {
-  const content = document.getElementById('backpackContent');
-  content.innerHTML = `<div class="text-center py-6"><div class="spinner-sm mx-auto mb-2"></div><p class="text-xs text-muted">Opening backpack...</p></div>`;
-  document.getElementById('backpackModal').classList.add('is-open');
-  try {
-    const sb = await getSupabase();
-    const { data: notes } = await sb.from('study_notes').select('*').eq('student_id', studentId).order('created_at', { ascending: false });
-    if (!notes || notes.length === 0) { content.innerHTML = `<div class="glass-panel-2 text-center p-8"><span class="text-3xl mb-2 block">📚</span><p class="text-sm text-main font-bold">Backpack is empty!</p><p class="text-xs text-muted mt-1">Ask Miss Wena questions and save notes to build your collection.</p></div>`; return; }
-    window.cachedNotes = notes;
-    content.innerHTML = notes.map(n => `
+    window.openBackpackModal = async (studentId) => {
+      const content = document.getElementById('backpackContent');
+      content.innerHTML = `<div class="text-center py-6"><div class="spinner-sm mx-auto mb-2"></div><p class="text-xs text-muted">Opening backpack...</p></div>`;
+      document.getElementById('backpackModal').classList.add('is-open');
+      try {
+        const sb = await getSupabase();
+        const { data: notes } = await sb.from('study_notes').select('*').eq('student_id', studentId).order('created_at', { ascending: false });
+        if (!notes || notes.length === 0) { content.innerHTML = `<div class="glass-panel-2 text-center p-8"><span class="text-3xl mb-2 block">📚</span><p class="text-sm text-main font-bold">Backpack is empty!</p><p class="text-xs text-muted mt-1">Ask Miss Wena questions and save notes to build your collection.</p></div>`; return; }
+        window.cachedNotes = notes;
+        content.innerHTML = notes.map(n => `
       <div class="glass-panel-2 hover-lift p-4 flex justify-between items-center cursor-pointer" style="${!n.is_read ? 'border-left:3px solid var(--brand-rose);' : 'border:1px solid var(--border-light);'}" onclick="viewStudyNote('${n.id}')">
         <div>
           <div class="flex items-center gap-2 mb-1">
@@ -435,27 +591,28 @@ window.openBackpackModal = async (studentId) => {
             ${!n.is_read ? `<span class="badge text-[10px]" style="background:var(--brand-rose);color:white;">New</span>` : ''}
           </div>
           <div class="font-bold text-main text-sm leading-tight">${escapeHtml(n.title)}</div>
-          <div class="text-xs text-muted mt-1">${new Date(n.created_at).toLocaleDateString('en-SG', {day:'numeric',month:'short'})} · ${escapeHtml(n.topic).replace(/-/g,' ')}</div>
+          <div class="text-xs text-muted mt-1">${new Date(n.created_at).toLocaleDateString('en-SG', { day: 'numeric', month: 'short' })} · ${escapeHtml(n.topic).replace(/-/g, ' ')}</div>
         </div>
         <span class="text-rose font-bold">→</span>
       </div>
     `).join('');
-  } catch(e) { content.innerHTML = `<p class="text-danger text-sm text-center">Failed to load notes.</p>`; }
-};
+      } catch (e) { content.innerHTML = `<p class="text-danger text-sm text-center">Failed to load notes.</p>`; }
+    };
 
-window.viewStudyNote = async (noteId) => {
-  const note = (window.cachedNotes || []).find(n => n.id === noteId);
-  if (!note) return;
-  document.getElementById('noteTitleView').textContent = note.title;
-  document.getElementById('noteSubjectBadge').textContent = note.subject.toUpperCase();
-  document.getElementById('noteHtmlView').innerHTML = note.content_html;
-  document.getElementById('noteViewerModal').classList.add('is-open');
-  if (!note.is_read) {
-    const sb = await getSupabase();
-    await sb.from('study_notes').update({ is_read: true }).eq('id', noteId);
-    note.is_read = true;
-  }
-};
-</script>
+    window.viewStudyNote = async (noteId) => {
+      const note = (window.cachedNotes || []).find(n => n.id === noteId);
+      if (!note) return;
+      document.getElementById('noteTitleView').textContent = note.title;
+      document.getElementById('noteSubjectBadge').textContent = note.subject.toUpperCase();
+      document.getElementById('noteHtmlView').innerHTML = note.content_html;
+      document.getElementById('noteViewerModal').classList.add('is-open');
+      if (!note.is_read) {
+        const sb = await getSupabase();
+        await sb.from('study_notes').update({ is_read: true }).eq('id', noteId);
+        note.is_read = true;
+      }
+    };
+  </script>
 </body>
+
 </html>
