@@ -556,7 +556,7 @@ window.initExamEngine = function () {
         </div>
 
         <div style="flex: 0 0 280px; width: 100%;">
-          <div class="glass-panel-1 p-6" style="position: sticky; top: 100px;">
+          <div class="glass-panel-1 p-4" style="position: sticky; top: 100px;">
             <h3 class="font-bold text-main mb-4 m-0">Exam Navigator</h3>
             <div class="exam-navigator flex flex-wrap gap-2">${navPips}</div>
             <div class="flex flex-col gap-2 mt-4 pt-4 text-xs text-muted font-medium" style="border-top: 1px solid var(--border-light);">
