@@ -27,7 +27,7 @@
   const chatMessages = document.getElementById('chat-messages');
   const chatInput = document.getElementById('chat-input');
   const sendBtn = document.getElementById('chat-send');
-  const saveBtn = document.getElementById('saveChatBtn'); 
+  const saveBtn = document.getElementById('saveChatBtn');
   const modeTextBtn = document.getElementById('modeTextBtn');
   const modeDrawBtn = document.getElementById('modeDrawBtn');
   const drawArea = document.getElementById('drawArea');
@@ -55,11 +55,11 @@
 
     // Event Listeners
     sendBtn.addEventListener('click', handleSend);
-    chatInput.addEventListener('keydown', e => { 
-      if (e.key === 'Enter' && !e.shiftKey) { 
-        e.preventDefault(); 
-        handleSend(); 
-      } 
+    chatInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        handleSend();
+      }
     });
     chatInput.addEventListener('input', adjustTextareaHeight);
     modeTextBtn.addEventListener('click', () => setMode('text'));
@@ -72,7 +72,7 @@
     if (!isRemedial) {
       appendBubble('tutor', "Hello! I'm Miss Wena. 😊 I'm your Superholic Tutor, so you can ask me about Mathematics, Science, or English all in one place! Need help with a bar model, a science experiment, or grammar? Let's figure it out together!");
     }
-   }
+  }
 
   function adjustTextareaHeight() {
     chatInput.style.height = 'auto';
@@ -90,17 +90,17 @@
 
     const start = (e) => { isDrawing = true; canvasHasContent = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); e.preventDefault(); };
     const draw = (e) => { if (!isDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); e.preventDefault(); };
-    const stop = () => { if(isDrawing) isDrawing = false; };
+    const stop = () => { if (isDrawing) isDrawing = false; };
 
     canvas.addEventListener('mousedown', start); canvas.addEventListener('mousemove', draw);
     canvas.addEventListener('mouseup', stop); canvas.addEventListener('mouseout', stop);
-    canvas.addEventListener('touchstart', start, {passive: false});
-    canvas.addEventListener('touchmove', draw, {passive: false});
+    canvas.addEventListener('touchstart', start, { passive: false });
+    canvas.addEventListener('touchmove', draw, { passive: false });
     canvas.addEventListener('touchend', stop);
   }
 
   window.clearCanvas = () => {
-    if(ctx) {
+    if (ctx) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       canvasHasContent = false;
     }
@@ -113,7 +113,7 @@
       modeDrawBtn.className = 'btn btn-primary btn-sm';
       modeTextBtn.className = 'btn btn-ghost btn-sm';
       drawArea.style.display = 'block';
-      
+
       // Resize canvas safely after display block
       setTimeout(() => {
         const rect = canvas.parentElement.getBoundingClientRect();
@@ -122,8 +122,8 @@
           canvas.width = rect.width;
           canvas.height = 200;
           ctx = canvas.getContext('2d');
-          ctx.lineWidth = 2.5; 
-          ctx.lineCap = 'round'; 
+          ctx.lineWidth = 2.5;
+          ctx.lineCap = 'round';
           ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--border-dark').trim() || '#2C3E3A';
           if (imgData) ctx.putImageData(imgData, 0, 0);
         }
@@ -136,13 +136,13 @@
   }
 
   // ── Chat Logic ──
-  let currentTypingEl = null; 
+  let currentTypingEl = null;
 
   async function handleSend() {
     if (isLoading) return;
     const text = chatInput.value.trim();
     const hasImage = isDrawMode && canvasHasContent;
-    
+
     if (!text && !hasImage) return;
 
     const imageData = hasImage ? canvas.toDataURL('image/png') : null;
@@ -153,15 +153,15 @@
       if (window.plausible) window.plausible('Tutor Session', { props: { subject: currentSubjectContext } });
     }
     messageQueue.push({ text, image: imageData });
-    
+
     chatInput.value = '';
     chatInput.style.height = 'auto';
     if (hasImage) window.clearCanvas();
 
     if (batchTimeout) clearTimeout(batchTimeout);
-    
+
     if (!currentTypingEl) {
-        currentTypingEl = appendTyping(); 
+      currentTypingEl = appendTyping();
     }
 
     batchTimeout = setTimeout(() => {
@@ -171,14 +171,14 @@
 
   async function processBatchQueue() {
     if (messageQueue.length === 0) return;
-    
+
     isLoading = true;
     chatInput.disabled = true;
     sendBtn.disabled = true;
 
     const combinedText = messageQueue.map(m => m.text).filter(Boolean).join('\n');
     const lastImage = messageQueue.reverse().find(m => m.image)?.image || null;
-    
+
     messageQueue = [];
 
     history.forEach(msg => msg.image = null);
@@ -190,11 +190,11 @@
         // Dynamic import of the weakness engine
         const { runCognitiveDiagnosis } = await import('../js/analyze-weakness.js');
         const diagnostic = await runCognitiveDiagnosis(db, currentStudentId, currentSubjectContext);
-        
+
         if (diagnostic) {
-          history.push({ 
-            role: 'system', 
-            content: `[Diagnostic Alert] The engine has detected the student's root weakness is ${diagnostic.identified_weakness} with a mastery score of ${diagnostic.mastery_score}. Their specific failed skills are: ${diagnostic.failed_skills.join(', ')}. If they ask for help, guide them towards mastering these prerequisites first.` 
+          history.push({
+            role: 'system',
+            content: `[Diagnostic Alert] The engine has detected the student's root weakness is ${diagnostic.identified_weakness} with a mastery score of ${diagnostic.mastery_score}. Their specific failed skills are: ${diagnostic.failed_skills.join(', ')}. If they ask for help, guide them towards mastering these prerequisites first.`
           });
         }
       } catch (err) {
@@ -207,7 +207,7 @@
     // AI LOGGING: Store the user's combined batched prompt
     if (currentStudentId) {
       try {
-        const db = await getSupabase(); 
+        const db = await getSupabase();
         await db.from('ai_tutor_logs').insert([{
           student_id: currentStudentId,
           role: 'user',
@@ -222,35 +222,35 @@
 
     try {
       const res = await fetch('/api/chat', {
-        method:  'POST',
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ messages: history }),
+        body: JSON.stringify({ messages: history }),
       });
 
       const data = await res.json();
 
       if (currentTypingEl) {
-          currentTypingEl.remove();
-          currentTypingEl = null;
+        currentTypingEl.remove();
+        currentTypingEl = null;
       }
 
       if (!res.ok || data.error) {
         if ((data.error && data.error.includes("temporarily unavailable")) || res.status === 500) {
-            appendBubble('tutor', 'Miss Wena is thinking a bit too fast! 😅 Give me about 30 seconds to catch my breath before we continue.');
+          appendBubble('tutor', 'Miss Wena is thinking a bit too fast! 😅 Give me about 30 seconds to catch my breath before we continue.');
         } else {
-            appendBubble('tutor', data.error || 'Sorry, something went wrong. Please try again.');
+          appendBubble('tutor', data.error || 'Sorry, something went wrong. Please try again.');
         }
-        history.pop(); 
-        chatInput.value = combinedText; 
+        history.pop();
+        chatInput.value = combinedText;
         adjustTextareaHeight();
       } else {
         appendBubble('tutor', data.reply);
         history.push({ role: 'assistant', content: data.reply });
-        
+
         // AI LOGGING: Store Miss Wena's final response
         if (currentStudentId) {
           try {
-            const db = await getSupabase(); 
+            const db = await getSupabase();
             await db.from('ai_tutor_logs').insert([{
               student_id: currentStudentId,
               role: 'assistant',
@@ -262,19 +262,19 @@
             console.error('Failed to log assistant tutor interaction:', err);
           }
         }
-        
+
         if (saveBtn && history.filter(m => m.role === 'user').length >= 1) {
           saveBtn.classList.remove('hidden');
         }
       }
     } catch (err) {
       if (currentTypingEl) {
-          currentTypingEl.remove();
-          currentTypingEl = null;
+        currentTypingEl.remove();
+        currentTypingEl = null;
       }
       appendBubble('tutor', 'Could not reach the tutor. Please check your connection.');
       history.pop();
-      chatInput.value = combinedText; 
+      chatInput.value = combinedText;
       adjustTextareaHeight();
     } finally {
       isLoading = false;
@@ -286,18 +286,18 @@
 
   // ── DOM Helpers ──
   function formatMessage(text) {
-    let safe = String(text).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    
+    let safe = String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
     safe = safe.replace(/\\frac\s*\{([^{}]+)\}\s*\{([^{}]+)\}/g, '$1/$2');
     safe = safe.replace(/\$([^$]*?[/+\-=][^$]*?)\$/g, '$1');
     safe = safe.replace(/\$\s*([0-9a-zA-Z])\s*\$/g, '$1');
-    
+
     return safe.replace(/\*\*(.*?)\*\*/g, '<strong class="text-rose">$1</strong>');
   }
 
   function appendBubble(role, text, imageBase64 = null) {
     const isUser = role === 'user';
-    
+
     const wrap = document.createElement('div');
     wrap.className = `flex w-full ${isUser ? 'justify-end' : 'justify-start'}`;
     wrap.style.display = 'flex';
@@ -322,14 +322,14 @@
 
     const bubble = document.createElement('div');
     bubble.className = isUser ? 'chat-bubble-user text-sm' : 'glass-panel-2 chat-bubble-tutor text-sm';
-    
+
     if (imageBase64) {
       const img = document.createElement('img');
       img.src = imageBase64;
       img.className = 'w-full h-auto bg-white rounded border border-light mb-2';
       bubble.appendChild(img);
     }
-    
+
     if (text) {
       const textContainer = document.createElement('div');
       textContainer.style.whiteSpace = 'pre-wrap';
@@ -360,7 +360,7 @@
     wrap.style.display = 'flex';
     wrap.style.width = '100%';
     wrap.style.justifyContent = 'flex-start';
-    
+
     const innerFlex = document.createElement('div');
     innerFlex.className = 'flex gap-4 flex-row';
     innerFlex.style.display = 'flex';
@@ -381,7 +381,7 @@
     bubble.className = 'glass-panel-2 chat-bubble-tutor text-sm flex items-center justify-center';
     bubble.style.minWidth = '60px';
     bubble.style.height = '40px';
-    
+
     const spinner = document.createElement('div');
     spinner.className = 'spinner-sm';
     spinner.style.width = '16px';
@@ -392,7 +392,7 @@
     innerFlex.appendChild(avatar);
     innerFlex.appendChild(bubble);
     wrap.appendChild(innerFlex);
-    
+
     chatMessages.appendChild(wrap);
     chatMessages.scrollTop = chatMessages.scrollHeight;
     return wrap;
@@ -411,7 +411,7 @@
       // Fetch student data INCLUDING photo_url
       const { data: students } = await sb.from('students').select('id, photo_url').eq('parent_id', session.user.id);
       let student = (students || []).find(s => s.id === activeStudentId) || (students || [])[0];
-      
+
       if (student) {
         currentStudentId = student.id;
         currentStudentPhoto = student.photo_url || '../assets/images/kid_studying.png';
@@ -421,10 +421,10 @@
       // Fetch Limit
       const { data: profile } = await sb.from('profiles').select('subscription_tier').eq('id', session.user.id).single();
       const isTrial = !profile || profile.subscription_tier === 'trial';
-      
+
       if (isTrial && currentStudentId) {
         const { count } = await sb.from('ai_tutor_logs').select('*', { count: 'exact', head: true }).eq('student_id', currentStudentId);
-          
+
         if (count >= TRIAL_AI_LIMIT) {
           limitBanner.hidden = false;
           chatInput.disabled = true;
@@ -445,7 +445,7 @@
       const topicEl = document.getElementById('quest-topic-name');
       const topic = params.get('topic').replace(/-/g, ' ');
       const score = params.get('score') || 0;
-      
+
       currentSubjectContext = params.get('subject') || 'general';
       currentTopicContext = params.get('topic');
 
@@ -459,13 +459,13 @@
 
       let sName = 'there';
       try {
-         const sb = await window.getSupabase();
-         const { data: { session } } = await sb.auth.getSession();
-         if (session && currentStudentId) {
-           const { data: stu } = await sb.from('students').select('name').eq('id', currentStudentId).single();
-           if (stu && stu.name) sName = stu.name;
-         }
-      } catch(e) {}
+        const sb = await window.getSupabase();
+        const { data: { session } } = await sb.auth.getSession();
+        if (session && currentStudentId) {
+          const { data: stu } = await sb.from('students').select('name').eq('id', currentStudentId).single();
+          if (stu && stu.name) sName = stu.name;
+        }
+      } catch (e) { }
 
       const autoPrompt = `SYSTEM INSTRUCTION: The student just clicked "Ask Miss Wena" from their Progress Dashboard because they are struggling. They scored ${score}% in ${topic}. 
       Generate your opening message. It MUST exactly follow this format: "Hi ${sName}! I saw you scored ${score}% on ${topic} recently. Don't worry, we are going to master this together. Let's start with..." and then immediately ask a foundational, easy question to start scaffolding.`;
@@ -478,15 +478,15 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ messages: history })
         });
-        
+
         const data = await res.json();
         typingEl.remove();
-        
+
         if (res.ok && !data.error) {
-           appendBubble('tutor', data.reply);
-           history.push({ role: 'assistant', content: data.reply });
+          appendBubble('tutor', data.reply);
+          history.push({ role: 'assistant', content: data.reply });
         } else {
-           appendBubble('tutor', "Hi " + sName + "! I saw you needed help with " + topic + ". Let's master it together. What's your first question?");
+          appendBubble('tutor', "Hi " + sName + "! I saw you needed help with " + topic + ". Let's master it together. What's your first question?");
         }
       } catch (e) {
         typingEl.remove();
@@ -506,38 +506,51 @@
   // ── STUDY NOTES ENGINE: Generate & Save ──
   async function generateStudyNote() {
     if (!currentStudentId || history.length < 2) return;
-    
+
     saveBtn.disabled = true;
     saveBtn.innerHTML = '<span class="spinner-sm" style="width:14px;height:14px;border-width:2px;display:inline-block;margin-right:6px;border-top-color:currentColor;"></span> Saving...';
 
     try {
       const sb = await getSupabase();
       const { data: { session } } = await sb.auth.getSession();
-      
-      const res = await fetch('/api/summarize-chat', {
+
+      // 🚀 MASTERCLASS: Fetch BKT Mastery to pass to Miss Wena
+      let bktMastery = null;
+      if (currentStudentId && currentTopicContext && currentTopicContext !== 'mixed') {
+        const { data: masteryData } = await sb.from('mastery_levels')
+          .select('probability')
+          .eq('student_id', currentStudentId)
+          .eq('topic', currentTopicContext)
+          .order('last_updated', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (masteryData) bktMastery = masteryData.probability;
+      }
+
+      const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
-        body: JSON.stringify({ 
-          student_id: currentStudentId, 
-          subject: currentSubjectContext, 
-          topic: currentTopicContext, 
-          messages: history 
+        body: JSON.stringify({
+          messages: payload,
+          subject: currentSubjectContext,
+          topic: currentTopicContext,
+          bkt_mastery: bktMastery // Injecting real-time probability
         })
       });
-      
+
       const data = await res.json();
-      if(data.success) {
-         saveBtn.innerHTML = '✅ Saved to Backpack';
-         saveBtn.className = 'btn btn-success btn-sm hover-lift';
-         setTimeout(() => { 
-           saveBtn.innerHTML = '💾 Save Notes'; 
-           saveBtn.disabled = false; 
-           saveBtn.className = 'btn btn-secondary btn-sm hover-lift';
-         }, 3000);
-      } else { 
-         throw new Error(data.error || "Save failed"); 
+      if (data.success) {
+        saveBtn.innerHTML = '✅ Saved to Backpack';
+        saveBtn.className = 'btn btn-success btn-sm hover-lift';
+        setTimeout(() => {
+          saveBtn.innerHTML = '💾 Save Notes';
+          saveBtn.disabled = false;
+          saveBtn.className = 'btn btn-secondary btn-sm hover-lift';
+        }, 3000);
+      } else {
+        throw new Error(data.error || "Save failed");
       }
-    } catch(e) {
+    } catch (e) {
       alert("Failed to save note: " + e.message);
       saveBtn.innerHTML = '💾 Save Notes';
       saveBtn.disabled = false;

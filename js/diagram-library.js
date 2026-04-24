@@ -29,22 +29,95 @@ const DiagramLibrary = {
     return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   },
 
+  // ==========================================
+  // P5/P6 MATH HEURISTIC ENGINE
+  // ==========================================
+  unitModel(data) {
+    if (!data || !data.models) return '';
+    // Uses the Sage-Rose glassmorphism design tokens
+    let svg = `<rect width="100%" height="100%" fill="var(--glass-bg, rgba(255,255,255,0.7))" rx="8"/>`;
+    let y = 40;
+
+    data.models.forEach(model => {
+      svg += `<text x="20" y="${y + 15}" fill="var(--text-main)" font-size="14" font-weight="bold">${this._esc(model.label)}</text>`;
+      let x = 100;
+      model.parts.forEach(part => {
+        const width = part.width || 40;
+        const fill = part.shaded ? 'var(--brand-rose)' : 'var(--glass-bg, rgba(255,255,255,0.7))';
+        const opacity = part.shaded ? '0.3' : '1';
+        const strokeDash = part.dashed ? 'stroke-dasharray="4,4"' : '';
+
+        svg += `<rect x="${x}" y="${y}" width="${width}" height="24" fill="${fill}" fill-opacity="${opacity}" stroke="var(--brand-sage)" stroke-width="2" ${strokeDash}/>`;
+
+        if (part.label) {
+          svg += `<text x="${x + width / 2}" y="${y + 16}" text-anchor="middle" fill="var(--text-main)" font-size="12">${this._esc(part.label)}</text>`;
+        }
+        x += width;
+      });
+      y += 40;
+    });
+    return this._svg(svg, { viewBox: '0 0 500 ' + (y + 20) });
+  },
+
+  // ==========================================
+  // P5/P6 SCIENCE SCHEMATIC ENGINE
+  // ==========================================
+  circuitDiagram(data) {
+    if (!data || !data.components) return '';
+    let svg = `<rect width="100%" height="100%" fill="var(--glass-bg, rgba(255,255,255,0.7))" rx="8" stroke="var(--border-light)" />`;
+
+    if (data.title) {
+      svg += `<text x="200" y="30" text-anchor="middle" fill="var(--text-main)" font-size="14" font-weight="bold">${this._esc(data.title)}</text>`;
+    }
+
+    // Base wire loop for a standard series circuit
+    svg += `<path d="M 100 80 L 300 80 L 300 180 L 100 180 Z" fill="none" stroke="var(--brand-sage)" stroke-width="2" />`;
+
+    data.components.forEach(comp => {
+      if (comp.type === 'battery') {
+        svg += `<line x1="190" y1="80" x2="210" y2="80" stroke="var(--glass-bg, rgba(255,255,255,0.7))" stroke-width="6"/>`; // Breaks the wire
+        svg += `<line x1="195" y1="70" x2="195" y2="90" stroke="var(--text-main)" stroke-width="2"/>`; // Short negative
+        svg += `<line x1="205" y1="65" x2="205" y2="95" stroke="var(--text-main)" stroke-width="2"/>`; // Long positive
+      } else if (comp.type === 'bulb') {
+        const cy = comp.position === 'bottom' ? 180 : 130;
+        const cx = comp.position === 'right' ? 300 : 200;
+        const stroke = comp.fused ? 'var(--brand-rose)' : 'var(--brand-sage)';
+
+        svg += `<circle cx="${cx}" cy="${cy}" r="15" fill="var(--glass-bg, rgba(255,255,255,0.7))" stroke="${stroke}" stroke-width="2"/>`;
+        svg += `<path d="M ${cx - 10} ${cy - 10} L ${cx + 10} ${cy + 10} M ${cx - 10} ${cy + 10} L ${cx + 10} ${cy - 10}" stroke="${stroke}" stroke-width="2"/>`; // MOE cross symbol
+      } else if (comp.type === 'switch') {
+        svg += `<line x1="90" y1="130" x2="110" y2="130" stroke="var(--glass-bg, rgba(255,255,255,0.7))" stroke-width="6"/>`; // Breaks the wire
+        svg += `<circle cx="95" cy="130" r="3" fill="var(--text-main)"/>`;
+        svg += `<circle cx="105" cy="130" r="3" fill="var(--text-main)"/>`;
+
+        if (comp.isOpen) {
+          svg += `<line x1="95" y1="130" x2="105" y2="120" stroke="var(--text-main)" stroke-width="2"/>`;
+        } else {
+          svg += `<line x1="95" y1="130" x2="105" y2="130" stroke="var(--text-main)" stroke-width="2"/>`;
+        }
+      }
+    });
+    return this._svg(svg, { viewBox: '0 0 400 220' });
+  },
+
   // 🚀 Centralized Router (With Backward-Compatible Fallback)
   render(payload) {
+    if (payload.unitModel) return this.unitModel(payload.unitModel);
+    if (payload.circuitDiagram) return this.circuitDiagram(payload.circuitDiagram);
     if (!payload || !payload.function_name) return '';
     const fn = this[payload.function_name];
-    
+
     // 1. If the specific engine exists, use it
     if (typeof fn === 'function') {
       return fn.call(this, payload.params || {});
     }
-    
+
     // 2. Backward Compatibility: If it's a legacy or hallucinated function, 
     // route it safely to the genericExperiment fallback!
     if (typeof this.genericExperiment === 'function') {
       return this.genericExperiment(payload.params || {}, payload.function_name);
     }
-    
+
     return `<div class="text-amber border border-amber p-4 rounded text-center text-sm">Diagram engine cannot render: "${this._esc(payload.function_name)}"</div>`;
   },
 
@@ -53,16 +126,16 @@ const DiagramLibrary = {
    */
   lineGraph(params) {
     let p = params;
-    if (typeof p === 'string') { try { p = JSON.parse(p); } catch(e) { p = {}; } }
-    
+    if (typeof p === 'string') { try { p = JSON.parse(p); } catch (e) { p = {}; } }
+
     const title = p.title || '';
     const xLabel = p.xLabel || '';
     const yLabel = p.yLabel || '';
     const yMax = Number(p.yMax) || 100;
-    
+
     // Deep parse array to prevent stringified traps
     let rawPoints = p.points;
-    if (typeof rawPoints === 'string') { try { rawPoints = JSON.parse(rawPoints); } catch(e) { rawPoints = []; } }
+    if (typeof rawPoints === 'string') { try { rawPoints = JSON.parse(rawPoints); } catch (e) { rawPoints = []; } }
     const points = Array.isArray(rawPoints) ? rawPoints : [];
 
     const width = 420, height = 260;
@@ -72,11 +145,11 @@ const DiagramLibrary = {
 
     // max-width prevents flexbox blowout
     let svg = `<svg viewBox="0 0 ${width} ${height}" style="width: 100%; max-width: 420px; height: auto; display: block; margin: 0 auto 1.5rem auto; background: var(--bg-surface); border-radius: 8px; border: 1px solid var(--border-light);" role="img" aria-label="Line Graph">
-      <text x="${width/2}" y="22" text-anchor="middle" font-weight="bold" font-size="14" fill="var(--text-main)" font-family="sans-serif">${this._esc(title)}</text>
+      <text x="${width / 2}" y="22" text-anchor="middle" font-weight="bold" font-size="14" fill="var(--text-main)" font-family="sans-serif">${this._esc(title)}</text>
       <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${height - padB}" stroke="var(--border-dark)" stroke-width="2"/>
-      <text x="${padL - 35}" y="${padT + plotH/2}" transform="rotate(-90 ${padL - 35} ${padT + plotH/2})" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-main)" font-family="sans-serif">${this._esc(yLabel)}</text>
+      <text x="${padL - 35}" y="${padT + plotH / 2}" transform="rotate(-90 ${padL - 35} ${padT + plotH / 2})" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-main)" font-family="sans-serif">${this._esc(yLabel)}</text>
       <line x1="${padL}" y1="${height - padB}" x2="${width - padR}" y2="${height - padB}" stroke="var(--border-dark)" stroke-width="2"/>
-      <text x="${padL + plotW/2}" y="${height - 12}" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-main)" font-family="sans-serif">${this._esc(xLabel)}</text>
+      <text x="${padL + plotW / 2}" y="${height - 12}" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-main)" font-family="sans-serif">${this._esc(xLabel)}</text>
     `;
 
     if (points.length > 0) {
@@ -84,7 +157,7 @@ const DiagramLibrary = {
       const coords = points.map((pt, i) => {
         // Absolute fail-safe math: forces Number() and provides default fallbacks
         const cx = Number(padL + (stepX * i) + (stepX / 2)) || padL;
-        const safeY = Number(pt.yVal) || 0; 
+        const safeY = Number(pt.yVal) || 0;
         const cy = Number((height - padB) - ((safeY / yMax) * plotH)) || (height - padB);
         return { cx, cy, label: pt.xText || '', val: safeY };
       });
@@ -97,7 +170,7 @@ const DiagramLibrary = {
           <circle cx="${c.cx}" cy="${c.cy}" r="4" fill="var(--brand-sage)" stroke="#fff" stroke-width="2"/>
           <text x="${c.cx}" y="${height - padB + 18}" text-anchor="middle" font-size="11" fill="var(--text-muted)" font-family="sans-serif">${this._esc(c.label)}</text>
           <text x="${padL - 8}" y="${c.cy + 4}" text-anchor="end" font-size="11" fill="var(--text-muted)" font-family="sans-serif">${c.val}</text>
-          <line x1="${padL-4}" y1="${c.cy}" x2="${padL}" y2="${c.cy}" stroke="var(--border-dark)" stroke-width="1"/>
+          <line x1="${padL - 4}" y1="${c.cy}" x2="${padL}" y2="${c.cy}" stroke="var(--border-dark)" stroke-width="1"/>
         `;
       });
     }
@@ -109,16 +182,16 @@ const DiagramLibrary = {
    */
   conceptMap(params) {
     let p = params;
-    if (typeof p === 'string') { try { p = JSON.parse(p); } catch(e) { p = {}; } }
-    
+    if (typeof p === 'string') { try { p = JSON.parse(p); } catch (e) { p = {}; } }
+
     let rawNodes = p.nodes;
-    if (typeof rawNodes === 'string') { try { rawNodes = JSON.parse(rawNodes); } catch(e) { rawNodes = []; } }
+    if (typeof rawNodes === 'string') { try { rawNodes = JSON.parse(rawNodes); } catch (e) { rawNodes = []; } }
     const nodes = Array.isArray(rawNodes) ? rawNodes : [];
 
     let rawEdges = p.edges;
-    if (typeof rawEdges === 'string') { try { rawEdges = JSON.parse(rawEdges); } catch(e) { rawEdges = []; } }
+    if (typeof rawEdges === 'string') { try { rawEdges = JSON.parse(rawEdges); } catch (e) { rawEdges = []; } }
     const edges = Array.isArray(rawEdges) ? rawEdges : [];
-    
+
     const width = 420, height = 260;
 
     let svg = `<svg viewBox="0 0 ${width} ${height}" style="width: 100%; max-width: 420px; height: auto; display: block; margin: 0 auto 1.5rem auto; background: var(--bg-surface); border-radius: 8px; border: 1px solid var(--border-light);" role="img" aria-label="Concept Map">
@@ -160,7 +233,7 @@ const DiagramLibrary = {
    */
   genericExperiment(params, functionName = '') {
     const esc = this._esc ? this._esc.bind(this) : (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    
+
     // Parse nested object into beautifully formatted rows
     let rowsHtml = '';
     if (typeof params === 'object' && params !== null) {
@@ -174,7 +247,7 @@ const DiagramLibrary = {
           </div>`;
       }
     } else {
-       rowsHtml = `<div style="color: var(--text-main); font-size: 15px; line-height: 1.5;">${esc(params)}</div>`;
+      rowsHtml = `<div style="color: var(--text-main); font-size: 15px; line-height: 1.5;">${esc(params)}</div>`;
     }
 
     const htmlContent = `
@@ -185,7 +258,7 @@ const DiagramLibrary = {
         ${rowsHtml}
       </div>
     `;
-    
+
     return `<svg viewBox="0 0 500 240" width="100%" style="height: auto; max-width: 450px; display: block; margin: 0 auto;" role="img" aria-label="Experiment setup">
       <foreignObject width="100%" height="100%">
         ${htmlContent}
@@ -193,31 +266,31 @@ const DiagramLibrary = {
     </svg>`;
   },
 
-/**
-   * 🚀 AI FUNCTION: Equilateral Triangle(s)
-   * Draws a specified count of equilateral triangles with labelled base and tick marks.
-   */
+  /**
+     * 🚀 AI FUNCTION: Equilateral Triangle(s)
+     * Draws a specified count of equilateral triangles with labelled base and tick marks.
+     */
   equilateralTriangle(params) {
     const esc = this._esc ? this._esc.bind(this) : (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     const unit = params.unit || 'cm';
     const sideLength = params.side_length || 10;
-    
+
     // Fallback to 1, limit to 5 so we don't break the viewBox if the AI goes crazy
-    const count = Math.max(1, Math.min(params.count || 1, 5)); 
+    const count = Math.max(1, Math.min(params.count || 1, 5));
 
     const vbW = 400, vbH = 260;
     const gap = 20;
-    
+
     // Calculate max available width and height per triangle to maintain aspect ratio
     const maxW = (vbW - (count + 1) * gap) / count;
     const maxH = vbH - 60; // Leave 60px for bottom labels
-    
+
     // Formula: height = width * (sqrt(3)/2)
-    const drawW = Math.min(maxW, maxH / (Math.sqrt(3)/2));
-    const drawH = drawW * (Math.sqrt(3)/2);
+    const drawW = Math.min(maxW, maxH / (Math.sqrt(3) / 2));
+    const drawH = drawW * (Math.sqrt(3) / 2);
 
     let shapesHtml = '';
-    
+
     for (let i = 0; i < count; i++) {
       // Calculate center point for each triangle in the sequence
       const cx = gap + (drawW / 2) + i * (drawW + gap);
@@ -229,13 +302,13 @@ const DiagramLibrary = {
 
       const points = `${topX},${topY} ${brX},${brY} ${blX},${blY}`;
       shapesHtml += `<polygon points="${points}" fill="rgba(81, 97, 94, 0.05)" stroke="var(--brand-sage)" stroke-width="2"/>`;
-      
+
       // Draw tick marks on all 3 sides to visually denote 'equilateral'
       const tickL = 6;
       // Left side tick
-      shapesHtml += `<line x1="${(topX + blX)/2 - tickL}" y1="${(topY + blY)/2 + tickL/2}" x2="${(topX + blX)/2 + tickL}" y2="${(topY + blY)/2 - tickL/2}" stroke="var(--brand-rose)" stroke-width="2"/>`;
+      shapesHtml += `<line x1="${(topX + blX) / 2 - tickL}" y1="${(topY + blY) / 2 + tickL / 2}" x2="${(topX + blX) / 2 + tickL}" y2="${(topY + blY) / 2 - tickL / 2}" stroke="var(--brand-rose)" stroke-width="2"/>`;
       // Right side tick
-      shapesHtml += `<line x1="${(topX + brX)/2 - tickL}" y1="${(topY + brY)/2 - tickL/2}" x2="${(topX + brX)/2 + tickL}" y2="${(topY + brY)/2 + tickL/2}" stroke="var(--brand-rose)" stroke-width="2"/>`;
+      shapesHtml += `<line x1="${(topX + brX) / 2 - tickL}" y1="${(topY + brY) / 2 - tickL / 2}" x2="${(topX + brX) / 2 + tickL}" y2="${(topY + brY) / 2 + tickL / 2}" stroke="var(--brand-rose)" stroke-width="2"/>`;
       // Bottom base tick
       shapesHtml += `<line x1="${cx}" y1="${brY - tickL}" x2="${cx}" y2="${brY + tickL}" stroke="var(--brand-rose)" stroke-width="2"/>`;
 
@@ -246,204 +319,204 @@ const DiagramLibrary = {
     return this._svg(shapesHtml, { alt: `${count} equilateral triangle(s) with side length ${sideLength}${unit}` });
   },
 
-rulerMeasurement(params) {
-      const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      
-      const item = params.item || 'Object';
-      const unit = params.unit || 'cm';
-      const minVal = params.min_value !== undefined ? params.min_value : 0;
-      const maxVal = params.max_value !== undefined ? params.max_value : 15;
-      const startRead = params.start_reading !== undefined ? params.start_reading : 0;
-      const endRead = params.end_reading !== undefined ? params.end_reading : 10;
-      
-      const majorInt = params.major_interval || 1;
-      const minorInt = params.minor_interval || 0.1;
-      
-      const svgW = 800;
-      const svgH = 300;
-      const margin = { top: 120, right: 60, bottom: 60, left: 60 };
-      const drawW = svgW - margin.left - margin.right;
-      const range = Math.max(1, maxVal - minVal);
-      
-      // Helper to map ruler values to SVG X coordinates
-      const xMap = (val) => margin.left + ((val - minVal) / range) * drawW;
+  rulerMeasurement(params) {
+    const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-      let html = `<div style="font-family: 'Inter', system-ui, sans-serif; width: 100%; max-width: ${svgW}px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">`;
-      html += `<svg viewBox="0 0 ${svgW} ${svgH}" width="100%" height="100%">`;
+    const item = params.item || 'Object';
+    const unit = params.unit || 'cm';
+    const minVal = params.min_value !== undefined ? params.min_value : 0;
+    const maxVal = params.max_value !== undefined ? params.max_value : 15;
+    const startRead = params.start_reading !== undefined ? params.start_reading : 0;
+    const endRead = params.end_reading !== undefined ? params.end_reading : 10;
 
-      // 1. Draw the Ruler Body
-      html += `<rect x="${margin.left - 20}" y="${margin.top}" width="${drawW + 40}" height="70" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2" rx="6"/>`;
-      
-      // 2. Draw Ruler Ticks and Numbers
-      const eps = minorInt / 100; // Epsilon to handle JS floating point math
-      for (let v = minVal; v <= maxVal + eps; v += minorInt) {
-        const x = xMap(v);
-        
-        // Determine if it's a major, half, or minor tick
-        const remainder = Math.abs((v - minVal) % majorInt);
-        const isMajor = remainder < eps || remainder > majorInt - eps;
-        const halfRemainder = Math.abs((v - minVal) % (majorInt / 2));
-        const isHalf = !isMajor && (halfRemainder < eps || halfRemainder > (majorInt / 2) - eps);
+    const majorInt = params.major_interval || 1;
+    const minorInt = params.minor_interval || 0.1;
 
-        let tickH = 8, strokeW = 1.5;
-        if (isMajor) { tickH = 20; strokeW = 2; }
-        else if (isHalf) { tickH = 14; strokeW = 1.5; }
+    const svgW = 800;
+    const svgH = 300;
+    const margin = { top: 120, right: 60, bottom: 60, left: 60 };
+    const drawW = svgW - margin.left - margin.right;
+    const range = Math.max(1, maxVal - minVal);
 
-        html += `<line x1="${x}" y1="${margin.top}" x2="${x}" y2="${margin.top + tickH}" stroke="#334155" stroke-width="${strokeW}"/>`;
-        
-        if (isMajor) {
-          const labelVal = Math.round(v * 100) / 100; // Clean decimal output
-          html += `<text x="${x}" y="${margin.top + 45}" text-anchor="middle" font-size="15" font-weight="600" fill="#334155">${labelVal}</text>`;
-        }
+    // Helper to map ruler values to SVG X coordinates
+    const xMap = (val) => margin.left + ((val - minVal) / range) * drawW;
+
+    let html = `<div style="font-family: 'Inter', system-ui, sans-serif; width: 100%; max-width: ${svgW}px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">`;
+    html += `<svg viewBox="0 0 ${svgW} ${svgH}" width="100%" height="100%">`;
+
+    // 1. Draw the Ruler Body
+    html += `<rect x="${margin.left - 20}" y="${margin.top}" width="${drawW + 40}" height="70" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2" rx="6"/>`;
+
+    // 2. Draw Ruler Ticks and Numbers
+    const eps = minorInt / 100; // Epsilon to handle JS floating point math
+    for (let v = minVal; v <= maxVal + eps; v += minorInt) {
+      const x = xMap(v);
+
+      // Determine if it's a major, half, or minor tick
+      const remainder = Math.abs((v - minVal) % majorInt);
+      const isMajor = remainder < eps || remainder > majorInt - eps;
+      const halfRemainder = Math.abs((v - minVal) % (majorInt / 2));
+      const isHalf = !isMajor && (halfRemainder < eps || halfRemainder > (majorInt / 2) - eps);
+
+      let tickH = 8, strokeW = 1.5;
+      if (isMajor) { tickH = 20; strokeW = 2; }
+      else if (isHalf) { tickH = 14; strokeW = 1.5; }
+
+      html += `<line x1="${x}" y1="${margin.top}" x2="${x}" y2="${margin.top + tickH}" stroke="#334155" stroke-width="${strokeW}"/>`;
+
+      if (isMajor) {
+        const labelVal = Math.round(v * 100) / 100; // Clean decimal output
+        html += `<text x="${x}" y="${margin.top + 45}" text-anchor="middle" font-size="15" font-weight="600" fill="#334155">${labelVal}</text>`;
       }
+    }
 
-      // Unit Label on the right edge of the ruler
-      html += `<text x="${svgW - margin.right + 5}" y="${margin.top + 45}" text-anchor="end" font-size="14" font-weight="700" fill="#64748b">${esc(unit)}</text>`;
+    // Unit Label on the right edge of the ruler
+    html += `<text x="${svgW - margin.right + 5}" y="${margin.top + 45}" text-anchor="end" font-size="14" font-weight="700" fill="#64748b">${esc(unit)}</text>`;
 
-      // 3. Draw the Object (e.g., Pencil or Box)
-      const objStartX = xMap(Math.min(startRead, endRead));
-      const objEndX = xMap(Math.max(startRead, endRead));
-      const objW = objEndX - objStartX;
-      const objY = margin.top - 45;
-      const objH = 30;
+    // 3. Draw the Object (e.g., Pencil or Box)
+    const objStartX = xMap(Math.min(startRead, endRead));
+    const objEndX = xMap(Math.max(startRead, endRead));
+    const objW = objEndX - objStartX;
+    const objY = margin.top - 45;
+    const objH = 30;
 
-      if (item.toLowerCase().includes('pencil')) {
-        // Draw a pencil shape
-        const bodyW = objW * 0.8;
-        html += `<rect x="${objStartX}" y="${objY}" width="${bodyW}" height="${objH}" fill="#FBBF24" stroke="#B45309" stroke-width="2"/>`;
-        // Pencil Tip
-        html += `<polygon points="${objStartX + bodyW},${objY} ${objEndX},${objY + objH/2} ${objStartX + bodyW},${objY + objH}" fill="#FDE68A" stroke="#B45309" stroke-width="2"/>`;
-        // Pencil Lead
-        html += `<polygon points="${objEndX - objW*0.05},${objY + objH/2 - 3} ${objEndX},${objY + objH/2} ${objEndX - objW*0.05},${objY + objH/2 + 3}" fill="#334155"/>`;
-        // Eraser End
-        html += `<rect x="${objStartX - 10}" y="${objY}" width="10" height="${objH}" fill="#FCA5A5" stroke="#B45309" stroke-width="2" rx="2"/>`;
-      } else {
-        // Generic rectangular block for anything else
-        html += `<rect x="${objStartX}" y="${objY}" width="${objW}" height="${objH}" fill="var(--brand-mint, #10B981)" stroke="#059669" stroke-width="2" rx="4"/>`;
-        html += `<text x="${objStartX + objW/2}" y="${objY + 20}" text-anchor="middle" font-size="14" font-weight="bold" fill="#ffffff">${esc(item.toUpperCase())}</text>`;
-      }
+    if (item.toLowerCase().includes('pencil')) {
+      // Draw a pencil shape
+      const bodyW = objW * 0.8;
+      html += `<rect x="${objStartX}" y="${objY}" width="${bodyW}" height="${objH}" fill="#FBBF24" stroke="#B45309" stroke-width="2"/>`;
+      // Pencil Tip
+      html += `<polygon points="${objStartX + bodyW},${objY} ${objEndX},${objY + objH / 2} ${objStartX + bodyW},${objY + objH}" fill="#FDE68A" stroke="#B45309" stroke-width="2"/>`;
+      // Pencil Lead
+      html += `<polygon points="${objEndX - objW * 0.05},${objY + objH / 2 - 3} ${objEndX},${objY + objH / 2} ${objEndX - objW * 0.05},${objY + objH / 2 + 3}" fill="#334155"/>`;
+      // Eraser End
+      html += `<rect x="${objStartX - 10}" y="${objY}" width="10" height="${objH}" fill="#FCA5A5" stroke="#B45309" stroke-width="2" rx="2"/>`;
+    } else {
+      // Generic rectangular block for anything else
+      html += `<rect x="${objStartX}" y="${objY}" width="${objW}" height="${objH}" fill="var(--brand-mint, #10B981)" stroke="#059669" stroke-width="2" rx="4"/>`;
+      html += `<text x="${objStartX + objW / 2}" y="${objY + 20}" text-anchor="middle" font-size="14" font-weight="bold" fill="#ffffff">${esc(item.toUpperCase())}</text>`;
+    }
 
-      // 4. Draw Dotted Guide Lines
-      html += `<line x1="${objStartX}" y1="${objY - 10}" x2="${objStartX}" y2="${margin.top}" stroke="#EF4444" stroke-width="2" stroke-dasharray="6 4"/>`;
-      html += `<line x1="${objEndX}" y1="${objY - 10}" x2="${objEndX}" y2="${margin.top}" stroke="#EF4444" stroke-width="2" stroke-dasharray="6 4"/>`;
+    // 4. Draw Dotted Guide Lines
+    html += `<line x1="${objStartX}" y1="${objY - 10}" x2="${objStartX}" y2="${margin.top}" stroke="#EF4444" stroke-width="2" stroke-dasharray="6 4"/>`;
+    html += `<line x1="${objEndX}" y1="${objY - 10}" x2="${objEndX}" y2="${margin.top}" stroke="#EF4444" stroke-width="2" stroke-dasharray="6 4"/>`;
 
-      // 5. Title
-      if (params.title) {
-        html += `<text x="${svgW/2}" y="35" text-anchor="middle" font-size="18" font-weight="700" fill="#1e293b">${esc(params.title)}</text>`;
-      }
+    // 5. Title
+    if (params.title) {
+      html += `<text x="${svgW / 2}" y="35" text-anchor="middle" font-size="18" font-weight="700" fill="#1e293b">${esc(params.title)}</text>`;
+    }
 
-      html += `</svg>`;
-      if (params.notes) {
-        html += `<div style="margin-top: 12px; text-align: center; font-size: 13px; color: #64748b;"><em>${esc(params.notes)}</em></div>`;
-      }
-      html += `</div>`;
-      
-      return html;
-    },
+    html += `</svg>`;
+    if (params.notes) {
+      html += `<div style="margin-top: 12px; text-align: center; font-size: 13px; color: #64748b;"><em>${esc(params.notes)}</em></div>`;
+    }
+    html += `</div>`;
+
+    return html;
+  },
 
   verticalBarChart(params) {
-      const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      
-      const title = params.title || '';
-      const xAxisLabel = params.xAxisLabel || '';
-      const yAxisLabel = params.yAxisLabel || '';
-      const data = params.data || [];
-      const yMin = params.yAxisMin !== undefined ? params.yAxisMin : 0;
-      
-      // Calculate max if not provided
-      let calcMax = 10;
-      data.forEach(d => { if (typeof d.value === 'number' && d.value > calcMax) calcMax = d.value; });
-      const yMax = params.yAxisMax !== undefined ? params.yAxisMax : calcMax;
-      const yStep = params.yAxisStep || Math.max(1, Math.ceil((yMax - yMin) / 5));
-      
-      const svgW = 600;
-      const svgH = 400;
-      const margin = { top: 50, right: 40, bottom: 60, left: 70 };
-      const chartW = svgW - margin.left - margin.right;
-      const chartH = svgH - margin.top - margin.bottom;
+    const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-      let html = `<div style="font-family: 'Inter', system-ui, sans-serif; width: 100%; max-width: ${svgW}px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">`;
-      html += `<svg viewBox="0 0 ${svgW} ${svgH}" width="100%" height="100%">`;
-      
-      // Title
-      if (title) {
-        html += `<text x="${svgW/2}" y="25" text-anchor="middle" font-size="18" font-weight="700" fill="#1e293b">${esc(title)}</text>`;
-      }
+    const title = params.title || '';
+    const xAxisLabel = params.xAxisLabel || '';
+    const yAxisLabel = params.yAxisLabel || '';
+    const data = params.data || [];
+    const yMin = params.yAxisMin !== undefined ? params.yAxisMin : 0;
 
-      // Y-Axis Label
-      if (yAxisLabel) {
-        html += `<text x="-${margin.top + chartH/2}" y="20" transform="rotate(-90)" text-anchor="middle" font-size="14" font-weight="600" fill="#64748b">${esc(yAxisLabel)}</text>`;
-      }
+    // Calculate max if not provided
+    let calcMax = 10;
+    data.forEach(d => { if (typeof d.value === 'number' && d.value > calcMax) calcMax = d.value; });
+    const yMax = params.yAxisMax !== undefined ? params.yAxisMax : calcMax;
+    const yStep = params.yAxisStep || Math.max(1, Math.ceil((yMax - yMin) / 5));
 
-      // X-Axis Label
-      if (xAxisLabel) {
-        html += `<text x="${margin.left + chartW/2}" y="${svgH - 10}" text-anchor="middle" font-size="14" font-weight="600" fill="#64748b">${esc(xAxisLabel)}</text>`;
-      }
+    const svgW = 600;
+    const svgH = 400;
+    const margin = { top: 50, right: 40, bottom: 60, left: 70 };
+    const chartW = svgW - margin.left - margin.right;
+    const chartH = svgH - margin.top - margin.bottom;
 
-      // Grid & Y-Axis values
-      const yRange = Math.max(1, yMax - yMin);
-      for (let yVal = yMin; yVal <= yMax; yVal += yStep) {
-        const yPos = margin.top + chartH - ((yVal - yMin) / yRange) * chartH;
-        // Grid line
-        html += `<line x1="${margin.left}" y1="${yPos}" x2="${svgW - margin.right}" y2="${yPos}" stroke="#e2e8f0" stroke-width="1.5" stroke-dasharray="4 4"/>`;
-        // Label
-        html += `<text x="${margin.left - 15}" y="${yPos + 5}" text-anchor="end" font-size="13" font-weight="500" fill="#475569">${yVal}</text>`;
-      }
+    let html = `<div style="font-family: 'Inter', system-ui, sans-serif; width: 100%; max-width: ${svgW}px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">`;
+    html += `<svg viewBox="0 0 ${svgW} ${svgH}" width="100%" height="100%">`;
 
-      // Base X-Axis line
-      html += `<line x1="${margin.left}" y1="${margin.top + chartH}" x2="${svgW - margin.right}" y2="${margin.top + chartH}" stroke="#64748b" stroke-width="2"/>`;
+    // Title
+    if (title) {
+      html += `<text x="${svgW / 2}" y="25" text-anchor="middle" font-size="18" font-weight="700" fill="#1e293b">${esc(title)}</text>`;
+    }
 
-      // Bars
-      const n = data.length;
-      if (n > 0) {
-        const barSpacing = chartW / n;
-        const barW = Math.min(barSpacing * 0.6, 60); 
-        
-        data.forEach((d, i) => {
-          const xCenter = margin.left + (i + 0.5) * barSpacing;
-          const xPos = xCenter - barW / 2;
-          
-          // X-Axis label
-          html += `<text x="${xCenter}" y="${margin.top + chartH + 24}" text-anchor="middle" font-size="13" font-weight="600" fill="#334155">${esc(d.label)}</text>`;
-          
-          // "COVERED" DATA LOGIC
-          if (d.value === 'covered') {
-            const coverY = margin.top + chartH * 0.2; 
-            const coverH = chartH * 0.8;
-            
-            // Draw a literal "Ink Splatter" blob to hide the bar!
-            html += `<path d="M ${xPos - 10} ${coverY + 20} Q ${xCenter} ${coverY - 20} ${xPos + barW + 10} ${coverY + 10} L ${xPos + barW + 15} ${coverY + coverH} L ${xPos - 15} ${coverY + coverH} Z" fill="#94a3b8" opacity="0.9"/>`;
-            html += `<text x="${xCenter}" y="${coverY + coverH/2}" text-anchor="middle" font-size="32" font-weight="bold" fill="#ffffff">?</text>`;
-            html += `<text x="${xCenter}" y="${coverY + coverH/2 + 25}" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff" letter-spacing="1">INK SPILL</text>`;
-          } 
-          // NORMAL DATA LOGIC
-          else {
-            const val = parseFloat(d.value) || 0;
-            const barH = ((val - yMin) / yRange) * chartH;
-            const yPos = margin.top + chartH - barH;
-            
-            html += `<rect x="${xPos}" y="${yPos}" width="${barW}" height="${barH}" fill="var(--brand-mint, #10B981)" rx="3" ry="3" stroke="#059669" stroke-width="2"/>`;
-          }
-        });
-      }
+    // Y-Axis Label
+    if (yAxisLabel) {
+      html += `<text x="-${margin.top + chartH / 2}" y="20" transform="rotate(-90)" text-anchor="middle" font-size="14" font-weight="600" fill="#64748b">${esc(yAxisLabel)}</text>`;
+    }
 
-      html += `</svg>`;
-      if (params.notes) {
-        html += `<div style="margin-top: 12px; text-align: center; font-size: 13px; color: #64748b;"><em>${esc(params.notes)}</em></div>`;
-      }
-      html += `</div>`;
-      
-      return html;
-    },
+    // X-Axis Label
+    if (xAxisLabel) {
+      html += `<text x="${margin.left + chartW / 2}" y="${svgH - 10}" text-anchor="middle" font-size="14" font-weight="600" fill="#64748b">${esc(xAxisLabel)}</text>`;
+    }
 
-// 🚀 AI FUNCTION: Pie Chart Generator
+    // Grid & Y-Axis values
+    const yRange = Math.max(1, yMax - yMin);
+    for (let yVal = yMin; yVal <= yMax; yVal += yStep) {
+      const yPos = margin.top + chartH - ((yVal - yMin) / yRange) * chartH;
+      // Grid line
+      html += `<line x1="${margin.left}" y1="${yPos}" x2="${svgW - margin.right}" y2="${yPos}" stroke="#e2e8f0" stroke-width="1.5" stroke-dasharray="4 4"/>`;
+      // Label
+      html += `<text x="${margin.left - 15}" y="${yPos + 5}" text-anchor="end" font-size="13" font-weight="500" fill="#475569">${yVal}</text>`;
+    }
+
+    // Base X-Axis line
+    html += `<line x1="${margin.left}" y1="${margin.top + chartH}" x2="${svgW - margin.right}" y2="${margin.top + chartH}" stroke="#64748b" stroke-width="2"/>`;
+
+    // Bars
+    const n = data.length;
+    if (n > 0) {
+      const barSpacing = chartW / n;
+      const barW = Math.min(barSpacing * 0.6, 60);
+
+      data.forEach((d, i) => {
+        const xCenter = margin.left + (i + 0.5) * barSpacing;
+        const xPos = xCenter - barW / 2;
+
+        // X-Axis label
+        html += `<text x="${xCenter}" y="${margin.top + chartH + 24}" text-anchor="middle" font-size="13" font-weight="600" fill="#334155">${esc(d.label)}</text>`;
+
+        // "COVERED" DATA LOGIC
+        if (d.value === 'covered') {
+          const coverY = margin.top + chartH * 0.2;
+          const coverH = chartH * 0.8;
+
+          // Draw a literal "Ink Splatter" blob to hide the bar!
+          html += `<path d="M ${xPos - 10} ${coverY + 20} Q ${xCenter} ${coverY - 20} ${xPos + barW + 10} ${coverY + 10} L ${xPos + barW + 15} ${coverY + coverH} L ${xPos - 15} ${coverY + coverH} Z" fill="#94a3b8" opacity="0.9"/>`;
+          html += `<text x="${xCenter}" y="${coverY + coverH / 2}" text-anchor="middle" font-size="32" font-weight="bold" fill="#ffffff">?</text>`;
+          html += `<text x="${xCenter}" y="${coverY + coverH / 2 + 25}" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff" letter-spacing="1">INK SPILL</text>`;
+        }
+        // NORMAL DATA LOGIC
+        else {
+          const val = parseFloat(d.value) || 0;
+          const barH = ((val - yMin) / yRange) * chartH;
+          const yPos = margin.top + chartH - barH;
+
+          html += `<rect x="${xPos}" y="${yPos}" width="${barW}" height="${barH}" fill="var(--brand-mint, #10B981)" rx="3" ry="3" stroke="#059669" stroke-width="2"/>`;
+        }
+      });
+    }
+
+    html += `</svg>`;
+    if (params.notes) {
+      html += `<div style="margin-top: 12px; text-align: center; font-size: 13px; color: #64748b;"><em>${esc(params.notes)}</em></div>`;
+    }
+    html += `</div>`;
+
+    return html;
+  },
+
+  // 🚀 AI FUNCTION: Pie Chart Generator
   pieChart(params) {
     // ADD THIS LINE RIGHT HERE:
     const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    
+
     const { data = [], title = "" } = params;
     const w = 400, h = 260;
-    
+
     // Position the pie slightly to the left to leave room for the legend
     const cx = 130, cy = 140, r = 90;
 
@@ -464,7 +537,7 @@ rulerMeasurement(params) {
       const color = colors[i % colors.length];
 
       // Safe-catch for 100% full circle
-      if (sliceAngle >= 2 * Math.PI - 0.001) { 
+      if (sliceAngle >= 2 * Math.PI - 0.001) {
         slices += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${color}" stroke="#fff" stroke-width="1.5"/>`;
       } else if (sliceAngle > 0) {
         // Calculate SVG path points using Trigonometry
@@ -489,12 +562,12 @@ rulerMeasurement(params) {
 
         // Add percentage label inside the slice (if it's wide enough to fit text)
         if (sliceAngle > 0.3) {
-           const midAngle = currentAngle + sliceAngle / 2;
-           const labelR = r * 0.65; // Position text 65% of the way to the edge
-           const lx = cx + labelR * Math.cos(midAngle);
-           const ly = cy + labelR * Math.sin(midAngle) + 4; // +4 to vertically center text
-           const pct = Math.round((val/total)*100) + '%';
-           slices += `<text x="${lx}" y="${ly}" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="bold">${pct}</text>`;
+          const midAngle = currentAngle + sliceAngle / 2;
+          const labelR = r * 0.65; // Position text 65% of the way to the edge
+          const lx = cx + labelR * Math.cos(midAngle);
+          const ly = cy + labelR * Math.sin(midAngle) + 4; // +4 to vertically center text
+          const pct = Math.round((val / total) * 100) + '%';
+          slices += `<text x="${lx}" y="${ly}" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="bold">${pct}</text>`;
         }
 
         currentAngle = endAngle;
@@ -503,7 +576,7 @@ rulerMeasurement(params) {
       // Build the Legend on the right side
       const legX = 250;
       const legY = 80 + (i * 24); // Space each item 24px apart vertically
-      
+
       legend += `
         <rect x="${legX}" y="${legY - 11}" width="14" height="14" fill="${color}" rx="3"/>
         <text x="${legX + 22}" y="${legY}" font-size="12" fill="var(--text-main)" font-weight="500">${esc(item.label)}</text>
@@ -519,7 +592,7 @@ rulerMeasurement(params) {
     `, { alt: title || 'Pie Chart' });
   },
 
-// 🚀 AI FUNCTION: Dynamic Polygon Generator (Draws any N-sided shape)
+  // 🚀 AI FUNCTION: Dynamic Polygon Generator (Draws any N-sided shape)
   polygon(params) {
     const w = 400, h = 260;
     const cx = 200, cy = 130;
@@ -529,10 +602,10 @@ rulerMeasurement(params) {
     const rawVertices = params.vertices || [];
     // The AI sometimes passes strings ['A','B'] or objects [{label: 'A'}, {label: 'B'}]
     const vertices = rawVertices.map(v => typeof v === 'string' ? v : (v.label || ''));
-    
+
     // Fallback to a triangle if something goes wrong
-    const n = vertices.length > 2 ? vertices.length : 3; 
-    
+    const n = vertices.length > 2 ? vertices.length : 3;
+
     let points = [];
     let labelsHtml = '';
     let angleArcsHtml = '';
@@ -551,7 +624,7 @@ rulerMeasurement(params) {
       const labelR = r + 20;
       const lx = cx + labelR * Math.cos(angle);
       const ly = cy + labelR * Math.sin(angle);
-      
+
       // Smart text alignment based on position
       const baseline = ly > cy + 10 ? 'hanging' : (ly < cy - 10 ? 'auto' : 'middle');
       const anchor = lx > cx + 10 ? 'start' : (lx < cx - 10 ? 'end' : 'middle');
@@ -568,14 +641,14 @@ rulerMeasurement(params) {
       // Find the middle letter (the actual corner we are measuring)
       const targetVertex = angleToMeasure[1];
       const targetIdx = vertices.indexOf(targetVertex);
-      
+
       if (targetIdx !== -1) {
         // Place a question mark "?" slightly inward from that specific corner
         const targetAngle = startAngle + (targetIdx * 2 * Math.PI) / n;
-        const textR = r - 25; 
+        const textR = r - 25;
         const tx = cx + textR * Math.cos(targetAngle);
         const ty = cy + textR * Math.sin(targetAngle);
-        
+
         angleArcsHtml += `<text x="${tx}" y="${ty + 6}" font-size="18" font-weight="bold" fill="var(--brand-rose)" text-anchor="middle">?</text>`;
       }
     }
@@ -590,7 +663,7 @@ rulerMeasurement(params) {
     `;
   },
 
-// 🚀 AI FUNCTION: Isometric Cuboid / Water Tank
+  // 🚀 AI FUNCTION: Isometric Cuboid / Water Tank
   cuboid(params) {
     const esc = this._esc ? this._esc.bind(this) : (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     const lLabel = params.length_label || '';
@@ -600,7 +673,7 @@ rulerMeasurement(params) {
 
     const w = 400, h = 260;
     const fx = 100, fy = 80, fw = 150, fh = 120;
-    const depthX = 60, depthY = -40; 
+    const depthX = 60, depthY = -40;
 
     let svg = '';
     // Back edges (dashed to show depth)
@@ -610,7 +683,7 @@ rulerMeasurement(params) {
 
     // Render Water Level inside the tank
     if (waterLevel) {
-      const wl = Math.max(0, Math.min(1, parseFloat(waterLevel))); 
+      const wl = Math.max(0, Math.min(1, parseFloat(waterLevel)));
       const wH = fh * wl;
       const wY = fy + fh - wH;
       // Top water surface
@@ -638,7 +711,7 @@ rulerMeasurement(params) {
   parallelogram(params) {
     const esc = this._esc ? this._esc.bind(this) : (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     const w = 400, h = 260;
-    const v = params.vertices || ['A', 'B', 'C', 'D']; 
+    const v = params.vertices || ['A', 'B', 'C', 'D'];
     const px = 100, py = 70;
     const width = 160, height = 110, skew = 60;
 
@@ -650,8 +723,8 @@ rulerMeasurement(params) {
     let svg = `<polygon points="${tlX},${tlY} ${trX},${trY} ${brX},${brY} ${blX},${blY}" fill="rgba(81, 97, 94, 0.05)" stroke="var(--brand-sage)" stroke-width="3"/>`;
 
     if (params.show_diagonals) {
-        svg += `<line x1="${tlX}" y1="${tlY}" x2="${brX}" y2="${brY}" stroke="var(--border-dark, #ccc)" stroke-width="1.5" stroke-dasharray="4"/>`;
-        svg += `<line x1="${trX}" y1="${trY}" x2="${blX}" y2="${blY}" stroke="var(--border-dark, #ccc)" stroke-width="1.5" stroke-dasharray="4"/>`;
+      svg += `<line x1="${tlX}" y1="${tlY}" x2="${brX}" y2="${brY}" stroke="var(--border-dark, #ccc)" stroke-width="1.5" stroke-dasharray="4"/>`;
+      svg += `<line x1="${trX}" y1="${trY}" x2="${blX}" y2="${blY}" stroke="var(--border-dark, #ccc)" stroke-width="1.5" stroke-dasharray="4"/>`;
     }
 
     // Vertex Labels
@@ -663,10 +736,10 @@ rulerMeasurement(params) {
     // Internal Angle Markers
     if (params.angle_arcs) {
       params.angle_arcs.forEach(arc => {
-        const pt = arc.vertex === v[0] ? {x: tlX + 25, y: tlY + 22} :
-                   arc.vertex === v[1] ? {x: trX - 25, y: trY + 22} :
-                   arc.vertex === v[2] ? {x: brX - 28, y: brY - 15} :
-                   {x: blX + 30, y: blY - 15};
+        const pt = arc.vertex === v[0] ? { x: tlX + 25, y: tlY + 22 } :
+          arc.vertex === v[1] ? { x: trX - 25, y: trY + 22 } :
+            arc.vertex === v[2] ? { x: brX - 28, y: brY - 15 } :
+              { x: blX + 30, y: blY - 15 };
         svg += `<text x="${pt.x}" y="${pt.y}" font-size="14" font-weight="bold" text-anchor="middle" fill="var(--brand-rose)">${esc(arc.label)}</text>`;
       });
     }
@@ -674,7 +747,7 @@ rulerMeasurement(params) {
     return `<svg width="100%" viewBox="0 0 ${w} ${h}" style="height: auto; max-width: 500px; display: block; margin: 0 auto;">${svg}</svg>`;
   },
 
-// 🚀 AI FUNCTION 1: Right Angle Divided
+  // 🚀 AI FUNCTION 1: Right Angle Divided
   rightAngleDivided(params) {
     const w = 400, h = 260;
     const cx = 200, cy = 200;
@@ -683,7 +756,7 @@ rulerMeasurement(params) {
     const lines = params.lines || [];
     const angles = params.angles || [];
     const vertices = params.vertices || [];
-    
+
     // Find the center vertex
     const center = lines.length > 0 ? lines[0].start : 'O';
 
@@ -693,7 +766,7 @@ rulerMeasurement(params) {
 
     let rightVertex = baseEnds[0] || 'A';
     let leftVertex = baseEnds[1] || 'B';
-    
+
     let svg = `<line x1="${cx - r}" y1="${cy}" x2="${cx + r}" y2="${cy}" stroke="var(--border-dark, #ccc)" stroke-width="3"/>`;
     svg += `<circle cx="${cx}" cy="${cy}" r="4" fill="var(--brand-sage, #51615E)"/>`;
 
@@ -708,30 +781,30 @@ rulerMeasurement(params) {
 
     // Draw the rays (e.g., D, E, C at 30, 60, 90 degrees)
     rayEnds.forEach((endVertex, index) => {
-        const totalRays = rayEnds.length;
-        const angleDeg = (index + 1) * (90 / totalRays);
-        const rad = angleDeg * Math.PI / 180;
-        
-        const rayX = cx + r * Math.cos(rad);
-        const rayY = cy - r * Math.sin(rad);
-        
-        svg += `<line x1="${cx}" y1="${cy}" x2="${rayX}" y2="${rayY}" stroke="var(--text-main, #333)" stroke-width="2"/>`;
-        labelsHtml += `<text x="${rayX + 10}" y="${rayY - 10}" font-size="16" font-weight="bold" fill="var(--text-muted)">${endVertex}</text>`;
+      const totalRays = rayEnds.length;
+      const angleDeg = (index + 1) * (90 / totalRays);
+      const rad = angleDeg * Math.PI / 180;
+
+      const rayX = cx + r * Math.cos(rad);
+      const rayY = cy - r * Math.sin(rad);
+
+      svg += `<line x1="${cx}" y1="${cy}" x2="${rayX}" y2="${rayY}" stroke="var(--text-main, #333)" stroke-width="2"/>`;
+      labelsHtml += `<text x="${rayX + 10}" y="${rayY - 10}" font-size="16" font-weight="bold" fill="var(--text-muted)">${endVertex}</text>`;
     });
 
     // Angle labels (e.g., AOD, DOE, EOC)
     angles.forEach((ang, index) => {
-        const label = typeof ang === 'string' ? ang : (ang.label || '?');
-        const startAngle = index * (90 / rayEnds.length);
-        const endAngle = (index + 1) * (90 / rayEnds.length);
-        const midAngle = (startAngle + endAngle) / 2;
-        const midRad = midAngle * Math.PI / 180;
-        
-        const textRadius = r * 0.4;
-        const textX = cx + textRadius * Math.cos(midRad);
-        const textY = cy - textRadius * Math.sin(midRad);
-        
-        labelsHtml += `<text x="${textX}" y="${textY}" font-size="14" font-weight="bold" text-anchor="middle" fill="var(--brand-sage)">${label}</text>`;
+      const label = typeof ang === 'string' ? ang : (ang.label || '?');
+      const startAngle = index * (90 / rayEnds.length);
+      const endAngle = (index + 1) * (90 / rayEnds.length);
+      const midAngle = (startAngle + endAngle) / 2;
+      const midRad = midAngle * Math.PI / 180;
+
+      const textRadius = r * 0.4;
+      const textX = cx + textRadius * Math.cos(midRad);
+      const textY = cy - textRadius * Math.sin(midRad);
+
+      labelsHtml += `<text x="${textX}" y="${textY}" font-size="14" font-weight="bold" text-anchor="middle" fill="var(--brand-sage)">${label}</text>`;
     });
 
     return `
@@ -751,7 +824,7 @@ rulerMeasurement(params) {
     const lines = params.lines || [];
     const angles = params.angles || [];
     const vertices = params.vertices || [];
-    
+
     // Find the center vertex
     const center = lines.length > 0 ? lines[0].start : 'O';
 
@@ -774,29 +847,29 @@ rulerMeasurement(params) {
     // Draw the rays dynamically spaced across 180 degrees
     const totalAngles = rayEnds.length + 1;
     rayEnds.forEach((endVertex, index) => {
-        const angleDeg = (index + 1) * (180 / totalAngles);
-        const rad = angleDeg * Math.PI / 180;
-        
-        const rayX = cx + r * Math.cos(rad);
-        const rayY = cy - r * Math.sin(rad);
-        
-        svg += `<line x1="${cx}" y1="${cy}" x2="${rayX}" y2="${rayY}" stroke="var(--text-main, #333)" stroke-width="2"/>`;
-        labelsHtml += `<text x="${rayX + 10}" y="${rayY - 10}" font-size="16" font-weight="bold" fill="var(--text-muted)">${endVertex}</text>`;
+      const angleDeg = (index + 1) * (180 / totalAngles);
+      const rad = angleDeg * Math.PI / 180;
+
+      const rayX = cx + r * Math.cos(rad);
+      const rayY = cy - r * Math.sin(rad);
+
+      svg += `<line x1="${cx}" y1="${cy}" x2="${rayX}" y2="${rayY}" stroke="var(--text-main, #333)" stroke-width="2"/>`;
+      labelsHtml += `<text x="${rayX + 10}" y="${rayY - 10}" font-size="16" font-weight="bold" fill="var(--text-muted)">${endVertex}</text>`;
     });
 
     // Angle labels
     angles.forEach((ang, index) => {
-        const label = typeof ang === 'string' ? ang : (ang.label || '?');
-        const startAngle = index * (180 / totalAngles);
-        const endAngle = (index + 1) * (180 / totalAngles);
-        const midAngle = (startAngle + endAngle) / 2;
-        const midRad = midAngle * Math.PI / 180;
-        
-        const textRadius = r * 0.45;
-        const textX = cx + textRadius * Math.cos(midRad);
-        const textY = cy - textRadius * Math.sin(midRad);
-        
-        labelsHtml += `<text x="${textX}" y="${textY}" font-size="14" font-weight="bold" text-anchor="middle" fill="var(--brand-sage)">${label}</text>`;
+      const label = typeof ang === 'string' ? ang : (ang.label || '?');
+      const startAngle = index * (180 / totalAngles);
+      const endAngle = (index + 1) * (180 / totalAngles);
+      const midAngle = (startAngle + endAngle) / 2;
+      const midRad = midAngle * Math.PI / 180;
+
+      const textRadius = r * 0.45;
+      const textX = cx + textRadius * Math.cos(midRad);
+      const textY = cy - textRadius * Math.sin(midRad);
+
+      labelsHtml += `<text x="${textX}" y="${textY}" font-size="14" font-weight="bold" text-anchor="middle" fill="var(--brand-sage)">${label}</text>`;
     });
 
     return `
@@ -807,15 +880,15 @@ rulerMeasurement(params) {
     `;
   },
 
-rectangleDividedRightAngle(params) {
+  rectangleDividedRightAngle(params) {
     // Canvas sizing
     const w = 400, h = 260;
-    
+
     // Rectangle vertices (Q is Bottom Left, P is Top Left, R is Bottom Right, S is Top Right)
     const qx = 50, qy = 210;
-    const px = 50, py = 50;   
-    const rx = 350, ry = 210; 
-    const sx = 350, sy = 50;  
+    const px = 50, py = 50;
+    const rx = 350, ry = 210;
+    const sx = 350, sy = 50;
 
     const v = params.vertices || ['P', 'Q', 'R', 'S'];
     const pName = v[0] || 'P';
@@ -829,7 +902,7 @@ rectangleDividedRightAngle(params) {
     // 🚀 SMART PARSER: Analyze the angles the AI actually asked for (e.g. PQT, SQT)
     const angles = params.angles || [];
     const endPoints = new Set();
-    
+
     angles.forEach(a => {
       let label = (a.label || '').toUpperCase().replace('ANGLE', '').trim();
       // Split the angle string by the center vertex (Q) to find the two endpoints
@@ -850,21 +923,21 @@ rectangleDividedRightAngle(params) {
 
     const extraRays = Array.from(endPoints);
     let labelsHtml = '';
-    
+
     // 1. If S is mentioned in the angles, draw the rectangle's diagonal
     if (extraRays.includes(sName)) {
-        svg += `<line x1="${qx}" y1="${qy}" x2="${sx}" y2="${sy}" stroke="var(--border-dark, #ccc)" stroke-width="2"/>`;
-        extraRays.splice(extraRays.indexOf(sName), 1); // Remove S from the queue
+      svg += `<line x1="${qx}" y1="${qy}" x2="${sx}" y2="${sy}" stroke="var(--border-dark, #ccc)" stroke-width="2"/>`;
+      extraRays.splice(extraRays.indexOf(sName), 1); // Remove S from the queue
     }
 
     // 2. Draw any remaining extra lines (like T) that were explicitly mentioned in the text
     extraRays.forEach((ptName, index) => {
-        const rad = (60 - (index * 20)) * Math.PI / 180;
-        const lineLen = 200; 
-        const tx = qx + lineLen * Math.cos(rad);
-        const ty = qy - lineLen * Math.sin(rad);
-        svg += `<line x1="${qx}" y1="${qy}" x2="${tx}" y2="${ty}" stroke="var(--text-main, #333)" stroke-width="2"/>`;
-        labelsHtml += `<text x="${tx + 10}" y="${ty + 10}" font-size="14" font-weight="bold" fill="var(--text-muted)">${ptName}</text>`;
+      const rad = (60 - (index * 20)) * Math.PI / 180;
+      const lineLen = 200;
+      const tx = qx + lineLen * Math.cos(rad);
+      const ty = qy - lineLen * Math.sin(rad);
+      svg += `<line x1="${qx}" y1="${qy}" x2="${tx}" y2="${ty}" stroke="var(--text-main, #333)" stroke-width="2"/>`;
+      labelsHtml += `<text x="${tx + 10}" y="${ty + 10}" font-size="14" font-weight="bold" fill="var(--text-muted)">${ptName}</text>`;
     });
 
     // 3. Label the 4 standard corners
@@ -881,15 +954,15 @@ rectangleDividedRightAngle(params) {
         ${labelsHtml}
       </svg>
     `;
-  },  
+  },
 
-dividedStraightLineAngle(params) {
+  dividedStraightLineAngle(params) {
     const cx = 200, cy = 200;
     const r = 160;
-    
+
     // 1. Draw the straight horizontal base line
     let linesHtml = `<line x1="${cx - r}" y1="${cy}" x2="${cx + r}" y2="${cy}" stroke="var(--border-dark, #ccc)" stroke-width="3"/>`;
-    
+
     // 2. Draw an intersecting ray to divide the angle
     const rad = (60 * Math.PI) / 180;
     const rayX = cx + r * Math.cos(-rad);
@@ -901,7 +974,7 @@ dividedStraightLineAngle(params) {
 
     // 4. Extract AI parameters (Angles and Vertices)
     const vertices = params.vertices || ['A', 'O', 'B', 'C'];
-    
+
     // 🚀 THE FIX: Handle both simple strings AND complex AI objects
     const angles = params.angles || [];
     const a1 = angles[0]?.label || (typeof angles[0] === 'string' ? angles[0] : '?');
@@ -926,7 +999,7 @@ dividedStraightLineAngle(params) {
   },
 
   // ── HELPERS ────────────────────────────────────────────────────────────────
-drawRectangleOnGrid(params) {
+  drawRectangleOnGrid(params) {
     const w_cm = parseFloat(params.width_cm) || 10;
     const l_cm = parseFloat(params.length_cm) || 5;
     const unit = parseFloat(params.unit_grid_cm) || 1;
@@ -956,8 +1029,8 @@ drawRectangleOnGrid(params) {
     const rectSvg = `<rect x="${rectX}" y="${rectY}" width="${rectW}" height="${rectH}" fill="rgba(183, 110, 121, 0.1)" stroke="var(--brand-sage)" stroke-width="3"/>`;
 
     // Draw Labels
-    const labelTop = `<text x="${rectX + rectW/2}" y="${rectY - 8}" text-anchor="middle" fill="var(--text-main)" font-size="14" font-weight="bold">${params.labels || w_cm + 'cm'}</text>`;
-    const labelSide = `<text x="${rectX - 8}" y="${rectY + rectH/2}" text-anchor="end" alignment-baseline="middle" fill="var(--text-main)" font-size="14" font-weight="bold">${l_cm + 'cm'}</text>`;
+    const labelTop = `<text x="${rectX + rectW / 2}" y="${rectY - 8}" text-anchor="middle" fill="var(--text-main)" font-size="14" font-weight="bold">${params.labels || w_cm + 'cm'}</text>`;
+    const labelSide = `<text x="${rectX - 8}" y="${rectY + rectH / 2}" text-anchor="end" alignment-baseline="middle" fill="var(--text-main)" font-size="14" font-weight="bold">${l_cm + 'cm'}</text>`;
 
     const content = `
       <svg width="100%" style="height: auto;" viewBox="0 0 ${gridW} ${gridH}" style="max-width: 500px;">
@@ -970,22 +1043,22 @@ drawRectangleOnGrid(params) {
     return content;
   },
 
-table(params) {
+  table(params) {
     // 🚀 FIX: Strictly enforce arrays to prevent .map() and .forEach() crashes
     const headers = Array.isArray(params.headers) ? params.headers : [];
     const rows = Array.isArray(params.rows) ? params.rows : [];
-    
+
     let thead = headers.length > 0 ? `
       <thead class="bg-elevated border-b border-light">
         <tr>${headers.map(h => `<th class="p-3 text-left font-bold text-main border-r border-light last:border-r-0">${h}</th>`).join('')}</tr>
       </thead>
     ` : '';
-    
+
     let tbody = `<tbody>`;
     rows.forEach((row) => {
-       // Handle both array-based rows and object-based rows dynamically
-       let rData = Array.isArray(row) ? row : Object.values(row);
-       tbody += `<tr class="border-b border-light last:border-b-0 hover:bg-page transition-colors">
+      // Handle both array-based rows and object-based rows dynamically
+      let rData = Array.isArray(row) ? row : Object.values(row);
+      tbody += `<tr class="border-b border-light last:border-b-0 hover:bg-page transition-colors">
           ${rData.map(cell => `<td class="p-3 text-main border-r border-light last:border-r-0">${cell}</td>`).join('')}
        </tr>`;
     });
@@ -1008,9 +1081,9 @@ table(params) {
 
     const w_units = w_cm / unit;
     const h_units = l_cm / unit;
-    const cellSize = 30; 
-    const gridW = (w_units + 2) * cellSize; 
-    const gridH = (h_units + 2) * cellSize; 
+    const cellSize = 30;
+    const gridW = (w_units + 2) * cellSize;
+    const gridH = (h_units + 2) * cellSize;
 
     // Extract exactly 4 corner labels (Default ABCD if missing)
     const lbl = (params.labels || "ABCD").padEnd(4, ' ');
@@ -1036,8 +1109,8 @@ table(params) {
       ${txt(BR, rectX + rectW + padding, rectY + rectH + padding, 'start', 'hanging')}
       ${txt(BL, rectX - padding, rectY + rectH + padding, 'end', 'hanging')}
       
-      <text x="${rectX + rectW/2}" y="${rectY - 6}" text-anchor="middle" fill="var(--text-main)" font-size="14">${w_cm}cm</text>
-      <text x="${rectX - 6}" y="${rectY + rectH/2}" text-anchor="end" alignment-baseline="middle" fill="var(--text-main)" font-size="14">${l_cm}cm</text>
+      <text x="${rectX + rectW / 2}" y="${rectY - 6}" text-anchor="middle" fill="var(--text-main)" font-size="14">${w_cm}cm</text>
+      <text x="${rectX - 6}" y="${rectY + rectH / 2}" text-anchor="end" alignment-baseline="middle" fill="var(--text-main)" font-size="14">${l_cm}cm</text>
     `;
 
     return `
@@ -1099,19 +1172,19 @@ table(params) {
     }
 
     const fnName = parsedPayload.function_name;
-    
+
     // Safety check: Parse params if they were double-stringified by the database
     let params = parsedPayload.params || {};
     if (typeof params === 'string') {
-      try { params = JSON.parse(params); } catch(e) {}
+      try { params = JSON.parse(params); } catch (e) { }
     }
 
     // 3. Security & Validation: Check if function exists or is missing
     if (!fnName || typeof fnName !== 'string' || typeof this[fnName] !== 'function' || fnName.startsWith('_') || fnName === 'render') {
       const missingName = fnName || 'UnknownFunction';
-      
+
       // 🚀 MASTERCLASS ROUTER: Intercept known AI hallucinations
-      
+
       // A. Did it try to draw a flow diagram using nodes/edges? Map it to our arrowDiagram.
       if (missingName.toLowerCase().includes('flow') && params.nodes && (params.edges || params.arrows)) {
         console.info(`[DiagramLibrary] Auto-routed ${missingName} to arrowDiagram`);
@@ -1127,9 +1200,9 @@ table(params) {
       // C. Ultimate Fallback (Developer Warning)
       console.warn(`[DiagramLibrary] To-Do: Missing or invalid function ${missingName}`);
       const paramKeys = params && Object.keys(params).length > 0 ? Object.keys(params).join(', ') : 'no params';
-      return this.placeholder({ 
-        description: `[Requires DiagramLibrary.${missingName}({ ${paramKeys} })]`, 
-        borderStyle: 'dashed' 
+      return this.placeholder({
+        description: `[Requires DiagramLibrary.${missingName}({ ${paramKeys} })]`,
+        borderStyle: 'dashed'
       });
     }
 
@@ -1410,7 +1483,7 @@ table(params) {
 
     const chartX = 55, chartY = 30, chartW = 310, chartH = 160;
     const autoMax = maxY || Math.ceil(Math.max(...bars.map(b => b.value)) * 1.2) || 10;
-// ... (leave the rest of the function untouched)
+    // ... (leave the rest of the function untouched)
     const barW = Math.min(40, (chartW / bars.length) - 8);
     const gap = (chartW - barW * bars.length) / (bars.length + 1);
 

@@ -288,12 +288,14 @@ You may ONLY use the following `function_name` values and their exact parameters
     *(PRO TIP: Use `"value": "covered"` to trigger the MOE "Ink Spill" question type where the student must calculate the hidden bar).*
 * `pictogram`: `{"title": "Stickers", "items": [{"label": "Ali", "count": 12}], "keyValue": 4, "keySymbol": "★"}`
 * `fractionBars`: `{"fractions": [{"numerator": 1, "denominator": 4}, {"numerator": 1, "denominator": 3}]}`
+* `unitModel`: Renders proportional "Before and After" or "Internal Transfer" models. `{"unitModel": {"models": [{"label": "Before", "parts": [{"width": 40, "shaded": false, "label": "1u"}, {"width": 40, "shaded": true, "label": "Transfer"}]}]}}`
 
 **--- 3. SCIENCE / GENERAL ---**
 * `thermometer`: `{"minTemp": 0, "maxTemp": 100, "currentTemp": 37, "unit": "°C", "label": "Beaker A"}`
 * `arrowDiagram`: For Food Chains/Life Cycles. `{"nodes": [{"id": "1", "label": "Seed"}, {"id": "2", "label": "Plant"}], "arrows": [{"from": "1", "to": "2"}], "layout": "hopip install antigravity-clirizontal"}`
 * `table`: Renders a clean HTML table. `{"headers": ["Material", "Magnetic?"], "rows": [["Iron", "Yes"], ["Wood", "No"]]}`
 * `genericExperiment`: Use this as a CATCH-ALL for science setups (Beakers, ramps, magnets). Provide an object of variables, and it will render a beautiful UI card. `{"Setup A": "Wrapped in black cloth, 30ml water", "Setup B": "Wrapped in white cloth, 30ml water"}`
+* `circuitDiagram`: Renders electrical circuits with MOE standardized symbols. `{"circuitDiagram": {"title": "Setup A", "components": [{"type": "battery"}, {"type": "switch", "isOpen": true}, {"type": "bulb", "position": "right", "fused": false}]}}`
 
 ═══════════════════════════════════════════════════════════════
 FINAL QUALITY CHECKLIST BEFORE OUTPUT

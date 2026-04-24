@@ -1211,6 +1211,8 @@ window.initExamEngine = function () {
           cognitive_skill: q.cognitive_skill || null,
           difficulty: q.difficulty || 'standard',
           correct: result ? result.isCorrect : false,
+          marks_earned: result ? result.score : 0,
+          marks_total: result ? result.maxScore : (q.marks || 1),
           answer_chosen: String(ans || '').slice(0, 200),
           correct_answer: String(q.correct_answer || ''),
         };

@@ -269,6 +269,9 @@ async function init() {
     // Fire the new Action Plan renderer
     renderActionPlanUI(totalSeconds, questionsMastered, overallPct, advancedSubjectStats, weakTopics, student, session, activeQuest, allActivity, improvedText);
     insertAOMasteryUI(aoStats);
+    
+    // 🚀 MASTERCLASS: Fetch and Render BKT Mastery Data
+    await renderBKT(db, student.id);
 
     // Fire legacy bottom history renderers
     if (activeQuest) renderQuestMap(activeQuest, db);
@@ -1313,3 +1316,82 @@ window.toggleDeepDive = async function (studentId, subject, btnEl, quizCount) {
     container.dataset.loaded = ""; // Allow retry
   }
 };
+
+// ── BKT RENDERING ENGINE (PHASE 3) ────────────────────────────────────────────
+
+async function renderBKT(db, studentId) {
+  const container = document.getElementById('bkt-mastery-list');
+  if (!container) return;
+
+  try {
+    const { data, error } = await db.from('mastery_levels')
+      .select('*')
+      .eq('student_id', studentId)
+      .order('probability', { ascending: false });
+
+    if (error) throw error;
+
+    if (!data || data.length === 0) {
+      container.innerHTML = '<div class="glass-panel-1 p-6 text-center text-sm text-muted">Complete more quizzes to unlock your AI Mastery Tracker.</div>';
+      return;
+    }
+
+    // Group by subject for cleaner UI blocks
+    const subjects = { mathematics: [], science: [], english: [], mixed: [] };
+    data.forEach(m => {
+      const sub = (m.subject || 'mixed').toLowerCase();
+      if (!subjects[sub]) subjects[sub] = [];
+      subjects[sub].push(m);
+    });
+
+    let html = '';
+    const subLabels = { mathematics: 'Mathematics', science: 'Science', english: 'English', mixed: 'Mixed' };
+
+    Object.keys(subjects).forEach(sub => {
+      if (subjects[sub].length === 0) return;
+      
+      // Dynamic border colour based on subject
+      const borderColour = sub === 'mathematics' ? 'var(--maths-colour)' : 
+                           sub === 'science' ? 'var(--science-colour)' : 
+                           sub === 'english' ? 'var(--english-colour)' : 'var(--brand-sage)';
+
+      html += `<div class="glass-panel-1 p-6" style="border-top: 3px solid ${borderColour};">`;
+      html += `<h3 class="font-bold text-main mb-4 uppercase text-sm tracking-wide" style="color: ${borderColour};">${subLabels[sub] || sub}</h3>`;
+      html += `<div class="flex flex-col gap-5">`;
+
+      subjects[sub].forEach(m => {
+        const pct = Math.round(m.probability * 100);
+        // Map to Sage-Rose palette: >= 80 is Mint, >= 50 is Amber, < 50 is Rose
+        const color = pct >= 80 ? 'var(--mint)' : (pct >= 50 ? 'var(--amber)' : 'var(--rose)');
+        
+        // Escape strings
+        const safeTopic = m.topic ? String(m.topic).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : 'General';
+        const safeSubTopic = m.sub_topic && m.sub_topic !== 'general' ? String(m.sub_topic).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : '';
+        
+        html += `
+          <div class="flex flex-col">
+            <div class="flex justify-between items-center mb-2">
+              <span class="font-bold text-sm text-main" style="text-transform: capitalize;">
+                ${safeTopic.replace(/-/g, ' ')}
+                ${safeSubTopic ? `<span class="text-xs text-muted font-normal ml-1">(${safeSubTopic.replace(/-/g, ' ')})</span>` : ''}
+              </span>
+              <span class="text-xs font-bold" style="color: ${color};">${pct}%</span>
+            </div>
+            <div class="w-full rounded-full h-2 overflow-hidden" style="background: var(--glass-border);">
+              <div class="h-2 rounded-full transition-all duration-1000" style="width: ${pct}%; background: ${color};"></div>
+            </div>
+            <div class="text-right mt-1 text-[10px] text-muted">${m.attempts} attempts analyzed</div>
+          </div>
+        `;
+      });
+      
+      html += `</div></div>`;
+    });
+
+    container.innerHTML = html;
+  } catch (err) {
+    console.error('[progress] BKT Error:', err.message);
+    container.innerHTML = '<div class="glass-panel-1 p-6 text-center text-sm" style="color: var(--rose);">Failed to load mastery data.</div>';
+  }
+}
+
