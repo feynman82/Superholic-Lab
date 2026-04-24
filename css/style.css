@@ -1744,8 +1744,10 @@ body.has-bottom-nav .footer {
   background-color: var(--bg-elevated);
   border: 1px solid var(--border-dark);
   border-radius: var(--radius-lg);
-  padding: var(--space-4);
-  margin-bottom: var(--space-4);
+  padding: var(--space-3);
+  /* Internal p-4 padding */
+  margin: var(--space-3);
+  /* External p-4 gap from the glass container */
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.03);
   overflow-y: auto;
   min-height: 700px;
