@@ -12,6 +12,7 @@
   <link rel="icon" href="../assets/favicon.ico" />
   <script src="/js/header.js" defer></script>
   <script src="../js/supabase-client.js"></script>
+  <script src="../js/qa-panel.js" defer></script>
 
   <!-- PAGE-LEVEL CSS — admin.html v2.2
        Design guardian: zero hardcoded hex in style= attributes. -->
@@ -798,6 +799,13 @@
       color: var(--text-muted);
       gap: var(--space-3);
     }
+
+    /* ── Synthesis connector UI ── */
+    .synth-blueprint { display: flex; align-items: flex-end; gap: 8px; padding: var(--space-3); border-radius: var(--radius-md); background: var(--bg-elevated); border: 1px dashed var(--border-light); min-height: 44px; }
+    .synth-line { flex-grow: 1; border-bottom: 2px solid var(--text-main); margin-bottom: 6px; opacity: 0.25; min-width: 30px; }
+    .synth-pill { font-weight: 700; color: var(--brand-rose); padding: 4px 12px; background: var(--bg-surface); border-radius: var(--radius-sm); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.05em; border: 1px solid var(--border-light); flex-shrink: 0; white-space: nowrap; }
+    .qa-divider { height: 1px; background: var(--border-light); margin: var(--space-3) 0; }
+    .synth-section-lbl { font-size: var(--text-xs); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: var(--space-3); }
   </style>
 </head>
 
@@ -988,7 +996,7 @@
             <option value="">All Subjects</option>
             <option>Mathematics</option>
             <option>Science</option>
-            <option>English</option>
+            <option>English Language</option>
           </select>
           <select id="qaFLevel" class="form-select" style="font-size:var(--text-xs);"
             onchange="window.loadQAApproved()">
@@ -1036,7 +1044,7 @@
                 <select id="qfSubject" class="form-select" onchange="window.qaLivePreview()">
                   <option>Mathematics</option>
                   <option>Science</option>
-                  <option>English</option>
+                  <option>English Language</option>
                 </select>
               </div>
               <div class="qa-field">
@@ -1083,7 +1091,7 @@
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);">
               <div class="qa-field">
                 <label>Topic</label>
-                <input type="text" id="qfTopic" class="form-input" oninput="window.qaLivePreview()" />
+                <input type="text" id="qfTopic" class="form-input" oninput="window.qaOnTopicChange()" />
               </div>
               <div class="qa-field">
                 <label>Sub-Topic</label>
@@ -1126,6 +1134,65 @@
               <textarea id="qfWorkedSolution" class="form-input" rows="4" oninput="window.qaLivePreview()"></textarea>
             </div>
 
+            <!-- accept_also: shown for short_ans and synthesis -->
+            <div class="qa-field" id="qfAcceptAlsoGroup" style="display:none;">
+              <label>Also Accepted <span style="color:var(--text-muted);font-weight:400;text-transform:none;">one alternative per line</span></label>
+              <textarea id="qfAcceptAlso" class="form-input" rows="3" placeholder="Alternative correct answers, one per line…" oninput="window.qaLivePreview()"></textarea>
+            </div>
+
+            <!-- Raw instructions: shown for short_ans that is NOT synthesis -->
+            <div class="qa-field" id="qfInstructionsGroup" style="display:none;">
+              <label>Instructions</label>
+              <textarea id="qfInstructions" class="form-input" rows="2" oninput="window.qaLivePreview()"></textarea>
+            </div>
+
+            <!-- Synthesis connector editor: shown when topic = "Synthesis" -->
+            <div id="qfSynthesisGroup" style="display:none;">
+              <div class="qa-divider"></div>
+              <div class="synth-section-lbl">✍️ Synthesis Connector</div>
+
+              <div class="qa-field">
+                <label>Connector Word(s)</label>
+                <input type="text" id="qfConnector" class="form-input"
+                       placeholder="e.g. Although · since · so that · Both"
+                       oninput="window.qaOnConnectorChange()" />
+              </div>
+
+              <div class="qa-field">
+                <label>Position</label>
+                <div style="display:flex;gap:var(--space-4);flex-wrap:wrap;margin-top:var(--space-1);">
+                  <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:var(--text-sm);">
+                    <input type="radio" name="qfConnectorPos" value="front" onchange="window.qaOnConnectorChange()">
+                    Front <span style="color:var(--text-muted);font-size:11px;">(beginning with…)</span>
+                  </label>
+                  <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:var(--text-sm);">
+                    <input type="radio" name="qfConnectorPos" value="middle" checked onchange="window.qaOnConnectorChange()">
+                    Middle <span style="color:var(--text-muted);font-size:11px;">(… word …)</span>
+                  </label>
+                  <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:var(--text-sm);">
+                    <input type="radio" name="qfConnectorPos" value="end" onchange="window.qaOnConnectorChange()">
+                    End <span style="color:var(--text-muted);font-size:11px;">(… word)</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Visual blueprint -->
+              <div class="qa-field">
+                <label>Blueprint Preview</label>
+                <div id="qfSynthBlueprint" class="synth-blueprint">
+                  <div style="font-size:var(--text-xs);color:var(--text-muted);">Enter connector above to preview</div>
+                </div>
+              </div>
+
+              <!-- Auto-generated instructions string -->
+              <div class="qa-field">
+                <label>Generated Instructions <span style="color:var(--text-muted);font-weight:400;text-transform:none;">(auto-built)</span></label>
+                <div id="qfInstructionsPreview"
+                     style="padding:var(--space-2) var(--space-3);border-radius:var(--radius-sm);background:var(--bg-elevated);border:1px solid var(--border-light);color:var(--text-muted);font-family:monospace;font-size:11px;min-height:32px;word-break:break-all;">—</div>
+              </div>
+              <div class="qa-divider"></div>
+            </div>
+
             <!-- JSON fields — conditionally shown -->
             <div class="qa-field" id="qfOptGroup">
               <label>Options <span style="color:var(--text-muted);font-weight:400;text-transform:none;">(JSON array of 4
@@ -1146,15 +1213,8 @@
                 oninput="window.qaValidateJson(this);window.qaLivePreview()"></textarea>
             </div>
 
-            <!-- Action bar -->
-            <div class="qa-action-bar">
-              <button class="btn btn-primary hover-lift" style="flex:1;" onclick="window.qaApproveNext()">✅ Approve
-                &amp; Next</button>
-              <button class="btn btn-secondary hover-lift" onclick="window.qaSaveDraft(this)">💾 Save</button>
-              <button class="btn hover-lift"
-                style="color:var(--brand-error);border:1px solid var(--brand-error);background:transparent;"
-                onclick="window.qaDelete()">🗑️</button>
-            </div>
+            <!-- Action bar — rendered by qa-panel.js renderQAActionBar() -->
+            <div id="qaActionBar" class="qa-action-bar"></div>
           </div>
         </div><!-- /qa-editor-pane -->
 
@@ -1490,387 +1550,8 @@
       } catch (err) { content.innerHTML = '<p class="text-sm text-muted text-center py-6">Could not load analytics. ' + esc(err.message) + '</p>'; }
     };
 
-    /* ════════════════════════════════════════════════════════════════════════════
-       QA AUDIT PANEL
-       ════════════════════════════════════════════════════════════════════════════ */
-
-    var qaQueue = [];     // pending questions (is_ai_cloned=true)
-    var qaApproved = [];     // approved questions (is_ai_cloned=false)
-    var qaCurrentQ = null;   // question currently loaded in editor
-    var qaCurrentIdx = -1;   // index within qaQueue (-1 = from approved list)
-
-    /* ── Load pending queue ── */
-    async function loadQAQueue() {
-      try {
-        var res = await fetch('/api/qa-questions?mode=pending&limit=100', {
-          headers: { 'Authorization': 'Bearer ' + adminSession.access_token }
-        });
-        var data = await res.json();
-        qaQueue = data.questions || [];
-        renderQAPendingList();
-        var cnt = document.getElementById('qaQueueCount');
-        if (cnt) cnt.textContent = qaQueue.length;
-        var badge = document.getElementById('qaTabBadge');
-        if (badge) badge.textContent = qaQueue.length;
-        // Auto-load first pending question
-        if (qaQueue.length > 0 && !qaCurrentQ) { qaCurrentIdx = 0; qaLoadEditor(qaQueue[0]); }
-      } catch (e) { console.error('[qa] loadQAQueue error:', e.message); }
-    }
-
-    /* ── Load approved list ── */
-    window.loadQAApproved = async function () {
-      var subject = (document.getElementById('qaFSubject') || {}).value || '';
-      var level = (document.getElementById('qaFLevel') || {}).value || '';
-      var type = (document.getElementById('qaFType') || {}).value || '';
-      var url = '/api/qa-questions?mode=approved&limit=100';
-      if (subject) url += '&subject=' + encodeURIComponent(subject);
-      if (level) url += '&level=' + encodeURIComponent(level);
-      if (type) url += '&type=' + encodeURIComponent(type);
-      try {
-        var res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + adminSession.access_token } });
-        var data = await res.json();
-        qaApproved = data.questions || [];
-        renderQAApprovedList();
-      } catch (e) { console.error('[qa] loadQAApproved error:', e.message); }
-    };
-
-    /* ── Render sidebar lists ── */
-    function renderQAPendingList() {
-      var el = document.getElementById('qaPendingList');
-      if (!qaQueue.length) { el.innerHTML = '<div class="qa-empty">🎉 Queue is empty!</div>'; return; }
-      el.innerHTML = qaQueue.map(function (q, i) {
-        return '<div class="qa-item' + (i === qaCurrentIdx ? ' is-active' : '') + '" onclick="window.qaSelectPending(' + i + ')">'
-          + '<div class="qa-item-title">' + esc((q.question_text || q.passage || '—').slice(0, 80)) + '</div>'
-          + '<div class="qa-item-meta">' + esc(q.type || '') + ' · ' + esc(q.level || '') + ' · ' + esc(q.subject || '') + '</div>'
-          + '</div>';
-      }).join('');
-    }
-
-    function renderQAApprovedList() {
-      var el = document.getElementById('qaApprovedList');
-      if (!qaApproved.length) { el.innerHTML = '<div class="qa-empty">No matches. Adjust filters.</div>'; return; }
-      el.innerHTML = qaApproved.map(function (q, i) {
-        return '<div class="qa-item" onclick="window.qaSelectApproved(' + i + ')">'
-          + '<div class="qa-item-title">' + esc((q.question_text || q.passage || '—').slice(0, 80)) + '</div>'
-          + '<div class="qa-item-meta">' + esc(q.type || '') + ' · ' + esc(q.level || '') + '</div>'
-          + '</div>';
-      }).join('');
-    }
-
-    /* ── Select item ── */
-    window.qaSelectPending = function (i) {
-      qaCurrentIdx = i;
-      qaLoadEditor(qaQueue[i]);
-      renderQAPendingList();
-    };
-    window.qaSelectApproved = function (i) {
-      qaCurrentIdx = -1;
-      qaLoadEditor(qaApproved[i]);
-    };
-
-    /* ── Load question into editor ── */
-    function qaLoadEditor(q) {
-      qaCurrentQ = q;
-      document.getElementById('qaEditorEmpty').style.display = 'none';
-      document.getElementById('qaEditorInner').style.display = '';
-
-      var setVal = function (id, v) { var el = document.getElementById(id); if (el) el.value = (v !== null && v !== undefined) ? String(v) : ''; };
-      setVal('qfSubject', q.subject || '');
-      setVal('qfLevel', q.level || '');
-      setVal('qfType', q.type || '');
-      setVal('qfTopic', q.topic || '');
-      setVal('qfSubTopic', q.sub_topic || '');
-      setVal('qfDifficulty', q.difficulty || 'Standard');
-      setVal('qfMarks', q.marks || 1);
-      setVal('qfCogSkill', q.cognitive_skill || '');
-      setVal('qfQuestionText', q.question_text || '');
-      setVal('qfCorrectAnswer', q.correct_answer || '');
-      setVal('qfWorkedSolution', q.worked_solution || '');
-
-      qaSetJson('qfOptions', q.options);
-      qaSetJson('qfWrongExpl', q.wrong_explanations);
-      qaSetJson('qfParts', q.parts);
-
-      window.qaOnTypeChange();
-      renderQAPreview(q);
-    }
-
-    function qaSetJson(id, val) {
-      var el = document.getElementById(id); if (!el) return;
-      if (val === null || val === undefined || val === '') { el.value = ''; el.classList.remove('json-error'); return; }
-      try { el.value = JSON.stringify(typeof val === 'string' ? JSON.parse(val) : val, null, 2); el.classList.remove('json-error'); }
-      catch (e) { el.value = typeof val === 'string' ? val : JSON.stringify(val); }
-    }
-
-    function qaGetJson(id) {
-      var el = document.getElementById(id); if (!el || !el.value.trim()) return null;
-      try { var v = JSON.parse(el.value); el.classList.remove('json-error'); return v; }
-      catch (e) { el.classList.add('json-error'); throw new Error('Invalid JSON in field: ' + id.replace('qf', '').toLowerCase()); }
-    }
-
-    window.qaValidateJson = function (el) {
-      if (!el.value.trim()) { el.classList.remove('json-error'); return; }
-      try { JSON.parse(el.value); el.classList.remove('json-error'); }
-      catch (e) { el.classList.add('json-error'); }
-    };
-
-    window.qaOnTypeChange = function () {
-      var type = (document.getElementById('qfType') || {}).value || (qaCurrentQ ? qaCurrentQ.type : 'mcq');
-      var isMCQ = type === 'mcq';
-      var hasPts = ['word_problem', 'open_ended', 'comprehension', 'cloze', 'editing', 'visual_text'].includes(type);
-      document.getElementById('qfOptGroup').style.display = isMCQ ? '' : 'none';
-      document.getElementById('qfWrongExplGroup').style.display = isMCQ ? '' : 'none';
-      document.getElementById('qfPartsGroup').style.display = hasPts ? '' : 'none';
-      window.qaLivePreview();
-    };
-
-    function qaCollectFields() {
-      var fields = {
-        subject: document.getElementById('qfSubject').value,
-        level: document.getElementById('qfLevel').value,
-        type: document.getElementById('qfType').value,
-        topic: document.getElementById('qfTopic').value,
-        sub_topic: document.getElementById('qfSubTopic').value,
-        difficulty: document.getElementById('qfDifficulty').value,
-        marks: parseInt(document.getElementById('qfMarks').value, 10) || 1,
-        cognitive_skill: document.getElementById('qfCogSkill').value,
-        question_text: document.getElementById('qfQuestionText').value,
-        correct_answer: document.getElementById('qfCorrectAnswer').value,
-        worked_solution: document.getElementById('qfWorkedSolution').value,
-        options: qaGetJson('qfOptions'),
-        wrong_explanations: qaGetJson('qfWrongExpl'),
-        parts: qaGetJson('qfParts'),
-      };
-      return fields;
-    }
-
-    /* ── Workflow buttons ── */
-    window.qaApproveNext = async function () {
-      if (!qaCurrentQ) { showError('No question selected.'); return; }
-      try {
-        var fields = qaCollectFields();
-        var res = await fetch('/api/qa-questions', {
-          method: 'PUT',
-          headers: { 'Authorization': 'Bearer ' + adminSession.access_token, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: qaCurrentQ.id, fields: fields, approve: true })
-        });
-        var data = await res.json(); if (!res.ok) throw new Error(data.error);
-
-        var prevIdx = qaCurrentIdx;
-        qaQueue = qaQueue.filter(function (q) { return q.id !== qaCurrentQ.id; });
-        if (qaQueue.length === 0) {
-          qaCurrentQ = null; qaCurrentIdx = -1;
-          document.getElementById('qaEditorEmpty').style.display = '';
-          document.getElementById('qaEditorInner').style.display = 'none';
-          document.getElementById('qaPreview').innerHTML = '<div class="qa-empty-state"><div style="font-size:2rem;">🎉</div><div class="text-sm">Queue complete! All questions reviewed.</div></div>';
-        } else {
-          qaCurrentIdx = Math.min(prevIdx, qaQueue.length - 1);
-          qaLoadEditor(qaQueue[qaCurrentIdx]);
-        }
-        renderQAPendingList();
-        var cnt = document.getElementById('qaQueueCount'); if (cnt) cnt.textContent = qaQueue.length;
-        var badge = document.getElementById('qaTabBadge'); if (badge) badge.textContent = qaQueue.length;
-        qaPending = qaQueue.length; renderPulse();
-      } catch (e) { showError('Approve failed: ' + e.message); }
-    };
-
-    window.qaSaveDraft = async function (btn) {
-      if (!qaCurrentQ) { showError('No question selected.'); return; }
-      try {
-        var fields = qaCollectFields();
-        var res = await fetch('/api/qa-questions', {
-          method: 'PUT',
-          headers: { 'Authorization': 'Bearer ' + adminSession.access_token, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: qaCurrentQ.id, fields: fields }) // no approve — preserves is_ai_cloned
-        });
-        var data = await res.json(); if (!res.ok) throw new Error(data.error);
-        Object.assign(qaCurrentQ, fields);
-        renderQAPendingList();
-        if (btn) { var orig = btn.textContent; btn.textContent = '✅ Saved!'; btn.disabled = true; setTimeout(function () { btn.textContent = orig; btn.disabled = false; }, 1500); }
-      } catch (e) { showError('Save failed: ' + e.message); }
-    };
-
-    window.qaDelete = async function () {
-      if (!qaCurrentQ) { showError('No question selected.'); return; }
-      if (!confirm('Delete this question permanently? This cannot be undone.')) return;
-      try {
-        var res = await fetch('/api/qa-questions', {
-          method: 'DELETE',
-          headers: { 'Authorization': 'Bearer ' + adminSession.access_token, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: qaCurrentQ.id })
-        });
-        var data = await res.json(); if (!res.ok) throw new Error(data.error);
-
-        var prevIdx = qaCurrentIdx;
-        qaQueue = qaQueue.filter(function (q) { return q.id !== qaCurrentQ.id; });
-        if (qaQueue.length === 0) {
-          qaCurrentQ = null; qaCurrentIdx = -1;
-          document.getElementById('qaEditorEmpty').style.display = '';
-          document.getElementById('qaEditorInner').style.display = 'none';
-          document.getElementById('qaPreview').innerHTML = '<div class="qa-empty-state"><div style="font-size:2rem;">✅</div><div class="text-sm">Queue empty.</div></div>';
-        } else {
-          qaCurrentIdx = Math.min(prevIdx, qaQueue.length - 1);
-          qaLoadEditor(qaQueue[qaCurrentIdx]);
-        }
-        renderQAPendingList();
-        var cnt = document.getElementById('qaQueueCount'); if (cnt) cnt.textContent = qaQueue.length;
-        var badge = document.getElementById('qaTabBadge'); if (badge) badge.textContent = qaQueue.length;
-        qaPending = qaQueue.length; renderPulse();
-      } catch (e) { showError('Delete failed: ' + e.message); }
-    };
-
-    /* ── Live preview on editor input ── */
-    window.qaLivePreview = function () {
-      if (!qaCurrentQ) return;
-      var type = (document.getElementById('qfType') || {}).value || qaCurrentQ.type || 'mcq';
-      var opts = null, wrongExpl = null, parts = null;
-      try { opts = qaGetJson('qfOptions'); } catch (e) { }
-      try { wrongExpl = qaGetJson('qfWrongExpl'); } catch (e) { }
-      try { parts = qaGetJson('qfParts'); } catch (e) { }
-      var live = {
-        subject: (document.getElementById('qfSubject') || {}).value || '',
-        level: (document.getElementById('qfLevel') || {}).value || '',
-        type: type,
-        topic: (document.getElementById('qfTopic') || {}).value || '',
-        sub_topic: (document.getElementById('qfSubTopic') || {}).value || '',
-        difficulty: (document.getElementById('qfDifficulty') || {}).value || '',
-        marks: parseInt((document.getElementById('qfMarks') || {}).value || '1', 10),
-        cognitive_skill: (document.getElementById('qfCogSkill') || {}).value || '',
-        question_text: (document.getElementById('qfQuestionText') || {}).value || '',
-        correct_answer: (document.getElementById('qfCorrectAnswer') || {}).value || '',
-        worked_solution: (document.getElementById('qfWorkedSolution') || {}).value || '',
-        options: opts, wrong_explanations: wrongExpl, parts: parts,
-        passage: qaCurrentQ.passage,
-        passage_lines: qaCurrentQ.passage_lines,
-        blanks: qaCurrentQ.blanks,
-      };
-      renderQAPreview(live);
-    };
-
-    /* ── Question preview renderer ── */
-    function renderQAPreview(q) {
-      var el = document.getElementById('qaPreview');
-      if (!q) { el.innerHTML = '<div class="qa-empty-state"><div class="text-sm text-muted">Select a question to preview</div></div>'; return; }
-
-      var html = '';
-      var type = q.type || 'mcq';
-      var letters = ['A', 'B', 'C', 'D'];
-
-      /* badges row */
-      html += '<div class="flex flex-wrap gap-2 mb-4">';
-      if (type) html += '<span class="badge badge-info">' + esc(type.replace(/_/g, ' ')) + '</span>';
-      if (q.level) html += '<span class="badge">' + esc(q.level) + '</span>';
-      if (q.difficulty) html += '<span class="badge">' + esc(q.difficulty) + '</span>';
-      if (q.marks) html += '<span class="badge badge-amber">' + q.marks + ' mk</span>';
-      if (q.cognitive_skill) html += '<span class="badge">' + esc(q.cognitive_skill) + '</span>';
-      html += '</div>';
-
-      /* topic breadcrumb */
-      if (q.topic) html += '<div class="text-xs font-bold text-muted uppercase mb-4" style="letter-spacing:0.06em;">' + esc(q.topic) + (q.sub_topic ? ' › ' + esc(q.sub_topic) : '') + '</div>';
-
-      /* question text */
-      var showQText = q.question_text && !['cloze', 'editing'].includes(type);
-      if (showQText) html += '<div style="font-size:var(--text-base);font-weight:700;color:var(--text-main);line-height:1.6;margin-bottom:var(--space-4);">' + esc(q.question_text).replace(/\n/g, '<br>') + '</div>';
-
-      if (type === 'mcq') {
-        var opts = [];
-        try { opts = typeof q.options === 'string' ? JSON.parse(q.options) : (Array.isArray(q.options) ? q.options : []); } catch (e) { }
-        opts.forEach(function (opt, i) {
-          var letter = letters[i];
-          var isCorrect = String(q.correct_answer || '').trim().toUpperCase() === letter ||
-            String(q.correct_answer || '').trim() === opt;
-          html += '<div class="mcq-opt' + (isCorrect ? ' is-correct' : '') + '">'
-            + '<span class="mcq-badge">' + letter + '</span>'
-            + '<span style="font-size:var(--text-sm);color:var(--text-main);">' + esc(opt) + '</span>'
-            + (isCorrect ? '<span style="margin-left:auto;font-size:10px;font-weight:700;color:var(--brand-mint);">✓ CORRECT</span>' : '')
-            + '</div>';
-        });
-        /* wrong explanations */
-        var we = {};
-        try { we = typeof q.wrong_explanations === 'string' ? JSON.parse(q.wrong_explanations) : (q.wrong_explanations || {}); } catch (e) { }
-        var weKeys = Object.keys(we);
-        if (weKeys.length > 0) {
-          html += '<div class="mt-4 p-4 rounded" style="background:var(--bg-elevated);">';
-          html += '<div class="text-xs font-bold text-muted uppercase mb-2">Wrong Answer Explanations</div>';
-          weKeys.forEach(function (k) { html += '<div class="text-sm text-main mb-2"><strong>' + esc(k) + ':</strong> ' + esc(we[k]) + '</div>'; });
-          html += '</div>';
-        }
-
-      } else if (type === 'short_ans') {
-        html += '<div class="p-3 rounded mb-4" style="background:var(--bg-elevated);border:1px solid var(--border-light);">';
-        html += '<div class="text-xs text-muted mb-2">Student writes answer here</div>';
-        html += '<div style="height:32px;border:1px solid var(--border-dark);border-radius:var(--radius-sm);background:var(--bg-surface);"></div></div>';
-        if (q.correct_answer) {
-          html += '<div class="qa-solution-box"><div class="qa-solution-lbl">✓ Correct Answer</div><div class="text-sm text-main">' + esc(q.correct_answer) + '</div></div>';
-        }
-
-      } else if (type === 'word_problem' || type === 'open_ended') {
-        var parts = [];
-        try { parts = typeof q.parts === 'string' ? JSON.parse(q.parts) : (Array.isArray(q.parts) ? q.parts : []); } catch (e) { }
-        parts.forEach(function (p, i) {
-          html += '<div class="mb-4 p-4 rounded" style="border-left:3px solid var(--brand-sage);background:var(--bg-elevated);">';
-          html += '<div class="font-bold text-sm" style="color:var(--brand-sage);">' + esc(p.label || '(' + String.fromCharCode(97 + i) + ')') + ' <span class="text-muted font-normal text-xs">(' + (p.marks || 1) + ' mk)</span></div>';
-          if (p.question) html += '<div class="text-sm text-main mt-2">' + esc(p.question) + '</div>';
-          var ans = p.model_answer || p.correct_answer || p.worked_solution || '';
-          if (ans) html += '<div class="text-xs text-muted mt-2 font-bold" style="color:var(--brand-mint);">✓ ' + esc(ans).slice(0, 100) + '</div>';
-          html += '</div>';
-        });
-
-      } else if (type === 'cloze') {
-        var passage = esc(q.passage || q.question_text || '');
-        var displayed = passage.replace(/\[(\d+)\]/g, function (m, n) {
-          return '<span style="display:inline-block;min-width:70px;border-bottom:2px solid var(--brand-rose);text-align:center;margin:0 2px;color:var(--brand-rose);">[' + n + ']</span>';
-        });
-        html += '<div class="p-4 rounded mb-4" style="background:var(--bg-elevated);line-height:2;font-size:var(--text-sm);">' + displayed + '</div>';
-        var blanks = [];
-        try { blanks = typeof q.blanks === 'string' ? JSON.parse(q.blanks) : (Array.isArray(q.blanks) ? q.blanks : []); } catch (e) { }
-        if (blanks.length) {
-          html += '<div class="flex flex-wrap gap-2">';
-          blanks.forEach(function (b) { html += '<span class="badge">[' + (b.number || b.id) + '] <span style="color:var(--brand-mint);">' + esc(b.correct_answer || '') + '</span></span>'; });
-          html += '</div>';
-        }
-
-      } else if (type === 'editing') {
-        var lines = [];
-        try { lines = typeof q.passage_lines === 'string' ? JSON.parse(q.passage_lines) : (Array.isArray(q.passage_lines) ? q.passage_lines : []); } catch (e) { }
-        if (lines.length) {
-          html += '<div class="p-4 rounded" style="background:var(--bg-elevated);font-size:var(--text-base);line-height:2.4;">';
-          lines.forEach(function (line) {
-            var text = esc(line.text || '');
-            if (line.underlined_word) {
-              var colour = line.has_error ? 'var(--brand-error)' : 'var(--text-main)';
-              text = text.replace(esc(line.underlined_word), '<u style="color:' + colour + ';font-weight:700;">' + esc(line.underlined_word) + '</u>');
-            }
-            html += '<div>' + text + (line.has_error ? ' <span style="color:var(--brand-mint);font-size:11px;">[→ ' + esc(line.correct_word || '') + ']</span>' : '') + '</div>';
-          });
-          html += '</div>';
-        }
-
-      } else if (type === 'comprehension' || type === 'visual_text') {
-        if (q.passage) html += '<div class="p-3 rounded mb-4 text-sm" style="background:var(--bg-elevated);max-height:180px;overflow-y:auto;line-height:1.7;">' + esc(q.passage).replace(/\n/g, '<br>') + '</div>';
-        var cParts = [];
-        try { cParts = typeof q.parts === 'string' ? JSON.parse(q.parts) : (Array.isArray(q.parts) ? q.parts : []); } catch (e) { }
-        cParts.slice(0, 4).forEach(function (p, i) {
-          html += '<div class="mb-2 p-4 rounded" style="background:var(--bg-elevated);border-left:3px solid var(--brand-sage);">';
-          html += '<span class="font-bold text-sm" style="color:var(--brand-sage);">' + esc(p.label || ('Q' + (i + 1))) + '</span> ';
-          html += '<span class="text-xs text-muted">(' + esc(p.part_type || '') + ' · ' + (p.marks || 1) + ' mk)</span>';
-          if (p.question || p.instructions) html += '<div class="text-sm text-main mt-2">' + esc(p.question || p.instructions || '') + '</div>';
-          html += '</div>';
-        });
-        if (cParts.length > 4) html += '<div class="text-xs text-muted">+' + (cParts.length - 4) + ' more parts</div>';
-      }
-
-      /* worked solution (always at bottom) */
-      if (q.worked_solution) {
-        html += '<div class="qa-solution-box mt-4"><div class="qa-solution-lbl">📋 Worked Solution</div><div class="text-sm text-main" style="white-space:pre-wrap;">' + esc(q.worked_solution) + '</div></div>';
-      }
-
-      el.innerHTML = html;
-    }
+    /* QA Panel logic in js/qa-panel.js */
 
     /* ════ BOOT ══════════════════════════════════════════════════════════════════ */
     loadAdminData();
   </script>
-</body>
-
-</html>
