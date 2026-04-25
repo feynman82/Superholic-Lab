@@ -154,6 +154,7 @@ New questions MUST go into topic-specific files only.
 | Batch | Date | Subject | Questions | Topics |
 |---|---|---|---|---|
 | batch_20260425_001 | 2026-04-25 | Mathematics P6 MCQ Standard | 5 | Algebra, Circles, Fractions, Geometry, Percentage |
+| batch_20260425_002 | 2026-04-25 | Mathematics P6+P5 MCQ Standard | 5 | Ratio, Speed, Volume, Pie Charts (P6); Whole Numbers (P5) |
 
 **Batch 001 IDs (Supabase UUIDs):**
 - Algebra: `1743b2e1-41c4-458d-b111-f8bf12b4fedc`
@@ -161,6 +162,13 @@ New questions MUST go into topic-specific files only.
 - Fractions: `5e1eae10-bea1-4a16-9e79-8b9c5fbbac63`
 - Geometry: `caf1c426-2119-44b9-a4a6-8bcfc1d44382`
 - Percentage: `e9461bc2-35b4-4ffe-85d6-18149272160c`
+
+**Batch 002 IDs (Supabase UUIDs):**
+- Ratio (P6): `0eff47e6-90f3-4710-952f-dfb82c88cdcc`
+- Speed (P6): `f4ceba87-8e60-4c13-b099-33b8e4a14cbd`
+- Volume (P6): `8a84fa38-a5e2-4066-aaeb-297353e48ad1`
+- Pie Charts (P6): `243613e1-c40d-4edc-a63b-e78768fd1e4b`
+- Whole Numbers (P5): `69e0af0d-c58f-43d9-83c0-1cce69d4cfd2`
 
 > Note: `seed_id` column in Supabase is UUID type — text-based IDs not applicable.
 > Track inserted questions by UUID. Gap analysis SQL is the authoritative state source.
