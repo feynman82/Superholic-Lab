@@ -14,7 +14,7 @@
   <script src="../js/supabase-client.js"></script>
   <script src="../js/qa-panel.js" defer></script>
 
-  <!-- PAGE-LEVEL CSS — admin.html v2.2
+  <!-- PAGE-LEVEL CSS — admin.html v2.3
        Design guardian: zero hardcoded hex in style= attributes. -->
   <style>
     /* ── Business Pulse ── */
@@ -838,114 +838,65 @@
     </div>
   </div>
 
-  <!-- ════ CRM VIEW (all existing zones) ══════════════════════════════════════ -->
+  <!-- ════ CRM VIEW ══════════════════════════════════════════════════════════ -->
   <div id="crmView">
 
-    <!-- ZONE 1 — BUSINESS PULSE -->
     <section class="py-8 bg-white" style="border-bottom: 1px solid var(--border-light);">
       <div class="container">
         <div class="pulse-featured" id="pulseFeatured">
-          <div class="pulse-card">
-            <div class="spinner-sm"></div>
-          </div>
-          <div class="pulse-card">
-            <div class="spinner-sm"></div>
-          </div>
+          <div class="pulse-card"><div class="spinner-sm"></div></div>
+          <div class="pulse-card"><div class="spinner-sm"></div></div>
         </div>
         <div class="pulse-stats" id="pulseStats">
-          <div class="pulse-card">
-            <div class="spinner-sm"></div>
-          </div>
-          <div class="pulse-card">
-            <div class="spinner-sm"></div>
-          </div>
-          <div class="pulse-card">
-            <div class="spinner-sm"></div>
-          </div>
-          <div class="pulse-card">
-            <div class="spinner-sm"></div>
-          </div>
+          <div class="pulse-card"><div class="spinner-sm"></div></div>
+          <div class="pulse-card"><div class="spinner-sm"></div></div>
+          <div class="pulse-card"><div class="spinner-sm"></div></div>
+          <div class="pulse-card"><div class="spinner-sm"></div></div>
         </div>
       </div>
     </section>
 
-    <!-- ZONE 2 — AT-RISK RADAR -->
     <section class="py-8 bg-page texture-light-grid">
       <div class="container">
         <h2 class="zone-heading">🔭 At-Risk Radar</h2>
         <p class="text-sm text-muted mb-4">Accounts that need attention. Act proactively to reduce churn.</p>
         <div class="radar-tabs">
-          <button class="radar-tab is-active" onclick="window.showRadarTab('failed', this)">🔴 Payment Failed <span
-              class="radar-count" id="cnt-failed">0</span></button>
-          <button class="radar-tab" onclick="window.showRadarTab('inactive', this)">🟡 Inactive Subscribers <span
-              class="radar-count" id="cnt-inactive">0</span></button>
-          <button class="radar-tab" onclick="window.showRadarTab('expiring', this)">🟠 Trial Expiring Soon <span
-              class="radar-count" id="cnt-expiring">0</span></button>
-          <button class="radar-tab" onclick="window.showRadarTab('unconverted', this)">⚫ Trial Expired, Not Converted
-            <span class="radar-count" id="cnt-unconverted">0</span></button>
+          <button class="radar-tab is-active" onclick="window.showRadarTab('failed', this)">🔴 Payment Failed <span class="radar-count" id="cnt-failed">0</span></button>
+          <button class="radar-tab" onclick="window.showRadarTab('inactive', this)">🟡 Inactive Subscribers <span class="radar-count" id="cnt-inactive">0</span></button>
+          <button class="radar-tab" onclick="window.showRadarTab('expiring', this)">🟠 Trial Expiring Soon <span class="radar-count" id="cnt-expiring">0</span></button>
+          <button class="radar-tab" onclick="window.showRadarTab('unconverted', this)">⚫ Trial Expired, Not Converted <span class="radar-count" id="cnt-unconverted">0</span></button>
         </div>
         <div class="card" style="overflow-x: auto;">
-          <div id="radarContent">
-            <div class="p-6 text-center">
-              <div class="spinner-sm mx-auto"></div>
-            </div>
-          </div>
+          <div id="radarContent"><div class="p-6 text-center"><div class="spinner-sm mx-auto"></div></div></div>
         </div>
       </div>
     </section>
 
-    <!-- ZONE 3 — PARENTS TABLE -->
     <section class="py-8 bg-white">
       <div class="container">
         <div class="flex justify-between items-center mb-4 flex-wrap gap-3">
           <h2 class="zone-heading m-0">👨‍👩‍👧 All Parents</h2>
           <div class="flex gap-3">
-            <input type="search" id="parentSearch" class="form-input" placeholder="Search name or email…"
-              style="width: 240px;" oninput="window.renderParents()" />
+            <input type="search" id="parentSearch" class="form-input" placeholder="Search name or email…" style="width: 240px;" oninput="window.renderParents()" />
             <button class="btn btn-secondary btn-sm hover-lift" onclick="window.exportCSV()">⬇️ Export CSV</button>
           </div>
         </div>
-        <div id="errorMsg" class="mb-4 p-4 text-sm font-bold rounded hidden"
-          style="background: rgba(220,38,38,0.1); border: 1px solid rgba(220,38,38,0.3); color: var(--brand-error);">
-        </div>
+        <div id="errorMsg" class="mb-4 p-4 text-sm font-bold rounded hidden" style="background: rgba(220,38,38,0.1); border: 1px solid rgba(220,38,38,0.3); color: var(--brand-error);"></div>
         <div class="card" style="overflow-x: auto;">
           <table class="admin-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Plan</th>
-                <th>Last Active</th>
-                <th>Students</th>
-                <th>Joined</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="parentsBody">
-              <tr>
-                <td colspan="7" style="text-align:center;padding:40px;">
-                  <div class="spinner-sm mx-auto"></div>
-                </td>
-              </tr>
-            </tbody>
+            <thead><tr><th>Name</th><th>Email</th><th>Plan</th><th>Last Active</th><th>Students</th><th>Joined</th><th>Actions</th></tr></thead>
+            <tbody id="parentsBody"><tr><td colspan="7" style="text-align:center;padding:40px;"><div class="spinner-sm mx-auto"></div></td></tr></tbody>
           </table>
         </div>
       </div>
     </section>
 
-    <!-- ZONE 4 — SUBSCRIBERS FEED + ANALYTICS -->
     <section class="py-8 bg-page texture-light-grid">
       <div class="container">
         <div class="intel-grid">
           <div>
             <h2 class="zone-heading">📬 New Subscribers</h2>
-            <div class="card p-4">
-              <div id="activityFeed">
-                <div class="text-center py-6">
-                  <div class="spinner-sm mx-auto"></div>
-                </div>
-              </div>
-            </div>
+            <div class="card p-4"><div id="activityFeed"><div class="text-center py-6"><div class="spinner-sm mx-auto"></div></div></div></div>
           </div>
           <div>
             <div class="flex justify-between items-center mb-4">
@@ -957,13 +908,7 @@
                 <button class="period-btn" onclick="window.loadAnalytics('12mo', this)">12MO</button>
               </div>
             </div>
-            <div class="card p-6">
-              <div id="analyticsContent">
-                <div class="text-center py-6">
-                  <div class="spinner-sm mx-auto"></div>
-                </div>
-              </div>
-            </div>
+            <div class="card p-6"><div id="analyticsContent"><div class="text-center py-6"><div class="spinner-sm mx-auto"></div></div></div></div>
           </div>
         </div>
       </div>
@@ -975,55 +920,80 @@
   <div id="qaView" style="display:none;">
     <div class="qa-shell">
 
-      <!-- LEFT SIDEBAR -->
+      <!-- LEFT SIDEBAR — collapsible sections; pending+approved collapsed by default, find open -->
       <aside class="qa-sidebar">
-        <!-- Pending section -->
-        <div class="qa-section-hdr">
+
+        <!-- PENDING REVIEW (collapsed by default, auto-expands when queue loads) -->
+        <div class="qa-section-hdr" style="cursor:pointer;" onclick="window.qaToggleSection('pending')">
           <span>⏳ Pending Review</span>
-          <span class="radar-count" id="qaQueueCount">0</span>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span class="radar-count" id="qaQueueCount">0</span>
+            <span id="qaPendingToggle" style="font-size:10px;opacity:0.5;transition:transform 0.2s;">▶</span>
+          </div>
         </div>
-        <div id="qaPendingList">
-          <div class="qa-empty">Loading queue…</div>
+        <div id="qaPendingBody" style="display:none;">
+          <div id="qaPendingList"><div class="qa-empty">Loading queue…</div></div>
         </div>
 
-        <!-- Approved section with filters -->
-        <div class="qa-section-hdr" style="margin-top: auto; border-top: 2px solid var(--border-light);">
+        <!-- APPROVED (collapsed by default) -->
+        <div class="qa-section-hdr" style="cursor:pointer;border-top:2px solid var(--border-light);" onclick="window.qaToggleSection('approved')">
           <span>✅ Approved</span>
+          <span id="qaApprovedToggle" style="font-size:10px;opacity:0.5;transition:transform 0.2s;">▶</span>
         </div>
-        <div class="qa-filter-strip">
-          <select id="qaFSubject" class="form-select" style="font-size:var(--text-xs);"
-            onchange="window.loadQAApproved()">
-            <option value="">All Subjects</option>
-            <option>Mathematics</option>
-            <option>Science</option>
-            <option>English Language</option>
-          </select>
-          <select id="qaFLevel" class="form-select" style="font-size:var(--text-xs);"
-            onchange="window.loadQAApproved()">
-            <option value="">All Levels</option>
-            <option>Primary 1</option>
-            <option>Primary 2</option>
-            <option>Primary 3</option>
-            <option>Primary 4</option>
-            <option>Primary 5</option>
-            <option>Primary 6</option>
-            <option>Secondary 1</option>
-            <option>Secondary 2</option>
-          </select>
-          <select id="qaFType" class="form-select" style="font-size:var(--text-xs);" onchange="window.loadQAApproved()">
-            <option value="">All Types</option>
-            <option value="mcq">MCQ</option>
-            <option value="short_ans">Short Answer</option>
-            <option value="word_problem">Word Problem</option>
-            <option value="open_ended">Open Ended</option>
-            <option value="cloze">Cloze</option>
-            <option value="editing">Editing</option>
-            <option value="comprehension">Comprehension</option>
-          </select>
+        <div id="qaApprovedBody" style="display:none;">
+          <div class="qa-filter-strip">
+            <select id="qaFSubject" class="form-select" style="font-size:var(--text-xs);" onchange="window.loadQAApproved()">
+              <option value="">All Subjects</option>
+              <option>Mathematics</option>
+              <option>Science</option>
+              <option>English Language</option>
+            </select>
+            <select id="qaFLevel" class="form-select" style="font-size:var(--text-xs);" onchange="window.loadQAApproved()">
+              <option value="">All Levels</option>
+              <option>Primary 1</option><option>Primary 2</option><option>Primary 3</option>
+              <option>Primary 4</option><option>Primary 5</option><option>Primary 6</option>
+              <option>Secondary 1</option><option>Secondary 2</option>
+            </select>
+            <select id="qaFType" class="form-select" style="font-size:var(--text-xs);" onchange="window.loadQAApproved()">
+              <option value="">All Types</option>
+              <option value="mcq">MCQ</option>
+              <option value="short_ans">Short Answer</option>
+              <option value="word_problem">Word Problem</option>
+              <option value="open_ended">Open Ended</option>
+              <option value="cloze">Cloze</option>
+              <option value="editing">Editing</option>
+              <option value="comprehension">Comprehension</option>
+            </select>
+          </div>
+          <div id="qaApprovedList"><div class="qa-empty">Loading…</div></div>
         </div>
-        <div id="qaApprovedList">
-          <div class="qa-empty">Apply filters above.</div>
+
+        <!-- FIND QUESTION (expanded by default) -->
+        <div class="qa-section-hdr" style="cursor:pointer;border-top:2px solid var(--border-light);" onclick="window.qaToggleSection('find')">
+          <span>🔍 Find Question</span>
+          <span id="qaFindToggle" style="font-size:10px;opacity:0.5;transition:transform 0.2s;">▼</span>
         </div>
+        <div id="qaFindBody">
+          <div class="qa-filter-strip">
+            <input type="search" id="qaSearchInput" class="form-input"
+                   placeholder="Search text, topic, connector…"
+                   style="font-size:var(--text-xs);"
+                   oninput="window.qaSearchDebounced()" />
+            <select id="qaSearchSubject" class="form-select" style="font-size:var(--text-xs);" onchange="window.qaDoSearch()">
+              <option value="">All Subjects</option>
+              <option>Mathematics</option>
+              <option>Science</option>
+              <option>English Language</option>
+            </select>
+            <select id="qaSearchMode" class="form-select" style="font-size:var(--text-xs);" onchange="window.qaDoSearch()">
+              <option value="">Pending + Approved</option>
+              <option value="pending">Pending Only</option>
+              <option value="approved">Approved Only</option>
+            </select>
+          </div>
+          <div id="qaSearchResults"><div class="qa-empty">Type to search…</div></div>
+        </div>
+
       </aside>
 
       <!-- MAIN: EDITOR + PREVIEW -->
@@ -1037,7 +1007,6 @@
           </div>
           <div id="qaEditorInner" style="display:none;" class="qa-editor-inner">
 
-            <!-- Row 1: subject / level -->
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);">
               <div class="qa-field">
                 <label>Subject</label>
@@ -1050,19 +1019,13 @@
               <div class="qa-field">
                 <label>Level</label>
                 <select id="qfLevel" class="form-select" onchange="window.qaLivePreview()">
-                  <option>Primary 1</option>
-                  <option>Primary 2</option>
-                  <option>Primary 3</option>
-                  <option>Primary 4</option>
-                  <option>Primary 5</option>
-                  <option>Primary 6</option>
-                  <option>Secondary 1</option>
-                  <option>Secondary 2</option>
+                  <option>Primary 1</option><option>Primary 2</option><option>Primary 3</option>
+                  <option>Primary 4</option><option>Primary 5</option><option>Primary 6</option>
+                  <option>Secondary 1</option><option>Secondary 2</option>
                 </select>
               </div>
             </div>
 
-            <!-- Row 2: type / difficulty -->
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);">
               <div class="qa-field">
                 <label>Type</label>
@@ -1079,15 +1042,11 @@
               <div class="qa-field">
                 <label>Difficulty</label>
                 <select id="qfDifficulty" class="form-select" onchange="window.qaLivePreview()">
-                  <option>Foundation</option>
-                  <option>Standard</option>
-                  <option>Advanced</option>
-                  <option>HOTS</option>
+                  <option>Foundation</option><option>Standard</option><option>Advanced</option><option>HOTS</option>
                 </select>
               </div>
             </div>
 
-            <!-- Row 3: topic / sub_topic -->
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);">
               <div class="qa-field">
                 <label>Topic</label>
@@ -1099,12 +1058,10 @@
               </div>
             </div>
 
-            <!-- Row 4: marks / cognitive_skill -->
             <div style="display:grid;grid-template-columns:80px 1fr;gap:var(--space-3);">
               <div class="qa-field">
                 <label>Marks</label>
-                <input type="number" id="qfMarks" class="form-input" min="1" max="10"
-                  oninput="window.qaLivePreview()" />
+                <input type="number" id="qfMarks" class="form-input" min="1" max="10" oninput="window.qaLivePreview()" />
               </div>
               <div class="qa-field">
                 <label>Cognitive Skill</label>
@@ -1120,7 +1077,6 @@
               </div>
             </div>
 
-            <!-- Content fields -->
             <div class="qa-field">
               <label>Question Text</label>
               <textarea id="qfQuestionText" class="form-input" rows="4" oninput="window.qaLivePreview()"></textarea>
@@ -1150,14 +1106,12 @@
             <div id="qfSynthesisGroup" style="display:none;">
               <div class="qa-divider"></div>
               <div class="synth-section-lbl">✍️ Synthesis Connector</div>
-
               <div class="qa-field">
                 <label>Connector Word(s)</label>
                 <input type="text" id="qfConnector" class="form-input"
                        placeholder="e.g. Although · since · so that · Both"
                        oninput="window.qaOnConnectorChange()" />
               </div>
-
               <div class="qa-field">
                 <label>Position</label>
                 <div style="display:flex;gap:var(--space-4);flex-wrap:wrap;margin-top:var(--space-1);">
@@ -1175,16 +1129,12 @@
                   </label>
                 </div>
               </div>
-
-              <!-- Visual blueprint -->
               <div class="qa-field">
                 <label>Blueprint Preview</label>
                 <div id="qfSynthBlueprint" class="synth-blueprint">
                   <div style="font-size:var(--text-xs);color:var(--text-muted);">Enter connector above to preview</div>
                 </div>
               </div>
-
-              <!-- Auto-generated instructions string -->
               <div class="qa-field">
                 <label>Generated Instructions <span style="color:var(--text-muted);font-weight:400;text-transform:none;">(auto-built)</span></label>
                 <div id="qfInstructionsPreview"
@@ -1193,27 +1143,21 @@
               <div class="qa-divider"></div>
             </div>
 
-            <!-- JSON fields — conditionally shown -->
+            <!-- JSON fields -->
             <div class="qa-field" id="qfOptGroup">
-              <label>Options <span style="color:var(--text-muted);font-weight:400;text-transform:none;">(JSON array of 4
-                  strings)</span></label>
-              <textarea id="qfOptions" class="form-input qa-json-area" rows="5"
-                oninput="window.qaValidateJson(this);window.qaLivePreview()"></textarea>
+              <label>Options <span style="color:var(--text-muted);font-weight:400;text-transform:none;">(JSON array of 4 strings)</span></label>
+              <textarea id="qfOptions" class="form-input qa-json-area" rows="5" oninput="window.qaValidateJson(this);window.qaLivePreview()"></textarea>
             </div>
             <div class="qa-field" id="qfWrongExplGroup">
-              <label>Wrong Explanations <span style="color:var(--text-muted);font-weight:400;text-transform:none;">(JSON
-                  object)</span></label>
-              <textarea id="qfWrongExpl" class="form-input qa-json-area" rows="5"
-                oninput="window.qaValidateJson(this);window.qaLivePreview()"></textarea>
+              <label>Wrong Explanations <span style="color:var(--text-muted);font-weight:400;text-transform:none;">(JSON object)</span></label>
+              <textarea id="qfWrongExpl" class="form-input qa-json-area" rows="5" oninput="window.qaValidateJson(this);window.qaLivePreview()"></textarea>
             </div>
             <div class="qa-field" id="qfPartsGroup">
-              <label>Parts <span style="color:var(--text-muted);font-weight:400;text-transform:none;">(JSON
-                  array)</span></label>
-              <textarea id="qfParts" class="form-input qa-json-area" rows="7"
-                oninput="window.qaValidateJson(this);window.qaLivePreview()"></textarea>
+              <label>Parts <span style="color:var(--text-muted);font-weight:400;text-transform:none;">(JSON array)</span></label>
+              <textarea id="qfParts" class="form-input qa-json-area" rows="7" oninput="window.qaValidateJson(this);window.qaLivePreview()"></textarea>
             </div>
 
-            <!-- Action bar — rendered by qa-panel.js renderQAActionBar() -->
+            <!-- Action bar — rendered by qa-panel.js -->
             <div id="qaActionBar" class="qa-action-bar"></div>
           </div>
         </div><!-- /qa-editor-pane -->
@@ -1234,20 +1178,15 @@
   </div><!-- /qaView -->
 
 
-  <!-- MODALS ─────────────────────────────────────────────────────────────────── -->
+  <!-- MODALS -->
 
-  <div id="subBreakdownModal" class="modal-overlay"
-    onclick="if(event.target.id==='subBreakdownModal')this.classList.remove('is-open')">
+  <div id="subBreakdownModal" class="modal-overlay" onclick="if(event.target.id==='subBreakdownModal')this.classList.remove('is-open')">
     <div class="card p-6 modal-box modal-md">
       <div class="flex justify-between items-center mb-4">
         <h3 class="font-display text-2xl text-main m-0">Subscriber Breakdown</h3>
-        <button class="btn btn-ghost btn-sm"
-          onclick="document.getElementById('subBreakdownModal').classList.remove('is-open')"
-          style="font-size:1.2rem;padding:2px 8px;">×</button>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('subBreakdownModal').classList.remove('is-open')" style="font-size:1.2rem;padding:2px 8px;">×</button>
       </div>
-      <div id="subBreakdownContent">
-        <div class="spinner-sm"></div>
-      </div>
+      <div id="subBreakdownContent"><div class="spinner-sm"></div></div>
     </div>
   </div>
 
@@ -1255,17 +1194,13 @@
     <div class="card p-6 modal-box modal-md">
       <div class="flex justify-between items-center mb-4">
         <h3 class="font-display text-2xl text-main m-0">MRR Detail</h3>
-        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('mrrModal').classList.remove('is-open')"
-          style="font-size:1.2rem;padding:2px 8px;">×</button>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('mrrModal').classList.remove('is-open')" style="font-size:1.2rem;padding:2px 8px;">×</button>
       </div>
-      <div id="mrrContent">
-        <div class="spinner-sm"></div>
-      </div>
+      <div id="mrrContent"><div class="spinner-sm"></div></div>
     </div>
   </div>
 
-  <div id="editTierModal" class="modal-overlay"
-    onclick="if(event.target.id==='editTierModal')window.closeEditTierModal()">
+  <div id="editTierModal" class="modal-overlay" onclick="if(event.target.id==='editTierModal')window.closeEditTierModal()">
     <div class="card p-6 modal-box modal-sm">
       <h3 class="font-display text-2xl text-main m-0 mb-2">Edit Subscription</h3>
       <p class="text-sm text-muted m-0 mb-4" id="editTierEmail"></p>
@@ -1302,7 +1237,6 @@
     function tierPill(t) { var lbl = { trial: 'Trial', all_subjects: 'All Subjects', family: 'Family', single_subject: 'Single Sub', paused: 'Paused' }[t] || t; var cls = { trial: 'tier-trial', all_subjects: 'tier-paid', family: 'tier-paid', single_subject: 'tier-paid', paused: 'tier-paused' }[t] || 'tier-trial'; return '<span class="tier-pill ' + cls + '">' + esc(lbl) + '</span>'; }
     function daysSince(iso) { if (!iso) return Infinity; return Math.floor((Date.now() - new Date(iso).getTime()) / 86400000); }
     function buildContactLink(e, s, b) { return 'mailto:' + encodeURIComponent(e) + '?subject=' + encodeURIComponent(s) + '&body=' + encodeURIComponent(b); }
-
     function updateClock() { var el = document.getElementById('liveClock'); if (el) el.textContent = new Date().toLocaleTimeString('en-SG', { timeZone: 'Asia/Singapore', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) + ' SGT'; }
     setInterval(updateClock, 1000); updateClock();
 
@@ -1332,39 +1266,24 @@
       var res = await fetch('/api/admin', { method: 'GET', headers: { 'Authorization': 'Bearer ' + session.access_token } });
       if (!res.ok) { showError('Failed to load admin data — server returned ' + res.status); return; }
       var data = await res.json();
-      allProfiles = data.profiles || [];
-      allStudents = data.students || [];
-      allSubs = data.subscriptions || [];
-      subsByProfile = data.subscriptions_by_profile || {};
-      lastActivityMap = data.last_activity_by_parent || {};
-      breakdown = data.subscription_breakdown || {};
-      contactPending = data.contact_pending || 0;
-      qaPending = data.qa_pending || 0;
-      var badge = document.getElementById('qaTabBadge');
-      if (badge) badge.textContent = qaPending;
+      allProfiles = data.profiles || []; allStudents = data.students || []; allSubs = data.subscriptions || [];
+      subsByProfile = data.subscriptions_by_profile || {}; lastActivityMap = data.last_activity_by_parent || {};
+      breakdown = data.subscription_breakdown || {}; contactPending = data.contact_pending || 0; qaPending = data.qa_pending || 0;
+      var badge = document.getElementById('qaTabBadge'); if (badge) badge.textContent = qaPending;
       renderPulse(); renderRadarCounts(); renderRadarTab(currentRadarTab); renderParents(); renderActivityFeed(); loadAnalytics('30d');
     }
 
     /* ════ BUSINESS PULSE ════════════════════════════════════════════════════════ */
     function makeCard(icon, value, label, sub, cls, action) {
       var oc = action ? ' onclick="window.' + action + '()"' : '';
-      return '<div class="pulse-card ' + cls + '"' + oc + '>'
-        + '<div class="pulse-card-icon">' + icon + '</div>'
-        + '<div class="pulse-card-value">' + value + '</div>'
-        + '<div class="pulse-card-label">' + label + '</div>'
-        + (sub ? '<div class="pulse-card-sub">' + sub + '</div>' : '')
-        + '</div>';
+      return '<div class="pulse-card ' + cls + '"' + oc + '><div class="pulse-card-icon">' + icon + '</div><div class="pulse-card-value">' + value + '</div><div class="pulse-card-label">' + label + '</div>' + (sub ? '<div class="pulse-card-sub">' + sub + '</div>' : '') + '</div>';
     }
-
     function renderPulse() {
       var total = allProfiles.length;
       var paid = allProfiles.filter(function (p) { return ['all_subjects', 'family', 'single_subject'].includes(p.subscription_tier); }).length;
       var trial = allProfiles.filter(function (p) { return p.subscription_tier === 'trial'; }).length;
-      var students = allStudents.length;
       var grossMRR = 0, netMRR = 0;
-      ['all_subjects_monthly', 'all_subjects_annual', 'family_monthly', 'family_annual'].forEach(function (k) {
-        if (breakdown[k]) { grossMRR += breakdown[k].gross_mrr || 0; netMRR += breakdown[k].net_mrr || 0; }
-      });
+      ['all_subjects_monthly', 'all_subjects_annual', 'family_monthly', 'family_annual'].forEach(function (k) { if (breakdown[k]) { grossMRR += breakdown[k].gross_mrr || 0; netMRR += breakdown[k].net_mrr || 0; } });
       document.getElementById('pulseFeatured').innerHTML =
         makeCard('💳', paid, 'Subscribers', 'Click for breakdown', 'pulse-card-rose clickable', 'openSubBreakdown')
         + makeCard('📈', fmtSGD(netMRR), 'Net MRR', 'Gross: ' + fmtSGD(grossMRR), 'pulse-card-mint clickable', 'openMRR');
@@ -1374,7 +1293,6 @@
         + makeCard('📩', contactPending, 'Contact Pending', 'From contact page', 'pulse-card-amber clickable', 'openContactInbox')
         + makeCard('🔬', qaPending, 'QA Queue', 'Click to audit', 'pulse-card-sage clickable', 'openQATab');
     }
-
     window.openSubBreakdown = function () {
       var bd = breakdown; var gross = 0, net = 0;
       var rows = [{ label: 'All Subjects — Monthly', key: 'all_subjects_monthly' }, { label: 'All Subjects — Annual', key: 'all_subjects_annual' }, { label: 'Family — Monthly', key: 'family_monthly' }, { label: 'Family — Annual', key: 'family_annual' }];
@@ -1385,7 +1303,6 @@
       document.getElementById('subBreakdownContent').innerHTML = th + '<p class="mrr-note mt-4">Annual subscriptions recognised at 1/12 per month per Singapore FRS 115. Stripe fee estimated at 3.4% + S$0.50 per transaction.</p>';
       document.getElementById('subBreakdownModal').classList.add('is-open');
     };
-
     window.openMRR = function () {
       var gross = 0, net = 0;
       ['all_subjects_monthly', 'all_subjects_annual', 'family_monthly', 'family_annual'].forEach(function (k) { if (breakdown[k]) { gross += breakdown[k].gross_mrr || 0; net += breakdown[k].net_mrr || 0; } });
@@ -1411,7 +1328,7 @@
       });
       return { failed: failed, inactive: inactive, expiring: expiring, unconverted: unconverted };
     }
-    function renderRadarCounts() { var g = getAtRiskGroups();['failed', 'inactive', 'expiring', 'unconverted'].forEach(function (k) { var el = document.getElementById('cnt-' + k); if (el) el.textContent = g[k].length; }); }
+    function renderRadarCounts() { var g = getAtRiskGroups(); ['failed', 'inactive', 'expiring', 'unconverted'].forEach(function (k) { var el = document.getElementById('cnt-' + k); if (el) el.textContent = g[k].length; }); }
     function renderRadarTab(tab) {
       currentRadarTab = tab; var g = getAtRiskGroups(); var rows = g[tab] || [];
       if (rows.length === 0) { document.getElementById('radarContent').innerHTML = '<div class="p-8 text-center"><div class="text-3xl mb-2">✅</div><p class="text-muted text-sm">No accounts in this category.</p></div>'; return; }
@@ -1428,13 +1345,9 @@
         var p = r.profile; var ml = buildContactLink(p.email || '', subj[tab], body[tab](p));
         html += '<tr><td class="font-bold">' + esc(p.full_name || '—') + '</td><td style="color:var(--text-muted);">' + esc(p.email || '—') + '</td><td><span class="risk-flag ' + flagCls[tab] + '">' + esc(r.reason) + '</span></td><td style="color:var(--text-muted);">' + (r.days === 999 ? 'Never' : r.days) + '</td><td><a href="' + esc(ml) + '" class="btn btn-sm btn-secondary hover-lift" target="_blank">✉️ Contact</a></td></tr>';
       });
-      html += '</tbody></table>';
-      document.getElementById('radarContent').innerHTML = html;
+      document.getElementById('radarContent').innerHTML = html + '</tbody></table>';
     }
-    window.showRadarTab = function (tab, btn) {
-      document.querySelectorAll('.radar-tab').forEach(function (b) { b.classList.remove('is-active'); });
-      btn.classList.add('is-active'); renderRadarTab(tab);
-    };
+    window.showRadarTab = function (tab, btn) { document.querySelectorAll('.radar-tab').forEach(function (b) { b.classList.remove('is-active'); }); btn.classList.add('is-active'); renderRadarTab(tab); };
 
     /* ════ PARENTS TABLE ════════════════════════════════════════════════════════ */
     window.renderParents = function () {
@@ -1516,10 +1429,9 @@
       var counts = { all_subjects_monthly: 0, all_subjects_annual: 0, family_monthly: 0, family_annual: 0 };
       newSubs.forEach(function (s) { var key = (s.plan_name || '') + '_' + (s.billing_cycle || ''); if (counts[key] !== undefined) counts[key]++; });
       var total = newSubs.length;
-      var heading = '<div class="text-xs font-bold text-muted uppercase mb-4" style="letter-spacing:0.06em;">New Subscribers — Last 7 Days</div>';
-      var totalBox = '<div class="flex items-baseline gap-2 p-4 rounded-lg mb-4" style="background:var(--bg-elevated);"><span class="font-display" style="font-size:2.5rem;color:var(--text-main);line-height:1;">' + total + '</span><span class="text-sm text-muted">new subscriber' + (total !== 1 ? 's' : '') + '</span></div>';
-      var planRows = groups.filter(function (g) { return counts[g.key] > 0; }).map(function (g) { return '<div class="feed-item"><div class="feed-icon">' + g.icon + '</div><div class="feed-body"><div class="feed-text">' + g.label + '</div><div class="feed-sub">' + counts[g.key] + ' new subscriber' + (counts[g.key] !== 1 ? 's' : '') + '</div></div></div>'; }).join('');
-      el.innerHTML = heading + totalBox + (planRows || '<p class="text-sm text-muted text-center py-2">No new subscribers in the last 7 days.</p>');
+      el.innerHTML = '<div class="text-xs font-bold text-muted uppercase mb-4" style="letter-spacing:0.06em;">New Subscribers — Last 7 Days</div>'
+        + '<div class="flex items-baseline gap-2 p-4 rounded-lg mb-4" style="background:var(--bg-elevated);"><span class="font-display" style="font-size:2.5rem;color:var(--text-main);line-height:1;">' + total + '</span><span class="text-sm text-muted">new subscriber' + (total !== 1 ? 's' : '') + '</span></div>'
+        + (groups.filter(function (g) { return counts[g.key] > 0; }).map(function (g) { return '<div class="feed-item"><div class="feed-icon">' + g.icon + '</div><div class="feed-body"><div class="feed-text">' + g.label + '</div><div class="feed-sub">' + counts[g.key] + ' new subscriber' + (counts[g.key] !== 1 ? 's' : '') + '</div></div></div>'; }).join('') || '<p class="text-sm text-muted text-center py-2">No new subscribers in the last 7 days.</p>');
     }
 
     /* ════ ANALYTICS ════════════════════════════════════════════════════════════ */
@@ -1555,3 +1467,5 @@
     /* ════ BOOT ══════════════════════════════════════════════════════════════════ */
     loadAdminData();
   </script>
+</body>
+</html>
