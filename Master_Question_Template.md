@@ -297,6 +297,268 @@ You may ONLY use the following `function_name` values and their exact parameters
 * `genericExperiment`: Use this as a CATCH-ALL for science setups (Beakers, ramps, magnets). Provide an object of variables, and it will render a beautiful UI card. `{"Setup A": "Wrapped in black cloth, 30ml water", "Setup B": "Wrapped in white cloth, 30ml water"}`
 * `circuitDiagram`: Renders electrical circuits with MOE standardized symbols. `{"circuitDiagram": {"title": "Setup A", "components": [{"type": "battery"}, {"type": "switch", "isOpen": true}, {"type": "bulb", "position": "right", "fused": false}]}}`
 
+**--- 4. MATH: GEOMETRY (Basic Shapes) ---**
+* `rectangle`: Labelled rectangle with dimension arrows. Use for Area & Perimeter, Algebra (variable sides).
+  `{"widthLabel": "12 cm", "heightLabel": "7 cm", "showNotToScale": true}`
+* `square`: Calls rectangle with equal sides.
+  `{"sideLabel": "9 cm"}`
+* `circle`: Circle with optional radius or diameter line.
+  `{"radiusLabel": "7 cm"}` OR `{"diameterLabel": "14 cm"}`
+* `rightTriangle`: Right-angled triangle with labelled base, height, and optional hypotenuse.
+  `{"base": "8 cm", "height": "6 cm", "hypotenuse": "10 cm", "showRightAngle": true}`
+* `compositeShape`: L-shape or T-shape built from rectangles. Use for composite area/perimeter problems.
+  `{"parts": [{"x": 40, "y": 40, "w": 200, "h": 80, "shaded": true, "label": "A"}, {"x": 40, "y": 120, "w": 80, "h": 100, "shaded": true, "label": "B"}], "unit": "cm", "showNotToScale": true}`
+  *(All coordinates are SVG pixel positions within a 400×260 viewBox. Scale your shapes accordingly.)*
+
+**--- 5. MATH: ANGLES (Advanced Geometry) ---**
+* `protractorMeasurement`: ⭐ NEW — Semicircular protractor with inner/outer scale and pointer arm.
+  Standard (baseline at 0°): `{"angle_to_measure": 65, "pointer_label": "?", "show_inner_scale": true}`
+  Non-zero baseline exam variant: `{"angle_to_measure": 50, "baseline_offset": 30, "pointer_label": "?"}`
+  *(Use `baseline_offset` > 0 for questions where the object/angle does not start at the 0° mark.)*
+* `rectangleDividedRightAngle`: Rectangle with a diagonal line at one corner creating angles.
+  `{"vertices": ["P","Q","R","S"], "angles": [{"label": "PQT"}, {"label": "TQR"}]}`
+* `dividedStraightLineAngle`: A straight line divided by one intersecting ray showing two named angles.
+  `{"vertices": ["A","O","B","C"], "angles": [{"label": "40°"}, {"label": "?"}]}`
+
+**--- 6. MATH: NUMBER & FRACTIONS ---**
+* `numberLine`: Horizontal number line with optional marked dots and highlight arcs.
+  Basic: `{"start": 0, "end": 10, "marked": [3, 7]}`
+  With highlight arc: `{"start": 0, "end": 12, "marked": [4], "highlight": [{"from": 0, "to": 4}]}`
+  With custom tick labels (fractions/decimals): `{"start": 0, "end": 1, "labels": [{"value": 0, "text": "0"}, {"value": 0.5, "text": "½"}, {"value": 1, "text": "1"}]}`
+* `fractionBar`: A single fraction bar (simpler than `fractionBars`). Use for one-fraction MCQ questions.
+  `{"numerator": 3, "denominator": 4, "showLabel": true}`
+
+**--- 7. MATH: DATA ANALYSIS (Alternatives) ---**
+* `barChart`: Pure SVG bar chart. Simpler API than `verticalBarChart`; preferred for MCQ diagrams.
+  `{"title": "Books Read", "xLabel": "Month", "yLabel": "Number", "bars": [{"label": "Jan", "value": 8}, {"label": "Feb", "value": 12}]}`
+  *(Use `verticalBarChart` when you need the "ink spill" covered-bar question type.)*
+* `horizontalBarChart`: Horizontal bar variant. Use for P3/P4 data questions with long category names.
+  `{"title": "Favourite Sports", "bars": [{"label": "Swimming", "value": 15}, {"label": "Football", "value": 22}]}`
+* `dataTable`: HTML table using CSS variables (preferred over `table` for CSS-var support).
+  `{"headers": ["Material", "Magnetic?", "Conductor?"], "rows": [["Iron", "Yes", "Yes"], ["Wood", "No", "No"]]}`
+  *(Use `highlightCol` (0-indexed integer) to highlight a specific column in rose colour.)*
+
+**--- 8. MATH: GEOMETRY (Solid Figures) ---**
+* `isometricGrid`: ⭐ NEW — Dual-mode: 3D isometric view OR orthographic 3-panel projection.
+  `cubes_arrangement` is a 2D array where each cell = number of cubes stacked at [row][col]. Row 0 = front.
+
+  Isometric (3D view): `{"mode": "isometric", "cubes_arrangement": [[2,1,0],[1,3,1],[0,1,2]]}`
+  Orthographic (Top/Front/Side panels): `{"mode": "orthographic", "cubes_arrangement": [[2,1,0],[1,3,1],[0,1,2]]}`
+  Highlight specific cubes: `{"mode": "isometric", "cubes_arrangement": [[2,1],[1,2]], "highlight_cubes": [{"row": 0, "col": 0, "layer": 1}]}`
+
+  *(Hidden-blocks questions: use `mode: "orthographic"` — students must deduce maximum cubes from the 2D views.)*
+
+**--- 9. SCIENCE: CONCEPTUAL ---**
+* `conceptMap`: Concept web with labelled nodes and directional edges. Use for Science classification/relationship questions.
+  `{"nodes": [{"id": "a", "label": "Living Things", "x": 50, "y": 20}, {"id": "b", "label": "Plants", "x": 25, "y": 70}, {"id": "c", "label": "Animals", "x": 75, "y": 70}], "edges": [{"from": "a", "to": "b"}, {"from": "a", "to": "c"}]}`
+  *(Note: `conceptMap` uses `edges` not `arrows`. `x` and `y` are percentages (0–100) of the viewBox.)*
+
+**--- 10. UTILITY ---**
+* `placeholder`: Grey dashed box with centred description. Use when no specific diagram function applies (e.g., complex anatomy, apparatus cross-sections).
+  `{"description": "Diagram of the human heart showing four chambers and major blood vessels."}`
+
+---
+
+**⚠️ CORRECTION — `lineGraph` params:**
+The `points` array uses `{x, y}` format (NOT the old `{xText, yVal}` format).
+Both formats are accepted for backward compatibility, but the correct format is:
+
+Numeric x-axis: `{"points": [{"x": 0, "y": 28}, {"x": 1, "y": 32}, {"x": 2, "y": 30}]}`
+Categorical x-axis (string labels): `{"points": [{"x": "8 am", "y": 28}, {"x": "9 am", "y": 32}]}`
+Legacy format (still works): `{"points": [{"xText": "8 am", "yVal": 28}]}`
+
+**⚠️ NOTE — `table` vs `dataTable`:**
+Both render HTML tables. `dataTable` uses CSS variables and is preferred. `table` uses Tailwind classes and is the legacy name. Both are valid in `visual_payload`.
+
+═══════════════════════════════════════════════════════════════
+SECTION 7: DIAGRAM ROUTING MAP — TOPIC → FUNCTION LOOKUP
+═══════════════════════════════════════════════════════════════
+
+MANDATORY RULE: Before choosing a `function_name` for any Maths or
+Science question, look up the topic in this map FIRST.
+ONLY use functions listed for that topic.
+If the topic is not listed, set `visual_payload` to NULL.
+NEVER invent a function name not present in Section 6.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MATHEMATICS ROUTING MAP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+── P1 ──────────────────────────────────────────────────────────
+
+| Topic                | Use Function          | Condition / Notes                                      |
+|----------------------|-----------------------|--------------------------------------------------------|
+| Whole Numbers        | `numberLine`          | Ordering, comparing, sequences on a number line        |
+| Addition/Subtraction | `numberLine`          | "Jump" strategy visualisation only; omit for text-only |
+| Multiplication/Division | NULL               | No diagram required for basic tables                   |
+| Money                | NULL                  | Text-based questions only                              |
+| Length and Mass      | `rulerMeasurement`    | Any question requiring a measurement reading           |
+| Shapes and Patterns  | `rectangle` / `square` / `circle` | Identifying or describing shapes          |
+| Picture Graphs       | `pictogram`           | Always use; set `keyValue` to the scale shown          |
+
+── P2 ──────────────────────────────────────────────────────────
+
+| Topic                | Use Function          | Condition / Notes                                      |
+|----------------------|-----------------------|--------------------------------------------------------|
+| Whole Numbers        | `numberLine`          | Number patterns, placing values on a line              |
+| Fractions            | `fractionBar`         | Visualise ½, ¼, ¾ as a single shaded bar               |
+| Length/Mass/Volume   | `rulerMeasurement`    | Scale reading questions                                |
+| Shapes               | `rectangle` / `square` / `circle` | Naming and comparing shapes              |
+| Picture Graphs       | `pictogram`           | Always; include `keySymbol` and `keyValue`             |
+
+── P3 ──────────────────────────────────────────────────────────
+
+| Topic                | Use Function           | Condition / Notes                                     |
+|----------------------|------------------------|-------------------------------------------------------|
+| Whole Numbers        | `numberLine`           | Number sequences or ordering only                     |
+| Fractions            | `fractionBars`         | Equivalent fractions, comparison, addition            |
+| Length/Mass/Volume   | `rulerMeasurement`     | All measurement reading questions                     |
+| Time                 | NULL                   | Clock-face diagrams not supported; omit visual        |
+| **Angles**           | `protractorMeasurement`| ⭐ Use for ALL angle measuring questions              |
+|                      |                        | `baseline_offset: 0` → standard; `> 0` → non-zero baseline |
+| Area and Perimeter   | `rectangle`            | Rectangle shapes                                      |
+|                      | `square`               | Square shapes                                         |
+|                      | `compositeShape`       | L-shapes, T-shapes, rectilinear figures               |
+| Bar Graphs           | `verticalBarChart`     | Always use `verticalBarChart` for P3/P4 bar graphs    |
+|                      |                        | Use `"value": "covered"` for the ink-spill question type |
+
+── P4 ──────────────────────────────────────────────────────────
+
+| Topic                | Use Function                   | Condition / Notes                                 |
+|----------------------|--------------------------------|---------------------------------------------------|
+| Whole Numbers        | NULL                           | Large-number operations, text-only                |
+| Factors and Multiples| NULL                           | Factor trees not in library; text only            |
+| Fractions            | `fractionBars`                 | Comparison, equivalent fractions, addition        |
+| Decimals             | `numberLine`                   | Placing decimals, ordering on a line              |
+| **Angles (basic)**   | `protractorMeasurement`        | Reading a protractor; measuring given angles      |
+| **Angles (advanced)**| `rightAngleDivided`            | Angles divided by rays within a right angle       |
+|                      | `straightLineDividedAngles`    | Angles on a straight line (sum = 180°)            |
+|                      | `rectangleDividedRightAngle`   | Rectangle with diagonal forming labelled angles   |
+|                      | `dividedStraightLineAngle`     | Straight line with one intersecting arm           |
+| Area and Perimeter   | `rectangle` / `square`        | Standard shapes                                   |
+|                      | `rightTriangle`                | Triangle area questions                           |
+|                      | `compositeShape`               | Composite rectilinear figures                     |
+|                      | `drawRectangleOnGrid`          | Grid-based area problems with labelled corners    |
+| Symmetry             | `drawRectangleOnGrid`          | Shape on grid with axis of symmetry shown         |
+| Data Analysis        | `verticalBarChart`             | Bar graph questions (include ink-spill where set) |
+|                      | `lineGraph`                    | Line graph / trend questions                      |
+|                      | `dataTable`                    | Tabulated data comparison                         |
+
+── P5 ──────────────────────────────────────────────────────────
+
+| Topic                | Use Function           | Condition / Notes                                     |
+|----------------------|------------------------|-------------------------------------------------------|
+| Fractions            | `fractionBars`         | Comparison and mixed-number visualisation             |
+| Decimals             | `numberLine`           | Ordering decimals or placing on a line                |
+| **Percentage**       | `pieChart`             | "What percentage of the whole" circular problems      |
+| **Ratio**            | `unitModel`            | Before-and-after, constant-part, internal-transfer models |
+| **Rate**             | `lineGraph`            | Distance-time or speed-time trend questions           |
+| Area of Triangle     | `rightTriangle`        | Right-angled triangle; include hypotenuse if asked    |
+|                      | `compositeShape`       | Composite shapes with shaded triangular regions       |
+| **Volume**           | `cuboid`               | 3D tank; set `water_level` (0.0–1.0) for liquid problems |
+| **Angles and Geometry** | `parallelogram`    | Rhombus, parallelogram with diagonals shown           |
+|                      | `polygon`              | General polygon with vertex labels; mark angle to measure |
+|                      | `equilateralTriangle`  | Equal-sided triangle(s); set `count` for multiple     |
+|                      | `rightAngleDivided`    | Angles in a right angle                               |
+|                      | `straightLineDividedAngles` | Angles on a straight line                       |
+| Average              | `verticalBarChart`     | Showing data bars with average line for context       |
+
+── P6 ──────────────────────────────────────────────────────────
+
+| Topic                | Use Function           | Condition / Notes                                     |
+|----------------------|------------------------|-------------------------------------------------------|
+| Fractions            | `fractionBars`         | Complex comparison or multi-step problems             |
+| Percentage           | `pieChart`             | Circular proportion problems                          |
+| Ratio                | `unitModel`            | Complex before-and-after, unequal-units models        |
+| **Speed**            | `lineGraph`            | Distance-time graphs; use categorical x for time labels |
+| **Algebra**          | `rectangle`            | Rectangle with variable side labels (e.g., "x+3 cm") |
+| **Circles**          | `circle`               | Use `radiusLabel` OR `diameterLabel` (not both)       |
+| Volume               | `cuboid`               | 3D tank; before-and-after water level (two diagrams)  |
+| **Geometry (general)** | `polygon`            | Complex polygons with multiple angle labels           |
+|                      | `parallelogram`        | Rhombus and parallelogram angle properties            |
+|                      | `compositeShape`       | Shaded/unshaded composite area figures                |
+| **Geometry (Solid Figures)** | `isometricGrid` | Use `mode: "isometric"` for 3D view questions     |
+|                      |                        | Use `mode: "orthographic"` for Top/Front/Side view questions |
+|                      |                        | Use `highlight_cubes` to mark specific cubes in rose  |
+| Pie Charts           | `pieChart`             | Always; AI must sum `data.value` to the correct total |
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SCIENCE ROUTING MAP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+── P3 ──────────────────────────────────────────────────────────
+
+| Topic        | Use Function       | Condition / Notes                                            |
+|--------------|--------------------|--------------------------------------------------------------|
+| Diversity    | `arrowDiagram`     | Classification tree: nodes = groups, arrows = characteristics |
+|              | `dataTable`        | Comparing features across organisms (rows = organisms)       |
+|              |                    | Set `hasFaultyNode: true` in params for misconception MCQs   |
+| Systems      | `arrowDiagram`     | Parts-and-function flow (e.g., digestive stages)             |
+|              | `genericExperiment`| Experimental setups; pass key variables as object params     |
+| Interactions | `arrowDiagram`     | Food chain: nodes = organisms, arrows = energy direction     |
+
+── P4 ──────────────────────────────────────────────────────────
+
+| Topic        | Use Function        | Condition / Notes                                           |
+|--------------|---------------------|-------------------------------------------------------------|
+| Cycles       | `arrowDiagram`      | Life cycles: nodes = stages, arrows = direction of time     |
+|              |                     | Set `layout: "horizontal"` for linear cycles (butterfly)    |
+|              |                     | For circular life cycles, set node x/y as % positions      |
+| Energy       | `genericExperiment` | General energy experiment setups                            |
+| **Heat**     | `thermometer`       | Temperature reading; set `minTemp`, `maxTemp`, `currentTemp`|
+|              | `genericExperiment` | Comparing heat absorption setups (e.g., black vs white cloth)|
+| Light        | `genericExperiment` | Shadow/transparency experiments; describe setup in params   |
+| **Magnets**  | `genericExperiment` | Poles, core material, electromagnet coil setup              |
+|              |                     | Include `magnetTypes`, `poles`, `coreMaterial` as params    |
+| Matter       | `genericExperiment` | States of matter, syringe/beaker experiments                |
+|              | `dataTable`         | Comparing properties of solids, liquids, gases              |
+
+── P5 ──────────────────────────────────────────────────────────
+
+| Topic        | Use Function        | Condition / Notes                                           |
+|--------------|---------------------|-------------------------------------------------------------|
+| Cycles       | `arrowDiagram`      | Water cycle stages as a flow diagram                        |
+|              | `genericExperiment` | Condensation/evaporation setup with annotated containers    |
+| Systems      | `dataTable`         | Comparing body systems (e.g., xylem vs phloem table)        |
+|              | `genericExperiment` | Any system with labelled experimental conditions            |
+| **Energy**   | `circuitDiagram`    | ⭐ Use ONLY for electrical circuit questions               |
+|              |                     | Set `circuitArrangement: "series"` or `"parallel"`         |
+|              |                     | Set `fusedBulbs: [index]` for fused-bulb deduction questions|
+|              | `genericExperiment` | Non-circuit energy experiments                              |
+| Interactions | `arrowDiagram`      | Food webs: multiple nodes connected by energy-flow arrows   |
+|              |                     | For faulty food web MCQs, include a misplaced arrow in nodes/arrows |
+
+── P6 ──────────────────────────────────────────────────────────
+
+| Topic        | Use Function        | Condition / Notes                                           |
+|--------------|---------------------|-------------------------------------------------------------|
+| Interactions | `arrowDiagram`      | Complex food web with producers + multiple consumer levels  |
+|              |                     | Ensure at least one producer node is always present         |
+| Energy       | `circuitDiagram`    | Complex series/parallel with switch states and fused bulbs  |
+|              | `genericExperiment` | Non-electrical energy experiments (friction, springs, ramps)|
+| Cells        | `dataTable`         | Plant cell vs animal cell feature comparison                |
+|              | `genericExperiment` | Microscope/experiment setup for cell observation            |
+| Forces       | `genericExperiment` | Ramp angle, surface texture, block mass, spring extension   |
+|              |                     | Pass `rampAngle`, `surfaceTexture`, `blockMass` as params   |
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 7 — HARD RULES (apply these after looking up the table above)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. NEVER use `arrowDiagram` for electrical circuits. ALWAYS use `circuitDiagram`.
+2. NEVER use `circuitDiagram` for food chains. ALWAYS use `arrowDiagram`.
+3. NEVER use `lineGraph` for bar graph topics. ALWAYS use `verticalBarChart`.
+4. For Science experiments NOT listed above: ALWAYS use `genericExperiment` with
+   descriptive key-value params. Do NOT invent a new function name.
+5. If a Maths question is entirely computational with no spatial component,
+   set `visual_payload` to NULL. Do NOT force a diagram on a text-only question.
+6. `isometricGrid` is the ONLY permitted function for Solid Figures questions.
+   Do NOT use `cuboid` for flat-grid arrangements. `cuboid` is for 3D TANK/VOLUME questions only.
+7. For P3/P4 Angles questions, ALWAYS include `protractorMeasurement`. Do NOT use
+   `polygon` or `parallelogram` for angle-reading questions at P3/P4 level.
+8. `pieChart` is for CIRCULAR proportion diagrams only. Do NOT use it for bar graphs
+   labelled as "pie" in the question — use `verticalBarChart` instead.
+
 ═══════════════════════════════════════════════════════════════
 FINAL QUALITY CHECKLIST BEFORE OUTPUT
 ═══════════════════════════════════════════════════════════════

@@ -23,12 +23,199 @@
 'use strict';
 
 const DiagramLibrary = {
+  /**
+ * 🧊 Isometric Grid / Orthographic Projection — P5/P6 Geometry > Solid Figures
+ *
+ * Masterclass solution: one function, two render modes, same data model.
+ * The AI specifies cubes_arrangement once; mode controls the visual output.
+ *
+ * @param {string}   params.mode                - 'isometric' (default) | 'orthographic'
+ * @param {number[][]} params.cubes_arrangement - 2D array: each cell = cubes stacked at [row][col]
+ *                                               row 0 = front of the grid
+ * @param {string}   params.label               - Optional diagram caption
+ * @param {Array}    params.highlight_cubes     - [{row, col, layer}] cubes to tint rose
+ *
+ * MODE: 'isometric'
+ *   Renders a 3D perspective view of the cube stack.
+ *   Use for: "How many cubes are in this arrangement?"
+ *   { "function_name": "isometricGrid",
+ *     "params": { "mode": "isometric",
+ *                 "cubes_arrangement": [[2,1],[1,3]] } }
+ *
+ * MODE: 'orthographic'
+ *   Renders Top View, Front View, and Side View panels side-by-side.
+ *   Use for: "Draw/identify the Top/Front/Side view of this arrangement."
+ *   Hidden-cubes variant: AI sets values higher, mode='orthographic' shows what
+ *   can be deduced from the 2D views only.
+ *   { "function_name": "isometricGrid",
+ *     "params": { "mode": "orthographic",
+ *                 "cubes_arrangement": [[2,0,1],[1,2,0],[0,1,1]] } }
+ */
+  isometricGrid({
+    mode              = 'isometric',
+    cubes_arrangement = [[1]],
+    label             = '',
+    highlight_cubes   = [],
+  } = {}) {
+    // Normalise: ensure valid 2D array
+    let grid = Array.isArray(cubes_arrangement) ? cubes_arrangement : [[1]];
+    if (!Array.isArray(grid[0])) grid = [grid];
 
-  _esc(str) {
-    if (str == null) return '';
-    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const rows  = grid.length;
+    const cols  = Math.max(...grid.map(r => (Array.isArray(r) ? r.length : 0)), 1);
+    const maxH  = Math.max(...grid.flat().map(v => Number(v) || 0), 1);
+
+    if (mode === 'orthographic') return this._isoOrthographic(grid, rows, cols, maxH, label);
+    return this._isoIsometric(grid, rows, cols, maxH, label, highlight_cubes);
   },
 
+  /**
+   * @private — Renders the 3D isometric perspective view.
+   */
+  _isoIsometric(grid, rows, cols, maxH, label, hlCubes) {
+    const esc = this._esc.bind(this);
+    const cW = 36, cH = 18, vH = 24;  // cube face dimensions (pixels)
+
+    // Dynamic viewBox sized to fit the grid
+    const svgW = Math.max(280, (cols + rows) * cW / 2 + 100);
+    const svgH = Math.max(180, maxH * vH + (cols + rows) * cH / 2 + 60);
+    // Origin = front-left (col=0, row=0) anchor point (bottom of ground cube's top face)
+    const ox = Math.round(rows * cW / 2 + 50);
+    const oy = Math.round(svgH - 30);
+
+    // Convert (col, row, z) → SVG position of the FRONT vertex of the TOP face
+    const toS = (col, row, z) => ({
+      x: ox + (col - row) * cW / 2,
+      y: oy - (col + row) * cH / 2 - z * vH,
+    });
+
+    // Draw one face of a cube; `which` = 'top' | 'left' | 'right'
+    const drawFace = (col, row, z, which, hl) => {
+      const { x: fx, y: fy } = toS(col, row, z);
+      const lx = fx - cW/2, ly = fy - cH/2;
+      const rx = fx + cW/2, ry = fy - cH/2;
+      const tx = fx,         ty = fy - cH;
+      const bx = fx,         by = fy + vH;
+      const pts = {
+        top:   `${fx},${fy} ${lx},${ly} ${tx},${ty} ${rx},${ry}`,
+        left:  `${lx},${ly} ${fx},${fy} ${bx},${by} ${lx},${ly + vH}`,
+        right: `${fx},${fy} ${rx},${ry} ${rx},${ry + vH} ${bx},${by}`,
+      };
+      const fill = hl
+        ? { top: 'rgba(183,110,121,0.45)', left: 'rgba(183,110,121,0.30)', right: 'rgba(183,110,121,0.18)' }
+        : { top: 'var(--bg-elevated)',     left: 'rgba(81,97,94,0.16)',    right: 'rgba(81,97,94,0.08)' };
+      const stroke = hl ? 'var(--brand-rose)' : 'var(--brand-sage)';
+      return `<polygon points="${pts[which]}" fill="${fill[which]}" stroke="${stroke}" stroke-width="1.5"/>`;
+    };
+
+    // Painter's algorithm: draw from back-right to front-left, bottom layer first
+    let shapes = '';
+    for (let r = rows - 1; r >= 0; r--) {
+      for (let c = 0; c < cols; c++) {
+        const h = Number((grid[r] || [])[c]) || 0;
+        for (let z = 0; z < h; z++) {
+          const hl = Array.isArray(hlCubes) && hlCubes.some(q => q.row === r && q.col === c && q.layer === z);
+          shapes += drawFace(c, r, z, 'left', hl);
+          shapes += drawFace(c, r, z, 'right', hl);
+          shapes += drawFace(c, r, z, 'top', hl);
+        }
+      }
+    }
+
+    const lblEl = label
+      ? `<text x="${svgW/2}" y="16" text-anchor="middle" fill="var(--text-main)" font-size="12" font-weight="600">${esc(label)}</text>`
+      : '';
+
+    return this._svg(`${lblEl}${shapes}`, {
+      viewBox: `0 0 ${svgW} ${svgH}`,
+      alt: `Isometric view of cube arrangement: ${rows} row(s), ${cols} column(s), max height ${maxH}.`,
+      maxWidth: svgW,
+    });
+  },
+
+/**
+ * @private — Renders 3 orthographic projection panels (Top, Front, Side).
+ */
+_isoOrthographic(grid, rows, cols, maxH, label) {
+  const esc      = this._esc.bind(this);
+  const cs       = 22;   // cell size (pixels)
+  const lblH     = 16;
+  const pad      = 12;
+  const gap      = 22;
+
+  // Derive views from cubes_arrangement
+  // Front view: for each COLUMN, max height across all rows
+  const frontH   = Array.from({ length: cols }, (_, c) =>
+    Math.max(...grid.map(row => Number((row || [])[c]) || 0))
+  );
+  // Side view: for each ROW, max height across all columns
+  const sideH    = grid.map(row =>
+    Math.max(...Array.from({ length: cols }, (_, c) => Number((row || [])[c]) || 0))
+  );
+
+  const mFront   = Math.max(...frontH, 1);
+  const mSide    = Math.max(...sideH, 1);
+  const mPanel   = Math.max(rows * cs, mFront * cs, mSide * cs);
+
+  const svgW     = pad + cols*cs + gap + cols*cs + gap + rows*cs + pad;
+  const svgH     = pad + lblH + mPanel + pad + (label ? 16 : 0);
+
+  const tx0      = pad;                             // top view x-origin
+  const fx0      = pad + cols*cs + gap;             // front view x-origin
+  const sx0      = fx0 + cols*cs + gap;             // side view x-origin
+  const cy0      = pad + lblH;                      // content y-origin (top of tallest panel)
+
+  // Bottom-align all panels
+  const topY0    = cy0 + (mPanel - rows*cs);
+  const frontY0  = cy0 + (mPanel - mFront*cs);
+  const sideY0   = cy0 + (mPanel - mSide*cs);
+
+  let svg = '';
+
+  // Panel headers
+  const hY = pad + lblH - 3;
+  [[tx0 + cols*cs/2, 'Top View'], [fx0 + cols*cs/2, 'Front View'], [sx0 + rows*cs/2, 'Side View']].forEach(([x, t]) => {
+    svg += `<text x="${x}" y="${hY}" text-anchor="middle" fill="var(--brand-sage)" font-size="10" font-weight="700">${t}</text>`;
+  });
+
+  // ── TOP VIEW ───────────────────────────────────────────────────────────────
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const h    = Number((grid[r] || [])[c]) || 0;
+      const fill = h > 0 ? 'rgba(81,97,94,0.22)' : 'none';
+      svg += `<rect x="${tx0+c*cs}" y="${topY0+r*cs}" width="${cs}" height="${cs}" fill="${fill}" stroke="var(--brand-sage)" stroke-width="1"/>`;
+      if (h > 1) svg += `<text x="${tx0+c*cs+cs/2}" y="${topY0+r*cs+cs/2+4}" text-anchor="middle" fill="var(--brand-sage)" font-size="8" font-weight="700">${h}</text>`;
+    }
+  }
+
+  // ── FRONT VIEW (looking from row=0 side) ──────────────────────────────────
+  for (let c = 0; c < cols; c++) {
+    for (let z = 0; z < mFront; z++) {
+      const fill = z < frontH[c] ? 'rgba(81,97,94,0.22)' : 'none';
+      svg += `<rect x="${fx0+c*cs}" y="${frontY0+(mFront-1-z)*cs}" width="${cs}" height="${cs}" fill="${fill}" stroke="var(--brand-sage)" stroke-width="1"/>`;
+    }
+  }
+
+  // ── SIDE VIEW (looking from col=cols−1 side, row=0 appears on RIGHT) ──────
+  for (let r = 0; r < rows; r++) {
+    const panelCol = rows - 1 - r;   // front row → rightmost column in panel
+    for (let z = 0; z < mSide; z++) {
+      const fill = z < sideH[r] ? 'rgba(81,97,94,0.22)' : 'none';
+      svg += `<rect x="${sx0+panelCol*cs}" y="${sideY0+(mSide-1-z)*cs}" width="${cs}" height="${cs}" fill="${fill}" stroke="var(--brand-sage)" stroke-width="1"/>`;
+    }
+  }
+
+  // Optional diagram caption
+  const capEl = label
+    ? `<text x="${svgW/2}" y="${svgH-3}" text-anchor="middle" fill="var(--text-muted)" font-size="10">${esc(label)}</text>`
+    : '';
+
+  return this._svg(`${svg}${capEl}`, {
+    viewBox: `0 0 ${svgW} ${svgH}`,
+    alt: `Orthographic projection: Top, Front, and Side views of the cube arrangement.`,
+    maxWidth: Math.max(300, svgW),
+  });
+},
   // ==========================================
   // P5/P6 MATH HEURISTIC ENGINE
   // ==========================================
@@ -98,84 +285,7 @@ const DiagramLibrary = {
       }
     });
     return this._svg(svg, { viewBox: '0 0 400 220' });
-  },
-
-  // 🚀 Centralized Router (With Backward-Compatible Fallback)
-  render(payload) {
-    if (payload.unitModel) return this.unitModel(payload.unitModel);
-    if (payload.circuitDiagram) return this.circuitDiagram(payload.circuitDiagram);
-    if (!payload || !payload.function_name) return '';
-    const fn = this[payload.function_name];
-
-    // 1. If the specific engine exists, use it
-    if (typeof fn === 'function') {
-      return fn.call(this, payload.params || {});
-    }
-
-    // 2. Backward Compatibility: If it's a legacy or hallucinated function, 
-    // route it safely to the genericExperiment fallback!
-    if (typeof this.genericExperiment === 'function') {
-      return this.genericExperiment(payload.params || {}, payload.function_name);
-    }
-
-    return `<div class="text-amber border border-amber p-4 rounded text-center text-sm">Diagram engine cannot render: "${this._esc(payload.function_name)}"</div>`;
-  },
-
-  /**
-   * 📈 MOE Line Graph Engine (Hardened & Scaled)
-   */
-  lineGraph(params) {
-    let p = params;
-    if (typeof p === 'string') { try { p = JSON.parse(p); } catch (e) { p = {}; } }
-
-    const title = p.title || '';
-    const xLabel = p.xLabel || '';
-    const yLabel = p.yLabel || '';
-    const yMax = Number(p.yMax) || 100;
-
-    // Deep parse array to prevent stringified traps
-    let rawPoints = p.points;
-    if (typeof rawPoints === 'string') { try { rawPoints = JSON.parse(rawPoints); } catch (e) { rawPoints = []; } }
-    const points = Array.isArray(rawPoints) ? rawPoints : [];
-
-    const width = 420, height = 260;
-    const padL = 55, padR = 25, padT = 35, padB = 45;
-    const plotW = width - padL - padR;
-    const plotH = height - padT - padB;
-
-    // max-width prevents flexbox blowout
-    let svg = `<svg viewBox="0 0 ${width} ${height}" style="width: 100%; max-width: 420px; height: auto; display: block; margin: 0 auto 1.5rem auto; background: var(--bg-surface); border-radius: 8px; border: 1px solid var(--border-light);" role="img" aria-label="Line Graph">
-      <text x="${width / 2}" y="22" text-anchor="middle" font-weight="bold" font-size="14" fill="var(--text-main)" font-family="sans-serif">${this._esc(title)}</text>
-      <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${height - padB}" stroke="var(--border-dark)" stroke-width="2"/>
-      <text x="${padL - 35}" y="${padT + plotH / 2}" transform="rotate(-90 ${padL - 35} ${padT + plotH / 2})" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-main)" font-family="sans-serif">${this._esc(yLabel)}</text>
-      <line x1="${padL}" y1="${height - padB}" x2="${width - padR}" y2="${height - padB}" stroke="var(--border-dark)" stroke-width="2"/>
-      <text x="${padL + plotW / 2}" y="${height - 12}" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-main)" font-family="sans-serif">${this._esc(xLabel)}</text>
-    `;
-
-    if (points.length > 0) {
-      const stepX = plotW / points.length;
-      const coords = points.map((pt, i) => {
-        // Absolute fail-safe math: forces Number() and provides default fallbacks
-        const cx = Number(padL + (stepX * i) + (stepX / 2)) || padL;
-        const safeY = Number(pt.yVal) || 0;
-        const cy = Number((height - padB) - ((safeY / yMax) * plotH)) || (height - padB);
-        return { cx, cy, label: pt.xText || '', val: safeY };
-      });
-
-      const pathD = `M ${coords.map(c => `${c.cx},${c.cy}`).join(' L ')}`;
-      svg += `<path d="${pathD}" fill="none" stroke="var(--brand-rose)" stroke-width="3" stroke-linejoin="round"/>`;
-
-      coords.forEach(c => {
-        svg += `
-          <circle cx="${c.cx}" cy="${c.cy}" r="4" fill="var(--brand-sage)" stroke="#fff" stroke-width="2"/>
-          <text x="${c.cx}" y="${height - padB + 18}" text-anchor="middle" font-size="11" fill="var(--text-muted)" font-family="sans-serif">${this._esc(c.label)}</text>
-          <text x="${padL - 8}" y="${c.cy + 4}" text-anchor="end" font-size="11" fill="var(--text-muted)" font-family="sans-serif">${c.val}</text>
-          <line x1="${padL - 4}" y1="${c.cy}" x2="${padL}" y2="${c.cy}" stroke="var(--border-dark)" stroke-width="1"/>
-        `;
-      });
-    }
-    return svg + `</svg>`;
-  },
+  },  
 
   /**
    * 🕸️ MOE Concept Map Engine (Hardened & Scaled)
@@ -999,49 +1109,6 @@ const DiagramLibrary = {
   },
 
   // ── HELPERS ────────────────────────────────────────────────────────────────
-  drawRectangleOnGrid(params) {
-    const w_cm = parseFloat(params.width_cm) || 10;
-    const l_cm = parseFloat(params.length_cm) || 5;
-    const unit = parseFloat(params.unit_grid_cm) || 1;
-
-    // Calculate how many grid squares are needed
-    const w_units = w_cm / unit;
-    const h_units = l_cm / unit;
-
-    const cellSize = 30; // 30 pixels per grid square
-    const gridW = (w_units + 2) * cellSize; // Add padding
-    const gridH = (h_units + 2) * cellSize; // Add padding
-
-    // Draw grid background
-    let gridLines = '';
-    for (let x = 0; x <= gridW; x += cellSize) {
-      gridLines += `<line x1="${x}" y1="0" x2="${x}" y2="${gridH}" stroke="var(--border-light)" stroke-width="1"/>`;
-    }
-    for (let y = 0; y <= gridH; y += cellSize) {
-      gridLines += `<line x1="0" y1="${y}" x2="${gridW}" y2="${y}" stroke="var(--border-light)" stroke-width="1"/>`;
-    }
-
-    // Draw the actual rectangle
-    const rectX = cellSize;
-    const rectY = cellSize;
-    const rectW = w_units * cellSize;
-    const rectH = h_units * cellSize;
-    const rectSvg = `<rect x="${rectX}" y="${rectY}" width="${rectW}" height="${rectH}" fill="rgba(183, 110, 121, 0.1)" stroke="var(--brand-sage)" stroke-width="3"/>`;
-
-    // Draw Labels
-    const labelTop = `<text x="${rectX + rectW / 2}" y="${rectY - 8}" text-anchor="middle" fill="var(--text-main)" font-size="14" font-weight="bold">${params.labels || w_cm + 'cm'}</text>`;
-    const labelSide = `<text x="${rectX - 8}" y="${rectY + rectH / 2}" text-anchor="end" alignment-baseline="middle" fill="var(--text-main)" font-size="14" font-weight="bold">${l_cm + 'cm'}</text>`;
-
-    const content = `
-      <svg width="100%" style="height: auto;" viewBox="0 0 ${gridW} ${gridH}" style="max-width: 500px;">
-        ${gridLines}
-        ${rectSvg}
-        ${labelTop}
-        ${labelSide}
-      </svg>
-    `;
-    return content;
-  },
 
   table(params) {
     // 🚀 FIX: Strictly enforce arrays to prevent .map() and .forEach() crashes
@@ -1596,57 +1663,75 @@ const DiagramLibrary = {
    * @param {object} opts
    * @returns {string} SVG string
    */
-  lineGraph({
-    title = '',
-    xLabel = '',
-    yLabel = '',
-    points = [],
-    xTicks = [],
-    yTicks = [],
-  } = {}) {
-    const esc = this._esc.bind(this);
-    if (!points.length) return this.placeholder({ description: 'Line graph (no data)' });
+  /**
+ * Line graph with connected data points.
+ * Accepts BOTH param formats for backward compatibility:
+ *   New format: points = [{ x: number, y: number }]
+ *   Legacy format: points = [{ xText: 'Mon', yVal: 42 }]
+ * For categorical x-axes (time, day names), points are spaced evenly.
+ */
+lineGraph({
+  title = '',
+  xLabel = '',
+  yLabel = '',
+  points = [],
+  xTicks = [],
+  yTicks = [],
+  yMax = null,
+} = {}) {
+  const esc = this._esc.bind(this);
+  if (!points.length) return this.placeholder({ description: 'Line graph (no data)' });
 
-    const chartX = 55, chartY = 30, chartW = 310, chartH = 160;
-    const xVals = points.map(p => p.x);
-    const yVals = points.map(p => p.y);
-    const xMin = Math.min(...xVals), xMax = Math.max(...xVals);
-    const yMin = 0, yMax = Math.ceil(Math.max(...yVals) * 1.2) || 10;
+  // ── Normalise: accept {x, y} OR legacy {xText, yVal} ──────────────────────
+  const isLegacy = 'xText' in points[0] || 'yVal' in points[0];
+  const isCategorical = isLegacy || typeof points[0].x === 'string';
 
-    const toSX = (v) => chartX + ((v - xMin) / (xMax - xMin || 1)) * chartW;
-    const toSY = (v) => chartY + chartH - ((v - yMin) / (yMax - yMin || 1)) * chartH;
+  const normalised = points.map((p, i) => ({
+    numX:     isCategorical ? i : (Number(p.x) || 0),
+    numY:     typeof p.y === 'number' ? p.y : (Number(p.yVal) || 0),
+    displayX: p.label ?? p.xText ?? (p.x !== undefined ? String(p.x) : String(i)),
+  }));
 
-    // Grid lines from yTicks or auto
-    const yTicksArr = yTicks.length ? yTicks : [0, Math.round(yMax / 2), yMax];
-    const gridLines = yTicksArr.map(v => {
-      const y = toSY(v);
-      return `<line x1="${chartX}" y1="${y}" x2="${chartX + chartW}" y2="${y}" stroke="var(--border-light)" stroke-width="1"/>
-              <text x="${chartX - 6}" y="${y + 4}" text-anchor="end" fill="var(--text-muted)" font-size="10">${v}</text>`;
-    }).join('');
+  const chartX = 55, chartY = 30, chartW = 310, chartH = 160;
 
-    // X axis labels
-    const xTicksArr = xTicks.length ? xTicks : xVals;
-    const xLabels = xTicksArr.map(v => {
-      const x = toSX(v);
-      return `<text x="${x}" y="${chartY + chartH + 16}" text-anchor="middle" fill="var(--text-main)" font-size="10">${v}</text>`;
-    }).join('');
+  const xMin  = isCategorical ? 0 : Math.min(...normalised.map(p => p.numX));
+  const xMax  = isCategorical ? Math.max(normalised.length - 1, 1) : Math.max(...normalised.map(p => p.numX));
+  const autoYMax = yMax || Math.ceil(Math.max(...normalised.map(p => p.numY)) * 1.2) || 10;
+  const yMin  = 0;
 
-    // Line path
-    const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${toSX(p.x)} ${toSY(p.y)}`).join(' ');
-    const dots = points.map(p =>
-      `<circle cx="${toSX(p.x)}" cy="${toSY(p.y)}" r="4" fill="var(--brand-rose)" stroke="white" stroke-width="1.5"/>`
-    ).join('');
+  const toSX = (v) => chartX + ((v - xMin) / (xMax - xMin || 1)) * chartW;
+  const toSY = (v) => chartY + chartH - ((v - yMin) / (autoYMax - yMin || 1)) * chartH;
 
-    const axes = `<line x1="${chartX}" y1="${chartY}" x2="${chartX}" y2="${chartY + chartH}" stroke="var(--brand-sage)" stroke-width="2"/>
-                  <line x1="${chartX}" y1="${chartY + chartH}" x2="${chartX + chartW}" y2="${chartY + chartH}" stroke="var(--brand-sage)" stroke-width="2"/>`;
+  // Y gridlines
+  const yTicksArr = yTicks.length ? yTicks : [0, Math.round(autoYMax / 2), autoYMax];
+  const gridLines = yTicksArr.map(v => {
+    const y = toSY(v);
+    return `<line x1="${chartX}" y1="${y}" x2="${chartX + chartW}" y2="${y}" stroke="var(--border-light)" stroke-width="1"/>
+            <text x="${chartX - 6}" y="${y + 4}" text-anchor="end" fill="var(--text-muted)" font-size="10">${v}</text>`;
+  }).join('');
 
-    const titleEl = title ? `<text x="200" y="18" text-anchor="middle" fill="var(--text-main)" font-size="13" font-weight="700">${esc(title)}</text>` : '';
-    const xLblEl = xLabel ? `<text x="${chartX + chartW / 2}" y="255" text-anchor="middle" fill="var(--text-muted)" font-size="11">${esc(xLabel)}</text>` : '';
-    const yLblEl = yLabel ? `<text x="14" y="${chartY + chartH / 2}" text-anchor="middle" fill="var(--text-muted)" font-size="11" transform="rotate(-90,14,${chartY + chartH / 2})">${esc(yLabel)}</text>` : '';
+  // X axis labels (from normalised.displayX)
+  const xLabels = normalised.map(p =>
+    `<text x="${toSX(p.numX)}" y="${chartY + chartH + 16}" text-anchor="middle" fill="var(--text-main)" font-size="10">${esc(p.displayX)}</text>`
+  ).join('');
 
-    const content = `${titleEl}${yLblEl}${gridLines}${axes}${xLabels}<path d="${pathD}" fill="none" stroke="var(--brand-rose)" stroke-width="2.5" stroke-linejoin="round"/>${dots}${xLblEl}`;
-    return this._svg(content, { alt: `Line graph${title ? ': ' + title : ''}. ${points.length} data points.` });
-  },
+  // Line path and dots
+  const pathD = normalised.map((p, i) => `${i === 0 ? 'M' : 'L'} ${toSX(p.numX)} ${toSY(p.numY)}`).join(' ');
+  const dots  = normalised.map(p =>
+    `<circle cx="${toSX(p.numX)}" cy="${toSY(p.numY)}" r="4" fill="var(--brand-rose)" stroke="white" stroke-width="1.5"/>`
+  ).join('');
+
+  const axes = `
+    <line x1="${chartX}" y1="${chartY}" x2="${chartX}" y2="${chartY + chartH}" stroke="var(--brand-sage)" stroke-width="2"/>
+    <line x1="${chartX}" y1="${chartY + chartH}" x2="${chartX + chartW}" y2="${chartY + chartH}" stroke="var(--brand-sage)" stroke-width="2"/>`;
+
+  const titleEl = title  ? `<text x="200" y="18" text-anchor="middle" fill="var(--text-main)" font-size="13" font-weight="700">${esc(title)}</text>` : '';
+  const xLblEl  = xLabel ? `<text x="${chartX + chartW / 2}" y="255" text-anchor="middle" fill="var(--text-muted)" font-size="11">${esc(xLabel)}</text>` : '';
+  const yLblEl  = yLabel ? `<text x="14" y="${chartY + chartH / 2}" text-anchor="middle" fill="var(--text-muted)" font-size="11" transform="rotate(-90,14,${chartY + chartH / 2})">${esc(yLabel)}</text>` : '';
+
+  const content = `${titleEl}${yLblEl}${gridLines}${axes}${xLabels}<path d="${pathD}" fill="none" stroke="var(--brand-rose)" stroke-width="2.5" stroke-linejoin="round"/>${dots}${xLblEl}`;
+  return this._svg(content, { alt: `Line graph${title ? ': ' + title : ''}. ${points.length} data points.` });
+},
 
   // ── TABLES (HTML) ────────────────────────────────────────────────────────────
 
@@ -1811,6 +1896,131 @@ const DiagramLibrary = {
     return this._svg(content, { alt: esc(description) });
   },
 
+  /**
+ * 🔺 MOE Protractor — P3/P4 Angles
+ * Draws a semicircular protractor with inner + outer scales and a pointer arm.
+ *
+ * @param {object} params
+ * @param {number} params.angle_to_measure   - The angle being shown (degrees, 0–180)
+ * @param {number} params.baseline_offset    - Where the angle arm starts (0 = right edge).
+ *                                             Set > 0 for "non-zero baseline" exam variants.
+ * @param {boolean} params.show_inner_scale  - Show the inner (reverse) scale
+ * @param {boolean} params.show_outer_scale  - Show the outer (standard) scale
+ * @param {string}  params.pointer_label     - Label on the angle arc (e.g. "?", "∠ABC")
+ * @param {string}  params.label             - Optional diagram title
+ *
+ * Usage:
+ *   { "function_name": "protractorMeasurement",
+ *     "params": { "angle_to_measure": 65, "baseline_offset": 0, "pointer_label": "?" } }
+ *
+ * Non-zero baseline (object not starting at 0°):
+ *   { "function_name": "protractorMeasurement",
+ *     "params": { "angle_to_measure": 50, "baseline_offset": 30, "pointer_label": "?" } }
+ */
+  protractorMeasurement({
+    angle_to_measure = 60,
+    baseline_offset  = 0,
+    show_inner_scale = true,
+    show_outer_scale = true,
+    pointer_label    = '?',
+    label            = '',
+  } = {}) {
+    const esc = this._esc.bind(this);
+    const cx = 200, cy = 224, R = 142;  // protractor centre and radius
+
+    // Convert protractor degrees → SVG coords
+    // 0° = right, 90° = top, 180° = left (counterclockwise, going upward)
+    const toXY = (deg, r) => {
+      const rad = deg * Math.PI / 180;
+      return { x: cx + r * Math.cos(rad), y: cy - r * Math.sin(rad) };
+    };
+
+    // ── Semicircle arc (upper half) ────────────────────────────────────────────
+    const arcStart = toXY(0, R), arcEnd = toXY(180, R);
+    const arc = `<path d="M ${arcStart.x},${arcStart.y} A ${R},${R} 0 0,0 ${arcEnd.x},${arcEnd.y}"
+      fill="rgba(240,244,243,0.55)" stroke="var(--brand-sage)" stroke-width="2"/>`;
+
+    // ── Flat baseline (the diameter) ──────────────────────────────────────────
+    const flatBase = `<line x1="${arcEnd.x}" y1="${cy}" x2="${arcStart.x}" y2="${cy}" stroke="var(--brand-sage)" stroke-width="2.5"/>`;
+
+    // ── Tick marks + scale labels ──────────────────────────────────────────────
+    let ticks = '', outerLbls = '', innerLbls = '';
+    for (let deg = 0; deg <= 180; deg += 10) {
+      const isMajor  = deg % 30 === 0;
+      const isHalf   = deg % 10 === 0 && !isMajor;
+      const outerPt  = toXY(deg, R);
+      const innerPt  = toXY(deg, R - (isMajor ? 20 : isHalf ? 12 : 8));
+      ticks += `<line x1="${outerPt.x.toFixed(1)}" y1="${outerPt.y.toFixed(1)}"
+                      x2="${innerPt.x.toFixed(1)}" y2="${innerPt.y.toFixed(1)}"
+                      stroke="var(--text-main)" stroke-width="${isMajor ? 2 : 1}"/>`;
+
+      if (isMajor) {
+        if (show_outer_scale) {
+          const lPt   = toXY(deg, R + 17);
+          const anchor = deg < 75 ? 'start' : deg > 105 ? 'end' : 'middle';
+          outerLbls  += `<text x="${lPt.x.toFixed(1)}" y="${(lPt.y + 4).toFixed(1)}"
+            text-anchor="${anchor}" fill="var(--text-main)" font-size="11" font-weight="600">${deg}</text>`;
+        }
+        if (show_inner_scale) {
+          const inner_deg = 180 - deg;
+          const ilPt  = toXY(deg, R - 27);
+          const anchor = deg < 75 ? 'start' : deg > 105 ? 'end' : 'middle';
+          innerLbls  += `<text x="${ilPt.x.toFixed(1)}" y="${(ilPt.y + 4).toFixed(1)}"
+            text-anchor="${anchor}" fill="var(--text-muted)" font-size="9">${inner_deg}</text>`;
+        }
+      }
+    }
+
+    // ── Baseline arm (where the measurement starts; visible when offset ≠ 0) ──
+    const baseArmPt   = toXY(baseline_offset, R - 4);
+    const baseArm     = baseline_offset !== 0
+      ? `<line x1="${cx}" y1="${cy}" x2="${baseArmPt.x.toFixed(1)}" y2="${baseArmPt.y.toFixed(1)}"
+          stroke="var(--brand-sage)" stroke-width="2.5" stroke-dasharray="6,3"/>`
+      : '';
+
+    // ── Pointer arm (at the measured angle) ───────────────────────────────────
+    const pointerDeg  = baseline_offset + angle_to_measure;
+    const pointerPt   = toXY(pointerDeg, R - 4);
+    const pointer     = `<line x1="${cx}" y1="${cy}" x2="${pointerPt.x.toFixed(1)}" y2="${pointerPt.y.toFixed(1)}"
+      stroke="var(--brand-rose)" stroke-width="2.5"/>`;
+
+    // ── Arc indicator (shows the angle sector) ────────────────────────────────
+    const arcR        = 48;
+    const arcS        = toXY(baseline_offset, arcR);
+    const arcE        = toXY(pointerDeg, arcR);
+    const largeFlag   = angle_to_measure > 180 ? 1 : 0;
+    // sweep-flag=0: counterclockwise in SVG = increasing protractor degrees (upward)
+    const angArc      = `<path d="M ${arcS.x.toFixed(1)},${arcS.y.toFixed(1)} A ${arcR},${arcR} 0 ${largeFlag},0 ${arcE.x.toFixed(1)},${arcE.y.toFixed(1)}"
+      fill="none" stroke="var(--brand-rose)" stroke-width="2"/>`;
+
+    // ── Angle label in the arc sector ─────────────────────────────────────────
+    const midDeg      = baseline_offset + angle_to_measure / 2;
+    const midPt       = toXY(midDeg, 68);
+    const pLabel      = `<text x="${midPt.x.toFixed(1)}" y="${(midPt.y + 5).toFixed(1)}"
+      text-anchor="middle" fill="var(--brand-rose)" font-size="14" font-weight="700">${esc(pointer_label)}</text>`;
+
+    // ── Centre dot ────────────────────────────────────────────────────────────
+    const dot         = `<circle cx="${cx}" cy="${cy}" r="4" fill="var(--brand-sage)"/>`;
+
+    // ── Optional diagram title ─────────────────────────────────────────────────
+    const titleEl     = label
+      ? `<text x="${cx}" y="18" text-anchor="middle" fill="var(--text-main)" font-size="12" font-weight="600">${esc(label)}</text>`
+      : '';
+
+    // ── Non-zero baseline note ─────────────────────────────────────────────────
+    const noteEl      = baseline_offset !== 0
+      ? `<text x="${cx}" y="256" text-anchor="middle" fill="var(--text-muted)" font-size="9" font-style="italic">Baseline does not start at 0°</text>`
+      : '';
+
+    const content = `${titleEl}${arc}${flatBase}${ticks}${outerLbls}${innerLbls}${baseArm}${pointer}${angArc}${pLabel}${dot}${noteEl}`;
+
+    return this._svg(content, {
+      viewBox: '0 0 400 265',
+      alt: `Protractor showing ${angle_to_measure}° angle${baseline_offset ? ', baseline at ' + baseline_offset + '°' : ''}.`,
+    });
+  },
+   
+  
 };
 
 // Assign to globalThis for cross-environment access (browser + Node.js ESM)
