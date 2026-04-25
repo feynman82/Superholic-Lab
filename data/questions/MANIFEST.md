@@ -155,6 +155,8 @@ New questions MUST go into topic-specific files only.
 |---|---|---|---|---|
 | batch_20260425_001 | 2026-04-25 | Mathematics P6 MCQ Standard | 5 | Algebra, Circles, Fractions, Geometry, Percentage |
 | batch_20260425_002 | 2026-04-25 | Mathematics P6+P5 MCQ Standard | 5 | Ratio, Speed, Volume, Pie Charts (P6); Whole Numbers (P5) |
+| batch_20260425_003 | 2026-04-25 | Science P6+P5 MCQ Standard | 5 | Cells, Energy, Forces, Interactions (P6); Cycles (P5) |
+| batch_20260425_004 | 2026-04-25 | Mathematics P5 MCQ Standard | 5 | Angles and Geometry, Area of Triangle, Average, Decimals, Fractions |
 
 **Batch 001 IDs (Supabase UUIDs):**
 - Algebra: `1743b2e1-41c4-458d-b111-f8bf12b4fedc`
