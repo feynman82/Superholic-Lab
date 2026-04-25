@@ -1812,6 +1812,222 @@ lineGraph({
    * @param {object} opts
    * @returns {string} SVG string
    */
+
+  /**
+   * Flow diagram: food chains, life cycles, classification trees, food webs.
+   *
+   * layout: 'auto' (default) | 'horizontal' | 'circular' | 'layered'
+   *   auto       — detects from arrow structure (recommended)
+   *   horizontal — single row; food chains up to 6 nodes
+   *   circular   — nodes on a circle; life cycles 3–5 stages
+   *   layered    — trophic/classification levels; food webs, trees
+   *
+   * Each node: { id, label }
+   * Each arrow: { from, to, label? }
+   *
+   * Examples:
+   *   Food chain (auto→horizontal):
+   *     nodes:[{id:"g",label:"Grass"},{id:"r",label:"Rabbit"},{id:"e",label:"Eagle"}]
+   *     arrows:[{from:"g",to:"r"},{from:"r",to:"e"}]
+   *
+   *   Life cycle (auto→circular):
+   *     nodes:[{id:"1",label:"Egg"},{id:"2",label:"Larva"},{id:"3",label:"Pupa"},{id:"4",label:"Adult"}]
+   *     arrows:[{from:"1",to:"2"},{from:"2",to:"3"},{from:"3",to:"4"},{from:"4",to:"1"}]
+   *
+   *   Classification tree (auto→layered):
+   *     nodes:[{id:"a",label:"Animals"},{id:"v",label:"Vertebrates"},{id:"i",label:"Invertebrates"}]
+   *     arrows:[{from:"a",to:"v"},{from:"a",to:"i"}]
+   */
+  arrowDiagram({ nodes = [], arrows = [], layout = 'auto', title = '' } = {}) {
+    const esc = this._esc.bind(this);
+    if (!nodes.length) return this.placeholder({ description: 'Arrow diagram (no nodes)' });
+ 
+    const NODE_H = 36;
+    // Dynamic node width: min 84px, grows with label length
+    const nw = (label) => Math.max(84, String(label || '').length * 9 + 24);
+ 
+    // ── 1. Determine layout ───────────────────────────────────────────────────
+    const mode = layout === 'auto' ? this._adDetectLayout(nodes, arrows) : layout;
+ 
+    // ── 2. Position nodes ────────────────────────────────────────────────────
+    let positions, vbW, vbH;
+    if (mode === 'circular') {
+      ({ positions, vbW, vbH } = this._adCircular(nodes, nw, NODE_H));
+    } else if (mode === 'layered' || mode === 'tree') {
+      ({ positions, vbW, vbH } = this._adLayered(nodes, arrows, nw, NODE_H));
+    } else {
+      ({ positions, vbW, vbH } = this._adHorizontal(nodes, nw, NODE_H));
+    }
+ 
+    const posMap = Object.fromEntries(positions.map(p => [p.id, p]));
+ 
+    // ── 3. Arrowhead marker ───────────────────────────────────────────────────
+    // Marker ID scoped to this SVG — dlab prefix prevents page-level ID conflicts
+    const MID = 'dlab_ah';
+    const defs = `<defs>
+      <marker id="${MID}" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+        <polygon points="0 0, 9 3.5, 0 7" fill="var(--brand-sage)"/>
+      </marker>
+    </defs>`;
+ 
+    // ── 4. Draw arrows ────────────────────────────────────────────────────────
+    const arrowEls = arrows.map(a => {
+      const src = posMap[a.from], tgt = posMap[a.to];
+      if (!src || !tgt) return '';
+ 
+      const angle = Math.atan2(tgt.cy - src.cy, tgt.cx - src.cx);
+      // Get edge-to-edge endpoints — no more hardcoded ±45px
+      const p1 = this._adRectEdge(src.cx, src.cy, src.w, src.h, angle);
+      const p2 = this._adRectEdge(tgt.cx, tgt.cy, tgt.w, tgt.h, angle + Math.PI);
+ 
+      let pathEl;
+      if (mode === 'circular' && nodes.length >= 3) {
+        // Slight outward curve prevents arrows from crossing the centre
+        const midX = (p1.x + p2.x) / 2, midY = (p1.y + p2.y) / 2;
+        const outX = midX + (midX - vbW / 2) * 0.2;
+        const outY = midY + (midY - vbH / 2) * 0.2;
+        pathEl = `<path d="M ${p1.x.toFixed(1)},${p1.y.toFixed(1)} Q ${outX.toFixed(1)},${outY.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}" fill="none" stroke="var(--brand-sage)" stroke-width="2" marker-end="url(#${MID})"/>`;
+      } else {
+        pathEl = `<line x1="${p1.x.toFixed(1)}" y1="${p1.y.toFixed(1)}" x2="${p2.x.toFixed(1)}" y2="${p2.y.toFixed(1)}" stroke="var(--brand-sage)" stroke-width="2" marker-end="url(#${MID})"/>`;
+      }
+ 
+      const lbl = a.label
+        ? `<text x="${((p1.x + p2.x) / 2).toFixed(1)}" y="${((p1.y + p2.y) / 2 - 8).toFixed(1)}" text-anchor="middle" fill="var(--text-muted)" font-size="10">${esc(a.label)}</text>`
+        : '';
+      return pathEl + lbl;
+    }).join('');
+ 
+    // ── 5. Draw nodes (rendered on top of arrows) ─────────────────────────────
+    const nodeEls = positions.map(p => `
+      <rect x="${(p.cx - p.w / 2).toFixed(1)}" y="${(p.cy - NODE_H / 2).toFixed(1)}"
+            width="${p.w}" height="${NODE_H}" rx="8"
+            fill="var(--bg-elevated)" stroke="var(--brand-sage)" stroke-width="1.5"/>
+      <text x="${p.cx.toFixed(1)}" y="${(p.cy + 5).toFixed(1)}"
+            text-anchor="middle" fill="var(--text-main)" font-size="12" font-weight="600">${esc(p.label)}</text>
+    `).join('');
+ 
+    const titleEl = title
+      ? `<text x="${(vbW / 2).toFixed(1)}" y="16" text-anchor="middle" fill="var(--text-main)" font-size="13" font-weight="700">${esc(title)}</text>`
+      : '';
+ 
+    return this._svg(`${defs}${titleEl}${arrowEls}${nodeEls}`, {
+      viewBox: `0 0 ${Math.ceil(vbW)} ${Math.ceil(vbH)}`,
+      alt: `Flow diagram (${mode}): ${nodes.map(n => n.label).join(', ')}.`,
+      maxWidth: Math.min(Math.ceil(vbW), 640),
+    });
+  },
+ 
+  // ── Private: detect layout from arrow structure ─────────────────────────────
+  _adDetectLayout(nodes, arrows) {
+    const ids = nodes.map(n => n.id);
+    // Any back-edge (arrow pointing to an earlier node) = cycle = circular
+    const hasCycle = arrows.some(a => {
+      const fi = ids.indexOf(a.from), ti = ids.indexOf(a.to);
+      return fi >= 0 && ti >= 0 && ti <= fi;
+    });
+    if (hasCycle) return 'circular';
+    // Any node has 2+ outgoing OR 2+ incoming = branching = layered
+    const out = {}, inc = {};
+    arrows.forEach(a => {
+      out[a.from] = (out[a.from] || 0) + 1;
+      inc[a.to]   = (inc[a.to] || 0) + 1;
+    });
+    if (Object.values(out).some(c => c > 1) || Object.values(inc).some(c => c > 1)) return 'layered';
+    return 'horizontal';
+  },
+ 
+  // ── Private: rectangle edge intersection point ──────────────────────────────
+  _adRectEdge(cx, cy, w, h, angle) {
+    const hw = w / 2 + 5, hh = h / 2 + 5; // +5px clearance so arrow doesn't touch box
+    const dx = Math.cos(angle), dy = Math.sin(angle);
+    if (Math.abs(dx) < 1e-9) return { x: cx, y: cy + hh * Math.sign(dy || 1) };
+    if (Math.abs(dy) < 1e-9) return { x: cx + hw * Math.sign(dx), y: cy };
+    const t = Math.min(hw / Math.abs(dx), hh / Math.abs(dy));
+    return { x: cx + dx * t, y: cy + dy * t };
+  },
+ 
+  // ── Private: horizontal layout ──────────────────────────────────────────────
+  _adHorizontal(nodes, nw, nh) {
+    const GAP = 44, PAD = 24;
+    let x = PAD;
+    const positions = nodes.map(n => {
+      const w = nw(n.label);
+      const pos = { ...n, cx: x + w / 2, cy: 80, w, h: nh };
+      x += w + GAP;
+      return pos;
+    });
+    return { positions, vbW: x + PAD, vbH: 160 };
+  },
+ 
+  // ── Private: circular layout ────────────────────────────────────────────────
+  _adCircular(nodes, nw, nh) {
+    const n = nodes.length;
+    if (n === 1) return this._adHorizontal(nodes, nw, nh);
+    const maxW = Math.max(...nodes.map(nd => nw(nd.label)));
+    // Radius ensures adjacent nodes don't overlap: circumference ≥ n × (maxNodeWidth + minGap)
+    const R = Math.max(95, (maxW + 64) * n / (2 * Math.PI));
+    const PAD = maxW / 2 + 40;
+    const cx = R + PAD, cy = R + PAD;
+    const positions = nodes.map((nd, i) => {
+      const angle = -Math.PI / 2 + (2 * Math.PI / n) * i; // start from top
+      return { ...nd, cx: cx + R * Math.cos(angle), cy: cy + R * Math.sin(angle), w: nw(nd.label), h: nh };
+    });
+    const dim = (R + PAD) * 2;
+    return { positions, vbW: dim, vbH: dim };
+  },
+ 
+  // ── Private: layered layout (topological BFS levels) ───────────────────────
+  _adLayered(nodes, arrows, nw, nh) {
+    // BFS from root nodes (no incoming arrows)
+    const inbound = Object.fromEntries(nodes.map(n => [n.id, 0]));
+    arrows.forEach(a => { inbound[a.to] = (inbound[a.to] || 0) + 1; });
+ 
+    const levels = [], visited = new Set();
+    let queue = nodes.filter(n => !inbound[n.id]).map(n => n.id);
+    if (!queue.length) queue = [nodes[0].id]; // full-cycle fallback: start anywhere
+ 
+    while (queue.length) {
+      levels.push([...queue]);
+      queue.forEach(id => visited.add(id));
+      const next = [];
+      queue.forEach(fid =>
+        arrows.filter(a => a.from === fid && !visited.has(a.to))
+              .forEach(a => { if (!next.includes(a.to)) next.push(a.to); })
+      );
+      queue = next;
+    }
+    // Any node not reachable by BFS goes into the last level (handles disconnected nodes)
+    nodes.filter(n => !visited.has(n.id)).forEach(n => (levels[levels.length - 1] || []).push(n.id));
+ 
+    const nodeMap = Object.fromEntries(nodes.map(n => [n.id, n]));
+    const ROW_GAP = 70, COL_GAP = 44, PAD = 28;
+ 
+    // ViewBox width = widest row + padding
+    let maxRowW = 0;
+    levels.forEach(level => {
+      const rw = level.reduce((s, id) => s + nw(nodeMap[id]?.label || ''), 0)
+               + COL_GAP * Math.max(0, level.length - 1);
+      maxRowW = Math.max(maxRowW, rw);
+    });
+    const vbW = maxRowW + PAD * 2;
+ 
+    const positions = [];
+    levels.forEach((level, rowI) => {
+      const rowW = level.reduce((s, id) => s + nw(nodeMap[id]?.label || ''), 0)
+                 + COL_GAP * Math.max(0, level.length - 1);
+      let x = (vbW - rowW) / 2; // centre each row horizontally
+      level.forEach(id => {
+        const nd = nodeMap[id];
+        if (!nd) return;
+        const w = nw(nd.label);
+        positions.push({ ...nd, cx: x + w / 2, cy: PAD + rowI * (nh + ROW_GAP) + nh / 2, w, h: nh });
+        x += w + COL_GAP;
+      });
+    });
+ 
+    return { positions, vbW: Math.max(vbW, 200), vbH: PAD + levels.length * (nh + ROW_GAP) + PAD };
+  },
+  
   /**
    * Side-by-side experiment comparison panel.
    * Used for: Heat (black vs white cloth), Light (shadow), Matter (states),
@@ -2335,7 +2551,7 @@ lineGraph({
    *     }
    *   }
    */
-  
+
   rampExperiment({
     rampAngle      = 30,
     surfaceTexture = 'smooth',
