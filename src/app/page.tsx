@@ -1,3 +1,5 @@
+"use client"
+
 /**
  * Superholic Lab — Next.js Landing Page
  *
