@@ -149,6 +149,24 @@ New questions MUST go into topic-specific files only.
 
 ---
 
+## Question Factory Batches (Supabase — auto-inserted)
+
+| Batch | Date | Subject | Questions | Topics |
+|---|---|---|---|---|
+| batch_20260425_001 | 2026-04-25 | Mathematics P6 MCQ Standard | 5 | Algebra, Circles, Fractions, Geometry, Percentage |
+
+**Batch 001 IDs (Supabase UUIDs):**
+- Algebra: `1743b2e1-41c4-458d-b111-f8bf12b4fedc`
+- Circles: `ac3963d7-871a-4eea-baf6-e682d725616b`
+- Fractions: `5e1eae10-bea1-4a16-9e79-8b9c5fbbac63`
+- Geometry: `caf1c426-2119-44b9-a4a6-8bcfc1d44382`
+- Percentage: `e9461bc2-35b4-4ffe-85d6-18149272160c`
+
+> Note: `seed_id` column in Supabase is UUID type — text-based IDs not applicable.
+> Track inserted questions by UUID. Gap analysis SQL is the authoritative state source.
+
+---
+
 ## Priority Gaps (ranked by exam impact)
 
 | Priority | Gap | Impact | Target |
