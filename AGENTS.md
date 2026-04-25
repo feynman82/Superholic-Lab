@@ -114,3 +114,54 @@ Your responsibilities:
 Always check: does the student already have an active quest before generating a new one?
 Always validate: action_url patterns before inserting to Supabase (validateQuestSteps()).
 Always respect: PDPA — no PII in logs, no user emails or student names in error messages.
+
+## Agent: question-factory-agent
+
+**Slash command:** `/generate-batch`
+**Location:** `.claude/commands/generate-batch.md`
+**Supporting scripts:** `scripts/question-factory/prompt-builder.js`
+
+### Purpose
+Autonomous question generation agent. Queries Supabase for gaps in the
+question bank, plans generation batches by priority score, constructs
+token-efficient surgical prompts, generates MOE-aligned SQL questions,
+validates them, inserts them, and updates MANIFEST — in a continuous loop
+until the context budget is reached or all gaps are resolved.
+
+### When to invoke
+- Run `/generate-batch` at the start of any question generation sprint
+- Re-run after context flush to continue from where it left off
+- The agent resumes automatically by re-querying Supabase — no manual state tracking needed
+
+### Token conservation model
+- Surgical prompts are 69% smaller than the full template (~1320 vs ~4200 tokens)
+- Batches of 5 questions amortise prompt overhead per question
+- Context budget guard exits at 150k tokens, preserving session health
+- One Supabase gap query per session (Phase 1 runs once)
+
+### Key rules this agent follows
+- Reads MANIFEST.md before generation to prevent ID collisions
+- Validates all 10 checks before any Supabase insert
+- Never re-reads the full template after Phase 0 (uses surgical prompt only)
+- Groups batches by (subject, type) to share surgical prompt context
+- Max 1 HOTS question per batch to maintain quality
+- Prioritises P6 > P5 > P4 > P3 > P2 > P1 and Standard > Foundation > Advanced > HOTS
+
+### Priority scoring formula
+```
+priority = level_weight(1-6) × type_weight(mcq=3, short_ans=2, word_problem=1)
+         × difficulty_weight(Standard=4, Foundation=3, Advanced=2, HOTS=1)
+         × (1 + gap_count)
+```
+
+### Context and resumability
+- No persistent state file needed — Supabase is the state
+- Re-running `/generate-batch` picks up where it left off automatically
+- Failed batches are written to `scripts/question-factory/failed-{batch_id}.sql`
+
+### MCP tools used
+- `supabase:execute_sql` — gap analysis query (Phase 1)
+- `supabase:apply_migration` — question insertion (Phase 6)
+- `filesystem:read_multiple_files` — Phase 0 orientation
+- `filesystem:read_file` + `filesystem:write_file` — MANIFEST update
+- `github:push_files` — commit after each batch
