@@ -264,13 +264,13 @@
     var isPending = qaCurrentQ.is_ai_cloned !== false;
     if (isPending) {
       bar.innerHTML =
-        '<button class="btn btn-primary hover-lift" style="flex:1;" onclick="window.qaApproveNext()">✅ Approve &amp; Next</button>' +
-        '<button class="btn btn-secondary hover-lift" onclick="window.qaSaveDraft(this)">💾 Save</button>' +
+        '<button class="btn btn-primary hover-lift" style="flex:1;" onclick="window.qaApproveNext()">Approve &amp; Next</button>' +
+        '<button class="btn btn-secondary hover-lift" onclick="window.qaSaveDraft(this)">Save</button>' +
         '<button class="btn hover-lift" style="color:var(--brand-error);border:1px solid var(--brand-error);background:transparent;" onclick="window.qaDelete()">🗑️</button>';
     } else {
       bar.innerHTML =
-        '<button class="btn hover-lift" style="flex:1;background:rgba(99,102,241,0.1);color:#6366f1;border:1px solid rgba(99,102,241,0.3);" onclick="window.qaReturnToQueue()">↩️ Return to Queue</button>' +
-        '<button class="btn btn-secondary hover-lift" onclick="window.qaSaveDraft(this)">💾 Save</button>' +
+        '<button class="btn hover-lift" style="flex:1;background:rgba(99,102,241,0.1);color:#6366f1;border:1px solid rgba(99,102,241,0.3);" onclick="window.qaReturnToQueue()">Return to Queue</button>' +
+        '<button class="btn btn-secondary hover-lift" onclick="window.qaSaveDraft(this)">Save</button>' +
         '<button class="btn hover-lift" style="color:var(--brand-error);border:1px solid var(--brand-error);background:transparent;" onclick="window.qaDelete()">🗑️</button>';
     }
   }
