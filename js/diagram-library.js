@@ -1812,51 +1812,698 @@ lineGraph({
    * @param {object} opts
    * @returns {string} SVG string
    */
-  arrowDiagram({ nodes = [], arrows = [], layout = 'horizontal' } = {}) {
+  /**
+   * Side-by-side experiment comparison panel.
+   * Used for: Heat (black vs white cloth), Light (shadow), Matter (states),
+   *           P5 Cycles (condensation), P6 Forces (friction comparison).
+   *
+   * setups: array of up to 3 setup objects, each:
+   *   { label, conditions: [string], result_label? }
+   *
+   * containerType: 'beaker' | 'test_tube' | 'flask' | 'box'
+   *
+   * Example:
+   *   { "function_name": "comparativeSetup",
+   *     "params": {
+   *       "title": "Heat Absorption Experiment",
+   *       "variable": "Colour of cloth",
+   *       "containerType": "beaker",
+   *       "setups": [
+   *         { "label": "Setup A", "conditions": ["Black cloth","30 ml water","Sunny spot"], "result_label": "Temperature after 1 hour:" },
+   *         { "label": "Setup B", "conditions": ["White cloth","30 ml water","Sunny spot"], "result_label": "Temperature after 1 hour:" }
+   *       ],
+   *       "commonConditions": ["Same beaker size", "Same starting temperature"]
+   *     }
+   *   }
+   */
+  comparativeSetup({
+    title            = '',
+    variable         = '',
+    setups           = [],
+    containerType    = 'beaker',
+    commonConditions = [],
+  } = {}) {
     const esc = this._esc.bind(this);
-    if (!nodes.length) return this.placeholder({ description: 'Arrow diagram (no nodes)' });
-
-    // Auto-position nodes if x/y not provided
-    const positioned = nodes.map((n, i) => {
-      if (n.x !== undefined && n.y !== undefined) return n;
-      const total = nodes.length;
-      if (layout === 'horizontal') {
-        return { ...n, x: 15 + (70 / (total - 1 || 1)) * i, y: 50 };
+    if (!setups.length) return this.placeholder({ description: 'Comparative setup (no setups provided)' });
+ 
+    const nSetups  = Math.min(setups.length, 3);
+    const SVG_W    = 500;
+    const PAD      = 18, PANEL_GAP = 14;
+    const panelW   = (SVG_W - PAD * 2 - PANEL_GAP * (nSetups - 1)) / nSetups;
+    const LINE_H   = 17;
+    const CONT_H   = 82;   // container silhouette total height
+ 
+    const maxConds = Math.max(...setups.map(s => (s.conditions || []).length), 0);
+    const hasResult = setups.some(s => s.result_label);
+    const commonH  = commonConditions.length ? (18 + commonConditions.length * LINE_H) : 0;
+ 
+    // Build vertical layout heights
+    const TITLE_H  = title    ? 26 : 0;
+    const VAR_H    = variable ? 24 : 0;
+    const SVG_H    = TITLE_H + VAR_H + 8           // header
+                   + 18 + CONT_H + 10              // setup label + container
+                   + maxConds * LINE_H             // conditions
+                   + (hasResult ? 30 : 0)          // result underline
+                   + commonH + 14;                 // common conditions + bottom pad
+ 
+    let svg = '';
+    let curY = 0;
+ 
+    // ── Title ──────────────────────────────────────────────
+    if (title) {
+      curY += 18;
+      svg += `<text x="${SVG_W / 2}" y="${curY}" text-anchor="middle" fill="var(--text-main)" font-size="13" font-weight="700">${esc(title)}</text>`;
+    }
+ 
+    // ── Changed variable banner ────────────────────────────
+    if (variable) {
+      curY += 22;
+      svg += `<rect x="${PAD}" y="${curY - 4}" width="${SVG_W - PAD * 2}" height="19" rx="4" fill="rgba(183,110,121,0.12)"/>`;
+      svg += `<text x="${SVG_W / 2}" y="${curY + 10}" text-anchor="middle" fill="var(--brand-rose)" font-size="11" font-weight="700">Changed variable: ${esc(variable)}</text>`;
+    }
+    curY += 12;
+ 
+    const panelTopY = curY; // Y where panel content starts
+ 
+    // ── Vertical dividers between panels ──────────────────
+    for (let i = 1; i < nSetups; i++) {
+      const dx = PAD + i * (panelW + PANEL_GAP) - PANEL_GAP / 2;
+      svg += `<line x1="${dx.toFixed(1)}" y1="${panelTopY}" x2="${dx.toFixed(1)}" y2="${SVG_H - 14 - commonH}" stroke="var(--border-light)" stroke-width="1" stroke-dasharray="4,3"/>`;
+    }
+ 
+    // ── Render each panel ──────────────────────────────────
+    for (let pi = 0; pi < nSetups; pi++) {
+      const s       = setups[pi];
+      const panelX  = PAD + pi * (panelW + PANEL_GAP);
+      const panelCX = panelX + panelW / 2;
+      const lbl     = s.label || `Setup ${String.fromCharCode(65 + pi)}`;
+ 
+      let py = panelTopY;
+ 
+      // Panel label
+      py += 14;
+      svg += `<text x="${panelCX.toFixed(1)}" y="${py}" text-anchor="middle" fill="var(--brand-sage)" font-size="12" font-weight="700">${esc(lbl)}</text>`;
+ 
+      // Container silhouette
+      py += 10;
+      const contBaseY = py + CONT_H;
+      svg += this._containerSilhouette(panelCX, contBaseY, containerType);
+      py = contBaseY + 12;
+ 
+      // Conditions list
+      (s.conditions || []).forEach((cond, ci) => {
+        svg += `<text x="${(panelX + 6).toFixed(1)}" y="${(py + ci * LINE_H + 12).toFixed(1)}" fill="var(--text-main)" font-size="11">• ${esc(cond)}</text>`;
+      });
+ 
+      // Result label + underline (answer space)
+      if (s.result_label) {
+        const ry = py + maxConds * LINE_H + 12;
+        svg += `<text x="${panelCX.toFixed(1)}" y="${ry}" text-anchor="middle" fill="var(--text-muted)" font-size="10" font-style="italic">${esc(s.result_label)}</text>`;
+        svg += `<line x1="${(panelX + 8).toFixed(1)}" y1="${(ry + 5).toFixed(1)}" x2="${(panelX + panelW - 8).toFixed(1)}" y2="${(ry + 5).toFixed(1)}" stroke="var(--border-dark)" stroke-width="1"/>`;
       }
-      return { ...n, x: 50, y: 10 + (80 / (total - 1 || 1)) * i };
+    }
+ 
+    // ── Common conditions footer ───────────────────────────
+    if (commonConditions.length) {
+      const footerY = SVG_H - 14 - commonH + 14;
+      svg += `<line x1="${PAD}" y1="${footerY - 10}" x2="${SVG_W - PAD}" y2="${footerY - 10}" stroke="var(--border-light)" stroke-width="1"/>`;
+      svg += `<text x="${SVG_W / 2}" y="${footerY}" text-anchor="middle" fill="var(--text-muted)" font-size="10" font-weight="600">Same conditions in all setups:</text>`;
+      commonConditions.forEach((c, i) => {
+        svg += `<text x="${SVG_W / 2}" y="${footerY + 14 + i * LINE_H}" text-anchor="middle" fill="var(--text-muted)" font-size="10">${esc(c)}</text>`;
+      });
+    }
+ 
+    return this._svg(svg, {
+      viewBox: `0 0 ${SVG_W} ${Math.ceil(SVG_H)}`,
+      alt: `Comparative experiment: ${setups.map(s => s.label || '').filter(Boolean).join(' vs ')}.`,
+      maxWidth: 500,
     });
+  },
+ 
+  /**
+   * @private — container silhouette SVG for comparativeSetup panels.
+   * cx = horizontal centre, baseY = bottom of container.
+   */
+  _containerSilhouette(cx, baseY, type) {
+    switch (type) {
+      case 'test_tube': {
+        const w = 28, h = 70, r = 14;
+        return `<path d="M ${cx - w / 2},${baseY - h} L ${cx - w / 2},${baseY - r} A ${r},${r} 0 0 0 ${cx + w / 2},${baseY - r} L ${cx + w / 2},${baseY - h}" fill="rgba(240,244,243,0.8)" stroke="var(--brand-sage)" stroke-width="2"/>
+                <line x1="${cx - w / 2 - 5}" y1="${baseY - h}" x2="${cx + w / 2 + 5}" y2="${baseY - h}" stroke="var(--brand-sage)" stroke-width="2.5"/>`;
+      }
+      case 'flask': {
+        const nw = 20, bw = 66, h = 70, neck = 24;
+        return `<path d="M ${cx - nw / 2},${baseY - h} L ${cx - nw / 2},${baseY - neck} L ${cx - bw / 2},${baseY} L ${cx + bw / 2},${baseY} L ${cx + nw / 2},${baseY - neck} L ${cx + nw / 2},${baseY - h}" fill="rgba(240,244,243,0.8)" stroke="var(--brand-sage)" stroke-width="2" stroke-linejoin="round"/>
+                <line x1="${cx - nw / 2 - 4}" y1="${baseY - h}" x2="${cx + nw / 2 + 4}" y2="${baseY - h}" stroke="var(--brand-sage)" stroke-width="2.5"/>`;
+      }
+      case 'box': {
+        const w = 74, h = 52;
+        return `<rect x="${cx - w / 2}" y="${baseY - h}" width="${w}" height="${h}" fill="rgba(240,244,243,0.8)" stroke="var(--brand-sage)" stroke-width="2" rx="3"/>`;
+      }
+      default: { // beaker
+        const bw = 52, tw = 66, h = 68;
+        return `<path d="M ${cx - tw / 2},${baseY - h} L ${cx - bw / 2},${baseY} L ${cx + bw / 2},${baseY} L ${cx + tw / 2},${baseY - h}" fill="rgba(240,244,243,0.8)" stroke="var(--brand-sage)" stroke-width="2" stroke-linejoin="round"/>
+                <line x1="${cx - tw / 2 - 5}" y1="${baseY - h}" x2="${cx + tw / 2 + 5}" y2="${baseY - h}" stroke="var(--brand-sage)" stroke-width="2.5"/>`;
+      }
+    }
+  },
 
-    // Convert % to viewBox px
-    const toPx = (pct, dim) => (pct / 100) * dim;
-    const vbW = 400, vbH = 260;
+  /**
+   * Side-by-side experiment comparison panel.
+   * Used for: Heat (black vs white cloth), Light (shadow), Matter (states),
+   *           P5 Cycles (condensation), P6 Forces (friction comparison).
+   *
+   * setups: array of up to 3 setup objects, each:
+   *   { label, conditions: [string], result_label? }
+   *
+   * containerType: 'beaker' | 'test_tube' | 'flask' | 'box'
+   *
+   * Example:
+   *   { "function_name": "comparativeSetup",
+   *     "params": {
+   *       "title": "Heat Absorption Experiment",
+   *       "variable": "Colour of cloth",
+   *       "containerType": "beaker",
+   *       "setups": [
+   *         { "label": "Setup A", "conditions": ["Black cloth","30 ml water","Sunny spot"], "result_label": "Temperature after 1 hour:" },
+   *         { "label": "Setup B", "conditions": ["White cloth","30 ml water","Sunny spot"], "result_label": "Temperature after 1 hour:" }
+   *       ],
+   *       "commonConditions": ["Same beaker size", "Same starting temperature"]
+   *     }
+   *   }
+   */
+  comparativeSetup({
+      title            = '',
+      variable         = '',
+      setups           = [],
+      containerType    = 'beaker',
+      commonConditions = [],
+    } = {}) {
+      const esc = this._esc.bind(this);
+      if (!setups.length) return this.placeholder({ description: 'Comparative setup (no setups provided)' });
+  
+      const nSetups  = Math.min(setups.length, 3);
+      const SVG_W    = 500;
+      const PAD      = 18, PANEL_GAP = 14;
+      const panelW   = (SVG_W - PAD * 2 - PANEL_GAP * (nSetups - 1)) / nSetups;
+      const LINE_H   = 17;
+      const CONT_H   = 82;   // container silhouette total height
+  
+      const maxConds = Math.max(...setups.map(s => (s.conditions || []).length), 0);
+      const hasResult = setups.some(s => s.result_label);
+      const commonH  = commonConditions.length ? (18 + commonConditions.length * LINE_H) : 0;
+  
+      // Build vertical layout heights
+      const TITLE_H  = title    ? 26 : 0;
+      const VAR_H    = variable ? 24 : 0;
+      const SVG_H    = TITLE_H + VAR_H + 8           // header
+                    + 18 + CONT_H + 10              // setup label + container
+                    + maxConds * LINE_H             // conditions
+                    + (hasResult ? 30 : 0)          // result underline
+                    + commonH + 14;                 // common conditions + bottom pad
+  
+      let svg = '';
+      let curY = 0;
+  
+      // ── Title ──────────────────────────────────────────────
+      if (title) {
+        curY += 18;
+        svg += `<text x="${SVG_W / 2}" y="${curY}" text-anchor="middle" fill="var(--text-main)" font-size="13" font-weight="700">${esc(title)}</text>`;
+      }
+  
+      // ── Changed variable banner ────────────────────────────
+      if (variable) {
+        curY += 22;
+        svg += `<rect x="${PAD}" y="${curY - 4}" width="${SVG_W - PAD * 2}" height="19" rx="4" fill="rgba(183,110,121,0.12)"/>`;
+        svg += `<text x="${SVG_W / 2}" y="${curY + 10}" text-anchor="middle" fill="var(--brand-rose)" font-size="11" font-weight="700">Changed variable: ${esc(variable)}</text>`;
+      }
+      curY += 12;
+  
+      const panelTopY = curY; // Y where panel content starts
+  
+      // ── Vertical dividers between panels ──────────────────
+      for (let i = 1; i < nSetups; i++) {
+        const dx = PAD + i * (panelW + PANEL_GAP) - PANEL_GAP / 2;
+        svg += `<line x1="${dx.toFixed(1)}" y1="${panelTopY}" x2="${dx.toFixed(1)}" y2="${SVG_H - 14 - commonH}" stroke="var(--border-light)" stroke-width="1" stroke-dasharray="4,3"/>`;
+      }
+  
+      // ── Render each panel ──────────────────────────────────
+      for (let pi = 0; pi < nSetups; pi++) {
+        const s       = setups[pi];
+        const panelX  = PAD + pi * (panelW + PANEL_GAP);
+        const panelCX = panelX + panelW / 2;
+        const lbl     = s.label || `Setup ${String.fromCharCode(65 + pi)}`;
+  
+        let py = panelTopY;
+  
+        // Panel label
+        py += 14;
+        svg += `<text x="${panelCX.toFixed(1)}" y="${py}" text-anchor="middle" fill="var(--brand-sage)" font-size="12" font-weight="700">${esc(lbl)}</text>`;
+  
+        // Container silhouette
+        py += 10;
+        const contBaseY = py + CONT_H;
+        svg += this._containerSilhouette(panelCX, contBaseY, containerType);
+        py = contBaseY + 12;
+  
+        // Conditions list
+        (s.conditions || []).forEach((cond, ci) => {
+          svg += `<text x="${(panelX + 6).toFixed(1)}" y="${(py + ci * LINE_H + 12).toFixed(1)}" fill="var(--text-main)" font-size="11">• ${esc(cond)}</text>`;
+        });
+  
+        // Result label + underline (answer space)
+        if (s.result_label) {
+          const ry = py + maxConds * LINE_H + 12;
+          svg += `<text x="${panelCX.toFixed(1)}" y="${ry}" text-anchor="middle" fill="var(--text-muted)" font-size="10" font-style="italic">${esc(s.result_label)}</text>`;
+          svg += `<line x1="${(panelX + 8).toFixed(1)}" y1="${(ry + 5).toFixed(1)}" x2="${(panelX + panelW - 8).toFixed(1)}" y2="${(ry + 5).toFixed(1)}" stroke="var(--border-dark)" stroke-width="1"/>`;
+        }
+      }
+  
+      // ── Common conditions footer ───────────────────────────
+      if (commonConditions.length) {
+        const footerY = SVG_H - 14 - commonH + 14;
+        svg += `<line x1="${PAD}" y1="${footerY - 10}" x2="${SVG_W - PAD}" y2="${footerY - 10}" stroke="var(--border-light)" stroke-width="1"/>`;
+        svg += `<text x="${SVG_W / 2}" y="${footerY}" text-anchor="middle" fill="var(--text-muted)" font-size="10" font-weight="600">Same conditions in all setups:</text>`;
+        commonConditions.forEach((c, i) => {
+          svg += `<text x="${SVG_W / 2}" y="${footerY + 14 + i * LINE_H}" text-anchor="middle" fill="var(--text-muted)" font-size="10">${esc(c)}</text>`;
+        });
+      }
+  
+      return this._svg(svg, {
+        viewBox: `0 0 ${SVG_W} ${Math.ceil(SVG_H)}`,
+        alt: `Comparative experiment: ${setups.map(s => s.label || '').filter(Boolean).join(' vs ')}.`,
+        maxWidth: 500,
+      });
+    },
+  
+  /**
+   * MOE-schematic magnet diagram for P4 Magnets topic.
+   *
+   * magnetType: 'bar' | 'horseshoe' | 'electromagnet'
+   *
+   * For bar magnets:
+   *   magnets: [{ poles: ['N','S'] }]   — 1 or 2 magnets
+   *   interaction: 'none' | 'attraction' | 'repulsion'
+   *
+   *   Two-magnet repulsion (N facing N):
+   *     magnets: [{ poles: ['S','N'] }, { poles: ['N','S'] }], interaction: 'repulsion'
+   *
+   *   Two-magnet attraction (N facing S):
+   *     magnets: [{ poles: ['S','N'] }, { poles: ['S','N'] }], interaction: 'attraction'
+   *
+   * For electromagnet:
+   *   coreMaterial: 'iron' | 'copper' | 'plastic'
+   *   coilsCount: number of coil turns shown (default 5)
+   *   batteryCount: number of battery cells shown (default 1)
+   *
+   * NOTE: CSS variables --color-magnet-N and --color-magnet-S should be added
+   * to style.css for proper MOE red/blue convention:
+   *   --color-magnet-N: #C0392B;  (red)
+   *   --color-magnet-S: #2471A3;  (blue)
+   * The fallback values (#C0392B, #2471A3) are used until those vars are defined.
+   */
+  
+  magnetDiagram({
+    magnetType   = 'bar',
+    magnets      = [{ poles: ['N', 'S'] }],
+    interaction  = 'none',
+    coreMaterial = 'iron',
+    coilsCount   = 5,
+    batteryCount = 1,
+    label        = '',
+  } = {}) {
+    const esc = this._esc.bind(this);
+    // N = red, S = blue — using CSS var with hardcoded fallback
+    const N_CLR = 'var(--color-magnet-N, #C0392B)';
+    const S_CLR = 'var(--color-magnet-S, #2471A3)';
+    const pClr  = (p) => (String(p).toUpperCase() === 'N') ? N_CLR : S_CLR;
+ 
+    let svg = '', vbW = 400, vbH = 200;
+ 
+    // ── Electromagnet ──────────────────────────────────────
+    if (magnetType === 'electromagnet') {
+      vbW = 500; vbH = 230;
+      const rodX = 90, rodY = 100, rodW = 290, rodH = 24;
+      const coilX1 = rodX + 20, coilX2 = rodX + rodW - 20;
+ 
+      // Rod
+      const rodFill = coreMaterial === 'copper' ? '#C27A35'
+                    : coreMaterial === 'plastic' ? 'var(--text-muted)'
+                    : 'var(--brand-sage)';
+      svg += `<rect x="${rodX}" y="${rodY}" width="${rodW}" height="${rodH}" rx="4" fill="${rodFill}" stroke="var(--text-main)" stroke-width="1.5"/>`;
+      svg += `<text x="${rodX + rodW / 2}" y="${rodY + rodH + 16}" text-anchor="middle" fill="var(--text-muted)" font-size="10">${esc(coreMaterial)} core</text>`;
+ 
+      // Coil windings: quadratic bezier arcs above and below the rod
+      const step = (coilX2 - coilX1) / coilsCount;
+      const arcH = 14;
+      let topPath = `M ${coilX1},${rodY}`;
+      let botPath = `M ${coilX1},${rodY + rodH}`;
+      for (let i = 0; i < coilsCount; i++) {
+        const mx = coilX1 + (i + 0.5) * step;
+        const ex = coilX1 + (i + 1) * step;
+        topPath += ` Q ${mx.toFixed(1)},${rodY - arcH} ${ex.toFixed(1)},${rodY}`;
+        botPath += ` Q ${mx.toFixed(1)},${rodY + rodH + arcH} ${ex.toFixed(1)},${rodY + rodH}`;
+      }
+      svg += `<path d="${topPath}" fill="none" stroke="var(--text-main)" stroke-width="2"/>`;
+      svg += `<path d="${botPath}" fill="none" stroke="var(--text-main)" stroke-width="2"/>`;
+ 
+      // Battery (left side): long line = +, short line = −
+      const batCX = 38, batCY = rodY + rodH / 2;
+      const cellSpacing = 14;
+      for (let i = 0; i < Math.min(batteryCount, 3); i++) {
+        const bx = batCX - (batteryCount - 1) * cellSpacing / 2 + i * cellSpacing;
+        svg += `<line x1="${bx}" y1="${batCY - 16}" x2="${bx}" y2="${batCY + 16}" stroke="var(--text-main)" stroke-width="3"/>`;
+        if (i < batteryCount - 1) {
+          svg += `<line x1="${bx + cellSpacing / 2}" y1="${batCY - 9}" x2="${bx + cellSpacing / 2}" y2="${batCY + 9}" stroke="var(--text-main)" stroke-width="2"/>`;
+        }
+      }
+      svg += `<text x="${batCX - 6}" y="${batCY - 22}" fill="var(--text-main)" font-size="11" font-weight="700" text-anchor="middle">+</text>`;
+ 
+      // Wires connecting battery to coil (top and bottom)
+      svg += `<polyline points="${batCX},${batCY - 16} ${batCX},${rodY - arcH - 6} ${coilX1},${rodY}" fill="none" stroke="var(--text-main)" stroke-width="1.5"/>`;
+      svg += `<polyline points="${batCX},${batCY + 16} ${batCX},${rodY + rodH + arcH + 6} ${coilX1},${rodY + rodH}" fill="none" stroke="var(--text-main)" stroke-width="1.5"/>`;
+ 
+      // Closing wire on right side
+      svg += `<polyline points="${coilX2},${rodY} ${coilX2 + 20},${rodY - arcH - 6} ${coilX2 + 20},${rodY + rodH + arcH + 6} ${coilX2},${rodY + rodH}" fill="none" stroke="var(--text-main)" stroke-width="1.5"/>`;
+ 
+      // Pole labels at rod ends
+      svg += `<text x="${rodX + 10}" y="${rodY - 8}" fill="${N_CLR}" font-size="15" font-weight="800">N</text>`;
+      svg += `<text x="${rodX + rodW - 12}" y="${rodY - 8}" fill="${S_CLR}" font-size="15" font-weight="800">S</text>`;
+ 
+    // ── Horseshoe magnet ───────────────────────────────────
+    } else if (magnetType === 'horseshoe') {
+      vbW = 300; vbH = 250;
+      const armW = 30, armH = 115, gap = 90;
+      const lx = 85, rx = lx + gap, topY = 65;
+ 
+      // Body (two arms + curved bottom)
+      const bodyPath = `M ${lx},${topY + armH}
+        Q ${lx},${topY + armH + 45} ${lx + gap / 2 + armW / 2},${topY + armH + 45}
+        Q ${rx + armW},${topY + armH + 45} ${rx + armW},${topY + armH}
+        L ${rx + armW},${topY} L ${rx},${topY} L ${rx},${topY + armH}
+        Q ${rx},${topY + armH + 30} ${lx + gap / 2 + armW / 2},${topY + armH + 30}
+        Q ${lx},${topY + armH + 30} ${lx},${topY + armH}
+        L ${lx},${topY} Z`;
+      svg += `<path d="${bodyPath}" fill="var(--brand-sage)" stroke="var(--text-main)" stroke-width="2" stroke-linejoin="round"/>`;
+ 
+      // Pole caps (coloured top portions)
+      const m0 = (magnets[0] || { poles: ['N', 'S'] });
+      svg += `<rect x="${lx}" y="${topY}" width="${armW}" height="26" rx="4" fill="${pClr(m0.poles[0])}"/>`;
+      svg += `<rect x="${rx}" y="${topY}" width="${armW}" height="26" rx="4" fill="${pClr(m0.poles[1])}"/>`;
+ 
+      // Pole labels above each arm
+      svg += `<text x="${lx + armW / 2}" y="${topY - 8}" text-anchor="middle" fill="${pClr(m0.poles[0])}" font-size="17" font-weight="800">${esc(m0.poles[0])}</text>`;
+      svg += `<text x="${rx + armW / 2}" y="${topY - 8}" text-anchor="middle" fill="${pClr(m0.poles[1])}" font-size="17" font-weight="800">${esc(m0.poles[1])}</text>`;
+ 
+    // ── Bar magnet(s) ──────────────────────────────────────
+    } else {
+      const nMagnets = Math.min(magnets.length || 1, 2);
+      const MAG_W = 178, MAG_H = 48, GAP_BTW = 56;
+ 
+      if (nMagnets === 1) {
+        vbW = 300; vbH = 160;
+        svg += this._drawBarMagnet(61, 56, MAG_W, MAG_H, (magnets[0] || {}).poles || ['N','S'], pClr, esc);
+      } else {
+        vbW = 480; vbH = 160;
+        const m1x = 16, m2x = 16 + MAG_W + GAP_BTW, my = 56;
+        svg += this._drawBarMagnet(m1x, my, MAG_W, MAG_H, (magnets[0] || {}).poles || ['N','S'], pClr, esc);
+        svg += this._drawBarMagnet(m2x, my, MAG_W, MAG_H, (magnets[1] || {}).poles || ['N','S'], pClr, esc);
+ 
+        // Interaction arrows and label
+        const midX  = m1x + MAG_W + GAP_BTW / 2;
+        const midY  = my + MAG_H / 2;
+        const IID   = interaction === 'repulsion' ? 'dlab_rep' : 'dlab_att';
+        const iClr  = interaction === 'repulsion' ? 'var(--brand-rose)' : 'var(--brand-sage)';
+        svg += `<defs><marker id="${IID}" markerWidth="8" markerHeight="7" refX="7" refY="3.5" orient="auto"><polygon points="0 0,8 3.5,0 7" fill="${iClr}"/></marker></defs>`;
+ 
+        if (interaction === 'repulsion') {
+          // Arrows pointing AWAY from centre: ← →
+          svg += `<line x1="${midX - 4}" y1="${midY}" x2="${m1x + MAG_W + 4}" y2="${midY}" stroke="${iClr}" stroke-width="2" marker-end="url(#${IID})"/>`;
+          svg += `<line x1="${midX + 4}" y1="${midY}" x2="${m2x - 4}" y2="${midY}" stroke="${iClr}" stroke-width="2" marker-end="url(#${IID})"/>`;
+          svg += `<text x="${midX}" y="${midY + 20}" text-anchor="middle" fill="${iClr}" font-size="10" font-weight="600">repel</text>`;
+        } else if (interaction === 'attraction') {
+          // Arrows pointing TOWARD centre: → ←
+          svg += `<line x1="${m1x + MAG_W + 4}" y1="${midY}" x2="${midX - 4}" y2="${midY}" stroke="${iClr}" stroke-width="2" marker-end="url(#${IID})"/>`;
+          svg += `<line x1="${m2x - 4}" y1="${midY}" x2="${midX + 4}" y2="${midY}" stroke="${iClr}" stroke-width="2" marker-end="url(#${IID})"/>`;
+          svg += `<text x="${midX}" y="${midY + 20}" text-anchor="middle" fill="${iClr}" font-size="10" font-weight="600">attract</text>`;
+        }
+      }
+    }
+ 
+    if (label) {
+      svg += `<text x="${vbW / 2}" y="${vbH - 5}" text-anchor="middle" fill="var(--text-muted)" font-size="10" font-style="italic">${esc(label)}</text>`;
+    }
+ 
+    return this._svg(svg, {
+      viewBox: `0 0 ${vbW} ${vbH}`,
+      alt: `${magnetType} magnet diagram${interaction !== 'none' ? ': ' + interaction : ''}.`,
+      maxWidth: vbW,
+    });
+  },
+ 
+  /** @private — draws one bar magnet rectangle with coloured pole halves */
+  _drawBarMagnet(x, y, w, h, poles, pClr, esc) {
+    const hw = w / 2;
+    const p0 = String((poles || [])[0] || 'N').toUpperCase();
+    const p1 = String((poles || [])[1] || 'S').toUpperCase();
+    return `
+      <rect x="${x}"      y="${y}" width="${hw}" height="${h}" fill="${pClr(p0)}" rx="6" stroke="var(--text-main)" stroke-width="1.5"/>
+      <rect x="${x + hw}" y="${y}" width="${hw}" height="${h}" fill="${pClr(p1)}" rx="6" stroke="var(--text-main)" stroke-width="1.5"/>
+      <line x1="${x + hw}" y1="${y}" x2="${x + hw}" y2="${y + h}" stroke="var(--text-main)" stroke-width="1.5"/>
+      <text x="${x + hw / 2}"      y="${y + h / 2 + 6}" text-anchor="middle" fill="white" font-size="16" font-weight="800">${esc(p0)}</text>
+      <text x="${x + hw + hw / 2}" y="${y + h / 2 + 6}" text-anchor="middle" fill="white" font-size="16" font-weight="800">${esc(p1)}</text>
+    `;
+  },
 
-    const nodeMap = {};
-    positioned.forEach(n => { nodeMap[n.id] = n; });
+  /**
+   * @private — container silhouette SVG for comparativeSetup panels.
+   * cx = horizontal centre, baseY = bottom of container.
+   */
+  _containerSilhouette(cx, baseY, type) {
+    switch (type) {
+      case 'test_tube': {
+        const w = 28, h = 70, r = 14;
+        return `<path d="M ${cx - w / 2},${baseY - h} L ${cx - w / 2},${baseY - r} A ${r},${r} 0 0 0 ${cx + w / 2},${baseY - r} L ${cx + w / 2},${baseY - h}" fill="rgba(240,244,243,0.8)" stroke="var(--brand-sage)" stroke-width="2"/>
+                <line x1="${cx - w / 2 - 5}" y1="${baseY - h}" x2="${cx + w / 2 + 5}" y2="${baseY - h}" stroke="var(--brand-sage)" stroke-width="2.5"/>`;
+      }
+      case 'flask': {
+        const nw = 20, bw = 66, h = 70, neck = 24;
+        return `<path d="M ${cx - nw / 2},${baseY - h} L ${cx - nw / 2},${baseY - neck} L ${cx - bw / 2},${baseY} L ${cx + bw / 2},${baseY} L ${cx + nw / 2},${baseY - neck} L ${cx + nw / 2},${baseY - h}" fill="rgba(240,244,243,0.8)" stroke="var(--brand-sage)" stroke-width="2" stroke-linejoin="round"/>
+                <line x1="${cx - nw / 2 - 4}" y1="${baseY - h}" x2="${cx + nw / 2 + 4}" y2="${baseY - h}" stroke="var(--brand-sage)" stroke-width="2.5"/>`;
+      }
+      case 'box': {
+        const w = 74, h = 52;
+        return `<rect x="${cx - w / 2}" y="${baseY - h}" width="${w}" height="${h}" fill="rgba(240,244,243,0.8)" stroke="var(--brand-sage)" stroke-width="2" rx="3"/>`;
+      }
+      default: { // beaker
+        const bw = 52, tw = 66, h = 68;
+        return `<path d="M ${cx - tw / 2},${baseY - h} L ${cx - bw / 2},${baseY} L ${cx + bw / 2},${baseY} L ${cx + tw / 2},${baseY - h}" fill="rgba(240,244,243,0.8)" stroke="var(--brand-sage)" stroke-width="2" stroke-linejoin="round"/>
+                <line x1="${cx - tw / 2 - 5}" y1="${baseY - h}" x2="${cx + tw / 2 + 5}" y2="${baseY - h}" stroke="var(--brand-sage)" stroke-width="2.5"/>`;
+      }
+    }
+  },
 
-    // Draw nodes as rounded rectangles
-    const nodeEls = positioned.map(n => {
-      const cx = toPx(n.x, vbW), cy = toPx(n.y, vbH);
-      return `<rect x="${cx - 45}" y="${cy - 18}" width="90" height="36" rx="8" fill="var(--bg-elevated)" stroke="var(--brand-sage)" stroke-width="1.5"/>
-              <text x="${cx}" y="${cy + 5}" text-anchor="middle" fill="var(--text-main)" font-size="12" font-weight="600">${esc(n.label)}</text>`;
-    }).join('');
-
-    // Draw arrows
-    const arrowEls = arrows.map(a => {
-      const from = nodeMap[a.from], to = nodeMap[a.to];
-      if (!from || !to) return '';
-      const x1 = toPx(from.x, vbW) + 45, y1 = toPx(from.y, vbH);
-      const x2 = toPx(to.x, vbW) - 45, y2 = toPx(to.y, vbH);
-      const lbl = a.label
-        ? `<text x="${(x1 + x2) / 2}" y="${(y1 + y2) / 2 - 8}" text-anchor="middle" fill="var(--text-muted)" font-size="10">${esc(a.label)}</text>`
-        : '';
-      return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--brand-sage)" stroke-width="2" marker-end="url(#arrowHead)"/>
-              ${lbl}`;
-    }).join('');
-
-    const defs = `<defs><marker id="arrowHead" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 L2,4 Z" fill="var(--brand-sage)"/></marker></defs>`;
-
-    const content = `${defs}${arrowEls}${nodeEls}`;
-    return this._svg(content, { alt: `Flow diagram with ${nodes.length} node(s): ${nodes.map(n => n.label).join(' → ')}.` });
+  /**
+   * Inclined plane experiment for P6 Forces topic.
+   *
+   * rampAngle: degrees from horizontal (10–70)
+   * surfaceTexture: 'smooth' | 'rough' | 'sandpaper' | 'glass'
+   * blockLabel: text shown on the block (e.g. '1 kg')
+   * forceArrows: [{ direction, label }]
+   *   direction values: 'down' | 'up_slope' | 'down_slope' | 'normal' | 'left' | 'right'
+   * springState: 'none' | 'compressed' | 'extended'
+   * showAngleLabel: true/false
+   *
+   * Direction conventions (ramp rises from LEFT to RIGHT):
+   *   'up_slope'  = friction opposing downward motion
+   *   'down_slope'= component of gravity along slope
+   *   'normal'    = normal force perpendicular away from slope surface
+   *   'down'      = weight / gravity
+   *
+   * Example (block on rough ramp with weight and friction arrows):
+   *   { "function_name": "rampExperiment",
+   *     "params": {
+   *       "rampAngle": 30,
+   *       "surfaceTexture": "rough",
+   *       "blockLabel": "Block",
+   *       "showAngleLabel": true,
+   *       "forceArrows": [
+   *         { "direction": "down",     "label": "Weight" },
+   *         { "direction": "up_slope", "label": "Friction" },
+   *         { "direction": "normal",   "label": "Normal force" }
+   *       ]
+   *     }
+   *   }
+   */
+  
+  rampExperiment({
+    rampAngle      = 30,
+    surfaceTexture = 'smooth',
+    blockLabel     = '',
+    forceArrows    = [],
+    springState    = 'none',
+    showAngleLabel = true,
+    label          = '',
+  } = {}) {
+    const esc = this._esc.bind(this);
+    const vbW = 500, vbH = 290;
+    const θ = Math.min(Math.max(rampAngle, 10), 70) * Math.PI / 180;
+ 
+    // ── Ramp geometry ─────────────────────────────────────
+    // Ramp rises from lower-LEFT (bx, baseY) to upper-RIGHT (apex)
+    const bx = 55, baseY = 248;
+    const SLOPE_LEN = 210;
+    const rampH    = SLOPE_LEN * Math.sin(θ);
+    const rampBase = SLOPE_LEN * Math.cos(θ);
+    const apex     = { x: bx + rampBase, y: baseY - rampH };
+ 
+    // ── Force arrow marker ────────────────────────────────
+    let svg = `<defs>
+      <marker id="dlab_fa" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+        <polygon points="0 0, 9 3.5, 0 7" fill="var(--brand-amber, #D97706)"/>
+      </marker>
+    </defs>`;
+ 
+    // ── Ramp triangle fill ────────────────────────────────
+    svg += `<polygon points="${bx},${baseY} ${apex.x.toFixed(1)},${apex.y.toFixed(1)} ${apex.x.toFixed(1)},${baseY}" fill="var(--bg-elevated)" stroke="var(--brand-sage)" stroke-width="2.5"/>`;
+ 
+    // ── Surface texture ───────────────────────────────────
+    const steps  = 22;
+    const nx = Math.sin(θ), ny = Math.cos(θ); // inward normal (into slope face)
+ 
+    if (surfaceTexture === 'rough') {
+      // Zigzag line 3px inside the slope edge
+      let pts = '';
+      for (let i = 0; i <= steps; i++) {
+        const t  = i / steps;
+        const px = bx + t * rampBase;
+        const py = baseY - t * rampH;
+        const amp = (i % 2 === 0 ? 1 : -1) * 4;
+        pts += `${(px + nx * amp).toFixed(1)},${(py + ny * amp).toFixed(1)} `;
+      }
+      svg += `<polyline points="${pts.trim()}" fill="none" stroke="var(--brand-sage)" stroke-width="1.5" opacity="0.65"/>`;
+ 
+    } else if (surfaceTexture === 'sandpaper') {
+      // Dense short tick marks perpendicular to the slope
+      for (let i = 1; i < steps; i++) {
+        const t  = i / steps;
+        const px = bx + t * rampBase;
+        const py = baseY - t * rampH;
+        svg += `<line x1="${(px + nx * 2).toFixed(1)}" y1="${(py + ny * 2).toFixed(1)}" x2="${(px + nx * 9).toFixed(1)}" y2="${(py + ny * 9).toFixed(1)}" stroke="var(--text-muted)" stroke-width="1.5" opacity="0.55"/>`;
+      }
+ 
+    } else if (surfaceTexture === 'glass') {
+      // Bright dashed line along slope edge + two sparkle dots
+      svg += `<line x1="${bx}" y1="${baseY}" x2="${apex.x.toFixed(1)}" y2="${apex.y.toFixed(1)}" stroke="white" stroke-width="3" stroke-dasharray="10,6" opacity="0.8"/>`;
+      const gx = bx + rampBase * 0.35, gy = baseY - rampH * 0.35;
+      svg += `<circle cx="${gx.toFixed(1)}" cy="${gy.toFixed(1)}" r="3" fill="white" opacity="0.9"/>`;
+    }
+    // smooth: no extra texture — just the outline
+ 
+    // ── Ground line + hatching ────────────────────────────
+    svg += `<line x1="${bx - 22}" y1="${baseY}" x2="${apex.x + 28}" y2="${baseY}" stroke="var(--brand-sage)" stroke-width="2"/>`;
+    for (let i = 0; i < 14; i++) {
+      const gx = bx - 22 + i * 16;
+      svg += `<line x1="${gx}" y1="${baseY}" x2="${gx - 7}" y2="${baseY + 9}" stroke="var(--brand-sage)" stroke-width="1" opacity="0.45"/>`;
+    }
+ 
+    // ── Block on slope ────────────────────────────────────
+    const fBlock = 0.52;
+    const blockCX = bx + fBlock * rampBase;
+    const blockCY = baseY - fBlock * rampH;
+    const bw = 44, bh = 32;
+    // Rotate CLOCKWISE by rampAngle so the block's base aligns with the slope surface
+    svg += `<g transform="rotate(${rampAngle}, ${blockCX.toFixed(1)}, ${blockCY.toFixed(1)})">
+      <rect x="${(blockCX - bw / 2).toFixed(1)}" y="${(blockCY - bh).toFixed(1)}"
+            width="${bw}" height="${bh}" rx="3"
+            fill="var(--brand-rose)" fill-opacity="0.72" stroke="var(--brand-rose)" stroke-width="1.5"/>`;
+    if (blockLabel) {
+      svg += `<text x="${blockCX.toFixed(1)}" y="${(blockCY - bh / 2 + 5).toFixed(1)}"
+                    text-anchor="middle" fill="white" font-size="10" font-weight="700">${esc(blockLabel)}</text>`;
+    }
+    svg += `</g>`;
+ 
+    // ── Force arrows ──────────────────────────────────────
+    // Direction vectors (SVG coords: x right, y down)
+    const cosT = Math.cos(θ), sinT = Math.sin(θ);
+    const dirVec = {
+      down:       [0, 1],
+      up:         [0, -1],
+      up_slope:   [cosT, -sinT],           // up the slope
+      down_slope: [-cosT, sinT],           // down the slope
+      normal:     [-sinT, -cosT],          // perpendicular, away from surface
+      left:       [-1, 0],
+      right:      [1, 0],
+    };
+ 
+    const ARROW_LEN = 54;
+    // Arrow origin: slightly above block centre to avoid the block itself
+    const arrowOriginX = blockCX;
+    const arrowOriginY = blockCY - bh * 0.55;
+ 
+    forceArrows.forEach((fa, idx) => {
+      const dir = dirVec[fa.direction] || dirVec.down;
+      // Small lateral offset so multiple arrows don't stack on the same line
+      const perpX = -dir[1] * 7 * (idx % 2 === 0 ? idx / 2 : -(idx + 1) / 2);
+      const perpY =  dir[0] * 7 * (idx % 2 === 0 ? idx / 2 : -(idx + 1) / 2);
+      const ax1 = arrowOriginX + perpX, ay1 = arrowOriginY + perpY;
+      const ax2 = ax1 + dir[0] * ARROW_LEN;
+      const ay2 = ay1 + dir[1] * ARROW_LEN;
+ 
+      svg += `<line x1="${ax1.toFixed(1)}" y1="${ay1.toFixed(1)}" x2="${ax2.toFixed(1)}" y2="${ay2.toFixed(1)}" stroke="var(--brand-amber, #D97706)" stroke-width="2.5" marker-end="url(#dlab_fa)"/>`;
+ 
+      if (fa.label) {
+        const anchor = dir[0] > 0.3 ? 'start' : dir[0] < -0.3 ? 'end' : 'middle';
+        svg += `<text x="${(ax2 + dir[0] * 7).toFixed(1)}" y="${(ay2 + dir[1] * 7 + 4).toFixed(1)}" text-anchor="${anchor}" fill="var(--brand-amber, #D97706)" font-size="11" font-weight="600">${esc(fa.label)}</text>`;
+      }
+    });
+ 
+    // ── Angle label arc ───────────────────────────────────
+    if (showAngleLabel) {
+      const arcR   = 38;
+      const arcEnd = { x: bx + arcR * Math.cos(θ), y: baseY - arcR * Math.sin(θ) };
+      // sweep-flag=0 → counterclockwise arc from (bx+arcR, baseY) to arcEnd — short arc inside the angle
+      svg += `<path d="M ${bx + arcR},${baseY} A ${arcR},${arcR} 0 0,0 ${arcEnd.x.toFixed(1)},${arcEnd.y.toFixed(1)}" fill="none" stroke="var(--brand-sage)" stroke-width="1.5"/>`;
+      const midAngle = θ / 2;
+      const lblR = arcR + 15;
+      svg += `<text x="${(bx + lblR * Math.cos(midAngle)).toFixed(1)}" y="${(baseY - lblR * Math.sin(midAngle)).toFixed(1)}" text-anchor="middle" fill="var(--brand-sage)" font-size="11" font-weight="600">${rampAngle}°</text>`;
+    }
+ 
+    // ── Spring ────────────────────────────────────────────
+    if (springState !== 'none') {
+      // Spring runs DOWN the slope from the block's lower face
+      const spLen   = springState === 'compressed' ? 28 : 52;
+      const spCoils = springState === 'compressed' ? 7 : 5;
+      // Start of spring: centre of block's lower face (approximated)
+      const spSX = blockCX - cosT * (bw * 0.4);
+      const spSY = blockCY + sinT * (bw * 0.4);
+      const step = spLen / spCoils;
+ 
+      let spPath = `M ${spSX.toFixed(1)},${spSY.toFixed(1)}`;
+      for (let i = 0; i < spCoils; i++) {
+        const t   = (i + 0.5) / spCoils;
+        const te  = (i + 1) / spCoils;
+        // Perpendicular offset alternates sides
+        const amp = (i % 2 === 0 ? 8 : -8);
+        const mpx = spSX - cosT * t * spLen + (-sinT) * amp;
+        const mpy = spSY + sinT * t * spLen + (-cosT) * amp;
+        const epx = spSX - cosT * te * spLen;
+        const epy = spSY + sinT * te * spLen;
+        spPath += ` Q ${mpx.toFixed(1)},${mpy.toFixed(1)} ${epx.toFixed(1)},${epy.toFixed(1)}`;
+      }
+      svg += `<path d="${spPath}" fill="none" stroke="var(--brand-sage)" stroke-width="2"/>`;
+    }
+ 
+    // ── Caption ───────────────────────────────────────────
+    if (label) {
+      svg += `<text x="${vbW / 2}" y="${vbH - 5}" text-anchor="middle" fill="var(--text-muted)" font-size="10" font-style="italic">${esc(label)}</text>`;
+    }
+ 
+    return this._svg(svg, {
+      viewBox: `0 0 ${vbW} ${vbH}`,
+      alt: `Inclined plane experiment: ${rampAngle}° angle, ${surfaceTexture} surface${blockLabel ? ', ' + blockLabel + ' block' : ''}.`,
+      maxWidth: 500,
+    });
   },
 
   // ── FALLBACK ─────────────────────────────────────────────────────────────────

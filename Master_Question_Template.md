@@ -292,9 +292,14 @@ You may ONLY use the following `function_name` values and their exact parameters
 
 **--- 3. SCIENCE / GENERAL ---**
 * `thermometer`: `{"minTemp": 0, "maxTemp": 100, "currentTemp": 37, "unit": "°C", "label": "Beaker A"}`
-* `arrowDiagram`: For Food Chains/Life Cycles. `{"nodes": [{"id": "1", "label": "Seed"}, {"id": "2", "label": "Plant"}], "arrows": [{"from": "1", "to": "2"}], "layout": "hopip install antigravity-clirizontal"}`
+* `arrowDiagram`: Flow diagram for food chains, life cycles, classification trees, and food webs.
+  Always use `"layout": "auto"` — the engine detects the correct layout from arrow structure.
+  Food chain (auto → horizontal): `{"nodes": [{"id":"g","label":"Grass"},{"id":"r","label":"Rabbit"},{"id":"e","label":"Eagle"}], "arrows": [{"from":"g","to":"r"},{"from":"r","to":"e"}], "layout": "auto"}`
+  Life cycle (auto → circular): `{"nodes": [{"id":"1","label":"Egg"},{"id":"2","label":"Larva"},{"id":"3","label":"Pupa"},{"id":"4","label":"Adult"}], "arrows": [{"from":"1","to":"2"},{"from":"2","to":"3"},{"from":"3","to":"4"},{"from":"4","to":"1"}], "layout": "auto"}`
+  Food web / classification tree (auto → layered): `{"nodes": [{"id":"a","label":"Animals"},{"id":"v","label":"Vertebrates"},{"id":"i","label":"Invertebrates"}], "arrows": [{"from":"a","to":"v"},{"from":"a","to":"i"}], "layout": "auto"}`
+  *(Do NOT set x/y coordinates on nodes. Do NOT specify layout unless overriding — auto is always correct.)*
 * `table`: Renders a clean HTML table. `{"headers": ["Material", "Magnetic?"], "rows": [["Iron", "Yes"], ["Wood", "No"]]}`
-* `genericExperiment`: Use this as a CATCH-ALL for science setups (Beakers, ramps, magnets). Provide an object of variables, and it will render a beautiful UI card. `{"Setup A": "Wrapped in black cloth, 30ml water", "Setup B": "Wrapped in white cloth, 30ml water"}`
+* `genericExperiment`: ⚠️ LAST RESORT ONLY — use this ONLY when no specific function covers the setup (see --- 11. SCIENCE: EXPERIMENTS --- below). Renders a plain key-value info card; no actual visual diagram. `{"apparatus": "Syringe with plunger", "observation": "Air is compressible", "conclusion": "Gases can be compressed"}`
 * `circuitDiagram`: Renders electrical circuits with MOE standardized symbols. `{"circuitDiagram": {"title": "Setup A", "components": [{"type": "battery"}, {"type": "switch", "isOpen": true}, {"type": "bulb", "position": "right", "fused": false}]}}`
 
 **--- 4. MATH: GEOMETRY (Basic Shapes) ---**
@@ -356,6 +361,45 @@ You may ONLY use the following `function_name` values and their exact parameters
 **--- 10. UTILITY ---**
 * `placeholder`: Grey dashed box with centred description. Use when no specific diagram function applies (e.g., complex anatomy, apparatus cross-sections).
   `{"description": "Diagram of the human heart showing four chambers and major blood vessels."}`
+
+---
+
+**--- 11. SCIENCE: EXPERIMENTS ---**
+* `comparativeSetup`: ⭐ Side-by-side A/B experiment panels with SVG container silhouette.
+  Use for: Heat (cloth colour), Light (shadow), Matter (states comparison), P5 Cycles (condensation), P6 Forces (surface friction comparison).
+  `containerType`: `"beaker"` | `"test_tube"` | `"flask"` | `"box"`
+  ```json
+  {"title": "Heat Absorption", "variable": "Colour of cloth", "containerType": "beaker",
+   "setups": [
+     {"label": "Setup A", "conditions": ["Black cloth", "30 ml water", "Sunny spot"], "result_label": "Temperature after 1 hour:"},
+     {"label": "Setup B", "conditions": ["White cloth", "30 ml water", "Sunny spot"], "result_label": "Temperature after 1 hour:"}
+   ],
+   "commonConditions": ["Same beaker size", "Same starting temperature"]}
+  ```
+  *(Up to 3 setups. `result_label` adds an answer underline at the bottom of each panel.)*
+
+* `magnetDiagram`: ⭐ MOE-schematic magnet drawing.
+  `magnetType`: `"bar"` | `"horseshoe"` | `"electromagnet"`
+  Single bar magnet: `{"magnetType": "bar", "magnets": [{"poles": ["N", "S"]}]}`
+  Two-magnet repulsion (N facing N): `{"magnetType": "bar", "magnets": [{"poles": ["S","N"]}, {"poles": ["N","S"]}], "interaction": "repulsion"}`
+  Two-magnet attraction (N facing S): `{"magnetType": "bar", "magnets": [{"poles": ["S","N"]}, {"poles": ["S","N"]}], "interaction": "attraction"}`
+  Horseshoe: `{"magnetType": "horseshoe", "magnets": [{"poles": ["N", "S"]}]}`
+  Electromagnet: `{"magnetType": "electromagnet", "coreMaterial": "iron", "coilsCount": 5, "batteryCount": 1}`
+  *(N pole = red, S pole = blue per MOE convention. Requires `--color-magnet-N` and `--color-magnet-S` CSS vars.)*
+
+* `rampExperiment`: ⭐ Inclined plane with block, surface texture, and force arrows.
+  `surfaceTexture`: `"smooth"` | `"rough"` | `"sandpaper"` | `"glass"`
+  `forceArrows[].direction`: `"down"` (weight) | `"up_slope"` (friction) | `"down_slope"` | `"normal"` | `"left"` | `"right"`
+  `springState`: `"none"` | `"compressed"` | `"extended"`
+  ```json
+  {"rampAngle": 30, "surfaceTexture": "rough", "blockLabel": "Block",
+   "showAngleLabel": true,
+   "forceArrows": [
+     {"direction": "down",     "label": "Weight"},
+     {"direction": "up_slope", "label": "Friction"},
+     {"direction": "normal",   "label": "Normal force"}
+   ]}
+  ```
 
 ---
 
@@ -502,29 +546,34 @@ SCIENCE ROUTING MAP
 | Topic        | Use Function        | Condition / Notes                                           |
 |--------------|---------------------|-------------------------------------------------------------|
 | Cycles       | `arrowDiagram`      | Life cycles: nodes = stages, arrows = direction of time     |
-|              |                     | Set `layout: "horizontal"` for linear cycles (butterfly)    |
-|              |                     | For circular life cycles, set node x/y as % positions      |
+|              |                     | Use `"layout": "auto"` — detects circular/horizontal automatically |
+|              |                     | Do NOT set node x/y coordinates; auto-layout handles spacing |
 | Energy       | `genericExperiment` | General energy experiment setups                            |
 | **Heat**     | `thermometer`       | Temperature reading; set `minTemp`, `maxTemp`, `currentTemp`|
-|              | `genericExperiment` | Comparing heat absorption setups (e.g., black vs white cloth)|
-| Light        | `genericExperiment` | Shadow/transparency experiments; describe setup in params   |
-| **Magnets**  | `genericExperiment` | Poles, core material, electromagnet coil setup              |
-|              |                     | Include `magnetTypes`, `poles`, `coreMaterial` as params    |
-| Matter       | `genericExperiment` | States of matter, syringe/beaker experiments                |
+|              | `comparativeSetup`  | ⭐ Comparing heat absorption setups (e.g., black vs white cloth) |
+|              |                     | Use `containerType: "beaker"`, `variable: "colour of cloth"` |
+| Light        | `comparativeSetup`  | ⭐ Shadow/transparency A/B comparisons; use `containerType: "box"` |
+|              | `genericExperiment` | Single-setup light experiments (no A/B comparison needed)  |
+| **Magnets**  | `magnetDiagram`     | ⭐ ALL magnet questions: bar, horseshoe, electromagnet       |
+|              |                     | Set `interaction: "repulsion"` or `"attraction"` for 2-magnet setups |
+|              |                     | Set `magnetType: "electromagnet"` + `coreMaterial` for P4 coil questions |
+| Matter       | `comparativeSetup`  | ⭐ A/B comparisons (e.g., syringe compressed vs extended)   |
 |              | `dataTable`         | Comparing properties of solids, liquids, gases              |
+|              | `genericExperiment` | Single-setup matter experiments (no A/B comparison)        |
 
 ── P5 ──────────────────────────────────────────────────────────
 
 | Topic        | Use Function        | Condition / Notes                                           |
 |--------------|---------------------|-------------------------------------------------------------|
-| Cycles       | `arrowDiagram`      | Water cycle stages as a flow diagram                        |
-|              | `genericExperiment` | Condensation/evaporation setup with annotated containers    |
+| Cycles       | `arrowDiagram`      | Water cycle stages as a flow diagram; use `"layout": "auto"`|
+|              | `comparativeSetup`  | ⭐ Condensation/evaporation A/B setups (e.g., cold vs warm surface) |
+|              | `genericExperiment` | Single-setup evaporation/condensation (no A/B comparison)  |
 | Systems      | `dataTable`         | Comparing body systems (e.g., xylem vs phloem table)        |
 |              | `genericExperiment` | Any system with labelled experimental conditions            |
 | **Energy**   | `circuitDiagram`    | ⭐ Use ONLY for electrical circuit questions               |
 |              |                     | Set `circuitArrangement: "series"` or `"parallel"`         |
 |              |                     | Set `fusedBulbs: [index]` for fused-bulb deduction questions|
-|              | `genericExperiment` | Non-circuit energy experiments                              |
+|              | `comparativeSetup`  | ⭐ Non-circuit energy comparisons (e.g., insulation A vs B) |
 | Interactions | `arrowDiagram`      | Food webs: multiple nodes connected by energy-flow arrows   |
 |              |                     | For faulty food web MCQs, include a misplaced arrow in nodes/arrows |
 
@@ -535,11 +584,15 @@ SCIENCE ROUTING MAP
 | Interactions | `arrowDiagram`      | Complex food web with producers + multiple consumer levels  |
 |              |                     | Ensure at least one producer node is always present         |
 | Energy       | `circuitDiagram`    | Complex series/parallel with switch states and fused bulbs  |
-|              | `genericExperiment` | Non-electrical energy experiments (friction, springs, ramps)|
+|              | `rampExperiment`    | ⭐ Friction/ramp energy experiments (inclined plane)        |
+|              | `comparativeSetup`  | Non-ramp energy A/B comparisons                             |
 | Cells        | `dataTable`         | Plant cell vs animal cell feature comparison                |
-|              | `genericExperiment` | Microscope/experiment setup for cell observation            |
-| Forces       | `genericExperiment` | Ramp angle, surface texture, block mass, spring extension   |
-|              |                     | Pass `rampAngle`, `surfaceTexture`, `blockMass` as params   |
+|              | `genericExperiment` | Microscope/experiment setups (no specific function covers this) |
+| Forces       | `rampExperiment`    | ⭐ ALL inclined plane questions: angle, texture, force arrows |
+|              |                     | Set `surfaceTexture: "rough"/"sandpaper"` for friction questions |
+|              |                     | Add `forceArrows` for Weight, Friction, Normal force labels |
+|              | `comparativeSetup`  | Side-by-side comparisons (e.g., rough vs smooth surface)   |
+|              | `genericExperiment` | Non-ramp Forces setups only (e.g., spring balance, pulley) |
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 SECTION 7 — HARD RULES (apply these after looking up the table above)
@@ -548,8 +601,9 @@ SECTION 7 — HARD RULES (apply these after looking up the table above)
 1. NEVER use `arrowDiagram` for electrical circuits. ALWAYS use `circuitDiagram`.
 2. NEVER use `circuitDiagram` for food chains. ALWAYS use `arrowDiagram`.
 3. NEVER use `lineGraph` for bar graph topics. ALWAYS use `verticalBarChart`.
-4. For Science experiments NOT listed above: ALWAYS use `genericExperiment` with
-   descriptive key-value params. Do NOT invent a new function name.
+4. For Science experiments in the routing map above: use the SPECIFIC function listed
+   (`comparativeSetup`, `magnetDiagram`, `rampExperiment`). ONLY fall back to
+   `genericExperiment` when no specific function applies (e.g., pulley, microscope).
 5. If a Maths question is entirely computational with no spatial component,
    set `visual_payload` to NULL. Do NOT force a diagram on a text-only question.
 6. `isometricGrid` is the ONLY permitted function for Solid Figures questions.
@@ -558,6 +612,14 @@ SECTION 7 — HARD RULES (apply these after looking up the table above)
    `polygon` or `parallelogram` for angle-reading questions at P3/P4 level.
 8. `pieChart` is for CIRCULAR proportion diagrams only. Do NOT use it for bar graphs
    labelled as "pie" in the question — use `verticalBarChart` instead.
+9. For ALL magnet questions (bar, horseshoe, electromagnet, poles), ALWAYS use
+   `magnetDiagram`. Do NOT use `genericExperiment` for P4 Magnets topic.
+10. For ALL inclined plane / ramp experiments, ALWAYS use `rampExperiment`. Set
+    `forceArrows` to label Weight, Friction, and Normal force as required by the question.
+11. `comparativeSetup` is the ONLY permitted function for A/B experiment comparisons
+    where two setups differ by one variable. NEVER use `genericExperiment` for A/B setups.
+12. For `arrowDiagram`, ALWAYS set `"layout": "auto"`. Do NOT set x/y coordinates on
+    nodes. Do NOT hardcode a layout mode unless the question explicitly requires it.
 
 ═══════════════════════════════════════════════════════════════
 FINAL QUALITY CHECKLIST BEFORE OUTPUT
