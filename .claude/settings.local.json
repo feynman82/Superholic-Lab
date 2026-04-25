@@ -89,7 +89,11 @@
       "Bash(pdftotext \"P3 Maths 2025 WA1 - Ai Tong.pdf\" extracted.txt)",
       "Bash(pdftotext -l 5 \"D:/Git/Superholic-Lab/data/past_year_papers/P3_Primary3/English/P3 English 2025 WA1 -  Catholic High.pdf\" /tmp/test1.txt)",
       "Bash(npm list:*)",
-      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(list\\(d.keys\\(\\)\\)[:5], indent=2\\)\\)\")"
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(list\\(d.keys\\(\\)\\)[:5], indent=2\\)\\)\")",
+      "Bash(npm install *)",
+      "Bash(git pull *)",
+      "mcp__claude_ai_Supabase__execute_sql",
+      "mcp__claude_ai_Supabase__apply_migration"
     ]
   },
   "enabledMcpjsonServers": [

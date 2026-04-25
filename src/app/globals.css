@@ -1,0 +1,7 @@
+/* Import the project design system */
+@import "../../css/style.css";
+
+/* Tailwind directives — active once tailwindcss is installed */
+/* @tailwind base;    */
+/* @tailwind components; */
+/* @tailwind utilities; */
