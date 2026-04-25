@@ -106,6 +106,9 @@
 
   --navbar-h: 64px;
 
+  /* -- Diagram Library colors --*/
+  --color-magnet-N: #C0392B;  /* red  */
+  --color-magnet-S: #2471A3;  /* blue */
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -3101,3 +3104,4 @@ h4,
   background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(2px);
 }
+
