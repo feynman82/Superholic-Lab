@@ -71,28 +71,22 @@ type CelebrationProps = {
   onDismiss: () => void
 }
 
-// ─── Local design tokens (mirror QuestClient.tsx) ──────────────────
-
-const T = {
-  sage:       "#51615E",
-  sageDark:   "#1A2E2A",
-  sageDarker: "#0E1F1C",
-  cream:      "#e3d9ca",
-  rose:       "#B76E79",
-  peach:      "#B88078",
-  mint:       "#39FFB3",
-  amber:      "#FFB830",
-  fontDisplay: "'Bebas Neue', sans-serif",
-  fontBody:    "'Plus Jakarta Sans', sans-serif",
-  fontMono:    "'JetBrains Mono', monospace",
-}
-
+// ─── Rarity → CSS custom property mapping ──────────────────────────
+// Passed as --rarity-color per-instance so CSS classes can reference it.
 const RARITY_COLOR: Record<BadgeRarity, string> = {
-  common:    T.cream,
-  rare:      T.mint,
-  epic:      T.rose,
-  legendary: T.amber,
+  common:    "var(--cream)",
+  rare:      "var(--brand-mint)",
+  epic:      "var(--brand-rose)",
+  legendary: "var(--brand-amber)",
 }
+
+// Confetti piece colours — CSS vars resolve at paint time
+const CONFETTI_HUES = [
+  "var(--brand-rose)",
+  "var(--brand-mint)",
+  "var(--brand-amber)",
+  "var(--cream)",
+]
 
 // ─── Component ─────────────────────────────────────────────────────
 
@@ -150,27 +144,15 @@ export function ReturningCelebration({ data, onDismiss }: CelebrationProps) {
 
   return (
     <motion.div
+      className="quest-celebration-backdrop"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.4 }}
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 200,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background: `radial-gradient(circle at 50% 40%, rgba(57,255,179,0.18), rgba(14,31,28,0.92) 60%)`,
-        backdropFilter: "blur(8px)",
-        WebkitBackdropFilter: "blur(8px)",
-        padding: 16,
-        fontFamily: T.fontBody,
-        color: T.cream,
-      }}
       onClick={onDismiss}
       role="dialog"
       aria-label="Quest day completion celebration"
+      style={{ color: "var(--cream)" }}
     >
       <ConfettiBurst />
 
@@ -191,21 +173,8 @@ export function ReturningCelebration({ data, onDismiss }: CelebrationProps) {
           style={{ marginBottom: 32 }}
         >
           <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-              fontFamily: T.fontMono,
-              fontSize: "0.7rem",
-              fontWeight: 700,
-              letterSpacing: "0.18em",
-              color: T.mint,
-              background: "rgba(57,255,179,0.1)",
-              border: `1px solid rgba(57,255,179,0.35)`,
-              borderRadius: 9999,
-              padding: "6px 16px",
-              marginBottom: 16,
-            }}
+            className="quest-chip quest-chip-mint"
+            style={{ marginBottom: 16, display: "inline-flex" }}
           >
             {triggerLabel}
             {data.score !== null && ` · SCORE ${data.score}%`}
@@ -213,16 +182,16 @@ export function ReturningCelebration({ data, onDismiss }: CelebrationProps) {
 
           <h1
             style={{
-              fontFamily: T.fontDisplay,
+              fontFamily: "'Bebas Neue', sans-serif",
               fontSize: "clamp(3rem, 11vw, 5.5rem)",
               letterSpacing: "0.04em",
               lineHeight: 0.95,
               margin: 0,
-              background: `linear-gradient(180deg, ${T.cream} 0%, ${T.mint} 100%)`,
+              background: `linear-gradient(180deg, var(--cream) 0%, var(--brand-mint) 100%)`,
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
-              filter: "drop-shadow(0 0 24px rgba(57,255,179,0.35))",
+              filter: "drop-shadow(0 0 24px color-mix(in srgb, var(--brand-mint) 35%, transparent))",
             }}
           >
             {isFinalDay ? "QUEST COMPLETE" : `DAY ${data.completedDay} COMPLETE`}
@@ -232,7 +201,7 @@ export function ReturningCelebration({ data, onDismiss }: CelebrationProps) {
             <p
               style={{
                 fontSize: "1rem",
-                color: "rgba(227,217,202,0.75)",
+                color: "color-mix(in srgb, var(--cream) 75%, transparent)",
                 margin: "12px 0 0 0",
               }}
             >
@@ -246,27 +215,17 @@ export function ReturningCelebration({ data, onDismiss }: CelebrationProps) {
           {stage !== "banner" && (
             <motion.div
               key="xp-burst"
+              className="quest-xp-burst"
               initial={{ opacity: 0, y: 30, scale: 0.6 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 12,
-                background: "rgba(255,184,48,0.1)",
-                border: `1.5px solid ${T.amber}`,
-                borderRadius: 9999,
-                padding: "10px 24px",
-                marginBottom: 24,
-                boxShadow: `0 0 24px rgba(255,184,48,0.3)`,
-              }}
             >
               <span
                 style={{
-                  fontFamily: T.fontDisplay,
+                  fontFamily: "'Bebas Neue', sans-serif",
                   fontSize: "2rem",
-                  color: T.amber,
+                  color: "var(--brand-amber)",
                   letterSpacing: "0.04em",
                   lineHeight: 1,
                 }}
@@ -283,35 +242,23 @@ export function ReturningCelebration({ data, onDismiss }: CelebrationProps) {
             data.levelUp && (
               <motion.div
                 key="level-up"
+                className="quest-levelup-panel"
                 initial={{ opacity: 0, scale: 0.7 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                style={{
-                  background: "rgba(57,255,179,0.06)",
-                  border: `1.5px solid ${T.mint}`,
-                  borderRadius: 20,
-                  padding: 20,
-                  marginBottom: 16,
-                  boxShadow: `0 0 32px rgba(57,255,179,0.25), inset 0 0 20px rgba(57,255,179,0.05)`,
-                }}
               >
                 <div
-                  style={{
-                    fontFamily: T.fontMono,
-                    fontSize: "0.7rem",
-                    letterSpacing: "0.2em",
-                    color: T.mint,
-                    marginBottom: 6,
-                  }}
+                  className="label-caps"
+                  style={{ color: "var(--brand-mint)", marginBottom: 6 }}
                 >
                   LEVEL UP
                 </div>
                 <div
                   style={{
-                    fontFamily: T.fontDisplay,
+                    fontFamily: "'Bebas Neue', sans-serif",
                     fontSize: "2.4rem",
-                    color: T.cream,
+                    color: "var(--cream)",
                     letterSpacing: "0.04em",
                     display: "flex",
                     alignItems: "center",
@@ -321,18 +268,12 @@ export function ReturningCelebration({ data, onDismiss }: CelebrationProps) {
                   }}
                 >
                   <span style={{ opacity: 0.5 }}>{data.levelUp.fromLevel}</span>
-                  <span style={{ color: T.mint }}>→</span>
-                  <span style={{ color: T.mint }}>{data.levelUp.toLevel}</span>
+                  <span style={{ color: "var(--brand-mint)" }}>→</span>
+                  <span style={{ color: "var(--brand-mint)" }}>{data.levelUp.toLevel}</span>
                 </div>
                 <div
-                  style={{
-                    fontFamily: T.fontMono,
-                    fontSize: "0.85rem",
-                    color: T.mint,
-                    marginTop: 6,
-                    letterSpacing: "0.08em",
-                    textTransform: "uppercase",
-                  }}
+                  className="label-caps"
+                  style={{ color: "var(--brand-mint)", marginTop: 6 }}
                 >
                   {data.levelUp.fromRank} → {data.levelUp.toRank}
                 </div>
@@ -345,35 +286,20 @@ export function ReturningCelebration({ data, onDismiss }: CelebrationProps) {
           {(stage === "badge" || stage === "done") && currentBadge && (
             <motion.div
               key={`badge-${currentBadge.id}`}
+              className={`quest-badge-panel quest-badge-${currentBadge.rarity}`}
+              style={
+                { "--rarity-color": RARITY_COLOR[currentBadge.rarity] } as React.CSSProperties
+              }
               initial={{ opacity: 0, scale: 0.6, rotateY: -90 }}
               animate={{ opacity: 1, scale: 1, rotateY: 0 }}
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-              style={{
-                background: `rgba(${
-                  currentBadge.rarity === "epic"
-                    ? "183,110,121"
-                    : currentBadge.rarity === "legendary"
-                      ? "255,184,48"
-                      : currentBadge.rarity === "rare"
-                        ? "57,255,179"
-                        : "227,217,202"
-                }, 0.08)`,
-                border: `1.5px solid ${RARITY_COLOR[currentBadge.rarity]}`,
-                borderRadius: 20,
-                padding: 20,
-                marginBottom: 16,
-                boxShadow: `0 0 32px ${RARITY_COLOR[currentBadge.rarity]}55`,
-              }}
             >
               <div
+                className="label-caps"
                 style={{
-                  fontFamily: T.fontMono,
-                  fontSize: "0.7rem",
-                  letterSpacing: "0.2em",
-                  color: RARITY_COLOR[currentBadge.rarity],
+                  color: "var(--rarity-color, var(--cream))",
                   marginBottom: 8,
-                  textTransform: "uppercase",
                 }}
               >
                 ⬢ {currentBadge.rarity} BADGE UNLOCKED
@@ -389,29 +315,19 @@ export function ReturningCelebration({ data, onDismiss }: CelebrationProps) {
                 }}
               >
                 <div
-                  style={{
-                    width: 56,
-                    height: 56,
-                    borderRadius: 14,
-                    background: `linear-gradient(135deg, ${RARITY_COLOR[currentBadge.rarity]}33, ${T.sageDark})`,
-                    border: `1.5px solid ${RARITY_COLOR[currentBadge.rarity]}`,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: RARITY_COLOR[currentBadge.rarity],
-                    flexShrink: 0,
-                  }}
+                  className={`quest-badge-icon quest-badge-icon-${currentBadge.rarity}`}
                 >
                   <Icon name="shield" size={32} />
                 </div>
                 <div style={{ textAlign: "left" }}>
+                  {/* Badge name: Plus Jakarta Sans 700 — Bebas Neue at 1.6rem = 25.6px violates 32px floor */}
                   <div
                     style={{
-                      fontFamily: T.fontDisplay,
-                      fontSize: "1.6rem",
-                      color: T.cream,
-                      letterSpacing: "0.02em",
-                      lineHeight: 1.1,
+                      fontFamily: "'Plus Jakarta Sans', sans-serif",
+                      fontSize: "1.1rem",
+                      fontWeight: 700,
+                      color: "var(--cream)",
+                      lineHeight: 1.2,
                     }}
                   >
                     {currentBadge.name}
@@ -419,7 +335,7 @@ export function ReturningCelebration({ data, onDismiss }: CelebrationProps) {
                   <div
                     style={{
                       fontSize: "0.8rem",
-                      color: "rgba(227,217,202,0.65)",
+                      color: "color-mix(in srgb, var(--cream) 65%, transparent)",
                       marginTop: 2,
                     }}
                   >
@@ -431,29 +347,13 @@ export function ReturningCelebration({ data, onDismiss }: CelebrationProps) {
           )}
         </AnimatePresence>
 
-        {/* ─── Continue button (always visible after stage 1) ─── */}
+        {/* ─── Continue button (visible after stage 1) ─── */}
         <motion.button
+          className="quest-continue-btn"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.0, duration: 0.5 }}
           onClick={onDismiss}
-          style={{
-            marginTop: 8,
-            padding: "12px 32px",
-            borderRadius: 9999,
-            background: `linear-gradient(90deg, ${T.rose}, ${T.peach}, ${T.mint}, ${T.peach}, ${T.rose})`,
-            backgroundSize: "300% 100%",
-            color: T.sageDark,
-            fontWeight: 700,
-            fontSize: "1rem",
-            border: "none",
-            cursor: "pointer",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 8,
-            boxShadow: `0 4px 24px rgba(57,255,179,0.3)`,
-            fontFamily: T.fontBody,
-          }}
         >
           {isFinalDay
             ? "Claim Your Reward"
@@ -464,7 +364,7 @@ export function ReturningCelebration({ data, onDismiss }: CelebrationProps) {
         <div
           style={{
             fontSize: "0.75rem",
-            color: "rgba(227,217,202,0.4)",
+            color: "color-mix(in srgb, var(--cream) 40%, transparent)",
             marginTop: 16,
           }}
         >
@@ -476,7 +376,8 @@ export function ReturningCelebration({ data, onDismiss }: CelebrationProps) {
 }
 
 // ─────────────────────────────────────────────────────────────────────
-// Confetti — pure CSS, lightweight, no external deps
+// Confetti — pure CSS, lightweight, no external deps.
+// The shlConfettiFall keyframe lives in style.css (AS.10 section).
 // ─────────────────────────────────────────────────────────────────────
 
 function ConfettiBurst() {
@@ -486,48 +387,39 @@ function ConfettiBurst() {
       left: Math.random() * 100,
       delay: Math.random() * 0.6,
       duration: 1.4 + Math.random() * 1.6,
-      hue: [T.rose, T.mint, T.amber, T.cream][i % 4],
+      hue: CONFETTI_HUES[i % 4],
       size: 6 + Math.random() * 8,
       rotate: Math.random() * 720 - 360,
     }))
   }, [])
 
   return (
-    <>
-      <style>{`
-        @keyframes shlConfettiFall {
-          0%   { transform: translateY(-20vh) rotate(0deg);   opacity: 0; }
-          10%  { opacity: 1; }
-          100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
-        }
-      `}</style>
-      <div
-        aria-hidden
-        style={{
-          position: "absolute",
-          inset: 0,
-          pointerEvents: "none",
-          overflow: "hidden",
-        }}
-      >
-        {pieces.map((p) => (
-          <span
-            key={p.id}
-            style={{
-              position: "absolute",
-              top: "-20vh",
-              left: `${p.left}%`,
-              width: p.size,
-              height: p.size * 0.4,
-              background: p.hue,
-              borderRadius: 2,
-              animation: `shlConfettiFall ${p.duration}s ease-in ${p.delay}s forwards`,
-              transform: `rotate(${p.rotate}deg)`,
-              opacity: 0,
-            }}
-          />
-        ))}
-      </div>
-    </>
+    <div
+      aria-hidden
+      style={{
+        position: "absolute",
+        inset: 0,
+        pointerEvents: "none",
+        overflow: "hidden",
+      }}
+    >
+      {pieces.map((p) => (
+        <span
+          key={p.id}
+          style={{
+            position: "absolute",
+            top: "-20vh",
+            left: `${p.left}%`,
+            width: p.size,
+            height: p.size * 0.4,
+            background: p.hue,
+            borderRadius: 2,
+            animation: `shlConfettiFall ${p.duration}s ease-in ${p.delay}s forwards`,
+            transform: `rotate(${p.rotate}deg)`,
+            opacity: 0,
+          }}
+        />
+      ))}
+    </div>
   )
 }

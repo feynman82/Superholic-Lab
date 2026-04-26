@@ -14,16 +14,20 @@
  *   7. Coming-next accordion
  *   8. Abandon button
  *
- * All visual values come from STYLEGUIDE.md tokens via inline style strings
- * (matches the pattern used in src/components/PlanQuestSection.tsx).
+ * Architect-Scholar migration (2026-04-26):
+ *   - All colours via CSS variables (var(--token)); no T token map; no hex/rgba literals
+ *   - Page background: light var(--surface); dark gradient removed
+ *   - Glassmorphism cards via .card-glass utility class
+ *   - Keyframes moved to public/css/style.css (AS.10)
+ *   - Bebas Neue enforced ≥ 32px (h2 minimum)
+ *   - JetBrains Mono replaced with .label-caps / .quest-chip
+ *   - AbandonButton hover → .quest-abandon-btn CSS class
+ *   - QuestTimeline connectors → CSS-class layout (no magic numbers)
  *
  * Phase 3 will:
  *   - Replace props with Supabase fetch
  *   - Wire onClick handlers to real API endpoints
  *   - Add EmptyState + CompleteState
- *
- * Demo mode: ?demo=returning shows the ReturningCelebration overlay so
- * we can vet the celebration UX before Phase 3 wires the real flow.
  */
 
 import { useState } from "react"
@@ -91,38 +95,6 @@ type QuestClientProps = {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// DESIGN TOKENS (mirror STYLEGUIDE.md)
-// ═══════════════════════════════════════════════════════════════════
-
-const T = {
-  // Colors
-  sage:       "#51615E",
-  sageDark:   "#1A2E2A",
-  sageDarker: "#0E1F1C",
-  cream:      "#e3d9ca",
-  rose:       "#B76E79",
-  peach:      "#B88078",
-  mint:       "#39FFB3",
-  amber:      "#FFB830",
-
-  // Typography
-  fontDisplay: "'Bebas Neue', sans-serif",
-  fontBody:    "'Plus Jakarta Sans', sans-serif",
-  fontMono:    "'JetBrains Mono', monospace",
-
-  // 8-point grid
-  s1: 8,
-  s2: 16,
-  s3: 24,
-  s4: 32,
-  s5: 40,
-  s6: 48,
-  s8: 64,
-  s10: 80,
-  s12: 96,
-}
-
-// ═══════════════════════════════════════════════════════════════════
 // MAIN COMPONENT
 // ═══════════════════════════════════════════════════════════════════
 
@@ -131,17 +103,11 @@ export function QuestClient({ quest, student, hud, diagnosis }: QuestClientProps
   const isQuestComplete = quest.current_step >= quest.steps.length
 
   // ─── ?demo=returning toggle (Phase 2 only) ─────────────────────────
-  // Reads the URL on first render and shows a hardcoded celebration so
-  // we can vet the post-completion experience before Phase 3 wires real
-  // data from /api/quest-step-complete. In Phase 3 this same component
-  // will be triggered by ?completed=N&trigger=quiz&score=85 and the data
-  // shape stays identical — no rewrite.
   const [demoCelebration, setDemoCelebration] = useState<CelebrationData | null>(
     () => {
       if (typeof window === "undefined") return null
       const params = new URLSearchParams(window.location.search)
       if (params.get("demo") !== "returning") return null
-      // Hardcoded sample matching Lily's Day 2 (tutor) completion.
       return {
         completedDay: 2,
         trigger: "tutor",
@@ -174,7 +140,6 @@ export function QuestClient({ quest, student, hud, diagnosis }: QuestClientProps
 
   function dismissCelebration() {
     setDemoCelebration(null)
-    // Clean the URL so a refresh doesn't replay it
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href)
       url.searchParams.delete("demo")
@@ -192,88 +157,29 @@ export function QuestClient({ quest, student, hud, diagnosis }: QuestClientProps
           />
         )}
       </AnimatePresence>
-      {/* ─── Keyframes ────────────────────────────── */}
-      <style>{`
-        @keyframes questPulseRing {
-          0%   { transform: scale(1);   opacity: 0.6; }
-          80%  { transform: scale(1.8); opacity: 0;   }
-          100% { transform: scale(1.8); opacity: 0;   }
-        }
-        @keyframes questGlowSweep {
-          0%, 100% { background-position: 0% 50%; }
-          50%      { background-position: 100% 50%; }
-        }
-        @keyframes questFloat {
-          0%, 100% { transform: translateY(0px); }
-          50%      { transform: translateY(-6px); }
-        }
-        @keyframes questFlameFlicker {
-          0%, 100% { transform: scale(1) rotate(-2deg); }
-          50%      { transform: scale(1.08) rotate(2deg); }
-        }
-        @keyframes questAuraSpin {
-          0%   { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-        @keyframes questXpFill {
-          from { width: 0%; }
-          to   { width: var(--target-pct); }
-        }
-      `}</style>
 
       {/* @ts-expect-error custom element */}
       <global-header />
 
       <main
+        className="grid-texture"
         style={{
           minHeight: "100vh",
-          background: `linear-gradient(180deg, ${T.sageDark} 0%, #243835 60%, ${T.sageDarker} 100%)`,
+          background: "var(--surface)",
           paddingTop: 64, // header height
-          paddingBottom: T.s12,
+          paddingBottom: 96, // no --space-12 token; keep numeric
           position: "relative",
           overflow: "hidden",
-          fontFamily: T.fontBody,
-          color: T.cream,
+          fontFamily: "var(--font-body)",
+          color: "var(--text-main)",
         }}
       >
-        {/* Ambient grid texture */}
-        <div
-          aria-hidden
-          style={{
-            position: "absolute",
-            inset: 0,
-            backgroundImage: `linear-gradient(rgba(57,255,179,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(57,255,179,0.03) 1px,transparent 1px)`,
-            backgroundSize: "64px 64px",
-            pointerEvents: "none",
-          }}
-        />
-
-        {/* Ambient glows */}
-        <div
-          aria-hidden
-          style={{
-            position: "absolute", top: -180, right: -120,
-            width: 520, height: 520,
-            background: `radial-gradient(circle, rgba(183,110,121,0.12) 0%, transparent 70%)`,
-            pointerEvents: "none",
-          }}
-        />
-        <div
-          aria-hidden
-          style={{
-            position: "absolute", bottom: -100, left: -80,
-            width: 400, height: 400,
-            background: `radial-gradient(circle, rgba(57,255,179,0.08) 0%, transparent 70%)`,
-            pointerEvents: "none",
-          }}
-        />
-
         <div
           style={{
             position: "relative",
             maxWidth: 760,
             margin: "0 auto",
-            padding: `0 ${T.s2}px`,
+            padding: "0 16px",
           }}
         >
           {/* ─────────────────────── HUD STRIP ───────────────────────── */}
@@ -319,19 +225,13 @@ function HUDStrip({ student, hud }: { student: Student; hud: HUD }) {
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
+      className="card-glass"
       style={{
-        background: "rgba(227,217,202,0.06)",
-        border: "1.5px solid rgba(227,217,202,0.14)",
-        borderRadius: 20,
-        backdropFilter: "blur(16px)",
-        WebkitBackdropFilter: "blur(16px)",
-        padding: T.s3,
-        marginTop: T.s4,
-        marginBottom: T.s4,
+        marginTop: 32,
+        marginBottom: 32,
         display: "flex",
-        gap: T.s3,
+        gap: 24,
         alignItems: "center",
-        boxShadow: "4px 4px 0px rgba(42,42,42,0.18)",
       }}
     >
       {/* Avatar with magic ring */}
@@ -339,59 +239,26 @@ function HUDStrip({ student, hud }: { student: Student; hud: HUD }) {
 
       {/* Center: name, level, XP bar */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "baseline", gap: T.s2, flexWrap: "wrap" }}>
-          <span style={{ fontWeight: 700, fontSize: "1rem", color: T.cream }}>{student.name}</span>
-          <span
-            style={{
-              fontFamily: T.fontMono,
-              fontSize: "0.7rem",
-              color: T.mint,
-              background: "rgba(57,255,179,0.1)",
-              border: `1px solid rgba(57,255,179,0.3)`,
-              padding: "2px 8px",
-              borderRadius: 9999,
-              textTransform: "uppercase",
-              letterSpacing: "0.08em",
-              fontWeight: 700,
-            }}
-          >
+        <div style={{ display: "flex", alignItems: "baseline", gap: 16, flexWrap: "wrap" }}>
+          <span style={{ fontWeight: 700, fontSize: "1rem", color: "var(--text-main)" }}>
+            {student.name}
+          </span>
+          <span className="quest-chip quest-chip-mint">
             Lvl {hud.level} · {hud.rank}
           </span>
         </div>
 
         {/* XP bar */}
-        <div style={{ marginTop: T.s1, display: "flex", alignItems: "center", gap: T.s2 }}>
-          <div
-            style={{
-              flex: 1,
-              height: 8,
-              background: "rgba(227,217,202,0.1)",
-              borderRadius: 9999,
-              overflow: "hidden",
-              position: "relative",
-            }}
-          >
+        <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 16 }}>
+          <div className="quest-xp-track">
             <motion.div
+              className="quest-xp-fill"
               initial={{ width: 0 }}
               animate={{ width: `${xpPct}%` }}
               transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
-              style={{
-                height: "100%",
-                background: `linear-gradient(90deg, ${T.rose}, ${T.peach}, ${T.mint})`,
-                backgroundSize: "200% 100%",
-                animation: "questGlowSweep 3s ease infinite",
-                borderRadius: 9999,
-              }}
             />
           </div>
-          <span
-            style={{
-              fontFamily: T.fontMono,
-              fontSize: "0.7rem",
-              color: "rgba(227,217,202,0.6)",
-              whiteSpace: "nowrap",
-            }}
-          >
+          <span className="label-caps" style={{ color: "var(--text-muted)", whiteSpace: "nowrap" }}>
             {hud.xp_in_level}/{hud.xp_to_next_level}
           </span>
         </div>
@@ -410,14 +277,14 @@ function HUDStrip({ student, hud }: { student: Student; hud: HUD }) {
 function AvatarSlot({ photoUrl }: { photoUrl: string }) {
   return (
     <div style={{ position: "relative", width: 64, height: 64, flexShrink: 0 }}>
-      {/* Magic ring (rotating) */}
+      {/* Magic ring (rotating) — decorative animated element; stays as-is, tokenised */}
       <div
         aria-hidden
         style={{
           position: "absolute",
           inset: -3,
           borderRadius: "50%",
-          background: `conic-gradient(from 0deg, ${T.rose}, ${T.mint}, ${T.amber}, ${T.rose})`,
+          background: `conic-gradient(from 0deg, var(--brand-rose), var(--brand-mint), var(--brand-amber), var(--brand-rose))`,
           animation: "questAuraSpin 6s linear infinite",
           opacity: 0.7,
         }}
@@ -428,7 +295,7 @@ function AvatarSlot({ photoUrl }: { photoUrl: string }) {
           position: "absolute",
           inset: 0,
           borderRadius: "50%",
-          background: T.sageDark,
+          background: "var(--brand-sage)", // T.sageDark was drift; brand-sage is the canonical value
           padding: 2,
         }}
       >
@@ -437,7 +304,7 @@ function AvatarSlot({ photoUrl }: { photoUrl: string }) {
             width: "100%",
             height: "100%",
             borderRadius: "50%",
-            background: `radial-gradient(circle at 30% 30%, ${T.rose}33, ${T.sageDarker})`,
+            background: `radial-gradient(circle at 30% 30%, color-mix(in srgb, var(--brand-rose) 20%, transparent), var(--sage-dark))`,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -445,7 +312,6 @@ function AvatarSlot({ photoUrl }: { photoUrl: string }) {
             fontSize: "1.6rem",
           }}
         >
-          {/* Placeholder space-marine emoji until real avatar loads */}
           <span aria-label="avatar placeholder">👨‍🚀</span>
         </div>
       </div>
@@ -469,34 +335,17 @@ function StreakFlame({ days, shieldCount }: { days: number; shieldCount: number 
       }}
       title={shieldCount > 0 ? `${shieldCount} streak shield(s) in stock` : "No shields"}
     >
-      <div
-        style={{
-          color: T.amber,
-          animation: "questFlameFlicker 1.5s ease-in-out infinite",
-          filter: `drop-shadow(0 0 8px ${T.amber}88)`,
-          display: "inline-flex",
-        }}
-        aria-hidden
-      >
+      <div className="quest-flame" aria-hidden>
         <Icon name="flame" size={28} />
       </div>
-      <div
-        style={{
-          fontFamily: T.fontMono,
-          fontSize: "0.7rem",
-          fontWeight: 700,
-          color: T.amber,
-          lineHeight: 1,
-        }}
-      >
+      <div className="label-caps" style={{ color: "var(--brand-amber)", lineHeight: 1 }}>
         {days}d
       </div>
       {shieldCount > 0 && (
         <div
+          className="label-caps"
           style={{
-            fontFamily: T.fontMono,
-            fontSize: "0.6rem",
-            color: T.mint,
+            color: "var(--brand-mint)",
             lineHeight: 1,
             display: "inline-flex",
             alignItems: "center",
@@ -526,59 +375,32 @@ function QuestHero({ quest }: { quest: Quest }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-      style={{ textAlign: "center", marginBottom: T.s5 }}
+      style={{ textAlign: "center", marginBottom: 40 }}
     >
       {/* Subject + day badge */}
       <div
         style={{
           display: "inline-flex",
           alignItems: "center",
-          gap: T.s2,
-          marginBottom: T.s2,
+          gap: 16,
+          marginBottom: 16,
         }}
       >
-        <span
-          style={{
-            fontFamily: T.fontMono,
-            fontSize: "0.7rem",
-            fontWeight: 700,
-            letterSpacing: "0.14em",
-            textTransform: "uppercase",
-            color: T.mint,
-            background: "rgba(57,255,179,0.1)",
-            border: `1px solid rgba(57,255,179,0.2)`,
-            borderRadius: 9999,
-            padding: "4px 12px",
-          }}
-        >
+        <span className="quest-chip quest-chip-mint">
           {subjectLabel} · {quest.level}
         </span>
-        <span
-          style={{
-            fontFamily: T.fontMono,
-            fontSize: "0.7rem",
-            fontWeight: 700,
-            letterSpacing: "0.14em",
-            textTransform: "uppercase",
-            color: T.rose,
-            background: "rgba(183,110,121,0.12)",
-            border: `1px solid rgba(183,110,121,0.3)`,
-            borderRadius: 9999,
-            padding: "4px 12px",
-          }}
-        >
+        <span className="quest-chip quest-chip-rose">
           {dayDisplay}
         </span>
       </div>
 
-      {/* Quest title */}
+      {/* Quest title — sage-dark → brand-rose gradient works on light surface */}
       <h1
         style={{
-          fontFamily: T.fontDisplay,
+          fontFamily: "var(--font-display)",
           fontSize: "clamp(2rem, 7vw, 3.5rem)",
           letterSpacing: "0.04em",
           lineHeight: 1.0,
-          color: T.cream,
           margin: 0,
           display: "inline-flex",
           alignItems: "center",
@@ -586,12 +408,12 @@ function QuestHero({ quest }: { quest: Quest }) {
           justifyContent: "center",
         }}
       >
-        <span style={{ display: "inline-flex", color: T.mint, flexShrink: 0 }} aria-hidden>
+        <span style={{ display: "inline-flex", color: "var(--brand-rose)", flexShrink: 0 }} aria-hidden>
           <Icon name="quest" size={36} />
         </span>
         <span
           style={{
-            background: `linear-gradient(90deg, ${T.cream}, ${T.mint})`,
+            background: `linear-gradient(90deg, var(--sage-dark), var(--brand-rose))`,
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
             backgroundClip: "text",
@@ -606,6 +428,7 @@ function QuestHero({ quest }: { quest: Quest }) {
 
 // ═══════════════════════════════════════════════════════════════════
 // QUEST TIMELINE — 3-node timeline with animated active indicator
+// Connectors rendered as CSS-class positioned elements (no magic numbers).
 // ═══════════════════════════════════════════════════════════════════
 
 function QuestTimeline({
@@ -620,112 +443,33 @@ function QuestTimeline({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-      style={{
-        marginBottom: T.s5,
-        padding: `${T.s4}px ${T.s2}px`,
-        background: "rgba(227,217,202,0.04)",
-        border: "1.5px solid rgba(227,217,202,0.1)",
-        borderRadius: 20,
-        backdropFilter: "blur(12px)",
-        position: "relative",
-      }}
+      className="card-glass"
+      style={{ marginBottom: 40 }}
     >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 0,
-          maxWidth: 480,
-          margin: "0 auto",
-        }}
-      >
+      <div className="quest-timeline-track">
         {steps.map((step, i) => {
-          const isDone = i < currentStep
+          const isDone   = i < currentStep
           const isActive = i === currentStep
           const isLocked = i > currentStep
 
-          const nodeColor = isDone ? T.mint : isActive ? T.rose : "rgba(227,217,202,0.2)"
-          const nodeBg = isDone
-            ? `${T.mint}26`
-            : isActive
-            ? `${T.rose}33`
-            : "rgba(227,217,202,0.06)"
-          const labelColor = isDone ? T.mint : isActive ? T.rose : "rgba(227,217,202,0.4)"
+          const nodeClass  = isDone ? "quest-node-done" : isActive ? "quest-node-active" : "quest-node-locked"
+          const labelClass = isDone ? "quest-label-done" : isActive ? "quest-label-active" : "quest-label-locked"
 
           return (
-            <div
-              key={step.day}
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                position: "relative",
-                flex: i < steps.length - 1 ? `0 0 auto` : "0 0 auto",
-                zIndex: 2,
-              }}
-            >
+            <div key={step.day} className="quest-timeline-item">
               {/* Node */}
-              <div style={{ position: "relative", marginBottom: T.s2 }}>
-                {/* Pulse ring for active */}
-                {isActive && (
-                  <div
-                    aria-hidden
-                    style={{
-                      position: "absolute",
-                      inset: 0,
-                      borderRadius: "50%",
-                      border: `2px solid ${T.rose}`,
-                      animation: "questPulseRing 2s ease-out infinite",
-                    }}
-                  />
-                )}
-                <div
-                  style={{
-                    width: 56,
-                    height: 56,
-                    borderRadius: "50%",
-                    background: nodeBg,
-                    border: `2.5px solid ${nodeColor}`,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontFamily: T.fontDisplay,
-                    fontSize: "1.6rem",
-                    color: nodeColor,
-                    position: "relative",
-                    boxShadow: isActive
-                      ? `0 0 0 3px ${T.rose}26, 0 4px 16px ${T.rose}40`
-                      : isDone
-                      ? `0 0 0 3px ${T.mint}1A`
-                      : "none",
-                  }}
-                >
+              <div className="quest-timeline-node-wrapper">
+                {isActive && <div aria-hidden className="quest-pulse-ring" />}
+                <div className={`quest-timeline-node ${nodeClass}`}>
                   {isDone ? "✓" : isLocked ? <Icon name="lock" size={22} /> : step.day}
                 </div>
               </div>
 
               {/* Day label */}
-              <div
-                style={{
-                  fontFamily: T.fontMono,
-                  fontSize: "0.7rem",
-                  fontWeight: 700,
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                  color: labelColor,
-                }}
-              >
+              <div className={`quest-node-label ${labelClass}`}>
                 Day {step.day}
               </div>
-              <div
-                style={{
-                  fontSize: "0.7rem",
-                  color: labelColor,
-                  opacity: 0.8,
-                  marginTop: 2,
-                }}
-              >
+              <div style={{ fontSize: "0.7rem", color: isActive ? "var(--brand-rose)" : "var(--text-muted)", opacity: 0.8, marginTop: 2 }}>
                 {step.type === "tutor" ? (
                   <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
                     <Icon name="tutor" size={12} /> Tutor
@@ -736,42 +480,17 @@ function QuestTimeline({
                   </span>
                 )}
               </div>
+
+              {/* Connector to next node — CSS class positions it behind the node via z-index */}
+              {i < steps.length - 1 && (
+                <div
+                  aria-hidden
+                  className={`quest-timeline-connector ${i < currentStep ? "quest-connector-filled" : ""}`}
+                />
+              )}
             </div>
           )
         })}
-
-        {/* Connector lines (absolute positioned behind nodes) */}
-        <div
-          aria-hidden
-          style={{
-            position: "absolute",
-            top: T.s4 + 28,  // node radius
-            left: T.s6,
-            right: T.s6,
-            height: 2,
-            zIndex: 1,
-            display: "flex",
-            justifyContent: "space-between",
-          }}
-        >
-          {Array.from({ length: steps.length - 1 }).map((_, i) => {
-            const filled = i < currentStep
-            return (
-              <div
-                key={i}
-                style={{
-                  flex: 1,
-                  height: 2,
-                  background: filled
-                    ? `linear-gradient(90deg, ${T.mint}, ${i + 1 === currentStep ? T.rose : T.mint})`
-                    : "rgba(227,217,202,0.15)",
-                  margin: "0 8px",
-                  transition: "background 0.6s ease",
-                }}
-              />
-            )
-          })}
-        </div>
       </div>
     </motion.div>
   )
@@ -779,14 +498,13 @@ function QuestTimeline({
 
 // ═══════════════════════════════════════════════════════════════════
 // ACTIVE DAY CARD — today's mission with primary CTA
+// ActiveDayCard intentionally overrides .card-glass shadow + border
+// to read as "today's mission" via rose tint.
 // ═══════════════════════════════════════════════════════════════════
 
 function ActiveDayCard({ step, questId }: { step: QuestStep; questId: string }) {
-  // Append quest tracking params to action URL
   const stepIndex = step.day - 1
-  const ctaUrl = `${step.action_url}&from_quest=${encodeURIComponent(
-    questId
-  )}&step=${stepIndex}`
+  const ctaUrl = `${step.action_url}&from_quest=${encodeURIComponent(questId)}&step=${stepIndex}`
 
   return (
     <motion.div
@@ -795,35 +513,29 @@ function ActiveDayCard({ step, questId }: { step: QuestStep; questId: string }) 
       transition={{ duration: 0.6, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
       style={{
         position: "relative",
-        marginBottom: T.s5,
+        marginBottom: 40,
       }}
     >
       {/* Corner accents (rose) */}
       {[
-        { top: -6, left: -6, borderTop: `2px solid ${T.rose}`, borderLeft: `2px solid ${T.rose}` },
-        { top: -6, right: -6, borderTop: `2px solid ${T.rose}`, borderRight: `2px solid ${T.rose}` },
-        { bottom: -6, left: -6, borderBottom: `2px solid ${T.rose}`, borderLeft: `2px solid ${T.rose}` },
-        { bottom: -6, right: -6, borderBottom: `2px solid ${T.rose}`, borderRight: `2px solid ${T.rose}` },
-      ].map((style, i) => (
-        <div
-          key={i}
-          aria-hidden
-          style={{ position: "absolute", width: 18, height: 18, ...style }}
-        />
+        { top: -6, left: -6, borderTop: `2px solid var(--brand-rose)`, borderLeft: `2px solid var(--brand-rose)` },
+        { top: -6, right: -6, borderTop: `2px solid var(--brand-rose)`, borderRight: `2px solid var(--brand-rose)` },
+        { bottom: -6, left: -6, borderBottom: `2px solid var(--brand-rose)`, borderLeft: `2px solid var(--brand-rose)` },
+        { bottom: -6, right: -6, borderBottom: `2px solid var(--brand-rose)`, borderRight: `2px solid var(--brand-rose)` },
+      ].map((s, i) => (
+        <div key={i} aria-hidden style={{ position: "absolute", width: 18, height: 18, ...s }} />
       ))}
 
-      {/* Card body */}
+      {/* Card body — .card-glass with rose-tint override to signal "today" */}
       <motion.div
         animate={{ y: [0, -4, 0] }}
         transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
+        className="card-glass"
         style={{
-          background: "rgba(183,110,121,0.08)",
-          border: `1.5px solid ${T.rose}66`,
-          borderRadius: 22,
-          backdropFilter: "blur(24px)",
-          WebkitBackdropFilter: "blur(24px)",
-          padding: T.s5,
-          boxShadow: `0 0 32px rgba(183,110,121,0.18), 4px 4px 0 rgba(42,42,42,0.22)`,
+          /* ActiveDayCard intentionally overrides .card-glass shadow + border to read as "today" */
+          borderColor: "rgba(183, 110, 121, 0.4)",
+          boxShadow: "0 0 32px rgba(183, 110, 121, 0.18)",
+          padding: 40,
         }}
       >
         {/* Header row */}
@@ -832,19 +544,15 @@ function ActiveDayCard({ step, questId }: { step: QuestStep; questId: string }) 
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            marginBottom: T.s3,
+            marginBottom: 24,
             flexWrap: "wrap",
-            gap: T.s2,
+            gap: 16,
           }}
         >
           <span
+            className="label-caps"
             style={{
-              fontFamily: T.fontMono,
-              fontSize: "0.7rem",
-              fontWeight: 700,
-              letterSpacing: "0.14em",
-              textTransform: "uppercase",
-              color: T.rose,
+              color: "var(--brand-rose)",
               display: "inline-flex",
               alignItems: "center",
               gap: 6,
@@ -854,10 +562,9 @@ function ActiveDayCard({ step, questId }: { step: QuestStep; questId: string }) 
             Today's Mission
           </span>
           <span
+            className="label-caps"
             style={{
-              fontFamily: T.fontMono,
-              fontSize: "0.7rem",
-              color: "rgba(227,217,202,0.7)",
+              color: "var(--text-muted)",
               display: "inline-flex",
               alignItems: "center",
               gap: 6,
@@ -868,14 +575,14 @@ function ActiveDayCard({ step, questId }: { step: QuestStep; questId: string }) 
           </span>
         </div>
 
-        {/* Title */}
+        {/* Title — clamp(2rem, ...) ensures Bebas ≥ 32px floor */}
         <h2
           style={{
-            fontFamily: T.fontDisplay,
-            fontSize: "clamp(1.6rem, 4vw, 2.2rem)",
+            fontFamily: "var(--font-display)",
+            fontSize: "clamp(2rem, 4vw, 2.2rem)",
             letterSpacing: "0.02em",
-            color: T.cream,
-            margin: `0 0 ${T.s2}px 0`,
+            color: "var(--text-main)",
+            margin: `0 0 16px 0`,
             lineHeight: 1.1,
           }}
         >
@@ -885,10 +592,10 @@ function ActiveDayCard({ step, questId }: { step: QuestStep; questId: string }) 
         {/* Description */}
         <p
           style={{
-            color: "rgba(227,217,202,0.78)",
+            color: "var(--text-muted)",
             fontSize: "0.95rem",
             lineHeight: 1.6,
-            margin: `0 0 ${T.s4}px 0`,
+            margin: `0 0 32px 0`,
           }}
         >
           {step.description}
@@ -900,17 +607,17 @@ function ActiveDayCard({ step, questId }: { step: QuestStep; questId: string }) 
           style={{
             display: "inline-flex",
             alignItems: "center",
-            gap: T.s1,
-            padding: `${T.s2}px ${T.s4}px`,
+            gap: 8,
+            padding: "16px 32px",
             borderRadius: 9999,
-            background: `linear-gradient(90deg, ${T.rose}, ${T.peach}, ${T.mint}, ${T.peach}, ${T.rose})`,
+            background: `linear-gradient(90deg, var(--brand-rose), var(--brand-rose-hover), var(--brand-mint), var(--brand-rose-hover), var(--brand-rose))`,
             backgroundSize: "300% 100%",
             animation: "questGlowSweep 4s ease infinite",
-            color: T.sageDark,
+            color: "var(--text-main)",
             fontWeight: 700,
             fontSize: "1rem",
             textDecoration: "none",
-            boxShadow: `0 4px 20px rgba(57,255,179,0.25), 4px 4px 0 rgba(42,42,42,0.2)`,
+            boxShadow: `0 4px 20px color-mix(in srgb, var(--brand-mint) 25%, transparent)`,
             minHeight: 48,
             transition: "transform 150ms ease",
           }}
@@ -934,33 +641,22 @@ function DiagnosisCard({ diagnosis }: { diagnosis: Diagnosis }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.5 }}
-      style={{
-        background: "rgba(227,217,202,0.04)",
-        border: "1.5px solid rgba(227,217,202,0.1)",
-        borderRadius: 20,
-        backdropFilter: "blur(16px)",
-        padding: T.s5,
-        marginBottom: T.s4,
-      }}
+      className="card-glass"
+      style={{ marginBottom: 32 }}
     >
       <div
         style={{
           display: "flex",
           alignItems: "center",
-          gap: T.s2,
-          marginBottom: T.s3,
+          gap: 16,
+          marginBottom: 24,
         }}
       >
-        <span style={{ fontSize: "1.3rem", display: "inline-flex", color: T.mint }} aria-hidden><Icon name="diagnosis" size={22} /></span>
-        <h3
-          style={{
-            fontFamily: T.fontDisplay,
-            fontSize: "1.3rem",
-            letterSpacing: "0.04em",
-            color: T.cream,
-            margin: 0,
-          }}
-        >
+        <span style={{ fontSize: "1.3rem", display: "inline-flex", color: "var(--brand-mint)" }} aria-hidden>
+          <Icon name="diagnosis" size={22} />
+        </span>
+        {/* h3 at label-caps style — Plus Jakarta 700, 0.1em tracking, uppercase. fontSize overrides class 12px → 16px */}
+        <h3 className="label-caps" style={{ fontSize: "1rem", color: "var(--text-main)", margin: 0 }}>
           Why This Quest?
         </h3>
       </div>
@@ -970,17 +666,17 @@ function DiagnosisCard({ diagnosis }: { diagnosis: Diagnosis }) {
         style={{
           fontSize: "0.95rem",
           lineHeight: 1.6,
-          color: "rgba(227,217,202,0.85)",
-          margin: `0 0 ${T.s3}px 0`,
+          color: "var(--text-muted)",
+          margin: `0 0 24px 0`,
         }}
       >
         You're at{" "}
-        <strong style={{ color: T.amber }}>
+        <strong style={{ color: "var(--brand-amber)" }}>
           AL{diagnosis.current_al} ({diagnosis.current_pct}%)
         </strong>{" "}
-        in <strong style={{ color: T.cream }}>{diagnosis.topic}</strong>.
+        in <strong style={{ color: "var(--text-main)" }}>{diagnosis.topic}</strong>.
         Mastering this unlocks{" "}
-        <strong style={{ color: T.mint }}>
+        <strong style={{ color: "var(--brand-mint)" }}>
           {diagnosis.unlocks.length} dependent topics
         </strong>
         .
@@ -993,7 +689,6 @@ function DiagnosisCard({ diagnosis }: { diagnosis: Diagnosis }) {
 }
 
 function DependencyTree({ topic, unlocks }: { topic: string; unlocks: string[] }) {
-  // Layout: root in center-left, unlocks fanning out to the right
   const W = 480
   const H = 160
   const rootX = 80
@@ -1001,15 +696,7 @@ function DependencyTree({ topic, unlocks }: { topic: string; unlocks: string[] }
   const fanRadius = 280
 
   return (
-    <div
-      style={{
-        background: "rgba(0,0,0,0.2)",
-        borderRadius: 12,
-        border: "1px solid rgba(227,217,202,0.08)",
-        padding: T.s2,
-        overflow: "auto",
-      }}
-    >
+    <div className="quest-dep-tree">
       <svg
         viewBox={`0 0 ${W} ${H}`}
         xmlns="http://www.w3.org/2000/svg"
@@ -1019,8 +706,8 @@ function DependencyTree({ topic, unlocks }: { topic: string; unlocks: string[] }
       >
         <defs>
           <linearGradient id="depLineGradient" x1="0" x2="1">
-            <stop offset="0%" stopColor={T.rose} stopOpacity="0.8" />
-            <stop offset="100%" stopColor={T.mint} stopOpacity="0.4" />
+            <stop offset="0%" stopColor="var(--brand-rose)" stopOpacity="0.8" />
+            <stop offset="100%" stopColor="var(--brand-mint)" stopOpacity="0.4" />
           </linearGradient>
           <filter id="depGlow">
             <feGaussianBlur stdDeviation="2" result="blur" />
@@ -1056,8 +743,8 @@ function DependencyTree({ topic, unlocks }: { topic: string; unlocks: string[] }
           cx={rootX}
           cy={rootY}
           r={28}
-          fill={`${T.rose}33`}
-          stroke={T.rose}
+          fill={`color-mix(in srgb, var(--brand-rose) 20%, transparent)`}
+          stroke="var(--brand-rose)"
           strokeWidth={2}
           filter="url(#depGlow)"
         />
@@ -1065,9 +752,9 @@ function DependencyTree({ topic, unlocks }: { topic: string; unlocks: string[] }
           x={rootX}
           y={rootY + 4}
           textAnchor="middle"
-          fill={T.cream}
+          fill="var(--text-main)"
           fontSize="11"
-          fontFamily={T.fontBody}
+          fontFamily="var(--font-body)"
           fontWeight="700"
         >
           {topic}
@@ -1084,8 +771,8 @@ function DependencyTree({ topic, unlocks }: { topic: string; unlocks: string[] }
                 cx={x}
                 cy={y}
                 r={20}
-                fill="rgba(57,255,179,0.08)"
-                stroke={T.mint}
+                fill={`color-mix(in srgb, var(--brand-mint) 8%, transparent)`}
+                stroke="var(--brand-mint)"
                 strokeOpacity="0.5"
                 strokeWidth={1.5}
               />
@@ -1093,9 +780,9 @@ function DependencyTree({ topic, unlocks }: { topic: string; unlocks: string[] }
                 x={x}
                 y={y + 3}
                 textAnchor="middle"
-                fill="rgba(227,217,202,0.85)"
+                fill="var(--text-muted)"
                 fontSize="9"
-                fontFamily={T.fontBody}
+                fontFamily="var(--font-body)"
                 fontWeight="600"
               >
                 {name}
@@ -1129,41 +816,38 @@ function DayAccordion({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.6 }}
-      style={{
-        background: "rgba(227,217,202,0.03)",
-        border: "1.5px solid rgba(227,217,202,0.08)",
-        borderRadius: 20,
-        marginBottom: T.s4,
-        overflow: "hidden",
-      }}
+      className="card-glass"
+      style={{ marginBottom: 32, padding: 0, overflow: "hidden" }}
     >
       <button
         onClick={() => setOpen(!open)}
         style={{
           width: "100%",
-          padding: T.s3,
+          padding: 24,
           background: "transparent",
           border: "none",
-          color: T.cream,
-          fontFamily: T.fontBody,
+          color: "var(--text-main)",
+          fontFamily: "var(--font-body)",
           fontSize: "0.95rem",
           fontWeight: 600,
           cursor: "pointer",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          gap: T.s2,
+          gap: 16,
         }}
         aria-expanded={open}
       >
-        <span style={{ display: "inline-flex", alignItems: "center", gap: T.s2 }}>
-          <span style={{ display: "inline-flex", color: T.cream }} aria-hidden><Icon name="roadmap" size={18} /></span>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 16 }}>
+          <span style={{ display: "inline-flex", color: "var(--text-main)" }} aria-hidden>
+            <Icon name="roadmap" size={18} />
+          </span>
           <span>What's coming next ({upcomingSteps.length})</span>
         </span>
         <motion.span
           animate={{ rotate: open ? 180 : 0 }}
           transition={{ duration: 0.2 }}
-          style={{ display: "inline-flex", color: "rgba(227,217,202,0.6)" }}
+          style={{ display: "inline-flex", color: "var(--text-muted)" }}
           aria-hidden
         >
           <Icon name="chevron" size={16} />
@@ -1181,9 +865,9 @@ function DayAccordion({
           >
             <div
               style={{
-                padding: `0 ${T.s3}px ${T.s3}px ${T.s3}px`,
-                borderTop: "1px solid rgba(227,217,202,0.08)",
-                paddingTop: T.s3,
+                padding: `0 24px 24px 24px`,
+                borderTop: "1px solid var(--border-light)",
+                paddingTop: 24,
               }}
             >
               {upcomingSteps.map((step) => (
@@ -1192,9 +876,9 @@ function DayAccordion({
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: T.s2,
-                    padding: `${T.s2}px 0`,
-                    borderBottom: "1px solid rgba(227,217,202,0.06)",
+                    gap: 16,
+                    padding: "16px 0",
+                    borderBottom: "1px solid var(--border-light)",
                   }}
                 >
                   <span
@@ -1202,26 +886,26 @@ function DayAccordion({
                       width: 32,
                       height: 32,
                       borderRadius: "50%",
-                      background: "rgba(227,217,202,0.06)",
-                      border: "1.5px solid rgba(227,217,202,0.2)",
+                      background: "var(--surface-container)",
+                      border: "1.5px solid var(--border-light)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       fontSize: "0.75rem",
                       flexShrink: 0,
-                      color: "rgba(227,217,202,0.6)",
+                      color: "var(--text-muted)",
                     }}
                   >
-                  <span style={{ color: "rgba(227,217,202,0.6)" }}><Icon name="lock" size={14} /></span>
+                    <Icon name="lock" size={14} />
                   </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 600, fontSize: "0.9rem" }}>
+                    <div style={{ fontWeight: 600, fontSize: "0.9rem", color: "var(--text-main)" }}>
                       Day {step.day}: {step.title}
                     </div>
                     <div
                       style={{
                         fontSize: "0.75rem",
-                        color: "rgba(227,217,202,0.55)",
+                        color: "var(--text-muted)",
                         marginTop: 2,
                         display: "inline-flex",
                         alignItems: "center",
@@ -1248,36 +932,16 @@ function DayAccordion({
 
 // ═══════════════════════════════════════════════════════════════════
 // ABANDON BUTTON — subtle, requires confirmation (Phase 3 wires real action)
+// Hover handled entirely by .quest-abandon-btn CSS class (:hover/:focus-visible).
 // ═══════════════════════════════════════════════════════════════════
 
 function AbandonButton() {
   const [confirming, setConfirming] = useState(false)
 
   return (
-    <div style={{ textAlign: "center", marginTop: T.s5 }}>
+    <div style={{ textAlign: "center", marginTop: 40 }}>
       {!confirming ? (
-        <button
-          onClick={() => setConfirming(true)}
-          style={{
-            background: "transparent",
-            border: "1px solid rgba(227,217,202,0.15)",
-            color: "rgba(227,217,202,0.5)",
-            padding: `${T.s1}px ${T.s3}px`,
-            borderRadius: 9999,
-            fontSize: "0.8rem",
-            fontFamily: T.fontBody,
-            cursor: "pointer",
-            transition: "all 0.2s ease",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = "rgba(227,217,202,0.3)"
-            e.currentTarget.style.color = "rgba(227,217,202,0.7)"
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = "rgba(227,217,202,0.15)"
-            e.currentTarget.style.color = "rgba(227,217,202,0.5)"
-          }}
-        >
+        <button onClick={() => setConfirming(true)} className="quest-abandon-btn">
           <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
             <Icon name="diagnosis" size={14} />
             Abandon Quest
@@ -1290,22 +954,23 @@ function AbandonButton() {
           style={{
             display: "inline-flex",
             alignItems: "center",
-            gap: T.s2,
-            padding: `${T.s2}px ${T.s3}px`,
-            background: "rgba(220,38,38,0.1)",
-            border: "1px solid rgba(220,38,38,0.3)",
+            gap: 16,
+            padding: "16px 24px",
+            // no --brand-error-tint token yet (documented exception per design-guardian rule)
+            background: "rgba(220, 38, 38, 0.08)",
+            border: "1px solid rgba(220, 38, 38, 0.3)",
             borderRadius: 12,
             fontSize: "0.85rem",
           }}
         >
-          <span style={{ color: "rgba(227,217,202,0.85)" }}>
+          <span style={{ color: "var(--text-muted)" }}>
             Abandon this quest?
           </span>
           <button
             onClick={() => alert("Phase 3 will wire real abandon flow")}
             style={{
-              background: "rgba(220,38,38,0.7)",
-              color: "white",
+              background: "var(--error)",
+              color: "var(--on-error)",
               border: "none",
               padding: "4px 12px",
               borderRadius: 6,
@@ -1320,8 +985,8 @@ function AbandonButton() {
             onClick={() => setConfirming(false)}
             style={{
               background: "transparent",
-              color: "rgba(227,217,202,0.7)",
-              border: "1px solid rgba(227,217,202,0.2)",
+              color: "var(--text-muted)",
+              border: "1px solid var(--border-light)",
               padding: "4px 12px",
               borderRadius: 6,
               fontSize: "0.8rem",
