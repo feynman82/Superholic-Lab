@@ -30,7 +30,7 @@
  *   - Add EmptyState + CompleteState
  */
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import Link from "next/link"
 import { Icon } from "../../components/icons"
@@ -146,6 +146,18 @@ export function QuestClient({ quest, student, hud, diagnosis }: QuestClientProps
       window.history.replaceState({}, "", url.pathname + (url.search || ""))
     }
   }
+
+  // Show the Quest nav item and mark it active — waits for the web component to be defined
+  useEffect(() => {
+    customElements.whenDefined("global-bottom-nav").then(() => {
+      const nav = document.querySelector("global-bottom-nav") as HTMLElement & {
+        setQuestActive?: (v: boolean) => void
+        setActive?: (slug: string) => void
+      }
+      nav?.setQuestActive?.(true)
+      nav?.setActive?.("quest")
+    })
+  }, [])
 
   return (
     <>
@@ -593,31 +605,33 @@ function ActiveDayCard({ step, questId }: { step: QuestStep; questId: string }) 
           {step.description}
         </p>
 
-        {/* CTA */}
-        <Link
-          href={ctaUrl}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 8,
-            padding: "16px 32px",
-            borderRadius: 9999,
-            background: `linear-gradient(90deg, var(--brand-rose), var(--brand-rose-hover), var(--brand-mint), var(--brand-rose-hover), var(--brand-rose))`,
-            backgroundSize: "300% 100%",
-            animation: "questGlowSweep 4s ease infinite",
-            color: "var(--text-main)",
-            fontWeight: 700,
-            fontSize: "1rem",
-            textDecoration: "none",
-            boxShadow: `0 4px 20px color-mix(in srgb, var(--brand-mint) 25%, transparent)`,
-            minHeight: 48,
-            transition: "transform 150ms ease",
-          }}
-        >
-          <Icon name="play" size={18} />
-          <span>Start Day {step.day}</span>
-          <span style={{ fontSize: "1.1rem", marginLeft: 4 }}>→</span>
-        </Link>
+        {/* CTA — centered in the card */}
+        <div style={{ textAlign: "center" }}>
+          <Link
+            href={ctaUrl}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "16px 32px",
+              borderRadius: 9999,
+              background: `linear-gradient(90deg, var(--brand-rose), var(--brand-rose-hover), var(--brand-mint), var(--brand-rose-hover), var(--brand-rose))`,
+              backgroundSize: "300% 100%",
+              animation: "questGlowSweep 4s ease infinite",
+              color: "var(--text-main)",
+              fontWeight: 700,
+              fontSize: "1rem",
+              textDecoration: "none",
+              boxShadow: `0 4px 20px color-mix(in srgb, var(--brand-mint) 25%, transparent)`,
+              minHeight: 48,
+              transition: "transform 150ms ease",
+            }}
+          >
+            <Icon name="play" size={18} />
+            <span>Start Day {step.day}</span>
+            <span style={{ fontSize: "1.1rem", marginLeft: 4 }}>→</span>
+          </Link>
+        </div>
       </motion.div>
     </motion.div>
   )
@@ -636,22 +650,13 @@ function DiagnosisCard({ diagnosis }: { diagnosis: Diagnosis }) {
       className="card-glass"
       style={{ marginBottom: 32 }}
     >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 16,
-          marginBottom: 24,
-        }}
+      <h3
+        className="label-caps"
+        style={{ color: "var(--brand-mint)", display: "inline-flex", alignItems: "center", gap: 6, marginBottom: 24 }}
       >
-        <span style={{ fontSize: "1.3rem", display: "inline-flex", color: "var(--brand-mint)" }} aria-hidden>
-          <Icon name="diagnosis" size={22} />
-        </span>
-        {/* h3 at label-caps style — Plus Jakarta 700, 0.1em tracking, uppercase. fontSize overrides class 12px → 16px */}
-        <h3 className="label-caps" style={{ fontSize: "1rem", color: "var(--text-main)", margin: 0 }}>
-          Why This Quest?
-        </h3>
-      </div>
+        <Icon name="diagnosis" size={14} />
+        Why This Quest?
+      </h3>
 
       {/* Diagnosis sentence */}
       <p
@@ -681,108 +686,54 @@ function DiagnosisCard({ diagnosis }: { diagnosis: Diagnosis }) {
 }
 
 function DependencyTree({ topic, unlocks }: { topic: string; unlocks: string[] }) {
-  const W = 480
-  const H = 160
-  const rootX = 80
-  const rootY = H / 2
-  const fanRadius = 280
-
   return (
-    <div className="quest-dep-tree">
-      <svg
-        viewBox={`0 0 ${W} ${H}`}
-        xmlns="http://www.w3.org/2000/svg"
-        style={{ width: "100%", height: "auto", display: "block" }}
-        role="img"
-        aria-label={`Dependency tree showing ${topic} unlocking ${unlocks.join(", ")}`}
+    <div
+      className="quest-dep-tree"
+      role="img"
+      aria-label={`${topic} unlocks ${unlocks.join(", ")}`}
+      style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}
+    >
+      {/* Root topic pill */}
+      <span
+        style={{
+          display: "inline-block",
+          padding: "5px 14px",
+          borderRadius: 9999,
+          background: "color-mix(in srgb, var(--brand-rose) 14%, transparent)",
+          border: "1.5px solid var(--brand-rose)",
+          color: "var(--brand-rose)",
+          fontSize: "0.8rem",
+          fontWeight: 700,
+          letterSpacing: "0.02em",
+          whiteSpace: "nowrap",
+        }}
       >
-        <defs>
-          <linearGradient id="depLineGradient" x1="0" x2="1">
-            <stop offset="0%" stopColor="var(--brand-rose)" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="var(--brand-mint)" stopOpacity="0.4" />
-          </linearGradient>
-          <filter id="depGlow">
-            <feGaussianBlur stdDeviation="2" result="blur" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </defs>
+        {topic}
+      </span>
 
-        {/* Lines from root to each unlock */}
-        {unlocks.map((_, i) => {
-          const angle = ((i - (unlocks.length - 1) / 2) / unlocks.length) * 1.4
-          const x = rootX + Math.cos(angle) * fanRadius
-          const y = rootY + Math.sin(angle) * fanRadius * 0.4
-          return (
-            <line
-              key={`line-${i}`}
-              x1={rootX}
-              y1={rootY}
-              x2={x}
-              y2={y}
-              stroke="url(#depLineGradient)"
-              strokeWidth={1.5}
-              strokeDasharray="4 4"
-              strokeLinecap="round"
-            />
-          )
-        })}
+      <span aria-hidden style={{ color: "var(--brand-mint)", fontWeight: 700 }}>→</span>
 
-        {/* Root node (current weakness) */}
-        <circle
-          cx={rootX}
-          cy={rootY}
-          r={28}
-          fill={`color-mix(in srgb, var(--brand-rose) 20%, transparent)`}
-          stroke="var(--brand-rose)"
-          strokeWidth={2}
-          filter="url(#depGlow)"
-        />
-        <text
-          x={rootX}
-          y={rootY + 4}
-          textAnchor="middle"
-          fill="var(--text-main)"
-          fontSize="11"
-          fontFamily="var(--font-body)"
-          fontWeight="700"
-        >
-          {topic}
-        </text>
-
-        {/* Unlock nodes */}
-        {unlocks.map((name, i) => {
-          const angle = ((i - (unlocks.length - 1) / 2) / unlocks.length) * 1.4
-          const x = rootX + Math.cos(angle) * fanRadius
-          const y = rootY + Math.sin(angle) * fanRadius * 0.4
-          return (
-            <g key={`node-${i}`}>
-              <circle
-                cx={x}
-                cy={y}
-                r={20}
-                fill={`color-mix(in srgb, var(--brand-mint) 8%, transparent)`}
-                stroke="var(--brand-mint)"
-                strokeOpacity="0.5"
-                strokeWidth={1.5}
-              />
-              <text
-                x={x}
-                y={y + 3}
-                textAnchor="middle"
-                fill="var(--text-muted)"
-                fontSize="9"
-                fontFamily="var(--font-body)"
-                fontWeight="600"
-              >
-                {name}
-              </text>
-            </g>
-          )
-        })}
-      </svg>
+      {/* Unlock pills */}
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+        {unlocks.map((name) => (
+          <span
+            key={name}
+            style={{
+              display: "inline-block",
+              padding: "4px 12px",
+              borderRadius: 9999,
+              background: "color-mix(in srgb, var(--brand-mint) 8%, transparent)",
+              border: "1.5px solid color-mix(in srgb, var(--brand-mint) 40%, transparent)",
+              color: "var(--text-muted)",
+              fontSize: "0.75rem",
+              fontWeight: 600,
+              whiteSpace: "nowrap",
+            }}
+          >
+            {name}
+          </span>
+        ))}
+      </div>
     </div>
   )
 }
@@ -830,11 +781,9 @@ function DayAccordion({
         }}
         aria-expanded={open}
       >
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 16 }}>
-          <span style={{ display: "inline-flex", color: "var(--text-main)" }} aria-hidden>
-            <Icon name="roadmap" size={18} />
-          </span>
-          <span>What's coming next ({upcomingSteps.length})</span>
+        <span className="label-caps" style={{ color: "var(--text-main)", display: "inline-flex", alignItems: "center", gap: 6 }}>
+          <Icon name="roadmap" size={14} />
+          What's coming next ({upcomingSteps.length})
         </span>
         <motion.span
           animate={{ rotate: open ? 180 : 0 }}

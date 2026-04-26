@@ -3570,6 +3570,7 @@ ul.rose-list li::before {
 }
 .quest-timeline-node-wrapper {
   position: relative;
+  z-index: 1; /* sits above the absolutely-positioned connector (z-index:0) */
   margin-bottom: 8px;
 }
 .quest-pulse-ring {
