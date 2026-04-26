@@ -173,7 +173,8 @@ window.initQuizEngine = function () {
     studentId: new URLSearchParams(window.location.search).get('student'),
     dbSubject: '',
     dbLevel: '',
-    dbTopic: ''
+    dbTopic: '',
+    fromQuest: null
   };
 
   const app = document.getElementById('app');
@@ -1086,10 +1087,19 @@ window.initQuizEngine = function () {
     }
 
     if (state.currentIndex === state.questions.length - 1) {
-      // 🚀 MASTERCLASS RESTORED: Trigger Database Saving!
       if (typeof window.saveQuizResult === 'function') {
-        window.saveQuizResult().then(() => {
-          state.phase = 'DONE'; render();
+        window.saveQuizResult().then(async () => {
+          if (state.fromQuest) {
+            await handleQuestStepComplete();
+          } else {
+            state.phase = 'DONE';
+            render();
+            const pctScore = state.totalPossibleScore > 0
+              ? Math.round((state.score / state.totalPossibleScore) * 100) : 0;
+            if (pctScore <= 70 && state.dbTopic) {
+              showQuestSuggestionModal(pctScore);
+            }
+          }
         });
       } else {
         state.phase = 'DONE'; render();
@@ -1536,6 +1546,14 @@ window.initQuizEngine = function () {
 
       state.currentType = type;
 
+      const fromQuestId = params.get('from_quest');
+      const fromQuestStepRaw = params.get('step');
+      if (fromQuestId && fromQuestStepRaw !== null) {
+        state.fromQuest = { questId: fromQuestId, stepIndex: parseInt(fromQuestStepRaw, 10) };
+        injectQuestBanner(fromQuestId, fromQuestStepRaw, topic, subject);
+        disableSubjectSwitcher();
+      }
+
       if (studentId) {
         const isJunior = levelSlug.includes('primary-1') || levelSlug.includes('primary-2') || levelSlug === 'p1' || levelSlug === 'p2';
 
@@ -1584,6 +1602,11 @@ window.initQuizEngine = function () {
       state.dbSubject = dbSubject;
       state.dbLevel = dbLevel;
       state.dbTopic = dbTopic;
+
+      if (state.fromQuest) {
+        await loadQuestBatch();
+        return;
+      }
 
       let query = db.from('question_bank').select('*').eq('subject', dbSubject);
       if (dbLevel) query = query.eq('level', dbLevel);
@@ -1674,6 +1697,271 @@ window.initQuizEngine = function () {
       state.phase = 'QUIZ';
       render();
     }
+  }
+
+  // ── QUEST INTEGRATION ──
+
+  async function loadQuestBatch() {
+    try {
+      const sb = await window.getSupabase();
+      const { data: { session } } = await sb.auth.getSession();
+      const token = session?.access_token;
+
+      const res = await fetch('/api/quests/quiz-batch', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          quest_id: state.fromQuest.questId,
+          step_index: state.fromQuest.stepIndex
+        })
+      });
+
+      if (!res.ok) throw new Error('Failed to load quest questions');
+      const data = await res.json();
+      const questions = data.questions || [];
+
+      if (questions.length === 0) {
+        state.questions = [];
+        state.phase = 'QUIZ';
+        render();
+        return;
+      }
+
+      state.questions = questions;
+      state.totalPossibleScore = questions.reduce((sum, q) => {
+        if (q.type === 'cloze') return sum + (q.blanks?.length || 1);
+        if (q.type === 'editing') return sum + (q.blanks?.length || 1);
+        if (q.type === 'word_problem' || q.type === 'comprehension' || q.type === 'open_ended') return sum + (q.marks || 1);
+        return sum + 1;
+      }, 0);
+
+      state.quizStartTime = Date.now();
+      state.phase = 'QUIZ';
+      render();
+    } catch (err) {
+      console.error('Quest batch load failed:', err);
+      state.questions = [];
+      state.phase = 'QUIZ';
+      render();
+    }
+  }
+
+  async function handleQuestStepComplete() {
+    const pctScore = state.totalPossibleScore > 0
+      ? Math.round((state.score / state.totalPossibleScore) * 100) : 0;
+
+    const wrongAttempts = state.questions
+      .filter(q => {
+        const result = state.resultsObj[q.id];
+        return result && !result.isCorrect;
+      })
+      .map(q => {
+        const result = state.resultsObj[q.id];
+        let explanationForWrong = '';
+        try {
+          const wrongExpls = typeof q.wrong_explanations === 'string'
+            ? JSON.parse(q.wrong_explanations) : (q.wrong_explanations || {});
+          explanationForWrong = wrongExpls[result.studentAns] || '';
+        } catch (e) { }
+        return {
+          question_id: q.id,
+          question_text: String(q.question_text || '').slice(0, 300),
+          student_answer: String(result.studentAns || ''),
+          correct_answer: String(result.correctAns || q.correct_answer || ''),
+          topic: q.topic || state.dbTopic || '',
+          sub_topic: q.sub_topic || '',
+          explanation_for_wrong: explanationForWrong
+        };
+      });
+
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--surface,#fff);';
+    overlay.innerHTML = `
+      <div style="text-align:center;padding:40px 24px;">
+        <div style="font-family:var(--font-display,sans-serif);font-size:clamp(2rem,6vw,3rem);color:var(--brand-rose,#B76E79);margin-bottom:16px;letter-spacing:0.04em;">
+          Day ${state.fromQuest.stepIndex + 1} Complete!
+        </div>
+        <p style="color:var(--text-muted,#666);font-size:0.95rem;margin:0;">Returning to your quest…</p>
+      </div>`;
+    document.body.appendChild(overlay);
+
+    try {
+      const sb = await window.getSupabase();
+      const { data: { session } } = await sb.auth.getSession();
+      const token = session?.access_token;
+
+      const res = await fetch(`/api/quests/${state.fromQuest.questId}/advance-step`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          step_index: state.fromQuest.stepIndex,
+          trigger: 'quiz',
+          score: pctScore,
+          metadata: { wrong_attempts: wrongAttempts }
+        })
+      });
+
+      const celebData = await res.json();
+      if (res.ok) {
+        try {
+          sessionStorage.setItem(
+            `quest_celebration_${state.fromQuest.questId}`,
+            JSON.stringify(celebData)
+          );
+        } catch (e) { }
+      } else {
+        console.error('advance-step failed:', celebData.error);
+      }
+    } catch (err) {
+      console.error('Quest advance-step error:', err);
+    }
+
+    setTimeout(() => {
+      window.location.href = `/quest?id=${state.fromQuest.questId}&completed=${state.fromQuest.stepIndex}&trigger=quiz&score=${pctScore}`;
+    }, 2000);
+  }
+
+  function injectQuestBanner(questId, stepRaw, topicSlug, subjectSlug) {
+    const stepIndex = parseInt(stepRaw, 10) || 0;
+    const dayNum = stepIndex + 1;
+    const topicDisplay = topicSlug
+      ? decodeURIComponent(topicSlug).replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+      : 'Quest';
+
+    const banner = document.createElement('div');
+    banner.id = 'quest-session-banner';
+    banner.setAttribute('aria-label', `Plan Quest Day ${dayNum} session`);
+    banner.style.cssText = [
+      'display:flex',
+      'align-items:center',
+      'gap:8px',
+      'padding:10px 16px',
+      'background:color-mix(in srgb, var(--brand-rose, #B76E79) 10%, var(--surface, #fff))',
+      'border-bottom:1px solid color-mix(in srgb, var(--brand-rose, #B76E79) 20%, transparent)',
+      'font-size:0.8rem',
+      'font-weight:600',
+      'color:var(--brand-rose, #B76E79)',
+      'letter-spacing:0.08em',
+      'text-transform:uppercase',
+      'position:sticky',
+      'top:0',
+      'z-index:200'
+    ].join(';');
+    banner.textContent = `Plan Quest · Day ${dayNum} · ${topicDisplay}`;
+    document.body.insertBefore(banner, document.body.firstChild);
+  }
+
+  function disableSubjectSwitcher() {
+    const selectors = ['#subjectSelect', '#topicSelect', '.quiz-subject-switcher', '.quiz-topic-switcher'];
+    selectors.forEach(sel => {
+      const el = document.querySelector(sel);
+      if (el) {
+        el.disabled = true;
+        el.style.opacity = '0.5';
+        el.style.pointerEvents = 'none';
+      }
+    });
+  }
+
+  function showQuestSuggestionModal(pctScore) {
+    const topic = state.dbTopic || 'this topic';
+    const subject = (state.dbSubject || 'Mathematics').toLowerCase()
+      .replace('english language', 'english');
+
+    async function checkAndOffer() {
+      let slotFree = true;
+      try {
+        const sb = await window.getSupabase();
+        const { data: { session } } = await sb.auth.getSession();
+        const token = session?.access_token;
+        if (state.studentId && token) {
+          const r = await fetch(`/api/quests?student_id=${state.studentId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          const d = await r.json();
+          const activeSubjects = (d.quests || []).map(q => q.subject);
+          slotFree = !activeSubjects.includes(subject);
+        }
+      } catch (e) { slotFree = true; }
+
+      if (!slotFree) return;
+
+      const modal = document.createElement('div');
+      modal.id = 'quest-suggest-modal';
+      modal.style.cssText = 'position:fixed;inset:0;z-index:9998;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,0.6);backdrop-filter:blur(6px);';
+      modal.innerHTML = `
+        <div style="max-width:440px;width:100%;padding:32px 24px;background:var(--surface,#fff);border:1.5px solid var(--border-light);border-radius:16px;">
+          <div style="text-align:center;margin-bottom:24px;">
+            <div style="font-family:var(--font-display,sans-serif);font-size:clamp(1.5rem,4vw,2rem);color:var(--text-main);letter-spacing:0.04em;margin-bottom:8px;">
+              ${pctScore}% on ${topic}
+            </div>
+            <p style="font-size:0.875rem;color:var(--text-muted);line-height:1.5;margin:0;">
+              Want a 3-day Plan Quest to master this topic?
+              Miss Wena will guide you through it step by step.
+            </p>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <button id="quest-suggest-yes" style="padding:14px;border-radius:9999px;background:var(--brand-rose,#B76E79);color:var(--cream,#e3d9ca);border:none;font-weight:700;font-size:0.95rem;cursor:pointer;">
+              Yes, start my Quest
+            </button>
+            <button id="quest-suggest-no" style="padding:14px;border-radius:9999px;background:transparent;color:var(--text-muted);border:1.5px solid var(--border-light);font-weight:600;font-size:0.875rem;cursor:pointer;">
+              Not now
+            </button>
+          </div>
+        </div>`;
+      document.body.appendChild(modal);
+
+      document.getElementById('quest-suggest-no').addEventListener('click', () => modal.remove());
+
+      document.getElementById('quest-suggest-yes').addEventListener('click', async () => {
+        const yesBtn = document.getElementById('quest-suggest-yes');
+        yesBtn.disabled = true;
+        yesBtn.textContent = 'Generating…';
+        try {
+          const sb = await window.getSupabase();
+          const { data: { session } } = await sb.auth.getSession();
+          const token = session?.access_token;
+
+          const res = await fetch('/api/generate-quest', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              student_id: state.studentId,
+              subject: subject,
+              level: state.dbLevel || '',
+              topic: state.dbTopic || '',
+              trigger_score: pctScore
+            })
+          });
+
+          const data = await res.json();
+          if (res.ok && data.quest?.id) {
+            window.location.href = `/quest?id=${data.quest.id}`;
+          } else if (res.status === 409) {
+            modal.remove();
+            alert(`You already have an active ${subject} quest. Check your Quest page to continue it.`);
+          } else {
+            throw new Error(data.error || 'Failed to generate quest');
+          }
+        } catch (err) {
+          console.error('Quest generation failed:', err);
+          const yb = document.getElementById('quest-suggest-yes');
+          if (yb) { yb.disabled = false; yb.textContent = 'Yes, start my Quest'; }
+          alert('Could not create quest: ' + err.message);
+        }
+      });
+    }
+
+    checkAndOffer();
   }
 
   setTimeout(init, 100);

@@ -17,6 +17,12 @@
   const BATCH_DELAY_MS = 1500;
   let _sessionTracked = false; // Prevents duplicate Tutor Session analytics events
 
+  // Quest mode state
+  let fromQuestId = null;
+  let fromQuestStep = null;
+  let questMessageCount = 0;
+  let markCompleteBtn = null;
+
   // Canvas State
   let isDrawMode = false;
   let ctx = null;
@@ -52,6 +58,19 @@
 
     // Check student usage, fetch avatar, & check Remedial intent FIRST
     await checkStudentLimits();
+
+    // Quest mode detection
+    const questParams = new URLSearchParams(window.location.search);
+    const qFromQuest = questParams.get('from_quest');
+    const qStep = questParams.get('step');
+    if (qFromQuest && qStep !== null) {
+      fromQuestId = qFromQuest;
+      fromQuestStep = parseInt(qStep, 10);
+      currentSubjectContext = questParams.get('subject') || currentSubjectContext;
+      currentTopicContext = questParams.get('topic') || currentTopicContext;
+      injectQuestTutorBanner(fromQuestStep, currentTopicContext);
+      insertMarkCompleteBtn();
+    }
 
     // Event Listeners
     sendBtn.addEventListener('click', handleSend);
@@ -224,7 +243,10 @@
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: history }),
+        body: JSON.stringify({
+          messages: history,
+          ...(fromQuestId && { from_quest: fromQuestId })
+        }),
       });
 
       const data = await res.json();
@@ -263,7 +285,17 @@
           }
         }
 
-        if (saveBtn && history.filter(m => m.role === 'user').length >= 1) {
+        // Quest mode: track message count and update mark-complete button
+        if (fromQuestId && data.quest_message_count !== undefined) {
+          questMessageCount = data.quest_message_count;
+          updateMarkCompleteBtn();
+        } else if (fromQuestId) {
+          // Server may not return count yet; count locally from history
+          questMessageCount = history.filter(m => m.role === 'user').length;
+          updateMarkCompleteBtn();
+        }
+
+        if (!fromQuestId && saveBtn && history.filter(m => m.role === 'user').length >= 1) {
           saveBtn.classList.remove('hidden');
         }
       }
@@ -502,6 +534,145 @@
     return false;
   }
 
+
+  // ── QUEST INTEGRATION ──
+
+  function injectQuestTutorBanner(stepIndex, topicSlug) {
+    const dayNum = stepIndex + 1;
+    const topicDisplay = topicSlug
+      ? decodeURIComponent(topicSlug).replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+      : 'Quest';
+
+    const banner = document.createElement('div');
+    banner.id = 'quest-tutor-banner';
+    banner.setAttribute('aria-label', `Plan Quest Day ${dayNum} tutor session`);
+    banner.style.cssText = [
+      'display:flex',
+      'align-items:center',
+      'gap:8px',
+      'padding:10px 16px',
+      'background:color-mix(in srgb, var(--brand-rose, #B76E79) 10%, var(--surface, #fff))',
+      'border-bottom:1px solid color-mix(in srgb, var(--brand-rose, #B76E79) 20%, transparent)',
+      'font-size:0.8rem',
+      'font-weight:600',
+      'color:var(--brand-rose, #B76E79)',
+      'letter-spacing:0.08em',
+      'text-transform:uppercase',
+      'position:sticky',
+      'top:0',
+      'z-index:200'
+    ].join(';');
+    banner.textContent = `Plan Quest · Day ${dayNum} · ${topicDisplay} — Talk through what tripped you up yesterday`;
+    document.body.insertBefore(banner, document.body.firstChild);
+  }
+
+  function insertMarkCompleteBtn() {
+    if (!saveBtn) return;
+    saveBtn.style.display = 'none';
+
+    markCompleteBtn = document.createElement('button');
+    markCompleteBtn.id = 'quest-mark-complete-btn';
+    markCompleteBtn.textContent = 'Mark Day 2 Complete';
+    markCompleteBtn.disabled = true;
+    markCompleteBtn.title = 'Exchange at least 8 messages with Miss Wena to unlock this';
+    markCompleteBtn.style.cssText = [
+      'padding:10px 20px',
+      'border-radius:9999px',
+      'background:var(--surface-container, #f0f0f0)',
+      'color:var(--text-muted)',
+      'border:1.5px solid var(--border-light)',
+      'font-weight:700',
+      'font-size:0.875rem',
+      'cursor:not-allowed',
+      'opacity:0.6',
+      'transition:all 200ms ease'
+    ].join(';');
+    markCompleteBtn.addEventListener('click', handleDay2Complete);
+    saveBtn.parentNode.insertBefore(markCompleteBtn, saveBtn.nextSibling);
+  }
+
+  function updateMarkCompleteBtn() {
+    if (!markCompleteBtn) return;
+    if (questMessageCount >= 8) {
+      markCompleteBtn.disabled = false;
+      markCompleteBtn.style.background = 'var(--brand-rose, #B76E79)';
+      markCompleteBtn.style.color = 'var(--cream, #e3d9ca)';
+      markCompleteBtn.style.borderColor = 'var(--brand-rose, #B76E79)';
+      markCompleteBtn.style.cursor = 'pointer';
+      markCompleteBtn.style.opacity = '1';
+      markCompleteBtn.title = 'Mark your Day 2 session complete and return to your quest';
+    }
+  }
+
+  async function handleDay2Complete() {
+    if (!fromQuestId || questMessageCount < 8 || !markCompleteBtn) return;
+    markCompleteBtn.disabled = true;
+    markCompleteBtn.textContent = 'Saving…';
+
+    try {
+      const sb = await getSupabase();
+      const { data: { session } } = await sb.auth.getSession();
+      const token = session?.access_token;
+
+      // Auto-save Study Note (non-blocking — proceed even if this fails)
+      const cleanMessages = history
+        .filter(m => (m.role === 'user' || m.role === 'assistant') && m.content)
+        .map(m => ({ role: m.role, content: m.content }));
+
+      if (cleanMessages.length >= 2) {
+        try {
+          await fetch('/api/summarize-chat', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              student_id: currentStudentId,
+              subject: currentSubjectContext,
+              topic: currentTopicContext,
+              messages: cleanMessages,
+              quest_id: fromQuestId
+            })
+          });
+        } catch (e) {
+          console.error('Summarize chat failed (non-blocking):', e);
+        }
+      }
+
+      // Advance quest step
+      const res = await fetch(`/api/quests/${fromQuestId}/advance-step`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          step_index: fromQuestStep,
+          trigger: 'tutor',
+          score: null
+        })
+      });
+
+      const celebData = await res.json();
+      if (res.ok) {
+        try {
+          sessionStorage.setItem(
+            `quest_celebration_${fromQuestId}`,
+            JSON.stringify(celebData)
+          );
+        } catch (e) { }
+        window.location.href = `/quest?id=${fromQuestId}&completed=${fromQuestStep}&trigger=tutor`;
+      } else {
+        throw new Error(celebData.error || 'Failed to complete quest step');
+      }
+    } catch (err) {
+      console.error('Day 2 complete error:', err);
+      alert('Could not mark Day 2 complete: ' + err.message);
+      markCompleteBtn.disabled = false;
+      markCompleteBtn.textContent = 'Mark Day 2 Complete';
+    }
+  }
 
   // ── STUDY NOTES ENGINE: Generate & Save ──
   // Calls /api/summarize-chat (handled by lib/api/handlers.js handleSummarizeChat).
