@@ -71,6 +71,12 @@ async function init() {
     // Persist the truth
     localStorage.setItem('shl_active_student_id', student.id);
     // ------------------------------
+    window.currentStudentId = student.id;
+
+    // Render HUD strip — non-blocking, fails silently
+    if (window.renderHUDStrip) {
+      window.renderHUDStrip('progress-hud-strip', { studentId: student.id }).catch(() => {});
+    }
 
     // --- JUNIOR GUARDRAIL: Hide Exam Tab for P1 & P2 ---
     const isJunior = student.level.toLowerCase().includes('primary 1') || student.level.toLowerCase().includes('primary 2');
@@ -159,6 +165,19 @@ async function init() {
     // ── Fetch exam results & Active Quest ──
     const { data: examResults } = await db.from('exam_results').select('id, subject, level, exam_type, score, total_marks, questions_attempted, time_taken, completed_at').eq('student_id', student.id).order('completed_at', { ascending: false }).limit(20);
     const activeQuest = await loadActiveQuest(db, student.id);
+
+    // Fetch all active quests for tray + per-subject eligibility gating
+    let activeQuestsList = [];
+    try {
+      const questsRes = await fetch(`/api/quests?student_id=${student.id}`, {
+        headers: { 'Authorization': `Bearer ${session?.access_token}` },
+      });
+      if (questsRes.ok) {
+        const questsJson = await questsRes.json();
+        activeQuestsList = questsJson.quests || [];
+      }
+    } catch (e) { console.warn('[progress] Could not fetch active quests list:', e); }
+    window.activeQuestsList = activeQuestsList;
 
     // ── 🚀 Fetch Question Attempts for Cognitive Skill (AO) Analysis ──
     const { data: qAttempts } = await db.from('question_attempts')
@@ -267,14 +286,15 @@ async function init() {
     }
 
     // Fire the new Action Plan renderer
-    renderActionPlanUI(totalSeconds, questionsMastered, overallPct, advancedSubjectStats, weakTopics, student, session, activeQuest, allActivity, improvedText);
+    const subjectSlotsTaken = new Set(activeQuestsList.map(q => q.subject?.toLowerCase()));
+    renderActionPlanUI(totalSeconds, questionsMastered, overallPct, advancedSubjectStats, weakTopics, student, session, activeQuest, allActivity, improvedText, subjectSlotsTaken);
     insertAOMasteryUI(aoStats);
-    
+
     // 🚀 MASTERCLASS: Fetch and Render BKT Mastery Data
     await renderBKT(db, student.id);
 
-    // Fire legacy bottom history renderers
-    if (activeQuest) renderQuestMap(activeQuest, db);
+    // Quest tray (replaces old single-quest renderQuestMap)
+    renderQuestTrayFromData(activeQuestsList);
     renderRecentHistory(attempts.slice(0, 10));
 
     if (!isJunior) renderExamHistory(examResults || []);
@@ -420,6 +440,118 @@ function insertAOMasteryUI(aoStats) {
     weakAreasContainer.parentNode.insertBefore(aoContainer, weakAreasContainer.previousElementSibling);
   }
 }
+
+// ── Quest: tray render ─────────────────────────────────────────────────────────
+
+/**
+ * Renders the multi-quest tray from an already-fetched quests array.
+ * Shows 0–3 subject-coloured tiles linking to /quest?id=<id>.
+ * Uses #quest-map-section as the container (existing HTML slot).
+ * @param {Array} quests - array of quest rows from /api/quests
+ */
+function renderQuestTrayFromData(quests) {
+  const section = document.getElementById('quest-map-section') || document.getElementById('quest-tray-section');
+  if (!section) return;
+
+  function esc(s) {
+    return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  if (!quests || quests.length === 0) {
+    section.innerHTML = `
+      <div class="glass-panel-1 quest-tray-empty" style="margin-bottom:var(--space-6);">
+        <div class="label-caps quest-tray-label">⚡ Active Quests</div>
+        <p class="text-secondary text-sm" style="margin:0;">No active quests. Spot a weakness below to start one.</p>
+      </div>
+    `;
+    section.style.display = 'block';
+    return;
+  }
+
+  const subjectColours = {
+    mathematics: 'var(--brand-sage)',
+    science:     'var(--brand-amber)',
+    english:     'var(--brand-mint)',
+  };
+
+  const tiles = quests.map(q => {
+    const colour = subjectColours[q.subject?.toLowerCase()] || 'var(--brand-sage)';
+    const step = q.current_step || 0;
+    const dayPct = Math.round((step + 1) / 3 * 100);
+    return `
+      <a href="/quest?id=${esc(q.id)}" class="quest-tray-tile" style="--accent:${colour};">
+        <div class="quest-tray-tile-header">
+          <span class="quest-tray-tile-subject">${esc(q.subject)}</span>
+          <span class="quest-tray-tile-day">Day ${step + 1} of 3</span>
+        </div>
+        <div class="quest-tray-tile-topic">${esc(q.topic)}</div>
+        <div class="quest-tray-tile-bar">
+          <div class="quest-tray-tile-fill" style="width:${dayPct}%;"></div>
+        </div>
+      </a>
+    `;
+  }).join('');
+
+  section.innerHTML = `
+    <div class="glass-panel-1 quest-tray" style="margin-bottom:var(--space-6);">
+      <div class="label-caps quest-tray-label">⚡ Active Quests</div>
+      <div class="quest-tray-tiles">${tiles}</div>
+    </div>
+  `;
+  section.style.display = 'block';
+}
+
+// ── Quest: generate (new — redirects to /quest page) ─────────────────────────
+
+/**
+ * Calls POST /api/generate-quest and redirects to /quest?id=<new>.
+ * Handles 409 (slot taken) with a user-readable message.
+ * @param {HTMLElement} btnEl
+ * @param {string} subject
+ * @param {string} level
+ * @param {string} topic
+ * @param {number} triggerScore
+ */
+window.generateQuestFor = async function (btnEl, subject, level, topic, triggerScore) {
+  if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Generating…'; }
+  try {
+    const sb = await window.getSupabase();
+    const { data: { session } } = await sb.auth.getSession();
+    const studentId = window.currentStudentId;
+    if (!studentId || !session?.access_token) {
+      if (btnEl) { btnEl.disabled = false; btnEl.textContent = '+ Plan Quest'; }
+      return;
+    }
+    const levelSlug = (level || 'primary-4').toLowerCase().replace(/\s+/g, '-');
+    const res = await fetch('/api/generate-quest', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        student_id: studentId,
+        subject: subject.toLowerCase(),
+        level: levelSlug,
+        topic: topic.toLowerCase(),
+        trigger_score: triggerScore,
+      }),
+    });
+    const data = await res.json();
+    if (res.ok && data.quest) {
+      window.location.href = `/quest?id=${data.quest.id}`;
+    } else if (res.status === 409) {
+      alert(`You already have an active ${subject} quest. Scroll up to view it.`);
+      if (btnEl) { btnEl.disabled = false; btnEl.textContent = 'Quest taken'; }
+    } else {
+      alert('Could not generate quest: ' + (data.error || 'Unknown error'));
+      if (btnEl) { btnEl.disabled = false; btnEl.textContent = '+ Plan Quest'; }
+    }
+  } catch (err) {
+    console.error('[progress] generateQuestFor error:', err);
+    if (btnEl) { btnEl.disabled = false; btnEl.textContent = '+ Plan Quest'; }
+  }
+};
 
 // ── Quest: load ────────────────────────────────────────────────────────────────
 
@@ -1137,7 +1269,7 @@ function setText(id, value) {
 }
 // ── ACTION PLAN RENDERER (NEW UI/UX) ──────────────────────────────────────────
 
-function renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subjectStats, weakTopics, student, session, activeQuest, allActivity, improvedText) {
+function renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subjectStats, weakTopics, student, session, activeQuest, allActivity, improvedText, subjectSlotsTaken = new Set()) {
   // 1. LAYER 1: Subject Proficiency
   const subjects = ['mathematics', 'science', 'english'];
   subjects.forEach(sub => {
@@ -1179,16 +1311,25 @@ function renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subject
 
         subTopics.forEach(t => {
           const topicLabel = t.topic.replace(/-/g, ' ');
+          const sub = t.subject?.toLowerCase();
+          const slotTaken = subjectSlotsTaken.has(sub);
+          const existingQ = slotTaken
+            ? (window.activeQuestsList || []).find(q => q.subject?.toLowerCase() === sub)
+            : null;
+          const attrEsc = s => String(s || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+          const questBtnHtml = slotTaken
+            ? `<button class="btn btn-secondary btn-sm" disabled title="Active ${attrEsc(t.subject)} quest in progress">Quest taken</button>${existingQ ? `<a href="/quest?id=${attrEsc(existingQ.id)}" class="btn btn-ghost btn-sm" style="color:var(--brand-mint);">View →</a>` : ''}`
+            : `<button class="btn btn-primary btn-sm" onclick="window.generateQuestFor(this,'${attrEsc(t.subject)}','${attrEsc(student.level)}','${attrEsc(t.topic)}',${parseFloat(t.pct)})">+ Plan Quest</button>`;
           weakHtml.push(`
             <div class="glass-panel-2" style="display:flex; justify-content:space-between; align-items:center; padding:var(--space-3) var(--space-4); flex-wrap:wrap; gap:10px;">
               <div>
                 <span style="font-size:1.2rem; margin-right:8px;">${t.pct < 45 ? '🔴' : '🟠'}</span>
-                <strong style="color:var(--text-main); text-transform:capitalize;">${topicLabel}</strong> 
+                <strong style="color:var(--text-main); text-transform:capitalize;">${topicLabel}</strong>
                 <span class="text-secondary text-sm"> — ${t.pct}% (${getALBand(t.pct)})</span>
               </div>
-              <div style="display:flex; gap:10px;">
+              <div style="display:flex; gap:10px; flex-wrap:wrap;">
                  <a href="tutor.html?intent=remedial&subject=${t.subject}&topic=${t.topic}&score=${t.pct}" class="btn btn-secondary btn-sm" style="border-color:var(--rose); color:var(--rose);">Ask Miss Wena</a>
-                 <button class="btn btn-primary btn-sm" onclick="window.handlePlanQuest(this, '${student.id}', '${student.level}', '${t.topic}', '${t.subject}', ${t.pct}, '${t.lastAttemptId || ''}')" ${activeQuest ? 'disabled title="Complete active quest first"' : ''}>+ Plan Quest</button>
+                 ${questBtnHtml}
               </div>
             </div>`);
         });

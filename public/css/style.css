@@ -3709,3 +3709,99 @@ ul.rose-list li::before {
   font-family: var(--font-body);
   margin-top: 8px;
 }
+
+/* ── HUD Strip ──────────────────────────────────────────────────────────────── */
+.hud-strip {
+  display: flex;
+  gap: var(--space-6);
+  align-items: center;
+  padding: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+.hud-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--sage-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.hud-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.hud-avatar-placeholder { font-size: 1.6rem; }
+.hud-info { flex: 1; min-width: 0; }
+.hud-info-row {
+  display: flex;
+  gap: var(--space-3);
+  align-items: baseline;
+  flex-wrap: wrap;
+  margin-bottom: var(--space-2);
+}
+.hud-name { font-weight: 700; color: var(--text-main); }
+.hud-xp-row { display: flex; align-items: center; gap: var(--space-3); }
+.hud-xp-label { color: var(--text-muted); white-space: nowrap; font-size: 0.7rem; }
+.hud-streak {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.hud-streak-days  { color: var(--brand-amber); line-height: 1; }
+.hud-streak-shield { color: var(--brand-mint); line-height: 1; }
+
+/* ── Quest Tray (progress.html) ─────────────────────────────────────────────── */
+.quest-tray { padding: var(--space-4); }
+.quest-tray-label { color: var(--brand-rose); margin-bottom: var(--space-3); }
+.quest-tray-empty { padding: var(--space-4); }
+.quest-tray-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-3);
+}
+.quest-tray-tile {
+  display: block;
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--accent, var(--border-light));
+  background: color-mix(in srgb, var(--accent, var(--glass)) 8%, transparent);
+  text-decoration: none;
+  color: var(--text-main);
+  transition: transform 200ms ease;
+}
+.quest-tray-tile:hover { transform: translateY(-2px); }
+.quest-tray-tile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-2);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--accent, var(--brand-sage));
+  font-weight: 600;
+}
+.quest-tray-tile-topic {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  margin-bottom: var(--space-3);
+  color: var(--text-main);
+  text-transform: capitalize;
+}
+.quest-tray-tile-bar {
+  height: 4px;
+  border-radius: 9999px;
+  background: var(--glass-border);
+  overflow: hidden;
+}
+.quest-tray-tile-fill {
+  height: 100%;
+  background: var(--accent, var(--brand-sage));
+  border-radius: inherit;
+  transition: width 400ms ease;
+}
+@media (max-width: 480px) {
+  .quest-tray-tiles { grid-template-columns: 1fr; }
+  .hud-strip { gap: var(--space-4); }
+}

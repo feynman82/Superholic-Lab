@@ -15,6 +15,7 @@
   <script src="/js/footer.js" defer></script>
   <script src="/js/icons.js" defer></script>
   <script src="/js/bottom-nav.js" defer></script>
+  <script src="/js/hud-strip.js" defer></script>
   <script src="../js/supabase-client.js"></script>
   <script type="module">
     import { guardPage } from '/js/auth.js';
@@ -211,6 +212,8 @@
     </div>
   </section>
 
+  <div id="dashboard-hud-strip" class="container" style="max-width:1000px; padding-top:var(--space-4);"></div>
+
   <main id="app" class="container py-10 flex flex-col w-full gap-6" style="max-width: 1000px; min-height: 60vh;">
     <div class="flex justify-between items-center mb-4">
       <h2 class="font-display text-3xl text-main m-0">Your Learners</h2>
@@ -397,6 +400,12 @@
       }
 
       await loadStudents();
+
+      // Render HUD strip for the most recently active student (non-blocking)
+      const hudStudentId = localStorage.getItem('shl_active_student_id');
+      if (hudStudentId && window.renderHUDStrip) {
+        window.renderHUDStrip('dashboard-hud-strip', { studentId: hudStudentId }).catch(() => {});
+      }
 
       // ── Checkout success detection ──
       const params = new URLSearchParams(window.location.search);
