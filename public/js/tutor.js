@@ -504,6 +504,11 @@
 
 
   // ── STUDY NOTES ENGINE: Generate & Save ──
+  // Calls /api/summarize-chat (handled by lib/api/handlers.js handleSummarizeChat).
+  // Endpoint expects: { student_id, subject, topic, messages }
+  //   messages: array of {role, content} pairs (user/assistant only)
+  //   Authorization: Bearer ${access_token}
+  // Returns: { success: true } on success.
   async function generateStudyNote() {
     if (!currentStudentId || history.length < 2) return;
 
@@ -514,32 +519,32 @@
       const sb = await getSupabase();
       const { data: { session } } = await sb.auth.getSession();
 
-      // 🚀 MASTERCLASS: Fetch BKT Mastery to pass to Miss Wena
-      let bktMastery = null;
-      if (currentStudentId && currentTopicContext && currentTopicContext !== 'mixed') {
-        const { data: masteryData } = await sb.from('mastery_levels')
-          .select('probability')
-          .eq('student_id', currentStudentId)
-          .eq('topic', currentTopicContext)
-          .order('last_updated', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        if (masteryData) bktMastery = masteryData.probability;
+      // Build the payload that handleSummarizeChat expects.
+      // Filter to user/assistant messages only with {role, content} shape.
+      const cleanMessages = history
+        .filter(m => (m.role === 'user' || m.role === 'assistant') && m.content)
+        .map(m => ({ role: m.role, content: m.content }));
+
+      if (cleanMessages.length < 2) {
+        throw new Error('Need at least one user message and one tutor response to summarise.');
       }
 
-      const res = await fetch('/api/chat', {
+      const res = await fetch('/api/summarize-chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
+        },
         body: JSON.stringify({
-          messages: payload,
+          student_id: currentStudentId,
           subject: currentSubjectContext,
           topic: currentTopicContext,
-          bkt_mastery: bktMastery // Injecting real-time probability
+          messages: cleanMessages
         })
       });
 
       const data = await res.json();
-      if (data.success) {
+      if (res.ok && data.success) {
         saveBtn.innerHTML = '✅ Saved to Backpack';
         saveBtn.className = 'btn btn-success btn-sm hover-lift';
         setTimeout(() => {
@@ -548,10 +553,11 @@
           saveBtn.className = 'btn btn-secondary btn-sm hover-lift';
         }, 3000);
       } else {
-        throw new Error(data.error || "Save failed");
+        throw new Error(data.error || 'Save failed');
       }
     } catch (e) {
-      alert("Failed to save note: " + e.message);
+      console.error('Save Notes error:', e);
+      alert('Failed to save note: ' + e.message);
       saveBtn.innerHTML = '💾 Save Notes';
       saveBtn.disabled = false;
       saveBtn.className = 'btn btn-secondary btn-sm hover-lift';

@@ -1171,6 +1171,10 @@ window.initExamEngine = function () {
   }
 
   // ── 5. SUPABASE PERSISTENCE ──
+  // Hardened against NOT-NULL violations on question_attempts. Same pattern as quiz.js:
+  //   Production schema: question_text, topic, difficulty, correct, answer_chosen, correct_answer ALL NOT NULL.
+  //   Comprehension/cloze/visual_text questions often have empty values for these fields,
+  //   so each gets a guaranteed non-null fallback.
   async function saveExamResult() {
     if (!state.studentId) return;
     try {
@@ -1196,30 +1200,38 @@ window.initExamEngine = function () {
 
       if (examError) throw examError;
 
-      // 2. 🚀 DEEP TECH ENGINE: Log individual question attempts
+      // 2. 🚀 DEEP TECH ENGINE: Log individual question attempts with NOT-NULL safety guards
       const qAttempts = state.allQs.map((q) => {
         const globalIdx = q.globalIdx;
         const result = state.results[globalIdx];
         const ans = state.answers[globalIdx];
 
+        // 🚀 NOT-NULL guards — string fallbacks for every required text column
+        const safeQuestionText = String(q.question_text || q.passage || 'Diagram/Passage Question').slice(0, 500) || 'Untitled';
+        const safeTopic = String(q.topic || 'mixed') || 'Mixed';
+        const safeDifficulty = String(q.difficulty || 'standard') || 'standard';
+        const safeAnswerChosen = String(ans != null ? (typeof ans === 'object' ? JSON.stringify(ans) : ans) : '').slice(0, 200) || '(no answer)';
+        const safeCorrectAnswer = String(q.correct_answer || 'See model solution').slice(0, 500) || 'See model solution';
+
         return {
           exam_result_id: examData?.id || null,
           student_id: state.studentId,
-          question_text: (q.question_text || '').slice(0, 500),
-          topic: q.topic || 'mixed',
+          question_text: safeQuestionText,
+          topic: safeTopic,
           sub_topic: q.sub_topic || null,
           cognitive_skill: q.cognitive_skill || null,
-          difficulty: q.difficulty || 'standard',
-          correct: result ? result.isCorrect : false,
-          marks_earned: result ? result.score : 0,
-          marks_total: result ? result.maxScore : (q.marks || 1),
-          answer_chosen: String(ans || '').slice(0, 200),
-          correct_answer: String(q.correct_answer || ''),
+          difficulty: safeDifficulty,
+          correct: result ? !!result.isCorrect : false,
+          marks_earned: result ? (result.score || 0) : 0,
+          marks_total: result ? (result.maxScore || q.marks || 1) : (q.marks || 1),
+          answer_chosen: safeAnswerChosen,
+          correct_answer: safeCorrectAnswer,
         };
       });
 
       if (qAttempts.length > 0) {
-        await sb.from('question_attempts').insert(qAttempts);
+        const { error: qaErr } = await sb.from('question_attempts').insert(qAttempts);
+        if (qaErr) console.error('question_attempts insert failed:', qaErr);
       }
 
     } catch (e) {
