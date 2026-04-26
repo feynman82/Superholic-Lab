@@ -1,34 +1,37 @@
 /**
- * js/qa-panel.js  v2.0
+ * js/qa-panel.js  v3.0  (2026-04-26)
  * Human-in-the-Loop QA Audit Panel
  *
- * Bug fixes in v2.0:
- *   #1  Sidebar sections collapsible (default collapsed; pending auto-expands)
- *   #2  Find Question section with client-side search
- *   #3  Toast notifications visible in QA tab; approve/save give feedback;
- *       api/qa-questions.js endpoint now exists so PUT/DELETE actually work
- *   #4  renderHtml() lets <br> tags render instead of showing as literal text
+ * v3.0 changes:
+ *   #1  Pending = approved_at IS NULL (was: is_ai_cloned = true).
+ *       is_ai_cloned retained server-side as pure provenance flag.
+ *   #2  Visual payload renders inline using DiagramLibrary (same as quiz/exam).
+ *   #3  Server-side search via ?q= (no longer capped at 200 in-memory rows).
+ *   #4  New "Diagram" filter: All / Yes / No.
+ *   #5  Comprehension shows ALL parts (no 4-cap), pulls answers from parts[i].model_answer,
+ *       and renders <br> in passage instead of escaping it.
+ *   #6  Live preview "also accepted" box uses .qa-accept-also CSS class (no Tailwind dependency).
+ *   #7  Cloze sidebar shows passage text, not question_text.
+ *   #8  Editing live preview reads passage HTML (with <u>word</u> [N] markers) when
+ *       passage_lines is null, and sidebar shows passage instead of question_text.
  *
- * Globals from admin.html: adminSession, esc(), renderPulse(), qaPending
+ * Globals from admin.html: adminSession, esc(), renderPulse(), qaPending, DiagramLibrary
  */
 
 (function () {
   'use strict';
 
   // ── STATE ─────────────────────────────────────────────────────────────────
-  var qaQueue      = [];    // is_ai_cloned = true  (pending review)
-  var qaApproved   = [];    // is_ai_cloned = false (live)
-  var qaCurrentQ   = null;
-  var qaCurrentIdx = -1;    // index in qaQueue; -1 means came from approved/find
+  var qaQueue       = [];   // approved_at IS NULL (pending review)
+  var qaApproved    = [];   // approved_at IS NOT NULL (live)
+  var qaCurrentQ    = null;
+  var qaCurrentIdx  = -1;   // index in qaQueue; -1 means came from approved/find
   var qaSearchTimer = null;
 
   // Sidebar collapse state — pending/approved default collapsed, find default open
   var qaSectionOpen = { pending: false, approved: false, find: true };
 
   // ── TOAST NOTIFICATIONS ───────────────────────────────────────────────────
-  // Uses its own container inside .qa-shell so it works when CRM view is hidden.
-  // type: 'success' | 'error' | 'info'
-
   function qaNotify(msg, type) {
     type = type || 'info';
     var shell = document.querySelector('.qa-shell');
@@ -44,7 +47,6 @@
       'z-index:999', 'pointer-events:none', 'white-space:nowrap',
       'box-shadow:var(--shadow-md)', 'transition:opacity 0.3s'
     ].join(';');
-    // ensure shell is positioned
     if (getComputedStyle(shell).position === 'static') shell.style.position = 'relative';
     toast.textContent = msg;
     shell.appendChild(toast);
@@ -52,22 +54,37 @@
   }
 
   // ── renderHtml — let <br> tags render; escape everything else ─────────────
-  // Bug #4 fix: worked_solution and question_text fields often contain <br><br>.
-  // Plain esc() turns these into literal "&lt;br&gt;" text.
-
+  // For passage/question_text/worked_solution that may contain literal <br> markup.
   function renderHtml(text) {
     if (!text) return '';
-    // First escape all HTML, then un-escape just <br> variants
     return esc(text).replace(/&lt;br\s*\/?&gt;/gi, '<br>');
   }
 
-  // ── SYNTHESIS HELPERS ─────────────────────────────────────────────────────
-  //
-  // instructions encoding (single-quote notation, connector always at end):
-  //   front:  "Rewrite the sentence beginning with the word 'Since'."
-  //   middle: "Combine the sentences using the word '... as ...'."
-  //   end:    "Rewrite the sentence ending with the word '... however'."
+  // ── renderPassageHtml — for editing/comprehension passages ────────────────
+  // Editing passages contain <u>word</u> markers and [1] index references which
+  // must render as inline HTML, not as escaped text. We selectively allow <u>
+  // and <br> tags through after escaping everything else.
+  function renderPassageHtml(text) {
+    if (!text) return '';
+    return esc(text)
+      .replace(/&lt;br\s*\/?&gt;/gi, '<br>')
+      .replace(/&lt;u&gt;/gi, '<u>')
+      .replace(/&lt;\/u&gt;/gi, '</u>')
+      .replace(/\n/g, '<br>');
+  }
 
+  // ── SIDEBAR PREVIEW TEXT ──────────────────────────────────────────────────
+  // For comprehension/cloze/editing the sidebar should show the passage
+  // (since question_text is often empty or generic). Other types use question_text.
+  function sidebarPreviewText(q) {
+    var t = (q.type || '').toLowerCase();
+    if (t === 'comprehension' || t === 'visual_text' || t === 'cloze' || t === 'editing') {
+      return q.passage || q.question_text || '\u2014';
+    }
+    return q.question_text || q.passage || '\u2014';
+  }
+
+  // ── SYNTHESIS HELPERS ─────────────────────────────────────────────────────
   function qaParseInstructions(instructions) {
     if (!instructions) return { connector: '', position: 'middle' };
     var match = instructions.match(/'([^']+)'/);
@@ -89,14 +106,12 @@
   }
 
   // ── SIDEBAR COLLAPSE ──────────────────────────────────────────────────────
-  // Bug #1 fix: toggle sections; icons rotate to show state.
-
   window.qaToggleSection = function (section) {
     qaSectionOpen[section] = !qaSectionOpen[section];
-    var body    = document.getElementById('qa' + capitalize(section) + 'Body');
-    var icon    = document.getElementById('qa' + capitalize(section) + 'Toggle');
+    var body = document.getElementById('qa' + capitalize(section) + 'Body');
+    var icon = document.getElementById('qa' + capitalize(section) + 'Toggle');
     if (body) body.style.display = qaSectionOpen[section] ? '' : 'none';
-    if (icon) icon.textContent   = qaSectionOpen[section] ? '▼' : '▶';
+    if (icon) icon.textContent   = qaSectionOpen[section] ? '\u25BC' : '\u25B6';
   };
 
   function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
@@ -106,73 +121,78 @@
     var body = document.getElementById('qa' + capitalize(section) + 'Body');
     var icon = document.getElementById('qa' + capitalize(section) + 'Toggle');
     if (body) body.style.display = open ? '' : 'none';
-    if (icon) icon.textContent   = open ? '▼' : '▶';
+    if (icon) icon.textContent   = open ? '\u25BC' : '\u25B6';
   }
 
-  // ── FIND QUESTION — client-side search ───────────────────────────────────
-  // Bug #2 fix: searches across qaQueue + qaApproved in memory.
-
+  // ── FIND QUESTION — server-side search via ?q= ───────────────────────────
+  // v3.0 fix #3: search hits the API (no in-memory cap) so all 5,000+ rows
+  // are reachable. Debounce keeps load reasonable while typing.
   window.qaSearchDebounced = function () {
     clearTimeout(qaSearchTimer);
-    qaSearchTimer = setTimeout(window.qaDoSearch, 220);
+    qaSearchTimer = setTimeout(window.qaDoSearch, 280);
   };
 
-  window.qaDoSearch = function () {
-    var query   = ((document.getElementById('qaSearchInput')   || {}).value || '').toLowerCase().trim();
+  window.qaDoSearch = async function () {
+    var query   = ((document.getElementById('qaSearchInput')   || {}).value || '').trim();
     var subject = ((document.getElementById('qaSearchSubject') || {}).value || '');
     var mode    = ((document.getElementById('qaSearchMode')    || {}).value || '');
     var el      = document.getElementById('qaSearchResults');
     if (!el) return;
 
     if (!query && !subject) {
-      el.innerHTML = '<div class="qa-empty">Type to search…</div>';
+      el.innerHTML = '<div class="qa-empty">Type a keyword to search\u2026</div>';
       return;
     }
 
-    // Pick pool based on mode
-    var pool = [];
-    if (mode !== 'approved') pool = pool.concat(qaQueue.map(function (q) { return { q: q, src: 'pending' }; }));
-    if (mode !== 'pending')  pool = pool.concat(qaApproved.map(function (q) { return { q: q, src: 'approved' }; }));
+    el.innerHTML = '<div class="qa-empty">Searching\u2026</div>';
 
-    var results = pool.filter(function (item) {
-      var q = item.q;
-      if (subject && q.subject !== subject) return false;
-      if (!query) return true;
-      // Search: question_text, topic, sub_topic, correct_answer, instructions
-      var haystack = [
-        q.question_text || '', q.topic || '', q.sub_topic || '',
-        q.correct_answer || '', q.instructions || '', q.passage || ''
-      ].join(' ').toLowerCase();
-      return haystack.includes(query);
-    }).slice(0, 40);
+    // Build search across both pending + approved (or just one if mode set).
+    var modesToSearch = mode ? [mode] : ['pending', 'approved'];
+    var allResults    = [];
 
-    if (!results.length) {
+    try {
+      for (var i = 0; i < modesToSearch.length; i++) {
+        var m  = modesToSearch[i];
+        var url = '/api/qa-questions?mode=' + m + '&limit=80';
+        if (query)   url += '&q='       + encodeURIComponent(query);
+        if (subject) url += '&subject=' + encodeURIComponent(subject);
+        var res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + adminSession.access_token } });
+        if (!res.ok) continue;
+        var data = await res.json();
+        (data.questions || []).forEach(function (q) {
+          allResults.push({ q: q, src: m });
+        });
+      }
+    } catch (e) {
+      el.innerHTML = '<div class="qa-empty">Search failed: ' + esc(e.message) + '</div>';
+      return;
+    }
+
+    if (!allResults.length) {
       el.innerHTML = '<div class="qa-empty">No results.</div>';
       return;
     }
 
-    el.innerHTML = results.map(function (item, i) {
-      var q = item.q;
+    el.innerHTML = allResults.map(function (item, i) {
+      var q       = item.q;
       var isSynth = (q.topic || '').toLowerCase() === 'synthesis';
       var srcBadge = item.src === 'pending'
         ? '<span style="color:var(--brand-amber);font-size:9px;font-weight:700;text-transform:uppercase;">PENDING</span>'
         : '<span style="color:var(--brand-mint);font-size:9px;font-weight:700;text-transform:uppercase;">LIVE</span>';
-      return '<div class="qa-item" onclick="window.qaSearchSelect(' + chr(39) + item.src + chr(39) + ',' + i + ')">'
-        + '<div class="qa-item-title">' + esc((q.question_text || q.passage || '—').slice(0, 80)) + '</div>'
-        + '<div class="qa-item-meta">' + srcBadge + ' ' + (isSynth ? '✍️ ' : '') + esc(q.type || '') + ' · ' + esc(q.level || '') + '</div>'
+      return '<div class="qa-item" onclick="window.qaSearchSelect(' + i + ')">'
+        + '<div class="qa-item-title">' + esc(sidebarPreviewText(q).slice(0, 80)) + '</div>'
+        + '<div class="qa-item-meta">' + srcBadge + ' ' + (isSynth ? '\u270D\uFE0F ' : '') + esc(q.type || '') + ' \u00B7 ' + esc(q.level || '') + '</div>'
         + '</div>';
     }).join('');
 
-    // Stash results array for click handler
-    window._qaSearchResults = results;
+    window._qaSearchResults = allResults;
   };
 
-  function chr(n) { return String.fromCharCode(n); }
-
-  window.qaSearchSelect = function (src, i) {
+  window.qaSearchSelect = function (i) {
     var results = window._qaSearchResults || [];
     if (!results[i]) return;
-    var q = results[i].q;
+    var q   = results[i].q;
+    var src = results[i].src;
     if (src === 'pending') {
       var idx = qaQueue.findIndex(function (x) { return x.id === q.id; });
       if (idx >= 0) { qaCurrentIdx = idx; renderQAPendingList(); }
@@ -184,13 +204,12 @@
   };
 
   // ── CONNECTOR UI ──────────────────────────────────────────────────────────
-
   window.qaOnConnectorChange = function () {
     var connector = ((document.getElementById('qfConnector') || {}).value || '').trim();
     var posEl = document.querySelector('input[name="qfConnectorPos"]:checked');
     var position = posEl ? posEl.value : 'middle';
     var preview = document.getElementById('qfInstructionsPreview');
-    if (preview) preview.textContent = qaBuildInstructions(connector, position) || '—';
+    if (preview) preview.textContent = qaBuildInstructions(connector, position) || '\u2014';
     var bp = document.getElementById('qfSynthBlueprint');
     if (bp) {
       if (!connector) {
@@ -216,13 +235,12 @@
     var aaGrp    = document.getElementById('qfAcceptAlsoGroup');
     if (synthGrp) synthGrp.style.display = isSynth ? '' : 'none';
     if (instrGrp) instrGrp.style.display = (isShortAns && !isSynth) ? '' : 'none';
-    if (aaGrp)   aaGrp.style.display    = isShortAns ? '' : 'none';
+    if (aaGrp)    aaGrp.style.display    = isShortAns ? '' : 'none';
     if (isSynth) window.qaOnConnectorChange();
     qaLivePreview();
   };
 
   // ── JSON HELPERS ──────────────────────────────────────────────────────────
-
   function qaSetJson(id, val) {
     var el = document.getElementById(id);
     if (!el) return;
@@ -257,26 +275,25 @@
   };
 
   // ── ACTION BAR ────────────────────────────────────────────────────────────
-
   function renderQAActionBar() {
     var bar = document.getElementById('qaActionBar');
     if (!bar || !qaCurrentQ) return;
-    var isPending = qaCurrentQ.is_ai_cloned !== false;
+    // Pending = approved_at IS NULL. Server returns approved_at as null or ISO string.
+    var isPending = !qaCurrentQ.approved_at;
     if (isPending) {
       bar.innerHTML =
         '<button class="btn btn-primary hover-lift" style="flex:1;" onclick="window.qaApproveNext()">Approve &amp; Next</button>' +
         '<button class="btn btn-secondary hover-lift" onclick="window.qaSaveDraft(this)">Save</button>' +
-        '<button class="btn hover-lift" style="color:var(--brand-error);border:1px solid var(--brand-error);background:transparent;" onclick="window.qaDelete()">🗑️</button>';
+        '<button class="btn hover-lift" style="color:var(--brand-error);border:1px solid var(--brand-error);background:transparent;" onclick="window.qaDelete()">\uD83D\uDDD1\uFE0F</button>';
     } else {
       bar.innerHTML =
         '<button class="btn hover-lift" style="flex:1;background:rgba(99,102,241,0.1);color:#6366f1;border:1px solid rgba(99,102,241,0.3);" onclick="window.qaReturnToQueue()">Return to Queue</button>' +
         '<button class="btn btn-secondary hover-lift" onclick="window.qaSaveDraft(this)">Save</button>' +
-        '<button class="btn hover-lift" style="color:var(--brand-error);border:1px solid var(--brand-error);background:transparent;" onclick="window.qaDelete()">🗑️</button>';
+        '<button class="btn hover-lift" style="color:var(--brand-error);border:1px solid var(--brand-error);background:transparent;" onclick="window.qaDelete()">\uD83D\uDDD1\uFE0F</button>';
     }
   }
 
   // ── LOAD QUEUE ────────────────────────────────────────────────────────────
-
   window.loadQAQueue = async function () {
     if (!adminSession) { console.warn('[qa] adminSession not set yet'); return; }
     try {
@@ -293,7 +310,6 @@
       renderQAPendingList();
       var cnt   = document.getElementById('qaQueueCount'); if (cnt)   cnt.textContent   = qaQueue.length;
       var badge = document.getElementById('qaTabBadge');   if (badge) badge.textContent = qaQueue.length;
-      // Auto-expand pending section only if there are items
       if (qaQueue.length > 0) {
         setSectionOpen('pending', true);
         if (!qaCurrentQ) { qaCurrentIdx = 0; qaLoadEditor(qaQueue[0]); }
@@ -304,13 +320,15 @@
 
   window.loadQAApproved = async function () {
     if (!adminSession) return;
-    var subject = (document.getElementById('qaFSubject') || {}).value || '';
-    var level   = (document.getElementById('qaFLevel')   || {}).value || '';
-    var type    = (document.getElementById('qaFType')    || {}).value || '';
+    var subject    = (document.getElementById('qaFSubject')    || {}).value || '';
+    var level      = (document.getElementById('qaFLevel')      || {}).value || '';
+    var type       = (document.getElementById('qaFType')       || {}).value || '';
+    var hasDiagram = (document.getElementById('qaFHasDiagram') || {}).value || '';
     var url = '/api/qa-questions?mode=approved&limit=200';
-    if (subject) url += '&subject=' + encodeURIComponent(subject);
-    if (level)   url += '&level='   + encodeURIComponent(level);
-    if (type)    url += '&type='    + encodeURIComponent(type);
+    if (subject)    url += '&subject='     + encodeURIComponent(subject);
+    if (level)      url += '&level='       + encodeURIComponent(level);
+    if (type)       url += '&type='        + encodeURIComponent(type);
+    if (hasDiagram) url += '&has_diagram=' + encodeURIComponent(hasDiagram);
     try {
       var res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + adminSession.access_token } });
       if (!res.ok) return;
@@ -321,21 +339,21 @@
   };
 
   // ── SIDEBAR RENDERERS ─────────────────────────────────────────────────────
-
   function renderQAPendingList() {
     var el = document.getElementById('qaPendingList');
     if (!el) return;
-    if (!qaQueue.length) { el.innerHTML = '<div class="qa-empty">🎉 Queue is empty!</div>'; return; }
+    if (!qaQueue.length) { el.innerHTML = '<div class="qa-empty">\uD83C\uDF89 Queue is empty!</div>'; return; }
     el.innerHTML = qaQueue.map(function (q, i) {
       var isSynth = (q.topic || '').toLowerCase() === 'synthesis';
       var hint = '';
       if (isSynth && q.instructions) {
         var p = qaParseInstructions(q.instructions);
-        if (p.connector) hint = ' · <em>' + esc(p.connector) + '</em>';
+        if (p.connector) hint = ' \u00B7 <em>' + esc(p.connector) + '</em>';
       }
+      var diag = q.visual_payload ? ' \uD83D\uDCCA' : '';
       return '<div class="qa-item' + (i === qaCurrentIdx ? ' is-active' : '') + '" onclick="window.qaSelectPending(' + i + ')">'
-        + '<div class="qa-item-title">' + esc((q.question_text || q.passage || '—').slice(0, 80)) + '</div>'
-        + '<div class="qa-item-meta">' + (isSynth ? '✍️ ' : '') + esc(q.type || '') + ' · ' + esc(q.level || '') + hint + '</div>'
+        + '<div class="qa-item-title">' + esc(sidebarPreviewText(q).slice(0, 80)) + '</div>'
+        + '<div class="qa-item-meta">' + (isSynth ? '\u270D\uFE0F ' : '') + esc(q.type || '') + ' \u00B7 ' + esc(q.level || '') + diag + hint + '</div>'
         + '</div>';
     }).join('');
   }
@@ -346,9 +364,10 @@
     if (!qaApproved.length) { el.innerHTML = '<div class="qa-empty">No matches.</div>'; return; }
     el.innerHTML = qaApproved.map(function (q, i) {
       var isSynth = (q.topic || '').toLowerCase() === 'synthesis';
+      var diag    = q.visual_payload ? ' \uD83D\uDCCA' : '';
       return '<div class="qa-item" onclick="window.qaSelectApproved(' + i + ')">'
-        + '<div class="qa-item-title">' + esc((q.question_text || q.passage || '—').slice(0, 80)) + '</div>'
-        + '<div class="qa-item-meta">' + (isSynth ? '✍️ ' : '') + esc(q.type || '') + ' · ' + esc(q.level || '') + '</div>'
+        + '<div class="qa-item-title">' + esc(sidebarPreviewText(q).slice(0, 80)) + '</div>'
+        + '<div class="qa-item-meta">' + (isSynth ? '\u270D\uFE0F ' : '') + esc(q.type || '') + ' \u00B7 ' + esc(q.level || '') + diag + '</div>'
         + '</div>';
     }).join('');
   }
@@ -357,7 +376,6 @@
   window.qaSelectApproved = function (i) { qaCurrentIdx = -1; qaLoadEditor(qaApproved[i]); renderQAPendingList(); };
 
   // ── LOAD EDITOR ───────────────────────────────────────────────────────────
-
   function qaLoadEditor(q) {
     qaCurrentQ = q;
     document.getElementById('qaEditorEmpty').style.display = 'none';
@@ -377,7 +395,6 @@
     setVal('qfCorrectAnswer',  q.correct_answer  || '');
     setVal('qfWorkedSolution', q.worked_solution || '');
 
-    // accept_also: JSON array → one per line
     var aa = q.accept_also || [];
     if (typeof aa === 'string') { try { aa = JSON.parse(aa); } catch (e) { aa = []; } }
     if (!Array.isArray(aa)) aa = [];
@@ -391,7 +408,6 @@
     qaSetJson('qfWrongExpl', q.wrong_explanations);
     qaSetJson('qfParts',     q.parts);
 
-    // Synthesis connector
     var isSynth = (q.topic || '').toLowerCase() === 'synthesis';
     var connEl  = document.getElementById('qfConnector');
     if (isSynth && q.instructions) {
@@ -411,7 +427,6 @@
   }
 
   // ── COLLECT FIELDS ────────────────────────────────────────────────────────
-
   function qaCollectFields() {
     var topic   = (document.getElementById('qfTopic') || {}).value || '';
     var type    = (document.getElementById('qfType')  || {}).value || '';
@@ -429,7 +444,6 @@
     var aaEl = document.getElementById('qfAcceptAlso');
     var acceptLines = aaEl ? aaEl.value.split('\n').map(function (s) { return s.trim(); }).filter(Boolean) : [];
 
-    // Collect JSON fields with per-field error handling
     var optionsVal = null, wrongExplVal = null, partsVal = null;
     try { optionsVal   = qaGetJson('qfOptions');   } catch (e) { throw new Error('Options: ' + e.message); }
     try { wrongExplVal = qaGetJson('qfWrongExpl'); } catch (e) { throw new Error('Wrong Explanations: ' + e.message); }
@@ -456,11 +470,10 @@
   }
 
   // ── WORKFLOW: APPROVE & NEXT ───────────────────────────────────────────────
-
   window.qaApproveNext = async function () {
     if (!qaCurrentQ) { qaNotify('No question selected.', 'error'); return; }
     var btn = document.querySelector('#qaActionBar .btn-primary');
-    if (btn) { btn.textContent = '⏳ Saving…'; btn.disabled = true; }
+    if (btn) { btn.textContent = '\u23F3 Saving\u2026'; btn.disabled = true; }
     try {
       var fields = qaCollectFields();
       var res = await fetch('/api/qa-questions', {
@@ -473,13 +486,13 @@
 
       var prevIdx = qaCurrentIdx;
       qaQueue = qaQueue.filter(function (q) { return q.id !== qaCurrentQ.id; });
-      qaNotify('✅ Approved!', 'success');
+      qaNotify('\u2705 Approved!', 'success');
 
       if (qaQueue.length === 0) {
         qaCurrentQ = null; qaCurrentIdx = -1;
         document.getElementById('qaEditorEmpty').style.display = '';
         document.getElementById('qaEditorInner').style.display = 'none';
-        document.getElementById('qaPreview').innerHTML = '<div class="qa-empty-state"><div style="font-size:2rem;">🎉</div><div class="text-sm">Queue complete! All questions reviewed.</div></div>';
+        document.getElementById('qaPreview').innerHTML = '<div class="qa-empty-state"><div style="font-size:2rem;">\uD83C\uDF89</div><div class="text-sm">Queue complete! All questions reviewed.</div></div>';
       } else {
         qaCurrentIdx = Math.min(prevIdx, qaQueue.length - 1);
         qaLoadEditor(qaQueue[qaCurrentIdx]);
@@ -491,16 +504,15 @@
       window.loadQAApproved();
     } catch (e) {
       qaNotify('Approve failed: ' + e.message, 'error');
-      if (btn) { btn.textContent = '✅ Approve & Next'; btn.disabled = false; }
+      if (btn) { btn.textContent = '\u2705 Approve & Next'; btn.disabled = false; }
     }
   };
 
   // ── WORKFLOW: SAVE DRAFT ──────────────────────────────────────────────────
-
   window.qaSaveDraft = async function (btn) {
     if (!qaCurrentQ) { qaNotify('No question selected.', 'error'); return; }
     var origText = btn ? btn.textContent : '';
-    if (btn) { btn.textContent = '⏳ Saving…'; btn.disabled = true; }
+    if (btn) { btn.textContent = '\u23F3 Saving\u2026'; btn.disabled = true; }
     try {
       var fields = qaCollectFields();
       var res = await fetch('/api/qa-questions', {
@@ -512,8 +524,8 @@
       if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
       Object.assign(qaCurrentQ, fields);
       renderQAPendingList();
-      qaNotify('💾 Saved!', 'success');
-      if (btn) { btn.textContent = '✅ Saved!'; setTimeout(function () { btn.textContent = origText; btn.disabled = false; }, 1400); }
+      qaNotify('\uD83D\uDCBE Saved!', 'success');
+      if (btn) { btn.textContent = '\u2705 Saved!'; setTimeout(function () { btn.textContent = origText; btn.disabled = false; }, 1400); }
     } catch (e) {
       qaNotify('Save failed: ' + e.message, 'error');
       if (btn) { btn.textContent = origText; btn.disabled = false; }
@@ -521,7 +533,6 @@
   };
 
   // ── WORKFLOW: DELETE ──────────────────────────────────────────────────────
-
   window.qaDelete = async function () {
     if (!qaCurrentQ) { qaNotify('No question selected.', 'error'); return; }
     if (!confirm('Delete this question permanently? This cannot be undone.')) return;
@@ -535,12 +546,12 @@
       if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
       var prevIdx = qaCurrentIdx;
       qaQueue = qaQueue.filter(function (q) { return q.id !== qaCurrentQ.id; });
-      qaNotify('🗑️ Deleted', 'info');
+      qaNotify('\uD83D\uDDD1\uFE0F Deleted', 'info');
       if (qaQueue.length === 0) {
         qaCurrentQ = null; qaCurrentIdx = -1;
         document.getElementById('qaEditorEmpty').style.display = '';
         document.getElementById('qaEditorInner').style.display = 'none';
-        document.getElementById('qaPreview').innerHTML = '<div class="qa-empty-state"><div style="font-size:2rem;">✅</div><div class="text-sm">Queue empty.</div></div>';
+        document.getElementById('qaPreview').innerHTML = '<div class="qa-empty-state"><div style="font-size:2rem;">\u2705</div><div class="text-sm">Queue empty.</div></div>';
       } else {
         qaCurrentIdx = Math.min(prevIdx, qaQueue.length - 1);
         qaLoadEditor(qaQueue[qaCurrentIdx]);
@@ -553,7 +564,6 @@
   };
 
   // ── WORKFLOW: RETURN TO QUEUE ─────────────────────────────────────────────
-
   window.qaReturnToQueue = async function () {
     if (!qaCurrentQ) return;
     if (!confirm('Return this approved question back to the pending review queue?')) return;
@@ -565,7 +575,7 @@
       });
       var data = await res.json();
       if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
-      qaCurrentQ.is_ai_cloned = true;
+      qaCurrentQ.approved_at = null; // mark pending locally
       qaQueue.unshift(qaCurrentQ);
       qaApproved = qaApproved.filter(function (q) { return q.id !== qaCurrentQ.id; });
       renderQAPendingList(); renderQAApprovedList();
@@ -574,12 +584,11 @@
       var badge = document.getElementById('qaTabBadge');   if (badge) badge.textContent = qaQueue.length;
       qaPending = qaQueue.length; renderPulse();
       renderQAActionBar();
-      qaNotify('↩️ Returned to queue', 'info');
+      qaNotify('\u21A9\uFE0F Returned to queue', 'info');
     } catch (e) { qaNotify('Return failed: ' + e.message, 'error'); }
   };
 
   // ── LIVE PREVIEW ──────────────────────────────────────────────────────────
-
   function qaLivePreview() {
     if (!qaCurrentQ) return;
     var type    = (document.getElementById('qfType')  || {}).value || qaCurrentQ.type || 'mcq';
@@ -619,21 +628,41 @@
       worked_solution: (document.getElementById('qfWorkedSolution')|| {}).value || '',
       instructions:    liveInstructions, accept_also: liveAA,
       options: opts, wrong_explanations: wrongExpl, parts: parts,
-      passage: qaCurrentQ.passage, passage_lines: qaCurrentQ.passage_lines, blanks: qaCurrentQ.blanks,
+      passage: qaCurrentQ.passage,
+      passage_lines: qaCurrentQ.passage_lines,
+      blanks: qaCurrentQ.blanks,
+      visual_payload: qaCurrentQ.visual_payload,
     });
   }
 
   window.qaLivePreview = qaLivePreview;
 
-  // ── PREVIEW RENDERER ──────────────────────────────────────────────────────
-  // Bug #4 fix: use renderHtml() for worked_solution and question_text
-  // so that <br> tags stored in the DB render as actual line breaks.
-  //
-  // wrong_explanations:
-  //   NEW (2025+): keyed by option text → { "It eats...": { text:"...", type:"misconception" } }
-  //   OLD (legacy): keyed by letter     → { "A": "explanation" }
-  //   Both handled: option text lookup first, fall back to letter.
+  // ── VISUAL PAYLOAD RENDERER ───────────────────────────────────────────────
+  // v3.0 fix #2: matches quiz.js renderVisualPayload exactly so previews look
+  // identical to the live student view. Falls back gracefully if DiagramLibrary
+  // isn't loaded or the function name doesn't exist.
+  function renderVisualPayload(visual_payload) {
+    if (!visual_payload) return '';
+    if (typeof DiagramLibrary === 'undefined') {
+      return '<div class="qa-diagram-warn" style="padding:var(--space-3);background:var(--bg-elevated);border:1px dashed var(--border-light);border-radius:var(--radius-md);font-size:var(--text-xs);color:var(--text-muted);">\uD83D\uDCCA diagram-library.js not loaded</div>';
+    }
+    if (visual_payload.engine !== 'diagram-library') return '';
+    try {
+      var fnName = visual_payload.function_name;
+      var params = visual_payload.params || {};
+      if (typeof DiagramLibrary[fnName] === 'function') {
+        var svgHtml = DiagramLibrary[fnName](params);
+        if (String(svgHtml).indexOf('NaN') !== -1) throw new Error('NaN in generated geometry');
+        return '<div class="procedural-diagram mb-4 mx-auto" style="max-width:600px;overflow-x:auto;display:flex;justify-content:center;">' + svgHtml + '</div>';
+      }
+      return '<div class="qa-diagram-warn" style="padding:var(--space-3);background:var(--bg-elevated);border:1px dashed var(--border-light);border-radius:var(--radius-md);font-size:var(--text-xs);color:var(--text-muted);">Unknown DiagramLibrary function: ' + esc(fnName) + '</div>';
+    } catch (err) {
+      console.error('[qa] visual_payload render error:', err);
+      return '<div class="qa-diagram-warn" style="padding:var(--space-3);background:var(--bg-elevated);border:1px dashed var(--brand-error);border-radius:var(--radius-md);font-size:var(--text-xs);color:var(--brand-error);">Diagram render error: ' + esc(err.message) + '</div>';
+    }
+  }
 
+  // ── PREVIEW RENDERER ──────────────────────────────────────────────────────
   function renderQAPreview(q) {
     var el = document.getElementById('qaPreview');
     if (!q) { el.innerHTML = '<div class="qa-empty-state"><div class="text-sm text-muted">Select a question to preview</div></div>'; return; }
@@ -652,10 +681,14 @@
     if (q.difficulty)      html += '<span class="badge">'             + esc(q.difficulty)      + '</span>';
     if (q.marks)           html += '<span class="badge badge-amber">' + q.marks + ' mk</span>';
     if (q.cognitive_skill) html += '<span class="badge">'             + esc(q.cognitive_skill) + '</span>';
+    if (q.visual_payload)  html += '<span class="badge" style="background:rgba(57,255,179,0.1);color:var(--brand-mint);">\uD83D\uDCCA Diagram</span>';
     html += '</div>';
 
     if (q.topic) html += '<div class="text-xs font-bold text-muted uppercase mb-4" style="letter-spacing:0.06em;">'
-      + esc(q.topic) + (q.sub_topic ? ' \u203a ' + esc(q.sub_topic) : '') + '</div>';
+      + esc(q.topic) + (q.sub_topic ? ' \u203A ' + esc(q.sub_topic) : '') + '</div>';
+
+    // ══ VISUAL PAYLOAD (renders before question_text, like quiz.js) ═════════
+    if (q.visual_payload) html += renderVisualPayload(q.visual_payload);
 
     // ══ SYNTHESIS ═══════════════════════════════════════════════════════════
     if (isSynth && type === 'short_ans') {
@@ -683,9 +716,9 @@
       if (!Array.isArray(aa)) aa = [];
       aa = aa.filter(Boolean);
       if (aa.length) {
-        html += '<div class="p-3 rounded mt-2" style="background:var(--bg-elevated);border:1px solid var(--border-light);">';
-        html += '<div class="text-xs font-bold text-muted uppercase mb-2">Also Accepted</div>';
-        aa.forEach(function (alt) { html += '<div class="text-sm text-main mb-1">\u2022 ' + esc(alt) + '</div>'; });
+        html += '<div class="qa-accept-also">';
+        html += '<div class="qa-accept-also-lbl">Also Accepted</div>';
+        aa.forEach(function (alt) { html += '<div class="qa-accept-also-item">\u2022 ' + esc(alt) + '</div>'; });
         html += '</div>';
       }
 
@@ -693,7 +726,7 @@
 
     // ══ MCQ ═════════════════════════════════════════════════════════════════
     } else if (type === 'mcq') {
-      if (q.question_text) html += '<div style="font-size:var(--text-base);font-weight:700;color:var(--text-main);line-height:1.6;margin-bottom:var(--space-4);">' + renderHtml(q.question_text) + '</div>';
+      if (q.question_text) html += '<div class="qa-question-stem">' + renderHtml(q.question_text) + '</div>';
 
       var opts = [];
       try { opts = typeof q.options === 'string' ? JSON.parse(q.options) : (Array.isArray(q.options) ? q.options : []); } catch (e) {}
@@ -725,15 +758,28 @@
 
     // ══ SHORT ANSWER (non-synthesis) ═════════════════════════════════════════
     } else if (type === 'short_ans') {
-      if (q.question_text) html += '<div style="font-size:var(--text-base);font-weight:700;color:var(--text-main);line-height:1.6;margin-bottom:var(--space-4);">' + renderHtml(q.question_text) + '</div>';
+      if (q.question_text) html += '<div class="qa-question-stem">' + renderHtml(q.question_text) + '</div>';
       if (q.instructions)  html += '<div class="text-sm text-muted mb-3 italic">' + esc(q.instructions) + '</div>';
       html += '<div class="p-3 rounded mb-3" style="background:var(--bg-elevated);border:1px solid var(--border-light);"><div class="text-xs text-muted mb-2">Student writes answer here</div><div style="height:32px;border:1px solid var(--border-dark);border-radius:var(--radius-sm);background:var(--bg-surface);"></div></div>';
       if (q.correct_answer)  html += '<div class="qa-solution-box"><div class="qa-solution-lbl">\u2713 Correct Answer</div><div class="text-sm text-main">' + esc(q.correct_answer) + '</div></div>';
+
+      // Also accepted (uses style.css class instead of Tailwind)
+      var aa2 = q.accept_also || [];
+      if (typeof aa2 === 'string') { try { aa2 = JSON.parse(aa2); } catch (e) { aa2 = []; } }
+      if (!Array.isArray(aa2)) aa2 = [];
+      aa2 = aa2.filter(Boolean);
+      if (aa2.length) {
+        html += '<div class="qa-accept-also">';
+        html += '<div class="qa-accept-also-lbl">Also Accepted</div>';
+        aa2.forEach(function (alt) { html += '<div class="qa-accept-also-item">\u2022 ' + esc(alt) + '</div>'; });
+        html += '</div>';
+      }
+
       if (q.worked_solution) html += '<div class="qa-solution-box mt-3"><div class="qa-solution-lbl">\uD83D\uDCCB Worked Solution</div><div class="text-sm text-main">' + renderHtml(q.worked_solution) + '</div></div>';
 
     // ══ WORD PROBLEM / OPEN ENDED ════════════════════════════════════════════
     } else if (type === 'word_problem' || type === 'open_ended') {
-      if (q.question_text) html += '<div style="font-size:var(--text-base);font-weight:700;color:var(--text-main);line-height:1.6;margin-bottom:var(--space-4);">' + renderHtml(q.question_text) + '</div>';
+      if (q.question_text) html += '<div class="qa-question-stem">' + renderHtml(q.question_text) + '</div>';
       var wParts = [];
       try { wParts = typeof q.parts === 'string' ? JSON.parse(q.parts) : (Array.isArray(q.parts) ? q.parts : []); } catch (e) {}
       wParts.forEach(function (p, i) {
@@ -741,30 +787,38 @@
         html += '<div class="font-bold text-sm" style="color:var(--brand-sage);">' + esc(p.label || '(' + String.fromCharCode(97+i) + ')') + ' <span class="text-muted font-normal text-xs">(' + (p.marks||1) + ' mk)</span></div>';
         if (p.question) html += '<div class="text-sm text-main mt-2">' + renderHtml(p.question) + '</div>';
         var ans = p.model_answer || p.correct_answer || p.worked_solution || '';
-        if (ans) html += '<div class="text-xs mt-2 font-bold" style="color:var(--brand-mint);">\u2713 ' + esc(ans).slice(0,120) + '</div>';
+        if (ans) html += '<div class="text-xs mt-2 font-bold" style="color:var(--brand-mint);">\u2713 ' + esc(ans).slice(0,180) + (ans.length > 180 ? '\u2026' : '') + '</div>';
         html += '</div>';
       });
       if (q.worked_solution) html += '<div class="qa-solution-box mt-3"><div class="qa-solution-lbl">\uD83D\uDCCB Worked Solution</div><div class="text-sm text-main">' + renderHtml(q.worked_solution) + '</div></div>';
 
     // ══ CLOZE ════════════════════════════════════════════════════════════════
     } else if (type === 'cloze') {
-      var passageEsc = esc(q.passage || q.question_text || '').replace(/\[(\d+)\]/g, function (m, n) {
+      // Cloze passage often has literal <br> markup from generation. Render properly.
+      var clozeText = q.passage || q.question_text || '';
+      var passageHtml = renderPassageHtml(clozeText).replace(/\[(\d+)\]/g, function (m, n) {
         return '<span style="display:inline-block;min-width:70px;border-bottom:2px solid var(--brand-rose);text-align:center;margin:0 2px;color:var(--brand-rose);">[' + n + ']</span>';
       });
-      html += '<div class="p-4 rounded mb-4" style="background:var(--bg-elevated);line-height:2;font-size:var(--text-sm);">' + passageEsc + '</div>';
+      html += '<div class="p-4 rounded mb-4" style="background:var(--bg-elevated);line-height:2;font-size:var(--text-sm);">' + passageHtml + '</div>';
       var blanks = [];
       try { blanks = typeof q.blanks === 'string' ? JSON.parse(q.blanks) : (Array.isArray(q.blanks) ? q.blanks : []); } catch (e) {}
       if (blanks.length) {
         html += '<div class="flex flex-wrap gap-2">';
-        blanks.forEach(function (b) { html += '<span class="badge">[' + (b.number||b.id) + '] <span style="color:var(--brand-mint);">' + esc(b.correct_answer||'') + '</span></span>'; });
+        blanks.forEach(function (b) {
+          html += '<span class="badge">[' + (b.number||b.id) + '] <span style="color:var(--brand-mint);">' + esc(b.correct_answer||'') + '</span></span>';
+        });
         html += '</div>';
       }
 
     // ══ EDITING ══════════════════════════════════════════════════════════════
+    // v3.0 fix #8: real data stores passage as inline HTML in q.passage with
+    // <u>word</u> [N] markers. passage_lines is null. Try passage_lines first
+    // (legacy schema), fall back to rendering passage HTML.
     } else if (type === 'editing') {
       var lines = [];
       try { lines = typeof q.passage_lines === 'string' ? JSON.parse(q.passage_lines) : (Array.isArray(q.passage_lines) ? q.passage_lines : []); } catch (e) {}
       if (lines.length) {
+        // Legacy schema: structured per-line objects
         html += '<div class="p-4 rounded" style="background:var(--bg-elevated);font-size:var(--text-base);line-height:2.4;">';
         lines.forEach(function (line) {
           var text = esc(line.text || '');
@@ -772,29 +826,83 @@
             var colour = line.has_error ? 'var(--brand-error)' : 'var(--text-main)';
             text = text.replace(esc(line.underlined_word), '<u style="color:' + colour + ';font-weight:700;">' + esc(line.underlined_word) + '</u>');
           }
-          html += '<div>' + text + (line.has_error ? ' <span style="color:var(--brand-mint);font-size:11px;">[→ ' + esc(line.correct_word||'') + ']</span>' : '') + '</div>';
+          html += '<div>' + text + (line.has_error ? ' <span style="color:var(--brand-mint);font-size:11px;">[\u2192 ' + esc(line.correct_word||'') + ']</span>' : '') + '</div>';
         });
         html += '</div>';
+      } else if (q.passage) {
+        // Current schema: passage is inline HTML with <u>word</u> [N] markers
+        html += '<div class="p-4 rounded" style="background:var(--bg-elevated);font-size:var(--text-base);line-height:2;">';
+        html += renderPassageHtml(q.passage);
+        html += '</div>';
+        // Show parts (the corrections list) if present
+        var ePartsArr = [];
+        try { ePartsArr = typeof q.parts === 'string' ? JSON.parse(q.parts) : (Array.isArray(q.parts) ? q.parts : []); } catch (e) {}
+        if (ePartsArr.length) {
+          html += '<div class="qa-accept-also" style="margin-top:var(--space-3);">';
+          html += '<div class="qa-accept-also-lbl">Corrections</div>';
+          ePartsArr.forEach(function (p, i) {
+            var num = p.number || p.label || (i + 1);
+            var wrong = p.underlined_word || p.wrong || p.error || '';
+            var right = p.correct_word || p.correct_answer || p.model_answer || '';
+            html += '<div class="qa-accept-also-item">[' + esc(num) + '] '
+              + (wrong ? '<span style="color:var(--brand-error);text-decoration:line-through;">' + esc(wrong) + '</span> \u2192 ' : '')
+              + '<span style="color:var(--brand-mint);font-weight:700;">' + esc(right) + '</span></div>';
+          });
+          html += '</div>';
+        }
       }
 
     // ══ COMPREHENSION / VISUAL TEXT ══════════════════════════════════════════
+    // v3.0 fix #5: show ALL parts (was capped at 4), pull answers from parts[i].model_answer,
+    // and renderHtml() on passage so <br> markup renders as line breaks.
     } else if (type === 'comprehension' || type === 'visual_text') {
-      if (q.passage) html += '<div class="p-3 rounded mb-4 text-sm" style="background:var(--bg-elevated);max-height:180px;overflow-y:auto;line-height:1.7;">' + esc(q.passage).replace(/\n/g,'<br>') + '</div>';
+      if (q.passage) html += '<div class="p-3 rounded mb-4 text-sm" style="background:var(--bg-elevated);max-height:240px;overflow-y:auto;line-height:1.7;">' + renderPassageHtml(q.passage) + '</div>';
       var cParts = [];
       try { cParts = typeof q.parts === 'string' ? JSON.parse(q.parts) : (Array.isArray(q.parts) ? q.parts : []); } catch (e) {}
-      cParts.slice(0,4).forEach(function (p, i) {
+      cParts.forEach(function (p, i) {
+        var ptMarks   = p.marks || 1;
+        var ptType    = p.part_type || '';
+        var ptLabel   = p.label || ('Q' + (i + 1));
+        var ptAnswer  = p.model_answer || p.correct_answer || '';
+
+        // Build referent/sequencing/true_false answer if part-specific structure
+        if (!ptAnswer && p.part_type === 'referent' && Array.isArray(p.items)) {
+          ptAnswer = p.items.map(function (it) { return it.word + ' \u2192 ' + (it.correct_answer || ''); }).join('; ');
+        }
+        if (!ptAnswer && p.part_type === 'sequencing' && Array.isArray(p.correct_order)) {
+          ptAnswer = 'Order: ' + p.correct_order.join(', ');
+        }
+        if (!ptAnswer && p.part_type === 'true_false' && Array.isArray(p.items)) {
+          ptAnswer = p.items.map(function (it) { return '"' + (it.statement || '') + '" \u2192 ' + (it.correct_answer || ''); }).join('; ');
+        }
+
         html += '<div class="mb-2 p-4 rounded" style="background:var(--bg-elevated);border-left:3px solid var(--brand-sage);">';
-        html += '<span class="font-bold text-sm" style="color:var(--brand-sage);">' + esc(p.label||('Q'+(i+1))) + '</span> ';
-        html += '<span class="text-xs text-muted">(' + esc(p.part_type||'') + ' \u00b7 ' + (p.marks||1) + ' mk)</span>';
+        html += '<span class="font-bold text-sm" style="color:var(--brand-sage);">' + esc(ptLabel) + '</span> ';
+        html += '<span class="text-xs text-muted">(' + esc(ptType) + ' \u00B7 ' + ptMarks + ' mk)</span>';
         if (p.question || p.instructions) html += '<div class="text-sm text-main mt-2">' + renderHtml(p.question || p.instructions || '') + '</div>';
+
+        // MCQ-style options if present
+        if (Array.isArray(p.options) && p.options.length) {
+          html += '<div style="margin-top:var(--space-2);">';
+          p.options.forEach(function (opt, oi) {
+            var optLetter = letters[oi];
+            var isOptCorrect = String(p.correct_answer || '').toUpperCase() === optLetter || p.correct_answer === opt;
+            html += '<div style="font-size:var(--text-xs);margin:2px 0;color:' + (isOptCorrect ? 'var(--brand-mint)' : 'var(--text-muted)') + ';">'
+              + (isOptCorrect ? '\u2713 ' : '\u00B7 ') + esc(optLetter) + '. ' + esc(opt) + '</div>';
+          });
+          html += '</div>';
+        }
+
+        if (ptAnswer) {
+          html += '<div class="text-xs mt-2 font-bold" style="color:var(--brand-mint);">\u2713 ' + esc(String(ptAnswer)).slice(0, 240) + (String(ptAnswer).length > 240 ? '\u2026' : '') + '</div>';
+        }
         html += '</div>';
       });
-      if (cParts.length > 4) html += '<div class="text-xs text-muted">+' + (cParts.length-4) + ' more parts</div>';
       if (q.worked_solution) html += '<div class="qa-solution-box mt-3"><div class="qa-solution-lbl">\uD83D\uDCCB Worked Solution</div><div class="text-sm text-main">' + renderHtml(q.worked_solution) + '</div></div>';
 
     // ══ FALLBACK ═════════════════════════════════════════════════════════════
     } else {
-      if (q.question_text)  html += '<div style="font-size:var(--text-base);font-weight:700;color:var(--text-main);line-height:1.6;margin-bottom:var(--space-4);">' + renderHtml(q.question_text) + '</div>';
+      if (q.question_text)  html += '<div class="qa-question-stem">' + renderHtml(q.question_text) + '</div>';
       if (q.correct_answer) html += '<div class="qa-solution-box"><div class="qa-solution-lbl">\u2713 Answer</div><div class="text-sm text-main">' + esc(q.correct_answer) + '</div></div>';
       if (q.worked_solution) html += '<div class="qa-solution-box mt-3"><div class="qa-solution-lbl">\uD83D\uDCCB Worked Solution</div><div class="text-sm text-main">' + renderHtml(q.worked_solution) + '</div></div>';
     }

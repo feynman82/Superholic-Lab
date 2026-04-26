@@ -25,7 +25,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Icon } from "@/components/icons"
+import { Icon } from "../../../components/icons"
 
 // ─── Public types ──────────────────────────────────────────────────
 
