@@ -109,6 +109,24 @@
   /* -- Diagram Library colors --*/
   --color-magnet-N: #C0392B;  /* red  */
   --color-magnet-S: #2471A3;  /* blue */
+  
+  /* ── Semantic ──────────────────────────────────────────────── */
+  --error:              #ba1a1a;
+  --error-container:    #ffdad6;
+  --on-error:           #ffffff;
+  --on-error-container: #93000a;
+
+  /* ── Glass surfaces ────────────────────────────────────────── */
+  --glass-bg:         rgba(255, 255, 255, 0.40);
+  --glass-bg-dark:    rgba(58, 73, 71, 0.55);
+  --glass-border:     rgba(255, 255, 255, 0.40);
+  --glass-border-dim: rgba(194, 200, 198, 0.35);  /* outline-variant at 35% */
+  --glass-shadow:     rgba(81, 97, 94, 0.08);     /* sage-tinted diffuse     */
+
+  /* ── Blur levels (glassmorphism elevation) ─────────────────── */
+  --blur-1: blur(16px);   /* cards                  */
+  --blur-2: blur(32px);   /* modals / overlays       */
+
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -3105,3 +3123,310 @@ h4,
   backdrop-filter: blur(2px);
 }
 
+
+/* ==========================================================================
+   ARCHITECT-SCHOLAR LAYER — appended 2026-04-26
+   Source: src/design/architect-scholar.css (Stitch "Sage Rose ECC Redesign")
+   See STYLEGUIDE.md §"Architect-Scholar Theme Layer" for full philosophy.
+
+   ─── ADDITIVE ONLY ─────────────────────────────────────────────────────
+   Per Q1 (Option A): all architect-scholar tokens are added as ALIASES
+   that point to existing brand tokens. Both naming schemes work side by
+   side. Existing classes (.card, .btn, .bg-sage, etc.) remain untouched.
+   New components (.card-glass, .input-underline, etc.) are OPT-IN only.
+
+   ─── MIGRATION PLAN ────────────────────────────────────────────────────
+   Q2 long-term direction: .card will eventually default to glass.
+   For now (framework-build phase) we keep .card solid and ship the
+   glass variant as .card-glass. When the migration happens:
+     1. Audit all pages using .card for legibility on light backgrounds
+     2. Swap .card body to use --glass-bg + --blur-1
+     3. Introduce .card-solid as the legacy escape-hatch class
+   ========================================================================== */
+
+/* AS.1  TOKEN ALIASES — architect-scholar names → existing brand tokens */
+:root {
+  --sage:          var(--brand-sage);
+  --sage-darker:   var(--sage-dark);
+  --sage-charcoal: var(--text-main);
+  --rose:          var(--brand-rose);
+  --rose-dark:     var(--brand-rose-hover);
+  --off-white:     var(--bg-page);
+
+  --surface:                    #f4fbf9;
+  --surface-dim:                #d4dbda;
+  --surface-bright:             #f4fbf9;
+  --surface-container-lowest:   #ffffff;
+  --surface-container-low:      #eef5f3;
+  --surface-container:          #e8efed;
+  --surface-container-high:     #e3eae8;
+  --surface-container-highest:  #dde4e2;
+  --surface-variant:            #dde4e2;
+  --surface-tint:               #52625f;
+
+  --on-surface:           var(--text-main);
+  --on-surface-variant:   var(--text-muted);
+  --inverse-surface:      #2b3231;
+  --inverse-on-surface:   #ebf2f0;
+  --on-primary:           #ffffff;
+  --on-primary-container: #cadbd7;
+  --on-secondary:         #ffffff;
+
+  --outline:         var(--border-dark);
+  --outline-variant: var(--border-light);
+
+  --text-display-xl-size:    80px;
+  --text-display-xl-leading: 1.0;
+  --text-display-xl-tracking: 0.02em;
+
+  --text-h1-size:     48px;
+  --text-h1-leading:  1.1;
+  --text-h1-tracking: 0.04em;
+
+  --text-h2-size:     32px;
+  --text-h2-leading:  1.2;
+  --text-h2-tracking: 0.05em;
+
+  --text-body-lg-size:    18px;
+  --text-body-lg-leading: 1.6;
+  --text-body-md-size:    16px;
+  --text-body-md-leading: 1.6;
+
+  --text-button-tracking: 0.08em;
+  --text-label-size:      12px;
+  --text-label-tracking:  0.1em;
+
+  --transition-fast:   120ms ease;
+  --transition:        220ms ease;
+  --transition-spring: 400ms cubic-bezier(0.16, 1, 0.3, 1);
+
+  --gutter:       var(--space-4);
+  --container-as: 1280px;
+}
+
+/* AS.2  TYPOGRAPHY CLASSES (opt-in) */
+.display-xl {
+  font-family: var(--font-display);
+  font-size: var(--text-display-xl-size);
+  font-weight: 400;
+  line-height: var(--text-display-xl-leading);
+  letter-spacing: var(--text-display-xl-tracking);
+  text-transform: uppercase;
+  color: var(--text-main);
+}
+.h1-as {
+  font-family: var(--font-display);
+  font-size: var(--text-h1-size);
+  font-weight: 400;
+  line-height: var(--text-h1-leading);
+  letter-spacing: var(--text-h1-tracking);
+  text-transform: uppercase;
+  color: var(--text-main);
+}
+.h2-as {
+  font-family: var(--font-display);
+  font-size: var(--text-h2-size);
+  font-weight: 400;
+  line-height: var(--text-h2-leading);
+  letter-spacing: var(--text-h2-tracking);
+  text-transform: uppercase;
+  color: var(--text-main);
+}
+.body-lg {
+  font-family: var(--font-body);
+  font-size: var(--text-body-lg-size);
+  line-height: var(--text-body-lg-leading);
+  font-weight: 400;
+  color: var(--text-muted);
+}
+.body-md {
+  font-family: var(--font-body);
+  font-size: var(--text-body-md-size);
+  line-height: var(--text-body-md-leading);
+  font-weight: 400;
+  color: var(--text-muted);
+}
+.label-caps {
+  font-family: var(--font-body);
+  font-size: var(--text-label-size);
+  font-weight: 700;
+  letter-spacing: var(--text-label-tracking);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* AS.3  GLASSMORPHISM CARDS (opt-in) */
+.card-glass {
+  background: var(--glass-bg);
+  backdrop-filter: var(--blur-1);
+  -webkit-backdrop-filter: var(--blur-1);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 4px 24px var(--glass-shadow);
+  padding: var(--space-4);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+.card-glass:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 40px var(--glass-shadow);
+}
+.card-glass-dark {
+  background: var(--glass-bg-dark);
+  backdrop-filter: var(--blur-1);
+  -webkit-backdrop-filter: var(--blur-1);
+  border: 1px solid rgba(202, 219, 215, 0.15);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
+  padding: var(--space-4);
+  color: var(--cream);
+}
+.card-glass-overlay {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: var(--blur-2);
+  -webkit-backdrop-filter: var(--blur-2);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    0 8px 48px var(--glass-shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  padding: var(--space-4);
+}
+
+/* AS.4  INPUTS (opt-in) */
+.input-underline {
+  background: transparent;
+  border: none;
+  border-bottom: 1.5px solid var(--outline-variant);
+  border-radius: 0;
+  padding: var(--space-2) 0;
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--text-main);
+  width: 100%;
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+.input-underline::placeholder { color: var(--outline); }
+.input-underline:focus { border-bottom-color: var(--brand-rose); }
+.input-ghost {
+  background: rgba(255, 255, 255, 0.35);
+  border: 1px solid var(--glass-border-dim);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--text-main);
+  width: 100%;
+  outline: none;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.input-ghost::placeholder { color: var(--outline); }
+.input-ghost:focus {
+  border-color: var(--brand-rose);
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow: 0 0 0 3px rgba(183, 110, 121, 0.12);
+}
+
+/* AS.5  BADGES (new variants) */
+.badge-sage {
+  background: rgba(81, 97, 94, 0.12);
+  color: var(--brand-sage);
+  border: 1px solid rgba(81, 97, 94, 0.20);
+}
+.badge-rose {
+  background: rgba(183, 110, 121, 0.12);
+  color: var(--brand-rose-hover);
+  border: 1px solid rgba(183, 110, 121, 0.25);
+}
+.badge-neutral {
+  background: var(--surface-container);
+  color: var(--text-muted);
+  border: 1px solid var(--border-light);
+}
+
+/* AS.6  GAUGE — pure CSS circular progress.
+   Override --gauge-pct per instance via inline style attribute. */
+.gauge {
+  --gauge-size: 80px;
+  --gauge-stroke: 4px;
+  --gauge-pct: 0.65;
+  width: var(--gauge-size);
+  height: var(--gauge-size);
+  border-radius: 50%;
+  background:
+    conic-gradient(
+      var(--brand-rose) calc(var(--gauge-pct) * 360deg),
+      var(--surface-container-high) 0
+    );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.gauge::before {
+  content: '';
+  width: calc(var(--gauge-size) - var(--gauge-stroke) * 4);
+  height: calc(var(--gauge-size) - var(--gauge-stroke) * 4);
+  border-radius: 50%;
+  background: var(--surface);
+}
+
+/* AS.7  ASYMMETRIC GRID & TEXTURES.
+   Existing .container (1000px) is kept; opt into the wider
+   architect-scholar container with .container-as (1280px). */
+.container-as {
+  width: 100%;
+  max-width: var(--container-as);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+.grid-12 {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--gutter);
+}
+.grid-texture {
+  background-image:
+    linear-gradient(rgba(81, 97, 94, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(81, 97, 94, 0.025) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+.grid-texture-lg {
+  background-image:
+    linear-gradient(rgba(81, 97, 94, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(81, 97, 94, 0.03) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* AS.8  ROSE BULLET LIST */
+ul.rose-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+ul.rose-list li {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+  color: var(--text-main);
+  font-size: var(--text-base);
+  line-height: 1.6;
+}
+ul.rose-list li::before {
+  content: '▸';
+  color: var(--brand-rose);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* AS.9  SURFACE & TEXT UTILITIES */
+.bg-surface           { background: var(--surface); }
+.bg-surface-container { background: var(--surface-container); }
+.bg-charcoal          { background: var(--inverse-surface); color: var(--inverse-on-surface); }
+
+.text-sage            { color: var(--brand-sage); }
+.text-faint           { color: var(--outline); }
