@@ -686,54 +686,116 @@ function DiagnosisCard({ diagnosis }: { diagnosis: Diagnosis }) {
 }
 
 function DependencyTree({ topic, unlocks }: { topic: string; unlocks: string[] }) {
+  const W = 480
+  const H = 160
+  const rootX = 80
+  const rootY = H / 2
+  const fanRadius = 280
+
+  // Pill dimensions — wide enough for the longest MOE topic names
+  const rootPillW = 88, rootPillH = 28, rootPillRx = 14
+  const leafPillW = 84, leafPillH = 22, leafPillRx = 11
+
   return (
-    <div
-      className="quest-dep-tree"
-      role="img"
-      aria-label={`${topic} unlocks ${unlocks.join(", ")}`}
-      style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}
-    >
-      {/* Root topic pill */}
-      <span
-        style={{
-          display: "inline-block",
-          padding: "5px 14px",
-          borderRadius: 9999,
-          background: "color-mix(in srgb, var(--brand-rose) 14%, transparent)",
-          border: "1.5px solid var(--brand-rose)",
-          color: "var(--brand-rose)",
-          fontSize: "0.8rem",
-          fontWeight: 700,
-          letterSpacing: "0.02em",
-          whiteSpace: "nowrap",
-        }}
+    <div className="quest-dep-tree">
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        xmlns="http://www.w3.org/2000/svg"
+        style={{ width: "100%", height: "auto", display: "block" }}
+        role="img"
+        aria-label={`Dependency tree showing ${topic} unlocking ${unlocks.join(", ")}`}
       >
-        {topic}
-      </span>
+        <defs>
+          <linearGradient id="depLineGradient" x1="0" x2="1">
+            <stop offset="0%" stopColor="var(--brand-rose)" stopOpacity="0.8" />
+            <stop offset="100%" stopColor="var(--brand-mint)" stopOpacity="0.4" />
+          </linearGradient>
+          <filter id="depGlow">
+            <feGaussianBlur stdDeviation="2" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
 
-      <span aria-hidden style={{ color: "var(--brand-mint)", fontWeight: 700 }}>→</span>
+        {/* One dashed line per unlock — from root pill right edge to leaf pill left edge */}
+        {unlocks.map((_, i) => {
+          const angle = ((i - (unlocks.length - 1) / 2) / unlocks.length) * 1.4
+          const x = rootX + Math.cos(angle) * fanRadius
+          const y = rootY + Math.sin(angle) * fanRadius * 0.4
+          return (
+            <line
+              key={`line-${i}`}
+              x1={rootX + rootPillW / 2}
+              y1={rootY}
+              x2={x - leafPillW / 2}
+              y2={y}
+              stroke="url(#depLineGradient)"
+              strokeWidth={1.5}
+              strokeDasharray="4 4"
+              strokeLinecap="round"
+            />
+          )
+        })}
 
-      {/* Unlock pills */}
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-        {unlocks.map((name) => (
-          <span
-            key={name}
-            style={{
-              display: "inline-block",
-              padding: "4px 12px",
-              borderRadius: 9999,
-              background: "color-mix(in srgb, var(--brand-mint) 8%, transparent)",
-              border: "1.5px solid color-mix(in srgb, var(--brand-mint) 40%, transparent)",
-              color: "var(--text-muted)",
-              fontSize: "0.75rem",
-              fontWeight: 600,
-              whiteSpace: "nowrap",
-            }}
-          >
-            {name}
-          </span>
-        ))}
-      </div>
+        {/* Root pill (current weakness) */}
+        <rect
+          x={rootX - rootPillW / 2}
+          y={rootY - rootPillH / 2}
+          width={rootPillW}
+          height={rootPillH}
+          rx={rootPillRx}
+          fill="color-mix(in srgb, var(--brand-rose) 20%, transparent)"
+          stroke="var(--brand-rose)"
+          strokeWidth={2}
+          filter="url(#depGlow)"
+        />
+        <text
+          x={rootX}
+          y={rootY + 4}
+          textAnchor="middle"
+          fill="var(--text-main)"
+          fontSize="11"
+          fontFamily="var(--font-body)"
+          fontWeight="700"
+        >
+          {topic}
+        </text>
+
+        {/* Unlock pills — one per dependent topic */}
+        {unlocks.map((name, i) => {
+          const angle = ((i - (unlocks.length - 1) / 2) / unlocks.length) * 1.4
+          const x = rootX + Math.cos(angle) * fanRadius
+          const y = rootY + Math.sin(angle) * fanRadius * 0.4
+          return (
+            <g key={`node-${i}`}>
+              <rect
+                x={x - leafPillW / 2}
+                y={y - leafPillH / 2}
+                width={leafPillW}
+                height={leafPillH}
+                rx={leafPillRx}
+                fill="color-mix(in srgb, var(--brand-mint) 8%, transparent)"
+                stroke="var(--brand-mint)"
+                strokeOpacity="0.5"
+                strokeWidth={1.5}
+              />
+              <text
+                x={x}
+                y={y + 3}
+                textAnchor="middle"
+                fill="var(--text-muted)"
+                fontSize="9"
+                fontFamily="var(--font-body)"
+                fontWeight="600"
+              >
+                {name}
+              </text>
+            </g>
+          )
+        })}
+      </svg>
     </div>
   )
 }
