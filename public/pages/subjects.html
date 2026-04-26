@@ -14,6 +14,8 @@
   <script src="/js/header.js" defer></script>
   <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js"></script>
   <script src="/js/footer.js" defer></script>
+  <script src="/js/icons.js" defer></script>
+  <script src="/js/bottom-nav.js" defer></script>
   <script type="module">
     import { guardPage } from '/js/auth.js';
     import { initAppShell } from '/js/app-shell.js';
@@ -50,35 +52,8 @@
   <!-- ═══════════════════ GLOBAL FOOTER ═══════════════════ -->
   <global-footer></global-footer>
 
-  <!-- ═══════════════════ BOTTOM NAV ═══════════════════ -->
-  <nav class="bottom-nav" id="bottomNav" aria-label="Mobile navigation">
-    <a href="subjects.html" class="bottom-nav-item is-active">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
-        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-      </svg>
-      Practise
-    </a>
-    <a href="tutor.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
-        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-      </svg>
-      AI Tutor
-    </a>
-    <a href="exam.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
-        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
-        <rect x="9" y="3" width="6" height="4" rx="2" />
-        <path d="M9 12h6M9 16h4" />
-      </svg>
-      Exam
-    </a>
-    <a href="progress.html" class="bottom-nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
-        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-      </svg>
-      Progress
-    </a>
-  </nav>
+  <!-- ═══════════════════ BOTTOM NAV (web component) ═══════════════════ -->
+  <global-bottom-nav></global-bottom-nav>
 
   <script src="../js/supabase-client.js"></script>
   <script>
@@ -109,17 +84,6 @@
         });
       }
     });
-
-    // Auto-Light Up Active Nav Icon
-    (function () {
-      const currentPath = window.location.pathname;
-      document.querySelectorAll('.bottom-nav-item').forEach(link => {
-        const href = link.getAttribute('href');
-        if (href && currentPath.includes(href)) {
-          link.classList.add('is-active');
-        }
-      });
-    })();
 
     window.initSubjectsEngine = function () {
       'use strict';
@@ -436,22 +400,8 @@
           state.level = student.level || 'Primary 4';
           state.tier = profile.subscription_tier || 'trial';
 
-          const isJunior = state.level.toLowerCase().includes('primary 1') || state.level.toLowerCase().includes('primary 2');
-
-          document.querySelectorAll('.bottom-nav-item').forEach(link => {
-            const url = new URL(link.href, window.location.origin);
-            url.searchParams.set('student', state.studentId);
-            link.href = url.pathname + url.search;
-
-            if (isJunior && link.getAttribute('href').includes('exam.html')) {
-              link.style.display = 'none';
-            }
-          });
-
-          if (isJunior) {
-            const nav = document.getElementById('bottomNav');
-            if (nav) nav.style.justifyContent = 'space-evenly';
-          }
+          // app-shell.js already handles bottom-nav student propagation and
+          // junior guardrail. No need to duplicate that logic here.
 
           if (state.tier === 'single_subject' && student.selected_subject) {
             state.subject = student.selected_subject.toLowerCase();

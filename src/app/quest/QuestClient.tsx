@@ -20,13 +20,17 @@
  * Phase 3 will:
  *   - Replace props with Supabase fetch
  *   - Wire onClick handlers to real API endpoints
- *   - Add ReturningCelebration (?completed=N detection)
  *   - Add EmptyState + CompleteState
+ *
+ * Demo mode: ?demo=returning shows the ReturningCelebration overlay so
+ * we can vet the celebration UX before Phase 3 wires the real flow.
  */
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import Link from "next/link"
+import { Icon } from "@/components/icons"
+import { ReturningCelebration, type CelebrationData } from "./components/ReturningCelebration"
 
 // ═══════════════════════════════════════════════════════════════════
 // TYPES
@@ -126,8 +130,68 @@ export function QuestClient({ quest, student, hud, diagnosis }: QuestClientProps
   const activeStep = quest.steps[quest.current_step]
   const isQuestComplete = quest.current_step >= quest.steps.length
 
+  // ─── ?demo=returning toggle (Phase 2 only) ─────────────────────────
+  // Reads the URL on first render and shows a hardcoded celebration so
+  // we can vet the post-completion experience before Phase 3 wires real
+  // data from /api/quest-step-complete. In Phase 3 this same component
+  // will be triggered by ?completed=N&trigger=quiz&score=85 and the data
+  // shape stays identical — no rewrite.
+  const [demoCelebration, setDemoCelebration] = useState<CelebrationData | null>(
+    () => {
+      if (typeof window === "undefined") return null
+      const params = new URLSearchParams(window.location.search)
+      if (params.get("demo") !== "returning") return null
+      // Hardcoded sample matching Lily's Day 2 (tutor) completion.
+      return {
+        completedDay: 2,
+        trigger: "tutor",
+        score: null,
+        xpAwarded: 50,
+        levelUp: {
+          fromLevel: 4,
+          toLevel: 5,
+          fromRank: "Cadet",
+          toRank: "Operator",
+        },
+        badgesUnlocked: [
+          {
+            id: "first_quest",
+            name: "First Mission",
+            description: "Completed your first Plan Quest day.",
+            rarity: "rare",
+          },
+          {
+            id: "helper_10",
+            name: "Apprentice Pact",
+            description: "10 messages exchanged with Miss Wena.",
+            rarity: "common",
+          },
+        ],
+        questComplete: false,
+      }
+    }
+  )
+
+  function dismissCelebration() {
+    setDemoCelebration(null)
+    // Clean the URL so a refresh doesn't replay it
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href)
+      url.searchParams.delete("demo")
+      window.history.replaceState({}, "", url.pathname + (url.search || ""))
+    }
+  }
+
   return (
     <>
+      <AnimatePresence>
+        {demoCelebration && (
+          <ReturningCelebration
+            data={demoCelebration}
+            onDismiss={dismissCelebration}
+          />
+        )}
+      </AnimatePresence>
       {/* ─── Keyframes ────────────────────────────── */}
       <style>{`
         @keyframes questPulseRing {
@@ -407,13 +471,14 @@ function StreakFlame({ days, shieldCount }: { days: number; shieldCount: number 
     >
       <div
         style={{
-          fontSize: "1.8rem",
+          color: T.amber,
           animation: "questFlameFlicker 1.5s ease-in-out infinite",
           filter: `drop-shadow(0 0 8px ${T.amber}88)`,
+          display: "inline-flex",
         }}
         aria-hidden
       >
-        🔥
+        <Icon name="flame" size={28} />
       </div>
       <div
         style={{
@@ -433,10 +498,14 @@ function StreakFlame({ days, shieldCount }: { days: number; shieldCount: number 
             fontSize: "0.6rem",
             color: T.mint,
             lineHeight: 1,
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 2,
           }}
           aria-label={`${shieldCount} shield`}
         >
-          🛡{shieldCount}
+          <Icon name="shield" size={10} />
+          {shieldCount}
         </div>
       )}
     </div>
@@ -511,9 +580,15 @@ function QuestHero({ quest }: { quest: Quest }) {
           lineHeight: 1.0,
           color: T.cream,
           margin: 0,
+          display: "inline-flex",
+          alignItems: "center",
+          gap: "0.5em",
+          justifyContent: "center",
         }}
       >
-        ✨{" "}
+        <span style={{ display: "inline-flex", color: T.mint, flexShrink: 0 }} aria-hidden>
+          <Icon name="quest" size={36} />
+        </span>
         <span
           style={{
             background: `linear-gradient(90deg, ${T.cream}, ${T.mint})`,
@@ -626,7 +701,7 @@ function QuestTimeline({
                       : "none",
                   }}
                 >
-                  {isDone ? "✓" : isLocked ? "🔒" : step.day}
+                  {isDone ? "✓" : isLocked ? <Icon name="lock" size={22} /> : step.day}
                 </div>
               </div>
 
@@ -651,7 +726,15 @@ function QuestTimeline({
                   marginTop: 2,
                 }}
               >
-                {step.type === "tutor" ? "💬 Tutor" : "📝 Quiz"}
+                {step.type === "tutor" ? (
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                    <Icon name="tutor" size={12} /> Tutor
+                  </span>
+                ) : (
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                    <Icon name="quiz" size={12} /> Quiz
+                  </span>
+                )}
               </div>
             </div>
           )
@@ -762,18 +845,26 @@ function ActiveDayCard({ step, questId }: { step: QuestStep; questId: string }) 
               letterSpacing: "0.14em",
               textTransform: "uppercase",
               color: T.rose,
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
             }}
           >
-            ▶ Today's Mission
+            <Icon name="play" size={14} />
+            Today's Mission
           </span>
           <span
             style={{
               fontFamily: T.fontMono,
               fontSize: "0.7rem",
               color: "rgba(227,217,202,0.7)",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
             }}
           >
-            ⏱ ~{step.estimated_minutes} min
+            <span aria-hidden style={{ opacity: 0.7 }}>≈</span>
+            {step.estimated_minutes} min
           </span>
         </div>
 
@@ -824,7 +915,8 @@ function ActiveDayCard({ step, questId }: { step: QuestStep; questId: string }) 
             transition: "transform 150ms ease",
           }}
         >
-          ▶ Start Day {step.day}
+          <Icon name="play" size={18} />
+          <span>Start Day {step.day}</span>
           <span style={{ fontSize: "1.1rem", marginLeft: 4 }}>→</span>
         </Link>
       </motion.div>
@@ -859,7 +951,7 @@ function DiagnosisCard({ diagnosis }: { diagnosis: Diagnosis }) {
           marginBottom: T.s3,
         }}
       >
-        <span style={{ fontSize: "1.3rem" }} aria-hidden>📊</span>
+        <span style={{ fontSize: "1.3rem", display: "inline-flex", color: T.mint }} aria-hidden><Icon name="diagnosis" size={22} /></span>
         <h3
           style={{
             fontFamily: T.fontDisplay,
@@ -1065,16 +1157,16 @@ function DayAccordion({
         aria-expanded={open}
       >
         <span style={{ display: "inline-flex", alignItems: "center", gap: T.s2 }}>
-          <span aria-hidden>📅</span>
+          <span style={{ display: "inline-flex", color: T.cream }} aria-hidden><Icon name="roadmap" size={18} /></span>
           <span>What's coming next ({upcomingSteps.length})</span>
         </span>
         <motion.span
           animate={{ rotate: open ? 180 : 0 }}
           transition={{ duration: 0.2 }}
-          style={{ display: "inline-block", color: "rgba(227,217,202,0.6)" }}
+          style={{ display: "inline-flex", color: "rgba(227,217,202,0.6)" }}
           aria-hidden
         >
-          ▼
+          <Icon name="chevron" size={16} />
         </motion.span>
       </button>
 
@@ -1120,7 +1212,7 @@ function DayAccordion({
                       color: "rgba(227,217,202,0.6)",
                     }}
                   >
-                    🔒
+                  <span style={{ color: "rgba(227,217,202,0.6)" }}><Icon name="lock" size={14} /></span>
                   </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 600, fontSize: "0.9rem" }}>
@@ -1131,10 +1223,17 @@ function DayAccordion({
                         fontSize: "0.75rem",
                         color: "rgba(227,217,202,0.55)",
                         marginTop: 2,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 4,
                       }}
                     >
-                      {step.type === "tutor" ? "💬 Tutor" : "📝 Quiz"} ·{" "}
-                      ~{step.estimated_minutes} min
+                      {step.type === "tutor" ? (
+                        <><Icon name="tutor" size={11} /> Tutor</>
+                      ) : (
+                        <><Icon name="quiz" size={11} /> Quiz</>
+                      )}
+                      <span style={{ opacity: 0.6 }}>· ~{step.estimated_minutes} min</span>
                     </div>
                   </div>
                 </div>
@@ -1179,7 +1278,10 @@ function AbandonButton() {
             e.currentTarget.style.color = "rgba(227,217,202,0.5)"
           }}
         >
-          ⚙️ Abandon Quest
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+            <Icon name="diagnosis" size={14} />
+            Abandon Quest
+          </span>
         </button>
       ) : (
         <motion.div
