@@ -1,5 +1,5 @@
-/* Import the project design system */
-@import "../../css/style.css";
+/* Import the project design system from public/ where the static site lives */
+@import "../../public/css/style.css";
 
 /* Tailwind directives — active once tailwindcss is installed */
 /* @tailwind base;    */

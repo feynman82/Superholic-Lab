@@ -1,10 +1,9 @@
 ---
 date: 2026-03-30
 session_summary: |
-  EXAM ARCHITECT DEPLOYED. All 7 mission components implemented.
-  New agent, standards JSON, file map updates, exam type UI,
-  Singapore loading animation, progress exam trends, Supabase migration,
-  and AI fallback API endpoint all created or updated.
+  EXAM LIFECYCLE COMPLETE. End-to-end exam flow deployed:
+  access control → paper generation → semantic AI grading → Supabase persistence.
+  Design guardian audit running asynchronously (results pending).
 
 manifest_state:
   total_topic_files: 31
@@ -13,45 +12,43 @@ manifest_state:
   p0_critical_gaps: NONE
   type_gaps: NONE
 
-new_files_this_session:
-  - .claude/agents/exam-architect.md           (new agent v1.0)
-  - data/system-exam-standards.json            (MOE mark weights P3-P6)
-  - api/generate-question.js                   (Gemini + Claude AI fallback)
-  - supabase/003_exam_results.sql              (exam_results table + RLS)
-
-updated_files_this_session:
-  - js/exam-templates.js     (added P3 Math/Science/English + P6 English templates)
-  - js/exam-generator.js     (P3/P5/P6 file mappings + examType + WA scaling)
-  - pages/exam.html          (assessment type chips + Singapore loading animation)
-  - pages/progress.html      (exam performance trends panel)
-  - js/progress.js           (exam_results fetch + renderExamHistory function)
-
-exam_architect_capabilities:
-  assessment_types: [WA1, WA2, EOY, PRELIM, PRACTICE]
-  wa_scale_factor: 0.5   # WA papers = half question count
-  ai_fallback: Gemini 1.5 Flash → Claude Haiku (via api/generate-question.js)
-  supabase_table: exam_results (pending migration: supabase/003_exam_results.sql)
-
-gemini_setup_instructions: |
-  1. Get API key from https://aistudio.google.com/apikey (free tier available)
-  2. Add GEMINI_API_KEY to .env file (already gitignored)
-  3. Add GEMINI_API_KEY to Vercel dashboard → Project Settings → Environment Variables
-  4. The /api/generate-question endpoint will auto-use Gemini first, Claude fallback
+exam_feature_status:
+  access_control:
+    single_subject: "Cards locked with .is-locked class for non-subscribed subjects"
+    profile_fetch:  "initAccessControl() runs on load, stores token in window._examAuthToken"
+  blueprint_preview:
+    trigger: "Card click + type chip change both refresh blueprint"
+    content: "Section rows with type dot, label, count×type·marks; total marks + duration"
+  ai_grading:
+    endpoint: api/grade-answer.js
+    primary: "Gemini 1.5 Flash"
+    fallback: "Claude Haiku"
+    rubrics: "Hardcoded — Science CER, Maths heuristic, generic fallback"
+    fail_open: "Returns score:0 with explanation if AI call fails"
+  persistence:
+    endpoint: api/save-exam-result.js
+    auth: "Bearer token from Supabase session (window._examAuthToken)"
+    student_id: "Resolved server-side from students table"
+  ui_flow:
+    submit: "async — sync grades MCQ/short_ans/cloze/editing first, then AI grades WP/OE"
+    feedback: "AI score + narrative inline under each textarea"
+    save: "Saves to exam_results after grading; shows toast"
+    results: '"View Progress" button links to progress.html'
 
 pending_supabase_migration: |
-  Run supabase/003_exam_results.sql in Supabase Dashboard → SQL Editor
-  This creates the exam_results table used by progress.js renderExamHistory()
-  Until migration runs, exam history section will show "No exam results yet"
+  supabase/003_exam_results.sql must be run manually.
+  Without it: save-exam-result.js will fail silently (non-blocking, toast won't show).
+  To run: Supabase Dashboard → SQL Editor → paste 003_exam_results.sql → Run.
 
-next_phase: SAVE_EXAM_RESULTS
-  The exam.html submitExam() function currently only marks locally.
-  Next step: add api/save-exam-result.js + call it from exam.html on submit
-  to persist results to Supabase exam_results table.
+design_guardian_audit: PENDING (launched async, awaiting results)
 
-  Also needed: question bank volume expansion (all files still at 5-10q target 20q)
+next_phase: POLISH & CONTENT
+  Option A: Run /inventory to recount questions after any new additions
+  Option B: Continue @question-coder volume expansion — all files at 5q, target 20q
+  Option C: Apply any design-guardian findings from the audit
+  Option D: Build api/save-quiz-result.js (quiz engine also has no persistence yet)
 
-recommended_next_batch:
-  option_a: "Create api/save-exam-result.js to persist exam scores to Supabase"
-  option_b: "Continue @question-coder volume expansion — P6 Math fractions to 10q"
-  option_c: "Run supabase/003_exam_results.sql migration (manual step for user)"
+recommended_next_action: |
+  Check design-guardian audit output, then prioritise question bank expansion.
+  P6 Math fractions (5q → 20q) is highest value — PSLE year students need it most.
 ---
