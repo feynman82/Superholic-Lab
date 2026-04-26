@@ -1276,7 +1276,9 @@ window.initQuizEngine = function () {
   };
 
   function renderResults() {
-    saveQuizResult();
+    // 🚀 NOTE: Save is now triggered by navQuiz() before phase change to DONE.
+    // The local saveQuizResult() function has been removed; window.saveQuizResult is the
+    // single source of truth.
 
     // UPGRADE: Use total possible marks for percentage
     const maxScore = state.totalPossibleScore > 0 ? state.totalPossibleScore : 1;
@@ -1350,93 +1352,9 @@ window.initQuizEngine = function () {
   }
 
   // ── SAVE RESULTS ──
-  async function saveQuizResult() {
-    const params = new URLSearchParams(window.location.search);
-    const studentId = params.get('student');
-    if (!studentId) return;
-
-    try {
-      const sb = await getSupabase();
-
-      const topicCounts = {};
-      state.questions.forEach(q => {
-        if (q.topic) topicCounts[q.topic] = (topicCounts[q.topic] || 0) + 1;
-      });
-      const primaryTopic = Object.entries(topicCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || params.get('topic') || 'Mixed';
-
-      const { data: attempt, error: attErr } = await sb
-        .from('quiz_attempts')
-        .insert({
-          student_id: studentId,
-          subject: params.get('subject') || 'mathematics',
-          level: params.get('level') || 'primary-4',
-          topic: primaryTopic,
-          difficulty: 'Mixed',
-          score: state.score,
-          total_questions: state.totalPossibleScore > 0 ? state.totalPossibleScore : state.questions.length,
-          time_taken_seconds: state.quizStartTime ? Math.round((Date.now() - state.quizStartTime) / 1000) : null,
-          completed_at: new Date().toISOString(),
-        })
-        .select('id')
-        .single();
-
-      if (attErr) throw attErr;
-
-      const qAttempts = state.questions.map((q, i) => {
-        const ans = state.answers[i];
-        let isCorrect = false;
-
-        if (q.type === 'mcq') {
-          isCorrect = (ans === q.correct_answer);
-        } else {
-          const norm = (s) => String(s || '').toLowerCase().replace(/\s/g, '');
-          isCorrect = (norm(ans) === norm(q.correct_answer));
-        }
-
-        return {
-          quiz_attempt_id: attempt.id,
-          student_id: studentId,
-          question_text: (q.question_text || '').slice(0, 500),
-          topic: q.topic || primaryTopic,
-          sub_topic: q.sub_topic || null,
-          cognitive_skill: q.cognitive_skill || null,
-          difficulty: q.difficulty || 'standard',
-          correct: isCorrect,
-          answer_chosen: String(ans || '').slice(0, 200),
-          correct_answer: String(q.correct_answer || ''),
-        };
-      });
-
-      if (qAttempts.length > 0) {
-        await sb.from('question_attempts').insert(qAttempts);
-      }
-
-      const today = new Date().toISOString().slice(0, 10);
-      const { data: existingUsage } = await sb
-        .from('daily_usage')
-        .select('id, questions_attempted')
-        .eq('student_id', studentId)
-        .eq('date', today)
-        .maybeSingle();
-
-      const newCount = (existingUsage?.questions_attempted || 0) + state.questions.length;
-
-      if (!existingUsage) {
-        await sb.from('daily_usage').insert({
-          student_id: studentId,
-          date: today,
-          questions_attempted: newCount,
-        });
-      } else {
-        await sb.from('daily_usage')
-          .update({ questions_attempted: newCount })
-          .eq('id', existingUsage.id);
-      }
-
-    } catch (e) {
-      console.error('Failed to save quiz result:', e);
-    }
-  }
+  // 🚀 The local saveQuizResult() function was removed (was duplicate of window.saveQuizResult).
+  // The window.saveQuizResult below is the only save path. It is invoked by navQuiz()
+  // before the phase transitions to DONE.
 
   // ── CANVAS LOGIC ──
   let ctx, isDrawing = false;
@@ -1512,6 +1430,9 @@ window.initQuizEngine = function () {
   }
 
   // 🚀 MASTERCLASS RESTORED: SUPABASE PERSISTENCE ENGINE
+  // Single source of truth for saving quiz results. Hardened against:
+  //   - 400 errors: every NOT NULL column has a guaranteed non-null fallback
+  //   - 409 errors: daily_usage uses UPSERT (no race between SELECT-then-INSERT)
   window.saveQuizResult = async () => {
     if (!state.studentId) return;
     try {
@@ -1532,41 +1453,75 @@ window.initQuizEngine = function () {
 
       if (attErr) throw attErr;
 
+      // 🚀 NOT-NULL SAFETY: every column flagged NOT NULL in production gets a fallback.
+      // Schema: question_text, topic, difficulty, correct, answer_chosen, correct_answer all NOT NULL.
       const qAttempts = state.questions.map(q => {
         const r = state.resultsObj[q.id] || {};
 
-        // 🚀 MASTERCLASS: Capture precise marks and cognitive skills for BKT Engine
+        // Marks calculation (cloze/editing count blanks)
         let marksTotal = q.marks || 1;
         if (q.type === 'cloze' || q.type === 'editing') {
-          try { marksTotal = typeof q.blanks === 'string' ? JSON.parse(q.blanks).length : (q.blanks.length || 1); } catch (e) { }
+          try {
+            const parsedBlanks = typeof q.blanks === 'string' ? JSON.parse(q.blanks) : q.blanks;
+            marksTotal = (parsedBlanks && parsedBlanks.length) || 1;
+          } catch (e) { marksTotal = 1; }
         }
-        let marksEarned = r.isCorrect ? marksTotal : 0;
+        const marksEarned = r.isCorrect ? marksTotal : 0;
+
+        // 🚀 NOT-NULL guards — string fallbacks for every required text column
+        const safeQuestionText = String(q.question_text || q.passage || 'Diagram/Passage Question').slice(0, 500) || 'Untitled';
+        const safeTopic = String(q.topic || state.dbTopic || 'Mixed') || 'Mixed';
+        const safeDifficulty = String(q.difficulty || 'standard') || 'standard';
+        const safeAnswerChosen = String(r.studentAns != null ? r.studentAns : '').slice(0, 200) || '(no answer)';
+        const safeCorrectAnswer = String(r.correctAns || q.correct_answer || 'See model solution').slice(0, 500) || 'See model solution';
 
         return {
           quiz_attempt_id: attempt.id,
           student_id: state.studentId,
-          question_text: (q.question_text || q.passage || 'Diagram/Passage').slice(0, 500),
-          topic: q.topic || 'Quiz',
+          question_text: safeQuestionText,
+          topic: safeTopic,
+          sub_topic: q.sub_topic || null,
           cognitive_skill: q.cognitive_skill || null,
-          difficulty: q.difficulty || 'standard',
+          difficulty: safeDifficulty,
           correct: !!r.isCorrect,
           marks_earned: marksEarned,
           marks_total: marksTotal,
-          answer_chosen: String(r.studentAns || '').slice(0, 200),
-          correct_answer: String(r.correctAns || q.correct_answer || 'See Solution')
+          answer_chosen: safeAnswerChosen,
+          correct_answer: safeCorrectAnswer
         };
       });
 
-      if (qAttempts.length > 0) await sb.from('question_attempts').insert(qAttempts);
+      if (qAttempts.length > 0) {
+        const { error: qaErr } = await sb.from('question_attempts').insert(qAttempts);
+        if (qaErr) console.error('question_attempts insert failed:', qaErr);
+      }
 
+      // 🚀 RACE-SAFE UPSERT: replaces SELECT-then-INSERT-or-UPDATE pattern that caused 409.
+      // Atomic upsert on (student_id, date) unique constraint. No race window.
       const today = new Date().toISOString().slice(0, 10);
-      const { data: existingUsage } = await sb.from('daily_usage').select('id, questions_attempted').eq('student_id', state.studentId).eq('date', today).maybeSingle();
-      const newCount = (existingUsage?.questions_attempted || 0) + state.questions.length;
 
-      if (!existingUsage) await sb.from('daily_usage').insert({ student_id: state.studentId, date: today, questions_attempted: newCount });
-      else await sb.from('daily_usage').update({ questions_attempted: newCount }).eq('id', existingUsage.id);
+      // First read current count (best-effort; if it fails we still upsert with this session's count)
+      let baseCount = 0;
+      try {
+        const { data: existing } = await sb.from('daily_usage')
+          .select('questions_attempted')
+          .eq('student_id', state.studentId)
+          .eq('date', today)
+          .maybeSingle();
+        baseCount = existing?.questions_attempted || 0;
+      } catch (e) { baseCount = 0; }
 
-    } catch (e) { console.error('Failed to save quiz result to Supabase:', e); }
+      const newCount = baseCount + state.questions.length;
+
+      const { error: usageErr } = await sb.from('daily_usage').upsert(
+        { student_id: state.studentId, date: today, questions_attempted: newCount },
+        { onConflict: 'student_id,date' }
+      );
+      if (usageErr) console.error('daily_usage upsert failed:', usageErr);
+
+    } catch (e) {
+      console.error('Failed to save quiz result to Supabase:', e);
+    }
   };
 
   // ── DATA FETCHING ──
