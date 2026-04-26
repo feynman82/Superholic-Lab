@@ -158,19 +158,13 @@ export function QuestClient({ quest, student, hud, diagnosis }: QuestClientProps
         )}
       </AnimatePresence>
 
-      {/* @ts-expect-error custom element */}
-      <global-header />
-
       <main
-        className="grid-texture"
         style={{
           minHeight: "100vh",
-          background: "var(--surface)",
-          paddingTop: 64, // header height
-          paddingBottom: 96, // no --space-12 token; keep numeric
+          paddingTop: "calc(var(--navbar-h) + var(--space-8))",
+          paddingBottom: 96,
           position: "relative",
           overflow: "hidden",
-          fontFamily: "var(--font-body)",
           color: "var(--text-main)",
         }}
       >
@@ -207,8 +201,6 @@ export function QuestClient({ quest, student, hud, diagnosis }: QuestClientProps
         </div>
       </main>
 
-      {/* @ts-expect-error custom element */}
-      <global-footer />
     </>
   )
 }

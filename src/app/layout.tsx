@@ -26,13 +26,24 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="icon" href="/assets/favicon.ico" />
-        <script
-          defer
-          data-domain="superholiclab.com"
-          src="https://plausible.io/js/script.js"
-        />
+        <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js" />
+        {/* Vanilla JS web components — load in document order before use */}
+        <script defer src="/js/supabase-client.js" />
+        <script defer src="/js/icons.js" />
+        <script defer src="/js/header.js" />
+        <script defer src="/js/footer.js" />
+        <script defer src="/js/bottom-nav.js" />
       </head>
-      <body className="has-bottom-nav">{children}</body>
+      {/* body classes match the vanilla HTML pages: bg-page sets #F9FAFA, texture-light-grid adds the subtle grid watermark */}
+      <body className="has-bottom-nav bg-page texture-light-grid">
+        {/* @ts-expect-error vanilla web component */}
+        <global-header />
+        {children}
+        {/* @ts-expect-error vanilla web component */}
+        <global-footer />
+        {/* @ts-expect-error vanilla web component */}
+        <global-bottom-nav />
+      </body>
     </html>
   )
 }
