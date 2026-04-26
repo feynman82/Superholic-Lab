@@ -22,7 +22,10 @@
     { "source": "/api/save-exam-result",   "destination": "/api/index" },
     { "source": "/api/generate-quest",     "destination": "/api/index" },
     { "source": "/api/analyze-weakness",   "destination": "/api/index" },
-    { "source": "/api/summarize-chat",     "destination": "/api/index" }
+    { "source": "/api/summarize-chat",     "destination": "/api/index" },
+    { "source": "/api/award-xp",           "destination": "/api/index" },
+    { "source": "/api/quests",             "destination": "/api/index" },
+    { "source": "/api/quests/:path*",      "destination": "/api/index" }
   ],
   "headers": [
     {

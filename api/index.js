@@ -25,6 +25,8 @@ import {
   handleAdminEdit,
   handleContact,
   handleQAQuestions,
+  handleQuestsRouter,
+  handleAwardXP,
 } from '../lib/api/handlers.js';
 
 export const config = { api: { bodyParser: false } };
@@ -55,6 +57,9 @@ export default async function handler(req, res) {
     req.body = {};
   }
 
+  // Prefix-match routes (wildcard sub-paths — must come after body parse)
+  if (route === 'quests' || route.startsWith('quests/')) return handleQuestsRouter(req, res);
+
   switch (route) {
     case 'chat':               return handleChat(req, res);
     case 'checkout':           return handleCheckout(req, res);
@@ -76,6 +81,7 @@ export default async function handler(req, res) {
     case 'generate-quest':     return handleGenerateQuest(req, res);
     case 'analyze-weakness':   return handleAnalyzeWeakness(req, res);
     case 'summarize-chat':     return handleSummarizeChat(req, res);
+    case 'award-xp':           return handleAwardXP(req, res);
     default:
       return res.status(404).json({ error: 'Route /api/' + route + ' not found.' });
   }
