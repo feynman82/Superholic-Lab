@@ -38,7 +38,6 @@
   ],
   "crons": [
     {
-      "path": "/api/cron/auto-fill-bank",
       "schedule": "0 2 * * 0" 
     }
   ]
