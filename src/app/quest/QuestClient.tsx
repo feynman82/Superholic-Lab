@@ -29,7 +29,7 @@
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import Link from "next/link"
-import { Icon } from "@/components/icons"
+import { Icon } from "../../components/icons"
 import { ReturningCelebration, type CelebrationData } from "./components/ReturningCelebration"
 
 // ═══════════════════════════════════════════════════════════════════
