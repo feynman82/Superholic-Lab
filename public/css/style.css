@@ -3557,9 +3557,9 @@ ul.rose-list li::before {
 }
 .quest-timeline-connector {
   position: absolute;
-  top: 28px; /* half of node 56px — sits above node z-index:0 */
-  left: 50%;
-  width: 100%;
+  top: 28px;                    /* vertical centre of the 56px node */
+  left: calc(50% + 28px);       /* start at the 3-o'clock edge of this node */
+  width: calc(100% - 56px);     /* end at the 9-o'clock edge of the next node */
   height: 2px;
   background: var(--border-light);
   z-index: 0;
