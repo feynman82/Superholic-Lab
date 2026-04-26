@@ -15,7 +15,6 @@ To ensure mathematical precision and consistency across all layouts, we strictly
 - `--space-6` = 48px
 - `--space-8` = 64px
 - `--space-10` = 80px
-- `--space-12` = 96px
 
 ## 2. ECC Framework Alignment
 
@@ -32,6 +31,7 @@ The platform employs a glassmorphism aesthetic tailored to our Sage and Rose pal
 ### Core Brand Colors
 - **Sage:** `#51615E`
 - **Rose:** `#B76E79`
+- **Cream:** `#FFFDE7`
 
 ### Component Elevations (Z-Axis)
 
