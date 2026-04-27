@@ -88,6 +88,7 @@ class GlobalFooter extends HTMLElement {
                 <a href="/pages/dashboard.html" role="menuitem">Dashboard</a>
                 <a href="/pages/about.html" role="menuitem">About Us</a>
                 <a href="/pages/pricing.html" role="menuitem">Pricing</a>
+                <a href="/pages/faq.html" role="menuitem">FAQ</a>
                 <a href="/pages/signup.html" role="menuitem">Sign Up</a>
               </div>
             </div>
