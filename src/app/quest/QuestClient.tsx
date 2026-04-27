@@ -27,7 +27,6 @@
 import { useEffect, useState } from "react"
 import { createClient } from "@supabase/supabase-js"
 import { motion, AnimatePresence } from "framer-motion"
-import Link from "next/link"
 import { Icon } from "../../components/icons"
 import { ReturningCelebration, type CelebrationData } from "./components/ReturningCelebration"
 import { EmptyState } from "./components/EmptyState"
@@ -282,14 +281,18 @@ export function QuestClient({ searchParams }: QuestClientProps) {
 
     setQuestDetail(detail)
 
-    // Diagnosis from mastery_levels
-    const supabase = getSupabase()
-    const { data: mastery } = await supabase.from("mastery_levels")
-      .select("al_band, pct_correct")
-      .eq("student_id", studentId)
-      .eq("subject",    detail.subject.toLowerCase())
-      .eq("topic",      detail.topic)
-      .maybeSingle()
+    // Diagnosis from mastery_levels (best-effort — table may not yet be provisioned)
+    let mastery: { al_band?: number; pct_correct?: number } | null = null
+    try {
+      const supabase = getSupabase()
+      const { data } = await supabase.from("mastery_levels")
+        .select("al_band, pct_correct")
+        .eq("student_id", studentId)
+        .eq("subject",    detail.subject.toLowerCase())
+        .eq("topic",      detail.topic)
+        .maybeSingle()
+      mastery = data
+    } catch { /* table missing or schema mismatch — use fallback values below */ }
 
     setDiagnosis({
       topic:       detail.topic,
@@ -925,7 +928,7 @@ function ActiveDayCard({
               Come back after midnight SGT
             </span>
           ) : (
-            <Link
+            <a
               href={ctaUrl}
               style={{
                 display: "inline-flex",
@@ -948,7 +951,7 @@ function ActiveDayCard({
               <Icon name="play" size={18} />
               <span>Start Day {step.day}</span>
               <span style={{ fontSize: "1.1rem", marginLeft: 4 }}>→</span>
-            </Link>
+            </a>
           )}
         </div>
       </motion.div>
@@ -992,7 +995,7 @@ function QuestCompleteCard({ outcome }: { outcome: string }) {
       <p style={{ color: "var(--text-muted)", marginBottom: 28 }}>
         This quest is complete. Visit your Progress page to see what's next.
       </p>
-      <Link
+      <a
         href="/pages/progress.html"
         style={{
           display: "inline-flex",
@@ -1008,7 +1011,7 @@ function QuestCompleteCard({ outcome }: { outcome: string }) {
       >
         <Icon name="progress" size={16} />
         View Progress
-      </Link>
+      </a>
     </motion.div>
   )
 }
