@@ -42,7 +42,11 @@
   "crons": [
     {
       "path": "/api/cron/auto-fill-bank",
-      "schedule": "0 2 * * 0" 
+      "schedule": "0 2 * * 0"
+    },
+    {
+      "path": "/api/cron/snapshot-mastery",
+      "schedule": "0 19 * * *"
     }
   ]
 }
