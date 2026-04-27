@@ -1,5 +1,5 @@
 # SUPERHOLIC LAB — ARCHITECTURE BRIEFING
-# Version 4.0 | Updated 2026-04-27
+# Version 4.1 | Updated 2026-04-27
 # Purpose: Source of truth for Claude Code on infrastructure,
 #          database schema, API routes, and build state.
 
@@ -8,8 +8,9 @@ WHAT THIS FILE IS
 ═══════════════════════════════════════════════════════════════
 
 Claude Code must read CLAUDE.md + this file at session start.
-CLAUDE.md has coding rules, dev workflow, and feature reference.
-This file has infrastructure, schema, API routes, and build state.
+CLAUDE.md has coding rules, dev workflow, the 4 Pillars (canonical
+value proposition), and feature reference. This file has infrastructure,
+schema, API routes, and build state.
 
 For Plan Quest behaviour and pedagogy, also defer to
 docs/QUEST_PAGE_SPEC.md v2.0 — that file is authoritative.
@@ -28,19 +29,31 @@ Google Drive MCP: C:\SLabDrive (junction to G:\My Drive\Superholic Lab)
 What it is:
   Singapore's AI-powered EdTech platform for P1–S4 students.
   Parents subscribe monthly. Students practise MOE-aligned questions
-  in 7 (refer to MASTER_QUESTION_TEMPLAT.md) PSLE exam formats, get AI tutoring from Miss Wena, track
-  progress, run personalised 3-day Plan Quests when they hit a
-  weak topic, and earn XP / levels / badges for real learning actions.
+  across 7 PSLE exam formats (see Master_Question_Template.md), get AI
+  tutoring from Miss Wena, track progress, run personalised 3-day Plan
+  Quests when they hit a weak topic, and earn XP / levels / badges for
+  real learning actions.
 
 Key differentiators:
   1. Wrong-answer explanations naming specific misconceptions for every
-     MCQ option + 6 question types matching actual SEAB exam formats.
+     MCQ option + question types matching actual SEAB exam formats.
   2. The 3-day Plan Quest pedagogy: Day 1 ramping practice, Day 2
      Socratic dialogue with Miss Wena, Day 3 mastery trial with a
      three-way honest exit (mastered / slight_improvement / no_improvement).
      The Honest Compass badge for `no_improvement` exits is the platform's
      signal that it values self-awareness over fake celebrations.
-  3. (4 pillars)
+  3. The 4 Pillars closed-loop pedagogy:
+       (1) Practise (quiz.html) — students do reps with full feedback
+       (2) Analyse Weakness (BKT on progress.html) — surfaces root-cause
+           topic, weighting AO3-level cognitive skills 1.5×
+       (3) Remedial Plan (Plan Quest) — 3-day intervention built on the
+           diagnosis (the IP, see point 2)
+       (4) Assess (exam.html) — AI-generated WA/EOY/PSLE papers prove
+           that mastery sticks
+     The loop is closed: Practise reveals weakness → Analyse diagnoses
+     root cause → Plan Quest fixes it → Assess proves the fix held.
+     Most competitors only do Practise. CLAUDE.md "The 4 Pillars" section
+     is the canonical reference for marketing copy and FAQ wording.
 
 ═══════════════════════════════════════════════════════════════
 SUBSCRIPTION TIERS (current)
@@ -71,13 +84,16 @@ INFRASTRUCTURE
   ✓ Cloudflare  DNS: www.superholiclab.com → Vercel
   ✓ Supabase    SG region (rlmqsbxevuutugtyysjr), RLS on all tables
   ✓ Stripe      Test mode (webhook configured, whsec set in Vercel)
-  ✓ Gemini      gemini-3-flash-preview (current chat + summarise)
-  ✓ Anthropic   claude-haiku-4-5-20251001 (bulk question gen + fallbacks)
-  ✓ OpenAI      Subscription active. Migration to make OpenAI primary
-                for chat + grading is PENDING (Workstream B handoff).
+  ✓ Gemini      gemini-3-flash-preview (Miss Wena chat, summarise, exam-gen primary, quest narrative)
+  ✓ Anthropic   claude-3-5-sonnet-20241022 (bulk question gen via /api/generate),
+                claude-haiku-4-5-20251001 (exam-gen fallback)
+  ✓ OpenAI      LIVE for grading (gpt-4o-mini in handleGradeAnswer) and
+                on-demand question gen (o4-mini in handleGenerateQuestion).
+                Migration of remaining endpoints (chat, summarize, exam,
+                quest narrative) to OpenAI is PENDING (Workstream B handoff).
   ✓ Plausible   Analytics script tag (rollout in progress)
   ✓ MCP         supabase + github + filesystem (in Claude Code sessions)
-  ✓ Auth        Email/password + Google OAuth + Apple OAuth
+  ✓ Auth        Email/password + Google OAuth
 
 ═══════════════════════════════════════════════════════════════
 API ARCHITECTURE — SINGLE SERVERLESS GATEWAY
@@ -112,13 +128,13 @@ and register them in api/index.js + vercel.json.
   /api/export                  handleExport            PDPA data export
   /api/contact                 handleContact           Contact form
   /api/qa-questions            handleQaQuestions       QA panel listing
-  /api/generate                handleGenerate          Bulk question gen (internal)
-  /api/generate-question       handleGenerateQuestion  On-demand question
-  /api/generate-exam           handleGenerateExam      Exam paper generation
-  /api/grade-answer            handleGradeAnswer       AI grading (open/word_problem)
+  /api/generate                handleGenerate          Bulk question gen (Anthropic Sonnet)
+  /api/generate-question       handleGenerateQuestion  On-demand question (OpenAI o4-mini)
+  /api/generate-exam           handleGenerateExam      Exam paper generation (Gemini → Claude Haiku fallback)
+  /api/grade-answer            handleGradeAnswer       AI grading (OpenAI gpt-4o-mini)
   /api/save-exam-result        handleSaveExamResult    Save exam to Supabase
   /api/generate-quest          handleGenerateQuest     Plan Quest generation (concurrency-aware)
-  /api/analyze-weakness        handleAnalyzeWeakness   BKT weakness report
+  /api/analyze-weakness        handleAnalyzeWeakness   BKT weakness report (no AI; pure SQL + heuristics)
   /api/summarize-chat          handleSummarizeChat     Study Note generator (accepts quest_id)
   /api/award-xp                handleAwardXP           XP grant (server-validated allow-list)
   /api/quests                  handleQuestsRouter      List + sub-routes dispatcher
@@ -136,32 +152,71 @@ QUEST SUB-ROUTES (handled by handleQuestsRouter)
   POST /api/quests/quiz-batch            Fetch deterministic question set for a quest step
 
 ────────────────────────────────────────────────────────────
-AI MODEL ROUTING (current — pre-OpenAI-migration)
+AI MODEL ROUTING (current — actual handlers.js state)
 ────────────────────────────────────────────────────────────
 
-  Chat/tutor:           Gemini Flash (gemini-3-flash-preview, primary)
-  Socratic Quest mode:  Same Gemini model, system prompt overlaid via
-                        buildSocraticQuestPrompt() when ?from_quest= present
-  Summarize chat:       Gemini Flash
-  Question gen (bulk):  Anthropic Claude (claude-haiku-4-5-20251001 / sonnet)
-  Question gen (single):Mixed — Gemini primary with Claude fallback in some paths
-  Grading:              Mixed — currently uses both Gemini and Claude paths
-  Exam gen:             Gemini primary, Claude Haiku fallback
-  Quest/analysis:       Gemini primary, Claude Sonnet fallback
+Per direct inspection of lib/api/handlers.js as of 2026-04-27:
+
+  Endpoint                    | Provider          | Model
+  ────────────────────────────────────────────────────────────────────
+  /api/chat (Miss Wena)       | Gemini            | gemini-3-flash-preview
+  /api/summarize-chat         | Gemini            | gemini-3-flash-preview
+  /api/grade-answer           | OpenAI ✅          | gpt-4o-mini (live)
+  /api/generate-question      | OpenAI ✅          | o4-mini (live)
+  /api/generate (bulk)        | Anthropic         | claude-3-5-sonnet-20241022
+  /api/generate-exam          | Gemini → Claude   | Gemini primary; claude-haiku-4-5-20251001 fallback
+  /api/generate-quest (narrative) | Gemini       | gemini-3-flash-preview
+  /api/analyze-weakness       | (no AI)           | Pure SQL + BKT heuristics
 
   Helper functions in lib/api/handlers.js:
     callGemini(prompt, opts)              → gemini-3-flash-preview
     callClaudeRaw(systemPrompt, userPrompt, opts) → claude-3-5-sonnet-20241022 default
-    (OpenAI client is imported but not yet routed; see below)
+    OpenAI client `openai` instantiated at top of file; called via
+    direct fetch in handleGradeAnswer and via openai.chat.completions
+    in handleGenerateQuestion.
 
-  PENDING (Workstream B — separate handoff session):
+  PENDING (Workstream B — combined handoff):
     Introduce AI_ROUTING config object + callAI(task, opts) wrapper.
     Each task ('chat' | 'summarize' | 'grade_open' | 'question_gen' |
-    'exam_gen' | 'analyze') reads provider + model from env vars
-    (AI_CHAT_PROVIDER, AI_CHAT_MODEL, etc.). Default: OpenAI gpt-4o-mini
-    for chat + grading + summarize + analyze; keep Anthropic for bulk
-    question generation. To swap providers in future: change env vars
-    in Vercel — no code change needed.
+    'exam_gen' | 'analyze' | 'quest_narrative') reads provider + model
+    from env vars. Default targets:
+      chat            → OpenAI gpt-4o-mini (migrate from Gemini)
+      summarize       → OpenAI gpt-4o-mini (migrate from Gemini)
+      grade_open      → OpenAI gpt-4o-mini (already live; just normalised)
+      question_gen    → OpenAI o4-mini (already live; just normalised)
+      exam_gen        → OpenAI gpt-4o-mini (migrate primary from Gemini)
+      quest_narrative → OpenAI gpt-4o-mini (migrate from Gemini)
+      analyze         → no migration (no AI used)
+    Bulk question gen via /api/generate stays on Anthropic Claude Sonnet.
+    To swap providers in future: change env vars in Vercel — no code change.
+
+────────────────────────────────────────────────────────────
+BKT WEAKNESS ANALYSIS — COGNITIVE SKILLS → MOE AOs
+────────────────────────────────────────────────────────────
+
+handleAnalyzeWeakness (lib/api/handlers.js) maps each
+question_attempts.cognitive_skill to MOE Assessment Objectives:
+
+  AO1 (Knowledge & Understanding) — weight 1.0×:
+    'Factual Recall'
+    'Conceptual Understanding'
+  AO2 (Application) — weight 1.0×:
+    'Routine Application'
+  AO3 (Synthesis, Reasoning, Evaluation) — weight 1.5× (HOTS):
+    'Non-Routine / Heuristics'
+    'Inferential Reasoning'
+    'Synthesis & Evaluation'
+
+BKT mastery score per topic = correctWeight ÷ totalWeight, requiring
+≥3 weighted attempts before a topic is eligible to be flagged as the
+weakest. Root-cause topic resolution then walks SYLLABUS_DEPENDENCIES
+(in lib/api/quest-pedagogy.js) to surface a prerequisite topic if its
+mastery is below 0.6 — so a Fractions weakness can be diagnosed as a
+Decimals foundation gap.
+
+The FAQ page (public/pages/faq.html) explains this mapping in plain
+language to parents. Source of truth for the AO1/AO2/AO3 mapping is
+this section + handleAnalyzeWeakness — keep them in sync.
 
 ═══════════════════════════════════════════════════════════════
 SUPABASE DATABASE SCHEMA — RLS ENABLED ON ALL TABLES
@@ -232,7 +287,9 @@ TABLE: question_attempts
   id, quiz_attempt_id, student_id, question_text (NOT NULL),
   topic (NOT NULL, fallback 'Mixed'), difficulty (NOT NULL, fallback 'standard'),
   correct (NOT NULL), answer_chosen (NOT NULL, fallback '(no answer)'),
-  correct_answer (NOT NULL, fallback 'See model solution'), created_at
+  correct_answer (NOT NULL, fallback 'See model solution'),
+  cognitive_skill (NOT NULL — see BKT section above for AO mapping),
+  created_at
 
   NOT-NULL safety pattern (preserve in all writes — quiz.js commit
   602225fc 2026-04-26 fixed previous breakages):
@@ -250,7 +307,7 @@ TABLE: question_bank  (PRIMARY CONTENT STORE)
   level ('Primary 1'..'Secondary 4'),
   topic, sub_topic,
   difficulty ('Foundation'|'Standard'|'Advanced'|'HOTS'),
-  type ('mcq'|'short_ans'|'word_problem'|'open_ended'|'cloze'|'editing'),
+  type ('mcq'|'short_ans'|'word_problem'|'open_ended'|'cloze'|'editing'|'comprehension'),
   marks, question_text, options (jsonb), correct_answer (letter "A"–"D"),
   wrong_explanations (jsonb), worked_solution, parts (jsonb),
   keywords (text[]), model_answer, passage, blanks (jsonb),
@@ -420,13 +477,13 @@ PROJECT STRUCTURE (current — as of Phase 3 Commit 5)
 ═══════════════════════════════════════════════════════════════
 
 D:\Git\Superholic-Lab\
-├── CLAUDE.md                ← Coding rules + dev workflow (read first)
+├── CLAUDE.md                ← Coding rules + 4 Pillars + dev workflow (read first)
 ├── ARCHITECTURE.md          ← This file
 ├── AGENTS.md                ← 7 specialist subagent definitions
 ├── INDEX.md                 ← File/route directory
 ├── PROJECT_DASHBOARD.md     ← Build status, ECC health, known issues
 ├── STYLEGUIDE.md            ← Visual design standards (icons, bottom nav)
-├── Master_Question_Template.md  ← PSLE question type schemas
+├── Master_Question_Template.md  ← PSLE question type schemas (7 types)
 ├── .env                     ← All secrets (gitignored)
 ├── .mcp.json                ← MCP server config (gitignored)
 ├── vercel.json              ← 24 rewrites + security headers + 1 cron
@@ -445,6 +502,7 @@ D:\Git\Superholic-Lab\
 │   │   ├── contact.html
 │   │   ├── dashboard.html
 │   │   ├── exam.html
+│   │   ├── faq.html             ← (PENDING — built in Workstream B handoff)
 │   │   ├── login.html
 │   │   ├── pricing.html
 │   │   ├── privacy.html
@@ -465,26 +523,22 @@ D:\Git\Superholic-Lab\
 │   ├── js/
 │   │   ├── app-shell.js
 │   │   ├── auth.js
-│   │   ├── bottom-nav.js       ← <global-bottom-nav> 5-item nav (NEW)
+│   │   ├── bottom-nav.js       ← <global-bottom-nav> 5-item nav
 │   │   ├── diagram-library.js  ← Visual payload render
-│   │   ├── exam-generator.js   ← Pull questions from supabase to generate quiz
+│   │   ├── exam-generator.js   ← Pull questions from Supabase to generate quiz
 │   │   ├── exam-renderer.js    ← Generate printable version of practice paper
 │   │   ├── exam-templates.js   ← Question set for WA, EOY and PSLE
-│   │   ├── exam.js
-│   │   ├── footer.js           ← <global-footer>
+│   │   ├── exam.js             ← Exam runtime
+│   │   ├── footer.js           ← <global-footer> (FAQ link added in Workstream B)
 │   │   ├── header.js           ← <global-header>
-│   │   ├── hud-strip.js        ← Vanilla HUD partial (NEW, used on
-│   │   │                         progress.html + dashboard.html)
-│   │   ├── icons.js            ← 13-icon set, vanilla side (NEW)
-│   │   ├── progress.js         ← Includes renderQuestTray() (replaces
-│   │   │                         renderQuestMap)
+│   │   ├── hud-strip.js        ← Vanilla HUD partial
+│   │   ├── icons.js            ← 13-icon set, vanilla side
+│   │   ├── progress.js         ← renderQuestTray()
 │   │   ├── qa-panel.js
 │   │   ├── quiz.js             ← from_quest detection + advance-step
-│   │   │                         + auto-modal on score ≤70%
 │   │   ├── supabase-client.js
 │   │   ├── supabase.js         ← Legacy alias (do not modify)
 │   │   └── tutor.js            ← from_quest detection + Socratic mode
-│   │                             + Mark Day 2 Complete
 │   └── assets/
 │       ├── favicon.ico
 │       ├── logo.svg
@@ -518,14 +572,14 @@ D:\Git\Superholic-Lab\
 │   ├── generate-quest.js      ← Legacy alias (kept for compatibility)
 │   ├── summarize-chat.js      ← Legacy alias (kept for compatibility)
 │   └── cron/
-│       └── fill-bank.js         ← Question bank auto-fill (legacy)
+│       ├── fill-bank.js          ← Question bank auto-fill (legacy)
+│       └── snapshot-mastery.js   ← (PENDING — built in Workstream B handoff)
 ├── lib/
 │   └── api/
 │       ├── handlers.js         ← ALL handler logic (24 routes)
 │       ├── badge-engine.js     ← evaluateBadges, evaluateLevelUp,
-│       │                         xpToLevel, levelToRank (NEW)
-│       ├── quest-pedagogy.js   ← buildQuestSteps,
-│       │                         SYLLABUS_DEPENDENCIES (NEW)
+│       │                         xpToLevel, levelToRank
+│       ├── quest-pedagogy.js   ← buildQuestSteps, SYLLABUS_DEPENDENCIES
 │       └── prompts/
 │           ├── mcq.js
 │           ├── short-ans.js
@@ -533,7 +587,7 @@ D:\Git\Superholic-Lab\
 │           ├── open-ended.js
 │           ├── cloze.js
 │           ├── editing.js
-│           └── socratic-quest.js  ← buildSocraticQuestPrompt (NEW)
+│           └── socratic-quest.js  ← buildSocraticQuestPrompt
 ├── supabase/                  ← SQL migrations (run manually)
 │   ├── 002_question_types.sql
 │   ├── 003_exam_results.sql
@@ -551,7 +605,7 @@ D:\Git\Superholic-Lab\
 │   ├── 016_quest_gamification.sql   (APPLIED 2026-04-25)
 │   ├── 017_seed_badges.sql          (APPLIED 2026-04-25)
 │   └── 018_quest_pedagogy.sql       (APPLIED — Phase 3 Commit 1)
-│   (PENDING: 019_seed_pedagogy_badges.sql — Phase 3 Commit 6)
+│   (PENDING: 019_seed_pedagogy_badges.sql — Workstream B handoff)
 ├── docs/
 │   ├── QUEST_PAGE_SPEC.md      ← v2.0 LOCKED — quest authority
 │   ├── LAUNCH_PLAN_v1.md
@@ -561,7 +615,8 @@ D:\Git\Superholic-Lab\
 │   └── handoff/
 │       ├── README.md
 │       ├── QUEST_BACKEND_HANDOFF.md
-│       └── QUEST_FRONTEND_HANDOFF.md
+│       ├── QUEST_FRONTEND_HANDOFF.md
+│       └── AI_PROVIDER_AND_COMMIT6_HANDOFF.md  ← Workstream B (NEW)
 ├── hooks/
 │   └── hooks.json             ← Secret detection + CSS enforcement
 └── .claude/
@@ -581,7 +636,7 @@ COMPLETED
   [x] Marketing homepage (public/index.html)
   [x] Subject landing pages (maths, science, english)
   [x] 404 page
-  [x] Auth: email/password + Google + Apple OAuth
+  [x] Auth: email/password + Google OAuth
   [x] Auth pages: login, signup, confirm-email, update-password
   [x] Signup flow: 7-day trial, no credit card, subscription_tier='trial'
   [x] Profile trigger: handle_new_user() + 008 migration applied
@@ -594,7 +649,8 @@ COMPLETED
   [x] Progress tracker (progress.html + progress.js)
   [x] AI weakness analysis (/api/analyze-weakness)
   [x] Exam generator: WA/EOY/PSLE templates (exam-templates.js v4.0)
-  [x] AI grading for open_ended + word_problem (/api/grade-answer)
+  [x] AI grading for open_ended + word_problem (/api/grade-answer, OpenAI)
+  [x] AI on-demand question gen (/api/generate-question, OpenAI)
   [x] Stripe: trial-first flow, checkout, webhook, profiles.subscription_tier
   [x] Stripe Customer Portal (/api/portal via account.html)
   [x] Parent Account Portal (account.html)
@@ -636,18 +692,20 @@ COMPLETED
 PENDING / IN PROGRESS
   Currently: E2E testing the Lily Tan flow (docs/QUEST_PAGE_SPEC.md §18)
 
-  [ ] Phase 3 Commit 6 — combined with AI Provider Migration in next handoff:
+  [ ] Workstream B handoff (combined: AI Provider Migration + Phase 3 Commit 6):
+      - lib/api/handlers.js: AI_ROUTING config + callAI() wrapper
+      - Migrate /api/chat, /api/summarize-chat, /api/generate-exam (primary),
+        /api/generate-quest narrative to OpenAI gpt-4o-mini
+      - Normalise existing OpenAI calls (handleGradeAnswer, handleGenerateQuestion)
+        through the same callAI() wrapper
       - api/cron/snapshot-mastery.js (daily 03:00 SGT)
       - vercel.json cron registration
-      - public/pages/quest-info.html (parent FAQ page from spec §16)
+      - public/pages/faq.html (consolidated 9-section FAQ with search pill)
+      - public/js/footer.js — add FAQ dropdown link
       - supabase/019_seed_pedagogy_badges.sql (4 pedagogy badges)
-      - docs/PARENT_FAQ.md (extracted from spec §16)
+      - docs/PARENT_FAQ.md (extracted from spec §16, plus other 3 pillars)
       - docs/GAMIFICATION_RULES.md (extracted from spec §12)
-  [ ] AI Provider Migration (Workstream B) — separate handoff:
-      - AI_ROUTING config + callAI() wrapper
-      - OpenAI gpt-4o-mini for chat / grading / summarize / analyze
-      - Keep Anthropic Haiku/Sonnet for bulk question gen
-      - OPENAI_API_KEY + AI_*_PROVIDER + AI_*_MODEL env vars
+      - Add OPENAI_API_KEY (already present), AI_*_PROVIDER + AI_*_MODEL env vars
   [ ] Analytics: Plausible script on ALL pages (currently pricing.html only)
   [ ] SEO: meta descriptions, Open Graph, JSON-LD on all pages
   [ ] Stripe: switch from test mode to live mode
@@ -675,5 +733,5 @@ MCP servers available in Claude Code:
   Chrome MCP   for visual QA after deploys
 
 ═══════════════════════════════════════════════════════════════
-END OF ARCHITECTURE BRIEFING v4.0
+END OF ARCHITECTURE BRIEFING v4.1
 ═══════════════════════════════════════════════════════════════
