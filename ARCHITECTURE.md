@@ -1,5 +1,5 @@
 # SUPERHOLIC LAB — ARCHITECTURE BRIEFING
-# Version 3.0 | Updated 2026-04-17
+# Version 4.0 | Updated 2026-04-27
 # Purpose: Source of truth for Claude Code on infrastructure,
 #          database schema, API routes, and build state.
 
@@ -10,6 +10,9 @@ WHAT THIS FILE IS
 Claude Code must read CLAUDE.md + this file at session start.
 CLAUDE.md has coding rules, dev workflow, and feature reference.
 This file has infrastructure, schema, API routes, and build state.
+
+For Plan Quest behaviour and pedagogy, also defer to
+docs/QUEST_PAGE_SPEC.md v2.0 — that file is authoritative.
 
 ═══════════════════════════════════════════════════════════════
 THE PRODUCT
@@ -26,11 +29,17 @@ What it is:
   Singapore's AI-powered EdTech platform for P1–S4 students.
   Parents subscribe monthly. Students practise MOE-aligned questions
   in 6 PSLE exam formats, get AI tutoring from Miss Wena, track
-  progress, and receive personalised remedial plans.
+  progress, run personalised 3-day Plan Quests when they hit a
+  weak topic, and earn XP / levels / badges for real learning actions.
 
-Key differentiator:
-  Wrong-answer explanations naming specific misconceptions for every
-  MCQ option + 6 question types matching actual SEAB exam formats.
+Key differentiators:
+  1. Wrong-answer explanations naming specific misconceptions for every
+     MCQ option + 6 question types matching actual SEAB exam formats.
+  2. The 3-day Plan Quest pedagogy: Day 1 ramping practice, Day 2
+     Socratic dialogue with Miss Wena, Day 3 mastery trial with a
+     three-way honest exit (mastered / slight_improvement / no_improvement).
+     The Honest Compass badge for `no_improvement` exits is the platform's
+     signal that it values self-awareness over fake celebrations.
 
 ═══════════════════════════════════════════════════════════════
 SUBSCRIPTION TIERS (current)
@@ -46,7 +55,7 @@ No trial_period_days in Stripe — trial is tracked app-side only.
 FAMILY adds up to 3 child profiles. ALL SUBJECTS = 1 child profile.
 Single Subject tier is REMOVED from product and codebase.
 
-Stripe Price IDs in .env:
+Stripe Price IDs in .env (and Vercel dashboard):
   STRIPE_ALL_SUBJECTS_PRICE_ID         monthly all_subjects
   STRIPE_FAMILY_PRICE_ID               monthly family
   STRIPE_ALL_SUBJECTS_ANNUAL_PRICE_ID  annual all_subjects
@@ -57,13 +66,15 @@ INFRASTRUCTURE
 ═══════════════════════════════════════════════════════════════
 
   ✓ GitHub      feynman82/Superholic-Lab, auto-deploy on push to main
-  ✓ Vercel      Hobby plan, ~60s deploy, 12-function limit
+  ✓ Vercel      Hobby plan, ~60s deploy, 12-function limit (we use 1)
   ✓ Cloudflare  DNS: www.superholiclab.com → Vercel
   ✓ Supabase    SG region (rlmqsbxevuutugtyysjr), RLS on all tables
   ✓ Stripe      Test mode (webhook configured, whsec set in Vercel)
-  ✓ Gemini      gemini-3-flash-preview (primary AI model for Miss Wena)
-  ✓ Anthropic   claude-3-5-sonnet-20241022 (grading + question gen)
-  ✓ Plausible   Analytics script tag (added to pricing.html, extend to all pages)
+  ✓ Gemini      gemini-3-flash-preview (current chat + summarise)
+  ✓ Anthropic   claude-haiku-4-5-20251001 (bulk question gen + fallbacks)
+  ✓ OpenAI      Subscription active. Migration to make OpenAI primary
+                for chat + grading is PENDING (Workstream B handoff).
+  ✓ Plausible   Analytics script tag (rollout in progress)
   ✓ MCP         supabase + github + filesystem (in Claude Code sessions)
   ✓ Auth        Email/password + Google OAuth + Apple OAuth
 
@@ -83,14 +94,73 @@ The webhook route bypasses JSON body parsing (raw body required).
 Do NOT create new api/*.js files — add handlers to lib/api/handlers.js
 and register them in api/index.js + vercel.json.
 
-AI MODEL ROUTING:
-  Chat/tutor:        Gemini Flash (primary) → no Claude fallback
-  Question gen:      Gemini Flash (primary) → Claude Sonnet (fallback)
-  Grading:           Claude Sonnet (primary) → Gemini Flash (fallback)
-  Exam gen:          Gemini Flash (primary) → Claude Haiku (fallback)
-  Quest/analysis:    Gemini Flash (primary) → Claude Sonnet (fallback)
-  Summarize chat:    Gemini Flash only
-  Bulk generation:   Claude Sonnet via /api/generate (internal tooling)
+────────────────────────────────────────────────────────────
+24 ROUTES (current — as of 2026-04-27)
+────────────────────────────────────────────────────────────
+
+  /api/chat                    handleChat              Miss Wena tutor + Socratic Quest
+  /api/checkout                handleCheckout          Stripe Checkout
+  /api/webhook                 handleWebhook           Stripe webhook (raw body)
+  /api/portal                  handlePortal            Stripe Customer Portal
+  /api/admin                   handleAdmin             Admin panel data
+  /api/admin-edit              handleAdminEdit         Admin row edits
+  /api/analytics               handleAnalytics         Admin analytics
+  /api/pause                   handlePause             Subscription pause/resume
+  /api/referral                handleReferral          Referral codes
+  /api/account-delete          handleAccountDelete     PDPA account deletion
+  /api/export                  handleExport            PDPA data export
+  /api/contact                 handleContact           Contact form
+  /api/qa-questions            handleQaQuestions       QA panel listing
+  /api/generate                handleGenerate          Bulk question gen (internal)
+  /api/generate-question       handleGenerateQuestion  On-demand question
+  /api/generate-exam           handleGenerateExam      Exam paper generation
+  /api/grade-answer            handleGradeAnswer       AI grading (open/word_problem)
+  /api/save-exam-result        handleSaveExamResult    Save exam to Supabase
+  /api/generate-quest          handleGenerateQuest     Plan Quest generation (concurrency-aware)
+  /api/analyze-weakness        handleAnalyzeWeakness   BKT weakness report
+  /api/summarize-chat          handleSummarizeChat     Study Note generator (accepts quest_id)
+  /api/award-xp                handleAwardXP           XP grant (server-validated allow-list)
+  /api/quests                  handleQuestsRouter      List + sub-routes dispatcher
+  /api/quests/:path*           handleQuestsRouter      Wildcard rewrite for sub-routes
+
+────────────────────────────────────────────────────────────
+QUEST SUB-ROUTES (handled by handleQuestsRouter)
+────────────────────────────────────────────────────────────
+
+  GET  /api/quests                       List active quests for caller's student
+  GET  /api/quests/:id                   Fetch quest + HUD + diagnosis + day_unlock_status
+  POST /api/quests/:id/advance-step      Advance, award XP, evaluate badges
+  POST /api/quests/:id/day3-outcome      Branch on poor Day 3 (redo/slight/no_improvement)
+  POST /api/quests/:id/abandon           Close active quest, free eligibility slot
+  POST /api/quests/quiz-batch            Fetch deterministic question set for a quest step
+
+────────────────────────────────────────────────────────────
+AI MODEL ROUTING (current — pre-OpenAI-migration)
+────────────────────────────────────────────────────────────
+
+  Chat/tutor:           Gemini Flash (gemini-3-flash-preview, primary)
+  Socratic Quest mode:  Same Gemini model, system prompt overlaid via
+                        buildSocraticQuestPrompt() when ?from_quest= present
+  Summarize chat:       Gemini Flash
+  Question gen (bulk):  Anthropic Claude (claude-haiku-4-5-20251001 / sonnet)
+  Question gen (single):Mixed — Gemini primary with Claude fallback in some paths
+  Grading:              Mixed — currently uses both Gemini and Claude paths
+  Exam gen:             Gemini primary, Claude Haiku fallback
+  Quest/analysis:       Gemini primary, Claude Sonnet fallback
+
+  Helper functions in lib/api/handlers.js:
+    callGemini(prompt, opts)              → gemini-3-flash-preview
+    callClaudeRaw(systemPrompt, userPrompt, opts) → claude-3-5-sonnet-20241022 default
+    (OpenAI client is imported but not yet routed; see below)
+
+  PENDING (Workstream B — separate handoff session):
+    Introduce AI_ROUTING config object + callAI(task, opts) wrapper.
+    Each task ('chat' | 'summarize' | 'grade_open' | 'question_gen' |
+    'exam_gen' | 'analyze') reads provider + model from env vars
+    (AI_CHAT_PROVIDER, AI_CHAT_MODEL, etc.). Default: OpenAI gpt-4o-mini
+    for chat + grading + summarize + analyze; keep Anthropic for bulk
+    question generation. To swap providers in future: change env vars
+    in Vercel — no code change needed.
 
 ═══════════════════════════════════════════════════════════════
 SUPABASE DATABASE SCHEMA — RLS ENABLED ON ALL TABLES
@@ -99,7 +169,10 @@ SUPABASE DATABASE SCHEMA — RLS ENABLED ON ALL TABLES
 RLS PATTERN FOR STUDENT DATA (always use this — not auth.uid() = student_id):
   student_id IN (SELECT id FROM students WHERE parent_id = auth.uid())
 
-───────────────────────────────────────────────────────────────
+────────────────────────────────────────────────────────────
+CORE TABLES
+────────────────────────────────────────────────────────────
+
 TABLE: profiles
   id                  uuid PK (= auth.users.id)
   email               text
@@ -118,7 +191,6 @@ TABLE: profiles
   Triggers: handle_new_user() on auth.users INSERT
             handle_updated_at() on profiles UPDATE
 
-───────────────────────────────────────────────────────────────
 TABLE: students
   id               uuid PK
   parent_id        uuid FK → profiles.id
@@ -128,37 +200,10 @@ TABLE: students
   photo_url        text   (Supabase Storage, avatars bucket)
   created_at       timestamptz
 
-───────────────────────────────────────────────────────────────
-TABLE: quiz_attempts
-  id                  uuid PK
-  student_id          uuid FK → students.id
-  subject             text
-  level               text
-  topic               text
-  difficulty          text
-  score               numeric
-  total_questions     int
-  time_taken_seconds  int
-  completed_at        timestamptz
-
-───────────────────────────────────────────────────────────────
-TABLE: question_attempts
-  id               uuid PK
-  quiz_attempt_id  uuid FK → quiz_attempts.id
-  student_id       uuid FK → students.id
-  question_text    text
-  topic            text
-  difficulty       text
-  correct          bool
-  answer_chosen    text
-  correct_answer   text
-  created_at       timestamptz
-
-───────────────────────────────────────────────────────────────
 TABLE: subscriptions
   id                       uuid PK
   profile_id               uuid FK → profiles.id
-  stripe_subscription_id   text UNIQUE  (⚠ add UNIQUE constraint if missing)
+  stripe_subscription_id   text UNIQUE  (constraint added by 009_subscriptions_unique.sql)
   stripe_price_id          text
   plan_name                text
   status                   text  'active'|'past_due'|'cancelled'
@@ -166,12 +211,6 @@ TABLE: subscriptions
   current_period_end       timestamptz
   created_at               timestamptz
 
-  NOTE: stripe_subscription_id must have a UNIQUE constraint for
-  the upsert in handleWebhook to work correctly. If absent, the
-  upsert will silently fail (profiles still updates correctly via
-  the same webhook, so access control is not affected).
-
-───────────────────────────────────────────────────────────────
 TABLE: daily_usage
   id                   uuid PK
   student_id           uuid FK → students.id
@@ -180,219 +219,441 @@ TABLE: daily_usage
   ai_tutor_messages    int
   UNIQUE(student_id, date)
 
-───────────────────────────────────────────────────────────────
-TABLE: question_bank  (PRIMARY CONTENT STORE)
-  id                uuid PK
-  seed_id           uuid  (original if is_ai_cloned = true)
-  is_ai_cloned      bool
-  subject           text  'Mathematics'|'Science'|'English'
-  level             text  'Primary 1' ... 'Secondary 4'
-  topic             text
-  sub_topic         text
-  difficulty        text  'Foundation'|'Standard'|'Advanced'|'HOTS'
-  type              text  'mcq'|'short_ans'|'word_problem'|'open_ended'|'cloze'|'editing'
-  marks             int
-  question_text     text
-  options           jsonb  [{label, text}]
-  correct_answer    text  letter format: "B" (never index)
-  wrong_explanations jsonb {"A": "misconception", ...}
-  worked_solution   text
-  parts             jsonb  [{label, marks, question, correct_answer, worked_solution, progressive_hints}]
-  keywords          text[]
-  model_answer      text
-  passage           text
-  blanks            jsonb
-  passage_lines     jsonb
-  examiner_note     text
-  cognitive_skill   text
-  progressive_hints jsonb
-  image_url         text
-  visual_payload    jsonb  {engine, function_name, params} for diagram-library.js
-  instructions      text
-  flag_review       bool
-  accept_also       text
-  created_at        timestamptz
+────────────────────────────────────────────────────────────
+PRACTICE / ASSESSMENT TABLES
+────────────────────────────────────────────────────────────
 
-───────────────────────────────────────────────────────────────
-TABLE: study_notes  (Miss Wena Backpack)
-  id            uuid PK
-  student_id    uuid FK → students.id
-  subject       text
-  topic         text
-  title         text
-  content_html  text  (HTML generated by /api/summarize-chat)
-  is_read       bool
-  created_at    timestamptz
+TABLE: quiz_attempts
+  id, student_id, subject, level, topic, difficulty, score,
+  total_questions, time_taken_seconds, completed_at
 
-───────────────────────────────────────────────────────────────
+TABLE: question_attempts
+  id, quiz_attempt_id, student_id, question_text (NOT NULL),
+  topic (NOT NULL, fallback 'Mixed'), difficulty (NOT NULL, fallback 'standard'),
+  correct (NOT NULL), answer_chosen (NOT NULL, fallback '(no answer)'),
+  correct_answer (NOT NULL, fallback 'See model solution'), created_at
+
+  NOT-NULL safety pattern (preserve in all writes — quiz.js commit
+  602225fc 2026-04-26 fixed previous breakages):
+    String(value || fallback).slice(0, maxLen) || 'final-fallback'
+
 TABLE: exam_results
-  id                   uuid PK
-  student_id           uuid FK → students.id
-  subject              text
-  level                text
-  exam_type            text  'WA1'|'WA2'|'EOY'|'PRELIM'|'PRACTICE'|'QUIZ'
-  exam_id              text  (optional identifier)
-  score                int
-  total_marks          int
-  time_taken           int   (seconds)
-  questions_attempted  int
-  completed_at         timestamptz
+  id, student_id, subject, level, exam_type, exam_id, score,
+  total_marks, time_taken, questions_attempted, completed_at
+  exam_type values: 'WA1'|'WA2'|'WA3'|'EOY'|'PRELIM'|'PSLE'|'PRACTICE'|'QUIZ'
+  NOTE: SA1 is abolished (MOE 2023). Do not reference SA1 anywhere.
 
-  NOTE: SA1 is abolished (MOE 2023). Valid types: WA1, WA2, EOY.
-        Do not reference SA1 anywhere.
+TABLE: question_bank  (PRIMARY CONTENT STORE)
+  id, seed_id, is_ai_cloned,
+  subject ('Mathematics'|'Science'|'English'),
+  level ('Primary 1'..'Secondary 4'),
+  topic, sub_topic,
+  difficulty ('Foundation'|'Standard'|'Advanced'|'HOTS'),
+  type ('mcq'|'short_ans'|'word_problem'|'open_ended'|'cloze'|'editing'),
+  marks, question_text, options (jsonb), correct_answer (letter "A"–"D"),
+  wrong_explanations (jsonb), worked_solution, parts (jsonb),
+  keywords (text[]), model_answer, passage, blanks (jsonb),
+  passage_lines (jsonb), examiner_note, cognitive_skill,
+  progressive_hints (jsonb), image_url, visual_payload (jsonb),
+  instructions, flag_review (bool), accept_also, created_at
 
-───────────────────────────────────────────────────────────────
-TABLE: remedial_quests
+  Cloze sub_topic mapping:
+    Grammar Cloze       → topic='Cloze',  sub_topic='Grammar'
+    Vocabulary Cloze    → topic='Cloze',  sub_topic='Vocabulary'
+    Comprehension Cloze → topic='Cloze',  sub_topic='Comprehension'
+
+TABLE: study_notes  (Miss Wena Backpack)
+  id, student_id, subject, topic, title, content_html (HTML), is_read,
+  quest_id (FK → remedial_quests.id, nullable — set when note auto-saved
+  from a Day 2 Socratic session), created_at
+
+────────────────────────────────────────────────────────────
+PLAN QUEST + GAMIFICATION TABLES
+────────────────────────────────────────────────────────────
+
+TABLE: remedial_quests  (extended for Phase 3)
   id                  uuid PK
   student_id          uuid FK → students.id
-  subject             text
+  subject             text  ('mathematics'|'science'|'english', lowercase)
   level               text
   topic               text
-  trigger_score       numeric  (quiz score % that triggered the quest)
+  trigger_score       numeric
   trigger_attempt_id  uuid
   quest_title         text
-  steps               jsonb  [{day, type, title, description, action_url, estimated_minutes}]
-  current_step        int
-  status              text  'active' | 'completed'
-  created_at          timestamptz
+  steps               jsonb  -- 3-element array with rich config (see below)
+  current_step        int    -- 0-indexed (0=Day 1)
+  status              text   -- 'active' | 'completed' | 'abandoned'
 
-  Step URL rules:
-    Day 1 (tutor):  /pages/tutor.html?subject=X&level=Y&intent=remedial&topic=Z&score=N
-    Day 2 (quiz):   /pages/quiz.html?subject=X&level=Y&topic=Z&type=mcq
-    Day 3 (quiz):   /pages/quiz.html?subject=X&level=Y&topic=Z&type=short_ans
+  -- Added by 018_quest_pedagogy.sql:
+  day_completed_at    jsonb NOT NULL DEFAULT '{}'
+                              -- {"0":"2026-04-26T14:30:00+08:00", "1":"..."}
+  day1_wrong_attempts jsonb NOT NULL DEFAULT '[]'
+                              -- captured by quiz.js on Day 1 submit;
+                              -- read by /api/chat in Socratic Quest mode
+  day3_score          numeric(5,2)
+  day3_outcome        text   -- 'mastered'|'slight_improvement'|'no_improvement'|'redo'|NULL
+  parent_quest_id     uuid REFERENCES remedial_quests(id)
+                              -- set when this quest was spawned via Day 3 redo
+  abandoned_at        timestamptz
+  created_at          timestamptz
+  updated_at          timestamptz
+
+  steps jsonb shape (per step):
+    {
+      day, type ('quiz'|'tutor'),
+      title, description, estimated_minutes, action_url,
+      config: {
+        question_count, difficulty_curve ('ramping'|'mixed'|'mastery'),
+        difficulty_bands [], topic, transfer_topics [] (Day 3 only),
+        scaffold_mode ('socratic') (Day 2 only), min_messages,
+        diagnostic_carryover, auto_save_note, min_passing_score
+      }
+    }
+
+TABLE: quest_eligibility  (NEW — concurrency enforcer, 018)
+  student_id uuid NOT NULL REFERENCES students(id) ON DELETE CASCADE
+  subject    text NOT NULL CHECK (subject IN ('mathematics','science','english'))
+  quest_id   uuid NOT NULL REFERENCES remedial_quests(id) ON DELETE CASCADE
+  PRIMARY KEY (student_id, subject)
+
+  Enforces "max 1 active quest per (student, subject)". Inserting a 2nd
+  row for same pair fails with PG 23505. Application code catches and
+  returns HTTP 409 with existing_quest_id. UI greys out the Generate
+  Quest button when the slot is taken.
+
+TABLE: mastery_levels  (retroactive — 015)
+  student_id uuid FK → students.id
+  subject, topic, sub_topic
+  probability numeric (0.0–1.0)
+  attempts int
+  updated_at timestamptz
+
+TABLE: mastery_levels_snapshots  (016 — supports mastery_gain XP)
+  id uuid PK
+  student_id uuid FK
+  snapshot_date date NOT NULL
+  subject, topic, sub_topic
+  probability numeric NOT NULL
+  al_band int NOT NULL  -- 1..8 cached for fast diff
+  created_at timestamptz
+  UNIQUE (student_id, snapshot_date, subject, topic, sub_topic)
+
+  Daily Vercel cron writes snapshots; XP cron diffs latest two snapshots
+  and awards mastery_gain XP if al_band improved. Cron registration is
+  PENDING (Phase 3 commit 6).
+
+TABLE: student_xp  (016)
+  student_id uuid PK FK → students.id
+  total_xp int NOT NULL DEFAULT 0
+  current_level int NOT NULL DEFAULT 1
+  xp_in_level int NOT NULL DEFAULT 0
+  updated_at timestamptz
+
+TABLE: xp_events  (016 — append-only ledger)
+  id uuid PK
+  student_id uuid FK
+  event_type text  -- 'quiz_complete'|'quest_step_complete'|'quest_complete'|
+                   --   'exam_complete'|'mastery_gain'|'login_streak'|'badge_earned'
+  xp_awarded int NOT NULL
+  metadata jsonb
+  created_at timestamptz
+
+  Idempotency: handleAwardXP dedups on (student_id, event_type, event_id)
+  where event_id is supplied via metadata. Repeat calls return cached result.
+
+TABLE: student_streaks  (016)
+  student_id uuid PK FK → students.id
+  current_days, longest_days int
+  last_active date
+  shield_count int  (max 3)
+  updated_at timestamptz
+
+TABLE: badge_definitions  (016 + 017 + 019)
+  id text PK
+  name, description, icon_url, theme, rarity, xp_reward, sort_order
+  is_secret boolean
+  RLS: SELECT public, no INSERT/UPDATE/DELETE for clients
+
+  33 badges total: 12 common + 8 rare + 5 epic + 1 legendary + 4 secret
+  + 4 pedagogy (socratic_scholar, mastery_first_try, redo_warrior,
+  honest_compass). 019_seed_pedagogy_badges.sql is PENDING.
+
+TABLE: student_badges  (016)
+  id uuid PK
+  student_id uuid FK
+  badge_id text FK → badge_definitions.id
+  earned_at timestamptz
+  context jsonb
+  UNIQUE (student_id, badge_id)
+
+TABLE: avatar_rerolls  (016 — audit + cost ceiling, deferred to post-launch)
+  id, student_id, parent_id (denormalized), rerolled_at, trigger,
+  old_avatar_url, cost_usd, cost_recovered (bool)
+
+  Avatar pipeline is DEFERRED to post-launch per LAUNCH_PLAN_v1.md.
+  Tables exist (RLS-enabled) for forward compatibility but no handlers
+  call them yet.
+
+────────────────────────────────────────────────────────────
+DAY-GATING LOGIC (server-side, computed on every fetch)
+────────────────────────────────────────────────────────────
+
+For each step index 0..2 of an active quest:
+  step 0 unlocked iff true (always)
+  step N+1 unlocked iff:
+    (a) day_completed_at[N] exists in jsonb AND
+    (b) NOW() (in Asia/Singapore) ≥ midnight SGT of (day_completed_at[N] + 1 day)
+
+  Use Intl.DateTimeFormat with timeZone:'Asia/Singapore' for all
+  midnight calculations. Never use raw new Date() for SGT logic.
+
+  Returned in GET /api/quests/:id as:
+    day_unlock_status: {
+      "0": { unlocked, completed, unlocks_at },
+      "1": { ... },
+      "2": { ... }
+    }
 
 ═══════════════════════════════════════════════════════════════
-PROJECT STRUCTURE (current)
+PROJECT STRUCTURE (current — as of Phase 3 Commit 5)
 ═══════════════════════════════════════════════════════════════
 
 D:\Git\Superholic-Lab\
-├── index.html               ← Marketing homepage
-├── 404.html                 ← Custom error page
 ├── CLAUDE.md                ← Coding rules + dev workflow (read first)
 ├── ARCHITECTURE.md          ← This file
-├── AGENTS.md                ← 5 specialist subagent definitions
+├── AGENTS.md                ← 7 specialist subagent definitions
+├── INDEX.md                 ← File/route directory
+├── PROJECT_DASHBOARD.md     ← Build status, ECC health, known issues
+├── STYLEGUIDE.md            ← Visual design standards (icons, bottom nav)
+├── Master_Question_Template.md  ← 6 PSLE question type schemas
 ├── .env                     ← All secrets (gitignored)
 ├── .mcp.json                ← MCP server config (gitignored)
-├── vercel.json              ← 13 rewrites + security headers
-├── package.json
-├── pages/
-│   ├── account.html           ← Parent account portal (profile, password, billing)
-│   ├── admin.html             ← Master admin panel (role-gated)
-│   ├── confirm-email.html     ← Email confirmation holding page
-│   ├── contact.html
-│   ├── dashboard.html         ← Parent dashboard (learner cards, backpack)
-│   ├── exam.html              ← AI exam paper generator
-│   ├── login.html             ← Email + Google + Apple login
-│   ├── pricing.html           ← Plans + monthly/annual toggle + FAQ
-│   ├── privacy.html
-│   ├── progress.html          ← Progress tracker + weakness analysis + quest
-│   ├── quiz.html              ← Quiz engine (all 6 PSLE question types)
-│   ├── setup.html             ← New learner setup (post-signup)
-│   ├── signup.html            ← 7-day trial signup, no credit card
-│   ├── subject-english.html   ← English subject landing page
-│   ├── subject-mathematics.html ← Maths subject landing page
-│   ├── subject-science.html   ← Science subject landing page
-│   ├── subjects.html          ← Level + subject selector
-│   ├── terms.html
-│   ├── tutor.html             ← Miss Wena AI tutor chat
-│   └── update-password.html   ← Password reset landing page
-├── css/
-│   └── style.css              ← ALL styles, all CSS variables (do not add new CSS files)
-├── js/
-│   ├── app-shell.js           ← Plan badge + shared UI init
-│   ├── auth.js                ← Auth, paywall, guardPage(), enforcePaywall()
-│   ├── diagram-library.js     ← SVG diagram rendering for visual_payload questions
-│   ├── exam-generator.js      ← Exam config and section builder
-│   ├── exam-renderer.js       ← Renders generated exam paper to DOM
-│   ├── exam-templates.js      ← Preset exam configs (WA, EOY, PSLE)
-│   ├── footer.js              ← <global-footer> web component
-│   ├── header.js              ← <global-header> web component (auth-aware)
-│   ├── progress.js            ← Progress charts + weakness analysis
-│   ├── quiz.js                ← Quiz engine (fetches from question_bank via Supabase)
-│   ├── supabase-client.js     ← Supabase JS client singleton (getSupabase())
-│   ├── supabase.js            ← Legacy alias (do not modify)
-│   └── tutor.js               ← Miss Wena chat UI + save notes logic
+├── vercel.json              ← 24 rewrites + security headers + 1 cron
+├── package.json             ← Node 24.x, ESM, 3 prod deps
+├── next.config.mjs          ← Next.js config (for /quest route)
+├── tsconfig.json            ← TypeScript config (for src/)
+├── public/                  ← STATIC ASSETS + VANILLA APP PAGES
+│   ├── index.html             ← Marketing homepage
+│   ├── 404.html
+│   ├── robots.txt
+│   ├── sitemap.xml
+│   ├── pages/                 ← Vanilla HTML app pages
+│   │   ├── account.html
+│   │   ├── admin.html
+│   │   ├── confirm-email.html
+│   │   ├── contact.html
+│   │   ├── dashboard.html
+│   │   ├── exam.html
+│   │   ├── login.html
+│   │   ├── pricing.html
+│   │   ├── privacy.html
+│   │   ├── progress.html
+│   │   ├── quiz.html
+│   │   ├── refund-request.html
+│   │   ├── setup.html
+│   │   ├── signup.html
+│   │   ├── subject-english.html
+│   │   ├── subject-mathematics.html
+│   │   ├── subject-science.html
+│   │   ├── subjects.html
+│   │   ├── terms.html
+│   │   ├── tutor.html
+│   │   └── update-password.html
+│   ├── css/
+│   │   └── style.css           ← Single stylesheet (v3.0)
+│   ├── js/
+│   │   ├── app-shell.js
+│   │   ├── auth.js
+│   │   ├── bottom-nav.js       ← <global-bottom-nav> 5-item nav (NEW)
+│   │   ├── diagram-library.js
+│   │   ├── exam-generator.js
+│   │   ├── exam-renderer.js
+│   │   ├── exam-templates.js
+│   │   ├── exam.js
+│   │   ├── footer.js           ← <global-footer>
+│   │   ├── header.js           ← <global-header>
+│   │   ├── hud-strip.js        ← Vanilla HUD partial (NEW, used on
+│   │   │                         progress.html + dashboard.html)
+│   │   ├── icons.js            ← 13-icon set, vanilla side (NEW)
+│   │   ├── progress.js         ← Includes renderQuestTray() (replaces
+│   │   │                         renderQuestMap)
+│   │   ├── qa-panel.js
+│   │   ├── quiz.js             ← from_quest detection + advance-step
+│   │   │                         + auto-modal on score ≤70%
+│   │   ├── supabase-client.js
+│   │   ├── supabase.js         ← Legacy alias (do not modify)
+│   │   └── tutor.js            ← from_quest detection + Socratic mode
+│   │                             + Mark Day 2 Complete
+│   └── assets/
+│       ├── favicon.ico
+│       ├── logo.svg
+│       └── images/
+│           └── miss_wena.png
+├── src/                     ← NEXT.JS APP (currently /quest only)
+│   ├── app/
+│   │   ├── globals.css
+│   │   ├── layout.tsx
+│   │   └── quest/
+│   │       ├── page.tsx        ← Server component, auth + SSR fetch
+│   │       ├── QuestClient.tsx ← Main orchestrator (~1000 lines)
+│   │       └── components/
+│   │           ├── BadgeUnlockModal.tsx
+│   │           ├── Day3OutcomeModal.tsx     ← The 3-way exit modal
+│   │           ├── EmptyState.tsx
+│   │           ├── LevelUpModal.tsx
+│   │           ├── QuestPicker.tsx           ← Tabs when 2-3 quests
+│   │           └── ReturningCelebration.tsx
+│   └── components/
+│       ├── DashboardShowcase.tsx
+│       ├── PlanQuestSection.tsx
+│       ├── ScrollStory.tsx
+│       ├── SyllabusCylinder.tsx
+│       ├── icons/
+│       │   └── index.tsx       ← 13-icon set, React side
+│       └── ui/
+│           └── cosmos-orbit.tsx
 ├── api/
 │   ├── index.js               ← ONLY serverless entry point (router)
-│   ├── generate-quest.js      ← Legacy alias (kept for progress.html compatibility)
-│   ├── summarize-chat.js      ← Legacy alias (kept for tutor.html compatibility)
+│   ├── generate-quest.js      ← Legacy alias (kept for compatibility)
+│   ├── summarize-chat.js      ← Legacy alias (kept for compatibility)
 │   └── cron/
-│       └── fill-bank.js         ← Cron job for question bank auto-fill
+│       └── fill-bank.js         ← Question bank auto-fill
 ├── lib/
 │   └── api/
-│       ├── handlers.js          ← ALL handler logic (13 handlers)
-│       └── prompts/             ← System prompts for /api/generate
+│       ├── handlers.js         ← ALL handler logic (24 routes)
+│       ├── badge-engine.js     ← evaluateBadges, evaluateLevelUp,
+│       │                         xpToLevel, levelToRank (NEW)
+│       ├── quest-pedagogy.js   ← buildQuestSteps,
+│       │                         SYLLABUS_DEPENDENCIES (NEW)
+│       └── prompts/
 │           ├── mcq.js
 │           ├── short-ans.js
 │           ├── word-problem.js
 │           ├── open-ended.js
 │           ├── cloze.js
-│           └── editing.js
-├── supabase/                  ← SQL migrations (run manually in Supabase SQL Editor)
+│           ├── editing.js
+│           └── socratic-quest.js  ← buildSocraticQuestPrompt (NEW)
+├── supabase/                  ← SQL migrations (run manually)
 │   ├── 002_question_types.sql
 │   ├── 003_exam_results.sql
 │   ├── 004_profiles_email.sql
 │   ├── 006_study_notes.sql
 │   ├── 007_photo_upload.sql
-│   └── 008_fix_profile_trigger.sql  (APPLIED 2026-04-17)
-├── assets/
-│   ├── favicon.ico
-│   ├── logo.svg
-│   └── images/
-│       ├── miss_wena.png          ← AI tutor avatar (SVG onerror fallback)
-│       └── ... (screenshots, student illustrations)
+│   ├── 008_fix_profile_trigger.sql
+│   ├── 009_subscriptions_unique.sql
+│   ├── 010_referrals.sql
+│   ├── 011_profile_extensions.sql
+│   ├── 012_contact_messages.sql
+│   ├── 012_contact_submissions.sql
+│   ├── 013_question_bank_qa.sql
+│   ├── 015_mastery_levels.sql       (APPLIED 2026-04-25)
+│   ├── 016_quest_gamification.sql   (APPLIED 2026-04-25)
+│   ├── 017_seed_badges.sql          (APPLIED 2026-04-25)
+│   └── 018_quest_pedagogy.sql       (APPLIED — Phase 3 Commit 1)
+│   (PENDING: 019_seed_pedagogy_badges.sql — Phase 3 Commit 6)
+├── docs/
+│   ├── QUEST_PAGE_SPEC.md      ← v2.0 LOCKED — quest authority
+│   ├── LAUNCH_PLAN_v1.md
+│   ├── PROJECT_DASHBOARD.md    ← (mirror of root dashboard)
+│   ├── CONTENT_TIMELINE.md
+│   ├── design-audit.md
+│   └── handoff/
+│       ├── README.md
+│       ├── QUEST_BACKEND_HANDOFF.md
+│       └── QUEST_FRONTEND_HANDOFF.md
 ├── hooks/
 │   └── hooks.json             ← Secret detection + CSS enforcement
 └── .claude/
-    ├── rules/                 ← 7 always-active rule files
-    ├── commands/              ← 6 slash commands
-    ├── skills/                ← 5 domain skills
+    ├── rules/                 ← 13 always-active rule files
+    ├── commands/              ← 8 slash commands
+    ├── skills/                ← 6 domain skills
+    ├── agents/                ← 5 agent prompt files (note:
+    │                           AGENTS.md is the canonical registry)
     └── settings.local.json    ← MCP permissions (gitignored)
 
 ═══════════════════════════════════════════════════════════════
-BUILD STATUS (as of 2026-04-17)
+BUILD STATUS (as of 2026-04-27)
 ═══════════════════════════════════════════════════════════════
 
 COMPLETED
-  [x] CSS design system (Rose & Sage, Bebas Neue, CSS variables)
-  [x] Marketing homepage (index.html)
+  [x] CSS design system v3.0 (Rose & Sage, Bebas Neue, CSS variables)
+  [x] Marketing homepage (public/index.html)
   [x] Subject landing pages (maths, science, english)
   [x] 404 page
   [x] Auth: email/password + Google + Apple OAuth
-  [x] Auth pages: login.html, signup.html, confirm-email.html, update-password.html
-  [x] Signup flow: 7-day trial, no credit card, subscription_tier = 'trial'
+  [x] Auth pages: login, signup, confirm-email, update-password
+  [x] Signup flow: 7-day trial, no credit card, subscription_tier='trial'
   [x] Profile trigger: handle_new_user() + 008 migration applied
   [x] guardPage() + enforcePaywall() in auth.js
   [x] Daily usage limits (5 questions/day on trial)
   [x] Quiz engine: all 6 PSLE question types (quiz.js + quiz.html)
   [x] Question bank: migrated to Supabase question_bank table
-  [x] Miss Wena AI tutor: Gemini Flash, 3-Strike scaffolding, save-to-backpack
-  [x] Study Notes Backpack: summarize-chat → study_notes table → dashboard modal
+  [x] Miss Wena AI tutor: Gemini Flash, 3-Strike scaffolding
+  [x] Study Notes Backpack: summarize-chat → study_notes (with quest_id)
   [x] Progress tracker (progress.html + progress.js)
   [x] AI weakness analysis (/api/analyze-weakness)
-  [x] Remedial Plan Quest (/api/generate-quest, 3-day plan)
-  [x] Exam generator: AI-generated WA/EOY/PSLE papers (exam.html)
+  [x] Exam generator: WA/EOY/PSLE templates (exam-templates.js v4.0)
   [x] AI grading for open_ended + word_problem (/api/grade-answer)
-  [x] Stripe: trial-first flow, checkout, webhook, profiles.subscription_tier updated
+  [x] Stripe: trial-first flow, checkout, webhook, profiles.subscription_tier
   [x] Stripe Customer Portal (/api/portal via account.html)
-  [x] Parent Account Portal (account.html: profile, email, password, billing)
+  [x] Parent Account Portal (account.html)
   [x] Master Admin Panel (admin.html: users, plans, students, role-gated)
-  [x] Dashboard: checkout polling (auto-updates UI on webhook), trial banner
-  [x] Header: Manage Billing link for subscribers, Admin Panel link for admins
+  [x] Dashboard: checkout polling, trial banner
+  [x] Header: Manage Billing + Admin Panel links (auth-aware)
   [x] Student photo upload (Supabase Storage, avatars bucket)
   [x] ECC framework (rules, commands, agents, hooks, skills)
-  [x] Single gateway API (api/index.js → lib/api/handlers.js, 13 routes)
-  [x] vercel.json: 13 rewrites + security headers
-  [x] Profile trigger fix (008_fix_profile_trigger.sql applied)
+  [x] Single gateway API (api/index.js → lib/api/handlers.js, 24 routes)
+  [x] vercel.json: 24 rewrites + security headers + 1 cron
+  [x] subscriptions table: UNIQUE constraint on stripe_subscription_id (009)
   [x] Subject-specific pages (subject-mathematics/science/english.html)
 
+  --- Phase 3 Plan Quest (commits 1-5 done; 6 pending) ---
+  [x] Migration 015 (mastery_levels retroactive)
+  [x] Migration 016 (XP, streaks, badges, avatar audit, mastery snapshots)
+  [x] Migration 017 (badge seeds, 29 badges)
+  [x] Migration 018 (quest_eligibility + remedial_quests pedagogy fields)
+  [x] /quest route (Next.js): page.tsx, QuestClient.tsx, 6 components
+  [x] Day-gating server-side (Asia/Singapore midnight)
+  [x] handleQuestsRouter (list, fetch, advance-step, day3-outcome,
+       abandon, quiz-batch)
+  [x] handleAwardXP with allow-list + idempotency + anti-cheat
+  [x] badge-engine.js (evaluateBadges, level/rank calculations)
+  [x] quest-pedagogy.js (buildQuestSteps + SYLLABUS_DEPENDENCIES)
+  [x] socratic-quest.js prompt builder
+  [x] /api/chat Socratic Quest mode (?from_quest= overlay)
+  [x] /api/summarize-chat accepts quest_id → study_notes.quest_id
+  [x] quiz.js: from_quest detection, quest-batch fetch, advance-step
+       on submit, auto-modal on score ≤70% with eligibility check
+  [x] tutor.js: from_quest detection, Socratic mode banner, message-count
+       gated "Mark Day 2 Complete", auto-Study-Note on completion
+  [x] progress.html: renderQuestTray (replaces renderQuestMap),
+       eligibility-aware Generate Quest buttons, HUD strip slot
+  [x] hud-strip.js (vanilla HUD: avatar, level, XP, streak, shields)
+  [x] bottom-nav.js (canonical 5-item layout, setQuestActive API)
+  [x] icons.js + src/components/icons/index.tsx (13-icon set)
+
 PENDING / IN PROGRESS
+  Currently: E2E testing the Lily Tan flow (docs/QUEST_PAGE_SPEC.md §18)
+
+  [ ] Phase 3 Commit 6 — combined with AI Provider Migration in next handoff:
+      - api/cron/snapshot-mastery.js (daily 03:00 SGT)
+      - vercel.json cron registration
+      - public/pages/quest-info.html (parent FAQ page from spec §16)
+      - supabase/019_seed_pedagogy_badges.sql (4 pedagogy badges)
+      - docs/PARENT_FAQ.md (extracted from spec §16)
+      - docs/GAMIFICATION_RULES.md (extracted from spec §12)
+  [ ] AI Provider Migration (Workstream B) — separate handoff:
+      - AI_ROUTING config + callAI() wrapper
+      - OpenAI gpt-4o-mini for chat / grading / summarize / analyze
+      - Keep Anthropic Haiku/Sonnet for bulk question gen
+      - OPENAI_API_KEY + AI_*_PROVIDER + AI_*_MODEL env vars
   [ ] Analytics: Plausible script on ALL pages (currently pricing.html only)
   [ ] SEO: meta descriptions, Open Graph, JSON-LD on all pages
-  [ ] sitemap.xml + robots.txt
-  [ ] subscriptions table: UNIQUE constraint on stripe_subscription_id
   [ ] Stripe: switch from test mode to live mode
-  [ ] Question bank: expand to 600+ questions (P1, P3, P6 currently empty)
+  [ ] Question bank: systematic expansion (P5 maths/science most complete;
+       P1, P3, P6 mostly empty). See data/questions/MANIFEST.md.
+  [ ] Pre-launch cleanup of legacy files (see PROJECT_DASHBOARD.md
+       Known Issues for the list)
 
 ═══════════════════════════════════════════════════════════════
 HOW TO START A CLAUDE CODE SESSION
@@ -404,6 +665,8 @@ Rules and hooks load automatically from .claude/ and hooks/.
 First prompt for any new session:
   "Read CLAUDE.md and ARCHITECTURE.md, then [your task]."
 
+For Plan Quest work, also read docs/QUEST_PAGE_SPEC.md v2.0.
+
 MCP servers available in Claude Code:
   filesystem   D:\Git\Superholic-Lab + C:\SLabDrive
   github       feynman82/Superholic-Lab
@@ -411,5 +674,5 @@ MCP servers available in Claude Code:
   Chrome MCP   for visual QA after deploys
 
 ═══════════════════════════════════════════════════════════════
-END OF ARCHITECTURE BRIEFING v3.0
+END OF ARCHITECTURE BRIEFING v4.0
 ═══════════════════════════════════════════════════════════════
