@@ -1,6 +1,6 @@
 # PROJECT INDEX — Superholic Lab
 > Master directory of all files, routes, and data assets.
-> Last updated: 2026-04-27 | v2.0
+> Last updated: 2026-04-27 | v2.1
 
 For coding rules see `CLAUDE.md`. For schema and infra see `ARCHITECTURE.md`.
 For Plan Quest pedagogy and behaviour see `docs/QUEST_PAGE_SPEC.md` v2.0.
@@ -34,6 +34,7 @@ For Plan Quest pedagogy and behaviour see `docs/QUEST_PAGE_SPEC.md` v2.0.
 | terms.html | /pages/terms.html | ❌ public | Terms of Service |
 | contact.html | /pages/contact.html | ❌ public | Contact form |
 | refund-request.html | /pages/refund-request.html | ❌ public | Refund request form |
+| faq.html | /pages/faq.html | ❌ public | Consolidated FAQ — 9 sections, Schema.org FAQPage JSON-LD |
 | index.html | / | ❌ public | Marketing homepage |
 | 404.html | / | ❌ public | Custom 404 |
 
@@ -80,7 +81,7 @@ to handlers in `lib/api/handlers.js`.
 
 **Cron jobs:**
 - `/api/cron/auto-fill-bank` — `0 2 * * 0` (Sunday 02:00 UTC) — question bank auto-fill
-- `/api/cron/snapshot-mastery` — PENDING (Phase 3 commit 6) — daily 03:00 SGT mastery snapshot for `mastery_gain` XP
+- `/api/cron/snapshot-mastery` — `0 19 * * *` (daily 03:00 SGT) — mastery snapshot + `mastery_gain` XP awards
 
 ---
 
@@ -88,7 +89,7 @@ to handlers in `lib/api/handlers.js`.
 
 | File | Exports | Description |
 |---|---|---|
-| handlers.js | 20+ named exports | All API handler logic + shared AI helpers (callGemini, callClaudeRaw) + OpenAI client (migration pending) |
+| handlers.js | 20+ named exports | All API handler logic + `AI_ROUTING` config + `callAI()` / `callOpenAI()` / `callClaudeRaw()` / `callGemini()` unified dispatcher |
 | badge-engine.js | evaluateBadges, evaluateLevelUp, xpToLevel, xpInCurrentLevel, xpNeededForNextLevel, levelToRank | Badge unlock evaluation + level/rank math (33 badges) |
 | quest-pedagogy.js | buildQuestSteps, SYLLABUS_DEPENDENCIES | Builds quest steps config from BKT diagnosis; transfer-topic dependency map |
 | prompts/mcq.js | MCQ_SYSTEM_PROMPT | MCQ generation system prompt |
@@ -177,7 +178,7 @@ the only authoritative count.)
 
 | File | Description |
 |---|---|
-| vercel.json | Vercel config — cleanUrls, 24 rewrites, security headers, 1 cron |
+| vercel.json | Vercel config — cleanUrls, 24 rewrites, security headers, 2 crons |
 | package.json | Node 24.x, ESM (`"type":"module"`), Next.js 15 + React 19 + framer-motion |
 | next.config.mjs | Next.js config (for /quest route) |
 | tsconfig.json | TypeScript config (for src/) |
@@ -202,6 +203,8 @@ the only authoritative count.)
 | Master_Question_Template.md | 6 PSLE question type schemas |
 | CONTEXT.md | Quick context index pointer |
 | docs/QUEST_PAGE_SPEC.md | **v2.0 LOCKED** — Plan Quest authority (pedagogy, FAQ, schema, API contracts) |
+| docs/PARENT_FAQ.md | **Source of truth for FAQ content** — markdown twin of `public/pages/faq.html`; edit here first |
+| docs/GAMIFICATION_RULES.md | XP table, level math, rank ladder, all 33 badges, anti-cheat rules |
 | docs/LAUNCH_PLAN_v1.md | Launch sequencing |
 | docs/PROJECT_DASHBOARD.md | Mirror of root dashboard |
 | docs/CONTENT_TIMELINE.md | Content milestones |
@@ -209,6 +212,7 @@ the only authoritative count.)
 | docs/handoff/README.md | Handoff prompts index |
 | docs/handoff/QUEST_BACKEND_HANDOFF.md | Backend stream prompt for Phase 3 |
 | docs/handoff/QUEST_FRONTEND_HANDOFF.md | Frontend stream prompt for Phase 3 |
+| docs/handoff/AI_PROVIDER_AND_COMMIT6_HANDOFF.md | AI routing abstraction + Phase 3 Commit 6 handoff |
 
 ---
 
@@ -256,7 +260,7 @@ For full table definitions, see `ARCHITECTURE.md` → SUPABASE DATABASE SCHEMA.
 
 **Migrations applied (in `supabase/`):** 002, 003, 004, 006, 007, 008, 009,
 010, 011, 012, 013, 015, 016, 017, 018.
-**Pending:** 019_seed_pedagogy_badges.sql (Phase 3 commit 6).
+**Pending (apply in Supabase SQL Editor):** `019_reclassify_difficulty_heuristic.sql`, `020_seed_pedagogy_badges.sql`.
 
 ---
 
