@@ -53,6 +53,48 @@ function rankFromLevel(level: number): string {
   return "Cadet"
 }
 
+// ─── Inline syllabus dependency map (mirrors quest-pedagogy.js) ─────────────
+const TOPIC_DEPS: Record<string, Record<string, string[]>> = {
+  mathematics: {
+    "Ratio":                 ["Fractions", "Multiplication and Division"],
+    "Percentage":            ["Fractions", "Decimals"],
+    "Speed":                 ["Rate", "Time"],
+    "Rate":                  ["Whole Numbers", "Multiplication and Division"],
+    "Average":               ["Addition and Subtraction", "Multiplication and Division"],
+    "Fractions":             ["Whole Numbers", "Multiplication Tables"],
+    "Decimals":              ["Fractions", "Whole Numbers"],
+    "Algebra":               ["Whole Numbers", "Fractions"],
+    "Circles":               ["Area and Perimeter", "Geometry"],
+    "Volume":                ["Area and Perimeter", "Fractions"],
+    "Area of Triangle":      ["Area and Perimeter", "Fractions"],
+    "Factors and Multiples": ["Whole Numbers", "Multiplication Tables"],
+    "Pie Charts":            ["Fractions", "Percentage"],
+    "Data Analysis":         ["Whole Numbers", "Fractions"],
+    "Symmetry":              ["Geometry", "Shapes and Patterns"],
+    "Angles and Geometry":   ["Angles", "Geometry"],
+    "Area and Perimeter":    ["Whole Numbers", "Multiplication and Division"],
+  },
+  science: {
+    "Energy":       ["Heat", "Light", "Matter"],
+    "Cycles":       ["Diversity"],
+    "Systems":      ["Diversity", "Cells"],
+    "Interactions": ["Magnets", "Forces"],
+    "Forces":       ["Energy", "Interactions"],
+    "Cells":        ["Diversity", "Systems"],
+    "Heat":         ["Matter", "Energy"],
+    "Light":        ["Energy"],
+  },
+  english: {
+    "Synthesis and Transformation": ["Grammar", "Vocabulary"],
+    "Comprehension":                ["Vocabulary", "Grammar"],
+    "Cloze":                        ["Grammar", "Vocabulary"],
+    "Editing":                      ["Grammar", "Vocabulary"],
+    "Summary Writing":              ["Comprehension", "Vocabulary"],
+    "Grammar":                      ["Vocabulary"],
+    "Vocabulary":                   ["Grammar"],
+  },
+}
+
 // ═══════════════════════════════════════════════════════════════════
 // TYPES
 // ═══════════════════════════════════════════════════════════════════
@@ -163,6 +205,7 @@ export function QuestClient({ searchParams }: QuestClientProps) {
   const [token,           setToken]           = useState("")
   const [activeCelebration, setActiveCelebration] = useState<CelebrationData | null>(null)
   const [showDay3Modal,   setShowDay3Modal]   = useState(false)
+  const [earnedBadges,    setEarnedBadges]    = useState<Array<{ id: string; name: string; description: string; rarity: string }>>([])
 
   // ─── Init ───────────────────────────────────────────────────────
   useEffect(() => {
@@ -294,12 +337,29 @@ export function QuestClient({ searchParams }: QuestClientProps) {
       mastery = data
     } catch { /* table missing or schema mismatch — use fallback values below */ }
 
+    const subjectKey = detail.subject.toLowerCase()
+    const topicDeps  = TOPIC_DEPS[subjectKey]?.[detail.topic] ?? []
+
     setDiagnosis({
       topic:       detail.topic,
       current_al:  mastery?.al_band  ?? 5,
       current_pct: mastery?.pct_correct ?? detail.trigger_score,
-      unlocks:     [],
+      unlocks:     topicDeps,
     })
+
+    // Fetch earned badges (best-effort — table may not be provisioned yet)
+    try {
+      const { data: badgeRows } = await getSupabase()
+        .from("student_badges")
+        .select("badge_definitions(id, name, description, rarity)")
+        .eq("student_id", studentId)
+        .limit(20)
+      if (Array.isArray(badgeRows)) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const badges = (badgeRows as any[]).map((r: any) => r.badge_definitions).filter(Boolean)
+        setEarnedBadges(badges)
+      }
+    } catch { /* non-fatal */ }
 
     // Check for celebration data in sessionStorage
     const isReturning = sp(searchParams, "returning") === "true"
@@ -504,6 +564,9 @@ export function QuestClient({ searchParams }: QuestClientProps) {
           {isQuestComplete && (
             <QuestCompleteCard outcome={questDetail.day3_outcome ?? "completed"} />
           )}
+
+          {/* BADGE TRAY */}
+          {earnedBadges.length > 0 && <BadgeTray badges={earnedBadges} />}
 
           {/* DIAGNOSIS CARD */}
           {diagnosis && <DiagnosisCard diagnosis={diagnosis} />}
@@ -1045,9 +1108,9 @@ function DiagnosisCard({ diagnosis }: { diagnosis: Diagnosis }) {
         in <strong style={{ color: "var(--text-main)" }}>{diagnosis.topic}</strong>.
         {diagnosis.unlocks.length > 0 && (
           <>
-            {" "}Mastering this unlocks{" "}
+            {" "}This quest builds on{" "}
             <strong style={{ color: "var(--brand-mint)" }}>
-              {diagnosis.unlocks.length} dependent topic{diagnosis.unlocks.length > 1 ? "s" : ""}
+              {diagnosis.unlocks.length} core topic{diagnosis.unlocks.length > 1 ? "s" : ""}
             </strong>.
           </>
         )}
@@ -1056,6 +1119,79 @@ function DiagnosisCard({ diagnosis }: { diagnosis: Diagnosis }) {
       {diagnosis.unlocks.length > 0 && (
         <DependencyTree topic={diagnosis.topic} unlocks={diagnosis.unlocks} />
       )}
+    </motion.div>
+  )
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// BADGE TRAY — earned badges, always visible on quest page
+// ═══════════════════════════════════════════════════════════════════
+
+const BADGE_RARITY_COLOR: Record<string, string> = {
+  common:    "var(--cream)",
+  rare:      "var(--brand-mint)",
+  epic:      "var(--brand-rose)",
+  legendary: "var(--brand-amber)",
+}
+
+function BadgeTray({ badges }: { badges: Array<{ id: string; name: string; description: string; rarity: string }> }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.45 }}
+      className="card-glass"
+      style={{ marginBottom: 32 }}
+    >
+      <h3
+        className="label-caps"
+        style={{ color: "var(--brand-amber)", display: "inline-flex", alignItems: "center", gap: 6, marginBottom: 16 }}
+      >
+        <Icon name="shield" size={14} />
+        My Badges ({badges.length})
+      </h3>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+        {badges.map(b => {
+          const color = BADGE_RARITY_COLOR[b.rarity] ?? "var(--cream)"
+          return (
+            <div
+              key={b.id}
+              title={`${b.name}: ${b.description}`}
+              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, width: 68, textAlign: "center" }}
+            >
+              <div
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: `color-mix(in srgb, ${color} 12%, transparent)`,
+                  border: `2px solid color-mix(in srgb, ${color} 40%, transparent)`,
+                  color,
+                }}
+              >
+                <Icon name="shield" size={22} />
+              </div>
+              <span
+                style={{
+                  fontSize: "0.6rem",
+                  fontWeight: 600,
+                  color: "var(--text-muted)",
+                  lineHeight: 1.2,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  maxWidth: 64,
+                }}
+              >
+                {b.name}
+              </span>
+            </div>
+          )
+        })}
+      </div>
     </motion.div>
   )
 }

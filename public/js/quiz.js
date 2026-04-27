@@ -1824,9 +1824,31 @@ window.initQuizEngine = function () {
       const celebData = await res.json();
       if (res.ok) {
         try {
+          const xp        = celebData.xp || {};
+          const levelData = xp.levelData || {};
+          const stepIdx   = state.fromQuest.stepIndex;
+          const shaped = {
+            completedDay:   stepIdx + 1,
+            trigger:        'quiz',
+            score:          pctScore,
+            xpAwarded:      (xp.totalXpAfter || 0) - (xp.totalXpBefore || 0),
+            levelUp:        levelData.leveled_up ? {
+              fromLevel: levelData.level_before,
+              toLevel:   levelData.level_after,
+              fromRank:  levelData.rank_before,
+              toRank:    levelData.rank_after,
+            } : null,
+            badgesUnlocked: (celebData.badges_earned || []).map(b => ({
+              id:          b.id,
+              name:        b.name,
+              description: b.description || '',
+              rarity:      b.rarity || 'common',
+            })),
+            questComplete:  celebData.quest?.status === 'completed',
+          };
           sessionStorage.setItem(
             `quest_celebration_${state.fromQuest.questId}`,
-            JSON.stringify(celebData)
+            JSON.stringify(shaped)
           );
         } catch (e) { }
       } else {
@@ -1837,7 +1859,7 @@ window.initQuizEngine = function () {
     }
 
     setTimeout(() => {
-      window.location.href = `/quest?id=${state.fromQuest.questId}&completed=${state.fromQuest.stepIndex}&trigger=quiz&score=${pctScore}`;
+      window.location.href = `/quest?id=${state.fromQuest.questId}&returning=true&score=${pctScore}`;
     }, 2000);
   }
 
@@ -1864,11 +1886,16 @@ window.initQuizEngine = function () {
       'letter-spacing:0.08em',
       'text-transform:uppercase',
       'position:sticky',
-      'top:0',
-      'z-index:200'
+      'top:var(--navbar-h, 66px)',
+      'z-index:100'
     ].join(';');
     banner.textContent = `Plan Quest · Day ${dayNum} · ${topicDisplay}`;
-    document.body.insertBefore(banner, document.body.firstChild);
+    const globalHeader = document.querySelector('global-header');
+    if (globalHeader && globalHeader.parentNode === document.body) {
+      globalHeader.insertAdjacentElement('afterend', banner);
+    } else {
+      document.body.insertBefore(banner, document.body.firstChild);
+    }
   }
 
   function disableSubjectSwitcher() {
@@ -1895,7 +1922,7 @@ window.initQuizEngine = function () {
         const { data: { session } } = await sb.auth.getSession();
         const token = session?.access_token;
         if (state.studentId && token) {
-          const r = await fetch(`/api/quests?student_id=${state.studentId}`, {
+          const r = await fetch(`/api/quests?student_id=${state.studentId}&status=active`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
           const d = await r.json();
