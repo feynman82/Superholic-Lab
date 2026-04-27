@@ -409,8 +409,8 @@ export function QuestClient({ searchParams }: QuestClientProps) {
 
   if (loadState === "empty") {
     return (
-      <main style={{ minHeight: "100vh", paddingTop: "calc(var(--navbar-h) + 32px)", paddingBottom: 96 }}>
-        <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 16px" }}>
+      <main style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", paddingTop: "var(--navbar-h)", paddingBottom: 96 }}>
+        <div style={{ maxWidth: 760, width: "100%", padding: "0 16px" }}>
           <EmptyState />
         </div>
       </main>

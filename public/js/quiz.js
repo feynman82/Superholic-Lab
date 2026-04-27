@@ -1096,8 +1096,22 @@ window.initQuizEngine = function () {
             render();
             const pctScore = state.totalPossibleScore > 0
               ? Math.round((state.score / state.totalPossibleScore) * 100) : 0;
-            if (pctScore <= 70 && state.dbTopic) {
-              showQuestSuggestionModal(pctScore);
+            // For mixed quizzes (no URL topic), infer the most-failed topic from
+            // the questions answered so a quest can still be offered.
+            let questTopic = state.dbTopic;
+            if (!questTopic && state.questions?.length > 0) {
+              const failMap = {};
+              state.questions.forEach(q => {
+                const t = (q.topic || '').trim();
+                if (!t || t.toLowerCase() === 'mixed') return;
+                const r = state.resultsObj?.[q.id];
+                if (r && !r.isCorrect) failMap[t] = (failMap[t] || 0) + 1;
+              });
+              const top = Object.entries(failMap).sort((a, b) => b[1] - a[1]);
+              if (top.length > 0) questTopic = top[0][0];
+            }
+            if (pctScore <= 70 && questTopic) {
+              showQuestSuggestionModal(pctScore, questTopic);
             }
           }
         });
@@ -1869,8 +1883,8 @@ window.initQuizEngine = function () {
     });
   }
 
-  function showQuestSuggestionModal(pctScore) {
-    const topic = state.dbTopic || 'this topic';
+  function showQuestSuggestionModal(pctScore, inferredTopic) {
+    const topic = inferredTopic || state.dbTopic || 'this topic';
     const subject = (state.dbSubject || 'Mathematics').toLowerCase()
       .replace('english language', 'english');
 
@@ -1938,7 +1952,7 @@ window.initQuizEngine = function () {
               student_id: state.studentId,
               subject: subject,
               level: state.dbLevel || '',
-              topic: state.dbTopic || '',
+              topic: topic,
               trigger_score: pctScore
             })
           });

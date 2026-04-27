@@ -157,7 +157,7 @@ async function init() {
       topicMap[key].total += a.total_questions || 0;
     });
     const weakTopics = Object.values(topicMap)
-      .filter(t => t.total >= 5)
+      .filter(t => t.total >= 5 && t.topic && t.topic.toLowerCase() !== 'mixed')
       .map(t => ({ ...t, pct: Math.round((t.correct / t.total) * 100) }))
       .sort((a, b) => a.pct - b.pct)
       .slice(0, 5);
@@ -166,10 +166,10 @@ async function init() {
     const { data: examResults } = await db.from('exam_results').select('id, subject, level, exam_type, score, total_marks, questions_attempted, time_taken, completed_at').eq('student_id', student.id).order('completed_at', { ascending: false }).limit(20);
     const activeQuest = await loadActiveQuest(db, student.id);
 
-    // Fetch all active quests for tray + per-subject eligibility gating
+    // Fetch active quests for tray + per-subject eligibility gating
     let activeQuestsList = [];
     try {
-      const questsRes = await fetch(`/api/quests?student_id=${student.id}`, {
+      const questsRes = await fetch(`/api/quests?student_id=${student.id}&status=active`, {
         headers: { 'Authorization': `Bearer ${session?.access_token}` },
       });
       if (questsRes.ok) {
@@ -865,17 +865,24 @@ async function abandonQuest(db, questId, sectionEl) {
   if (!confirm('Abandon this quest? Your progress on it will be lost.')) return;
 
   try {
-    const { error } = await db
-      .from('remedial_quests')
-      .update({ status: 'abandoned' })
-      .eq('id', questId);
-
-    if (error) {
-      console.error('[progress] abandonQuest error:', error.message);
+    const sb = await window.getSupabase();
+    const { data: { session } } = await sb.auth.getSession();
+    const res = await fetch(`/api/quests/${questId}/abandon`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${session?.access_token}` },
+    });
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      console.error('[progress] abandonQuest API error:', d.error);
+      alert('Could not abandon quest. Please try again.');
       return;
     }
 
-    // Hide the quest map and re-enable all Generate Quest buttons
+    // Update local cache and re-render tray so it disappears immediately
+    window.activeQuestsList = (window.activeQuestsList || []).filter(q => q.id !== questId);
+    renderQuestTrayFromData(window.activeQuestsList);
+
+    // Hide legacy map section if visible
     if (sectionEl) sectionEl.style.display = 'none';
     document.querySelectorAll('[data-quest-btn]').forEach(btn => {
       btn.disabled = false;
@@ -884,6 +891,7 @@ async function abandonQuest(db, questId, sectionEl) {
 
   } catch (err) {
     console.error('[progress] abandonQuest failed:', err.message);
+    alert('Could not abandon quest. Please try again.');
   }
 }
 
