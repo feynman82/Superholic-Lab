@@ -424,6 +424,7 @@ Structure:
 - **Sticky search pill** (pill-shaped input, top of content, mobile-friendly): search across all visible Q/A text. Implement with vanilla JS — filter accordion items in real-time as parent types. Show "X results" counter.
 - **Sticky anchor nav** (mobile: collapsible "Jump to..." select; desktop: pill row of links to each section)
 - **9 sections**, each an `<details>`-based accordion list
+- there are some legacy FAQ on payments and subscription on pricing.html, to harmonize and update those into faq.html, but contniue to have payment and subscription related FAQ on pricing.html. make sure those FAQs are linked to the master faq.html so any edits in faq.html will automatically edit those in pricing.html.
 
 ### Section content
 
