@@ -1,7 +1,7 @@
 # CLAUDE.md — Superholic Lab
 
 > Read this file + ARCHITECTURE.md before writing any code.
-> Last updated: 2026-04-27 | v4.0
+> Last updated: 2026-04-27 | v4.1
 
 ## Project Identity
 
@@ -16,6 +16,30 @@ for P1–S4 students. Parents subscribe monthly. Students practise across PSLE
 exam formats with full worked solutions, wrong-answer explanations, an AI tutor
 (Miss Wena) who scaffolds learning in a warm Singaporean voice, and personalised
 3-day learning interventions when they get a low score.
+
+## The 4 Pillars of Superholic Lab
+
+The platform's value proposition rests on four pillars that work together as
+a closed learning loop. Each pillar must be preserved, distinct, and obvious
+on the marketing homepage. **Do not collapse pillars or rename them in
+marketing copy.** Order matters — this is the user journey, not just a feature
+list.
+
+| # | Pillar | What it does | Where it lives |
+|---|--------|--------------|----------------|
+| **1** | **Practise** | MOE-aligned questions across 6 PSLE formats. Every wrong answer explained with the specific misconception. The student does the reps. | `public/pages/quiz.html` + `public/js/quiz.js` |
+| **2** | **Analyse Weakness** | BKT (Bayesian Knowledge Tracing) reads every attempt, weights HOTS questions higher, and surfaces the *root-cause* topic — not just the symptom. Also runs the AI Weakness Report. | `public/pages/progress.html` + `public/js/progress.js` + `/api/analyze-weakness` |
+| **3** | **Remedial Plan (Plan Quest)** | A personalised 3-day intervention built on the diagnosis. Day 1 ramping practice → Day 2 Socratic dialogue with Miss Wena → Day 3 mastery trial with honest 3-way exit. The platform's IP. | `src/app/quest/` + `/api/quests/*` |
+| **4** | **Assess** | AI-generated WA / EOY / PSLE-style papers calibrated to SEAB 2026 syllabus. The summative check that closes the loop and proves mastery sticks. | `public/pages/exam.html` + `public/js/exam.js` + `/api/generate-exam` |
+
+**The closed loop in plain language:** Practise reveals weakness → Analyse
+diagnoses the root cause → Plan Quest fixes it → Assess proves the fix held.
+A platform that only does Practise (most competitors) cannot close this loop.
+
+**Marketing implication:** The homepage hero, pricing page, and FAQ must
+all reference these four pillars by name and in this order. Miss Wena and
+gamification (XP, badges, levels, streaks) are *enablers* of the four
+pillars, not pillars themselves.
 
 ## Subscription Pricing (current — Stripe test mode)
 
@@ -41,16 +65,20 @@ exam formats with full worked solutions, wrong-answer explanations, an AI tutor
 | Auth        | Supabase: email/password + Google OAuth |
 | Payments    | Stripe (test mode — switch to live before launch) |
 | AI (chat)   | Gemini Flash (`gemini-3-flash-preview`) — current; **migration to OpenAI pending** |
-| AI (grade)  | Currently uses Gemini + Anthropic SDK in handlers, **migration to OpenAI pending**, actual grading is already on OpenAI, probably through guiz.js and exam.js ; **see ARCHITECTURE.md AI MODEL ROUTING for actual current state** |
-| AI (questions, bulk) | Anthropic Claude Haiku (`claude-haiku-4-5-20251001`) |
+| AI (grade)  | **OpenAI `gpt-4o-mini`** — already live in `handleGradeAnswer` (direct fetch from handlers.js) |
+| AI (question gen, on-demand) | **OpenAI `o4-mini`** — already live in `handleGenerateQuestion` |
+| AI (question gen, bulk) | Anthropic Claude Sonnet (`claude-3-5-sonnet-20241022`) for `/api/generate` |
+| AI (exam gen) | Gemini primary, Anthropic Claude Haiku (`claude-haiku-4-5-20251001`) fallback |
 | Deploy      | Vercel auto-deploy on push to `main`, ~60s |
 | DNS         | Cloudflare → Vercel |
 | Analytics   | Plausible (script tag — being rolled out) |
 
-> **AI provider migration pending:** OpenAI subscription is now active. A
-> separate handoff session (Workstream B) will introduce an `AI_ROUTING`
-> abstraction in `handlers.js` so providers can be swapped via env vars.
-> See `docs/handoff/` for the upcoming `AI_PROVIDER_MIGRATION_HANDOFF.md`.
+> **AI provider migration in progress (Workstream B handoff next):**
+> Grading and on-demand question gen are already on OpenAI. Remaining
+> migrations: Miss Wena chat, summarise-chat, exam-gen narrative,
+> quest-narrative. The handoff introduces an `AI_ROUTING` config + `callAI()`
+> wrapper so future provider swaps are env-var-only. See
+> `docs/handoff/AI_PROVIDER_MIGRATION_HANDOFF.md` (upcoming).
 
 ## API Architecture — Single Gateway Pattern
 
@@ -79,12 +107,12 @@ one function via rewrites in `vercel.json`:
 | /api/contact                   | handleContact         | Contact form submissions |
 | /api/qa-questions              | handleQaQuestions     | QA panel question listing |
 | /api/generate                  | handleGenerate        | Bulk question generation (internal tooling) |
-| /api/generate-question         | handleGenerateQuestion | On-demand single question |
+| /api/generate-question         | handleGenerateQuestion | On-demand single question (OpenAI o4-mini) |
 | /api/generate-exam             | handleGenerateExam    | Full exam paper generation |
-| /api/grade-answer              | handleGradeAnswer     | AI marking for open/word_problem |
+| /api/grade-answer              | handleGradeAnswer     | AI marking for open/word_problem (OpenAI gpt-4o-mini) |
 | /api/save-exam-result          | handleSaveExamResult  | Save exam scores to Supabase |
 | /api/generate-quest            | handleGenerateQuest   | Plan Quest generation (with concurrency check) |
-| /api/analyze-weakness          | handleAnalyzeWeakness | Deep-dive learning gap report |
+| /api/analyze-weakness          | handleAnalyzeWeakness | BKT weakness diagnosis (no AI; pure SQL + heuristics) |
 | /api/summarize-chat            | handleSummarizeChat   | Package chat into Study Note (accepts `quest_id`) |
 | /api/award-xp                  | handleAwardXP         | Single source of truth for XP grants |
 | /api/quests                    | handleQuestsRouter    | Sub-routes: list, fetch, advance-step, day3-outcome, abandon, quiz-batch |
@@ -131,6 +159,10 @@ learning data. Honest signal is gold. Don't dilute it with empty encouragement.
 
 Active. XP, levels, streaks, badges, level-up modals all live as of Phase 3
 Commit 5. Avatar pipeline is **deferred to post-launch**.
+
+Gamification is an **enabler** of the 4 pillars, not a pillar itself.
+Every XP grant must reward a real learning action (quiz, quest step, exam,
+mastery gain). Never reward empty clicks.
 
 ### XP rules (server-validated allow-list)
 | Action | XP |
@@ -243,6 +275,7 @@ Commit 6 will be combined with the AI Provider Migration handoff (Workstream B).
 - Use `payment_method_types` or `automatic_payment_methods` on Checkout Sessions
 - Bypass the `quest_eligibility` PRIMARY KEY when generating quests (always handle the 409)
 - Skip the day-gating check when advancing a quest step
+- Collapse any of the 4 Pillars into another in marketing copy or the FAQ
 
 ## Design System — "Rose & Sage"
 
@@ -297,10 +330,10 @@ STRIPE_FAMILY_PRICE_ID              monthly Family price
 STRIPE_ALL_SUBJECTS_ANNUAL_PRICE_ID annual All Subjects price
 STRIPE_FAMILY_ANNUAL_PRICE_ID       annual Family price
 
-# AI (current — to be abstracted in upcoming Workstream B)
-ANTHROPIC_API_KEY                   (server-only)
-GEMINI_API_KEY                      (server-only)
-OPENAI_API_KEY                      (server-only — newly added, migration pending)
+# AI (current — to be abstracted in Workstream B handoff)
+ANTHROPIC_API_KEY                   (server-only — bulk question gen)
+GEMINI_API_KEY                      (server-only — Miss Wena chat, summarize-chat, exam-gen, quest narrative)
+OPENAI_API_KEY                      (server-only — grading + on-demand question gen, soon all chat too)
 
 # App
 NEXT_PUBLIC_APP_URL                 https://www.superholiclab.com
@@ -342,7 +375,7 @@ Miss Wena is Superholic Lab's AI tutor character. Key rules:
 
 ```
 Signup → 7-day trial (no Stripe) → subscription_tier = 'trial'
-Login → email/password OR Google OAuth OR Apple OAuth
+Login → email/password OR Google OAuth
 Subscribe → Stripe Checkout → webhook → subscription_tier = 'all_subjects'|'family'
 Paywall → enforcePaywall() in auth.js → blocks expired trial / unpaid users
 ```
@@ -355,23 +388,23 @@ Paywall → enforcePaywall() in auth.js → blocks expired trial / unpaid users
 
 ## Key Features
 
-| Feature                | Location |
-|------------------------|----------|
-| Quiz engine (6 types)  | `public/js/quiz.js`, `public/pages/quiz.html` |
-| AI Tutor (Miss Wena)   | `public/js/tutor.js`, `public/pages/tutor.html`, `/api/chat` |
-| Plan Quest (3-day)     | `src/app/quest/page.tsx`, `QuestClient.tsx`, `/api/quests/*` |
-| Quest tray + HUD strip | `public/js/progress.js` (`renderQuestTray`), `public/js/hud-strip.js` |
-| Bottom nav (5 items)   | `public/js/bottom-nav.js` (`<global-bottom-nav>`) |
-| Icon set (13 icons)    | `public/js/icons.js` + `src/components/icons/index.tsx` |
-| Study Notes Backpack   | `/api/summarize-chat`, `dashboard.html` backpack modal |
-| Progress Tracker       | `public/js/progress.js`, `public/pages/progress.html` |
-| Exam Generator         | `public/js/exam.js`, `public/pages/exam.html`, `/api/generate-exam`, `public/js/exam-template.js` |
-| AI Weakness Analysis   | `/api/analyze-weakness`, `progress.html` |
-| Pricing + Checkout     | `public/pages/pricing.html`, `/api/checkout` |
-| Parent Account Portal  | `public/pages/account.html` |
-| Master Admin Panel     | `public/pages/admin.html`, `/api/admin` |
-| Parent Dashboard       | `public/pages/dashboard.html` |
-| Web Components         | `<global-header>`, `<global-footer>`, `<global-bottom-nav>` |
+| Feature                | Pillar | Location |
+|------------------------|--------|----------|
+| Quiz engine (6 types)  | 1 Practise | `public/js/quiz.js`, `public/pages/quiz.html` |
+| AI Tutor (Miss Wena)   | enabler    | `public/js/tutor.js`, `public/pages/tutor.html`, `/api/chat` |
+| Progress Tracker + BKT | 2 Analyse  | `public/js/progress.js`, `public/pages/progress.html` |
+| AI Weakness Analysis   | 2 Analyse  | `/api/analyze-weakness` (pure SQL, no AI) |
+| Plan Quest (3-day)     | 3 Plan     | `src/app/quest/page.tsx`, `QuestClient.tsx`, `/api/quests/*` |
+| Quest tray + HUD strip | 3 Plan     | `public/js/progress.js` (`renderQuestTray`), `public/js/hud-strip.js` |
+| Exam Generator         | 4 Assess   | `public/js/exam.js`, `public/pages/exam.html`, `/api/generate-exam`, `public/js/exam-templates.js` |
+| Bottom nav (5 items)   | enabler    | `public/js/bottom-nav.js` (`<global-bottom-nav>`) |
+| Icon set (13 icons)    | enabler    | `public/js/icons.js` + `src/components/icons/index.tsx` |
+| Study Notes Backpack   | enabler    | `/api/summarize-chat`, `dashboard.html` backpack modal |
+| Pricing + Checkout     | platform   | `public/pages/pricing.html`, `/api/checkout` |
+| Parent Account Portal  | platform   | `public/pages/account.html` |
+| Master Admin Panel     | platform   | `public/pages/admin.html`, `/api/admin` |
+| Parent Dashboard       | platform   | `public/pages/dashboard.html` |
+| Web Components         | platform   | `<global-header>`, `<global-footer>`, `<global-bottom-nav>` |
 
 ## When Unsure
 
@@ -380,7 +413,8 @@ Ask before building:
 
 For Quest-related decisions, defer to `docs/QUEST_PAGE_SPEC.md` v2.0
 (the authoritative spec). For architecture/schema questions, defer to
-`ARCHITECTURE.md`.
+`ARCHITECTURE.md`. For marketing copy or FAQ wording about the 4 Pillars,
+this file is the source of truth.
 
 ---
-*CLAUDE.md v4.0 — Updated 2026-04-27 (Phase 3 Plan Quest commits 1–5 done, commit 6 + AI provider migration pending)*
+*CLAUDE.md v4.1 — Updated 2026-04-27 (added 4 Pillars section; AI table reflects actual handlers.js state)*
