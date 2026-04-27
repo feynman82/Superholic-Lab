@@ -249,44 +249,298 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
   // ==========================================
   // P5/P6 SCIENCE SCHEMATIC ENGINE
   // ==========================================
-  circuitDiagram(data) {
-    if (!data || !data.components) return '';
+  /**
+   * Electrical circuit diagram — supports series, parallel, and mixed arrangements.
+   *
+   * Schema:
+   *   {
+   *     "title":       "...",                       // optional
+   *     "arrangement": "series" | "parallel" | "mixed",   // required
+   *     "components":  [
+   *       {"type": "battery"},
+   *       {"type": "switch", "label": "S1", "isOpen": true,  "branch": "top"},
+   *       {"type": "bulb",   "label": "B1", "fused":  false, "branch": "top"},
+   *       ...
+   *     ]
+   *   }
+   *
+   * branch values:
+   *   - series mode: ignored (all components on one loop)
+   *   - parallel mode: 'top' | 'middle' | 'bottom' — assigns to one of 3 rails
+   *   - mixed mode:   'series' = on the main path; 'top'/'bottom' = on a parallel sub-branch
+   *
+   * Backwards-compatible: if `arrangement` is missing, falls back to series rendering.
+   * Backwards-compatible: if `data.circuitDiagram` is present (old nested format),
+   *                        unwraps it automatically.
+   */
+  circuitDiagram(params) {
+    // ── Unwrap legacy nested format ────────────────────────────────────────
+    const data = (params && params.circuitDiagram) ? params.circuitDiagram : (params || {});
+    if (!data || !Array.isArray(data.components) || !data.components.length) return '';
+ 
+    const arrangement = (data.arrangement || data.circuitArrangement || 'series').toLowerCase();
+    const VB_W = 400, VB_H = 240;
+    const esc  = this._esc.bind(this);
+ 
     let svg = `<rect width="100%" height="100%" fill="var(--glass-bg, rgba(255,255,255,0.7))" rx="8" stroke="var(--border-light)" />`;
-
+ 
+    // Title
     if (data.title) {
-      svg += `<text x="200" y="30" text-anchor="middle" fill="var(--text-main)" font-size="14" font-weight="bold">${this._esc(data.title)}</text>`;
+      svg += `<text x="${VB_W / 2}" y="22" text-anchor="middle" fill="var(--text-main)" font-size="13" font-weight="700">${esc(data.title)}</text>`;
     }
-
-    // Base wire loop for a standard series circuit
-    svg += `<path d="M 100 80 L 300 80 L 300 180 L 100 180 Z" fill="none" stroke="var(--brand-sage)" stroke-width="2" />`;
-
-    data.components.forEach(comp => {
-      if (comp.type === 'battery') {
-        svg += `<line x1="190" y1="80" x2="210" y2="80" stroke="var(--glass-bg, rgba(255,255,255,0.7))" stroke-width="6"/>`; // Breaks the wire
-        svg += `<line x1="195" y1="70" x2="195" y2="90" stroke="var(--text-main)" stroke-width="2"/>`; // Short negative
-        svg += `<line x1="205" y1="65" x2="205" y2="95" stroke="var(--text-main)" stroke-width="2"/>`; // Long positive
-      } else if (comp.type === 'bulb') {
-        const cy = comp.position === 'bottom' ? 180 : 130;
-        const cx = comp.position === 'right' ? 300 : 200;
-        const stroke = comp.fused ? 'var(--brand-rose)' : 'var(--brand-sage)';
-
-        svg += `<circle cx="${cx}" cy="${cy}" r="15" fill="var(--glass-bg, rgba(255,255,255,0.7))" stroke="${stroke}" stroke-width="2"/>`;
-        svg += `<path d="M ${cx - 10} ${cy - 10} L ${cx + 10} ${cy + 10} M ${cx - 10} ${cy + 10} L ${cx + 10} ${cy - 10}" stroke="${stroke}" stroke-width="2"/>`; // MOE cross symbol
-      } else if (comp.type === 'switch') {
-        svg += `<line x1="90" y1="130" x2="110" y2="130" stroke="var(--glass-bg, rgba(255,255,255,0.7))" stroke-width="6"/>`; // Breaks the wire
-        svg += `<circle cx="95" cy="130" r="3" fill="var(--text-main)"/>`;
-        svg += `<circle cx="105" cy="130" r="3" fill="var(--text-main)"/>`;
-
-        if (comp.isOpen) {
-          svg += `<line x1="95" y1="130" x2="105" y2="120" stroke="var(--text-main)" stroke-width="2"/>`;
-        } else {
-          svg += `<line x1="95" y1="130" x2="105" y2="130" stroke="var(--text-main)" stroke-width="2"/>`;
+ 
+    // ── Component drawing primitives ───────────────────────────────────────
+    const drawBattery = (cx, cy) => {
+      // Wire-break + two vertical lines (short = −, long = +)
+      let s = `<line x1="${cx - 10}" y1="${cy}" x2="${cx + 10}" y2="${cy}" stroke="var(--glass-bg, rgba(255,255,255,0.7))" stroke-width="6"/>`;
+      s    += `<line x1="${cx - 5}" y1="${cy - 10}" x2="${cx - 5}" y2="${cy + 10}" stroke="var(--text-main)" stroke-width="2"/>`;
+      s    += `<line x1="${cx + 5}" y1="${cy - 14}" x2="${cx + 5}" y2="${cy + 14}" stroke="var(--text-main)" stroke-width="2"/>`;
+      return s;
+    };
+ 
+    const drawBulb = (cx, cy, comp) => {
+      const stroke = comp.fused ? 'var(--brand-rose)' : 'var(--brand-sage)';
+      const r = 13;
+      let s = `<line x1="${cx - r}" y1="${cy}" x2="${cx + r}" y2="${cy}" stroke="var(--glass-bg, rgba(255,255,255,0.7))" stroke-width="6"/>`;
+      s    += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="var(--glass-bg, rgba(255,255,255,0.7))" stroke="${stroke}" stroke-width="2"/>`;
+      // MOE filament cross
+      s    += `<path d="M ${cx - 9} ${cy - 9} L ${cx + 9} ${cy + 9} M ${cx - 9} ${cy + 9} L ${cx + 9} ${cy - 9}" stroke="${stroke}" stroke-width="1.8"/>`;
+      // Label below the bulb
+      if (comp.label) {
+        s += `<text x="${cx}" y="${cy + r + 14}" text-anchor="middle" fill="var(--text-main)" font-size="11" font-weight="600">${esc(comp.label)}</text>`;
+      }
+      return s;
+    };
+ 
+    const drawSwitch = (cx, cy, comp) => {
+      let s = `<line x1="${cx - 10}" y1="${cy}" x2="${cx + 10}" y2="${cy}" stroke="var(--glass-bg, rgba(255,255,255,0.7))" stroke-width="6"/>`;
+      s    += `<circle cx="${cx - 7}" cy="${cy}" r="2.5" fill="var(--text-main)"/>`;
+      s    += `<circle cx="${cx + 7}" cy="${cy}" r="2.5" fill="var(--text-main)"/>`;
+      if (comp.isOpen) {
+        s += `<line x1="${cx - 7}" y1="${cy}" x2="${cx + 6}" y2="${cy - 9}" stroke="var(--text-main)" stroke-width="2"/>`;
+      } else {
+        s += `<line x1="${cx - 7}" y1="${cy}" x2="${cx + 7}" y2="${cy}" stroke="var(--text-main)" stroke-width="2"/>`;
+      }
+      // Label above the switch
+      if (comp.label) {
+        s += `<text x="${cx}" y="${cy - 12}" text-anchor="middle" fill="var(--text-main)" font-size="10" font-weight="600">${esc(comp.label)}</text>`;
+      }
+      return s;
+    };
+ 
+    const drawGap = (cx, cy, comp) => {
+      let s = `<line x1="${cx - 10}" y1="${cy}" x2="${cx + 10}" y2="${cy}" stroke="var(--glass-bg, rgba(255,255,255,0.7))" stroke-width="6"/>`;
+      s    += `<circle cx="${cx - 7}" cy="${cy}" r="3" fill="var(--brand-rose)"/>`;
+      s    += `<circle cx="${cx + 7}" cy="${cy}" r="3" fill="var(--brand-rose)"/>`;
+      if (comp.label) {
+        s += `<text x="${cx}" y="${cy - 12}" text-anchor="middle" fill="var(--brand-rose)" font-size="10" font-weight="700">${esc(comp.label)}</text>`;
+      }
+      return s;
+    };
+ 
+    const drawComponent = (cx, cy, comp) => {
+      switch (comp.type) {
+        case 'battery': return drawBattery(cx, cy);
+        case 'bulb':    return drawBulb(cx, cy, comp);
+        case 'switch':  return drawSwitch(cx, cy, comp);
+        case 'gap':     return drawGap(cx, cy, comp);
+        default:        return '';
+      }
+    };
+ 
+    // ── ARRANGEMENT: SERIES ────────────────────────────────────────────────
+    // Single rectangular wire loop. Battery on top edge centre. Other components
+    // distributed evenly along the loop (top → right → bottom in reading order).
+    if (arrangement === 'series') {
+      const X1 = 60, X2 = VB_W - 60, Y1 = 75, Y2 = VB_H - 50;
+ 
+      // Wire loop
+      svg += `<path d="M ${X1} ${Y1} L ${X2} ${Y1} L ${X2} ${Y2} L ${X1} ${Y2} Z" fill="none" stroke="var(--brand-sage)" stroke-width="2"/>`;
+ 
+      // Position battery first (always on top edge)
+      const battery = data.components.find(c => c.type === 'battery');
+      const others  = data.components.filter(c => c !== battery);
+ 
+      if (battery) svg += drawBattery((X1 + X2) / 2, Y1);
+ 
+      // Distribute other components — 1 on top split, then right edge, then bottom edge,
+      // then left edge — to look like real series circuit
+      const n = others.length;
+      // 4 perimeter "slots": top-left of battery, right edge, bottom (reversed), left edge
+      const positions = [];
+      // For up to 3 components, place them: right, bottom-centre, left
+      if (n === 1) {
+        positions.push({ x: X2,            y: (Y1 + Y2) / 2 });            // right
+      } else if (n === 2) {
+        positions.push({ x: X2,            y: (Y1 + Y2) / 2 });            // right
+        positions.push({ x: (X1 + X2) / 2, y: Y2 });                       // bottom
+      } else if (n === 3) {
+        positions.push({ x: X2,            y: (Y1 + Y2) / 2 });            // right
+        positions.push({ x: (X1 + X2) / 2, y: Y2 });                       // bottom
+        positions.push({ x: X1,            y: (Y1 + Y2) / 2 });            // left
+      } else {
+        // 4+ components: distribute evenly along bottom edge + corners
+        positions.push({ x: X2, y: Y1 + (Y2 - Y1) / 3 });
+        positions.push({ x: X2, y: Y1 + 2 * (Y2 - Y1) / 3 });
+        const bottomN = n - 2;
+        for (let i = 0; i < bottomN; i++) {
+          const t = (i + 1) / (bottomN + 1);
+          positions.push({ x: X2 - t * (X2 - X1), y: Y2 });
         }
       }
+ 
+      others.forEach((comp, i) => {
+        const pos = positions[i] || { x: (X1 + X2) / 2, y: Y2 };
+        svg += drawComponent(pos.x, pos.y, comp);
+      });
+    }
+ 
+    // ── ARRANGEMENT: PARALLEL ──────────────────────────────────────────────
+    // Battery on left edge; horizontal rails (top/middle/bottom) connect to
+    // a vertical bus on the right. Each component on a rail = one parallel branch.
+    else if (arrangement === 'parallel') {
+      const X1 = 80, X2 = VB_W - 50;
+      const Y_BAT = VB_H / 2;
+      const battery = data.components.find(c => c.type === 'battery');
+      const others  = data.components.filter(c => c !== battery);
+ 
+      // Group components by branch (top/middle/bottom). Default: distribute evenly.
+      const branches = { top: [], middle: [], bottom: [] };
+      const explicit = others.some(c => c.branch);
+      if (explicit) {
+        others.forEach(c => {
+          const b = (c.branch || 'middle').toLowerCase();
+          (branches[b] || branches.middle).push(c);
+        });
+      } else {
+        // No explicit branch: 1 per rail, top→middle→bottom
+        const rails = ['top', 'middle', 'bottom'];
+        others.forEach((c, i) => branches[rails[i % 3]].push(c));
+      }
+ 
+      // Determine which rails are used
+      const usedRails = ['top', 'middle', 'bottom'].filter(r => branches[r].length > 0);
+      if (!usedRails.length) usedRails.push('middle');
+      const railY = { top: 80, middle: 130, bottom: 180 };
+ 
+      // Left vertical bus (from battery to rails)
+      const yMin = Math.min(...usedRails.map(r => railY[r]));
+      const yMax = Math.max(...usedRails.map(r => railY[r]));
+      svg += `<line x1="${X1}" y1="${yMin}" x2="${X1}" y2="${yMax}" stroke="var(--brand-sage)" stroke-width="2"/>`;
+      // Right vertical bus
+      svg += `<line x1="${X2}" y1="${yMin}" x2="${X2}" y2="${yMax}" stroke="var(--brand-sage)" stroke-width="2"/>`;
+ 
+      // Battery wire: from middle of left bus down/up to battery position
+      // Battery is drawn on a short branch to the left of the left bus
+      const BAT_X = X1 - 25;
+      svg += `<line x1="${BAT_X}" y1="${Y_BAT}" x2="${X1}" y2="${Y_BAT}" stroke="var(--brand-sage)" stroke-width="2"/>`;
+      // If battery position isn't on the bus span, extend the bus
+      if (Y_BAT < yMin) svg += `<line x1="${X1}" y1="${Y_BAT}" x2="${X1}" y2="${yMin}" stroke="var(--brand-sage)" stroke-width="2"/>`;
+      if (Y_BAT > yMax) svg += `<line x1="${X1}" y1="${yMax}" x2="${X1}" y2="${Y_BAT}" stroke="var(--brand-sage)" stroke-width="2"/>`;
+ 
+      // Left side wire: battery → top of left bus
+      svg += `<line x1="${BAT_X}" y1="${Y_BAT}" x2="${BAT_X}" y2="35" stroke="var(--brand-sage)" stroke-width="2"/>`;
+      svg += `<line x1="${BAT_X}" y1="35" x2="${X2 + 25}" y2="35" stroke="var(--brand-sage)" stroke-width="2"/>`;
+      svg += `<line x1="${X2 + 25}" y1="35" x2="${X2 + 25}" y2="${Y_BAT}" stroke="var(--brand-sage)" stroke-width="2"/>`;
+      svg += `<line x1="${X2 + 25}" y1="${Y_BAT}" x2="${X2}" y2="${Y_BAT}" stroke="var(--brand-sage)" stroke-width="2"/>`;
+      if (Y_BAT < yMin || Y_BAT > yMax) {
+        // wire from outer right bus into the rails
+      }
+ 
+      svg += drawBattery(BAT_X, Y_BAT);
+ 
+      // Draw each rail with its components
+      usedRails.forEach(rail => {
+        const y = railY[rail];
+        svg += `<line x1="${X1}" y1="${y}" x2="${X2}" y2="${y}" stroke="var(--brand-sage)" stroke-width="2"/>`;
+ 
+        const comps = branches[rail];
+        const railLen = X2 - X1;
+        comps.forEach((comp, i) => {
+          const cx = X1 + railLen * (i + 1) / (comps.length + 1);
+          svg += drawComponent(cx, y, comp);
+        });
+      });
+    }
+ 
+    // ── ARRANGEMENT: MIXED ─────────────────────────────────────────────────
+    // Components with branch='series' (or no branch) sit on the main loop.
+    // Components with branch='top' or 'bottom' sit on a parallel sub-branch
+    // attached at the centre-bottom of the main loop.
+    else if (arrangement === 'mixed') {
+      const X1 = 60, X2 = VB_W - 60, Y1 = 70, Y2_TOP = 140;  // upper loop
+      const Y_SUB = 195;                                       // lower parallel branch
+ 
+      const battery = data.components.find(c => c.type === 'battery');
+      const series  = data.components.filter(c => c !== battery && (c.branch === 'series' || !c.branch));
+      const top     = data.components.filter(c => c.branch === 'top');
+      const bottom  = data.components.filter(c => c.branch === 'parallel' || c.branch === 'bottom');
+ 
+      // Main upper loop
+      svg += `<path d="M ${X1} ${Y1} L ${X2} ${Y1} L ${X2} ${Y2_TOP} L ${X1} ${Y2_TOP} Z" fill="none" stroke="var(--brand-sage)" stroke-width="2"/>`;
+ 
+      // Battery on top edge
+      if (battery) svg += drawBattery((X1 + X2) / 2, Y1);
+ 
+      // Series components distributed along right edge → bottom of upper loop → left edge
+      const seriesPositions = [];
+      const n = series.length;
+      if (n === 1) {
+        seriesPositions.push({ x: (X1 + X2) / 2, y: Y2_TOP });
+      } else if (n === 2) {
+        seriesPositions.push({ x: X1 + (X2 - X1) * 0.33, y: Y2_TOP });
+        seriesPositions.push({ x: X1 + (X2 - X1) * 0.67, y: Y2_TOP });
+      } else {
+        for (let i = 0; i < n; i++) {
+          const t = (i + 1) / (n + 1);
+          seriesPositions.push({ x: X1 + (X2 - X1) * t, y: Y2_TOP });
+        }
+      }
+      series.forEach((comp, i) => {
+        svg += drawComponent(seriesPositions[i].x, seriesPositions[i].y, comp);
+      });
+ 
+      // Parallel sub-branch: vertical drops from upper loop to sub-branch wire
+      if (top.length || bottom.length) {
+        const subList = bottom.length ? bottom : top;
+        // Drops at left and right of sub-branch
+        const subX1 = X1 + 40, subX2 = X2 - 40;
+        svg += `<line x1="${subX1}" y1="${Y2_TOP}" x2="${subX1}" y2="${Y_SUB}" stroke="var(--brand-sage)" stroke-width="2"/>`;
+        svg += `<line x1="${subX2}" y1="${Y2_TOP}" x2="${subX2}" y2="${Y_SUB}" stroke="var(--brand-sage)" stroke-width="2"/>`;
+        svg += `<line x1="${subX1}" y1="${Y_SUB}" x2="${subX2}" y2="${Y_SUB}" stroke="var(--brand-sage)" stroke-width="2"/>`;
+ 
+        // Distribute parallel components on the sub-branch
+        subList.forEach((comp, i) => {
+          const cx = subX1 + (subX2 - subX1) * (i + 1) / (subList.length + 1);
+          svg += drawComponent(cx, Y_SUB, comp);
+        });
+      }
+    }
+ 
+    // ── FALLBACK: unknown arrangement → render as series ───────────────────
+    else {
+      // Fall back to series rendering with a console warning
+      if (typeof console !== 'undefined') {
+        console.warn(`[circuitDiagram] Unknown arrangement "${arrangement}", rendering as series.`);
+      }
+      const X1 = 60, X2 = VB_W - 60, Y1 = 75, Y2 = VB_H - 50;
+      svg += `<path d="M ${X1} ${Y1} L ${X2} ${Y1} L ${X2} ${Y2} L ${X1} ${Y2} Z" fill="none" stroke="var(--brand-sage)" stroke-width="2"/>`;
+      const battery = data.components.find(c => c.type === 'battery');
+      const others  = data.components.filter(c => c !== battery);
+      if (battery) svg += drawBattery((X1 + X2) / 2, Y1);
+      others.forEach((comp, i) => {
+        const t = (i + 1) / (others.length + 1);
+        svg += drawComponent(X1 + (X2 - X1) * t, Y2, comp);
+      });
+    }
+ 
+    return this._svg(svg, {
+      viewBox: `0 0 ${VB_W} ${VB_H}`,
+      alt: `Electrical circuit diagram (${arrangement}). ${data.components.length} components.`,
+      maxWidth: VB_W,
     });
-    return this._svg(svg, { viewBox: '0 0 400 220' });
-  },  
-
+  },
+  
   /**
    * 🕸️ MOE Concept Map Engine (Hardened & Scaled)
    */
