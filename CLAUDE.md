@@ -12,7 +12,7 @@
 **Google Drive (via MCP):** C:\SLabDrive
 
 **What it is:** MOE-aligned quiz engine + AI tutor + 3-day Plan Quest pedagogy
-for P1–S4 students. Parents subscribe monthly. Students practise across 6 PSLE
+for P1–S4 students. Parents subscribe monthly. Students practise across PSLE
 exam formats with full worked solutions, wrong-answer explanations, an AI tutor
 (Miss Wena) who scaffolds learning in a warm Singaporean voice, and personalised
 3-day learning interventions when they get a low score.
@@ -38,10 +38,10 @@ exam formats with full worked solutions, wrong-answer explanations, an AI tutor
 | Styles      | Single `public/css/style.css` v3.0 with CSS variables, Bebas Neue + Plus Jakarta Sans |
 | Backend     | Vercel serverless — **single gateway** `api/index.js` → `lib/api/handlers.js` |
 | Database    | Supabase PostgreSQL, SG region (`rlmqsbxevuutugtyysjr`), RLS on all tables |
-| Auth        | Supabase: email/password + Google OAuth + Apple OAuth |
+| Auth        | Supabase: email/password + Google OAuth |
 | Payments    | Stripe (test mode — switch to live before launch) |
 | AI (chat)   | Gemini Flash (`gemini-3-flash-preview`) — current; **migration to OpenAI pending** |
-| AI (grade)  | Currently uses Gemini + Anthropic SDK in handlers; **see ARCHITECTURE.md AI MODEL ROUTING for actual current state** |
+| AI (grade)  | Currently uses Gemini + Anthropic SDK in handlers, **migration to OpenAI pending**, actual grading is already on OpenAI, probably through guiz.js and exam.js ; **see ARCHITECTURE.md AI MODEL ROUTING for actual current state** |
 | AI (questions, bulk) | Anthropic Claude Haiku (`claude-haiku-4-5-20251001`) |
 | Deploy      | Vercel auto-deploy on push to `main`, ~60s |
 | DNS         | Cloudflare → Vercel |
@@ -222,7 +222,7 @@ Commit 6 will be combined with the AI Provider Migration handoff (Workstream B).
 - `const` and `let` only — never `var`
 - Every API call wrapped in `try/catch` with a user-facing error message
 - Validate user input before sending to any API
-- Use CSS variables from `style.css` — never hardcode hex values in `style=` attributes
+- Use CSS variables from `style.css` — never hardcode hex values in `style=` attributes. Consult STYLEGUIDE.md for frontend UI design.
 - All pages mobile-responsive (mobile-first, 375px baseline)
 - Use `textContent` not `innerHTML` with user-supplied content
 - Immutable patterns only — spread/copy, never mutate
@@ -316,7 +316,7 @@ For full schema, RLS patterns, and the new gamification + quest tables
 quest_eligibility, mastery_levels, mastery_levels_snapshots, avatar_rerolls),
 see `ARCHITECTURE.md` → SUPABASE DATABASE SCHEMA section.
 
-**Question types:** `mcq`, `short_ans`, `word_problem`, `open_ended`, `cloze`, `editing`
+**Question types:** `mcq`, `short_ans`, `word_problem`, `open_ended`, `cloze`, `editing`, `comprehension`
 **Retired types (do not use):** `true_false`, `fill_blank`
 **Correct answer format:** Always letter string `"A"` — never index `0`
 **Difficulty values:** `Foundation`, `Standard`, `Advanced`, `HOTS`
@@ -334,7 +334,6 @@ Miss Wena is Superholic Lab's AI tutor character. Key rules:
   until the student articulates the concept correctly twice
 - Celebrates correct answers with enthusiasm
 - Soft pivots off-topic questions back to learning
-- Light Singlish ("lah", "lor") occasionally for authenticity
 - Avatar: `public/assets/images/miss_wena.png` (SVG `onerror` fallback)
 - Default prompt: `lib/api/handlers.js` → `OMNI_TUTOR_SYSTEM_PROMPT`
 - Quest overlay: `lib/api/prompts/socratic-quest.js` → `buildSocraticQuestPrompt(...)`
@@ -366,7 +365,7 @@ Paywall → enforcePaywall() in auth.js → blocks expired trial / unpaid users
 | Icon set (13 icons)    | `public/js/icons.js` + `src/components/icons/index.tsx` |
 | Study Notes Backpack   | `/api/summarize-chat`, `dashboard.html` backpack modal |
 | Progress Tracker       | `public/js/progress.js`, `public/pages/progress.html` |
-| Exam Generator         | `public/js/exam.js`, `public/pages/exam.html`, `/api/generate-exam` |
+| Exam Generator         | `public/js/exam.js`, `public/pages/exam.html`, `/api/generate-exam`, `public/js/exam-template.js` |
 | AI Weakness Analysis   | `/api/analyze-weakness`, `progress.html` |
 | Pricing + Checkout     | `public/pages/pricing.html`, `/api/checkout` |
 | Parent Account Portal  | `public/pages/account.html` |

@@ -169,7 +169,7 @@ the only authoritative count.)
 
 | File | Description |
 |---|---|
-| public/css/style.css | **Single stylesheet v3.0** — Rose & Sage design system. All custom styles. Never create additional CSS files. CSS variables only — zero hardcoded hex in HTML `style=` attributes. |
+| public/css/style.css | **Single stylesheet v3.0** — Rose & Sage design system. All custom styles. Never create additional CSS files. CSS variables only — zero hardcoded hex in HTML `style=` attributes. | refer for STYLEGUIDE.md for more details |
 
 ---
 

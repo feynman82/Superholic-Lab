@@ -28,7 +28,7 @@ Google Drive MCP: C:\SLabDrive (junction to G:\My Drive\Superholic Lab)
 What it is:
   Singapore's AI-powered EdTech platform for P1–S4 students.
   Parents subscribe monthly. Students practise MOE-aligned questions
-  in 6 PSLE exam formats, get AI tutoring from Miss Wena, track
+  in 7 (refer to MASTER_QUESTION_TEMPLAT.md) PSLE exam formats, get AI tutoring from Miss Wena, track
   progress, run personalised 3-day Plan Quests when they hit a
   weak topic, and earn XP / levels / badges for real learning actions.
 
@@ -40,6 +40,7 @@ Key differentiators:
      three-way honest exit (mastered / slight_improvement / no_improvement).
      The Honest Compass badge for `no_improvement` exits is the platform's
      signal that it values self-awareness over fake celebrations.
+  3. (4 pillars)
 
 ═══════════════════════════════════════════════════════════════
 SUBSCRIPTION TIERS (current)
@@ -425,7 +426,7 @@ D:\Git\Superholic-Lab\
 ├── INDEX.md                 ← File/route directory
 ├── PROJECT_DASHBOARD.md     ← Build status, ECC health, known issues
 ├── STYLEGUIDE.md            ← Visual design standards (icons, bottom nav)
-├── Master_Question_Template.md  ← 6 PSLE question type schemas
+├── Master_Question_Template.md  ← PSLE question type schemas
 ├── .env                     ← All secrets (gitignored)
 ├── .mcp.json                ← MCP server config (gitignored)
 ├── vercel.json              ← 24 rewrites + security headers + 1 cron
@@ -465,10 +466,10 @@ D:\Git\Superholic-Lab\
 │   │   ├── app-shell.js
 │   │   ├── auth.js
 │   │   ├── bottom-nav.js       ← <global-bottom-nav> 5-item nav (NEW)
-│   │   ├── diagram-library.js
-│   │   ├── exam-generator.js
-│   │   ├── exam-renderer.js
-│   │   ├── exam-templates.js
+│   │   ├── diagram-library.js  ← Visual payload render
+│   │   ├── exam-generator.js   ← Pull questions from supabase to generate quiz
+│   │   ├── exam-renderer.js    ← Generate printable version of practice paper
+│   │   ├── exam-templates.js   ← Question set for WA, EOY and PSLE
 │   │   ├── exam.js
 │   │   ├── footer.js           ← <global-footer>
 │   │   ├── header.js           ← <global-header>
@@ -517,7 +518,7 @@ D:\Git\Superholic-Lab\
 │   ├── generate-quest.js      ← Legacy alias (kept for compatibility)
 │   ├── summarize-chat.js      ← Legacy alias (kept for compatibility)
 │   └── cron/
-│       └── fill-bank.js         ← Question bank auto-fill
+│       └── fill-bank.js         ← Question bank auto-fill (legacy)
 ├── lib/
 │   └── api/
 │       ├── handlers.js         ← ALL handler logic (24 routes)
