@@ -539,7 +539,7 @@ window.generateQuestFor = async function (btnEl, subject, level, topic, triggerS
     });
     const data = await res.json();
     if (res.ok && data.quest) {
-      window.location.href = `/quest?id=${data.quest.id}`;
+      window.location.href = `/quest?id=${data.quest.id}&student=${encodeURIComponent(studentId)}`;
     } else if (res.status === 409) {
       alert(`You already have an active ${subject} quest. Scroll up to view it.`);
       if (btnEl) { btnEl.disabled = false; btnEl.textContent = 'Quest taken'; }

@@ -178,20 +178,36 @@ export function QuestClient({ searchParams }: QuestClientProps) {
         const accessToken = session.access_token
         setToken(accessToken)
 
+        // Resolve student_id — quest data is student-scoped, not parent-scoped.
+        // progress.html sets shl_active_student_id in localStorage when it
+        // selects a student; generateQuestFor also passes ?student= in the URL.
+        const paramStudentId = sp(searchParams, "student")
+        const studentId: string =
+          paramStudentId ||
+          (typeof window !== "undefined"
+            ? localStorage.getItem("shl_active_student_id") ?? ""
+            : "")
+
+        if (!studentId) {
+          // No student context — send user to progress page to pick a student
+          setLoadState("empty")
+          return
+        }
+
         // Parallel: fetch quests list + student profile + HUD
-        const [questsRes, profileRes, xpRes, streakRes] = await Promise.all([
-          apiFetch("/api/quests", accessToken),
-          supabase.from("profiles")
-            .select("id, full_name, level, avatar_url")
-            .eq("id", session.user.id)
+        const [questsRes, studentRes, xpRes, streakRes] = await Promise.all([
+          apiFetch(`/api/quests?student_id=${encodeURIComponent(studentId)}`, accessToken),
+          supabase.from("students")
+            .select("id, name, level, photo_url")
+            .eq("id", studentId)
             .single(),
           supabase.from("student_xp")
             .select("total_xp, current_level, xp_in_level")
-            .eq("student_id", session.user.id)
+            .eq("student_id", studentId)
             .maybeSingle(),
           supabase.from("student_streaks")
             .select("current_days, shield_count")
-            .eq("student_id", session.user.id)
+            .eq("student_id", studentId)
             .maybeSingle(),
         ])
 
@@ -202,16 +218,16 @@ export function QuestClient({ searchParams }: QuestClientProps) {
         )
 
         // Build student + HUD from Supabase data
-        const profile = profileRes.data
-        const xp      = xpRes.data
-        const streak  = streakRes.data
-        const level   = xp?.current_level ?? 1
+        const studentData = studentRes.data
+        const xp          = xpRes.data
+        const streak      = streakRes.data
+        const level       = xp?.current_level ?? 1
 
         setStudent({
-          id:        session.user.id,
-          name:      profile?.full_name ?? session.user.email?.split("@")[0] ?? "Student",
-          level:     profile?.level ?? "Primary 5",
-          photo_url: profile?.avatar_url ?? "/assets/avatars/placeholder_space_marine.png",
+          id:        studentId,
+          name:      studentData?.name ?? session.user.email?.split("@")[0] ?? "Student",
+          level:     studentData?.level ?? "Primary 5",
+          photo_url: studentData?.photo_url ?? "/assets/avatars/placeholder_space_marine.png",
         })
 
         setHud({
@@ -229,8 +245,9 @@ export function QuestClient({ searchParams }: QuestClientProps) {
           return
         }
 
-        // Determine which quest to load
-        const paramQuestId = sp(searchParams, "quest_id")
+        // Determine which quest to load.
+        // Accept both ?quest_id= (legacy/spec) and ?id= (generateQuestFor + quiz.js/tutor.js).
+        const paramQuestId = sp(searchParams, "quest_id") || sp(searchParams, "id")
         let targetId = paramQuestId
 
         if (!targetId) {
@@ -243,7 +260,7 @@ export function QuestClient({ searchParams }: QuestClientProps) {
           }
         }
 
-        await loadQuest(targetId, accessToken, session.user.id)
+        await loadQuest(targetId, accessToken, studentId)
       } catch (err: unknown) {
         console.error("[QuestClient] init error:", err)
         setErrorMsg("Something went wrong loading your quest. Please try again.")
@@ -318,7 +335,7 @@ export function QuestClient({ searchParams }: QuestClientProps) {
       const supabase = getSupabase()
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) { window.location.href = "/pages/login.html"; return }
-      await loadQuest(questId, session.access_token, session.user.id)
+      await loadQuest(questId, session.access_token, student?.id ?? session.user.id)
     } catch (err: unknown) {
       console.error("[QuestClient] handlePickQuest error:", err)
       setErrorMsg("Failed to load quest. Please try again.")
@@ -340,7 +357,7 @@ export function QuestClient({ searchParams }: QuestClientProps) {
           const supabase = getSupabase()
           const { data: { session } } = await supabase.auth.getSession()
           if (!session) { window.location.href = "/pages/login.html"; return }
-          await loadQuest(questDetail.id, session.access_token, session.user.id)
+          await loadQuest(questDetail.id, session.access_token, student?.id ?? session.user.id)
         } catch {
           setLoadState("quest")
         }

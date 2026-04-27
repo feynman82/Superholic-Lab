@@ -1,15 +1,17 @@
 /**
  * src/app/quest/page.tsx
- * Thin server component — passes searchParams to QuestClient.
- * All data fetching and auth happens client-side (no @supabase/ssr installed).
+ * Thin server component — awaits searchParams (Next.js 15 async) then
+ * passes the resolved params to QuestClient.
+ * All data fetching and auth happens client-side.
  */
 
 import { QuestClient } from "./QuestClient"
 
 type PageProps = {
-  searchParams: Record<string, string | string[] | undefined>
+  searchParams: Promise<Record<string, string | string[] | undefined>>
 }
 
-export default function QuestPage({ searchParams }: PageProps) {
-  return <QuestClient searchParams={searchParams} />
+export default async function QuestPage({ searchParams }: PageProps) {
+  const params = await searchParams
+  return <QuestClient searchParams={params} />
 }
