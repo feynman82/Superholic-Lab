@@ -336,7 +336,7 @@ export function PlanQuestSection() {
                             zIndex: 1,
                           }}
                         >
-                          {step.icon}
+                          {cfg.icon}
                         </div>
                       </div>
 

@@ -26,8 +26,12 @@ export function ParticleSphere({ images }: ParticleSphereProps) {
 
   const textures = useTexture(images)
 
+  type Vec3 = [number, number, number]
+  type ParticleSpec = { position: Vec3; scale: number; color: THREE.Color; rotationSpeed: number }
+  type OrbitImageSpec = { position: Vec3; rotation: Vec3; textureIndex: number; color: THREE.Color }
+
   const particles = useMemo(() => {
-    const particles = []
+    const particles: ParticleSpec[] = []
 
     for (let i = 0; i < PARTICLE_COUNT; i++) {
       // Generate points on sphere surface with some random variation
@@ -57,7 +61,7 @@ export function ParticleSphere({ images }: ParticleSphereProps) {
   }, [PARTICLE_COUNT, SPHERE_RADIUS, POSITION_RANDOMNESS, PARTICLE_SIZE_MIN, PARTICLE_SIZE_MAX])
 
   const orbitingImages = useMemo(() => {
-    const images = []
+    const images: OrbitImageSpec[] = []
 
     for (let i = 0; i < IMAGE_COUNT; i++) {
       const angle = (i / IMAGE_COUNT) * Math.PI * 2

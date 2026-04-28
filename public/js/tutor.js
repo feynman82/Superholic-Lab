@@ -206,24 +206,11 @@
 
     history.forEach(msg => msg.image = null);
 
-    // DEEP TECH ENGINE: Inject Cognitive Diagnostic Context (Runs once per session)
-    if (currentStudentId && !history.some(m => m.role === 'system' && m.content.includes('[Diagnostic Alert]'))) {
-      try {
-        const db = await getSupabase();
-        // Dynamic import of the weakness engine
-        const { runCognitiveDiagnosis } = await import('../js/analyze-weakness.js');
-        const diagnostic = await runCognitiveDiagnosis(db, currentStudentId, currentSubjectContext);
-
-        if (diagnostic) {
-          history.push({
-            role: 'system',
-            content: `[Diagnostic Alert] The engine has detected the student's root weakness is ${diagnostic.identified_weakness} with a mastery score of ${diagnostic.mastery_score}. Their specific failed skills are: ${diagnostic.failed_skills.join(', ')}. If they ask for help, guide them towards mastering these prerequisites first.`
-          });
-        }
-      } catch (err) {
-        console.error('Failed to load cognitive diagnostic engine:', err);
-      }
-    }
+    // (Removed) Cognitive diagnostic context injection used to dynamic-import
+    // ../js/analyze-weakness.js, which never existed at that path. The proper
+    // BKT root-cause is now served by /api/analyze-weakness via the gateway.
+    // If we want diagnostic context in chat again, fetch it here and push as
+    // a system message — keeping the call out for now to avoid noise.
 
     history.push({ role: 'user', content: combinedText, image: lastImage });
 
