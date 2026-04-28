@@ -639,7 +639,8 @@
     }
     .context-menu button svg { flex-shrink: 0; color: currentColor; }
 
-    /* Empty state */
+    /* Empty state — kept for any page that still references these classes;
+       the dashboard's empty path now renders .onboarding-walkthrough below. */
     .empty-state {
       grid-column: 1 / -1;
       padding: var(--space-8);
@@ -669,6 +670,79 @@
       margin: 0;
     }
     .empty-state__text a { color: var(--brand-rose); font-weight: 600; }
+
+    /* ── Onboarding walkthrough (Phase 4 — 3-step empty state) ── */
+    .onboarding-walkthrough {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: var(--space-3);
+    }
+    .onboarding-step {
+      padding: var(--space-5);
+      background: var(--surface-container-lowest);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      transition: opacity 200ms ease, border-color 200ms ease;
+      position: relative;
+    }
+    .onboarding-step--active {
+      border-color: var(--brand-rose);
+    }
+    .onboarding-step--locked {
+      opacity: 0.5;
+    }
+    .onboarding-step__num {
+      color: var(--brand-rose);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .onboarding-step--locked .onboarding-step__num {
+      color: var(--brand-sage);
+    }
+    .onboarding-step__icon {
+      width: 44px; height: 44px;
+      color: var(--brand-rose);
+      background: var(--surface-container);
+      border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .onboarding-step--locked .onboarding-step__icon {
+      color: var(--brand-sage);
+    }
+    .onboarding-step__title {
+      color: var(--text-main);
+      font-family: var(--font-display, 'Bebas Neue', sans-serif);
+      font-size: 20px;
+      letter-spacing: 0.02em;
+      margin: 0;
+      line-height: 1.15;
+    }
+    .onboarding-step__text {
+      color: var(--text-muted);
+      font-size: var(--text-sm);
+      margin: 0;
+      line-height: 1.5;
+      flex: 1;
+    }
+    .onboarding-step__cta {
+      align-self: flex-start;
+      margin-top: var(--space-2);
+    }
+    .onboarding-step__hint {
+      color: var(--text-muted);
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      margin-top: auto;
+      padding-top: var(--space-2);
+      font-style: italic;
+    }
 
     /* ── Aside cards (Today's Focus + Quick Links) ── */
     .aside-card {
@@ -1848,22 +1922,60 @@
       grid.innerHTML = '';
 
       if (currentStudents.length === 0) {
+        // Phase 4 — 3-step illustrated walkthrough. Step 1 is the active CTA;
+        // steps 2 + 3 are dimmed previews of what unlocks after step 1
+        // completes. Once a learner is added, this block is replaced by the
+        // standard learner cards grid (next branch below), so steps 2 + 3
+        // only ever appear in this empty state.
         grid.innerHTML = `
-          <div class="card-glass empty-state">
-            <div class="empty-state__icon">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                   stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-                <circle cx="9" cy="7" r="4"/>
-                <line x1="19" y1="8" x2="19" y2="14"/>
-                <line x1="22" y1="11" x2="16" y2="11"/>
-              </svg>
+          <div class="onboarding-walkthrough" role="list" aria-label="Get started in 3 steps">
+
+            <!-- Step 1 — Add your child (active) -->
+            <div class="card-glass onboarding-step onboarding-step--active" role="listitem">
+              <span class="onboarding-step__num">Step 01</span>
+              <div class="onboarding-step__icon" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <line x1="19" y1="8" x2="19" y2="14"/>
+                  <line x1="22" y1="11" x2="16" y2="11"/>
+                </svg>
+              </div>
+              <h3 class="onboarding-step__title">Add your child</h3>
+              <p class="onboarding-step__text">Set up a profile in 30 seconds.</p>
+              <a href="/pages/setup.html" class="btn btn-primary btn-sm onboarding-step__cta">Get started</a>
             </div>
-            <h3 class="empty-state__title">No learners yet</h3>
-            <p class="empty-state__text">
-              Click <strong>"+ Add learner"</strong> at the top to get started, or
-              <a href="/pages/setup.html">jump straight to setup</a>.
-            </p>
+
+            <!-- Step 2 — Pick a subject (locked) -->
+            <div class="card-glass onboarding-step onboarding-step--locked" role="listitem" aria-disabled="true">
+              <span class="onboarding-step__num">Step 02</span>
+              <div class="onboarding-step__icon" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                </svg>
+              </div>
+              <h3 class="onboarding-step__title">Pick a subject</h3>
+              <p class="onboarding-step__text">Choose Maths, Science, or English to start practising.</p>
+              <span class="onboarding-step__hint">Unlocks after step 1</span>
+            </div>
+
+            <!-- Step 3 — Start practising (locked) -->
+            <div class="card-glass onboarding-step onboarding-step--locked" role="listitem" aria-disabled="true">
+              <span class="onboarding-step__num">Step 03</span>
+              <div class="onboarding-step__icon" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2l2.39 5.45L20 8.27l-4 3.91L17.18 18 12 15.27 6.82 18 8 12.18 4 8.27l5.61-.82z"/>
+                </svg>
+              </div>
+              <h3 class="onboarding-step__title">Start practising</h3>
+              <p class="onboarding-step__text">Miss Wena will guide them through their first quiz.</p>
+              <span class="onboarding-step__hint">Unlocks after step 1</span>
+            </div>
+
           </div>`;
         return;
       }
