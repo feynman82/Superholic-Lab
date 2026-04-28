@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard — Superholic Lab</title>
-  <meta name="robots" content="noindex, nofollow">
+  <meta name="robots" content="noindex, nofollow" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="../css/style.css" />
@@ -33,78 +33,405 @@
     }
     boot();
   </script>
+
+
   <style>
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 100;
+    /* ── Page background — architect-scholar drawing grid ── */
+    body.has-bottom-nav {
+      background: var(--surface);
+      background-image:
+        linear-gradient(rgba(81, 97, 94, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(81, 97, 94, 0.025) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+
+    /* ── Hero (restrained: .h1-as on .bg-surface) ── */
+    .dash-hero {
+      padding-top: calc(64px + var(--space-8));
+      padding-bottom: var(--space-6);
+      border-bottom: 1px solid var(--border-light);
+    }
+    .dash-hero__eyebrow {
+      color: var(--brand-rose);
+      margin-bottom: var(--space-3);
+    }
+    .dash-hero__title {
+      color: var(--text-main);
+      margin: 0 0 var(--space-2) 0;
+    }
+    .dash-hero__lede {
+      color: var(--text-muted);
+      max-width: 560px;
+      margin: 0 0 var(--space-4) 0;
+    }
+    .dash-hero__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      align-items: center;
+    }
+
+    /* ── Health strip — at-a-glance summary above the body grid ── */
+    .health-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: var(--space-1);
+      padding: var(--space-3) var(--space-4);
+      margin-top: var(--space-4);
+    }
+    .health-tile {
+      padding: var(--space-2) var(--space-3);
+      border-right: 1px solid var(--border-light);
+    }
+    .health-tile:last-child { border-right: none; }
+    @media (max-width: 720px) {
+      .health-tile {
+        border-right: none;
+        border-bottom: 1px solid var(--border-light);
+        padding: var(--space-2) 0;
+      }
+      .health-tile:last-child { border-bottom: none; }
+    }
+    .health-tile__label {
+      color: var(--brand-rose);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .health-tile__value {
+      color: var(--text-main);
+      font-family: var(--font-display, 'Bebas Neue', sans-serif);
+      font-size: 22px; letter-spacing: 0.02em; line-height: 1.1;
+    }
+    .health-tile__sub {
+      color: var(--text-muted);
+      font-size: 11px;
+      margin-top: 2px;
+    }
+    .health-tile__value--ok    { color: var(--brand-mint); }
+    .health-tile__value--warn  { color: var(--brand-amber, #D4A24A); }
+    .health-tile__value--alert { color: var(--brand-rose); }
+
+    /* ── Trial banner (promoted to full-width card-glass strip) ── */
+    .trial-banner {
       display: flex;
       align-items: center;
-      justify-content: center;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(4px);
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.2s ease;
+      justify-content: space-between;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      margin-top: var(--space-4);
+      background: var(--surface-container-low);
+      border-left: 3px solid var(--brand-rose);
+      border-radius: var(--radius-md);
+      flex-wrap: wrap;
+    }
+    .trial-banner.hidden { display: none; }
+    .trial-banner__body {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      flex: 1;
+      min-width: 220px;
+    }
+    .trial-banner__icon {
+      width: 36px; height: 36px; flex-shrink: 0;
+      border-radius: var(--radius-full, 999px);
+      background: rgba(183, 110, 121, 0.12);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--brand-rose);
+    }
+    .trial-banner__text {
+      color: var(--text-main);
+      font-size: var(--text-sm);
+      line-height: 1.5;
+    }
+    .trial-banner__text strong { color: var(--text-main); font-weight: 600; }
+    .trial-banner__cta { flex-shrink: 0; }
+
+    /* ── Body layout: asymmetric 7+5 ── */
+    .dash-body {
+      padding-top: var(--space-6);
+      padding-bottom: var(--space-10);
+    }
+    .dash-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: var(--gutter);
+      align-items: start;
+    }
+    .dash-main {
+      grid-column: span 12;
+    }
+    .dash-aside {
+      grid-column: span 12;
+    }
+    @media (min-width: 1024px) {
+      .dash-main {
+        grid-column: 1 / span 7;
+      }
+      .dash-aside {
+        grid-column: 9 / span 4;
+        position: sticky;
+        top: calc(64px + var(--space-4));
+      }
+    }
+
+    /* ── Section heading (mirrors account.html) ── */
+    .dash-section__head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-3);
+      margin-bottom: var(--space-3);
+    }
+    .dash-section__eyebrow {
+      color: var(--brand-rose);
+      display: block;
+      margin-bottom: var(--space-1);
+    }
+    .dash-section__title {
+      color: var(--text-main);
+      margin: 0;
+    }
+
+    /* ── Learner cards grid (rendered by renderGrid JS) ── */
+    .learner-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: var(--space-3);
+    }
+
+    .learner-card {
       padding: var(--space-4);
+      position: relative;
+      transition: transform 160ms ease, box-shadow 160ms ease;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+    .learner-card:hover {
+      transform: translateY(-2px);
+    }
+    .learner-card__head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: var(--space-2);
+    }
+    .learner-card__identity {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      flex: 1;
+      min-width: 0;
+    }
+    .learner-card__avatar {
+      width: 48px; height: 48px;
+      flex-shrink: 0;
+      border-radius: var(--radius-md);
+      background: var(--brand-sage);
+      color: var(--cream);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display, 'Bebas Neue', sans-serif);
+      font-size: 22px;
+      letter-spacing: 0.04em;
+      object-fit: cover;
+      overflow: hidden;
+    }
+    .learner-card__avatar img {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+    .learner-card__name-block { min-width: 0; flex: 1; }
+    .learner-card__name {
+      font-family: var(--font-display, 'Bebas Neue', sans-serif);
+      font-size: 20px;
+      letter-spacing: 0.02em;
+      color: var(--text-main);
+      line-height: 1.1;
+      margin-bottom: 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .learner-card__meta {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
     }
 
-    .modal-overlay.is-open {
-      opacity: 1;
-      visibility: visible;
+    /* Unread-notes dot indicator (top-right of card) */
+    .learner-card__notes-dot {
+      position: absolute;
+      top: 12px; right: 56px; /* Sits left of the kebab menu */
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--brand-rose);
+      box-shadow: 0 0 0 2px var(--surface-container-lowest);
     }
 
-    .modal-content {
+    /* AL-band heatmap strip — rendered as small coloured pills per subject */
+    .al-strip {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+    .al-strip__label {
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-right: 4px;
+      font-weight: 700;
+    }
+    .al-pill {
+      flex: 1;
+      min-width: 24px;
+      max-width: 60px;
+      height: 6px;
+      border-radius: 3px;
+      background: var(--surface-container-high);
+      position: relative;
+      overflow: hidden;
+    }
+    .al-pill__fill {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      transform-origin: left;
+    }
+    .al-pill[data-band="AL1"] .al-pill__fill { background: var(--brand-mint); transform: scaleX(1); }
+    .al-pill[data-band="AL2"] .al-pill__fill { background: var(--brand-mint); transform: scaleX(0.92); }
+    .al-pill[data-band="AL3"] .al-pill__fill { background: var(--brand-mint); transform: scaleX(0.85); }
+    .al-pill[data-band="AL4"] .al-pill__fill { background: var(--brand-amber, #D4A24A); transform: scaleX(0.7); }
+    .al-pill[data-band="AL5"] .al-pill__fill { background: var(--brand-amber, #D4A24A); transform: scaleX(0.55); }
+    .al-pill[data-band="AL6"] .al-pill__fill { background: var(--brand-rose); transform: scaleX(0.4); }
+    .al-pill[data-band="AL7"] .al-pill__fill { background: var(--brand-rose); transform: scaleX(0.25); }
+    .al-pill[data-band="AL8"] .al-pill__fill { background: var(--brand-rose); transform: scaleX(0.1); }
+
+    /* Streak + last-active row */
+    .activity-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .streak-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      background: rgba(183, 110, 121, 0.12);
+      color: var(--brand-rose);
+      border-radius: var(--radius-full, 999px);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+    .last-active {
+      letter-spacing: 0.04em;
+    }
+    .last-active--idle { color: var(--text-faint, var(--outline)); }
+
+    /* Backpack button */
+    .backpack-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      background: var(--surface-container-lowest);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      color: var(--text-main);
+      cursor: pointer;
+      transition: border-color 160ms ease, background 160ms ease;
       width: 100%;
-      max-width: 500px;
-      background: var(--bg-surface);
-      transform: scale(0.95);
-      transition: transform 0.2s ease;
-      max-height: 90vh;
-      overflow-y: auto;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: var(--text-sm);
+      font-weight: 600;
+    }
+    .backpack-btn:hover {
+      border-color: var(--brand-rose);
+      background: var(--surface-container-low);
+    }
+    .backpack-btn__inner {
+      display: flex; align-items: center; gap: var(--space-2);
+    }
+    .backpack-btn__icon { color: var(--brand-sage); flex-shrink: 0; }
+    .backpack-btn__count {
+      display: inline-block;
+      padding: 2px 8px;
+      background: var(--brand-rose);
+      color: white;
+      border-radius: var(--radius-full, 999px);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+    .backpack-btn__hint {
+      color: var(--text-muted);
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-weight: 700;
     }
 
-    .modal-overlay.is-open .modal-content {
-      transform: scale(1);
+    .learner-card__cta {
+      width: 100%;
     }
 
+    /* Kebab menu — light architect-scholar dropdown (replaces dark sage one) */
+    .kebab-wrap {
+      position: relative;
+      flex-shrink: 0;
+    }
+    .kebab-btn {
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: var(--radius-md);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
+    }
+    .kebab-btn:hover {
+      background: var(--surface-container);
+      color: var(--text-main);
+      border-color: var(--border-light);
+    }
     .context-menu {
       display: none;
       position: absolute;
       right: 0;
-      top: calc(20% + 4px);
-      background: var(--sage-dark);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      top: calc(100% + 4px);
+      background: var(--surface-container-lowest);
+      border: 1px solid var(--border-light);
       border-radius: var(--radius-md);
-      padding: 6px;
-      min-width: 160px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      padding: 4px;
+      min-width: 180px;
+      box-shadow: 0 8px 24px rgba(44, 62, 58, 0.15);
       z-index: 50;
       flex-direction: column;
       gap: 2px;
     }
-
     .context-menu.is-open {
       display: flex;
-      animation: fadeDown 0.2s ease;
+      animation: cmFade 160ms ease;
     }
-
-    @keyframes fadeDown {
-      from {
-        opacity: 0;
-        transform: translateY(-6px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    @keyframes cmFade {
+      from { opacity: 0; transform: translateY(-4px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
-
     .context-menu button {
       text-align: left;
       width: 100%;
-      color: rgba(255, 255, 255, 0.85);
+      color: var(--text-main);
       padding: 8px 12px;
       border-radius: var(--radius-sm);
       border: none;
@@ -112,18 +439,232 @@
       font-size: var(--text-sm);
       font-weight: 500;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: background 160ms ease, color 160ms ease;
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
     }
-
     .context-menu button:hover {
-      background: rgba(255, 255, 255, 0.1);
-      color: var(--cream);
+      background: var(--surface-container-low);
     }
-
+    .context-menu button.text-danger {
+      color: var(--brand-rose);
+    }
     .context-menu button.text-danger:hover {
-      color: var(--brand-error);
+      background: rgba(183, 110, 121, 0.08);
+    }
+    .context-menu button svg { flex-shrink: 0; color: currentColor; }
+
+    /* Empty state */
+    .empty-state {
+      grid-column: 1 / -1;
+      padding: var(--space-8);
+      text-align: center;
+      border: 2px dashed var(--border-dark);
+      border-radius: var(--radius-md);
+      background: var(--surface-container-lowest);
+    }
+    .empty-state__icon {
+      width: 56px; height: 56px;
+      margin: 0 auto var(--space-3);
+      color: var(--brand-sage);
+      display: flex; align-items: center; justify-content: center;
+      background: var(--surface-container);
+      border-radius: 50%;
+    }
+    .empty-state__title {
+      color: var(--text-main);
+      font-family: var(--font-display, 'Bebas Neue', sans-serif);
+      font-size: 24px;
+      letter-spacing: 0.02em;
+      margin: 0 0 var(--space-1) 0;
+    }
+    .empty-state__text {
+      color: var(--text-muted);
+      font-size: var(--text-sm);
+      margin: 0;
+    }
+    .empty-state__text a { color: var(--brand-rose); font-weight: 600; }
+
+    /* ── Aside cards (Today's Focus + Quick Links) ── */
+    .aside-card {
+      padding: var(--space-4);
+      margin-bottom: var(--space-3);
+    }
+    .aside-card__head {
+      margin-bottom: var(--space-3);
+    }
+    .aside-card__eyebrow {
+      color: var(--brand-rose);
+      display: block;
+      margin-bottom: var(--space-1);
+    }
+    .aside-card__title {
+      color: var(--text-main);
+      margin: 0;
+      font-size: 22px;
     }
 
+    /* HUD mount point — kept under the existing #dashboard-hud-strip ID
+       but visually contained inside the .aside-card (Today's Focus). */
+    #dashboard-hud-strip:empty + .hud-empty {
+      display: block;
+      color: var(--text-muted);
+      font-size: var(--text-sm);
+      padding: var(--space-2) 0;
+    }
+    #dashboard-hud-strip:not(:empty) + .hud-empty {
+      display: none;
+    }
+    .hud-empty {
+      display: none;
+    }
+
+    /* Quick links list (matches contact.html quicklinks) */
+    .quicklinks {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+    .quicklinks li a {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-2);
+      padding: var(--space-2) 0;
+      color: var(--text-main);
+      text-decoration: none;
+      font-size: var(--text-sm);
+      border-bottom: 1px solid var(--border-light);
+      transition: color 160ms ease;
+    }
+    .quicklinks li:last-child a { border-bottom: none; }
+    .quicklinks li a:hover { color: var(--brand-rose); }
+    .quicklinks li a::after {
+      content: '→';
+      color: var(--text-faint, var(--outline));
+      font-size: var(--text-base);
+      transition: transform 160ms ease, color 160ms ease;
+    }
+    .quicklinks li a:hover::after {
+      color: var(--brand-rose);
+      transform: translateX(2px);
+    }
+
+    /* ── Modals — match account.html modal treatment ── */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(44, 62, 58, 0.5);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      padding: var(--space-4);
+    }
+    .modal-overlay.is-open { display: flex; }
+    .modal-content {
+      background: var(--surface-container-lowest);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg, 12px);
+      padding: var(--space-5);
+      max-width: 500px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 16px 48px rgba(44, 62, 58, 0.18);
+    }
+
+    /* Modal heading helpers */
+    .modal-eyebrow {
+      color: var(--brand-rose);
+      display: block;
+      margin-bottom: var(--space-2);
+    }
+    .modal-title {
+      color: var(--text-main);
+      margin: 0 0 var(--space-2) 0;
+      font-family: var(--font-display, 'Bebas Neue', sans-serif);
+      font-size: 28px;
+      letter-spacing: 0.04em;
+    }
+    .modal-title--danger { color: var(--brand-rose); }
+
+    .acc-row {
+      display: flex; flex-direction: column;
+      gap: var(--space-1);
+      margin-bottom: var(--space-3);
+    }
+    .acc-row__label {
+      color: var(--brand-sage);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    /* Force input-ghost on modal inputs (#editName, #editLevel) */
+    #editName, #editLevel {
+      background: rgba(255, 255, 255, 0.5);
+      border: 1px solid var(--glass-border-dim);
+      border-radius: var(--radius-md);
+      padding: var(--space-2) var(--space-3);
+      font-family: var(--font-body);
+      font-size: var(--text-base);
+      color: var(--text-main);
+      width: 100%;
+      outline: none;
+    }
+    #editName:focus, #editLevel:focus {
+      border-color: var(--brand-rose);
+      box-shadow: 0 0 0 3px rgba(183, 110, 121, 0.12);
+    }
+
+    .btn-danger {
+      background: rgba(183, 110, 121, 0.08);
+      color: var(--brand-rose);
+      border: 1px solid rgba(183, 110, 121, 0.25);
+    }
+    .btn-danger:hover {
+      background: rgba(183, 110, 121, 0.15);
+      border-color: var(--brand-rose);
+    }
+
+    /* Backpack note item — rendered by openBackpackModal */
+    .note-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3);
+      background: var(--surface-container-lowest);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: border-color 160ms ease, transform 160ms ease;
+    }
+    .note-item:hover {
+      border-color: var(--brand-rose);
+      transform: translateY(-1px);
+    }
+    .note-item--unread {
+      border-left: 3px solid var(--brand-rose);
+    }
+    .note-item__arrow {
+      color: var(--brand-rose);
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .note-viewer-content {
+      background: var(--surface-container-low);
+      padding: var(--space-4);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-light);
+    }
     .note-viewer-content h3 {
       font-family: var(--font-display);
       font-size: 1.5rem;
@@ -131,46 +672,55 @@
       margin-bottom: 0.5rem;
       color: var(--text-main);
     }
-
     .note-viewer-content p {
       font-size: 0.95rem;
       color: var(--text-muted);
       margin-bottom: 1rem;
     }
-
     .note-viewer-content ul {
       padding-left: 1.5rem;
       margin-bottom: 1rem;
     }
-
     .note-viewer-content li {
       margin-bottom: 0.5rem;
       font-size: 0.95rem;
       color: var(--text-main);
     }
 
+    /* Spinner */
+    .spinner-sm {
+      width: 18px; height: 18px;
+      border: 2px solid var(--border-light);
+      border-top-color: var(--brand-rose);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: var(--space-3) auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Checkout success toast — restyled from dark sage to architect-scholar pill */
     #checkoutToast {
       position: fixed;
-      bottom: 24px;
+      bottom: 88px;          /* Above bottom nav */
       left: 50%;
       transform: translateX(-50%);
-      background: var(--sage-dark);
-      color: white;
-      padding: 16px 28px;
-      border-radius: var(--radius-lg);
+      background: var(--text-main);
+      color: var(--cream);
+      padding: var(--space-3) var(--space-4);
+      border-radius: var(--radius-full, 999px);
       z-index: 9999;
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+      box-shadow: 0 12px 32px rgba(44, 62, 58, 0.25);
       text-align: center;
       max-width: min(420px, 90vw);
-      border: 1px solid rgba(255, 255, 255, 0.15);
       display: none;
+      border-left: 3px solid var(--brand-mint);
     }
-
     #checkoutToast .toast-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
       font-weight: 700;
+      letter-spacing: 0.02em;
       margin-bottom: 4px;
     }
-
     #checkoutToast .toast-status {
       font-size: 0.85rem;
       opacity: 0.85;
@@ -178,69 +728,155 @@
   </style>
 </head>
 
-<body id="mainBody" class="has-bottom-nav bg-page texture-light-grid">
+<body id="mainBody" class="has-bottom-nav">
 
   <div id="checkoutToast">
-    <div class="toast-title">🎉 Payment successful!</div>
-    <div class="toast-status" id="checkoutToastStatus">Activating your subscription — just a moment...</div>
+    <div class="toast-title">Payment successful</div>
+    <div class="toast-status" id="checkoutToastStatus">Activating your subscription — one moment…</div>
   </div>
 
   <global-header></global-header>
 
-  <section class="bg-sage texture-dots py-10" style="padding-top: calc(64px + var(--space-8));">
-    <div class="container flex flex-wrap items-center justify-between gap-6">
-      <div class="flex-1 flex flex-col items-start gap-4" style="min-width: 300px;">
-        <div id="trialBanner" class="badge badge-amber hidden mb-2">
-          🎁 <span id="trialDaysLeft" class="font-bold mx-1"></span> left in free trial.
-          <a href="pricing.html" class="underline ml-1" style="color: inherit;">Upgrade</a>
-        </div>
-        <h1 class="font-display text-4xl text-white m-0" id="welcomeMsg">Welcome back 👋</h1>
-        <p class="text-lg mb-4" style="color: rgba(255,255,255,0.8); max-width: 500px;">Mission Control is ready. Manage
-          your learners, track progress, and start practising.</p>
-        <div class="flex flex-wrap gap-3 items-center">
-          <a href="/pages/setup.html" id="addChildBtn" class="btn btn-secondary hover-lift">＋ Add Learner</a>
-          <button id="manageBillingBtn" class="btn btn-ghost hover-lift hidden"
-            style="border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.8);">Manage Billing</button>
-        </div>
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       HERO + HEALTH STRIP + TRIAL BANNER
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <section class="dash-hero bg-surface">
+    <div class="container-as">
+      <span class="label-caps dash-hero__eyebrow">Mission control</span>
+      <h1 class="h1-as dash-hero__title" id="welcomeMsg">Welcome back.</h1>
+      <p class="body-lg dash-hero__lede">Manage your learners, track progress, and start practising.</p>
+
+      <div class="dash-hero__actions">
+        <a href="/pages/setup.html" id="addChildBtn" class="btn btn-primary">+ Add learner</a>
+        <button id="manageBillingBtn" class="btn btn-secondary hidden">Manage billing</button>
       </div>
-      <div class="flex-1 flex justify-center items-end hidden sm:flex relative"
-        style="min-width: 300px; height: 200px;">
-        <img src="../assets/images/student_welcome.png" alt="Happy Student"
-          style="max-height: 260px; position: absolute; bottom: -48px; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.2));"
-          onerror="this.style.display='none'">
+
+      <!-- Trial banner — promoted to a full-width strip with rose left-rail -->
+      <div id="trialBanner" class="trial-banner hidden">
+        <div class="trial-banner__body">
+          <div class="trial-banner__icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 12 20 22 4 22 4 12"/>
+              <rect x="2" y="7" width="20" height="5"/>
+              <line x1="12" y1="22" x2="12" y2="7"/>
+              <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+              <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+            </svg>
+          </div>
+          <div class="trial-banner__text">
+            <strong><span id="trialDaysLeft"></span></strong> left in your free trial. Subscribe before it ends to keep access.
+          </div>
+        </div>
+        <a href="pricing.html" class="btn btn-primary btn-sm trial-banner__cta">Upgrade →</a>
+      </div>
+
+      <!-- Health strip — populated by initDashboard() -->
+      <div class="card-glass health-strip" id="healthStrip" hidden>
+        <div class="health-tile">
+          <div class="health-tile__label">Plan</div>
+          <div class="health-tile__value" id="healthPlan">—</div>
+          <div class="health-tile__sub" id="healthPlanSub"></div>
+        </div>
+        <div class="health-tile">
+          <div class="health-tile__label" id="healthBillingLabel">Status</div>
+          <div class="health-tile__value" id="healthBilling">—</div>
+          <div class="health-tile__sub" id="healthBillingSub"></div>
+        </div>
+        <div class="health-tile">
+          <div class="health-tile__label">Learners</div>
+          <div class="health-tile__value" id="healthLearners">—</div>
+          <div class="health-tile__sub" id="healthLearnersSub"></div>
+        </div>
+        <div class="health-tile">
+          <div class="health-tile__label">Family streak</div>
+          <div class="health-tile__value" id="healthStreak">—</div>
+          <div class="health-tile__sub" id="healthStreakSub"></div>
+        </div>
       </div>
     </div>
   </section>
 
-  <div id="dashboard-hud-strip" class="container" style="max-width:1000px; padding-top:var(--space-4);"></div>
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       MAIN BODY — asymmetric 7+5
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <main id="app" class="dash-body">
+    <div class="container-as">
+      <div class="dash-grid">
 
-  <main id="app" class="container py-10 flex flex-col w-full gap-6" style="max-width: 1000px; min-height: 60vh;">
-    <div class="flex justify-between items-center mb-4">
-      <h2 class="font-display text-3xl text-main m-0">Your Learners</h2>
-      <div class="admin-panel hidden" id="adminPanel">
-        <a href="/pages/admin.html" class="btn btn-secondary btn-sm hover-lift flex items-center gap-2">
-          👑 Admin Panel <span id="adminStats"></span>
-        </a>
-      </div>
-    </div>
-    <div id="cardsGrid" class="flex flex-wrap gap-6 w-full items-start">
-      <div class="glass-panel-1 w-full flex justify-center items-center p-8">
-        <div class="spinner-sm"></div>
+        <!-- ── 7-COL: LEARNER GRID ──────────────────────────────────────── -->
+        <section class="dash-main">
+          <header class="dash-section__head">
+            <div>
+              <span class="label-caps dash-section__eyebrow">Your family</span>
+              <h2 class="h2-as dash-section__title">Learners</h2>
+            </div>
+            <div class="admin-panel hidden" id="adminPanel">
+              <a href="/pages/admin.html" class="btn btn-secondary btn-sm">
+                Admin Panel <span id="adminStats"></span>
+              </a>
+            </div>
+          </header>
+
+          <div id="cardsGrid" class="learner-grid">
+            <div class="card-glass" style="grid-column: 1 / -1; display: flex; justify-content: center; padding: var(--space-6);">
+              <div class="spinner-sm"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── 5-COL ASIDE: Today's Focus + Quick Links ─────────────────── -->
+        <aside class="dash-aside" aria-label="Today's focus &amp; shortcuts">
+
+          <!-- Today's Focus card — wraps the existing #dashboard-hud-strip mount point -->
+          <article class="card-glass aside-card">
+            <header class="aside-card__head">
+              <span class="label-caps aside-card__eyebrow">Today's focus</span>
+              <h2 class="aside-card__title">Continue practising</h2>
+            </header>
+            <!-- HUD strip mounts here; hud-strip.js writes to this exact ID -->
+            <div id="dashboard-hud-strip"></div>
+            <div class="hud-empty">
+              Pick a learner below to start a session — your most-recent learner's progress will appear here.
+            </div>
+          </article>
+
+          <!-- Quick links -->
+          <article class="card-glass aside-card">
+            <header class="aside-card__head">
+              <span class="label-caps aside-card__eyebrow">Shortcuts</span>
+              <h2 class="aside-card__title">Quick links</h2>
+            </header>
+            <ul class="quicklinks">
+              <li><a href="/pages/account.html">Account &amp; billing</a></li>
+              <li><a href="/pages/pricing.html">Plans &amp; pricing</a></li>
+              <li><a href="/pages/faq.html">Help centre</a></li>
+              <li><a href="/pages/contact.html">Contact support</a></li>
+            </ul>
+          </article>
+
+        </aside>
+
       </div>
     </div>
   </main>
 
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       MODALS (IDs preserved verbatim — JS depends on these)
+       ═══════════════════════════════════════════════════════════════════════ -->
+
   <!-- Edit Modal -->
   <div id="editModal" class="modal-overlay" onclick="window.closeModalOnBgClick(event, 'editModal')">
-    <div class="glass-panel-1 p-6 modal-content flex flex-col gap-4">
-      <h3 class="font-display text-2xl text-main m-0">Edit Learner</h3>
-      <div class="flex flex-col gap-2">
-        <label class="text-sm font-bold text-muted">First Name</label>
-        <input type="text" id="editName" class="form-input" placeholder="e.g., Jayden">
+    <div class="modal-content">
+      <span class="label-caps modal-eyebrow">Edit profile</span>
+      <h3 class="modal-title">Edit learner.</h3>
+      <div class="acc-row">
+        <label class="acc-row__label" for="editName">First name</label>
+        <input type="text" id="editName" placeholder="e.g. Jayden" />
       </div>
-      <div class="flex flex-col gap-2">
-        <label class="text-sm font-bold text-muted">Academic Level</label>
-        <select id="editLevel" class="form-select w-full">
+      <div class="acc-row">
+        <label class="acc-row__label" for="editLevel">Academic level</label>
+        <select id="editLevel">
           <option value="Primary 1">Primary 1</option>
           <option value="Primary 2">Primary 2</option>
           <option value="Primary 3">Primary 3</option>
@@ -253,73 +889,96 @@
           <option value="Secondary 4">Secondary 4</option>
         </select>
       </div>
-      <div class="flex gap-3 mt-4">
+      <div class="flex gap-3" style="margin-top: var(--space-4);">
         <button class="btn btn-ghost flex-1" onclick="window.closeModals()">Cancel</button>
-        <button class="btn btn-primary flex-1 hover-lift" id="saveEditBtn" onclick="saveEdit()">Save Changes</button>
+        <button class="btn btn-primary flex-1" id="saveEditBtn" onclick="saveEdit()">Save changes</button>
       </div>
     </div>
   </div>
 
   <!-- Delete Modal -->
   <div id="deleteModal" class="modal-overlay" onclick="window.closeModalOnBgClick(event, 'deleteModal')">
-    <div class="glass-panel-1 p-6 modal-content flex flex-col gap-4" style="border-top: 4px solid var(--brand-error);">
-      <h3 class="font-display text-2xl text-danger m-0">Remove Learner?</h3>
-      <p class="text-sm text-muted m-0">Are you sure you want to delete <strong id="deleteTargetName"
-          class="text-main">this learner</strong>? This permanently erases their profile and all practice history.</p>
-      <div class="flex gap-3 mt-4">
+    <div class="modal-content" style="border-top: 4px solid var(--brand-rose);">
+      <span class="label-caps modal-eyebrow">Permanent action</span>
+      <h3 class="modal-title modal-title--danger">Remove learner?</h3>
+      <p style="color: var(--text-main); font-size: var(--text-sm); margin: 0 0 var(--space-4) 0; line-height: 1.6;">
+        Are you sure you want to delete <strong id="deleteTargetName" style="font-weight: 600;">this learner</strong>?
+        This permanently erases their profile and all practice history.
+      </p>
+      <div class="flex gap-3">
         <button class="btn btn-ghost flex-1" onclick="window.closeModals()">Cancel</button>
-        <button class="btn flex-1 hover-lift" id="confirmDeleteBtn" onclick="confirmDelete()"
-          style="background: var(--brand-error); color: white; border: none;">Yes, Delete</button>
+        <button class="btn btn-danger flex-1" id="confirmDeleteBtn" onclick="confirmDelete()">Yes, delete</button>
       </div>
     </div>
   </div>
 
   <!-- Backpack Modal -->
   <div id="backpackModal" class="modal-overlay" onclick="window.closeModalOnBgClick(event, 'backpackModal')">
-    <div class="glass-panel-1 p-6 modal-content flex flex-col gap-4">
-      <div class="flex justify-between items-center border-b border-light pb-4 mb-2">
-        <h3 class="font-display text-2xl text-main m-0">🎢 Learner Backpack</h3>
-        <button class="btn btn-ghost btn-sm text-xl p-2" style="line-height: 1;"
-          onclick="window.closeModals()">×</button>
+    <div class="modal-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: var(--space-3); border-bottom: 1px solid var(--border-light); margin-bottom: var(--space-3);">
+        <div>
+          <span class="label-caps modal-eyebrow">Notes &amp; revision</span>
+          <h3 class="modal-title" style="font-size: 24px; margin: 0;">Learner backpack.</h3>
+        </div>
+        <button class="kebab-btn" style="font-size: 24px; line-height: 1;" onclick="window.closeModals()" aria-label="Close">×</button>
       </div>
-      <div id="backpackContent" class="flex flex-col gap-3"></div>
+      <div id="backpackContent" style="display: flex; flex-direction: column; gap: var(--space-2);"></div>
     </div>
   </div>
 
   <!-- Note Viewer Modal -->
   <div id="noteViewerModal" class="modal-overlay" onclick="window.closeModalOnBgClick(event, 'noteViewerModal')">
-    <div class="glass-panel-1 p-6 modal-content flex flex-col gap-4" style="max-width: 600px;">
-      <div class="flex justify-between items-start border-b border-light pb-4">
+    <div class="modal-content" style="max-width: 600px;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: var(--space-3); border-bottom: 1px solid var(--border-light); margin-bottom: var(--space-3);">
         <div>
-          <div class="badge badge-info mb-2 text-xs" id="noteSubjectBadge">Maths</div>
-          <h2 class="font-display text-2xl text-main m-0" id="noteTitleView"></h2>
+          <span class="badge badge-sage" id="noteSubjectBadge" style="margin-bottom: var(--space-2); display: inline-block;">Maths</span>
+          <h2 class="modal-title" style="font-size: 24px; margin: 0;" id="noteTitleView"></h2>
         </div>
-        <button class="btn btn-ghost btn-sm text-xl p-2" style="line-height: 1;"
-          onclick="document.getElementById('noteViewerModal').classList.remove('is-open')">×</button>
+        <button class="kebab-btn" style="font-size: 24px; line-height: 1;" onclick="document.getElementById('noteViewerModal').classList.remove('is-open')" aria-label="Close">×</button>
       </div>
-      <div id="noteHtmlView" class="note-viewer-content mt-2 mb-4 bg-page p-6 rounded border border-light"></div>
-      <button class="btn btn-secondary w-full hover-lift"
-        onclick="document.getElementById('noteViewerModal').classList.remove('is-open')">Close</button>
+      <div id="noteHtmlView" class="note-viewer-content"></div>
+      <button class="btn btn-secondary" style="width: 100%; margin-top: var(--space-3);"
+              onclick="document.getElementById('noteViewerModal').classList.remove('is-open')">Close</button>
     </div>
   </div>
 
   <global-footer></global-footer>
-
-  <!-- ═══════════════════ BOTTOM NAV (web component) ═══════════════════ -->
   <global-bottom-nav></global-bottom-nav>
 
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       JS — preserved logic with surgical changes:
+         - All 26 element IDs preserved verbatim
+         - Inline HTML strings rewritten to use architect-scholar classes
+         - initDashboard() now also populates the health strip
+         - loadStudents() now fetches mastery_levels + daily_usage for cards
+         - Card render uses .learner-card with AL strip + streak + last-active
+       ═══════════════════════════════════════════════════════════════════════ -->
   <script>
     let currentStudents = [];
     let targetStudentId = null;
 
     function escapeHtml(str) {
       if (!str) return '';
-      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
-    // ── Checkout success polling ──
-    // Polls Supabase every 3s (max 8 attempts = 24s) after returning from Stripe.
-    // When the webhook updates subscription_tier, the UI auto-updates.
+    function fmtDate(d) {
+      return d ? d.toLocaleDateString('en-SG', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
+    }
+    function fmtRelative(d) {
+      if (!d) return null;
+      const diff = Date.now() - d.getTime();
+      const mins = Math.floor(diff / 60000);
+      if (mins < 60) return mins <= 1 ? 'just now' : mins + 'm ago';
+      const hours = Math.floor(mins / 60);
+      if (hours < 24) return hours + 'h ago';
+      const days = Math.floor(hours / 24);
+      if (days < 7) return days + 'd ago';
+      if (days < 30) return Math.floor(days / 7) + 'w ago';
+      return Math.floor(days / 30) + 'mo ago';
+    }
+
+    /* ─── Checkout success polling (preserved verbatim) ───────────────────────── */
     async function pollSubscriptionUpdate(attempt) {
       if (attempt >= 8) {
         const statusEl = document.getElementById('checkoutToastStatus');
@@ -336,22 +995,17 @@
           .eq('id', session.user.id)
           .single();
         if (p && p.subscription_tier !== 'trial') {
-          // Webhook came through — update profile state
           Object.assign(window.userProfile, p);
-          // Analytics: record the confirmed subscription activation
           if (window.plausible) window.plausible('Subscribe Complete', { props: { plan: p.subscription_tier } });
-          // Hide trial banner
           const banner = document.getElementById('trialBanner');
-          if (banner) banner.style.display = 'none';
-          // Show Manage Billing button
+          if (banner) { banner.classList.add('hidden'); banner.style.display = 'none'; }
           if (p.stripe_customer_id) {
             const btn = document.getElementById('manageBillingBtn');
             if (btn) btn.classList.remove('hidden');
           }
-          // Update toast
           const planNames = { all_subjects: 'All Subjects', family: 'Family Plan', single_subject: 'Single Subject' };
           const statusEl = document.getElementById('checkoutToastStatus');
-          if (statusEl) statusEl.textContent = `✓ You're now on ${planNames[p.subscription_tier] || p.subscription_tier}!`;
+          if (statusEl) statusEl.textContent = `You're now on ${planNames[p.subscription_tier] || p.subscription_tier}.`;
           setTimeout(() => { const t = document.getElementById('checkoutToast'); if (t) t.style.display = 'none'; }, 4000);
         } else {
           pollSubscriptionUpdate(attempt + 1);
@@ -361,17 +1015,72 @@
       }
     }
 
+    /* ─── HEALTH STRIP ──────────────────────────────────────────────────────── */
+    function renderHealthStrip(profile, students, streakInfo) {
+      const strip = document.getElementById('healthStrip');
+      if (!strip) return;
+      strip.hidden = false;
+
+      const tier = profile.subscription_tier || 'trial';
+      const planLabels = { trial: 'Free trial', all_subjects: 'All subjects', family: 'Family', single_subject: 'Single subject', paused: 'Paused' };
+      const planEl = document.getElementById('healthPlan');
+      const planSubEl = document.getElementById('healthPlanSub');
+      planEl.textContent = profile.role === 'admin' ? 'Admin' : (planLabels[tier] || tier);
+
+      planEl.classList.remove('health-tile__value--ok', 'health-tile__value--warn', 'health-tile__value--alert');
+      if (tier === 'trial')        planEl.classList.add('health-tile__value--warn');
+      else if (tier === 'paused')  planEl.classList.add('health-tile__value--warn');
+      else if (tier !== 'trial')   planEl.classList.add('health-tile__value--ok');
+      planSubEl.textContent = tier === 'trial' ? 'No card on file' : 'Active subscription';
+
+      // Status / Trial-ends tile
+      const billingEl = document.getElementById('healthBilling');
+      const billingSubEl = document.getElementById('healthBillingSub');
+      const billingLabelEl = document.getElementById('healthBillingLabel');
+      if (tier === 'trial' && profile.trial_ends_at) {
+        const daysLeft = Math.max(0, Math.ceil((new Date(profile.trial_ends_at) - new Date()) / 86400000));
+        billingLabelEl.textContent = 'Trial ends';
+        billingEl.textContent = daysLeft + (daysLeft === 1 ? ' day' : ' days');
+        billingSubEl.textContent = fmtDate(new Date(profile.trial_ends_at));
+        if (daysLeft <= 2) billingEl.classList.add('health-tile__value--alert');
+      } else {
+        billingLabelEl.textContent = 'Status';
+        billingEl.textContent = 'Active';
+        billingEl.classList.add('health-tile__value--ok');
+        billingSubEl.textContent = 'Subscription healthy';
+      }
+
+      // Learners tile
+      const learnersEl = document.getElementById('healthLearners');
+      const learnersSubEl = document.getElementById('healthLearnersSub');
+      const max = profile.max_children || 1;
+      learnersEl.textContent = students.length;
+      learnersSubEl.textContent = 'of ' + max + ' on plan';
+
+      // Family streak tile
+      const streakEl = document.getElementById('healthStreak');
+      const streakSubEl = document.getElementById('healthStreakSub');
+      if (streakInfo && streakInfo.familyStreak > 0) {
+        streakEl.textContent = streakInfo.familyStreak + (streakInfo.familyStreak === 1 ? ' day' : ' days');
+        streakSubEl.textContent = streakInfo.lastActiveLabel || '';
+      } else {
+        streakEl.textContent = '—';
+        streakSubEl.textContent = students.length === 0 ? 'Add a learner to start' : 'No activity yet';
+      }
+    }
+
+    /* ─── BOOT ───────────────────────────────────────────────────────────────── */
     window.initDashboard = async function () {
       const profile = window.userProfile;
       if (!profile) return;
 
       const firstName = profile.full_name?.split(' ')[0] || 'Parent';
-      document.getElementById('welcomeMsg').textContent = `Welcome back, ${escapeHtml(firstName)} 👋`;
+      document.getElementById('welcomeMsg').textContent = `Welcome back, ${escapeHtml(firstName)}.`;
 
       const badge = document.getElementById('planBadge');
       if (badge) {
-        const planLabels = { trial: '🎁 Free Trial', single_subject: 'Single Subject', all_subjects: 'All Subjects', family: 'Family' };
-        badge.textContent = profile.role === 'admin' ? '👑 Admin' : (planLabels[profile.subscription_tier] || profile.subscription_tier || 'Free Trial');
+        const planLabels = { trial: 'Free Trial', single_subject: 'Single Subject', all_subjects: 'All Subjects', family: 'Family' };
+        badge.textContent = profile.role === 'admin' ? 'Admin' : (planLabels[profile.subscription_tier] || profile.subscription_tier || 'Free Trial');
       }
 
       // Trial countdown + urgency analytics
@@ -380,9 +1089,8 @@
         if (daysLeft > 0) {
           const trialBanner = document.getElementById('trialBanner');
           trialBanner.classList.remove('hidden');
-          trialBanner.style.display = 'inline-flex';
+          trialBanner.style.display = 'flex';
           document.getElementById('trialDaysLeft').textContent = `${daysLeft} day${daysLeft !== 1 ? 's' : ''}`;
-          // Analytics: fire Trial Day 5 when ≤2 days remain (last urgency window)
           if (daysLeft <= 2) {
             if (window.plausible) window.plausible('Trial Day 5');
           }
@@ -394,14 +1102,14 @@
         document.getElementById('adminPanel').classList.remove('hidden');
       }
 
-      // Manage Billing button (subscribers who have gone through checkout)
+      // Manage Billing button
       if (profile.stripe_customer_id) {
         document.getElementById('manageBillingBtn').classList.remove('hidden');
       }
 
       await loadStudents();
 
-      // Render HUD strip for the most recently active student (non-blocking)
+      // Render HUD strip for the most recently active student
       const hudStudentId = localStorage.getItem('shl_active_student_id');
       if (hudStudentId && window.renderHUDStrip) {
         window.renderHUDStrip('dashboard-hud-strip', { studentId: hudStudentId }).catch(() => {});
@@ -417,6 +1125,7 @@
       }
     };
 
+    /* ─── LOAD STUDENTS ─────────────────────────────────────────────────────── */
     async function loadStudents() {
       const profile = window.userProfile;
       const sb = await getSupabase();
@@ -426,18 +1135,133 @@
       const { data: students } = await query;
       currentStudents = students || [];
       if (profile.role === 'admin') document.getElementById('adminStats').textContent = `(${currentStudents.length})`;
+
       const studentIds = currentStudents.map(s => s.id);
+
+      // Parallel fetch: unread notes, mastery levels (for AL strip), daily usage (streak)
       let unreadMap = {};
+      let masteryMap = {};   // { student_id: { Mathematics: AL3, Science: AL2, English: AL5 } }
+      let activityMap = {};  // { student_id: { lastActive: Date, streak: number } }
+
       if (studentIds.length > 0) {
-        const { data: notes } = await sb.from('study_notes').select('student_id, is_read').in('student_id', studentIds);
-        (notes || []).forEach(n => { if (!unreadMap[n.student_id]) unreadMap[n.student_id] = 0; if (!n.is_read) unreadMap[n.student_id]++; });
+        // Unread notes
+        const notesPromise = sb.from('study_notes').select('student_id, is_read').in('student_id', studentIds);
+
+        // Mastery — pull mean mastery per subject per student to derive AL band
+        const masteryPromise = sb.from('mastery_levels')
+          .select('student_id, subject, probability')
+          .in('student_id', studentIds);
+
+        // Activity — most recent question_attempt per student
+        const activityPromise = sb.from('question_attempts')
+          .select('student_id, created_at')
+          .in('student_id', studentIds)
+          .order('created_at', { ascending: false });
+
+        const [notesRes, masteryRes, activityRes] = await Promise.all([notesPromise, masteryPromise, activityPromise]);
+
+        // Unread map
+        (notesRes.data || []).forEach(n => {
+          if (!unreadMap[n.student_id]) unreadMap[n.student_id] = 0;
+          if (!n.is_read) unreadMap[n.student_id]++;
+        });
+
+        // Mastery map: average probability per (student, subject) → AL band
+        const accumulator = {};
+        (masteryRes.data || []).forEach(m => {
+          if (!accumulator[m.student_id]) accumulator[m.student_id] = {};
+          if (!accumulator[m.student_id][m.subject]) accumulator[m.student_id][m.subject] = { sum: 0, n: 0 };
+          accumulator[m.student_id][m.subject].sum += (m.probability || 0);
+          accumulator[m.student_id][m.subject].n   += 1;
+        });
+        Object.entries(accumulator).forEach(([sid, subjects]) => {
+          masteryMap[sid] = {};
+          Object.entries(subjects).forEach(([subj, agg]) => {
+            const avg = agg.sum / agg.n;
+            masteryMap[sid][subj] = probabilityToALBand(avg);
+          });
+        });
+
+        // Activity map
+        (activityRes.data || []).forEach(a => {
+          if (!activityMap[a.student_id]) {
+            activityMap[a.student_id] = { lastActive: new Date(a.created_at) };
+          }
+        });
       }
-      renderGrid(unreadMap);
+
+      // Compute family streak (max contiguous days any learner was active)
+      const familyStreakInfo = await computeFamilyStreak(studentIds);
+
+      // Render health strip with full data
+      renderHealthStrip(profile, currentStudents, familyStreakInfo);
+
+      renderGrid(unreadMap, masteryMap, activityMap);
+
       const addBtn = document.getElementById('addChildBtn');
-      if (profile.role !== 'admin' && currentStudents.length >= (profile.max_children || 1)) addBtn.style.display = 'none';
-      else addBtn.style.display = 'inline-flex';
+      if (profile.role !== 'admin' && currentStudents.length >= (profile.max_children || 1)) {
+        addBtn.style.display = 'none';
+      } else {
+        addBtn.style.display = 'inline-flex';
+      }
     }
 
+    function probabilityToALBand(p) {
+      // Mirrors AL band thresholds in the question bank docs
+      if (p >= 0.90) return 'AL1';
+      if (p >= 0.80) return 'AL2';
+      if (p >= 0.70) return 'AL3';
+      if (p >= 0.60) return 'AL4';
+      if (p >= 0.50) return 'AL5';
+      if (p >= 0.40) return 'AL6';
+      if (p >= 0.25) return 'AL7';
+      return 'AL8';
+    }
+
+    async function computeFamilyStreak(studentIds) {
+      if (!studentIds || studentIds.length === 0) return { familyStreak: 0, lastActiveLabel: null };
+      try {
+        const sb = await getSupabase();
+        const { data } = await sb.from('daily_usage')
+          .select('date, student_id')
+          .in('student_id', studentIds)
+          .order('date', { ascending: false })
+          .limit(60);
+
+        if (!data || data.length === 0) return { familyStreak: 0, lastActiveLabel: null };
+
+        // Collapse to a set of unique dates the family was active
+        const dates = Array.from(new Set(data.map(r => r.date))).sort().reverse();
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        let streak = 0;
+        let cursor = new Date(today);
+        for (let i = 0; i < dates.length; i++) {
+          const d = new Date(dates[i]);
+          d.setHours(0, 0, 0, 0);
+          if (d.getTime() === cursor.getTime()) {
+            streak++;
+            cursor.setDate(cursor.getDate() - 1);
+          } else if (i === 0 && (today.getTime() - d.getTime()) === 86400000) {
+            // Family was active yesterday but not today — streak still counts, just lagging by a day
+            streak++;
+            cursor = new Date(d);
+            cursor.setDate(cursor.getDate() - 1);
+          } else {
+            break;
+          }
+        }
+
+        const lastActive = dates[0] ? new Date(dates[0]) : null;
+        const lastActiveLabel = lastActive ? fmtRelative(lastActive) : null;
+        return { familyStreak: streak, lastActiveLabel };
+      } catch (e) {
+        return { familyStreak: 0, lastActiveLabel: null };
+      }
+    }
+
+    /* ─── PHOTO UPLOAD (preserved) ──────────────────────────────────────────── */
     window.handlePhotoUpload = async (event, studentId) => {
       const file = event.target.files[0];
       if (!file) return;
@@ -452,56 +1276,152 @@
       } catch (err) { alert('Failed to upload photo: ' + err.message); }
     };
 
-    function renderGrid(unreadMap) {
+    /* ─── RENDER LEARNER GRID — architect-scholar treatment ─────────────────── */
+    function renderGrid(unreadMap, masteryMap, activityMap) {
       const grid = document.getElementById('cardsGrid');
       grid.innerHTML = '';
+
       if (currentStudents.length === 0) {
-        grid.innerHTML = `<div class="glass-panel-1 w-full text-center flex flex-col items-center justify-center p-20" style="border: 2px dashed var(--border-dark); box-shadow: none;"><div class="text-4xl mb-4">🚀</div><h3 class="font-bold text-lg mb-2">No learners added yet</h3><p class="text-sm text-muted">Click "＋ Add Learner" above to get started.</p></div>`;
+        grid.innerHTML = `
+          <div class="card-glass empty-state">
+            <div class="empty-state__icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <line x1="19" y1="8" x2="19" y2="14"/>
+                <line x1="22" y1="11" x2="16" y2="11"/>
+              </svg>
+            </div>
+            <h3 class="empty-state__title">No learners yet</h3>
+            <p class="empty-state__text">
+              Click <strong>"+ Add learner"</strong> at the top to get started, or
+              <a href="/pages/setup.html">jump straight to setup</a>.
+            </p>
+          </div>`;
         return;
       }
+
+      const SUBJECTS = ['Mathematics', 'Science', 'English'];
+      const SUBJECT_LABELS = { Mathematics: 'M', Science: 'S', English: 'E' };
+
       currentStudents.forEach(student => {
-        const initials = student.name?.charAt(0).toUpperCase() || '?';
+        const initials = (student.name || '?').charAt(0).toUpperCase();
         const unreadCount = unreadMap ? (unreadMap[student.id] || 0) : 0;
+        const mastery = masteryMap[student.id] || {};
+        const activity = activityMap[student.id] || {};
+
         const avatarHtml = student.photo_url
-          ? `<img src="${escapeHtml(student.photo_url)}" alt="${escapeHtml(student.name)}" style="width:56px;height:56px;border-radius:var(--radius-md);object-fit:cover;">`
-          : `<div class="flex justify-center items-center font-display text-2xl text-white bg-sage" style="width:56px;height:56px;border-radius:var(--radius-md);flex-shrink:0;">${initials}</div>`;
-        const card = document.createElement('div');
-        card.className = 'glass-panel-1 hover-lift flex flex-col gap-4 p-4';
-        card.style = 'max-width: 280px; flex: 1; border-top: 4px solid var(--brand-sage);';
+          ? `<div class="learner-card__avatar"><img src="${escapeHtml(student.photo_url)}" alt="${escapeHtml(student.name)}" /></div>`
+          : `<div class="learner-card__avatar">${initials}</div>`;
+
+        // AL strip — one pill per subject. Empty pills if no mastery data yet.
+        const alPills = SUBJECTS.map(subj => {
+          const band = mastery[subj];
+          const title = band ? `${subj}: ${band}` : `${subj}: no data yet`;
+          return `<div class="al-pill" data-band="${band || ''}" title="${title}" aria-label="${title}">
+                    ${band ? '<div class="al-pill__fill"></div>' : ''}
+                  </div>`;
+        }).join('');
+
+        // Activity row: last-active text. (No streak chip per-student in this iteration —
+        // family streak shown in health strip; per-student streak deferred to Phase next.)
+        let lastActiveLabel = '';
+        if (activity.lastActive) {
+          lastActiveLabel = `<span class="last-active">Active ${fmtRelative(activity.lastActive)}</span>`;
+        } else {
+          lastActiveLabel = `<span class="last-active last-active--idle">No activity yet</span>`;
+        }
+
+        const notesDot = unreadCount > 0
+          ? `<span class="learner-card__notes-dot" title="${unreadCount} unread note${unreadCount > 1 ? 's' : ''}"></span>`
+          : '';
+
+        const subjectTag = student.selected_subject
+          ? `<span class="badge badge-neutral" style="font-size: 10px;">${escapeHtml(student.selected_subject)}</span>`
+          : '';
+
+        const card = document.createElement('article');
+        card.className = 'card-glass learner-card';
         card.innerHTML = `
-      <div class="flex justify-between items-start mb-2">
-        <div class="flex items-center gap-4">
-          ${avatarHtml}
-          <div>
-            <div class="font-display text-2xl text-main m-0">${escapeHtml(student.name)}</div>
-            <div class="flex gap-2 items-center mt-2">
-              <span class="badge badge-info text-xs">${escapeHtml(student.level)}</span>
-              ${student.selected_subject ? `<span class="badge text-xs" style="background:var(--bg-elevated);">${escapeHtml(student.selected_subject)}</span>` : ''}
+          ${notesDot}
+          <header class="learner-card__head">
+            <div class="learner-card__identity">
+              ${avatarHtml}
+              <div class="learner-card__name-block">
+                <div class="learner-card__name">${escapeHtml(student.name)}</div>
+                <div class="learner-card__meta">
+                  <span class="badge badge-sage" style="font-size: 10px;">${escapeHtml(student.level || '—')}</span>
+                  ${subjectTag}
+                </div>
+              </div>
             </div>
+            <div class="kebab-wrap" onclick="event.stopPropagation()">
+              <button class="kebab-btn" onclick="window.toggleDropdown(event, '${student.id}')" aria-label="Learner options">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/>
+                </svg>
+              </button>
+              <div id="dropdown-${student.id}" class="context-menu">
+                <input type="file" id="photo-upload-${student.id}" class="hidden" accept="image/*" onchange="handlePhotoUpload(event, '${student.id}')" style="display: none;">
+                <button onclick="document.getElementById('photo-upload-${student.id}').click(); window.toggleDropdown(event, '${student.id}')">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                    <circle cx="12" cy="13" r="4"/>
+                  </svg>
+                  Upload photo
+                </button>
+                <button onclick="window.openEditModal('${student.id}')">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                  Edit details
+                </button>
+                <button class="text-danger" onclick="window.openDeleteModal('${student.id}')">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                  </svg>
+                  Remove
+                </button>
+              </div>
+            </div>
+          </header>
+
+          <div class="al-strip" aria-label="Per-subject mastery">
+            <span class="al-strip__label">AL</span>
+            ${alPills}
           </div>
-        </div>
-        <div class="relative" onclick="event.stopPropagation()">
-          <button class="btn btn-sm btn-ghost p-2 text-muted" onclick="window.toggleDropdown(event, '${student.id}')">&#x22EE;</button>
-          <div id="dropdown-${student.id}" class="context-menu">
-            <input type="file" id="photo-upload-${student.id}" class="hidden" accept="image/*" onchange="handlePhotoUpload(event, '${student.id}')">
-            <button onclick="document.getElementById('photo-upload-${student.id}').click(); window.toggleDropdown(event, '${student.id}')">&#x1F4F8; Upload Photo</button>
-            <button onclick="window.openEditModal('${student.id}')">&#x270F;&#xFE0F; Edit Learner</button>
-            <button class="text-danger" onclick="window.openDeleteModal('${student.id}')">&#x1F5D1;&#xFE0F; Remove</button>
+
+          <div class="activity-row">
+            ${lastActiveLabel}
           </div>
-        </div>
-      </div>
-      <button class="btn btn-ghost w-full justify-between items-center px-4 mt-2" style="border:1px solid var(--border-light);background:var(--bg-surface);" onclick="openBackpackModal('${student.id}')">
-        <span class="flex items-center gap-2 font-bold text-sm">🎢 View Backpack</span>
-        ${unreadCount > 0 ? `<span class="badge" style="background:var(--brand-rose);color:white;">${unreadCount} New</span>` : `<span class="text-xs text-muted">Notes</span>`}
-      </button>
-      <div class="mt-auto pt-4 flex justify-center items-center w-full" style="border-top:1px solid var(--border-light);">
-        <a href="/pages/subjects.html?student=${student.id}" class="btn btn-primary w-full hover-lift">Enter Lab →</a>
-      </div>
-    `;
+
+          <button class="backpack-btn" onclick="openBackpackModal('${student.id}')">
+            <span class="backpack-btn__inner">
+              <svg class="backpack-btn__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 10v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V10"/>
+                <path d="M4 10a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4"/>
+                <path d="M9 6V4a3 3 0 0 1 6 0v2"/>
+                <line x1="9" y1="14" x2="15" y2="14"/>
+              </svg>
+              Backpack
+            </span>
+            ${unreadCount > 0
+              ? `<span class="backpack-btn__count">${unreadCount} new</span>`
+              : `<span class="backpack-btn__hint">Notes</span>`}
+          </button>
+
+          <a href="/pages/subjects.html?student=${student.id}" class="btn btn-primary learner-card__cta">Enter lab →</a>
+        `;
         grid.appendChild(card);
       });
     }
 
+    /* ─── INTERACTIONS (preserved IDs and contracts) ─────────────────────────── */
     window.toggleDropdown = (e, id) => {
       e.stopPropagation();
       const dropdown = document.getElementById(`dropdown-${id}`);
@@ -510,9 +1430,14 @@
       if (isHidden) dropdown.classList.add('is-open');
     };
 
-    document.addEventListener('click', () => { document.querySelectorAll('.context-menu').forEach(d => d.classList.remove('is-open')); });
+    document.addEventListener('click', () => {
+      document.querySelectorAll('.context-menu').forEach(d => d.classList.remove('is-open'));
+    });
 
-    window.closeModals = () => { document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('is-open')); targetStudentId = null; };
+    window.closeModals = () => {
+      document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('is-open'));
+      targetStudentId = null;
+    };
     window.closeModalOnBgClick = (e, id) => { if (e.target.id === id) window.closeModals(); };
 
     window.openEditModal = (id) => {
@@ -539,52 +1464,68 @@
       const level = document.getElementById('editLevel').value;
       if (!name || !level || !targetStudentId) return;
       const btn = document.getElementById('saveEditBtn');
-      btn.disabled = true; btn.textContent = 'Saving...';
+      btn.disabled = true; btn.textContent = 'Saving…';
       const sb = await getSupabase();
       await sb.from('students').update({ name, level }).eq('id', targetStudentId);
       await loadStudents();
       closeModals();
-      btn.disabled = false; btn.textContent = 'Save Changes';
+      btn.disabled = false; btn.textContent = 'Save changes';
     };
 
     window.confirmDelete = async () => {
       if (!targetStudentId) return;
       const btn = document.getElementById('confirmDeleteBtn');
-      btn.disabled = true; btn.textContent = 'Deleting...';
+      btn.disabled = true; btn.textContent = 'Deleting…';
       const sb = await getSupabase();
       await sb.from('students').delete().eq('id', targetStudentId);
       await loadStudents();
       closeModals();
-      btn.disabled = false; btn.textContent = 'Yes, Delete';
+      btn.disabled = false; btn.textContent = 'Yes, delete';
     };
 
     document.getElementById('manageBillingBtn').addEventListener('click', () => {
       window.location.href = '/pages/account.html';
     });
 
+    /* ─── BACKPACK ───────────────────────────────────────────────────────────── */
     window.openBackpackModal = async (studentId) => {
       const content = document.getElementById('backpackContent');
-      content.innerHTML = `<div class="text-center py-6"><div class="spinner-sm mx-auto mb-2"></div><p class="text-xs text-muted">Opening backpack...</p></div>`;
+      content.innerHTML = `
+        <div style="text-align: center; padding: var(--space-5);">
+          <div class="spinner-sm"></div>
+          <p style="font-size: var(--text-xs); color: var(--text-muted); margin-top: var(--space-2);">Opening backpack…</p>
+        </div>`;
       document.getElementById('backpackModal').classList.add('is-open');
       try {
         const sb = await getSupabase();
         const { data: notes } = await sb.from('study_notes').select('*').eq('student_id', studentId).order('created_at', { ascending: false });
-        if (!notes || notes.length === 0) { content.innerHTML = `<div class="glass-panel-2 text-center p-8"><span class="text-3xl mb-2 block">📚</span><p class="text-sm text-main font-bold">Backpack is empty!</p><p class="text-xs text-muted mt-2">Ask Miss Wena questions and save notes to build your collection.</p></div>`; return; }
+        if (!notes || notes.length === 0) {
+          content.innerHTML = `
+            <div style="text-align: center; padding: var(--space-6); background: var(--surface-container-low); border-radius: var(--radius-md);">
+              <p style="font-size: var(--text-sm); color: var(--text-main); font-weight: 600; margin: 0 0 var(--space-2) 0;">Backpack is empty.</p>
+              <p style="font-size: var(--text-xs); color: var(--text-muted); margin: 0;">Ask Miss Wena questions and save notes to build the collection.</p>
+            </div>`;
+          return;
+        }
         window.cachedNotes = notes;
         content.innerHTML = notes.map(n => `
-      <div class="glass-panel-2 hover-lift p-4 flex justify-between items-center cursor-pointer" style="${!n.is_read ? 'border-left:3px solid var(--brand-rose);' : 'border:1px solid var(--border-light);'}" onclick="viewStudyNote('${n.id}')">
-        <div>
-          <div class="flex items-center gap-2 mb-2">
-            <span class="badge badge-info text-[10px] uppercase">${escapeHtml(n.subject)}</span>
-            ${!n.is_read ? `<span class="badge text-[10px]" style="background:var(--brand-rose);color:white;">New</span>` : ''}
+          <div class="note-item ${!n.is_read ? 'note-item--unread' : ''}" onclick="viewStudyNote('${n.id}')">
+            <div style="flex: 1; min-width: 0;">
+              <div style="display: flex; gap: var(--space-1); align-items: center; margin-bottom: 4px;">
+                <span class="badge badge-sage" style="font-size: 10px;">${escapeHtml(n.subject)}</span>
+                ${!n.is_read ? `<span class="badge badge-rose" style="font-size: 10px;">New</span>` : ''}
+              </div>
+              <div style="font-weight: 600; color: var(--text-main); font-size: var(--text-sm); line-height: 1.3;">${escapeHtml(n.title)}</div>
+              <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
+                ${new Date(n.created_at).toLocaleDateString('en-SG', { day: 'numeric', month: 'short' })} · ${escapeHtml(n.topic).replace(/-/g, ' ')}
+              </div>
+            </div>
+            <span class="note-item__arrow">→</span>
           </div>
-          <div class="font-bold text-main text-sm leading-tight">${escapeHtml(n.title)}</div>
-          <div class="text-xs text-muted mt-2">${new Date(n.created_at).toLocaleDateString('en-SG', { day: 'numeric', month: 'short' })} · ${escapeHtml(n.topic).replace(/-/g, ' ')}</div>
-        </div>
-        <span class="text-rose font-bold">→</span>
-      </div>
-    `).join('');
-      } catch (e) { content.innerHTML = `<p class="text-danger text-sm text-center">Failed to load notes.</p>`; }
+        `).join('');
+      } catch (e) {
+        content.innerHTML = `<p style="color: var(--brand-rose); font-size: var(--text-sm); text-align: center;">Failed to load notes.</p>`;
+      }
     };
 
     window.viewStudyNote = async (noteId) => {
