@@ -738,61 +738,17 @@
       }
     };
 
-    /* ── 4. Navbar dropdown + auth-aware header (kept from previous version) ── */
-    document.addEventListener('DOMContentLoaded', () => {
-      const toggle = document.getElementById('navToggle');
-      const dropdown = document.getElementById('navDropdown');
+    /* ── 4. Navbar dropdown + auth-aware header ─────────────────────────────
+       Removed in this version. The <global-header> web component
+       (header.js) already manages the hamburger toggle, the auth-aware
+       Log-In ↔ Dashboard swap, the Sign-Out link, the Manage Billing link
+       for paid subscribers, and the Admin Panel link for admins.
 
-      if (toggle && dropdown) {
-        toggle.addEventListener('click', (e) => {
-          e.stopPropagation();
-          dropdown.classList.toggle('is-open');
-          toggle.classList.toggle('is-active');
-        });
-
-        document.addEventListener('click', (e) => {
-          if (!dropdown.contains(e.target) && !toggle.contains(e.target)) {
-            dropdown.classList.remove('is-open');
-            toggle.classList.remove('is-active');
-          }
-        });
-      }
-    });
-
-    if (typeof getSupabase === 'function') {
-      getSupabase().then(async function (sb) {
-        try {
-          const { data: { session } } = await sb.auth.getSession();
-          if (session) {
-            const authContainer = document.getElementById('auth-header-container');
-            const navLinks = document.getElementById('navDropdown');
-
-            if (authContainer) {
-              authContainer.innerHTML = '<a href="dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a>';
-            }
-
-            if (navLinks && !document.getElementById('navSignOut')) {
-              const signOut = document.createElement('a');
-              signOut.id = 'navSignOut';
-              signOut.href = '#';
-              signOut.textContent = 'Sign Out';
-              signOut.style.color = 'var(--brand-rose)';
-              signOut.onclick = async (e) => {
-                e.preventDefault();
-                await sb.auth.signOut();
-                window.location.href = '../index.html';
-              };
-              navLinks.appendChild(signOut);
-
-              const signUpLink = document.getElementById('navSignUp');
-              if (signUpLink) signUpLink.remove();
-            }
-          }
-        } catch (e) {
-          console.error('Auth check failed:', e);
-        }
-      });
-    }
+       The legacy script that lived here added a SECOND click listener on
+       #navToggle, which fired right after header.js's listener and
+       immediately re-toggled .is-open — causing the dropdown to flicker
+       open and instantly close. Deleting it fixes that bug.
+    ──────────────────────────────────────────────────────────────────────── */
   </script>
 </body>
 
