@@ -337,8 +337,16 @@ export function QuestClient({ searchParams }: QuestClientProps) {
       mastery = data
     } catch { /* table missing or schema mismatch — use fallback values below */ }
 
-    const subjectKey = detail.subject.toLowerCase()
-    const topicDeps  = TOPIC_DEPS[subjectKey]?.[detail.topic] ?? []
+    const subjectKey  = detail.subject.toLowerCase()
+    const subjectDeps = TOPIC_DEPS[subjectKey] ?? {}
+    // Case-insensitive + trimmed topic lookup so "cycles" matches "Cycles"
+    const topicKey    = Object.keys(subjectDeps).find(
+      k => k.trim().toLowerCase() === detail.topic.trim().toLowerCase()
+    ) ?? detail.topic
+    const topicDeps   = subjectDeps[topicKey] ?? []
+    if (topicDeps.length === 0) {
+      console.debug(`[QuestClient] No TOPIC_DEPS match for subject="${subjectKey}" topic="${detail.topic}"`)
+    }
 
     setDiagnosis({
       topic:       detail.topic,
@@ -481,7 +489,7 @@ export function QuestClient({ searchParams }: QuestClientProps) {
     return (
       <main style={{ minHeight: "100vh", paddingTop: "calc(var(--navbar-h) + 32px)", paddingBottom: 96 }}>
         <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 16px" }}>
-          {student && hud && <HUDStrip student={student} hud={hud} />}
+          {student && hud && <HUDStrip student={student} hud={hud} badges={earnedBadges} />}
           <QuestPicker quests={quests} onSelect={handlePickQuest} />
         </div>
       </main>
@@ -539,7 +547,7 @@ export function QuestClient({ searchParams }: QuestClientProps) {
           }}
         >
           {/* HUD STRIP */}
-          <HUDStrip student={student} hud={hud} />
+          <HUDStrip student={student} hud={hud} badges={earnedBadges} />
 
           {/* HERO BAND */}
           <QuestHero quest={questDetail} />
@@ -564,9 +572,6 @@ export function QuestClient({ searchParams }: QuestClientProps) {
           {isQuestComplete && (
             <QuestCompleteCard outcome={questDetail.day3_outcome ?? "completed"} />
           )}
-
-          {/* BADGE TRAY */}
-          {earnedBadges.length > 0 && <BadgeTray badges={earnedBadges} />}
 
           {/* DIAGNOSIS CARD */}
           {diagnosis && <DiagnosisCard diagnosis={diagnosis} />}
@@ -614,55 +619,201 @@ function QuestLoadingSkeleton() {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// HUD STRIP — avatar, XP bar, level, streak
+// BADGE COLLECTION MODAL — full list with names + descriptions
 // ═══════════════════════════════════════════════════════════════════
 
-function HUDStrip({ student, hud }: { student: Student; hud: HUD }) {
-  const xpPct = Math.min(100, (hud.xp_in_level / hud.xp_to_next_level) * 100)
+function BadgeCollectionModal({
+  badges,
+  onClose,
+}: {
+  badges: Array<{ id: string; name: string; description: string; rarity: string }>
+  onClose: () => void
+}) {
+  return (
+    <div
+      style={{
+        position: "fixed", inset: 0, zIndex: 9999,
+        background: "rgba(0,0,0,0.72)", backdropFilter: "blur(8px)",
+        display: "flex", alignItems: "center", justifyContent: "center", padding: 24,
+      }}
+      onClick={e => { if (e.target === e.currentTarget) onClose() }}
+    >
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+        className="card-glass"
+        style={{ maxWidth: 480, width: "100%", maxHeight: "80vh", overflowY: "auto" }}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+          <h3
+            className="label-caps"
+            style={{ color: "var(--brand-amber)", display: "inline-flex", alignItems: "center", gap: 6 }}
+          >
+            <Icon name="shield" size={14} />
+            My Badges ({badges.length})
+          </h3>
+          <button
+            onClick={onClose}
+            aria-label="Close badge collection"
+            style={{
+              background: "transparent", border: "none",
+              color: "var(--text-muted)", cursor: "pointer",
+              fontSize: "1.25rem", lineHeight: 1, padding: 4,
+            }}
+          >
+            ✕
+          </button>
+        </div>
+
+        {badges.length === 0 ? (
+          <p style={{ color: "var(--text-muted)", fontSize: "0.9rem", textAlign: "center", padding: "24px 0" }}>
+            Complete quests and activities to earn badges!
+          </p>
+        ) : (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }}>
+            {badges.map(b => {
+              const color = BADGE_RARITY_COLOR[b.rarity] ?? "var(--cream)"
+              return (
+                <div
+                  key={b.id}
+                  style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, textAlign: "center" }}
+                >
+                  <div
+                    style={{
+                      width: 52, height: 52, borderRadius: "50%",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      background: `color-mix(in srgb, ${color} 12%, transparent)`,
+                      border: `2px solid color-mix(in srgb, ${color} 40%, transparent)`,
+                      color,
+                    }}
+                  >
+                    <Icon name="shield" size={24} />
+                  </div>
+                  <span style={{ fontSize: "0.7rem", fontWeight: 700, color: "var(--text-main)", lineHeight: 1.2 }}>
+                    {b.name}
+                  </span>
+                  <span style={{ fontSize: "0.6rem", color: "var(--text-muted)", lineHeight: 1.3 }}>
+                    {b.description}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </motion.div>
+    </div>
+  )
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// HUD STRIP — avatar, XP bar, level, streak, + 2 recent badges
+// ═══════════════════════════════════════════════════════════════════
+
+function HUDStrip({
+  student,
+  hud,
+  badges,
+}: {
+  student: Student
+  hud: HUD
+  badges: Array<{ id: string; name: string; description: string; rarity: string }>
+}) {
+  const [showBadgeModal, setShowBadgeModal] = useState(false)
+  const xpPct       = Math.min(100, (hud.xp_in_level / hud.xp_to_next_level) * 100)
+  const recentBadges = badges.slice(0, 2)
+  const extraCount   = Math.max(0, badges.length - 2)
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="card-glass"
-      style={{
-        marginTop: 32,
-        marginBottom: 32,
-        display: "flex",
-        gap: 24,
-        alignItems: "center",
-      }}
-    >
-      <AvatarSlot photoUrl={student.photo_url} />
+    <>
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="card-glass"
+        style={{
+          marginTop: 32,
+          marginBottom: 32,
+          display: "flex",
+          gap: 16,
+          alignItems: "center",
+          flexWrap: "wrap",
+        }}
+      >
+        <AvatarSlot photoUrl={student.photo_url} />
 
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "baseline", gap: 16, flexWrap: "wrap" }}>
-          <span style={{ fontWeight: 700, fontSize: "1rem", color: "var(--text-main)" }}>
-            {student.name}
-          </span>
-          <span className="quest-chip quest-chip-mint">
-            Lvl {hud.level} · {hud.rank}
-          </span>
-        </div>
-
-        <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 16 }}>
-          <div className="quest-xp-track">
-            <motion.div
-              className="quest-xp-fill"
-              initial={{ width: 0 }}
-              animate={{ width: `${xpPct}%` }}
-              transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
-            />
+        {/* Badge mini-tray — 2 latest, beside avatar */}
+        {badges.length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, flexShrink: 0 }}>
+            <div style={{ display: "flex", gap: 6 }}>
+              {recentBadges.map(b => {
+                const color = BADGE_RARITY_COLOR[b.rarity] ?? "var(--cream)"
+                return (
+                  <div
+                    key={b.id}
+                    title={`${b.name}: ${b.description}`}
+                    style={{
+                      width: 32, height: 32, borderRadius: "50%",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      background: `color-mix(in srgb, ${color} 12%, transparent)`,
+                      border: `1.5px solid color-mix(in srgb, ${color} 40%, transparent)`,
+                      color,
+                      flexShrink: 0,
+                    }}
+                  >
+                    <Icon name="shield" size={14} />
+                  </div>
+                )
+              })}
+            </div>
+            <button
+              onClick={() => setShowBadgeModal(true)}
+              style={{
+                background: "transparent", border: "none", cursor: "pointer",
+                fontSize: "0.58rem", fontWeight: 700, color: "var(--brand-amber)",
+                letterSpacing: "0.06em", padding: 0, textTransform: "uppercase",
+              }}
+            >
+              {extraCount > 0 ? `+${extraCount} more` : `${badges.length} badge${badges.length > 1 ? "s" : ""}`}
+            </button>
           </div>
-          <span className="label-caps" style={{ color: "var(--text-muted)", whiteSpace: "nowrap" }}>
-            {hud.xp_in_level}/{hud.xp_to_next_level}
-          </span>
-        </div>
-      </div>
+        )}
 
-      <StreakFlame days={hud.streak_days} shieldCount={hud.shield_count} />
-    </motion.div>
+        <div style={{ flex: 1, minWidth: 120 }}>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" }}>
+            <span style={{ fontWeight: 700, fontSize: "1rem", color: "var(--text-main)" }}>
+              {student.name}
+            </span>
+            <span className="quest-chip quest-chip-mint">
+              Lvl {hud.level} · {hud.rank}
+            </span>
+          </div>
+
+          <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 12 }}>
+            <div className="quest-xp-track">
+              <motion.div
+                className="quest-xp-fill"
+                initial={{ width: 0 }}
+                animate={{ width: `${xpPct}%` }}
+                transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
+              />
+            </div>
+            <span className="label-caps" style={{ color: "var(--text-muted)", whiteSpace: "nowrap" }}>
+              {hud.xp_in_level}/{hud.xp_to_next_level}
+            </span>
+          </div>
+        </div>
+
+        <StreakFlame days={hud.streak_days} shieldCount={hud.shield_count} />
+      </motion.div>
+
+      <AnimatePresence>
+        {showBadgeModal && (
+          <BadgeCollectionModal badges={badges} onClose={() => setShowBadgeModal(false)} />
+        )}
+      </AnimatePresence>
+    </>
   )
 }
 
