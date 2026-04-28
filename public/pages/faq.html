@@ -5,16 +5,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FAQ — Superholic Lab</title>
-  <meta name="description" content="Everything parents need to know about Superholic Lab — the Four Pillars, Plan Quest, MOE alignment, pricing, PDPA privacy, and troubleshooting.">
-  <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://www.superholiclab.com/pages/faq.html">
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Superholic Lab">
-  <meta property="og:title" content="FAQ — Superholic Lab">
-  <meta property="og:description" content="Everything parents need to know about Superholic Lab — the Four Pillars, Plan Quest, MOE alignment, pricing, and PDPA privacy.">
-  <meta property="og:url" content="https://www.superholiclab.com/pages/faq.html">
-  <meta property="og:image" content="https://www.superholiclab.com/assets/og.png">
-  <meta property="og:locale" content="en_SG">
+  <meta name="description" content="Everything parents need to know about Superholic Lab — the Four Pillars, Plan Quest, MOE alignment, pricing, PDPA privacy, and troubleshooting." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://www.superholiclab.com/pages/faq.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Superholic Lab" />
+  <meta property="og:title" content="FAQ — Superholic Lab" />
+  <meta property="og:description" content="Everything parents need to know about Superholic Lab — the Four Pillars, Plan Quest, MOE alignment, pricing, and PDPA privacy." />
+  <meta property="og:url" content="https://www.superholiclab.com/pages/faq.html" />
+  <meta property="og:image" content="https://www.superholiclab.com/assets/og.png" />
+  <meta property="og:locale" content="en_SG" />
+
+  <!-- FAQPage schema (kept verbatim — important for SEO) -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -27,6 +29,7 @@
     ]
   }
   </script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="../css/style.css" />
@@ -38,501 +41,862 @@
     import { guardPage } from '/js/auth.js';
     await guardPage(false);
   </script>
+
+  <style>
+    /* ── Hero (restrained: .h1-as on .bg-surface) — identical pattern to privacy.html ── */
+    .faq-hero {
+      padding-top: calc(64px + var(--space-8));
+      padding-bottom: var(--space-8);
+      border-bottom: 1px solid var(--border-light);
+    }
+    .faq-hero__eyebrow {
+      color: var(--brand-rose);
+      margin-bottom: var(--space-3);
+    }
+    .faq-hero__title {
+      color: var(--text-main);
+      margin: 0 0 var(--space-3) 0;
+      max-width: 720px;
+    }
+    .faq-hero__lede {
+      color: var(--text-muted);
+      max-width: 640px;
+      margin: 0 0 var(--space-4) 0;
+    }
+    .faq-hero__meta {
+      display: flex;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    /* ── Sticky search bar (architect-scholar replacement for old .faq-search-wrap) ── */
+    .faq-search-as {
+      position: sticky;
+      top: 64px;
+      z-index: 30;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border-light);
+      padding: var(--space-3) 0;
+    }
+    .faq-search-as__inner {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+    .faq-search-as__input {
+      flex: 1;
+      /* Inherits .input-underline shape from architect-scholar layer */
+    }
+    .faq-search-as__count {
+      color: var(--brand-rose);
+      flex-shrink: 0;
+    }
+
+    /* ── Body layout: identical asymmetric 7+5 structure to privacy.html ── */
+    .faq-body-wrap {
+      padding-top: var(--space-8);
+      padding-bottom: var(--space-10);
+    }
+    .faq-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: var(--gutter);
+      align-items: start;
+    }
+    .faq-main {
+      grid-column: span 12;
+      max-width: 760px;
+    }
+    .faq-aside {
+      display: none;
+    }
+
+    @media (min-width: 1024px) {
+      .faq-main {
+        grid-column: 1 / span 7;
+      }
+      .faq-aside {
+        display: block;
+        grid-column: 9 / span 4;
+        position: sticky;
+        /* offset accounts for navbar (64) + sticky search (~64) + breathing space */
+        top: calc(64px + 80px);
+      }
+    }
+
+    /* ── Sticky TOC (desktop) — identical to privacy.html ── */
+    .toc {
+      padding: var(--space-4);
+    }
+    .toc__label {
+      color: var(--brand-rose);
+      margin-bottom: var(--space-3);
+      display: block;
+    }
+    .toc__list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+    .toc__link {
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-2);
+      padding: var(--space-1) 0 var(--space-1) var(--space-2);
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: var(--text-sm);
+      line-height: 1.5;
+      border-left: 2px solid transparent;
+      transition: color 160ms ease, border-color 160ms ease;
+    }
+    .toc__link:hover {
+      color: var(--text-main);
+    }
+    .toc__link.is-active {
+      color: var(--brand-rose);
+      border-left-color: var(--brand-rose);
+    }
+    .toc__num {
+      font-family: var(--font-display, 'Bebas Neue', sans-serif);
+      letter-spacing: 0.05em;
+      color: var(--text-faint, var(--outline));
+      flex-shrink: 0;
+    }
+    .toc__link.is-active .toc__num {
+      color: var(--brand-rose);
+    }
+
+    /* ── Mobile compact section chip (visible <1024px) — identical to privacy.html ── */
+    .toc-mobile {
+      position: sticky;
+      /* Sit beneath the navbar (64) and the sticky search (~72) */
+      top: calc(64px + 72px);
+      z-index: 20;
+      margin-bottom: var(--space-4);
+      padding: var(--space-2) var(--space-3);
+      background: var(--surface);
+      border-bottom: 1px solid var(--border-light);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: var(--text-sm);
+      color: var(--text-muted);
+    }
+    .toc-mobile__current {
+      color: var(--text-main);
+      font-weight: 600;
+    }
+    @media (min-width: 1024px) {
+      .toc-mobile {
+        display: none;
+      }
+    }
+
+    /* ── No-results message ── */
+    .faq-no-results-as {
+      display: none;
+      padding: var(--space-6);
+      text-align: center;
+      color: var(--text-muted);
+    }
+
+    /* ── Section header (mirror of privacy.html .policy-section pattern) ── */
+    .faq-section-as {
+      margin-bottom: var(--space-8);
+      scroll-margin-top: calc(64px + 80px);
+    }
+    .faq-section-as__eyebrow {
+      color: var(--brand-rose);
+      display: block;
+      margin-bottom: var(--space-2);
+    }
+    .faq-section-as__title {
+      color: var(--text-main);
+      margin: 0 0 var(--space-4) 0;
+    }
+
+    /* ──────────────────────────────────────────────────────────────────────
+       ACCORDION OVERRIDE: refit existing .faq-item to architect-scholar.
+       The existing .faq-item styles (in style.css §faq) handle the open/close
+       mechanics. We override the visual surface here to match .card-glass.
+       ────────────────────────────────────────────────────────────────────── */
+    .faq-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+
+    .faq-section-as .faq-item {
+      background: var(--glass-bg);
+      backdrop-filter: blur(var(--blur-1, 16px));
+      -webkit-backdrop-filter: blur(var(--blur-1, 16px));
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg, 12px);
+      transition: border-color 200ms ease, box-shadow 200ms ease, background 200ms ease;
+    }
+
+    .faq-section-as .faq-item:hover {
+      border-color: var(--border-dark);
+      background: var(--surface-container-lowest);
+    }
+
+    .faq-section-as .faq-item[open] {
+      border-color: var(--brand-rose);
+      background: var(--surface-container-lowest);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .faq-section-as .faq-item summary {
+      padding: var(--space-3) var(--space-4);
+      color: var(--text-main);
+      font-weight: 600;
+      font-size: var(--text-base);
+      list-style: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-3);
+    }
+
+    .faq-section-as .faq-item summary::-webkit-details-marker { display: none; }
+
+    /* Custom chevron — sage stroke, rotates on open */
+    .faq-section-as .faq-item summary::after {
+      content: '';
+      width: 12px;
+      height: 12px;
+      flex-shrink: 0;
+      border-right: 2px solid var(--text-muted);
+      border-bottom: 2px solid var(--text-muted);
+      transform: rotate(45deg);
+      transition: transform 220ms ease, border-color 220ms ease;
+      margin-top: -4px;
+    }
+    .faq-section-as .faq-item[open] summary::after {
+      transform: rotate(-135deg);
+      border-color: var(--brand-rose);
+      margin-top: 2px;
+    }
+
+    /* Body content inside open item */
+    .faq-section-as .faq-body {
+      padding: 0 var(--space-4) var(--space-4) var(--space-4);
+      color: var(--text-main);
+      font-size: var(--text-base);
+      line-height: 1.7;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+    .faq-section-as .faq-body p { margin: 0; }
+    .faq-section-as .faq-body strong { color: var(--text-main); font-weight: 600; }
+    .faq-section-as .faq-body em { color: var(--text-muted); }
+    .faq-section-as .faq-body a { color: var(--brand-rose); text-decoration: underline; text-underline-offset: 2px; }
+    .faq-section-as .faq-body ul,
+    .faq-section-as .faq-body ol {
+      margin: 0;
+      padding-left: var(--space-3);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+
+    /* AO table: restyled hairline architect-scholar pattern */
+    .faq-section-as .faq-body .ao-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: var(--space-2) 0;
+      font-size: var(--text-sm);
+    }
+    .faq-section-as .faq-body .ao-table th {
+      text-align: left;
+      padding: var(--space-2) var(--space-3);
+      background: transparent;
+      color: var(--brand-rose);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border-dark);
+    }
+    .faq-section-as .faq-body .ao-table td {
+      padding: var(--space-2) var(--space-3);
+      border-bottom: 1px solid var(--border-light);
+      color: var(--text-main);
+      vertical-align: top;
+    }
+    .faq-section-as .faq-body .ao-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* ── Bottom CTA: quieter architect-scholar version ── */
+    .faq-cta {
+      padding: var(--space-10) 0;
+      border-top: 1px solid var(--border-light);
+    }
+    .faq-cta__card {
+      padding: var(--space-6);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      align-items: center;
+    }
+    .faq-cta__eyebrow {
+      color: var(--brand-rose);
+      display: block;
+    }
+    .faq-cta__title {
+      color: var(--text-main);
+      margin: 0;
+    }
+    .faq-cta__text {
+      color: var(--text-muted);
+      max-width: 480px;
+      margin: 0;
+    }
+
+    /* Hide the legacy faq-anchor-nav and faq-search-wrap that this page no longer uses
+       (they're still in style.css globally; we just don't render them in this layout) */
+  </style>
 </head>
 
-<body class="has-bottom-nav">
+<body class="bg-surface has-bottom-nav">
 
   <global-header></global-header>
 
-  <!-- Hero -->
-  <section class="bg-sage" style="padding-top: calc(var(--navbar-h) + var(--space-8)); padding-bottom: var(--space-8); text-align: center;">
-    <div class="container">
-      <div class="label-caps" style="color: var(--brand-rose); margin-bottom: var(--space-2);">Help Centre</div>
-      <h1 class="font-display" style="font-size: 3rem; color: var(--cream); line-height: 1.1; margin-bottom: var(--space-3); text-align: center;">Frequently Asked Questions</h1>
-      <p style="color: var(--cream-dim); max-width: 560px; margin: 0 auto; font-size: var(--text-base);">Everything parents need to know about Superholic Lab, Plan Quest, MOE alignment, pricing, and data privacy.</p>
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       HERO — restrained, on .bg-surface, .h1-as (matches privacy.html)
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <section class="faq-hero bg-surface">
+    <div class="container-as">
+      <span class="label-caps faq-hero__eyebrow">Help Centre</span>
+      <h1 class="h1-as faq-hero__title">Frequently Asked Questions</h1>
+      <p class="body-lg faq-hero__lede">
+        Everything parents need to know about Superholic Lab — the Four Pillars, Plan Quest,
+        MOE alignment, pricing, and PDPA privacy.
+      </p>
+      <div class="faq-hero__meta">
+        <span class="badge badge-neutral">9 sections · 35+ answers</span>
+        <span class="badge badge-sage">PDPA-compliant</span>
+      </div>
     </div>
   </section>
 
-  <!-- Sticky search -->
-  <div class="faq-search-wrap">
-    <div class="faq-search-inner">
-      <input type="search" id="faqSearch" placeholder="Search questions… (e.g. 'PSLE', 'refund', 'PDPA')" autocomplete="off" />
-      <div id="faqResultCount" class="label-caps"></div>
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       STICKY SEARCH BAR (architect-scholar restyle)
+       Live-filters across all .faq-item elements via the script below.
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <div class="faq-search-as">
+    <div class="container-as">
+      <div class="faq-search-as__inner">
+        <input
+          type="search"
+          id="faqSearch"
+          class="input-underline faq-search-as__input"
+          placeholder="Search questions… (e.g. 'PSLE', 'refund', 'PDPA')"
+          autocomplete="off"
+          aria-label="Search FAQ" />
+        <span class="label-caps faq-search-as__count" id="faqResultCount" aria-live="polite"></span>
+      </div>
     </div>
   </div>
 
-  <!-- Anchor nav -->
-  <nav class="faq-anchor-nav" aria-label="FAQ sections">
-    <div class="faq-anchor-nav-inner">
-      <a href="#four-pillars">Four Pillars</a>
-      <a href="#moe-syllabus">MOE Syllabus</a>
-      <a href="#practise">Practise</a>
-      <a href="#analyse-weakness">Analyse Weakness</a>
-      <a href="#plan-quest">Plan Quest</a>
-      <a href="#assess">Assess</a>
-      <a href="#payment">Payment</a>
-      <a href="#privacy">Privacy</a>
-      <a href="#technical">Technical</a>
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       BODY — asymmetric 7+5 grid with sticky TOC (matches privacy.html)
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <section class="faq-body-wrap bg-surface">
+    <div class="container-as">
+
+      <!-- Mobile compact TOC chip (sticks below search on mobile) -->
+      <div class="toc-mobile" aria-hidden="true">
+        <span class="label-caps">§</span>
+        <span class="toc-mobile__current" id="tocMobileCurrent">The Four Pillars</span>
+      </div>
+
+      <!-- No-results message (shown when search returns 0 hits) -->
+      <div class="faq-no-results-as" id="faqNoResults">
+        No questions matched your search. Try a different keyword.
+      </div>
+
+      <div class="faq-grid">
+
+        <!-- ── 7-COL MAIN COLUMN ──────────────────────────────────────────── -->
+        <main class="faq-main">
+
+          <!-- §01 — Four Pillars -->
+          <section class="faq-section-as faq-section" id="four-pillars">
+            <span class="label-caps faq-section-as__eyebrow">§ 01 — Foundations</span>
+            <h2 class="h2-as faq-section-as__title">The Four Pillars</h2>
+            <div class="faq-list">
+
+              <details class="faq-item">
+                <summary>What is Superholic Lab?</summary>
+                <div class="faq-body">
+                  <p>Superholic Lab is Singapore's AI-powered learning platform for P1–P6 students. It's built around a four-pillar closed learning loop: <strong>Practise → Analyse Weakness → Plan Quest → Assess</strong>. Each pillar feeds the next — practice reveals weakness, weakness analysis diagnoses the root cause, Plan Quest fixes it, and the Assess exam proves the fix held.</p>
+                  <p>The platform covers Mathematics, Science, and English with MOE-aligned questions, an AI tutor (Miss Wena), personalised 3-day learning interventions, and SEAB-calibrated exam papers.</p>
+                </div>
+              </details>
+
+              <details class="faq-item">
+                <summary>What is the "Practise" pillar?</summary>
+                <div class="faq-body">
+                  <p>Practise gives your child thousands of MOE-aligned questions across Mathematics, Science, and English for P1–P6. Six question formats mirror actual SEAB exam formats: MCQ, Short Answer, Word Problem, Open-Ended (Science CER), Cloze Passage, and Editing.</p>
+                  <p>Every wrong answer includes a specific explanation of the exact misconception — not just "this is wrong," but "this is the reasoning error that caused this mistake." This is where the platform starts building diagnostic data.</p>
+                </div>
+              </details>
+
+              <details class="faq-item">
+                <summary>What is the "Analyse Weakness" pillar?</summary>
+                <div class="faq-body">
+                  <p>After your child completes quizzes, the platform's BKT (Bayesian Knowledge Tracing) algorithm weighs every attempt and identifies the root-cause topic — the foundational gap driving the most errors.</p>
+                  <p>Critically, AO3 (higher-order thinking) questions count <strong>1.5× more</strong> than routine questions in the mastery calculation. This means the diagnosis reflects your child's PSLE-readiness, not just raw percentage. A child who aces easy questions but stumbles on reasoning tasks will be correctly flagged as weak — not hidden by a flattering average.</p>
+                </div>
+              </details>
+
+              <details class="faq-item">
+                <summary>What are the "Plan Quest" and "Assess" pillars?</summary>
+                <div class="faq-body">
+                  <p><strong>Plan Quest</strong> is a personalised 3-day learning intervention built from the Analyse Weakness diagnosis. Day 1 is targeted practice, Day 2 is a Socratic dialogue with Miss Wena anchored to your child's specific errors, and Day 3 is a mastery trial. See the Plan Quest section below for full details.</p>
+                  <p><strong>Assess</strong> generates full AI-powered practice papers calibrated to SEAB 2026 formats: WA1, WA2, EOY, and Prelims. The correct mark allocations, section structures, and question types are used for each exam format. This is the summative check that closes the loop and proves mastery holds under exam conditions.</p>
+                </div>
+              </details>
+
+            </div>
+          </section>
+
+          <!-- §02 — MOE Syllabus -->
+          <section class="faq-section-as faq-section" id="moe-syllabus">
+            <span class="label-caps faq-section-as__eyebrow">§ 02 — Curriculum</span>
+            <h2 class="h2-as faq-section-as__title">MOE Syllabus &amp; Assessment</h2>
+            <div class="faq-list">
+
+              <details class="faq-item">
+                <summary>Is Superholic Lab aligned with the MOE syllabus?</summary>
+                <div class="faq-body">
+                  <p>Yes. Every question in our bank is tagged to the latest MOE syllabus for Mathematics, Science, and English (Primary 1 to Primary 6). Our exam templates are calibrated to SEAB 2026 syllabus codes (0001 Maths, 0008 Science, 0009 English) and follow the actual SEAB paper structure for WA1, WA2, EOY, and PSLE.</p>
+                </div>
+              </details>
+
+              <details class="faq-item">
+                <summary>How does MOE assess students at PSLE?</summary>
+                <div class="faq-body">
+                  <p>MOE uses three Assessment Objectives (AOs) to measure learning depth:</p>
+                  <ul>
+                    <li><strong>AO1 — Knowledge &amp; Understanding:</strong> Can the student recall facts and recognise concepts? Easier questions test this.</li>
+                    <li><strong>AO2 — Application:</strong> Can the student apply known methods to routine problems? Most quiz questions test this.</li>
+                    <li><strong>AO3 — Synthesis, Reasoning &amp; Evaluation:</strong> Can the student combine ideas, reason through unfamiliar problems, and justify their answers? HOTS questions test this. PSLE rewards AO3 heavily.</li>
+                  </ul>
+                  <p>A child who only practises AO1/AO2 will struggle on the harder PSLE questions. AO3 is where most students leave marks on the table.</p>
+                </div>
+              </details>
+
+              <details class="faq-item">
+                <summary>How does Superholic Lab's Analyse Weakness model AO1/AO2/AO3?</summary>
+                <div class="faq-body">
+                  <p>Every question in our bank is tagged with a specific cognitive skill. We map those skills directly onto MOE's AOs:</p>
+                  <table class="ao-table">
+                    <thead><tr><th>MOE AO</th><th>Cognitive skills</th><th>Weight</th></tr></thead>
+                    <tbody>
+                      <tr><td>AO1</td><td>Factual Recall, Conceptual Understanding</td><td>1.0×</td></tr>
+                      <tr><td>AO2</td><td>Routine Application</td><td>1.0×</td></tr>
+                      <tr><td>AO3 (HOTS)</td><td>Non-Routine / Heuristics, Inferential Reasoning, Synthesis &amp; Evaluation</td><td><strong>1.5×</strong></td></tr>
+                    </tbody>
+                  </table>
+                  <p>When we calculate your child's mastery score on a topic, AO3 questions count 1.5× more than AO1/AO2. So if your child gets all the easy questions right but stumbles on heuristics or inference, our system will correctly flag the topic as weak — even though the raw percentage looks fine. Most other platforms just show a flat percentage and miss this.</p>
+                </div>
+              </details>
+
+              <details class="faq-item">
+                <summary>Why does this matter for PSLE preparation?</summary>
+                <div class="faq-body">
+                  <p>Because PSLE doesn't reward only knowing the syllabus — it rewards being able to apply, reason, and synthesise. By weighting AO3 questions higher in our analysis, we give parents an honest picture of where their child stands against the actual PSLE bar.</p>
+                  <p>This honest signal is what makes Plan Quest interventions effective: we target the right weakness, not just the loudest symptom.</p>
+                </div>
+              </details>
+
+            </div>
+          </section>
+
+          <!-- §03 — Practise -->
+          <section class="faq-section-as faq-section" id="practise">
+            <span class="label-caps faq-section-as__eyebrow">§ 03 — Pillar I</span>
+            <h2 class="h2-as faq-section-as__title">Practise (Quizzes)</h2>
+            <div class="faq-list">
+
+              <details class="faq-item">
+                <summary>Which subjects and levels are covered?</summary>
+                <div class="faq-body">
+                  <p>Mathematics, Science, and English for Primary 1 to Primary 6 (P1–P6). Each subject covers all major MOE syllabus topics for the target level — for example, P5 Maths includes Fractions, Decimals, Percentage, Ratio, Rate, Area of Triangle, Volume, and more.</p>
+                </div>
+              </details>
+
+              <details class="faq-item">
+                <summary>What question types are included?</summary>
+                <div class="faq-body">
+                  <p>Six types mirror actual SEAB exam formats:</p>
+                  <ul>
+                    <li><strong>MCQ</strong> — 4-option multiple choice, letter answer</li>
+                    <li><strong>Short Answer</strong> — numerical or brief text answer</li>
+                    <li><strong>Word Problem</strong> — multi-part, model-answer comparison</li>
+                    <li><strong>Open-Ended</strong> (Science) — CER framework answers, keyword-based marking</li>
+                    <li><strong>Cloze Passage</strong> (English) — MCQ blanks in a passage</li>
+                    <li><strong>Editing</strong> (English) — spot and correct the grammar error</li>
+                  </ul>
+                </div>
+              </details>
+
+              <details class="faq-item">
+                <summary>What is a "wrong-answer explanation"?</summary>
+                <div class="faq-body">
+                  <p>For every MCQ option that isn't the correct answer, we write a specific explanation of why a student might choose it and exactly what misconception it reveals. Instead of "B is wrong," your child reads the specific reasoning error behind that choice and understands why it's incorrect.</p>
+                  <p>This is the core of the Practise pillar — your child doesn't just see a red cross, they understand the exact gap in their thinking.</p>
+                </div>
+              </details>
+
+              <details class="faq-item">
+                <summary>Are there daily question limits?</summary>
+                <div class="faq-body">
+                  <p>Trial users can attempt up to <strong>5 questions per day</strong> to explore the platform before subscribing. Subscribed users (All Subjects or Family plan) have <strong>no daily limits</strong>.</p>
+                </div>
+              </details>
+
+            </div>
+          </section>
+
+          <!-- §04 — Analyse Weakness -->
+          <section class="faq-section-as faq-section" id="analyse-weakness">
+            <span class="label-caps faq-section-as__eyebrow">§ 04 — Pillar II</span>
+            <h2 class="h2-as faq-section-as__title">Analyse Weakness</h2>
+            <div class="faq-list">
+
+              <details class="faq-item">
+                <summary>How does the Weakness Analysis work?</summary>
+                <div class="faq-body">
+                  <p>After each quiz session, BKT (Bayesian Knowledge Tracing) calculates a mastery probability for every topic your child has attempted. It tracks all attempts over time — not just recent ones — and weights AO3 (higher-order) questions 1.5× more than routine questions.</p>
+                  <p>The topic with the lowest weighted mastery score is flagged as the root-cause weakness, accounting for prerequisite dependencies. For example, if Algebra is weak because Fractions are shaky, Fractions gets flagged first.</p>
+                </div>
+              </details>
+
+              <details class="faq-item">
+                <summary>What is the AL1–AL8 progress tracking?</summary>
+                <div class="faq-body">
+                  <p>AL1–AL8 mirrors Singapore's Achievement Level scale used in PSLE. On Superholic Lab, AL bands are derived from mastery probability:</p>
+                  <ul>
+                    <li>AL1: ≥90% mastery — near-perfect</li>
+                    <li>AL4: 60–69% — approaching standard</li>
+                    <li>AL8: below 25% — needs significant support</li>
+                  </ul>
+                  <p>Your child's live AL band for each topic gives you a direct read on their PSLE-readiness for that topic — not just how many questions they got right last week.</p>
+                </div>
+              </details>
+
+              <details class="faq-item">
+                <summary>When should my child use the Analyse Weakness feature?</summary>
+                <div class="faq-body">
+                  <p>After any quiz session where they scored below 70%, or whenever you want a summary of where they stand across topics. The weakness analysis identifies the root-cause gap, not just the symptom — so it's most valuable when you want to decide what to focus on next, rather than just drilling the same topic again.</p>
+                </div>
+              </details>
+
+            </div>
+          </section>
+
+          <!-- §05 — Plan Quest -->
+          <section class="faq-section-as faq-section" id="plan-quest">
+            <span class="label-caps faq-section-as__eyebrow">§ 05 — Pillar III</span>
+            <h2 class="h2-as faq-section-as__title">Plan Quest</h2>
+            <div class="faq-list">
+
+              <details class="faq-item">
+                <summary>What is a Plan Quest?</summary>
+                <div class="faq-body">
+                  <p>A Plan Quest is a personalised 3-day learning intervention. When your child gets a low score on a topic, our AI builds a custom 3-day plan to help them master it: Day 1 is targeted practice with progressively harder questions; Day 2 is a guided conversation with Miss Wena (our AI tutor) where she helps them understand why they struggled; Day 3 is a mastery test that tells you honestly whether they've improved.</p>
+                </div>
+              </details>
+
+              <details class="faq-item">
+                <summary>How does it work — what happens on each day?</summary>
+                <div class="faq-body">
+                  <p><strong>Day 1 — Foundation Climb (15–20 min):</strong> 12 questions on the target topic, starting easy and getting harder. The point isn't to "pass" — it's to rebuild confidence and capture exactly which concepts your child finds tricky. Questions they get wrong feed Day 2.</p>
+                  <p><strong>Day 2 — Socratic Dialogue (15 min):</strong> Your child has a conversation with Miss Wena, who specifically references the questions they got wrong on Day 1. Instead of just explaining the answer, she asks leading questions that guide your child to discover the answer themselves. At the end, the conversation auto-saves as a study note in their Backpack for future revision.</p>
+                  <p><strong>Day 3 — Mastery Trial (15–20 min):</strong> 8 carefully chosen questions, mostly hard, with 2 "transfer" questions from a related topic to test depth of understanding. The score determines what happens next:</p>
+                  <ul>
+                    <li><strong>85% or above:</strong> Mastered. We close the quest and celebrate. Big XP bonus.</li>
+                    <li><strong>70–84%:</strong> Slight improvement. We close the quest and recommend revisiting the Day 2 study note.</li>
+                    <li><strong>Below 70%:</strong> We give your child the choice — try the quest again with new questions, accept slight improvement, or honestly mark themselves as still struggling.</li>
+                  </ul>
+                </div>
+              </details>
+
+              <details class="faq-item">
+                <summary>Why are the days separated by a day?</summary>
+                <div class="faq-body">
+                  <p>Spaced repetition. Research consistently shows that learning sticks better when concepts are revisited after a sleep cycle, not crammed in one sitting. Day 2 unlocks at midnight (Singapore time) after Day 1 is completed, and similarly for Day 3. We don't allow skipping the wait — the spacing is the medicine.</p>
+                </div>
+              </details>
+
+              <details class="faq-item">
+                <summary>Can my child have multiple quests at the same time?</summary>
+                <div class="faq-body">
+                  <p>Yes — up to 3 quests, one per subject (Maths, Science, English). This reflects the reality of PSLE preparation. If your child needs work on Fractions in Maths, Cells in Science, and Synthesis in English, they can run all three simultaneously without forcing a sequence.</p>
+                </div>
+              </details>
+
+              <details class="faq-item">
+                <summary>What if my child wants to abandon a quest?</summary>
+                <div class="faq-body">
+                  <p>They can. There's an "Abandon Quest" button (subtle, requires confirmation). They lose any unawarded XP for that quest, and the slot frees up so they can start a different quest in the same subject. We don't penalise abandonment — life happens.</p>
+                </div>
+              </details>
+
+              <details class="faq-item">
+                <summary>How is this different from just doing more practice questions?</summary>
+                <div class="faq-body">
+                  <p>Three ways:</p>
+                  <ol>
+                    <li><strong>It's diagnostic, not just remedial.</strong> Day 1 wrong answers feed Day 2's tutor session, which means Miss Wena addresses the specific misunderstanding your child has, not generic explanations.</li>
+                    <li><strong>It teaches, not just tests.</strong> Day 2 is a conversation, not a lecture. Active recall and explanation generation outperform passive review by 2–3× retention.</li>
+                    <li><strong>It produces honest signal.</strong> The 3-way exit on Day 3 means we tell you the truth. A platform that always says "Great job!" is a platform that produces no learning data.</li>
+                  </ol>
+                </div>
+              </details>
+
+              <details class="faq-item">
+                <summary>What happens if my child fails Day 3 repeatedly?</summary>
+                <div class="faq-body">
+                  <p>If they choose "Try this quest again" multiple times, we track the lineage. After two consecutive <em>no_improvement</em> outcomes on the same topic, the parent dashboard surfaces a recommendation: "Lily has marked herself as still struggling on Fractions twice. Consider scheduling a tutor session or speaking with her teacher." This is the platform telling you what other platforms hide.</p>
+                </div>
+              </details>
+
+              <details class="faq-item">
+                <summary>Does my child earn rewards for doing quests?</summary>
+                <div class="faq-body">
+                  <p>Yes, but only for <em>real learning actions</em>. They earn XP for completing quiz questions, tutor sessions, and quest steps. Bigger XP rewards for mastery (Day 3 ≥ 85%) and for redoing a failed quest (we reward growth mindset). XP feeds into a level/rank progression (Cadet → Operator → Specialist → …).</p>
+                  <p>They can earn badges for milestones — including a special <strong>Honest Compass</strong> badge for marking themselves as still struggling, because we genuinely value self-awareness as much as success.</p>
+                </div>
+              </details>
+
+              <details class="faq-item">
+                <summary>What does Plan Quest cost?</summary>
+                <div class="faq-body">
+                  <p>Plan Quests are included in all subscriptions: All Subjects (S$12.99/month) and Family Plan (S$19.99/month). No usage caps. Your child can complete as many quests as they want.</p>
+                </div>
+              </details>
+
+              <details class="faq-item">
+                <summary>How does this respect privacy?</summary>
+                <div class="faq-body">
+                  <p>All quest data is stored under your child's profile and protected by row-level security in our database — only you (the parent) and your child can access it. We never share quest performance data with third parties. We use your child's quiz history to improve recommendations within their own profile only — we don't pool anonymised data across users.</p>
+                </div>
+              </details>
+
+            </div>
+          </section>
+
+          <!-- §06 — Assess -->
+          <section class="faq-section-as faq-section" id="assess">
+            <span class="label-caps faq-section-as__eyebrow">§ 06 — Pillar IV</span>
+            <h2 class="h2-as faq-section-as__title">Assess (Exams)</h2>
+            <div class="faq-list">
+
+              <details class="faq-item">
+                <summary>What is the Assess feature?</summary>
+                <div class="faq-body">
+                  <p>The Assess feature generates full AI-powered practice papers for WA1, WA2, EOY, and PSLE Prelims. Each paper follows the actual SEAB paper structure for that exam type, covering the correct mark allocations, section types, and question formats for your child's target level.</p>
+                </div>
+              </details>
+
+              <details class="faq-item">
+                <summary>How are exam papers generated?</summary>
+                <div class="faq-body">
+                  <p>Our AI generates fresh questions calibrated to the SEAB 2026 syllabus. Each paper is unique — it's not reusing a static question bank. Questions are generated to the correct difficulty distribution and mark allocations for each exam format and level.</p>
+                </div>
+              </details>
+
+              <details class="faq-item">
+                <summary>Can I generate papers on specific topics?</summary>
+                <div class="faq-body">
+                  <p>Yes. You can customise sections or question types to focus on particular topics. A full paper includes all required sections; a focused paper targets the topics you select.</p>
+                </div>
+              </details>
+
+              <details class="faq-item">
+                <summary>How do I know if my child's answers are correct?</summary>
+                <div class="faq-body">
+                  <p>Every question includes a full worked solution with step-by-step reasoning. For open-ended and short-answer questions, AI grading gives instant scoring with feedback on what was demonstrated and what was missing. For word problems, a model answer is shown for comparison.</p>
+                </div>
+              </details>
+
+            </div>
+          </section>
+
+          <!-- §07 — Payment -->
+          <section class="faq-section-as faq-section" id="payment">
+            <span class="label-caps faq-section-as__eyebrow">§ 07 — Billing</span>
+            <h2 class="h2-as faq-section-as__title">Payment &amp; Subscription</h2>
+            <div class="faq-list">
+
+              <details class="faq-item">
+                <summary>Do I need a credit card for the free trial?</summary>
+                <div class="faq-body">
+                  <p>No. Your 7-day free trial starts the moment you create an account — no payment details required. You only enter your card when you decide to subscribe.</p>
+                </div>
+              </details>
+
+              <details class="faq-item">
+                <summary>What happens when my free trial ends?</summary>
+                <div class="faq-body">
+                  <p>When your 7-day trial ends, you'll need to subscribe to continue practising. We will never charge you automatically — you choose when to subscribe by visiting the <a href="/pages/pricing.html">Pricing page</a>.</p>
+                </div>
+              </details>
+
+              <details class="faq-item">
+                <summary>What's the difference between the All Subjects and Family plans?</summary>
+                <div class="faq-body">
+                  <p><strong>All Subjects</strong> (S$12.99/month or S$129.90/year) covers <strong>1 child profile</strong> with full access to Maths, Science, and English across all four pillars.</p>
+                  <p><strong>Family Plan</strong> (S$19.99/month or S$199.90/year) covers <strong>up to 3 child profiles</strong> with a shared parent dashboard — ideal for families with multiple school-age children.</p>
+                </div>
+              </details>
+
+              <details class="faq-item">
+                <summary>Can I change or cancel my plan?</summary>
+                <div class="faq-body">
+                  <p>Yes. Once subscribed, you can upgrade, downgrade, update your payment method, or cancel at any time from your account settings. Cancellation takes effect at the end of your current billing period.</p>
+                </div>
+              </details>
+
+              <details class="faq-item">
+                <summary>Is there a discount for annual billing?</summary>
+                <div class="faq-body">
+                  <p>Yes — annual billing saves 17% compared to monthly:</p>
+                  <ul>
+                    <li>All Subjects annual: <strong>S$129.90/year</strong> (≈ S$10.83/month)</li>
+                    <li>Family annual: <strong>S$199.90/year</strong> (≈ S$16.66/month)</li>
+                  </ul>
+                </div>
+              </details>
+
+              <details class="faq-item">
+                <summary>Do you offer refunds?</summary>
+                <div class="faq-body">
+                  <p>We offer a 7-day free trial specifically so you can evaluate the platform before committing. Refunds after subscription are handled on a case-by-case basis — <a href="/pages/contact.html">contact us</a> and we'll work something out.</p>
+                </div>
+              </details>
+
+            </div>
+          </section>
+
+          <!-- §08 — Privacy -->
+          <section class="faq-section-as faq-section" id="privacy">
+            <span class="label-caps faq-section-as__eyebrow">§ 08 — Data &amp; PDPA</span>
+            <h2 class="h2-as faq-section-as__title">Account &amp; Privacy</h2>
+            <div class="faq-list">
+
+              <details class="faq-item">
+                <summary>What personal data do you collect?</summary>
+                <div class="faq-body">
+                  <p>We collect only what's needed to operate the platform: email address, chosen username, year level, and quiz/quest results. We do <strong>not</strong> collect: full legal name, home address, school name, NRIC, or phone number.</p>
+                  <p>All data is stored in Singapore (Supabase SG region) under PDPA-compliant practices with AES-256 encryption at rest.</p>
+                </div>
+              </details>
+
+              <details class="faq-item">
+                <summary>Are my PDPA rights respected?</summary>
+                <div class="faq-body">
+                  <p>Yes. Under Singapore's Personal Data Protection Act (PDPA), you have the right to access, correct, and withdraw consent for your personal data. To exercise these rights, <a href="/pages/contact.html">contact us</a> and we will respond within 10 business days.</p>
+                </div>
+              </details>
+
+              <details class="faq-item">
+                <summary>How do I delete my account and all data?</summary>
+                <div class="faq-body">
+                  <p>Go to your account settings and click <strong>Delete Account</strong>. All quiz results, quest data, and profile information are permanently deleted — this action cannot be undone. You will receive a confirmation email once deletion is complete.</p>
+                </div>
+              </details>
+
+              <details class="faq-item">
+                <summary>Who can access my child's data?</summary>
+                <div class="faq-body">
+                  <p>Only you (the parent account holder) and your child can access quest and quiz data. All data is protected by row-level security in our database — no other user, subscriber, or staff member can access your child's records without your explicit consent.</p>
+                  <p>We never share your child's performance data with third parties, advertisers, or schools.</p>
+                </div>
+              </details>
+
+            </div>
+          </section>
+
+          <!-- §09 — Technical -->
+          <section class="faq-section-as faq-section" id="technical">
+            <span class="label-caps faq-section-as__eyebrow">§ 09 — Support</span>
+            <h2 class="h2-as faq-section-as__title">Technical &amp; Troubleshooting</h2>
+            <div class="faq-list">
+
+              <details class="faq-item">
+                <summary>Which browsers and devices are supported?</summary>
+                <div class="faq-body">
+                  <p>Superholic Lab works best on the latest two versions of Chrome, Safari, Edge, and Firefox. Mobile browsers on iOS and Android are fully supported. The platform is mobile-first and responsive at 375px and above.</p>
+                </div>
+              </details>
+
+              <details class="faq-item">
+                <summary>What if Miss Wena (the AI tutor) isn't responding?</summary>
+                <div class="faq-body">
+                  <p>If the AI tutor is slow or not responding, try refreshing the page. If the problem persists, it may be temporary high demand on the AI service. You can continue practising with quizzes or exams in the meantime. If the issue continues for more than 15 minutes, <a href="/pages/contact.html">contact us</a>.</p>
+                </div>
+              </details>
+
+              <details class="faq-item">
+                <summary>I found a bug — how do I report it?</summary>
+                <div class="faq-body">
+                  <p>Use the <a href="/pages/contact.html">Contact Us</a> link in the footer and describe what happened. Screenshots are very helpful — include the page you were on and what you expected vs. what happened. We aim to respond within 24 hours.</p>
+                </div>
+              </details>
+
+            </div>
+          </section>
+
+        </main>
+
+        <!-- ── 4-COL STICKY TOC SIDEBAR (desktop only) ──────────────────── -->
+        <aside class="faq-aside" aria-label="Table of contents">
+          <nav class="card-glass toc">
+            <span class="label-caps toc__label">Sections</span>
+            <ul class="toc__list" id="tocList">
+              <li><a class="toc__link" href="#four-pillars"><span class="toc__num">01</span><span>The Four Pillars</span></a></li>
+              <li><a class="toc__link" href="#moe-syllabus"><span class="toc__num">02</span><span>MOE Syllabus</span></a></li>
+              <li><a class="toc__link" href="#practise"><span class="toc__num">03</span><span>Practise</span></a></li>
+              <li><a class="toc__link" href="#analyse-weakness"><span class="toc__num">04</span><span>Analyse Weakness</span></a></li>
+              <li><a class="toc__link" href="#plan-quest"><span class="toc__num">05</span><span>Plan Quest</span></a></li>
+              <li><a class="toc__link" href="#assess"><span class="toc__num">06</span><span>Assess</span></a></li>
+              <li><a class="toc__link" href="#payment"><span class="toc__num">07</span><span>Payment</span></a></li>
+              <li><a class="toc__link" href="#privacy"><span class="toc__num">08</span><span>Privacy</span></a></li>
+              <li><a class="toc__link" href="#technical"><span class="toc__num">09</span><span>Technical</span></a></li>
+            </ul>
+          </nav>
+        </aside>
+
+      </div>
     </div>
-    <!-- Mobile: jump-to select -->
-    <select class="faq-anchor-select" aria-label="Jump to section" onchange="location.hash=this.value">
-      <option value="">Jump to section…</option>
-      <option value="#four-pillars">The Four Pillars</option>
-      <option value="#moe-syllabus">MOE Syllabus &amp; Assessment</option>
-      <option value="#practise">Practise (Quizzes)</option>
-      <option value="#analyse-weakness">Analyse Weakness</option>
-      <option value="#plan-quest">Plan Quest</option>
-      <option value="#assess">Assess (Exams)</option>
-      <option value="#payment">Payment &amp; Subscription</option>
-      <option value="#privacy">Account &amp; Privacy</option>
-      <option value="#technical">Technical &amp; Troubleshooting</option>
-    </select>
-  </nav>
+  </section>
 
-  <!-- No-results message -->
-  <div class="faq-no-results container" id="faqNoResults">No questions matched your search. Try a different keyword.</div>
-
-  <main class="container" style="max-width: 800px; padding-bottom: var(--space-10);">
-
-    <!-- §1 The Four Pillars -->
-    <section class="faq-section" id="four-pillars">
-      <div class="faq-section-eyebrow">§1</div>
-      <h2>The Four Pillars</h2>
-      <div class="faq-list">
-
-        <details class="faq-item">
-          <summary>What is Superholic Lab?</summary>
-          <div class="faq-body">
-            <p>Superholic Lab is Singapore's AI-powered learning platform for P1–P6 students. It's built around a four-pillar closed learning loop: <strong>Practise → Analyse Weakness → Plan Quest → Assess</strong>. Each pillar feeds the next — practice reveals weakness, weakness analysis diagnoses the root cause, Plan Quest fixes it, and the Assess exam proves the fix held.</p>
-            <p>The platform covers Mathematics, Science, and English with MOE-aligned questions, an AI tutor (Miss Wena), personalised 3-day learning interventions, and SEAB-calibrated exam papers.</p>
-          </div>
-        </details>
-
-        <details class="faq-item">
-          <summary>What is the "Practise" pillar?</summary>
-          <div class="faq-body">
-            <p>Practise gives your child thousands of MOE-aligned questions across Mathematics, Science, and English for P1–P6. Six question formats mirror actual SEAB exam formats: MCQ, Short Answer, Word Problem, Open-Ended (Science CER), Cloze Passage, and Editing.</p>
-            <p>Every wrong answer includes a specific explanation of the exact misconception — not just "this is wrong," but "this is the reasoning error that caused this mistake." This is where the platform starts building diagnostic data.</p>
-          </div>
-        </details>
-
-        <details class="faq-item">
-          <summary>What is the "Analyse Weakness" pillar?</summary>
-          <div class="faq-body">
-            <p>After your child completes quizzes, the platform's BKT (Bayesian Knowledge Tracing) algorithm weighs every attempt and identifies the root-cause topic — the foundational gap driving the most errors.</p>
-            <p>Critically, AO3 (higher-order thinking) questions count <strong>1.5× more</strong> than routine questions in the mastery calculation. This means the diagnosis reflects your child's PSLE-readiness, not just raw percentage. A child who aces easy questions but stumbles on reasoning tasks will be correctly flagged as weak — not hidden by a flattering average.</p>
-          </div>
-        </details>
-
-        <details class="faq-item">
-          <summary>What are the "Plan Quest" and "Assess" pillars?</summary>
-          <div class="faq-body">
-            <p><strong>Plan Quest</strong> is a personalised 3-day learning intervention built from the Analyse Weakness diagnosis. Day 1 is targeted practice, Day 2 is a Socratic dialogue with Miss Wena anchored to your child's specific errors, and Day 3 is a mastery trial. See the Plan Quest section below for full details.</p>
-            <p><strong>Assess</strong> generates full AI-powered practice papers calibrated to SEAB 2026 formats: WA1, WA2, EOY, and Prelims. The correct mark allocations, section structures, and question types are used for each exam format. This is the summative check that closes the loop and proves mastery holds under exam conditions.</p>
-          </div>
-        </details>
-
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       BOTTOM CTA — quieter architect-scholar version
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <section class="faq-cta bg-surface">
+    <div class="container-as">
+      <div class="card-glass faq-cta__card">
+        <span class="label-caps faq-cta__eyebrow">Still have questions?</span>
+        <h2 class="h2-as faq-cta__title">We're happy to help.</h2>
+        <p class="faq-cta__text">Send us a message and we'll get back within 24 hours.</p>
+        <a href="/pages/contact.html" class="btn btn-primary">Contact Us</a>
       </div>
-    </section>
-
-    <!-- §2 MOE Syllabus & Assessment -->
-    <section class="faq-section" id="moe-syllabus">
-      <div class="faq-section-eyebrow">§2</div>
-      <h2>MOE Syllabus &amp; Assessment</h2>
-      <div class="faq-list">
-
-        <details class="faq-item">
-          <summary>Is Superholic Lab aligned with the MOE syllabus?</summary>
-          <div class="faq-body">
-            <p>Yes. Every question in our bank is tagged to the latest MOE syllabus for Mathematics, Science, and English (Primary 1 to Primary 6). Our exam templates are calibrated to SEAB 2026 syllabus codes (0001 Maths, 0008 Science, 0009 English) and follow the actual SEAB paper structure for WA1, WA2, EOY, and PSLE.</p>
-          </div>
-        </details>
-
-        <details class="faq-item">
-          <summary>How does MOE assess students at PSLE?</summary>
-          <div class="faq-body">
-            <p>MOE uses three Assessment Objectives (AOs) to measure learning depth:</p>
-            <ul>
-              <li><strong>AO1 — Knowledge &amp; Understanding:</strong> Can the student recall facts and recognise concepts? Easier questions test this.</li>
-              <li><strong>AO2 — Application:</strong> Can the student apply known methods to routine problems? Most quiz questions test this.</li>
-              <li><strong>AO3 — Synthesis, Reasoning &amp; Evaluation:</strong> Can the student combine ideas, reason through unfamiliar problems, and justify their answers? HOTS questions test this. PSLE rewards AO3 heavily.</li>
-            </ul>
-            <p>A child who only practises AO1/AO2 will struggle on the harder PSLE questions. AO3 is where most students leave marks on the table.</p>
-          </div>
-        </details>
-
-        <details class="faq-item">
-          <summary>How does Superholic Lab's Analyse Weakness model AO1/AO2/AO3?</summary>
-          <div class="faq-body">
-            <p>Every question in our bank is tagged with a specific cognitive skill. We map those skills directly onto MOE's AOs:</p>
-            <table class="ao-table">
-              <thead><tr><th>MOE AO</th><th>Superholic Lab cognitive skills</th><th>Weight in analysis</th></tr></thead>
-              <tbody>
-                <tr><td>AO1</td><td>Factual Recall, Conceptual Understanding</td><td>1.0×</td></tr>
-                <tr><td>AO2</td><td>Routine Application</td><td>1.0×</td></tr>
-                <tr><td>AO3 (HOTS)</td><td>Non-Routine / Heuristics, Inferential Reasoning, Synthesis &amp; Evaluation</td><td><strong>1.5×</strong></td></tr>
-              </tbody>
-            </table>
-            <p>When we calculate your child's mastery score on a topic, AO3 questions count 1.5× more than AO1/AO2. So if your child gets all the easy questions right but stumbles on heuristics or inference, our system will correctly flag the topic as weak — even though the raw percentage looks fine. Most other platforms just show a flat percentage and miss this.</p>
-          </div>
-        </details>
-
-        <details class="faq-item">
-          <summary>Why does this matter for PSLE preparation?</summary>
-          <div class="faq-body">
-            <p>Because PSLE doesn't reward only knowing the syllabus — it rewards being able to apply, reason, and synthesise. By weighting AO3 questions higher in our analysis, we give parents an honest picture of where their child stands against the actual PSLE bar.</p>
-            <p>This honest signal is what makes Plan Quest interventions effective: we target the right weakness, not just the loudest symptom.</p>
-          </div>
-        </details>
-
-      </div>
-    </section>
-
-    <!-- §3 Practise -->
-    <section class="faq-section" id="practise">
-      <div class="faq-section-eyebrow">§3</div>
-      <h2>Practise (Quizzes)</h2>
-      <div class="faq-list">
-
-        <details class="faq-item">
-          <summary>Which subjects and levels are covered?</summary>
-          <div class="faq-body">
-            <p>Mathematics, Science, and English for Primary 1 to Primary 6 (P1–P6). Each subject covers all major MOE syllabus topics for the target level — for example, P5 Maths includes Fractions, Decimals, Percentage, Ratio, Rate, Area of Triangle, Volume, and more.</p>
-          </div>
-        </details>
-
-        <details class="faq-item">
-          <summary>What question types are included?</summary>
-          <div class="faq-body">
-            <p>Six types mirror actual SEAB exam formats:</p>
-            <ul>
-              <li><strong>MCQ</strong> — 4-option multiple choice, letter answer</li>
-              <li><strong>Short Answer</strong> — numerical or brief text answer</li>
-              <li><strong>Word Problem</strong> — multi-part, model-answer comparison</li>
-              <li><strong>Open-Ended</strong> (Science) — CER framework answers, keyword-based marking</li>
-              <li><strong>Cloze Passage</strong> (English) — MCQ blanks in a passage</li>
-              <li><strong>Editing</strong> (English) — spot and correct the grammar error</li>
-            </ul>
-          </div>
-        </details>
-
-        <details class="faq-item">
-          <summary>What is a "wrong-answer explanation"?</summary>
-          <div class="faq-body">
-            <p>For every MCQ option that isn't the correct answer, we write a specific explanation of why a student might choose it and exactly what misconception it reveals. Instead of "B is wrong," your child reads the specific reasoning error behind that choice and understands why it's incorrect.</p>
-            <p>This is the core of the Practise pillar — your child doesn't just see a red cross, they understand the exact gap in their thinking.</p>
-          </div>
-        </details>
-
-        <details class="faq-item">
-          <summary>Are there daily question limits?</summary>
-          <div class="faq-body">
-            <p>Trial users can attempt up to <strong>5 questions per day</strong> to explore the platform before subscribing. Subscribed users (All Subjects or Family plan) have <strong>no daily limits</strong>.</p>
-          </div>
-        </details>
-
-      </div>
-    </section>
-
-    <!-- §4 Analyse Weakness -->
-    <section class="faq-section" id="analyse-weakness">
-      <div class="faq-section-eyebrow">§4</div>
-      <h2>Analyse Weakness</h2>
-      <div class="faq-list">
-
-        <details class="faq-item">
-          <summary>How does the Weakness Analysis work?</summary>
-          <div class="faq-body">
-            <p>After each quiz session, BKT (Bayesian Knowledge Tracing) calculates a mastery probability for every topic your child has attempted. It tracks all attempts over time — not just recent ones — and weights AO3 (higher-order) questions 1.5× more than routine questions.</p>
-            <p>The topic with the lowest weighted mastery score is flagged as the root-cause weakness, accounting for prerequisite dependencies. For example, if Algebra is weak because Fractions are shaky, Fractions gets flagged first.</p>
-          </div>
-        </details>
-
-        <details class="faq-item">
-          <summary>What is the AL1–AL8 progress tracking?</summary>
-          <div class="faq-body">
-            <p>AL1–AL8 mirrors Singapore's Achievement Level scale used in PSLE. On Superholic Lab, AL bands are derived from mastery probability:</p>
-            <ul>
-              <li>AL1: ≥90% mastery — near-perfect</li>
-              <li>AL4: 60–69% — approaching standard</li>
-              <li>AL8: below 25% — needs significant support</li>
-            </ul>
-            <p>Your child's live AL band for each topic gives you a direct read on their PSLE-readiness for that topic — not just how many questions they got right last week.</p>
-          </div>
-        </details>
-
-        <details class="faq-item">
-          <summary>When should my child use the Analyse Weakness feature?</summary>
-          <div class="faq-body">
-            <p>After any quiz session where they scored below 70%, or whenever you want a summary of where they stand across topics. The weakness analysis identifies the root-cause gap, not just the symptom — so it's most valuable when you want to decide what to focus on next, rather than just drilling the same topic again.</p>
-          </div>
-        </details>
-
-      </div>
-    </section>
-
-    <!-- §5 Plan Quest -->
-    <section class="faq-section" id="plan-quest">
-      <div class="faq-section-eyebrow">§5</div>
-      <h2>Plan Quest</h2>
-      <div class="faq-list">
-
-        <details class="faq-item">
-          <summary>What is a Plan Quest?</summary>
-          <div class="faq-body">
-            <p>A Plan Quest is a personalised 3-day learning intervention. When your child gets a low score on a topic, our AI builds a custom 3-day plan to help them master it: Day 1 is targeted practice with progressively harder questions; Day 2 is a guided conversation with Miss Wena (our AI tutor) where she helps them understand why they struggled; Day 3 is a mastery test that tells you honestly whether they've improved.</p>
-          </div>
-        </details>
-
-        <details class="faq-item">
-          <summary>How does it work — what happens on each day?</summary>
-          <div class="faq-body">
-            <p><strong>Day 1 — Foundation Climb (15–20 min):</strong> 12 questions on the target topic, starting easy and getting harder. The point isn't to "pass" — it's to rebuild confidence and capture exactly which concepts your child finds tricky. Questions they get wrong feed Day 2.</p>
-            <p><strong>Day 2 — Socratic Dialogue (15 min):</strong> Your child has a conversation with Miss Wena, who specifically references the questions they got wrong on Day 1. Instead of just explaining the answer, she asks leading questions that guide your child to discover the answer themselves. At the end, the conversation auto-saves as a study note in their Backpack for future revision.</p>
-            <p><strong>Day 3 — Mastery Trial (15–20 min):</strong> 8 carefully chosen questions, mostly hard, with 2 "transfer" questions from a related topic to test depth of understanding. The score determines what happens next:</p>
-            <ul>
-              <li><strong>85% or above:</strong> Mastered. We close the quest and celebrate. Big XP bonus.</li>
-              <li><strong>70–84%:</strong> Slight improvement. We close the quest and recommend revisiting the Day 2 study note.</li>
-              <li><strong>Below 70%:</strong> We give your child the choice — try the quest again with new questions, accept slight improvement, or honestly mark themselves as still struggling.</li>
-            </ul>
-          </div>
-        </details>
-
-        <details class="faq-item">
-          <summary>Why are the days separated by a day?</summary>
-          <div class="faq-body">
-            <p>Spaced repetition. Research consistently shows that learning sticks better when concepts are revisited after a sleep cycle, not crammed in one sitting. Day 2 unlocks at midnight (Singapore time) after Day 1 is completed, and similarly for Day 3. We don't allow skipping the wait — the spacing is the medicine.</p>
-          </div>
-        </details>
-
-        <details class="faq-item">
-          <summary>Can my child have multiple quests at the same time?</summary>
-          <div class="faq-body">
-            <p>Yes — up to 3 quests, one per subject (Maths, Science, English). This reflects the reality of PSLE preparation. If your child needs work on Fractions in Maths, Cells in Science, and Synthesis in English, they can run all three simultaneously without forcing a sequence.</p>
-          </div>
-        </details>
-
-        <details class="faq-item">
-          <summary>What if my child wants to abandon a quest?</summary>
-          <div class="faq-body">
-            <p>They can. There's an "Abandon Quest" button (subtle, requires confirmation). They lose any unawarded XP for that quest, and the slot frees up so they can start a different quest in the same subject. We don't penalise abandonment — life happens.</p>
-          </div>
-        </details>
-
-        <details class="faq-item">
-          <summary>How is this different from just doing more practice questions?</summary>
-          <div class="faq-body">
-            <p>Three ways:</p>
-            <ol style="padding-left:1.25rem; margin-bottom:var(--space-2);">
-              <li style="margin-bottom:0.5rem"><strong>It's diagnostic, not just remedial.</strong> Day 1 wrong answers feed Day 2's tutor session, which means Miss Wena addresses the specific misunderstanding your child has, not generic explanations.</li>
-              <li style="margin-bottom:0.5rem"><strong>It teaches, not just tests.</strong> Day 2 is a conversation, not a lecture. Active recall and explanation generation outperform passive review by 2–3× retention.</li>
-              <li><strong>It produces honest signal.</strong> The 3-way exit on Day 3 means we tell you the truth. A platform that always says "Great job!" is a platform that produces no learning data.</li>
-            </ol>
-          </div>
-        </details>
-
-        <details class="faq-item">
-          <summary>What happens if my child fails Day 3 repeatedly?</summary>
-          <div class="faq-body">
-            <p>If they choose "Try this quest again" multiple times, we track the lineage. After two consecutive <em>no_improvement</em> outcomes on the same topic, the parent dashboard surfaces a recommendation: "Lily has marked herself as still struggling on Fractions twice. Consider scheduling a tutor session or speaking with her teacher." This is the platform telling you what other platforms hide.</p>
-          </div>
-        </details>
-
-        <details class="faq-item">
-          <summary>Does my child earn rewards for doing quests?</summary>
-          <div class="faq-body">
-            <p>Yes, but only for <em>real learning actions</em>. They earn XP for completing quiz questions, tutor sessions, and quest steps. Bigger XP rewards for mastery (Day 3 ≥ 85%) and for redoing a failed quest (we reward growth mindset). XP feeds into a level/rank progression (Cadet → Operator → Specialist → …).</p>
-            <p>They can earn badges for milestones — including a special <strong>Honest Compass</strong> badge for marking themselves as still struggling, because we genuinely value self-awareness as much as success.</p>
-          </div>
-        </details>
-
-        <details class="faq-item">
-          <summary>What does Plan Quest cost?</summary>
-          <div class="faq-body">
-            <p>Plan Quests are included in all subscriptions: All Subjects (S$12.99/month) and Family Plan (S$19.99/month). No usage caps. Your child can complete as many quests as they want.</p>
-          </div>
-        </details>
-
-        <details class="faq-item">
-          <summary>How does this respect privacy?</summary>
-          <div class="faq-body">
-            <p>All quest data is stored under your child's profile and protected by row-level security in our database — only you (the parent) and your child can access it. We never share quest performance data with third parties. We use your child's quiz history to improve recommendations within their own profile only — we don't pool anonymised data across users.</p>
-          </div>
-        </details>
-
-      </div>
-    </section>
-
-    <!-- §6 Assess -->
-    <section class="faq-section" id="assess">
-      <div class="faq-section-eyebrow">§6</div>
-      <h2>Assess (Exams)</h2>
-      <div class="faq-list">
-
-        <details class="faq-item">
-          <summary>What is the Assess feature?</summary>
-          <div class="faq-body">
-            <p>The Assess feature generates full AI-powered practice papers for WA1, WA2, EOY, and PSLE Prelims. Each paper follows the actual SEAB paper structure for that exam type, covering the correct mark allocations, section types, and question formats for your child's target level.</p>
-          </div>
-        </details>
-
-        <details class="faq-item">
-          <summary>How are exam papers generated?</summary>
-          <div class="faq-body">
-            <p>Our AI generates fresh questions calibrated to the SEAB 2026 syllabus. Each paper is unique — it's not reusing a static question bank. Questions are generated to the correct difficulty distribution and mark allocations for each exam format and level.</p>
-          </div>
-        </details>
-
-        <details class="faq-item">
-          <summary>Can I generate papers on specific topics?</summary>
-          <div class="faq-body">
-            <p>Yes. You can customise sections or question types to focus on particular topics. A full paper includes all required sections; a focused paper targets the topics you select.</p>
-          </div>
-        </details>
-
-        <details class="faq-item">
-          <summary>How do I know if my child's answers are correct?</summary>
-          <div class="faq-body">
-            <p>Every question includes a full worked solution with step-by-step reasoning. For open-ended and short-answer questions, AI grading gives instant scoring with feedback on what was demonstrated and what was missing. For word problems, a model answer is shown for comparison.</p>
-          </div>
-        </details>
-
-      </div>
-    </section>
-
-    <!-- §7 Payment -->
-    <section class="faq-section" id="payment">
-      <div class="faq-section-eyebrow">§7</div>
-      <h2>Payment &amp; Subscription</h2>
-      <div class="faq-list">
-
-        <details class="faq-item">
-          <summary>Do I need a credit card for the free trial?</summary>
-          <div class="faq-body">
-            <p>No. Your 7-day free trial starts the moment you create an account — no payment details required. You only enter your card when you decide to subscribe.</p>
-          </div>
-        </details>
-
-        <details class="faq-item">
-          <summary>What happens when my free trial ends?</summary>
-          <div class="faq-body">
-            <p>When your 7-day trial ends, you'll need to subscribe to continue practising. We will never charge you automatically — you choose when to subscribe by visiting the <a href="/pages/pricing.html" style="color:var(--brand-rose)">Pricing page</a>.</p>
-          </div>
-        </details>
-
-        <details class="faq-item">
-          <summary>What's the difference between the All Subjects and Family plans?</summary>
-          <div class="faq-body">
-            <p><strong>All Subjects</strong> (S$12.99/month or S$129.90/year) covers <strong>1 child profile</strong> with full access to Maths, Science, and English across all four pillars.</p>
-            <p><strong>Family Plan</strong> (S$19.99/month or S$199.90/year) covers <strong>up to 3 child profiles</strong> with a shared parent dashboard — ideal for families with multiple school-age children.</p>
-          </div>
-        </details>
-
-        <details class="faq-item">
-          <summary>Can I change or cancel my plan?</summary>
-          <div class="faq-body">
-            <p>Yes. Once subscribed, you can upgrade, downgrade, update your payment method, or cancel at any time from your account settings. Cancellation takes effect at the end of your current billing period.</p>
-          </div>
-        </details>
-
-        <details class="faq-item">
-          <summary>Is there a discount for annual billing?</summary>
-          <div class="faq-body">
-            <p>Yes — annual billing saves 17% compared to monthly:</p>
-            <ul>
-              <li>All Subjects annual: <strong>S$129.90/year</strong> (≈ S$10.83/month)</li>
-              <li>Family annual: <strong>S$199.90/year</strong> (≈ S$16.66/month)</li>
-            </ul>
-          </div>
-        </details>
-
-        <details class="faq-item">
-          <summary>Do you offer refunds?</summary>
-          <div class="faq-body">
-            <p>We offer a 7-day free trial specifically so you can evaluate the platform before committing. Refunds after subscription are handled on a case-by-case basis — <a href="/pages/contact.html" style="color:var(--brand-rose)">contact us</a> and we'll work something out.</p>
-          </div>
-        </details>
-
-      </div>
-    </section>
-
-    <!-- §8 Privacy -->
-    <section class="faq-section" id="privacy">
-      <div class="faq-section-eyebrow">§8</div>
-      <h2>Account &amp; Privacy (PDPA)</h2>
-      <div class="faq-list">
-
-        <details class="faq-item">
-          <summary>What personal data do you collect?</summary>
-          <div class="faq-body">
-            <p>We collect only what's needed to operate the platform: email address, chosen username, year level, and quiz/quest results. We do <strong>not</strong> collect: full legal name, home address, school name, NRIC, or phone number.</p>
-            <p>All data is stored in Singapore (Supabase SG region) under PDPA-compliant practices with AES-256 encryption at rest.</p>
-          </div>
-        </details>
-
-        <details class="faq-item">
-          <summary>Are my PDPA rights respected?</summary>
-          <div class="faq-body">
-            <p>Yes. Under Singapore's Personal Data Protection Act (PDPA), you have the right to access, correct, and withdraw consent for your personal data. To exercise these rights, <a href="/pages/contact.html" style="color:var(--brand-rose)">contact us</a> and we will respond within 10 business days.</p>
-          </div>
-        </details>
-
-        <details class="faq-item">
-          <summary>How do I delete my account and all data?</summary>
-          <div class="faq-body">
-            <p>Go to your account settings and click <strong>Delete Account</strong>. All quiz results, quest data, and profile information are permanently deleted — this action cannot be undone. You will receive a confirmation email once deletion is complete.</p>
-          </div>
-        </details>
-
-        <details class="faq-item">
-          <summary>Who can access my child's data?</summary>
-          <div class="faq-body">
-            <p>Only you (the parent account holder) and your child can access quest and quiz data. All data is protected by row-level security in our database — no other user, subscriber, or staff member can access your child's records without your explicit consent.</p>
-            <p>We never share your child's performance data with third parties, advertisers, or schools.</p>
-          </div>
-        </details>
-
-      </div>
-    </section>
-
-    <!-- §9 Technical -->
-    <section class="faq-section" id="technical">
-      <div class="faq-section-eyebrow">§9</div>
-      <h2>Technical &amp; Troubleshooting</h2>
-      <div class="faq-list">
-
-        <details class="faq-item">
-          <summary>Which browsers and devices are supported?</summary>
-          <div class="faq-body">
-            <p>Superholic Lab works best on the latest two versions of Chrome, Safari, Edge, and Firefox. Mobile browsers on iOS and Android are fully supported. The platform is mobile-first and responsive at 375px and above.</p>
-          </div>
-        </details>
-
-        <details class="faq-item">
-          <summary>What if Miss Wena (the AI tutor) isn't responding?</summary>
-          <div class="faq-body">
-            <p>If the AI tutor is slow or not responding, try refreshing the page. If the problem persists, it may be temporary high demand on the AI service. You can continue practising with quizzes or exams in the meantime. If the issue continues for more than 15 minutes, <a href="/pages/contact.html" style="color:var(--brand-rose)">contact us</a>.</p>
-          </div>
-        </details>
-
-        <details class="faq-item">
-          <summary>I found a bug — how do I report it?</summary>
-          <div class="faq-body">
-            <p>Use the <a href="/pages/contact.html" style="color:var(--brand-rose)">Contact Us</a> link in the footer and describe what happened. Screenshots are very helpful — include the page you were on and what you expected vs. what happened. We aim to respond within 24 hours.</p>
-          </div>
-        </details>
-
-      </div>
-    </section>
-
-  </main>
-
-  <!-- CTA -->
-  <section class="bg-sage" style="padding: var(--space-10) 0; text-align: center;">
-    <div class="container flex flex-col items-center gap-4">
-      <h2 class="font-display" style="font-size: 2.5rem; color: var(--cream);">Still have questions?</h2>
-      <p style="color: var(--cream-dim); max-width: 480px;">We're happy to help. Send us a message and we'll get back within 24 hours.</p>
-      <a href="/pages/contact.html" class="btn btn-primary btn-lg hover-lift">Contact Us</a>
     </div>
   </section>
 
@@ -541,46 +905,49 @@
   <script src="/js/bottom-nav.js" defer></script>
   <script src="/js/supabase-client.js"></script>
 
-  <style>
-    body { background: var(--bg-page); }
-    .bg-sage { background: var(--brand-sage); }
-  </style>
-
+  <!-- ────────────────────────────────────────────────────────────────────────
+       Search filter + TOC scrollspy + auth-aware header
+       ──────────────────────────────────────────────────────────────────────── -->
   <script>
-    // Search pill — real-time filter across all faq-item elements
-    const searchInput  = document.getElementById('faqSearch');
-    const resultCount  = document.getElementById('faqResultCount');
-    const noResults    = document.getElementById('faqNoResults');
-    const allItems     = document.querySelectorAll('.faq-item');
-    const allSections  = document.querySelectorAll('.faq-section');
+    /* ── 1. Search filter (real-time, across all .faq-item elements) ── */
+    (function initFaqSearch() {
+      const searchInput = document.getElementById('faqSearch');
+      const resultCount = document.getElementById('faqResultCount');
+      const noResults   = document.getElementById('faqNoResults');
+      const allItems    = document.querySelectorAll('.faq-item');
+      const allSections = document.querySelectorAll('.faq-section-as');
 
-    searchInput.addEventListener('input', () => {
-      const query = searchInput.value.trim().toLowerCase();
-      let visible = 0;
+      if (!searchInput) return;
 
-      allItems.forEach(item => {
-        const matches = !query || item.textContent.toLowerCase().includes(query);
-        item.style.display = matches ? '' : 'none';
-        if (matches) {
-          visible++;
-          if (query) item.setAttribute('open', '');
-          else item.removeAttribute('open');
-        }
+      searchInput.addEventListener('input', () => {
+        const query = searchInput.value.trim().toLowerCase();
+        let visible = 0;
+
+        allItems.forEach(item => {
+          const matches = !query || item.textContent.toLowerCase().includes(query);
+          item.style.display = matches ? '' : 'none';
+          if (matches) {
+            visible++;
+            if (query) item.setAttribute('open', '');
+            else item.removeAttribute('open');
+          }
+        });
+
+        // Hide whole sections when no items inside them match
+        allSections.forEach(section => {
+          const hasVisible = Array.from(section.querySelectorAll('.faq-item'))
+            .some(i => i.style.display !== 'none');
+          section.style.display = hasVisible ? '' : 'none';
+        });
+
+        resultCount.textContent = query
+          ? `${visible} ${visible === 1 ? 'result' : 'results'}`
+          : '';
+        noResults.style.display = (query && visible === 0) ? 'block' : 'none';
       });
+    })();
 
-      // Show/hide whole sections based on whether any item is visible
-      allSections.forEach(section => {
-        const hasVisible = Array.from(section.querySelectorAll('.faq-item'))
-          .some(i => i.style.display !== 'none');
-        section.style.display = hasVisible ? '' : 'none';
-      });
-
-      resultCount.textContent = query ? `${visible} ${visible === 1 ? 'result' : 'results'}` : '';
-      noResults.style.display = (query && visible === 0) ? 'block' : 'none';
-    });
-  </script>
-  <script>
-    /* ── 1. Navbar & Auth Logic ── */
+    /* ── 2. Navbar dropdown (kept verbatim from previous version) ── */
     document.addEventListener('DOMContentLoaded', () => {
       const toggle = document.getElementById('navToggle');
       const dropdown = document.getElementById('navDropdown');
@@ -601,6 +968,64 @@
       }
     });
 
+    /* ── 3. TOC scrollspy via IntersectionObserver — same pattern as privacy.html ──
+       Highlights the active section in the sidebar TOC and updates the
+       mobile compact chip. */
+    (function initScrollSpy() {
+      const sections = document.querySelectorAll('.faq-section-as');
+      const tocLinks = document.querySelectorAll('.toc__link');
+      const mobileCurrent = document.getElementById('tocMobileCurrent');
+
+      if (!sections.length || !tocLinks.length) return;
+
+      const linkById = new Map();
+      const labelById = new Map();
+      tocLinks.forEach(link => {
+        const id = link.getAttribute('href').slice(1);
+        linkById.set(id, link);
+        const spans = link.querySelectorAll('span');
+        labelById.set(id, spans[spans.length - 1]?.textContent || '');
+      });
+
+      const setActive = (id) => {
+        tocLinks.forEach(l => l.classList.remove('is-active'));
+        const link = linkById.get(id);
+        if (link) link.classList.add('is-active');
+        if (mobileCurrent && labelById.has(id)) {
+          mobileCurrent.textContent = labelById.get(id);
+        }
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        const visible = entries
+          .filter(e => e.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (visible.length > 0) {
+          setActive(visible[0].target.id);
+        }
+      }, {
+        rootMargin: '0px 0px -65% 0px',
+        threshold: 0
+      });
+
+      sections.forEach(s => observer.observe(s));
+
+      // Smooth scroll on click + active state sync
+      tocLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+          const id = link.getAttribute('href').slice(1);
+          const target = document.getElementById(id);
+          if (target) {
+            e.preventDefault();
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            history.replaceState(null, '', `#${id}`);
+            setActive(id);
+          }
+        });
+      });
+    })();
+
+    /* ── 4. Auth-aware header (kept verbatim from previous version) ── */
     getSupabase().then(async function (sb) {
       try {
         const { data: { session } } = await sb.auth.getSession();
@@ -610,7 +1035,7 @@
           const navLinks = document.getElementById('navDropdown');
 
           if (authContainer) {
-            authContainer.innerHTML = '<a href="dashboard.html" class="btn btn-secondary btn-sm" style="background: rgba(255,255,255,0.15); color: #FFFFFF; border: 1px solid rgba(255,255,255,0.1);">Dashboard</a>';
+            authContainer.innerHTML = '<a href="dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a>';
           }
 
           if (navLinks && !document.getElementById('navSignOut')) {
@@ -636,4 +1061,5 @@
     });
   </script>
 </body>
+
 </html>
