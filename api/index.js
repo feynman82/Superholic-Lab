@@ -27,6 +27,8 @@ import {
   handleQAQuestions,
   handleQuestsRouter,
   handleAwardXP,
+  handleAccountActivity,
+  handleLogActivity,
 } from '../lib/api/handlers.js';
 
 export const config = { api: { bodyParser: false } };
@@ -82,6 +84,8 @@ export default async function handler(req, res) {
     case 'analyze-weakness':   return handleAnalyzeWeakness(req, res);
     case 'summarize-chat':     return handleSummarizeChat(req, res);
     case 'award-xp':           return handleAwardXP(req, res);
+    case 'account-activity':   return handleAccountActivity(req, res);
+    case 'log-activity':       return handleLogActivity(req, res);
     default:
       return res.status(404).json({ error: 'Route /api/' + route + ' not found.' });
   }

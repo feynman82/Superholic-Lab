@@ -107,12 +107,42 @@ export async function signIn(email, password) {
   const supabase = await db();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) throw error;
+
+  // Fire-and-forget activity log. Server fills in IP hash + UA. Don't await
+  // the navigation on this — the row inserting a few hundred ms after the
+  // user is already on the next page is fine.
+  logActivityClient('login_success').catch(() => {});
+
   if (await shouldChallengeMfa(supabase)) {
     window.location.href = '/pages/mfa-challenge.html';
     return;
   }
   window.location.href = '/pages/dashboard.html';
 }
+
+// ─── Activity log helper (client-side wrapper) ──────────────
+// Sends a fire-and-forget POST /api/log-activity. Server validates event_type
+// against the allow list and fills in IP hash + user-agent. Safe to call from
+// any logged-in page; silently no-ops if there's no session.
+export async function logActivityClient(eventType, metadata) {
+  try {
+    const supabase = await db();
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+    await fetch('/api/log-activity', {
+      method: 'POST',
+      headers: {
+        'Content-Type':  'application/json',
+        'Authorization': 'Bearer ' + session.access_token,
+      },
+      body: JSON.stringify({ event_type: eventType, metadata: metadata || {} }),
+    });
+  } catch (err) {
+    // Activity logging must never break the user-visible flow
+    console.error('[logActivity] non-fatal:', err.message);
+  }
+}
+window.logActivityClient = logActivityClient;
 
 // ─── Google OAuth ────────────────────────────────────────────
 export async function signInWithGoogle() {
