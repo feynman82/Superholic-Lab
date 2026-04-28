@@ -24,7 +24,7 @@
  *   - Glassmorphism via .card-glass utility class
  */
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { createClient } from "@supabase/supabase-js"
 import { motion, AnimatePresence } from "framer-motion"
 import { Icon } from "../../components/icons"
@@ -509,6 +509,19 @@ type Diagnosis = {
   unlocks: string[]
 }
 
+type BadgeDefinition = {
+  id:          string
+  name:        string
+  description: string
+  rarity:      "common" | "rare" | "epic" | "legendary"
+  icon_url:    string | null
+  xp_reward:   number
+  is_secret:   boolean
+  sort_order?: number
+}
+
+type BadgeWithEarned = BadgeDefinition & { isEarned: boolean }
+
 type QuestClientProps = {
   searchParams: Record<string, string | string[] | undefined>
 }
@@ -550,7 +563,8 @@ export function QuestClient({ searchParams }: QuestClientProps) {
   const [token,           setToken]           = useState("")
   const [activeCelebration, setActiveCelebration] = useState<CelebrationData | null>(null)
   const [showDay3Modal,   setShowDay3Modal]   = useState(false)
-  const [earnedBadges,    setEarnedBadges]    = useState<Array<{ id: string; name: string; description: string; rarity: string }>>([])
+  const [earnedBadges,    setEarnedBadges]    = useState<BadgeDefinition[]>([])
+  const [badgeCatalog,    setBadgeCatalog]    = useState<BadgeDefinition[]>([])
 
   // ─── Init ───────────────────────────────────────────────────────
   useEffect(() => {
@@ -701,17 +715,26 @@ export function QuestClient({ searchParams }: QuestClientProps) {
       unlocks:     topicDeps,
     })
 
-    // Fetch earned badges (best-effort — table may not be provisioned yet)
+    // Fetch earned badges + full catalog in parallel (best-effort)
     try {
-      const { data: badgeRows } = await getSupabase()
-        .from("student_badges")
-        .select("badge_definitions(id, name, description, rarity)")
-        .eq("student_id", studentId)
-        .limit(20)
-      if (Array.isArray(badgeRows)) {
+      const sb = getSupabase()
+      const [earnedRes, catalogRes] = await Promise.all([
+        sb.from("student_badges")
+          .select("earned_at, badge_definitions(id, name, description, rarity, icon_url, xp_reward, is_secret)")
+          .eq("student_id", studentId)
+          .order("earned_at", { ascending: false })
+          .limit(50),
+        sb.from("badge_definitions")
+          .select("id, name, description, rarity, icon_url, xp_reward, is_secret, sort_order")
+          .order("sort_order", { ascending: true }),
+      ])
+      if (Array.isArray(earnedRes.data)) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const badges = (badgeRows as any[]).map((r: any) => r.badge_definitions).filter(Boolean)
+        const badges = (earnedRes.data as any[]).map((r: any) => r.badge_definitions).filter(Boolean)
         setEarnedBadges(badges)
+      }
+      if (Array.isArray(catalogRes.data)) {
+        setBadgeCatalog(catalogRes.data as BadgeDefinition[])
       }
     } catch { /* non-fatal */ }
 
@@ -835,7 +858,7 @@ export function QuestClient({ searchParams }: QuestClientProps) {
     return (
       <main style={{ minHeight: "100vh", paddingTop: "calc(var(--navbar-h) + 32px)", paddingBottom: 96 }}>
         <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 16px" }}>
-          {student && hud && <HUDStrip student={student} hud={hud} badges={earnedBadges} />}
+          {student && hud && <HUDStrip student={student} hud={hud} earned={earnedBadges} catalog={badgeCatalog} />}
           <QuestPicker quests={quests} onSelect={handlePickQuest} />
         </div>
       </main>
@@ -893,7 +916,7 @@ export function QuestClient({ searchParams }: QuestClientProps) {
           }}
         >
           {/* HUD STRIP */}
-          <HUDStrip student={student} hud={hud} badges={earnedBadges} />
+          <HUDStrip student={student} hud={hud} earned={earnedBadges} catalog={badgeCatalog} />
 
           {/* HERO BAND */}
           <QuestHero quest={questDetail} />
@@ -968,88 +991,246 @@ function QuestLoadingSkeleton() {
 // BADGE COLLECTION MODAL — full list with names + descriptions
 // ═══════════════════════════════════════════════════════════════════
 
+const RARITY_ORDER: Array<BadgeDefinition["rarity"]> = ["legendary", "epic", "rare", "common"]
+const RARITY_LABEL: Record<string, string> = {
+  legendary: "Legendary",
+  epic:      "Epic",
+  rare:      "Rare",
+  common:    "Common",
+}
+
 function BadgeCollectionModal({
-  badges,
+  allBadges,
   onClose,
 }: {
-  badges: Array<{ id: string; name: string; description: string; rarity: string }>
+  allBadges: BadgeWithEarned[]
   onClose: () => void
 }) {
+  const earnedCount = allBadges.filter(b => b.isEarned).length
+  const totalCount  = allBadges.length
+  const pct         = totalCount === 0 ? 0 : (earnedCount / totalCount) * 100
+
+  const groups = RARITY_ORDER.map(rarity => ({
+    rarity,
+    badges: allBadges.filter(b => b.rarity === rarity),
+  })).filter(g => g.badges.length > 0)
+
   return (
-    <div
-      style={{
-        position: "fixed", inset: 0, zIndex: 9999,
-        background: "rgba(0,0,0,0.72)", backdropFilter: "blur(8px)",
-        display: "flex", alignItems: "center", justifyContent: "center", padding: 24,
-      }}
-      onClick={e => { if (e.target === e.currentTarget) onClose() }}
+    <motion.div
+      className="quest-celebration-backdrop"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
+      role="dialog"
+      aria-label="Badge collection"
+      style={{ zIndex: 9999 }}
     >
       <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
-        transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-        className="card-glass"
-        style={{ maxWidth: 480, width: "100%", maxHeight: "80vh", overflowY: "auto" }}
+        initial={{ scale: 0.94, opacity: 0, y: 14 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.96, opacity: 0 }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        className="card-glass-overlay"
+        style={{
+          maxWidth: 720,
+          width: "100%",
+          maxHeight: "85vh",
+          overflowY: "auto",
+          padding: "var(--space-6)",
+        }}
+        onClick={(e) => e.stopPropagation()}
       >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-          <h3
-            className="label-caps"
-            style={{ color: "var(--brand-amber)", display: "inline-flex", alignItems: "center", gap: 6 }}
-          >
-            <Icon name="shield" size={14} />
-            My Badges ({badges.length})
-          </h3>
+        {/* ─── Header ─── */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "var(--space-4)" }}>
+          <div>
+            <div className="label-caps" style={{ color: "var(--brand-amber)", display: "inline-flex", alignItems: "center", gap: 6 }}>
+              <Icon name="shield" size={14} /> Badge Collection
+            </div>
+            <h3 style={{
+              fontFamily: "'Bebas Neue', sans-serif",
+              fontSize: "clamp(2rem, 6vw, 2.6rem)",
+              letterSpacing: "0.04em",
+              color: "var(--text-main)",
+              margin: "4px 0 0 0",
+              lineHeight: 1,
+            }}>
+              {earnedCount} <span style={{ opacity: 0.4 }}>/ {totalCount} unlocked</span>
+            </h3>
+          </div>
           <button
             onClick={onClose}
             aria-label="Close badge collection"
             style={{
-              background: "transparent", border: "none",
-              color: "var(--text-muted)", cursor: "pointer",
-              fontSize: "1.25rem", lineHeight: 1, padding: 4,
+              background: "transparent", border: "none", cursor: "pointer",
+              color: "var(--text-muted)", fontSize: "1.5rem", lineHeight: 1, padding: 4,
             }}
           >
             ✕
           </button>
         </div>
 
-        {badges.length === 0 ? (
+        {/* ─── Progress bar ─── */}
+        <div className="quest-xp-track" style={{ marginBottom: "var(--space-6)" }}>
+          <motion.div
+            className="quest-xp-fill"
+            initial={{ width: 0 }}
+            animate={{ width: `${pct}%` }}
+            transition={{ delay: 0.25, duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+          />
+        </div>
+
+        {/* ─── Groups ─── */}
+        {totalCount === 0 ? (
           <p style={{ color: "var(--text-muted)", fontSize: "0.9rem", textAlign: "center", padding: "24px 0" }}>
-            Complete quests and activities to earn badges!
+            Loading badges…
           </p>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }}>
-            {badges.map(b => {
-              const color = BADGE_RARITY_COLOR[b.rarity] ?? "var(--cream)"
+          <motion.div
+            variants={{
+              hidden:  {},
+              visible: { transition: { staggerChildren: 0.035, delayChildren: 0.15 } },
+            }}
+            initial="hidden"
+            animate="visible"
+          >
+            {groups.map(group => {
+              const groupColor   = BADGE_RARITY_COLOR[group.rarity] ?? "var(--cream)"
+              const groupEarned  = group.badges.filter(b => b.isEarned).length
               return (
-                <div
-                  key={b.id}
-                  style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, textAlign: "center" }}
-                >
-                  <div
-                    style={{
-                      width: 52, height: 52, borderRadius: "50%",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      background: `color-mix(in srgb, ${color} 12%, transparent)`,
-                      border: `2px solid color-mix(in srgb, ${color} 40%, transparent)`,
-                      color,
-                    }}
-                  >
-                    <Icon name="shield" size={24} />
+                <div key={group.rarity} style={{ marginBottom: "var(--space-6)" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "var(--space-3)", marginBottom: "var(--space-3)" }}>
+                    <h4 className="label-caps" style={{ color: groupColor, margin: 0 }}>
+                      {RARITY_LABEL[group.rarity]}
+                    </h4>
+                    <div style={{
+                      flex: 1, height: 1,
+                      background: `linear-gradient(90deg, color-mix(in srgb, ${groupColor} 35%, transparent), transparent)`,
+                    }} />
+                    <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--text-muted)" }}>
+                      {groupEarned} / {group.badges.length}
+                    </span>
                   </div>
-                  <span style={{ fontSize: "0.7rem", fontWeight: 700, color: "var(--text-main)", lineHeight: 1.2 }}>
-                    {b.name}
-                  </span>
-                  <span style={{ fontSize: "0.6rem", color: "var(--text-muted)", lineHeight: 1.3 }}>
-                    {b.description}
-                  </span>
+                  <div style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))",
+                    gap: "var(--space-3)",
+                  }}>
+                    {group.badges.map(b => <BadgeTile key={b.id} badge={b} />)}
+                  </div>
                 </div>
               )
             })}
-          </div>
+          </motion.div>
         )}
       </motion.div>
-    </div>
+    </motion.div>
+  )
+}
+
+// ─── Individual badge tile (used by the modal grid) ─────────────────
+function BadgeTile({ badge }: { badge: BadgeWithEarned }) {
+  const [imgError, setImgError] = useState(false)
+  const color          = BADGE_RARITY_COLOR[badge.rarity] ?? "var(--cream)"
+  const isLockedSecret = !badge.isEarned && badge.is_secret
+
+  return (
+    <motion.div
+      variants={{
+        hidden:  { opacity: 0, y: 16 },
+        visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] } },
+      }}
+      whileHover={badge.isEarned ? { y: -4, scale: 1.03 } : { y: -1 }}
+      transition={{ type: "spring", stiffness: 280, damping: 22 }}
+      style={{
+        position: "relative",
+        display: "flex", flexDirection: "column", alignItems: "center", gap: "var(--space-2)",
+        padding: "var(--space-3)",
+        borderRadius: "var(--radius-md)",
+        background: badge.isEarned
+          ? `color-mix(in srgb, ${color} 8%, var(--surface-container-lowest))`
+          : "var(--surface-container-low)",
+        border: `1px solid ${badge.isEarned
+          ? `color-mix(in srgb, ${color} 35%, transparent)`
+          : "var(--border-light)"}`,
+        opacity: badge.isEarned ? 1 : 0.62,
+        textAlign: "center",
+      }}
+    >
+      {/* Icon + glow ring + lock chip */}
+      <div style={{ position: "relative", width: 80, height: 80 }}>
+        {badge.isEarned && (
+          <div aria-hidden style={{
+            position: "absolute", inset: -3, borderRadius: "50%",
+            background: `conic-gradient(from 0deg, ${color}, transparent 35%, transparent 65%, ${color})`,
+            opacity: 0.55, filter: "blur(3px)",
+            animation: "questAuraSpin 7s linear infinite",
+          }} />
+        )}
+        <div style={{
+          position: "relative",
+          width: "100%", height: "100%",
+          borderRadius: "50%",
+          overflow: "hidden",
+          background: badge.isEarned
+            ? `radial-gradient(circle at 30% 30%, color-mix(in srgb, ${color} 22%, transparent), var(--surface-container))`
+            : "var(--surface-container-low)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          filter: badge.isEarned ? "none" : "grayscale(1)",
+        }}>
+          {isLockedSecret ? (
+            <span style={{ fontSize: "2rem", fontWeight: 700, color: "var(--text-muted)" }}>?</span>
+          ) : !imgError && badge.icon_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={badge.icon_url}
+              alt=""
+              onError={() => setImgError(true)}
+              style={{ width: "72%", height: "72%", objectFit: "contain" }}
+            />
+          ) : (
+            <Icon name="shield" size={36} style={{ color: badge.isEarned ? color : "var(--text-muted)" }} />
+          )}
+        </div>
+        {!badge.isEarned && !isLockedSecret && (
+          <div style={{
+            position: "absolute", bottom: -2, right: -2,
+            width: 22, height: 22, borderRadius: "50%",
+            background: "var(--surface-container-highest)",
+            border: "1.5px solid var(--surface-container-lowest)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <Icon name="lock" size={11} style={{ color: "var(--text-muted)" }} />
+          </div>
+        )}
+      </div>
+
+      {/* Name */}
+      <div style={{
+        fontFamily: "'Plus Jakarta Sans', sans-serif",
+        fontSize: "0.875rem", fontWeight: 700,
+        color: "var(--text-main)", lineHeight: 1.2,
+        marginTop: 4,
+      }}>
+        {isLockedSecret ? "???" : badge.name}
+      </div>
+
+      {/* Description — always visible (the C-5 fix) */}
+      <div style={{
+        fontSize: "0.75rem",
+        color: "var(--text-muted)",
+        lineHeight: 1.35,
+        minHeight: "2.7em",
+      }}>
+        {isLockedSecret ? "Secret badge — keep playing to discover." : badge.description}
+      </div>
+
+      {/* XP chip */}
+      <div className="quest-chip quest-chip-amber" style={{ fontSize: "0.65rem", padding: "2px 8px", marginTop: "auto" }}>
+        +{badge.xp_reward} XP
+      </div>
+    </motion.div>
   )
 }
 
@@ -1060,16 +1241,26 @@ function BadgeCollectionModal({
 function HUDStrip({
   student,
   hud,
-  badges,
+  earned,
+  catalog,
 }: {
   student: Student
   hud: HUD
-  badges: Array<{ id: string; name: string; description: string; rarity: string }>
+  earned: BadgeDefinition[]
+  catalog: BadgeDefinition[]
 }) {
   const [showBadgeModal, setShowBadgeModal] = useState(false)
-  const xpPct       = Math.min(100, (hud.xp_in_level / hud.xp_to_next_level) * 100)
-  const recentBadges = badges.slice(0, 2)
-  const extraCount   = Math.max(0, badges.length - 2)
+  const xpPct        = Math.min(100, (hud.xp_in_level / hud.xp_to_next_level) * 100)
+  const earnedSet    = useMemo(() => new Set(earned.map(b => b.id)), [earned])
+  const recentBadges = earned.slice(0, 2)
+  const extraCount   = Math.max(0, earned.length - 2)
+
+  // Merge catalog with earned set so the modal can show all 33 badges
+  // with isEarned flags. Falls back to earned-only if catalog hasn't loaded.
+  const allBadges: BadgeWithEarned[] = useMemo(() => {
+    const source = catalog.length > 0 ? catalog : earned
+    return source.map(b => ({ ...b, isEarned: earnedSet.has(b.id) }))
+  }, [catalog, earned, earnedSet])
 
   return (
     <>
@@ -1089,42 +1280,45 @@ function HUDStrip({
       >
         <AvatarSlot photoUrl={student.photo_url} />
 
-        {/* Badge mini-tray — 2 latest, beside avatar */}
-        {badges.length > 0 && (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, flexShrink: 0 }}>
-            <div style={{ display: "flex", gap: 6 }}>
-              {recentBadges.map(b => {
-                const color = BADGE_RARITY_COLOR[b.rarity] ?? "var(--cream)"
-                return (
-                  <div
-                    key={b.id}
-                    title={`${b.name}: ${b.description}`}
-                    style={{
-                      width: 32, height: 32, borderRadius: "50%",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      background: `color-mix(in srgb, ${color} 12%, transparent)`,
-                      border: `1.5px solid color-mix(in srgb, ${color} 40%, transparent)`,
-                      color,
-                      flexShrink: 0,
-                    }}
-                  >
-                    <Icon name="shield" size={14} />
-                  </div>
-                )
-              })}
-            </div>
-            <button
-              onClick={() => setShowBadgeModal(true)}
-              style={{
-                background: "transparent", border: "none", cursor: "pointer",
-                fontSize: "0.58rem", fontWeight: 700, color: "var(--brand-amber)",
-                letterSpacing: "0.06em", padding: 0, textTransform: "uppercase",
-              }}
-            >
-              {extraCount > 0 ? `+${extraCount} more` : `${badges.length} badge${badges.length > 1 ? "s" : ""}`}
-            </button>
+        {/* Badge mini-tray — 2 latest, beside avatar; clickable to open full modal */}
+        <button
+          onClick={() => setShowBadgeModal(true)}
+          aria-label="Open badge collection"
+          style={{
+            display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+            flexShrink: 0, background: "transparent", border: "none", cursor: "pointer", padding: 0,
+          }}
+        >
+          <div style={{ display: "flex", gap: 6 }}>
+            {recentBadges.length > 0 ? (
+              recentBadges.map(b => <MiniBadgeIcon key={b.id} badge={b} />)
+            ) : (
+              <div
+                style={{
+                  width: 32, height: 32, borderRadius: "50%",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  background: "var(--surface-container-low)",
+                  border: "1.5px solid var(--border-light)",
+                  color: "var(--text-muted)", flexShrink: 0,
+                }}
+              >
+                <Icon name="shield" size={14} />
+              </div>
+            )}
           </div>
-        )}
+          <span
+            style={{
+              fontSize: "0.58rem", fontWeight: 700, color: "var(--brand-amber)",
+              letterSpacing: "0.06em", textTransform: "uppercase",
+            }}
+          >
+            {earned.length === 0
+              ? "View badges"
+              : extraCount > 0
+                ? `+${extraCount} more`
+                : `${earned.length} badge${earned.length > 1 ? "s" : ""}`}
+          </span>
+        </button>
 
         <div style={{ flex: 1, minWidth: 120 }}>
           <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" }}>
@@ -1156,10 +1350,40 @@ function HUDStrip({
 
       <AnimatePresence>
         {showBadgeModal && (
-          <BadgeCollectionModal badges={badges} onClose={() => setShowBadgeModal(false)} />
+          <BadgeCollectionModal allBadges={allBadges} onClose={() => setShowBadgeModal(false)} />
         )}
       </AnimatePresence>
     </>
+  )
+}
+
+// ─── Tiny badge icon used in the HUD mini-tray ──────────────────────
+function MiniBadgeIcon({ badge }: { badge: BadgeDefinition }) {
+  const [imgError, setImgError] = useState(false)
+  const color = BADGE_RARITY_COLOR[badge.rarity] ?? "var(--cream)"
+  return (
+    <div
+      title={`${badge.name}: ${badge.description}`}
+      style={{
+        width: 32, height: 32, borderRadius: "50%",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        background: `color-mix(in srgb, ${color} 12%, transparent)`,
+        border: `1.5px solid color-mix(in srgb, ${color} 40%, transparent)`,
+        color, flexShrink: 0, overflow: "hidden",
+      }}
+    >
+      {!imgError && badge.icon_url ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={badge.icon_url}
+          alt=""
+          onError={() => setImgError(true)}
+          style={{ width: "78%", height: "78%", objectFit: "contain" }}
+        />
+      ) : (
+        <Icon name="shield" size={14} />
+      )}
+    </div>
   )
 }
 
@@ -1645,68 +1869,6 @@ const BADGE_RARITY_COLOR: Record<string, string> = {
   rare:      "var(--brand-mint)",
   epic:      "var(--brand-rose)",
   legendary: "var(--brand-amber)",
-}
-
-function BadgeTray({ badges }: { badges: Array<{ id: string; name: string; description: string; rarity: string }> }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.45 }}
-      className="card-glass"
-      style={{ marginBottom: 32 }}
-    >
-      <h3
-        className="label-caps"
-        style={{ color: "var(--brand-amber)", display: "inline-flex", alignItems: "center", gap: 6, marginBottom: 16 }}
-      >
-        <Icon name="shield" size={14} />
-        My Badges ({badges.length})
-      </h3>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
-        {badges.map(b => {
-          const color = BADGE_RARITY_COLOR[b.rarity] ?? "var(--cream)"
-          return (
-            <div
-              key={b.id}
-              title={`${b.name}: ${b.description}`}
-              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, width: 68, textAlign: "center" }}
-            >
-              <div
-                style={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: "50%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  background: `color-mix(in srgb, ${color} 12%, transparent)`,
-                  border: `2px solid color-mix(in srgb, ${color} 40%, transparent)`,
-                  color,
-                }}
-              >
-                <Icon name="shield" size={22} />
-              </div>
-              <span
-                style={{
-                  fontSize: "0.6rem",
-                  fontWeight: 600,
-                  color: "var(--text-muted)",
-                  lineHeight: 1.2,
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                  maxWidth: 64,
-                }}
-              >
-                {b.name}
-              </span>
-            </div>
-          )
-        })}
-      </div>
-    </motion.div>
-  )
 }
 
 function DependencyTree({ topic, unlocks }: { topic: string; unlocks: string[] }) {
