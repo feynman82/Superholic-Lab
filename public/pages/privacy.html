@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Privacy Policy — Superholic Lab</title>
-  <meta name="description" content="How we fiercely protect your child's data under Singapore's PDPA.">
+  <meta name="description" content="How we fiercely protect your child's data under Singapore's PDPA." />
 
   <!-- Fonts & Styles -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -17,138 +17,497 @@
   <script src="/js/footer.js" defer></script>
   <script type="module">
     import { guardPage } from '/js/auth.js';
-    await guardPage(false); 
+    await guardPage(false);
   </script>
+
+  <!-- ────────────────────────────────────────────────────────────────────────
+       PAGE-LEVEL STYLES (architect-scholar layer)
+       Per design doctrine: NO hardcoded hex/rgba in HTML style="" attributes.
+       All colours and spacing reference CSS variables defined in style.css.
+       ──────────────────────────────────────────────────────────────────────── */
+  <style>
+    .privacy-hero {
+      padding-top: calc(64px + var(--space-8));
+      padding-bottom: var(--space-8);
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .privacy-hero__eyebrow {
+      color: var(--brand-rose);
+      margin-bottom: var(--space-3);
+    }
+
+    .privacy-hero__title {
+      color: var(--text-main);
+      margin: 0 0 var(--space-3) 0;
+      max-width: 720px;
+    }
+
+    .privacy-hero__lede {
+      color: var(--text-muted);
+      max-width: 640px;
+      margin: 0 0 var(--space-4) 0;
+    }
+
+    .privacy-hero__meta {
+      display: flex;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    /* ── Body layout: asymmetric 7+5 with sticky TOC sidebar ── */
+    .privacy-body {
+      padding-top: var(--space-8);
+      padding-bottom: var(--space-10);
+    }
+
+    .privacy-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: var(--gutter);
+      align-items: start;
+    }
+
+    .privacy-main {
+      grid-column: span 12;
+      max-width: 720px;
+    }
+
+    .privacy-aside {
+      display: none;
+    }
+
+    /* Desktop: 7+5 split, sticky TOC */
+    @media (min-width: 1024px) {
+      .privacy-main {
+        grid-column: 1 / span 7;
+      }
+
+      .privacy-aside {
+        display: block;
+        grid-column: 9 / span 4;
+        position: sticky;
+        top: calc(64px + var(--space-4));
+      }
+    }
+
+    /* ── Sticky TOC (desktop) ── */
+    .toc {
+      padding: var(--space-4);
+    }
+
+    .toc__label {
+      color: var(--brand-rose);
+      margin-bottom: var(--space-3);
+      display: block;
+    }
+
+    .toc__list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+
+    .toc__link {
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-2);
+      padding: var(--space-1) 0;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: var(--text-sm);
+      line-height: 1.5;
+      border-left: 2px solid transparent;
+      padding-left: var(--space-2);
+      transition: color 160ms ease, border-color 160ms ease;
+    }
+
+    .toc__link:hover {
+      color: var(--text-main);
+    }
+
+    .toc__link.is-active {
+      color: var(--brand-rose);
+      border-left-color: var(--brand-rose);
+    }
+
+    .toc__num {
+      font-family: var(--font-display, 'Bebas Neue', sans-serif);
+      letter-spacing: 0.05em;
+      color: var(--text-faint, var(--outline));
+      flex-shrink: 0;
+    }
+
+    .toc__link.is-active .toc__num {
+      color: var(--brand-rose);
+    }
+
+    /* ── Mobile compact TOC chip (visible <1024px) ── */
+    .toc-mobile {
+      position: sticky;
+      top: 64px;
+      z-index: 20;
+      margin-bottom: var(--space-4);
+      padding: var(--space-2) var(--space-3);
+      background: var(--surface);
+      border-bottom: 1px solid var(--border-light);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: var(--text-sm);
+      color: var(--text-muted);
+    }
+
+    .toc-mobile__current {
+      color: var(--text-main);
+      font-weight: 600;
+    }
+
+    @media (min-width: 1024px) {
+      .toc-mobile {
+        display: none;
+      }
+    }
+
+    /* ── TL;DR card ── */
+    .tldr {
+      padding: var(--space-5);
+      margin-bottom: var(--space-8);
+    }
+
+    .tldr__eyebrow {
+      color: var(--brand-sage);
+      margin-bottom: var(--space-3);
+      display: block;
+    }
+
+    .tldr__title {
+      color: var(--text-main);
+      margin: 0 0 var(--space-4) 0;
+      font-size: 28px;
+      line-height: 1.2;
+    }
+
+    /* ── Policy section ── */
+    .policy-section {
+      margin-bottom: var(--space-8);
+      scroll-margin-top: calc(64px + var(--space-4));
+    }
+
+    .policy-section__eyebrow {
+      color: var(--brand-rose);
+      display: block;
+      margin-bottom: var(--space-2);
+    }
+
+    .policy-section__title {
+      color: var(--text-main);
+      margin: 0 0 var(--space-4) 0;
+    }
+
+    .policy-section__body {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      color: var(--text-main);
+      font-size: var(--text-base);
+      line-height: 1.7;
+    }
+
+    .policy-section__body strong {
+      color: var(--text-main);
+      font-weight: 600;
+    }
+
+    .policy-section__body em {
+      color: var(--text-muted);
+    }
+
+    /* ── DPO contact callout (end of §05) ── */
+    .dpo-callout {
+      margin-top: var(--space-4);
+      padding: var(--space-4);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      align-items: flex-start;
+    }
+
+    .dpo-callout__label {
+      color: var(--brand-rose);
+      display: block;
+    }
+
+    .dpo-callout__text {
+      color: var(--text-main);
+      margin: 0;
+      font-size: var(--text-base);
+      line-height: 1.6;
+    }
+
+    /* Definition-style list inside policy sections (3rd-party providers, rights) */
+    .policy-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      border-top: 1px solid var(--border-light);
+    }
+
+    .policy-list li {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-1);
+      padding: var(--space-3) 0;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    @media (min-width: 640px) {
+      .policy-list li {
+        grid-template-columns: 200px 1fr;
+        gap: var(--space-3);
+        align-items: baseline;
+      }
+    }
+
+    .policy-list__term {
+      color: var(--text-main);
+      font-weight: 600;
+      font-size: var(--text-sm);
+    }
+
+    .policy-list__def {
+      color: var(--text-muted);
+      font-size: var(--text-base);
+      line-height: 1.6;
+    }
+  </style>
+
+
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       HERO — restrained, on .bg-surface, .h1-as, no display-xl
+       ═══════════════════════════════════════════════════════════════════════ -->  
+
 </head>
 
-<body class="has-bottom-nav">
+<body class="bg-surface has-bottom-nav">
 
   <global-header></global-header>
 
-  <!-- ═══════════════════ HERO (Sage + Dots) ═══════════════════ -->
-  <section class="bg-sage texture-dots py-10" style="padding-top: calc(64px + var(--space-8)); text-align: center;">
-    <div class="container flex flex-col items-center gap-4">
-      <div class="badge"
-        style="background: rgba(0, 0, 0, 0.25); color: var(--brand-rose); backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.1);">
-        PDPA Compliant</div>
-      <h1 class="font-display text-4xl text-white mt-2 mb-2" style="font-size: 3.5rem; line-height: 1.1;">
-        Privacy <span class="text-rose">Policy</span>
-      </h1>
-      <p class="text-lg" style="color: rgba(255,255,255,0.8); max-width: 600px;">
-        Last updated: 23 March 2026. We protect your child's data like it's our own.
+<section class="privacy-hero bg-surface">
+    <div class="container-as">
+      <span class="label-caps privacy-hero__eyebrow">PDPA · Compliant</span>
+      <h1 class="h1-as privacy-hero__title">Privacy Policy</h1>
+      <p class="body-lg privacy-hero__lede">
+        How we protect your family's data under Singapore's Personal Data Protection Act.
+        Plain language. No fine print.
       </p>
+      <div class="privacy-hero__meta">
+        <span class="badge badge-neutral">Last updated · 23 March 2026</span>
+        <span class="badge badge-sage">Effective Singapore-wide</span>
+      </div>
     </div>
   </section>
 
-  <!-- ═══════════════════ MAIN CONTENT (Off-White + Light Grid) ═══════════════════ -->
-  <section class="py-10 bg-page texture-light-grid">
-    <div class="container" style="max-width: 800px;">
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       BODY — asymmetric 7+5 grid with sticky TOC
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <section class="privacy-body bg-surface">
+    <div class="container-as">
 
-      <!-- TL;DR Summary Card -->
-      <div class="glass-panel-1 hover-lift mb-8 p-6" style="border-left: 4px solid var(--brand-mint);">
-        <h2 class="font-display text-2xl text-main mb-4 flex items-center gap-2">
-          <span>✨</span> The Short Version (TL;DR)
-        </h2>
-        <ul class="flex flex-col gap-3 text-sm text-main" style="list-style: none; text-align: justify;">
-          <li class="flex items-start gap-2"><span class="text-success font-bold">✓</span> <span><strong>No Ads,
-                Ever:</strong> We do not sell your personal data or run advertisements.</span></li>
-          <li class="flex items-start gap-2"><span class="text-success font-bold">✓</span> <span><strong>Local
-                Storage:</strong> Your child's data is encrypted and securely stored right here in Singapore.</span>
-          </li>
-          <li class="flex items-start gap-2"><span class="text-success font-bold">✓</span> <span><strong>You have the
-                right to forget:</strong> You can request full deletion of your account and data at any time, processed
-              within 30 days.</span></li>
-        </ul>
+      <!-- Mobile compact TOC (sticks to top below 1024px) -->
+      <div class="toc-mobile" aria-hidden="true">
+        <span class="label-caps">§</span>
+        <span class="toc-mobile__current" id="tocMobileCurrent">At a glance</span>
       </div>
 
-      <!-- Full Privacy Cards -->
-      <div class="flex flex-col gap-6">
+      <div class="privacy-grid">
 
-        <div class="glass-panel-1 p-6 hover-lift">
-          <h2 class="font-display text-2xl text-main mb-4 flex items-center gap-3">
-            <span class="text-3xl">👋</span> 1. Who We Are & Scope
-          </h2>
-          <div class="text-muted text-sm flex flex-col gap-3" style="text-align: justify;">
-            <p>Superholic Lab is an online educational platform operated by <strong>Superholic Lab Pte. Ltd.</strong> in
-              Singapore.</p>
-            <p>We comply fully with Singapore's <strong>Personal Data Protection Act 2012 (PDPA)</strong> and act as the
-              Data Controller. This policy applies to all personal data collected through www.superholiclab.com for
-              parents, guardians, and children.</p>
-          </div>
-        </div>
+        <!-- ── 7-COL MAIN COLUMN ──────────────────────────────────────────── -->
+        <main class="privacy-main">
 
-        <div class="glass-panel-1 p-6 hover-lift">
-          <h2 class="font-display text-2xl text-main mb-4 flex items-center gap-3">
-            <span class="text-3xl">📝</span> 2. Data We Collect & How We Use It
-          </h2>
-          <div class="text-muted text-sm flex flex-col gap-3" style="text-align: justify;">
-            <p><strong>Account Data:</strong> Parent's name and email. Children's profiles require only a first name and
-              school level.</p>
-            <p><strong>Usage Data:</strong> Quiz results, topic progress, and AI tutor chat history. This is used
-              exclusively to personalise the learning experience and build your Mission Control dashboard.</p>
-            <p><strong>Payment Data:</strong> Processed securely via Stripe, Inc. We do not store your credit card
-              numbers on our servers.</p>
-            <p><strong>We never use your data for advertising or sell it to third parties.</strong></p>
-          </div>
-        </div>
-
-        <div class="glass-panel-1 p-6 hover-lift">
-          <h2 class="font-display text-2xl text-main mb-4 flex items-center gap-3">
-            <span class="text-3xl">🔒</span> 3. Security & Storage
-          </h2>
-          <div class="text-muted text-sm flex flex-col gap-3" style="text-align: justify;">
-            <p>Your data is stored in <strong>Supabase (PostgreSQL)</strong>, hosted on secure AWS servers located
-              physically in <strong>Singapore (ap-southeast-1)</strong>.</p>
-            <p>We enforce strict row-level security (RLS) policies so users can only access their own data. All data is
-              transmitted over HTTPS, and passwords are cryptographically hashed using bcrypt.</p>
-          </div>
-        </div>
-
-        <div class="glass-panel-1 p-6 hover-lift">
-          <h2 class="font-display text-2xl text-main mb-4 flex items-center gap-3">
-            <span class="text-3xl">🤝</span> 4. Sharing with Third Parties
-          </h2>
-          <div class="text-muted text-sm flex flex-col gap-3" style="text-align: justify;">
-            <p>We share data only with essential service providers who are contractually bound to protect it:</p>
-            <ul style="padding-left: var(--space-4);">
-              <li><strong>Supabase:</strong> Database and authentication.</li>
-              <li><strong>Stripe:</strong> Secure payment processing.</li>
-              <li><strong>Anthropic:</strong> The engine behind our AI Tutor. <em>Crucially, Anthropic does not use any
-                  API inputs (your child's chat logs) to train their foundation models.</em></li>
-              <li><strong>Plausible Analytics:</strong> A privacy-first, cookie-free analytics provider.</li>
+          <!-- TL;DR card -->
+          <article class="card-glass tldr" id="tldr">
+            <span class="label-caps tldr__eyebrow">At a glance</span>
+            <h2 class="font-display tldr__title">The short version</h2>
+            <ul class="rose-list">
+              <li><strong>No ads, ever.</strong>&nbsp;We do not sell your personal data or run advertisements.</li>
+              <li><strong>Data stored in Singapore.</strong>&nbsp;Encrypted and hosted locally on AWS Singapore.</li>
+              <li><strong>Right to forget.</strong>&nbsp;Request full deletion of your account at any time, processed within 30 days.</li>
             </ul>
-          </div>
-        </div>
+          </article>
 
-        <div class="glass-panel-1 p-6 hover-lift">
-          <h2 class="font-display text-2xl text-main mb-4 flex items-center gap-3">
-            <span class="text-3xl">🧸</span> 5. Children's Data & Your PDPA Rights
-          </h2>
-          <div class="text-muted text-sm flex flex-col gap-3" style="text-align: justify;">
-            <p>Under the PDPA, you have complete control over your family's data. You have the right to:</p>
-            <ul style="padding-left: var(--space-4);">
-              <li><strong>Access & Correction:</strong> View or fix the data we hold about you.</li>
-              <li><strong>Withdrawal:</strong> Withdraw your consent for data usage (which will pause your service).
-              </li>
-              <li><strong>The Right to Forget (Deletion):</strong> Request full deletion of your account and child's
-                data. We process these requests within 30 days.</li>
+          <!-- §01 — Who we are -->
+          <article class="policy-section" id="who-we-are">
+            <span class="label-caps policy-section__eyebrow">§ 01 — Who we are</span>
+            <h2 class="h2-as policy-section__title">Who we are &amp; scope</h2>
+            <div class="policy-section__body">
+              <p>
+                Superholic Lab is an online educational platform operated by
+                <strong>Superholic Lab Pte. Ltd.</strong> in Singapore.
+              </p>
+              <p>
+                We comply fully with Singapore's
+                <strong>Personal Data Protection Act 2012 (PDPA)</strong> and act as the Data Controller.
+                This policy applies to all personal data collected through
+                <strong>www.superholiclab.com</strong> for parents, guardians, and children.
+              </p>
+            </div>
+          </article>
+
+          <!-- §02 — Data we collect -->
+          <article class="policy-section" id="data-collection">
+            <span class="label-caps policy-section__eyebrow">§ 02 — What we collect</span>
+            <h2 class="h2-as policy-section__title">Data we collect &amp; how we use it</h2>
+            <div class="policy-section__body">
+              <ul class="policy-list">
+                <li>
+                  <span class="policy-list__term">Account data</span>
+                  <span class="policy-list__def">
+                    Parent's name and email. Children's profiles require only a first name and school level.
+                  </span>
+                </li>
+                <li>
+                  <span class="policy-list__term">Usage data</span>
+                  <span class="policy-list__def">
+                    Quiz results, topic progress, and AI tutor chat history — used exclusively to personalise
+                    learning and build your dashboard.
+                  </span>
+                </li>
+                <li>
+                  <span class="policy-list__term">Payment data</span>
+                  <span class="policy-list__def">
+                    Processed securely via Stripe, Inc. We do not store your credit card numbers on our servers.
+                  </span>
+                </li>
+              </ul>
+              <p><strong>We never use your data for advertising or sell it to third parties.</strong></p>
+            </div>
+          </article>
+
+          <!-- §03 — Security -->
+          <article class="policy-section" id="security">
+            <span class="label-caps policy-section__eyebrow">§ 03 — Security</span>
+            <h2 class="h2-as policy-section__title">Security &amp; storage</h2>
+            <div class="policy-section__body">
+              <p>
+                Your data is stored in <strong>Supabase (PostgreSQL)</strong>, hosted on secure AWS servers
+                located physically in <strong>Singapore (ap-southeast-1)</strong>.
+              </p>
+              <p>
+                We enforce strict row-level security (RLS) policies so users can only access their own data.
+                All data is transmitted over HTTPS, and passwords are cryptographically hashed using bcrypt.
+              </p>
+            </div>
+          </article>
+
+          <!-- §04 — Third parties -->
+          <article class="policy-section" id="third-parties">
+            <span class="label-caps policy-section__eyebrow">§ 04 — Third parties</span>
+            <h2 class="h2-as policy-section__title">Sharing with service providers</h2>
+            <div class="policy-section__body">
+              <p>
+                We share data only with essential service providers who are contractually bound to protect it:
+              </p>
+              <ul class="policy-list">
+                <li>
+                  <span class="policy-list__term">Supabase</span>
+                  <span class="policy-list__def">Database and authentication.</span>
+                </li>
+                <li>
+                  <span class="policy-list__term">Stripe</span>
+                  <span class="policy-list__def">Secure payment processing.</span>
+                </li>
+                <li>
+                  <span class="policy-list__term">Anthropic</span>
+                  <span class="policy-list__def">
+                    The engine behind our AI Tutor.
+                    <em>Anthropic does not use any API inputs (your child's chat logs) to train their foundation models.</em>
+                  </span>
+                </li>
+                <li>
+                  <span class="policy-list__term">Plausible Analytics</span>
+                  <span class="policy-list__def">A privacy-first, cookie-free analytics provider.</span>
+                </li>
+              </ul>
+            </div>
+          </article>
+
+          <!-- §05 — Children's data & PDPA rights -->
+          <article class="policy-section" id="rights">
+            <span class="label-caps policy-section__eyebrow">§ 05 — Your rights</span>
+            <h2 class="h2-as policy-section__title">Children's data &amp; your PDPA rights</h2>
+            <div class="policy-section__body">
+              <p>Under the PDPA, you have complete control over your family's data. You have the right to:</p>
+              <ul class="policy-list">
+                <li>
+                  <span class="policy-list__term">Access &amp; correction</span>
+                  <span class="policy-list__def">View or fix the data we hold about you.</span>
+                </li>
+                <li>
+                  <span class="policy-list__term">Withdrawal</span>
+                  <span class="policy-list__def">
+                    Withdraw your consent for data usage (which will pause your service).
+                  </span>
+                </li>
+                <li>
+                  <span class="policy-list__term">Right to forget</span>
+                  <span class="policy-list__def">
+                    Request full deletion of your account and child's data. Processed within 30 days.
+                  </span>
+                </li>
+              </ul>
+
+              <!-- DPO callout -->
+              <div class="card-glass dpo-callout">
+                <span class="label-caps dpo-callout__label">Data Protection Officer</span>
+                <p class="dpo-callout__text">
+                  To exercise these rights, email our DPO. We respond within 5 working days.
+                </p>
+                <a href="mailto:privacy@superholiclab.com" class="btn btn-secondary">
+                  privacy@superholiclab.com
+                </a>
+              </div>
+            </div>
+          </article>
+
+          <!-- §06 — Cookies -->
+          <article class="policy-section" id="cookies">
+            <span class="label-caps policy-section__eyebrow">§ 06 — Cookies</span>
+            <h2 class="h2-as policy-section__title">Cookies &amp; tracking</h2>
+            <div class="policy-section__body">
+              <p>
+                <strong>We do not use tracking cookies.</strong> Our analytics provider (Plausible) is entirely
+                cookie-free and respects your privacy. We only use local browser storage for functional necessities
+                — like keeping you safely logged into your session.
+              </p>
+            </div>
+          </article>
+
+        </main>
+
+        <!-- ── 4-COL STICKY TOC SIDEBAR (desktop only) ──────────────────── -->
+        <aside class="privacy-aside" aria-label="Table of contents">
+          <nav class="card-glass toc">
+            <span class="label-caps toc__label">Contents</span>
+            <ul class="toc__list" id="tocList">
+              <li><a class="toc__link" href="#tldr"><span class="toc__num">00</span><span>At a glance</span></a></li>
+              <li><a class="toc__link" href="#who-we-are"><span class="toc__num">01</span><span>Who we are</span></a></li>
+              <li><a class="toc__link" href="#data-collection"><span class="toc__num">02</span><span>What we collect</span></a></li>
+              <li><a class="toc__link" href="#security"><span class="toc__num">03</span><span>Security</span></a></li>
+              <li><a class="toc__link" href="#third-parties"><span class="toc__num">04</span><span>Third parties</span></a></li>
+              <li><a class="toc__link" href="#rights"><span class="toc__num">05</span><span>Your rights</span></a></li>
+              <li><a class="toc__link" href="#cookies"><span class="toc__num">06</span><span>Cookies</span></a></li>
             </ul>
-            <p>To exercise these rights, simply email our Data Protection Officer at
-              <strong>privacy@superholiclab.com</strong>.
-            </p>
-          </div>
-        </div>
-
-        <div class="glass-panel-1 p-6 hover-lift">
-          <h2 class="font-display text-2xl text-main mb-4 flex items-center gap-3">
-            <span class="text-3xl">🍪</span> 6. Cookies & Tracking
-          </h2>
-          <div class="text-muted text-sm flex flex-col gap-3" style="text-align: justify;">
-            <p><strong>We do not use tracking cookies.</strong> Our analytics provider (Plausible) is entirely
-              cookie-free and respects your privacy. We only use local browser storage for functional necessities, like
-              keeping you logged into your session safely.</p>
-          </div>
-        </div>
+          </nav>
+        </aside>
 
       </div>
     </div>
@@ -157,8 +516,12 @@
   <global-footer></global-footer>
 
   <script src="/js/supabase-client.js"></script>
+
+  <!-- ────────────────────────────────────────────────────────────────────────
+       TOC scrollspy + existing nav/auth logic
+       ──────────────────────────────────────────────────────────────────────── -->
   <script>
-    /* ── 1. Navbar & Auth Logic ── */
+    /* ── 1. Navbar dropdown (kept verbatim from previous version) ── */
     document.addEventListener('DOMContentLoaded', () => {
       const toggle = document.getElementById('navToggle');
       const dropdown = document.getElementById('navDropdown');
@@ -179,6 +542,75 @@
       }
     });
 
+    /* ── 2. TOC scrollspy via IntersectionObserver ──
+       Highlights the active section in the sidebar TOC and updates the
+       mobile compact chip. Uses a top-biased rootMargin so a section is
+       considered "active" when its heading reaches the top third of the
+       viewport — feels right for long-form reading. */
+    (function initScrollSpy() {
+      const sections = document.querySelectorAll('.policy-section, #tldr');
+      const tocLinks = document.querySelectorAll('.toc__link');
+      const mobileCurrent = document.getElementById('tocMobileCurrent');
+
+      if (!sections.length || !tocLinks.length) return;
+
+      // Map of section id → corresponding TOC link
+      const linkById = new Map();
+      tocLinks.forEach(link => {
+        const id = link.getAttribute('href').slice(1);
+        linkById.set(id, link);
+      });
+
+      // Map of section id → display label (from TOC link text, last span)
+      const labelById = new Map();
+      tocLinks.forEach(link => {
+        const id = link.getAttribute('href').slice(1);
+        const spans = link.querySelectorAll('span');
+        labelById.set(id, spans[spans.length - 1]?.textContent || '');
+      });
+
+      const setActive = (id) => {
+        tocLinks.forEach(l => l.classList.remove('is-active'));
+        const link = linkById.get(id);
+        if (link) link.classList.add('is-active');
+        if (mobileCurrent && labelById.has(id)) {
+          mobileCurrent.textContent = labelById.get(id);
+        }
+      };
+
+      // IntersectionObserver: section is "active" when it intersects
+      // a band near the top of the viewport (top 0% to 35%).
+      const observer = new IntersectionObserver((entries) => {
+        // Pick the entry closest to the top of the active band
+        const visible = entries
+          .filter(e => e.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (visible.length > 0) {
+          setActive(visible[0].target.id);
+        }
+      }, {
+        rootMargin: '0px 0px -65% 0px',
+        threshold: 0
+      });
+
+      sections.forEach(s => observer.observe(s));
+
+      // Smooth scroll for TOC link clicks (in addition to default anchor jump)
+      tocLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+          const id = link.getAttribute('href').slice(1);
+          const target = document.getElementById(id);
+          if (target) {
+            e.preventDefault();
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            history.replaceState(null, '', `#${id}`);
+            setActive(id);
+          }
+        });
+      });
+    })();
+
+    /* ── 3. Auth-aware header (kept verbatim from previous version) ── */
     getSupabase().then(async function (sb) {
       try {
         const { data: { session } } = await sb.auth.getSession();
@@ -188,7 +620,7 @@
           const navLinks = document.getElementById('navDropdown');
 
           if (authContainer) {
-            authContainer.innerHTML = '<a href="dashboard.html" class="btn btn-secondary btn-sm" style="background: rgba(255,255,255,0.15); color: #FFFFFF; border: 1px solid rgba(255,255,255,0.1);">Dashboard</a>';
+            authContainer.innerHTML = '<a href="dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a>';
           }
 
           if (navLinks && !document.getElementById('navSignOut')) {
