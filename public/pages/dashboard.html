@@ -361,6 +361,133 @@
       margin-top: 2px;
     }
 
+    /* ── Celebration toast (Phase 5 — top-right, slides in from edge) ── */
+    .celebration-toast {
+      position: fixed;
+      top: calc(64px + var(--space-3));
+      right: var(--space-4);
+      z-index: 200;
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-3);
+      max-width: 360px;
+      padding: var(--space-3) var(--space-4);
+      background: var(--surface-container-lowest);
+      border: 1px solid var(--border-light);
+      border-left: 3px solid var(--brand-rose);
+      border-radius: var(--radius-md);
+      box-shadow: 0 8px 24px rgba(44, 62, 58, 0.12);
+      transform: translateX(calc(100% + var(--space-4)));
+      opacity: 0;
+      transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1), opacity 240ms ease;
+      pointer-events: auto;
+    }
+    .celebration-toast.is-visible {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    .celebration-toast__icon {
+      width: 36px; height: 36px; flex-shrink: 0;
+      border-radius: var(--radius-full, 999px);
+      background: rgba(183, 110, 121, 0.12);
+      color: var(--brand-rose);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .celebration-toast__body { flex: 1; min-width: 0; }
+    .celebration-toast__eyebrow {
+      color: var(--brand-rose);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+    .celebration-toast__summary {
+      color: var(--text-main);
+      font-size: var(--text-sm);
+      font-weight: 600;
+      line-height: 1.35;
+    }
+    .celebration-toast__actions {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      align-items: flex-end;
+      flex-shrink: 0;
+    }
+    .celebration-toast__view {
+      background: transparent;
+      border: none;
+      color: var(--brand-rose);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+      padding: 4px 6px;
+    }
+    .celebration-toast__view:hover { text-decoration: underline; }
+    .celebration-toast__close {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 2px 6px;
+      font-size: 18px;
+      line-height: 1;
+    }
+    .celebration-toast__close:hover { color: var(--text-main); }
+    @media (max-width: 600px) {
+      .celebration-toast {
+        left: var(--space-3);
+        right: var(--space-3);
+        max-width: none;
+        top: calc(56px + var(--space-2));
+      }
+    }
+
+    /* Celebration modal — full list of unlocks since last visit */
+    .celebrations-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      max-height: 60vh;
+      overflow-y: auto;
+      margin-top: var(--space-3);
+    }
+    .celebrations-list__row {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-3);
+      padding: var(--space-3);
+      background: var(--surface-container-lowest);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+    }
+    .celebrations-list__icon {
+      width: 32px; height: 32px; flex-shrink: 0;
+      border-radius: var(--radius-full, 999px);
+      background: var(--surface-container);
+      color: var(--brand-rose);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .celebrations-list__icon--mint { color: var(--brand-mint); }
+    .celebrations-list__body { flex: 1; min-width: 0; }
+    .celebrations-list__title {
+      color: var(--text-main);
+      font-size: var(--text-sm);
+      font-weight: 600;
+      line-height: 1.3;
+    }
+    .celebrations-list__meta {
+      color: var(--text-muted);
+      font-size: 11px;
+      letter-spacing: 0.02em;
+      margin-top: 2px;
+    }
+
     /* ── Section heading (mirrors account.html) ── */
     .dash-section__head {
       display: flex;
@@ -1214,6 +1341,22 @@
     </div>
   </div>
 
+  <!-- Celebrations Modal (Phase 5 — opened from "View →" on combined toast) -->
+  <div id="celebrationsModal" class="modal-overlay" onclick="window.closeModalOnBgClick(event, 'celebrationsModal')">
+    <div class="modal-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: var(--space-3); border-bottom: 1px solid var(--border-light); margin-bottom: var(--space-3);">
+        <div>
+          <span class="label-caps modal-eyebrow">Since your last visit</span>
+          <h3 class="modal-title" style="font-size: 24px; margin: 0;">New unlocks.</h3>
+        </div>
+        <button class="kebab-btn" style="font-size: 24px; line-height: 1;" onclick="window.closeModals()" aria-label="Close">×</button>
+      </div>
+      <div id="celebrations-modal-content" class="celebrations-list">
+        <div class="spinner-sm"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- Note Viewer Modal -->
   <div id="noteViewerModal" class="modal-overlay" onclick="window.closeModalOnBgClick(event, 'noteViewerModal')">
     <div class="modal-content" style="max-width: 600px;">
@@ -1403,6 +1546,13 @@
         loadFamilyActivity(),
         loadWeeklyDigest(),
       ]);
+
+      // Phase 5 — celebration toast for new badges / mastery levels since
+      // the parent's last dashboard visit. Runs AFTER loadStudents resolves
+      // so window.__cachedStudents is populated and we can scope the
+      // unlocks query to this parent's learners. Bumps
+      // profile.dashboard_last_seen_at as a side-effect.
+      loadCelebrations(profile);
 
       // Render HUD strip for the most recently active student
       const hudStudentId = localStorage.getItem('shl_active_student_id');
@@ -1834,6 +1984,213 @@
             ? '<p class="digest-empty">No activity this week yet. The week resets each Monday.</p>'
             : pacer);
     }
+
+    /* ─── CELEBRATION TOAST (Phase 5) ─────────────────────────────────────────
+       Once per dashboard visit: if any learner unlocked a new badge or
+       crossed AL3+ since profile.dashboard_last_seen_at, show a top-right
+       toast. Multiple unlocks collapse into a single toast with a "View →"
+       link that opens a modal listing them all.
+
+       The timestamp is bumped to NOW after the query runs (regardless of
+       whether unlocks were found) so the toast cannot re-appear on a
+       refresh — engagement, not nag. */
+
+    let _celebrationItems = [];
+
+    async function loadCelebrations(profile) {
+      if (!profile) return;
+      // currentStudents is populated by loadStudents (top-level let in this
+      // script scope). loadCelebrations runs AFTER the loadStudents-bearing
+      // Promise.all resolves, so this is safe.
+      const students = Array.isArray(currentStudents) ? currentStudents : [];
+      if (students.length === 0) {
+        // Still bump the marker so a future first-learner-add doesn't
+        // surface stale events.
+        await bumpDashboardSeenAt();
+        return;
+      }
+      const sids = students.map(s => s.id);
+      const sinceIso = profile.dashboard_last_seen_at;
+      // Defensive — DEFAULT now() means this should be set after migration 025
+      if (!sinceIso) {
+        await bumpDashboardSeenAt();
+        return;
+      }
+
+      try {
+        const sb = await getSupabase();
+        const [badgesRes, masteryRes] = await Promise.all([
+          sb.from('student_badges')
+            .select('id, student_id, badge_id, earned_at, badge_definitions(name, rarity, icon_url)')
+            .in('student_id', sids)
+            .gt('earned_at', sinceIso)
+            .order('earned_at', { ascending: false })
+            .limit(20),
+          sb.from('mastery_levels')
+            .select('id, student_id, subject, topic, probability, last_updated')
+            .in('student_id', sids)
+            .gte('probability', 0.70)
+            .gt('last_updated', sinceIso)
+            .order('last_updated', { ascending: false })
+            .limit(20),
+        ]);
+
+        const studentName = id => {
+          const s = students.find(x => x.id === id);
+          return (s && s.name) || 'Your child';
+        };
+
+        const items = [];
+        (badgesRes.data || []).forEach(b => {
+          const def = b.badge_definitions || {};
+          items.push({
+            type:         'badge',
+            student_name: studentName(b.student_id),
+            title:        `${studentName(b.student_id)} earned ${def.name || 'a new badge'}`,
+            detail:       'Badge unlocked' + (def.rarity ? ` · ${def.rarity}` : ''),
+            occurred_at:  b.earned_at,
+          });
+        });
+        (masteryRes.data || []).forEach(m => {
+          const band = probabilityToALBand(m.probability || 0);
+          items.push({
+            type:         'mastery',
+            student_name: studentName(m.student_id),
+            title:        `${studentName(m.student_id)} reached ${band} on ${m.topic}`,
+            detail:       'Mastery level',
+            occurred_at:  m.last_updated,
+          });
+        });
+
+        // Always bump — even if zero items found. This is the entire point
+        // of the marker: "once per visit, not per session."
+        await bumpDashboardSeenAt();
+
+        if (items.length === 0) return;
+        items.sort((a, b) => new Date(b.occurred_at).getTime() - new Date(a.occurred_at).getTime());
+        _celebrationItems = items;
+        renderCelebrationToast(items);
+      } catch (err) {
+        console.error('[celebrations] load error:', err && err.message);
+        // Don't bump on error — we'd lose the events
+      }
+    }
+
+    async function bumpDashboardSeenAt() {
+      try {
+        const sb = await getSupabase();
+        const nowIso = new Date().toISOString();
+        await sb.from('profiles')
+          .update({ dashboard_last_seen_at: nowIso })
+          .eq('id', window.userProfile.id);
+        // Mirror so a subsequent loadCelebrations in the same session uses
+        // the new marker.
+        if (window.userProfile) window.userProfile.dashboard_last_seen_at = nowIso;
+      } catch (err) {
+        console.error('[celebrations] bump failed (non-fatal):', err && err.message);
+      }
+    }
+
+    function renderCelebrationToast(items) {
+      // Clean up any prior toast from this session
+      const existing = document.getElementById('celebration-toast');
+      if (existing) existing.remove();
+
+      const escape = (s) => String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+      const isCombined = items.length > 1;
+      const eyebrow = isCombined ? 'New unlocks' : 'New achievement';
+      const summary = isCombined
+        ? `${items.length} unlocks since your last visit`
+        : items[0].title;
+
+      // Sparkle icon — same shape as the onboarding step 3 sparkle
+      const sparkleSvg =
+        '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"'
+        + ' stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">'
+        + '<path d="M12 2l2.39 5.45L20 8.27l-4 3.91L17.18 18 12 15.27 6.82 18 8 12.18 4 8.27l5.61-.82z"/>'
+        + '</svg>';
+
+      const toast = document.createElement('div');
+      toast.className = 'celebration-toast';
+      toast.id = 'celebration-toast';
+      toast.setAttribute('role', 'status');
+      toast.setAttribute('aria-live', 'polite');
+      toast.innerHTML = ''
+        + '<div class="celebration-toast__icon" aria-hidden="true">' + sparkleSvg + '</div>'
+        + '<div class="celebration-toast__body">'
+          + '<div class="celebration-toast__eyebrow">' + escape(eyebrow) + '</div>'
+          + '<div class="celebration-toast__summary">' + escape(summary) + '</div>'
+        + '</div>'
+        + '<div class="celebration-toast__actions">'
+          + (isCombined
+              ? '<button class="celebration-toast__view" onclick="window.openCelebrationsModal()">View →</button>'
+              : '')
+          + '<button class="celebration-toast__close" onclick="window.dismissCelebrationToast()" aria-label="Dismiss">×</button>'
+        + '</div>';
+      document.body.appendChild(toast);
+
+      // Slide in next frame so the transition has somewhere to go
+      requestAnimationFrame(() => {
+        const el = document.getElementById('celebration-toast');
+        if (el) el.classList.add('is-visible');
+      });
+
+      // Auto-dismiss after 6s — only if the user hasn't already dismissed
+      setTimeout(() => {
+        const el = document.getElementById('celebration-toast');
+        if (el) window.dismissCelebrationToast();
+      }, 6000);
+    }
+
+    window.dismissCelebrationToast = function () {
+      const el = document.getElementById('celebration-toast');
+      if (!el) return;
+      el.classList.remove('is-visible');
+      // Remove from the DOM after the slide-out finishes
+      setTimeout(() => { if (el && el.parentNode) el.remove(); }, 320);
+    };
+
+    window.openCelebrationsModal = function () {
+      const content = document.getElementById('celebrations-modal-content');
+      const items = _celebrationItems || [];
+      if (!content) return;
+
+      const escape = (s) => String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+      const sparkleSvg =
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"'
+        + ' stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">'
+        + '<path d="M12 2l2.39 5.45L20 8.27l-4 3.91L17.18 18 12 15.27 6.82 18 8 12.18 4 8.27l5.61-.82z"/>'
+        + '</svg>';
+      const starSvg =
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"'
+        + ' stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">'
+        + '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>'
+        + '</svg>';
+
+      content.innerHTML = items.map(it => {
+        const iconSvg  = it.type === 'mastery' ? starSvg : sparkleSvg;
+        const iconCls  = it.type === 'mastery' ? 'celebrations-list__icon celebrations-list__icon--mint' : 'celebrations-list__icon';
+        return ''
+          + '<div class="celebrations-list__row">'
+            + '<div class="' + iconCls + '" aria-hidden="true">' + iconSvg + '</div>'
+            + '<div class="celebrations-list__body">'
+              + '<div class="celebrations-list__title">' + escape(it.title) + '</div>'
+              + '<div class="celebrations-list__meta">' + escape(it.detail) + ' · ' + escape(relativeTime(it.occurred_at)) + '</div>'
+            + '</div>'
+          + '</div>';
+      }).join('');
+
+      const modal = document.getElementById('celebrationsModal');
+      if (modal) modal.classList.add('is-open');
+      // Dismiss the toast since the user is now viewing the full list
+      window.dismissCelebrationToast();
+    };
 
     function relativeTime(iso) {
       if (!iso) return '—';
