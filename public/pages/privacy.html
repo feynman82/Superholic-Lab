@@ -21,6 +21,7 @@
   </script>
 
   <style>
+    /* ── Hero (restrained: .h1-as on .bg-surface, no display-xl, no grid-texture) ── */
     .privacy-hero {
       padding-top: calc(64px + var(--space-8));
       padding-bottom: var(--space-8);
@@ -187,6 +188,41 @@
       line-height: 1.2;
     }
 
+    /* ── TL;DR list ── overrides ul.rose-list's flex layout, which was creating
+       a column break between <strong> and the description text. Here we use a
+       block-level list with a hand-rolled rose ▸ marker via ::before, so the
+       strong tag and its description flow as one wrapped paragraph. */
+    ul.tldr__list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+    ul.tldr__list li {
+      position: relative;
+      padding-left: var(--space-3);
+      color: var(--text-main);
+      font-size: var(--text-base);
+      line-height: 1.6;
+      /* Reset rose-list's flex layout so children wrap inline */
+      display: block;
+    }
+    ul.tldr__list li::before {
+      content: '▸';
+      position: absolute;
+      left: 0;
+      top: 0;
+      color: var(--brand-rose);
+      line-height: 1.6;
+    }
+    ul.tldr__list li strong {
+      font-weight: 600;
+      color: var(--text-main);
+      margin-right: 0.35em;
+    }
+
     /* ── Policy section ── */
     .policy-section {
       margin-bottom: var(--space-8);
@@ -283,20 +319,16 @@
       line-height: 1.6;
     }
   </style>
-
-
-
-  <!-- ═══════════════════════════════════════════════════════════════════════
-       HERO — restrained, on .bg-surface, .h1-as, no display-xl
-       ═══════════════════════════════════════════════════════════════════════ -->  
-
 </head>
 
 <body class="bg-surface has-bottom-nav">
 
   <global-header></global-header>
 
-<section class="privacy-hero bg-surface">
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       HERO — restrained, on .bg-surface, .h1-as, no display-xl
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <section class="privacy-hero bg-surface">
     <div class="container-as">
       <span class="label-caps privacy-hero__eyebrow">PDPA · Compliant</span>
       <h1 class="h1-as privacy-hero__title">Privacy Policy</h1>
@@ -332,10 +364,10 @@
           <article class="card-glass tldr" id="tldr">
             <span class="label-caps tldr__eyebrow">At a glance</span>
             <h2 class="font-display tldr__title">The short version</h2>
-            <ul class="rose-list">
-              <li><strong>No ads, ever.</strong>&nbsp;We do not sell your personal data or run advertisements.</li>
-              <li><strong>Data stored in Singapore.</strong>&nbsp;Encrypted and hosted locally on AWS Singapore.</li>
-              <li><strong>Right to forget.</strong>&nbsp;Request full deletion of your account at any time, processed within 30 days.</li>
+            <ul class="tldr__list">
+              <li><strong>No ads, ever.</strong> We do not sell your personal data or run advertisements.</li>
+              <li><strong>Data stored in Singapore.</strong> Encrypted and hosted locally on AWS Singapore.</li>
+              <li><strong>Right to forget.</strong> Request full deletion of your account at any time, processed within 30 days.</li>
             </ul>
           </article>
 

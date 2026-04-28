@@ -1,10 +1,11 @@
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Terms of Service — Superholic Lab</title>
-  <meta name="description" content="Clear, fair, and straightforward Terms of Service for Superholic Lab.">
+  <meta name="description" content="Clear, fair, and straightforward Terms of Service for Superholic Lab — covering eligibility, subscriptions, refunds, AI tutor disclaimers, and acceptable use under Singapore law." />
 
   <!-- Fonts & Styles -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -16,135 +17,680 @@
   <script src="/js/footer.js" defer></script>
   <script type="module">
     import { guardPage } from '/js/auth.js';
-    await guardPage(false); 
+    await guardPage(false);
   </script>
+
+  <!-- ────────────────────────────────────────────────────────────────────────
+       PAGE-LEVEL STYLES (architect-scholar layer)
+       Mirrors privacy.html for consistency. NO hardcoded hex/rgba in HTML
+       style="" attributes. All colours and spacing reference CSS variables.
+       ──────────────────────────────────────────────────────────────────────── */
+  <style>
+    /* ── Hero (restrained: .h1-as on .bg-surface) — identical pattern to privacy.html ── */
+    .terms-hero {
+      padding-top: calc(64px + var(--space-8));
+      padding-bottom: var(--space-8);
+      border-bottom: 1px solid var(--border-light);
+    }
+    .terms-hero__eyebrow {
+      color: var(--brand-rose);
+      margin-bottom: var(--space-3);
+    }
+    .terms-hero__title {
+      color: var(--text-main);
+      margin: 0 0 var(--space-3) 0;
+      max-width: 720px;
+    }
+    .terms-hero__lede {
+      color: var(--text-muted);
+      max-width: 640px;
+      margin: 0 0 var(--space-4) 0;
+    }
+    .terms-hero__meta {
+      display: flex;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    /* ── Body layout: identical asymmetric 7+5 grid as privacy.html ── */
+    .terms-body {
+      padding-top: var(--space-8);
+      padding-bottom: var(--space-10);
+    }
+    .terms-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: var(--gutter);
+      align-items: start;
+    }
+    .terms-main {
+      grid-column: span 12;
+      max-width: 720px;
+    }
+    .terms-aside {
+      display: none;
+    }
+    @media (min-width: 1024px) {
+      .terms-main {
+        grid-column: 1 / span 7;
+      }
+      .terms-aside {
+        display: block;
+        grid-column: 9 / span 4;
+        position: sticky;
+        top: calc(64px + var(--space-4));
+      }
+    }
+
+    /* ── Sticky TOC (desktop) — identical to privacy.html ── */
+    .toc {
+      padding: var(--space-4);
+    }
+    .toc__label {
+      color: var(--brand-rose);
+      margin-bottom: var(--space-3);
+      display: block;
+    }
+    .toc__list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+    .toc__link {
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-2);
+      padding: var(--space-1) 0 var(--space-1) var(--space-2);
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: var(--text-sm);
+      line-height: 1.5;
+      border-left: 2px solid transparent;
+      transition: color 160ms ease, border-color 160ms ease;
+    }
+    .toc__link:hover {
+      color: var(--text-main);
+    }
+    .toc__link.is-active {
+      color: var(--brand-rose);
+      border-left-color: var(--brand-rose);
+    }
+    .toc__num {
+      font-family: var(--font-display, 'Bebas Neue', sans-serif);
+      letter-spacing: 0.05em;
+      color: var(--text-faint, var(--outline));
+      flex-shrink: 0;
+    }
+    .toc__link.is-active .toc__num {
+      color: var(--brand-rose);
+    }
+
+    /* ── Mobile compact section chip — identical to privacy.html ── */
+    .toc-mobile {
+      position: sticky;
+      top: 64px;
+      z-index: 20;
+      margin-bottom: var(--space-4);
+      padding: var(--space-2) var(--space-3);
+      background: var(--surface);
+      border-bottom: 1px solid var(--border-light);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: var(--text-sm);
+      color: var(--text-muted);
+    }
+    .toc-mobile__current {
+      color: var(--text-main);
+      font-weight: 600;
+    }
+    @media (min-width: 1024px) {
+      .toc-mobile { display: none; }
+    }
+
+    /* ── TL;DR card (matches privacy.html, with the alignment fix) ── */
+    .tldr {
+      padding: var(--space-5);
+      margin-bottom: var(--space-8);
+    }
+    .tldr__eyebrow {
+      color: var(--brand-sage);
+      margin-bottom: var(--space-3);
+      display: block;
+    }
+    .tldr__title {
+      color: var(--text-main);
+      margin: 0 0 var(--space-4) 0;
+      font-size: 28px;
+      line-height: 1.2;
+    }
+    /* TL;DR list — block-flow with hand-rolled rose marker so <strong> + text
+       wrap as one paragraph instead of fracturing into a 2-column flex. */
+    ul.tldr__list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+    ul.tldr__list li {
+      position: relative;
+      padding-left: var(--space-3);
+      color: var(--text-main);
+      font-size: var(--text-base);
+      line-height: 1.6;
+      display: block;
+    }
+    ul.tldr__list li::before {
+      content: '▸';
+      position: absolute;
+      left: 0;
+      top: 0;
+      color: var(--brand-rose);
+      line-height: 1.6;
+    }
+    ul.tldr__list li strong {
+      font-weight: 600;
+      color: var(--text-main);
+      margin-right: 0.35em;
+    }
+
+    /* ── Section (mirror of privacy.html .policy-section) ── */
+    .terms-section {
+      margin-bottom: var(--space-8);
+      scroll-margin-top: calc(64px + var(--space-4));
+    }
+    .terms-section__eyebrow {
+      color: var(--brand-rose);
+      display: block;
+      margin-bottom: var(--space-2);
+    }
+    .terms-section__title {
+      color: var(--text-main);
+      margin: 0 0 var(--space-4) 0;
+    }
+    .terms-section__body {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      color: var(--text-main);
+      font-size: var(--text-base);
+      line-height: 1.7;
+    }
+    .terms-section__body strong {
+      color: var(--text-main);
+      font-weight: 600;
+    }
+    .terms-section__body em {
+      color: var(--text-muted);
+    }
+    .terms-section__body a {
+      color: var(--brand-rose);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    /* Definition-style list (mirror of privacy.html .policy-list) */
+    .terms-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      border-top: 1px solid var(--border-light);
+    }
+    .terms-list li {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-1);
+      padding: var(--space-3) 0;
+      border-bottom: 1px solid var(--border-light);
+    }
+    @media (min-width: 640px) {
+      .terms-list li {
+        grid-template-columns: 200px 1fr;
+        gap: var(--space-3);
+        align-items: baseline;
+      }
+    }
+    .terms-list__term {
+      color: var(--text-main);
+      font-weight: 600;
+      font-size: var(--text-sm);
+    }
+    .terms-list__def {
+      color: var(--text-muted);
+      font-size: var(--text-base);
+      line-height: 1.6;
+    }
+
+    /* Pricing matrix used in §03 — hairline architect-scholar table */
+    .price-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: var(--space-2) 0;
+      font-size: var(--text-sm);
+    }
+    .price-table th {
+      text-align: left;
+      padding: var(--space-2) var(--space-3);
+      background: transparent;
+      color: var(--brand-rose);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border-dark);
+    }
+    .price-table td {
+      padding: var(--space-2) var(--space-3);
+      border-bottom: 1px solid var(--border-light);
+      color: var(--text-main);
+      vertical-align: top;
+    }
+    .price-table tr:last-child td {
+      border-bottom: none;
+    }
+    .price-table td strong {
+      color: var(--text-main);
+    }
+
+    /* AI disclaimer callout (§04) — quiet emphasis, sage left-rail */
+    .ai-callout {
+      margin-top: var(--space-3);
+      padding: var(--space-4);
+      border-left: 3px solid var(--brand-sage);
+    }
+    .ai-callout__label {
+      color: var(--brand-sage);
+      display: block;
+      margin-bottom: var(--space-2);
+    }
+    .ai-callout__text {
+      color: var(--text-main);
+      margin: 0;
+      font-size: var(--text-base);
+      line-height: 1.6;
+    }
+
+    /* Contact callout at end of §07, pattern matched to privacy.html DPO callout */
+    .contact-callout {
+      margin-top: var(--space-4);
+      padding: var(--space-4);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      align-items: flex-start;
+    }
+    .contact-callout__label {
+      color: var(--brand-rose);
+      display: block;
+    }
+    .contact-callout__text {
+      color: var(--text-main);
+      margin: 0;
+      font-size: var(--text-base);
+      line-height: 1.6;
+    }
+  </style>
 </head>
 
-<body class="has-bottom-nav">
+<body class="bg-surface has-bottom-nav">
 
   <global-header></global-header>
 
-  <!-- ═══════════════════ HERO (Sage + Dots) ═══════════════════ -->
-  <section class="bg-sage texture-dots py-10" style="padding-top: calc(64px + var(--space-8)); text-align: center;">
-    <div class="container flex flex-col items-center gap-4">
-      <div class="badge"
-        style="background: rgba(0, 0, 0, 0.25); color: var(--brand-rose); backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.1);">
-        Legal Information</div>
-      <h1 class="font-display text-4xl text-white mt-2 mb-2" style="font-size: 3.5rem; line-height: 1.1;">
-        Terms of <span class="text-rose">Service</span>
-      </h1>
-      <p class="text-lg" style="color: rgba(255,255,255,0.8); max-width: 600px;">
-        Last updated: 23 March 2026. Simple, honest rules for using Superholic Lab.
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       HERO — restrained, on .bg-surface (matches privacy.html / faq.html)
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <section class="terms-hero bg-surface">
+    <div class="container-as">
+      <span class="label-caps terms-hero__eyebrow">Legal · Singapore</span>
+      <h1 class="h1-as terms-hero__title">Terms of Service</h1>
+      <p class="body-lg terms-hero__lede">
+        The rules for using Superholic Lab. Plain language. Singapore-governed. Fair to both sides.
       </p>
+      <div class="terms-hero__meta">
+        <span class="badge badge-neutral">Last updated · 28 April 2026</span>
+        <span class="badge badge-sage">Governed by Singapore law</span>
+      </div>
     </div>
   </section>
 
-  <!-- ═══════════════════ MAIN CONTENT (Off-White + Light Grid) ═══════════════════ -->
-  <section class="py-10 bg-page texture-light-grid">
-    <div class="container" style="max-width: 800px;">
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       BODY — asymmetric 7+5 grid with sticky TOC (matches privacy.html)
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <section class="terms-body bg-surface">
+    <div class="container-as">
 
-      <!-- TL;DR Summary Card -->
-      <div class="glass-panel-1 hover-lift mb-8 p-6" style="border-left: 4px solid var(--brand-mint);">
-        <h2 class="font-display text-2xl text-main mb-4 flex items-center gap-2">
-          <span>✨</span> The Short Version (TL;DR)
-        </h2>
-        <ul class="flex flex-col gap-3 text-sm text-main" style="list-style: none; text-align: justify;">
-          <li class="flex items-start gap-2"><span class="text-success font-bold">✓</span> <span><strong>You're in
-                control:</strong> Cancel your subscription anytime. No hidden fees.</span></li>
-          <li class="flex items-start gap-2"><span class="text-success font-bold">✓</span> <span><strong>AI is a tool,
-                not magic:</strong> Our AI Tutor is deeply aligned with the MOE syllabus, but it's a learning aid, not
-              an official examiner.</span></li>
-          <li class="flex items-start gap-2"><span class="text-success font-bold">✓</span> <span><strong>Your data is
-                yours:</strong> We do not sell your data, and your child's chat logs are NEVER used to train public AI
-              models.</span></li>
-        </ul>
+      <!-- Mobile compact TOC (sticks below navbar on mobile) -->
+      <div class="toc-mobile" aria-hidden="true">
+        <span class="label-caps">§</span>
+        <span class="toc-mobile__current" id="tocMobileCurrent">At a glance</span>
       </div>
 
-      <!-- Full Terms Cards -->
-      <div class="flex flex-col gap-6">
+      <div class="terms-grid">
 
-        <div class="glass-panel-1 p-6 hover-lift">
-          <h2 class="font-display text-2xl text-main mb-4 flex items-center gap-3">
-            <span class="text-3xl">🤝</span> 1. About these Terms
-          </h2>
-          <div class="text-muted text-sm flex flex-col gap-3" style="text-align: justify;">
-            <p>These Terms of Service govern your access to and use of <strong>www.superholiclab.com</strong> (the
-              "Service"), operated by <strong>Superholic Lab Pte. Ltd.</strong>, incorporated in Singapore.</p>
-            <p>By creating an account or using the Service, you agree to be bound by these Terms. If you do not agree,
-              please do not use the Service.</p>
-          </div>
-        </div>
+        <!-- ── 7-COL MAIN COLUMN ──────────────────────────────────────────── -->
+        <main class="terms-main">
 
-        <div class="glass-panel-1 p-6 hover-lift">
-          <h2 class="font-display text-2xl text-main mb-4 flex items-center gap-3">
-            <span class="text-3xl">👤</span> 2. Eligibility & Accounts
-          </h2>
-          <div class="text-muted text-sm flex flex-col gap-3" style="text-align: justify;">
-            <p>Accounts must be created by a parent or guardian aged 18 or above on behalf of their child. By
-              registering, you represent that you have the authority to agree to these Terms on behalf of your child.
-            </p>
-            <p>You are responsible for maintaining the confidentiality of your account credentials. Notify us
-              immediately at <strong>support@superholiclab.com</strong> if you suspect unauthorised access.</p>
-          </div>
-        </div>
+          <!-- TL;DR card -->
+          <article class="card-glass tldr" id="tldr">
+            <span class="label-caps tldr__eyebrow">At a glance</span>
+            <h2 class="font-display tldr__title">The short version</h2>
+            <ul class="tldr__list">
+              <li><strong>You're in control.</strong> Cancel anytime from your account. No hidden fees, no auto-traps.</li>
+              <li><strong>AI is a learning aid.</strong> Miss Wena helps your child reason — she does not replace MOE materials, teachers, or official examiners.</li>
+              <li><strong>Your data is yours.</strong> Chat logs are never used to train public AI models. See our <a href="/pages/privacy.html">Privacy Policy</a>.</li>
+            </ul>
+          </article>
 
-        <div class="glass-panel-1 p-6 hover-lift">
-          <h2 class="font-display text-2xl text-main mb-4 flex items-center gap-3">
-            <span class="text-3xl">💳</span> 3. Subscriptions & Billing
-          </h2>
-          <div class="text-muted text-sm flex flex-col gap-3" style="text-align: justify;">
-            <p><strong>Free Trial:</strong> New accounts receive a 7-day free trial. No credit card is required to
-              start. At the end of the trial, access will pause unless you subscribe.</p>
-            <p><strong>Billing:</strong> Paid subscriptions are billed in advance. By subscribing, you authorise us to
-              charge your payment method (via Stripe, Inc.) on a recurring basis. Prices are in Singapore Dollars (SGD).
-            </p>
-            <p><strong>Cancellations & Refunds:</strong> You may cancel anytime via your billing dashboard. We offer a
-              7-day money-back guarantee for new paid subscriptions. Refunds beyond 7 days are considered on a
-              case-by-case basis.</p>
-          </div>
-        </div>
+          <!-- §01 — About these Terms -->
+          <article class="terms-section" id="about">
+            <span class="label-caps terms-section__eyebrow">§ 01 — Agreement</span>
+            <h2 class="h2-as terms-section__title">About these Terms</h2>
+            <div class="terms-section__body">
+              <p>
+                These Terms of Service ("Terms") govern your access to and use of
+                <strong>www.superholiclab.com</strong> and its subdomains (the "Service"),
+                operated by <strong>Superholic Lab Pte. Ltd.</strong>, a company incorporated in Singapore.
+              </p>
+              <p>
+                By creating an account, subscribing, or otherwise using the Service, you agree to these
+                Terms. If you do not agree, please do not use the Service. We may update these Terms from
+                time to time; material changes will be announced by email and on this page at least 14 days
+                before they take effect.
+              </p>
+            </div>
+          </article>
 
-        <div class="glass-panel-1 p-6 hover-lift">
-          <h2 class="font-display text-2xl text-main mb-4 flex items-center gap-3">
-            <span class="text-3xl">🤖</span> 4. The AI Tutor Clause
-          </h2>
-          <div class="text-muted text-sm flex flex-col gap-3" style="text-align: justify;">
-            <p>The AI Tutor feature uses advanced large language models (Anthropic) to generate educational explanations
-              aligned with the Singapore MOE curriculum.</p>
-            <p><strong>Important Disclaimer:</strong> While highly accurate, AI-generated content may occasionally
-              contain errors. It is an educational learning aid and does not constitute official examiner marking
-              advice. Students should verify answers against official MOE materials.</p>
-            <p><strong>No Public Training:</strong> We strictly protect your privacy. Your child's conversation logs and
-              inputs are <strong>never</strong> used by Anthropic or Superholic Lab to train public AI foundation
-              models.</p>
-          </div>
-        </div>
+          <!-- §02 — Eligibility & accounts -->
+          <article class="terms-section" id="eligibility">
+            <span class="label-caps terms-section__eyebrow">§ 02 — Accounts</span>
+            <h2 class="h2-as terms-section__title">Eligibility &amp; accounts</h2>
+            <div class="terms-section__body">
+              <p>
+                Accounts must be created by a parent or legal guardian aged <strong>18 or above</strong>
+                on behalf of their child. By registering, you confirm you have the authority to agree to
+                these Terms on behalf of the children whose profiles you create.
+              </p>
+              <p>
+                You may sign in via email and password, Google OAuth, or Apple OAuth. You are responsible
+                for keeping your credentials confidential and for all activity that occurs under your
+                account. If you suspect unauthorised access, email
+                <strong>support@superholiclab.com</strong> immediately.
+              </p>
+              <p>
+                Children's profiles store only a first name and school level — they are not standalone
+                accounts and cannot be used to sign in independently.
+              </p>
+            </div>
+          </article>
 
-        <div class="glass-panel-1 p-6 hover-lift">
-          <h2 class="font-display text-2xl text-main mb-4 flex items-center gap-3">
-            <span class="text-3xl">🛡️</span> 5. Acceptable Use & IP
-          </h2>
-          <div class="text-muted text-sm flex flex-col gap-3" style="text-align: justify;">
-            <p>All content on the Service (question banks, worked solutions, UI) is owned by Superholic Lab Pte. Ltd.
-              You may not scrape, copy, redistribute, or circumvent our paywalls.</p>
-            <p>You retain ownership of any data you input. By using the Service, you grant us a limited licence to
-              process that data solely to provide the Service to you.</p>
-          </div>
-        </div>
+          <!-- §03 — Subscriptions, trial & billing -->
+          <article class="terms-section" id="subscriptions">
+            <span class="label-caps terms-section__eyebrow">§ 03 — Billing</span>
+            <h2 class="h2-as terms-section__title">Subscriptions, trial &amp; billing</h2>
+            <div class="terms-section__body">
 
-        <div class="glass-panel-1 p-6 hover-lift">
-          <h2 class="font-display text-2xl text-main mb-4 flex items-center gap-3">
-            <span class="text-3xl">⚖️</span> 6. Liability & Singapore Law
-          </h2>
-          <div class="text-muted text-sm flex flex-col gap-3" style="text-align: justify;">
-            <p>To the fullest extent permitted by Singapore law, Superholic Lab Pte. Ltd. shall not be liable for any
-              indirect, incidental, or consequential damages arising from your use of the Service. The Service is
-              provided on an "as is" basis.</p>
-            <p>These Terms are governed by the laws of Singapore. We encourage you to contact
-              <strong>support@superholiclab.com</strong> to resolve any disputes amicably first.
-            </p>
-          </div>
-        </div>
+              <p>
+                <strong>7-day free trial.</strong> New accounts receive a 7-day free trial.
+                <strong>No credit card is required to start.</strong> Trial users may attempt up to
+                5 questions per day. When the trial ends, paid features pause until you subscribe.
+              </p>
+
+              <p>
+                <strong>Plans &amp; pricing.</strong> All prices are in Singapore Dollars (SGD) and
+                exclusive of any applicable taxes.
+              </p>
+
+              <table class="price-table" aria-label="Subscription plans">
+                <thead>
+                  <tr>
+                    <th>Plan</th>
+                    <th>Monthly</th>
+                    <th>Annual</th>
+                    <th>Children</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>All Subjects</strong></td>
+                    <td>S$12.99 / mo</td>
+                    <td>S$129.90 / yr <em>(save 17%)</em></td>
+                    <td>1 profile</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Family</strong></td>
+                    <td>S$19.99 / mo</td>
+                    <td>S$199.90 / yr <em>(save 17%)</em></td>
+                    <td>up to 3 profiles</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <p>
+                <strong>How charging works.</strong> When you click <em>Subscribe</em>, you authorise
+                Superholic Lab and our payment processor (<strong>Stripe, Inc.</strong>) to charge your
+                payment method immediately and on a recurring basis until you cancel. The first charge
+                begins your paid term — Stripe does not extend a trial period; the trial is tracked
+                separately within our application.
+              </p>
+
+              <p>
+                <strong>Cancellation.</strong> You may cancel your subscription at any time from your
+                account dashboard or via the Stripe customer portal. Cancellation takes effect at the
+                end of the current billing period — you keep full access until then. We will not charge
+                you again after cancellation.
+              </p>
+
+              <p>
+                <strong>Refunds.</strong> We offer a <strong>7-day no-questions-asked refund</strong>
+                on any new paid subscription. To request a refund, email
+                <strong>support@superholiclab.com</strong> within 7 days of the charge and we will
+                process it via Stripe within 5 working days. After 7 days, refunds are considered on a
+                case-by-case basis where required by Singapore consumer-protection law.
+              </p>
+
+              <p>
+                <strong>Failed payments.</strong> If your payment method fails on renewal, we will retry
+                up to 3 times over 14 days. If all retries fail, your subscription is paused until you
+                update your payment details — we will not delete your data during this period.
+              </p>
+            </div>
+          </article>
+
+          <!-- §04 — AI tutor disclaimer -->
+          <article class="terms-section" id="ai-tutor">
+            <span class="label-caps terms-section__eyebrow">§ 04 — AI tutor</span>
+            <h2 class="h2-as terms-section__title">The AI tutor clause</h2>
+            <div class="terms-section__body">
+              <p>
+                Our AI tutor (<strong>Miss Wena</strong>) and exam-paper generator are powered by
+                third-party large language models, currently including
+                <strong>Google Gemini</strong>, <strong>OpenAI</strong>, and <strong>Anthropic Claude</strong>.
+                Different features may use different models. We may change providers or model versions at
+                any time to improve quality, latency, or safety — without notice — provided the function
+                of the feature remains substantially the same.
+              </p>
+
+              <p>
+                Outputs are generated to align with the Singapore MOE syllabus and SEAB exam formats, but
+                because they are AI-generated they may occasionally be incomplete or contain errors.
+              </p>
+
+              <div class="card-glass ai-callout">
+                <span class="label-caps ai-callout__label">Important disclaimer</span>
+                <p class="ai-callout__text">
+                  AI outputs are a learning aid, not official examiner marking advice. Where accuracy
+                  matters — especially in the run-up to PSLE or formal school assessments — students and
+                  parents should verify against official MOE / SEAB materials and their child's teachers.
+                  Superholic Lab is not affiliated with, endorsed by, or representing MOE or SEAB.
+                </p>
+              </div>
+
+              <p>
+                <strong>No public training on your data.</strong> Your child's chat logs, quiz answers,
+                and any other inputs are <strong>not</strong> used by Superholic Lab or by any of our AI
+                providers to train their public foundation models. Inputs are processed solely to deliver
+                the requested feature and are stored securely under our
+                <a href="/pages/privacy.html">Privacy Policy</a>.
+              </p>
+            </div>
+          </article>
+
+          <!-- §05 — Acceptable use -->
+          <article class="terms-section" id="acceptable-use">
+            <span class="label-caps terms-section__eyebrow">§ 05 — Acceptable use</span>
+            <h2 class="h2-as terms-section__title">Acceptable use</h2>
+            <div class="terms-section__body">
+              <p>
+                We provide a learning environment for children. To keep it safe and useful, you agree
+                <strong>not</strong> to:
+              </p>
+              <ul class="terms-list">
+                <li>
+                  <span class="terms-list__term">Misuse the AI tutor</span>
+                  <span class="terms-list__def">
+                    submit harmful, illegal, sexual, hateful, or self-harm-related prompts; attempt to
+                    extract our system prompts; or use the tutor for tasks outside primary-school education.
+                  </span>
+                </li>
+                <li>
+                  <span class="terms-list__term">Scrape or copy</span>
+                  <span class="terms-list__def">
+                    extract questions, worked solutions, exam papers, or other Service content via
+                    automated means or for redistribution, training of competing AI systems, or commercial reuse.
+                  </span>
+                </li>
+                <li>
+                  <span class="terms-list__term">Circumvent paywalls</span>
+                  <span class="terms-list__def">
+                    bypass authentication, daily question limits, the Family-plan profile cap, or any
+                    other access controls.
+                  </span>
+                </li>
+                <li>
+                  <span class="terms-list__term">Share accounts commercially</span>
+                  <span class="terms-list__def">
+                    resell, sublicense, or share access with students outside your immediate family. The
+                    Family plan covers up to 3 children of the same household.
+                  </span>
+                </li>
+                <li>
+                  <span class="terms-list__term">Impersonate or harass</span>
+                  <span class="terms-list__def">
+                    impersonate another person, abuse our staff or other users, or use the Service to
+                    harass any individual.
+                  </span>
+                </li>
+              </ul>
+              <p>
+                We may suspend or terminate accounts that breach this section, with refunds for any
+                unused subscription period prorated where possible.
+              </p>
+            </div>
+          </article>
+
+          <!-- §06 — Intellectual property -->
+          <article class="terms-section" id="ip">
+            <span class="label-caps terms-section__eyebrow">§ 06 — Intellectual property</span>
+            <h2 class="h2-as terms-section__title">Intellectual property &amp; your data</h2>
+            <div class="terms-section__body">
+              <p>
+                <strong>Our content.</strong> All Service content — including the question bank, worked
+                solutions, exam templates, the Plan Quest framework, the Miss Wena persona, and the
+                interface — is owned by <strong>Superholic Lab Pte. Ltd.</strong> or licensed to us, and
+                is protected by Singapore and international copyright and trademark law. We grant you a
+                personal, non-exclusive, non-transferable, revocable licence to access and use this
+                content solely for your family's private learning while your subscription is active.
+              </p>
+
+              <p>
+                <strong>Your data.</strong> You retain all rights to the data you input — your account
+                details, your child's profile, quiz attempts, AI tutor messages, and study notes. By
+                using the Service, you grant us a limited licence to process that data solely to operate
+                the Service, generate personalised learning recommendations, and provide support to you.
+                We do not claim ownership of your data, do not sell it, and do not share it with
+                advertisers. See our <a href="/pages/privacy.html">Privacy Policy</a> for full detail.
+              </p>
+
+              <p>
+                <strong>Feedback.</strong> If you send us suggestions or feedback, we may use them
+                without obligation. We will never identify you publicly without consent.
+              </p>
+            </div>
+          </article>
+
+          <!-- §07 — Liability, governing law & contact -->
+          <article class="terms-section" id="liability">
+            <span class="label-caps terms-section__eyebrow">§ 07 — Liability &amp; governing law</span>
+            <h2 class="h2-as terms-section__title">Liability, warranty &amp; disputes</h2>
+            <div class="terms-section__body">
+              <p>
+                <strong>Service "as is".</strong> The Service is provided on an "as is" and "as available"
+                basis. We work hard to keep it accurate and reliable, but to the fullest extent permitted
+                by Singapore law we disclaim all implied warranties of merchantability, fitness for a
+                particular purpose, and non-infringement.
+              </p>
+
+              <p>
+                <strong>Limitation of liability.</strong> To the fullest extent permitted by law,
+                Superholic Lab Pte. Ltd. shall not be liable for any indirect, incidental, special,
+                consequential, or punitive damages, or for loss of data, profits, or academic outcomes,
+                arising from or related to your use of the Service. Our total liability to you for any
+                claim shall not exceed the amount you paid us in the 12 months preceding the claim.
+              </p>
+              <p>
+                Nothing in these Terms limits liability that cannot be limited under Singapore law,
+                including liability for fraud or for death or personal injury caused by negligence.
+              </p>
+
+              <p>
+                <strong>Governing law &amp; venue.</strong> These Terms are governed by the laws of the
+                <strong>Republic of Singapore</strong>. Any dispute shall first be raised with us at
+                <strong>support@superholiclab.com</strong> for a 30-day good-faith resolution period.
+                If unresolved, disputes shall be submitted to the exclusive jurisdiction of the
+                Singapore courts.
+              </p>
+
+              <!-- Contact callout (mirrors privacy.html DPO callout) -->
+              <div class="card-glass contact-callout">
+                <span class="label-caps contact-callout__label">Questions about these Terms?</span>
+                <p class="contact-callout__text">
+                  Email our team. We respond within 5 working days.
+                </p>
+                <a href="mailto:support@superholiclab.com" class="btn btn-secondary">
+                  support@superholiclab.com
+                </a>
+              </div>
+            </div>
+          </article>
+
+        </main>
+
+        <!-- ── 4-COL STICKY TOC SIDEBAR (desktop only) ──────────────────── -->
+        <aside class="terms-aside" aria-label="Table of contents">
+          <nav class="card-glass toc">
+            <span class="label-caps toc__label">Contents</span>
+            <ul class="toc__list" id="tocList">
+              <li><a class="toc__link" href="#tldr"><span class="toc__num">00</span><span>At a glance</span></a></li>
+              <li><a class="toc__link" href="#about"><span class="toc__num">01</span><span>About these Terms</span></a></li>
+              <li><a class="toc__link" href="#eligibility"><span class="toc__num">02</span><span>Accounts</span></a></li>
+              <li><a class="toc__link" href="#subscriptions"><span class="toc__num">03</span><span>Billing</span></a></li>
+              <li><a class="toc__link" href="#ai-tutor"><span class="toc__num">04</span><span>AI tutor</span></a></li>
+              <li><a class="toc__link" href="#acceptable-use"><span class="toc__num">05</span><span>Acceptable use</span></a></li>
+              <li><a class="toc__link" href="#ip"><span class="toc__num">06</span><span>Intellectual property</span></a></li>
+              <li><a class="toc__link" href="#liability"><span class="toc__num">07</span><span>Liability &amp; law</span></a></li>
+            </ul>
+          </nav>
+        </aside>
 
       </div>
     </div>
@@ -153,8 +699,13 @@
   <global-footer></global-footer>
 
   <script src="/js/supabase-client.js"></script>
+
+  <!-- ────────────────────────────────────────────────────────────────────────
+       TOC scrollspy + existing nav/auth logic
+       (Identical pattern to privacy.html)
+       ──────────────────────────────────────────────────────────────────────── -->
   <script>
-    /* ── 1. Navbar & Auth Logic ── */
+    /* ── 1. Navbar dropdown (kept verbatim from previous version) ── */
     document.addEventListener('DOMContentLoaded', () => {
       const toggle = document.getElementById('navToggle');
       const dropdown = document.getElementById('navDropdown');
@@ -175,6 +726,61 @@
       }
     });
 
+    /* ── 2. TOC scrollspy via IntersectionObserver — same pattern as privacy.html ── */
+    (function initScrollSpy() {
+      const sections = document.querySelectorAll('.terms-section, #tldr');
+      const tocLinks = document.querySelectorAll('.toc__link');
+      const mobileCurrent = document.getElementById('tocMobileCurrent');
+
+      if (!sections.length || !tocLinks.length) return;
+
+      const linkById = new Map();
+      const labelById = new Map();
+      tocLinks.forEach(link => {
+        const id = link.getAttribute('href').slice(1);
+        linkById.set(id, link);
+        const spans = link.querySelectorAll('span');
+        labelById.set(id, spans[spans.length - 1]?.textContent || '');
+      });
+
+      const setActive = (id) => {
+        tocLinks.forEach(l => l.classList.remove('is-active'));
+        const link = linkById.get(id);
+        if (link) link.classList.add('is-active');
+        if (mobileCurrent && labelById.has(id)) {
+          mobileCurrent.textContent = labelById.get(id);
+        }
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        const visible = entries
+          .filter(e => e.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (visible.length > 0) {
+          setActive(visible[0].target.id);
+        }
+      }, {
+        rootMargin: '0px 0px -65% 0px',
+        threshold: 0
+      });
+
+      sections.forEach(s => observer.observe(s));
+
+      tocLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+          const id = link.getAttribute('href').slice(1);
+          const target = document.getElementById(id);
+          if (target) {
+            e.preventDefault();
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            history.replaceState(null, '', `#${id}`);
+            setActive(id);
+          }
+        });
+      });
+    })();
+
+    /* ── 3. Auth-aware header (kept verbatim from previous version) ── */
     getSupabase().then(async function (sb) {
       try {
         const { data: { session } } = await sb.auth.getSession();
@@ -184,7 +790,7 @@
           const navLinks = document.getElementById('navDropdown');
 
           if (authContainer) {
-            authContainer.innerHTML = '<a href="dashboard.html" class="btn btn-secondary btn-sm" style="background: rgba(255,255,255,0.15); color: #FFFFFF; border: 1px solid rgba(255,255,255,0.1);">Dashboard</a>';
+            authContainer.innerHTML = '<a href="dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a>';
           }
 
           if (navLinks && !document.getElementById('navSignOut')) {
