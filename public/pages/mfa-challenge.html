@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Verify your identity — Superholic Lab</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="icon" href="../assets/favicon.ico" />
+
+  <style>
+    /* ── Auth shell (mirrors login.html — kept in sync) ─────────────────── */
+    body.auth-page {
+      background: var(--surface);
+      background-image:
+        linear-gradient(rgba(81, 97, 94, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(81, 97, 94, 0.025) 1px, transparent 1px);
+      background-size: 48px 48px;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-4);
+    }
+    .auth-card {
+      width: 100%;
+      max-width: 440px;
+      padding: var(--space-6);
+    }
+    .auth-brand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: var(--sage-dark);
+      border-radius: var(--radius-md);
+      padding: var(--space-2) var(--space-3);
+      margin: calc(var(--space-6) * -1) calc(var(--space-6) * -1) var(--space-5);
+      margin-top: calc(var(--space-3) * -1);
+      text-decoration: none;
+      border-bottom: 3px solid var(--brand-rose);
+    }
+    .auth-brand__logo {
+      width: 32px;
+      height: 32px;
+      flex-shrink: 0;
+      border-radius: var(--radius-sm);
+    }
+    .auth-brand__text {
+      font-family: var(--font-display, 'Bebas Neue', sans-serif);
+      font-size: 1.5rem;
+      letter-spacing: 0.04em;
+      color: var(--text-logo, var(--cream));
+      line-height: 1;
+    }
+    .auth-heading {
+      text-align: center;
+      margin-bottom: var(--space-5);
+    }
+    .auth-heading__eyebrow {
+      color: var(--brand-rose);
+      display: block;
+      margin-bottom: var(--space-2);
+    }
+    .auth-heading__title {
+      color: var(--text-main);
+      margin: 0 0 var(--space-2) 0;
+    }
+    .auth-heading__lede {
+      color: var(--text-muted);
+      font-size: var(--text-sm);
+      margin: 0;
+    }
+    .auth-banner {
+      padding: var(--space-3) var(--space-4);
+      border-radius: var(--radius-md);
+      font-size: var(--text-sm);
+      line-height: 1.5;
+      margin-bottom: var(--space-4);
+      display: none;
+    }
+    .auth-banner.is-visible { display: block; }
+    .auth-banner--error {
+      background: var(--surface-container-low);
+      border-left: 3px solid var(--brand-rose);
+      color: var(--text-main);
+    }
+    .auth-banner--info {
+      background: var(--surface-container-low);
+      border-left: 3px solid var(--brand-sage);
+      color: var(--text-main);
+    }
+    .auth-form { display: flex; flex-direction: column; gap: var(--space-3); }
+    .auth-row { display: flex; flex-direction: column; gap: var(--space-1); }
+    .auth-row__label label {
+      color: var(--brand-sage);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .auth-footer {
+      margin-top: var(--space-5);
+      padding-top: var(--space-4);
+      border-top: 1px solid var(--border-light);
+      text-align: center;
+      font-size: var(--text-sm);
+      color: var(--text-muted);
+    }
+    .auth-footer a {
+      color: var(--brand-rose);
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .auth-footer a:hover { text-decoration: underline; }
+    .btn-auth-primary {
+      width: 100%;
+      margin-top: var(--space-2);
+    }
+
+    /* ── MFA challenge specifics ──────────────────────────────────────── */
+    .otp-input {
+      font-size: 24px;
+      letter-spacing: 0.4em;
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .recovery-input {
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.06em;
+    }
+  </style>
+</head>
+
+<body class="auth-page">
+
+  <main class="card-glass auth-card">
+
+    <a href="../index.html" class="auth-brand">
+      <img class="auth-brand__logo" src="../assets/images/SL logo.png" width="32" height="32" alt="Superholic Lab Logo" />
+      <span class="auth-brand__text">SUPERHOLIC LAB</span>
+    </a>
+
+    <header class="auth-heading">
+      <span class="label-caps auth-heading__eyebrow">Two-factor required</span>
+      <h1 class="h2-as auth-heading__title">Verify it's you.</h1>
+      <p class="auth-heading__lede" id="leadeText">Enter the 6-digit code from your authenticator app.</p>
+    </header>
+
+    <div id="authBanner" class="auth-banner" role="alert"></div>
+
+    <!-- TOTP form (default) -->
+    <form class="auth-form" id="totpForm" novalidate autocomplete="off">
+      <div class="auth-row">
+        <div class="auth-row__label"><label for="otpInput">Verification code</label></div>
+        <input class="input-ghost otp-input" type="text" id="otpInput"
+               inputmode="numeric" pattern="\d{6}" maxlength="6"
+               autocomplete="one-time-code" autofocus required
+               placeholder="000000" />
+      </div>
+      <button type="submit" class="btn btn-primary btn-auth-primary" id="verifyBtn">Verify</button>
+    </form>
+
+    <!-- Recovery-code form (toggled) -->
+    <form class="auth-form" id="recoveryForm" novalidate autocomplete="off" hidden>
+      <div class="auth-row">
+        <div class="auth-row__label"><label for="recoveryInput">Recovery code</label></div>
+        <input class="input-ghost recovery-input" type="text" id="recoveryInput"
+               autocomplete="off" required
+               placeholder="xxxx-xxxx" />
+      </div>
+      <button type="submit" class="btn btn-primary btn-auth-primary" id="recoveryBtn">Sign in with recovery code</button>
+    </form>
+
+    <div class="auth-footer">
+      <a href="#" id="toggleMethodLink">Use a recovery code instead</a>
+      <div style="margin-top: var(--space-3);">
+        <a href="#" id="signOutLink" style="color: var(--text-muted); font-weight: 500;">Sign out and start over</a>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="/js/supabase-client.js"></script>
+  <script type="module">
+    /* ── Banner helper ── */
+    const banner = document.getElementById('authBanner');
+    function showBanner(msg, kind = 'error') {
+      banner.textContent = msg;
+      banner.className = `auth-banner is-visible auth-banner--${kind}`;
+    }
+    function hideBanner() { banner.className = 'auth-banner'; }
+
+    function backUrl() {
+      const ret = new URLSearchParams(location.search).get('return');
+      if (ret && ret.startsWith('/')) return ret;
+      return '/pages/dashboard.html';
+    }
+
+    const sb = await getSupabase();
+
+    // No session at all → bounce to login
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) {
+      window.location.href = '/pages/login.html';
+      throw new Error('no session');
+    }
+
+    // Already AAL2 → no challenge needed, send them through
+    try {
+      const { data: aal } = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (aal && aal.currentLevel === 'aal2') {
+        window.location.href = backUrl();
+        throw new Error('already aal2');
+      }
+      // No verified TOTP factor → nothing to challenge against
+      const { data: factors } = await sb.auth.mfa.listFactors();
+      const hasVerifiedTotp = (factors?.totp || []).some(f => f.status === 'verified');
+      if (!hasVerifiedTotp) {
+        window.location.href = backUrl();
+        throw new Error('no verified factor');
+      }
+    } catch (e) {
+      // Errors here are mostly fine — fall through to the form. The actual
+      // verify call will surface any real problem with a clear message.
+    }
+
+    /* ── DOM refs ── */
+    const totpForm   = document.getElementById('totpForm');
+    const recForm    = document.getElementById('recoveryForm');
+    const otpInput   = document.getElementById('otpInput');
+    const recInput   = document.getElementById('recoveryInput');
+    const verifyBtn  = document.getElementById('verifyBtn');
+    const recBtn     = document.getElementById('recoveryBtn');
+    const toggleLink = document.getElementById('toggleMethodLink');
+    const leadeText  = document.getElementById('leadeText');
+    const signOut    = document.getElementById('signOutLink');
+
+    /* ── Toggle between TOTP and recovery code ── */
+    let mode = 'totp';
+    toggleLink.addEventListener('click', (e) => {
+      e.preventDefault(); hideBanner();
+      if (mode === 'totp') {
+        mode = 'recovery';
+        totpForm.hidden = true; recForm.hidden = false;
+        toggleLink.textContent = '← Back to authenticator code';
+        leadeText.textContent = 'Enter one of the recovery codes you saved during setup.';
+        recInput.focus();
+      } else {
+        mode = 'totp';
+        totpForm.hidden = false; recForm.hidden = true;
+        toggleLink.textContent = 'Use a recovery code instead';
+        leadeText.textContent = 'Enter the 6-digit code from your authenticator app.';
+        otpInput.focus();
+      }
+    });
+
+    /* ── Sign out ── */
+    signOut.addEventListener('click', async (e) => {
+      e.preventDefault();
+      try { await sb.auth.signOut(); } catch (_) {}
+      window.location.href = '/pages/login.html';
+    });
+
+    /* ── TOTP submit ── */
+    totpForm.addEventListener('submit', async (e) => {
+      e.preventDefault(); hideBanner();
+      const code = otpInput.value.trim();
+      if (!/^\d{6}$/.test(code)) { showBanner('Enter the 6-digit code from your authenticator app.'); return; }
+      verifyBtn.disabled = true; verifyBtn.textContent = 'Verifying…';
+      try {
+        const { data: factors } = await sb.auth.mfa.listFactors();
+        const totp = (factors?.totp || []).find(f => f.status === 'verified');
+        if (!totp) throw new Error('No verified two-factor method on this account.');
+
+        const ch = await sb.auth.mfa.challenge({ factorId: totp.id });
+        if (ch.error) throw ch.error;
+        const v  = await sb.auth.mfa.verify({ factorId: totp.id, challengeId: ch.data.id, code });
+        if (v.error) throw v.error;
+        window.location.href = backUrl();
+      } catch (err) {
+        showBanner(err.message || 'Verification failed. Check your code and try again.');
+        verifyBtn.disabled = false; verifyBtn.textContent = 'Verify';
+      }
+    });
+
+    /* ── Recovery-code submit ── */
+    async function sha256Hex(text) {
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+      return Array.from(new Uint8Array(buf))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
+    }
+
+    recForm.addEventListener('submit', async (e) => {
+      e.preventDefault(); hideBanner();
+      const code = recInput.value.trim();
+      if (!code) { showBanner('Enter a recovery code.'); return; }
+      recBtn.disabled = true; recBtn.textContent = 'Checking…';
+      try {
+        const hash = await sha256Hex(code);
+        const { data: { user } } = await sb.auth.getUser();
+        if (!user) throw new Error('No user session.');
+
+        const { data: row, error: lookupErr } = await sb.from('mfa_recovery_codes')
+          .select('id, used_at')
+          .eq('user_id', user.id)
+          .eq('code_hash', hash)
+          .is('used_at', null)
+          .maybeSingle();
+        if (lookupErr) throw lookupErr;
+        if (!row) throw new Error('That recovery code was not recognised, or has already been used.');
+
+        // Burn the code
+        await sb.from('mfa_recovery_codes').update({ used_at: new Date().toISOString() }).eq('id', row.id);
+
+        // Industry-standard pattern: recovery code use removes the TOTP factor.
+        // The user is sent to the account page with a banner so they can re-enrol.
+        const { data: factors } = await sb.auth.mfa.listFactors();
+        for (const f of (factors?.totp || [])) {
+          await sb.auth.mfa.unenroll({ factorId: f.id });
+        }
+
+        window.location.href = '/pages/account.html?mfa=recovery_used';
+      } catch (err) {
+        showBanner(err.message || 'Could not validate that recovery code.');
+        recBtn.disabled = false; recBtn.textContent = 'Sign in with recovery code';
+      }
+    });
+  </script>
+</body>
+
+</html>

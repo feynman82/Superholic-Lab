@@ -17,6 +17,21 @@ async function db() {
   return await getSupabase();
 }
 
+// ─── MFA: assurance-level gate ────────────────────────────────
+// Returns true if the current session has a verified TOTP factor but is still
+// at AAL1 (password level). Pages should redirect such sessions to the MFA
+// challenge before proceeding. Gracefully falls through if the MFA module
+// isn't available (older Supabase clients) — callers stay on the happy path.
+async function shouldChallengeMfa(supabase) {
+  try {
+    const { data, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (error) return false;
+    return data?.nextLevel === 'aal2' && data?.currentLevel === 'aal1';
+  } catch {
+    return false;
+  }
+}
+
 // ─── Sign Up ─────────────────────────────────────────────────
 // Everyone starts on a free 7-day trial. No Stripe at signup.
 // planChoice is stored as intended_plan only — NOT as subscription_tier.
@@ -92,6 +107,10 @@ export async function signIn(email, password) {
   const supabase = await db();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) throw error;
+  if (await shouldChallengeMfa(supabase)) {
+    window.location.href = '/pages/mfa-challenge.html';
+    return;
+  }
   window.location.href = '/pages/dashboard.html';
 }
 
@@ -296,6 +315,16 @@ export async function guardPage(requireAuth = true) {
   }
 
   if (!session) return null;
+
+  // ── MFA gate: if user has a verified factor but session is still AAL1,
+  //    bounce to the challenge page (preserving the intended destination).
+  //    The challenge page itself is exempt to avoid a redirect loop.
+  if (window.location.pathname !== '/pages/mfa-challenge.html'
+      && await shouldChallengeMfa(supabase)) {
+    const back = window.location.pathname + window.location.search;
+    window.location.href = '/pages/mfa-challenge.html?return=' + encodeURIComponent(back);
+    return null;
+  }
 
   let profile = await getProfile();
 

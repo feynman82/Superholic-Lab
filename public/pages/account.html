@@ -636,6 +636,104 @@
       letter-spacing: 0.04em;
     }
 
+    /* ── MFA section + modal ── */
+    .mfa-status-card {
+      display: flex; gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      border-radius: var(--radius-md);
+      background: var(--surface-container-low);
+    }
+    .mfa-status-card__icon {
+      width: 36px; height: 36px; flex-shrink: 0;
+      border-radius: var(--radius-full, 999px);
+      background: var(--surface-container);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--brand-mint);
+    }
+    .mfa-status-card__body { flex: 1; min-width: 0; }
+    .mfa-status-card__name {
+      color: var(--text-main); font-weight: 600; font-size: var(--text-base);
+      display: flex; gap: var(--space-2); flex-wrap: wrap; align-items: center;
+      margin-bottom: 2px;
+    }
+    .mfa-status-card__meta { color: var(--text-muted); font-size: var(--text-sm); }
+    .mfa-status-card__meta strong { color: var(--text-main); font-weight: 600; }
+
+    .mfa-recommend-eyebrow {
+      color: var(--brand-amber, #D4A24A);
+    }
+    .mfa-active-eyebrow {
+      color: var(--brand-mint);
+    }
+
+    .mfa-step { display: block; }
+    .mfa-step[hidden] { display: none; }
+    .mfa-qr-box {
+      background: var(--surface-container-lowest);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      display: flex; align-items: center; justify-content: center;
+      min-height: 220px;
+    }
+    .mfa-qr-box img,
+    .mfa-qr-box svg { max-width: 200px; height: auto; display: block; }
+    .mfa-secret-code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      background: var(--surface-container-low);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: var(--space-2) var(--space-3);
+      color: var(--text-main);
+      word-break: break-all;
+      letter-spacing: 0.04em;
+    }
+    .mfa-otp-input {
+      font-size: 22px;
+      letter-spacing: 0.4em;
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .mfa-recovery-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-1) var(--space-3);
+      background: var(--surface-container-low);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: var(--space-3);
+    }
+    .mfa-recovery-grid code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--text-main);
+      background: transparent;
+      padding: 4px 0;
+      letter-spacing: 0.04em;
+    }
+    .mfa-confirm-row {
+      display: flex; align-items: flex-start; gap: var(--space-2);
+      margin: var(--space-3) 0;
+      font-size: var(--text-sm);
+      color: var(--text-main);
+      cursor: pointer;
+      user-select: none;
+    }
+    .mfa-confirm-row input { margin-top: 3px; flex-shrink: 0; }
+    .mfa-recovery-banner {
+      padding: var(--space-3) var(--space-4);
+      border-radius: var(--radius-md);
+      background: var(--surface-container-low);
+      border-left: 3px solid var(--brand-amber, #D4A24A);
+      margin-bottom: var(--space-4);
+      font-size: var(--text-sm);
+      color: var(--text-main);
+      line-height: 1.5;
+    }
+    .mfa-recovery-banner strong { color: var(--brand-amber, #D4A24A); font-weight: 700; }
+    .mfa-recovery-banner.hidden { display: none; }
+
     /* Spinner */
     .spinner-sm {
       width: 18px; height: 18px;
@@ -781,11 +879,31 @@
             </form>
           </article>
 
-          <!-- §04 — Refer a Friend -->
+          <!-- §04 — Two-factor authentication -->
+          <article class="card-glass account-section" id="section-mfa">
+            <header class="account-section__head">
+              <div>
+                <span class="label-caps account-section__eyebrow">§ 04 — Security</span>
+                <h2 class="h2-as account-section__title">Two-factor authentication</h2>
+              </div>
+            </header>
+
+            <!-- Banner shown after a recovery code is consumed (?mfa=recovery_used) -->
+            <div id="mfa-recovery-banner" class="mfa-recovery-banner hidden">
+              <strong>Recovery code used.</strong> Two-factor authentication has been removed for safety.
+              Re-enable it now if you still have access to your authenticator app.
+            </div>
+
+            <div id="mfaContent">
+              <div class="spinner-sm"></div>
+            </div>
+          </article>
+
+          <!-- §05 — Refer a Friend -->
           <article class="card-glass account-section" id="section-referral">
             <header class="account-section__head account-section__head--center">
               <div>
-                <span class="label-caps account-section__eyebrow">§ 04 — Rewards</span>
+                <span class="label-caps account-section__eyebrow">§ 05 — Rewards</span>
                 <h2 class="h2-as account-section__title">Refer a friend</h2>
               </div>
               <span class="badge badge-rose">+1 month free</span>
@@ -944,6 +1062,69 @@
       <div class="flex gap-3">
         <button class="btn btn-ghost flex-1" onclick="document.getElementById('cancelPauseModal').classList.remove('is-open')">Keep pause</button>
         <button class="btn btn-primary flex-1" onclick="window.cancelPause()">Yes, cancel pause</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MFA ENROLMENT MODAL -->
+  <div id="mfaEnrolModal" class="modal-overlay" onclick="if(event.target===this)window.closeMfaEnrolModal()">
+    <div class="modal-box" style="max-width: 480px;">
+      <span class="label-caps" style="color: var(--brand-rose); display: block; margin-bottom: var(--space-2);">Two-factor authentication</span>
+
+      <!-- Step 1: Scan QR code -->
+      <div id="mfa-step-1" class="mfa-step">
+        <h3 class="h2-as" style="color: var(--text-main); margin: 0 0 var(--space-2) 0; font-size: 28px;">Scan this code.</h3>
+        <p class="acc-row__hint" style="margin: 0 0 var(--space-3) 0;">
+          Open your authenticator app (Google Authenticator, 1Password, Authy) and scan the QR code below.
+        </p>
+        <div id="mfa-qr-container" class="mfa-qr-box">
+          <div class="spinner-sm"></div>
+        </div>
+        <p class="acc-row__hint" style="margin: var(--space-3) 0 var(--space-1) 0;">Or enter this secret manually:</p>
+        <div id="mfa-secret-code" class="mfa-secret-code">—</div>
+        <div class="flex gap-3" style="margin-top: var(--space-4);">
+          <button class="btn btn-ghost flex-1" onclick="window.closeMfaEnrolModal()">Cancel</button>
+          <button class="btn btn-primary flex-1" onclick="window.advanceMfaStep(2)">Next: enter code</button>
+        </div>
+      </div>
+
+      <!-- Step 2: Verify code -->
+      <div id="mfa-step-2" class="mfa-step" hidden>
+        <h3 class="h2-as" style="color: var(--text-main); margin: 0 0 var(--space-2) 0; font-size: 28px;">Verify it works.</h3>
+        <p class="acc-row__hint" style="margin: 0 0 var(--space-3) 0;">
+          Enter the 6-digit code from your authenticator app to confirm the setup.
+        </p>
+        <div class="acc-row">
+          <label class="acc-row__label" for="mfa-verify-code">Verification code</label>
+          <input type="text" id="mfa-verify-code" inputmode="numeric" pattern="\d{6}" maxlength="6"
+                 placeholder="000000" autocomplete="one-time-code"
+                 class="form-input mfa-otp-input" />
+        </div>
+        <div id="mfa-verify-error" class="acc-banner hidden" style="background: var(--surface-container-low); border-left: 3px solid var(--brand-rose); margin-top: var(--space-2);"></div>
+        <div class="flex gap-3" style="margin-top: var(--space-4);">
+          <button class="btn btn-ghost flex-1" onclick="window.advanceMfaStep(1)">← Back</button>
+          <button class="btn btn-primary flex-1" id="mfa-verify-btn" onclick="window.verifyMfaCode()">Verify</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Recovery codes -->
+      <div id="mfa-step-3" class="mfa-step" hidden>
+        <h3 class="h2-as" style="color: var(--brand-rose); margin: 0 0 var(--space-2) 0; font-size: 28px;">Save these codes.</h3>
+        <p class="acc-row__hint" style="margin: 0 0 var(--space-3) 0;">
+          Each code works once and can be used in place of your authenticator.
+          Store them somewhere safe — a password manager is best.
+          If you lose your device, these are the only way back in.
+        </p>
+        <div id="mfa-recovery-codes-list" class="mfa-recovery-grid"></div>
+        <div class="flex gap-2" style="margin-top: var(--space-3);">
+          <button class="btn btn-secondary btn-sm" onclick="window.copyAllRecoveryCodes()">Copy all</button>
+          <button class="btn btn-secondary btn-sm" onclick="window.downloadRecoveryCodes()">Download .txt</button>
+        </div>
+        <label class="mfa-confirm-row">
+          <input type="checkbox" id="mfa-codes-saved-confirm" />
+          <span>I have saved these recovery codes somewhere safe.</span>
+        </label>
+        <button class="btn btn-primary w-full" id="mfa-finish-btn" onclick="window.finishMfaEnrol()" disabled>Finish setup</button>
       </div>
     </div>
   </div>
@@ -1139,10 +1320,24 @@
       // Initialise dirty-flag listener for sticky save bar
       initSaveBarWatcher();
 
+      // Recovery-code-used banner (appears once after a successful recovery
+      // sign-in). Re-renders the MFA section showing not-enrolled.
+      try {
+        var qs = new URLSearchParams(window.location.search);
+        if (qs.get('mfa') === 'recovery_used') {
+          var bnr = document.getElementById('mfa-recovery-banner');
+          if (bnr) bnr.classList.remove('hidden');
+          // Strip the param from the URL so a refresh doesn't re-trigger
+          var clean = window.location.pathname + window.location.hash;
+          window.history.replaceState({}, '', clean);
+        }
+      } catch (e) { /* no-op */ }
+
       await Promise.all([
         loadSubscription(profile),
         loadLearners(profile, students),
         loadReferral(),
+        loadMfaSection(profile),
       ]);
     };
 
@@ -1574,6 +1769,266 @@
         URL.revokeObjectURL(a.href);
       } catch (err) { showMsg('error', 'Export failed: ' + err.message); }
     };
+
+    /* ─── MFA — ENROLMENT, VERIFY, RECOVERY, REMOVE ───────────────────────────────
+       Uses Supabase Auth's native MFA APIs (mfa.enroll / challenge / verify /
+       unenroll / listFactors / getAuthenticatorAssuranceLevel) plus the local
+       mfa_recovery_codes table for SHA-256 hashed recovery codes. Plaintext
+       codes only ever live in memory + the user's clipboard / download. */
+
+    var _mfaState = { factorId: null, recoveryCodes: [] };
+
+    async function loadMfaSection(profile) {
+      var content = document.getElementById('mfaContent');
+      if (!content) return;
+      try {
+        var sb = await getSupabase();
+        var { data: factors } = await sb.auth.mfa.listFactors();
+        var totp = (factors && factors.totp) ? factors.totp.find(function (f) { return f.status === 'verified'; }) : null;
+        if (totp) {
+          content.innerHTML = renderMfaEnrolled(totp);
+        } else {
+          content.innerHTML = renderMfaNotEnrolled();
+        }
+      } catch (err) {
+        console.error('[mfa] load error:', err.message);
+        content.innerHTML = '<p class="acc-row__hint">Two-factor status unavailable right now.</p>';
+      }
+    }
+
+    function renderMfaNotEnrolled() {
+      return ''
+        + '<span class="label-caps mfa-recommend-eyebrow" style="display:block; margin-bottom: var(--space-2);">Recommended</span>'
+        + '<p class="acc-row__hint" style="margin: 0 0 var(--space-3) 0;">'
+          + 'Add a second login step using an authenticator app like Google Authenticator, 1Password, or Authy. '
+          + 'Recommended — your account holds child data, payment methods, and quiz history.'
+        + '</p>'
+        + '<button class="btn btn-primary" onclick="window.startMfaEnrol()">Set up two-factor auth</button>';
+    }
+
+    function renderMfaEnrolled(factor) {
+      var enrolledOn = factor.created_at
+        ? new Date(factor.created_at).toLocaleDateString('en-SG', { day: 'numeric', month: 'short', year: 'numeric' })
+        : '—';
+      var lockIcon =
+          '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">'
+          + '<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>'
+          + '<path d="M7 11V7a5 5 0 0 1 10 0v4"/>'
+        + '</svg>';
+      // Escape factor.id to be safe in inline onclick
+      var safeId = String(factor.id || '').replace(/'/g, '');
+      return ''
+        + '<span class="label-caps mfa-active-eyebrow" style="display:block; margin-bottom: var(--space-2);">Active</span>'
+        + '<div class="mfa-status-card">'
+          + '<div class="mfa-status-card__icon">' + lockIcon + '</div>'
+          + '<div class="mfa-status-card__body">'
+            + '<div class="mfa-status-card__name">'
+              + 'Authenticator app'
+              + '<span class="badge sub-status-active">TOTP</span>'
+            + '</div>'
+            + '<div class="mfa-status-card__meta">Enrolled on <strong>' + enrolledOn + '</strong></div>'
+          + '</div>'
+        + '</div>'
+        + '<div class="flex gap-2" style="margin-top: var(--space-3);">'
+          + '<button class="btn btn-secondary btn-sm" onclick="window.regenerateRecoveryCodes()">View recovery codes</button>'
+          + '<button class="btn btn-danger btn-sm" onclick="window.removeMfa(\'' + safeId + '\')">Remove 2FA</button>'
+        + '</div>';
+    }
+
+    window.advanceMfaStep = function (n) {
+      for (var i = 1; i <= 3; i++) {
+        var el = document.getElementById('mfa-step-' + i);
+        if (!el) continue;
+        if (i === n) el.removeAttribute('hidden'); else el.setAttribute('hidden', '');
+      }
+    };
+
+    window.startMfaEnrol = async function () {
+      try {
+        var sb = await getSupabase();
+        var { data, error } = await sb.auth.mfa.enroll({
+          factorType: 'totp',
+          friendlyName: 'Superholic Lab — ' + new Date().toISOString().slice(0, 10),
+        });
+        if (error) throw error;
+        _mfaState.factorId = data.id;
+        _mfaState.recoveryCodes = [];
+
+        // Render QR — Supabase JS v2 returns the QR as either an inline SVG
+        // markup string OR a data URI. Detect and render accordingly.
+        var qrEl = document.getElementById('mfa-qr-container');
+        var qr = data.totp.qr_code || '';
+        if (qrEl) {
+          if (/^\s*<(svg|\?xml)/i.test(qr)) {
+            qrEl.innerHTML = qr;
+          } else if (qr) {
+            qrEl.innerHTML = '<img src="' + qr.replace(/"/g, '&quot;') + '" alt="QR code" style="max-width:200px;height:auto;display:block;" />';
+          } else {
+            qrEl.innerHTML = '<p class="acc-row__hint">QR code unavailable — use the secret below.</p>';
+          }
+        }
+        var secretEl = document.getElementById('mfa-secret-code');
+        if (secretEl) secretEl.textContent = data.totp.secret || '—';
+
+        var verifyInput = document.getElementById('mfa-verify-code');
+        if (verifyInput) verifyInput.value = '';
+        var verifyErr = document.getElementById('mfa-verify-error');
+        if (verifyErr) verifyErr.classList.add('hidden');
+
+        window.advanceMfaStep(1);
+        document.getElementById('mfaEnrolModal').classList.add('is-open');
+      } catch (err) {
+        showMsg('error', 'Could not start two-factor setup: ' + err.message);
+      }
+    };
+
+    window.closeMfaEnrolModal = async function () {
+      var modal = document.getElementById('mfaEnrolModal');
+      modal.classList.remove('is-open');
+      // If we had an unverified factor in flight, clean it up so the user
+      // can re-start cleanly. Best-effort — failures are silent.
+      var fId = _mfaState.factorId;
+      _mfaState = { factorId: null, recoveryCodes: [] };
+      if (!fId) return;
+      try {
+        var sb = await getSupabase();
+        var { data: factors } = await sb.auth.mfa.listFactors();
+        var stillUnverified = (factors && factors.totp || []).find(function (f) {
+          return f.id === fId && f.status === 'unverified';
+        });
+        if (stillUnverified) await sb.auth.mfa.unenroll({ factorId: fId });
+      } catch (e) { /* swallow */ }
+    };
+
+    window.verifyMfaCode = async function () {
+      var input = document.getElementById('mfa-verify-code');
+      var code = (input && input.value || '').trim();
+      var errEl = document.getElementById('mfa-verify-error');
+      errEl.classList.add('hidden');
+      if (!/^\d{6}$/.test(code)) {
+        errEl.textContent = 'Enter the 6-digit code from your authenticator app.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+      var btn = document.getElementById('mfa-verify-btn');
+      btn.disabled = true; btn.textContent = 'Verifying…';
+      try {
+        var sb = await getSupabase();
+        var ch = await sb.auth.mfa.challenge({ factorId: _mfaState.factorId });
+        if (ch.error) throw ch.error;
+        var v = await sb.auth.mfa.verify({ factorId: _mfaState.factorId, challengeId: ch.data.id, code: code });
+        if (v.error) throw v.error;
+
+        // Generate + store recovery codes
+        var codes = [];
+        for (var i = 0; i < 8; i++) codes.push(generateRecoveryCode());
+        var hashed = await Promise.all(codes.map(sha256Hex));
+        var { data: { user } } = await sb.auth.getUser();
+        if (!user) throw new Error('No user session.');
+        // Wipe any old codes (fresh enrol = fresh set)
+        await sb.from('mfa_recovery_codes').delete().eq('user_id', user.id);
+        var rows = hashed.map(function (h) { return { user_id: user.id, code_hash: h }; });
+        var { error: insErr } = await sb.from('mfa_recovery_codes').insert(rows);
+        if (insErr) throw insErr;
+
+        _mfaState.recoveryCodes = codes;
+        renderRecoveryCodesIntoModal(codes);
+        window.advanceMfaStep(3);
+      } catch (e) {
+        errEl.textContent = e.message || 'Verification failed.';
+        errEl.classList.remove('hidden');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Verify';
+      }
+    };
+
+    function renderRecoveryCodesIntoModal(codes) {
+      var list = document.getElementById('mfa-recovery-codes-list');
+      list.innerHTML = codes.map(function (c) { return '<code>' + c + '</code>'; }).join('');
+      var cb = document.getElementById('mfa-codes-saved-confirm');
+      var finishBtn = document.getElementById('mfa-finish-btn');
+      cb.checked = false;
+      finishBtn.disabled = true;
+      cb.onchange = function () { finishBtn.disabled = !this.checked; };
+    }
+
+    window.copyAllRecoveryCodes = function () {
+      if (!_mfaState.recoveryCodes.length) return;
+      navigator.clipboard.writeText(_mfaState.recoveryCodes.join('\n')).then(function () {
+        showMsg('success', 'Recovery codes copied to clipboard.');
+      });
+    };
+
+    window.downloadRecoveryCodes = function () {
+      if (!_mfaState.recoveryCodes.length) return;
+      var header = 'Superholic Lab — two-factor recovery codes\n'
+                 + 'Generated: ' + new Date().toISOString() + '\n'
+                 + 'Each code works once. Keep these somewhere safe.\n\n';
+      var blob = new Blob([header + _mfaState.recoveryCodes.join('\n') + '\n'], { type: 'text/plain' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'superholiclab-recovery-codes.txt';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    };
+
+    window.finishMfaEnrol = function () {
+      _mfaState = { factorId: null, recoveryCodes: [] };
+      document.getElementById('mfaEnrolModal').classList.remove('is-open');
+      showMsg('success', 'Two-factor authentication enabled.');
+      loadMfaSection(window.userProfile);
+    };
+
+    window.removeMfa = async function (factorId) {
+      if (!confirm('Remove two-factor authentication? Your account will be less secure until you re-enable it.')) return;
+      try {
+        var sb = await getSupabase();
+        var { error } = await sb.auth.mfa.unenroll({ factorId: factorId });
+        if (error) throw error;
+        var { data: { user } } = await sb.auth.getUser();
+        if (user) await sb.from('mfa_recovery_codes').delete().eq('user_id', user.id);
+        showMsg('success', 'Two-factor authentication removed.');
+        loadMfaSection(window.userProfile);
+      } catch (err) {
+        showMsg('error', err.message || 'Could not remove 2FA.');
+      }
+    };
+
+    window.regenerateRecoveryCodes = async function () {
+      if (!confirm('Generate a fresh set of recovery codes? Your previous codes will stop working immediately.')) return;
+      try {
+        var codes = [];
+        for (var i = 0; i < 8; i++) codes.push(generateRecoveryCode());
+        var hashed = await Promise.all(codes.map(sha256Hex));
+        var sb = await getSupabase();
+        var { data: { user } } = await sb.auth.getUser();
+        if (!user) throw new Error('No user session.');
+        await sb.from('mfa_recovery_codes').delete().eq('user_id', user.id);
+        var rows = hashed.map(function (h) { return { user_id: user.id, code_hash: h }; });
+        var { error } = await sb.from('mfa_recovery_codes').insert(rows);
+        if (error) throw error;
+        _mfaState.recoveryCodes = codes;
+        // Open modal directly on step 3 to display the regenerated codes
+        renderRecoveryCodesIntoModal(codes);
+        window.advanceMfaStep(3);
+        document.getElementById('mfaEnrolModal').classList.add('is-open');
+      } catch (err) {
+        showMsg('error', 'Could not generate codes: ' + err.message);
+      }
+    };
+
+    /* Recovery-code helpers (Web Crypto API + crypto.randomUUID) */
+    function generateRecoveryCode() {
+      // 8 hex chars from a fresh UUID, formatted as xxxx-xxxx for readability
+      var raw = crypto.randomUUID().replace(/-/g, '').slice(0, 8);
+      return raw.slice(0, 4) + '-' + raw.slice(4, 8);
+    }
+    async function sha256Hex(text) {
+      var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+      return Array.from(new Uint8Array(buf))
+        .map(function (b) { return b.toString(16).padStart(2, '0'); })
+        .join('');
+    }
 
     /* ─── ACCOUNT DELETION ───────────────────────────────────────────────────────── */
     window.deleteAccount = async function () {
