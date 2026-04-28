@@ -85,7 +85,7 @@ const TOPIC_DEPS: Record<string, Record<string, string[]>> = {
     "Light":        ["Energy"],
   },
   english: {
-    "Synthesis and Transformation": ["Grammar", "Vocabulary"],
+    "Synthesis": ["Grammar", "Vocabulary"],
     "Comprehension":                ["Vocabulary", "Grammar"],
     "Cloze":                        ["Grammar", "Vocabulary"],
     "Editing":                      ["Grammar", "Vocabulary"],
