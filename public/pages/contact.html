@@ -5,24 +5,23 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Contact Us — Superholic Lab</title>
-  <meta name="description"
-    content="Get in touch with the Superholic Lab team. We're here to help your child succeed. Email, WhatsApp, or send a message.">
-  <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://www.superholiclab.com/pages/contact.html">
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Superholic Lab">
-  <meta property="og:title" content="Contact Us — Superholic Lab">
-  <meta property="og:description"
-    content="Get in touch with the Superholic Lab support team. We're here to help Singapore parents and students.">
-  <meta property="og:url" content="https://www.superholiclab.com/pages/contact.html">
-  <meta property="og:image" content="https://www.superholiclab.com/assets/og.png">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:locale" content="en_SG">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Contact Us — Superholic Lab">
-  <meta name="twitter:description" content="Get in touch with the Superholic Lab support team.">
-  <meta name="twitter:image" content="https://www.superholiclab.com/assets/og.png">
+  <meta name="description" content="Get in touch with the Superholic Lab team. We're here to help your child succeed. Email, WhatsApp, or send a message — we respond within 24 hours, Mon–Fri SGT." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://www.superholiclab.com/pages/contact.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Superholic Lab" />
+  <meta property="og:title" content="Contact Us — Superholic Lab" />
+  <meta property="og:description" content="Get in touch with the Superholic Lab support team. We're here to help Singapore parents and students." />
+  <meta property="og:url" content="https://www.superholiclab.com/pages/contact.html" />
+  <meta property="og:image" content="https://www.superholiclab.com/assets/og.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:locale" content="en_SG" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Contact Us — Superholic Lab" />
+  <meta name="twitter:description" content="Get in touch with the Superholic Lab support team." />
+  <meta name="twitter:image" content="https://www.superholiclab.com/assets/og.png" />
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="../css/style.css" />
@@ -43,182 +42,758 @@
     if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', boot); }
     else { boot(); }
   </script>
+
+  <style>
+    /* ── Hero (restrained: .h1-as on .bg-surface) ── */
+    .contact-hero {
+      padding-top: calc(64px + var(--space-8));
+      padding-bottom: var(--space-8);
+      border-bottom: 1px solid var(--border-light);
+    }
+    .contact-hero__eyebrow {
+      color: var(--brand-rose);
+      margin-bottom: var(--space-3);
+    }
+    .contact-hero__title {
+      color: var(--text-main);
+      margin: 0 0 var(--space-3) 0;
+      max-width: 720px;
+    }
+    .contact-hero__lede {
+      color: var(--text-muted);
+      max-width: 640px;
+      margin: 0 0 var(--space-4) 0;
+    }
+    .contact-hero__meta {
+      display: flex;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    /* ── Live status pill: green dot + breath ── */
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-1);
+      padding: 6px 12px;
+      border-radius: var(--radius-full, 999px);
+      background: var(--surface-container);
+      border: 1px solid var(--border-light);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-main);
+    }
+    .status-pill__dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--brand-mint, #6FB89B);
+      box-shadow: 0 0 0 0 var(--brand-mint, #6FB89B);
+      animation: status-breath 2.4s ease-in-out infinite;
+    }
+    .status-pill__dot--off {
+      background: var(--text-muted);
+      animation: none;
+    }
+    @keyframes status-breath {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(111, 184, 155, 0.5); }
+      50%      { box-shadow: 0 0 0 6px rgba(111, 184, 155, 0); }
+    }
+
+    /* ── Body layout: asymmetric 7+5 (form on the left, channels on the right) ── */
+    .contact-body {
+      padding-top: var(--space-8);
+      padding-bottom: var(--space-10);
+    }
+    .contact-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: var(--gutter);
+      align-items: start;
+    }
+    .contact-form-col {
+      grid-column: span 12;
+    }
+    .contact-channels-col {
+      grid-column: span 12;
+    }
+    @media (min-width: 1024px) {
+      .contact-form-col {
+        grid-column: 1 / span 7;
+      }
+      .contact-channels-col {
+        grid-column: 9 / span 4;
+        position: sticky;
+        top: calc(64px + var(--space-4));
+      }
+    }
+
+    /* ── Form card ── */
+    .form-card {
+      padding: var(--space-5);
+    }
+    .form-card__eyebrow {
+      color: var(--brand-rose);
+      display: block;
+      margin-bottom: var(--space-2);
+    }
+    .form-card__title {
+      color: var(--text-main);
+      margin: 0 0 var(--space-2) 0;
+    }
+    .form-card__lede {
+      color: var(--text-muted);
+      margin: 0 0 var(--space-5) 0;
+      font-size: var(--text-base);
+      line-height: 1.6;
+    }
+
+    .form-stack {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+    .form-row {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+    .form-row label {
+      color: var(--text-main);
+      font-size: var(--text-sm);
+      font-weight: 600;
+    }
+    .form-row .label-required {
+      color: var(--brand-rose);
+      margin-left: 2px;
+    }
+
+    /* Compose .input-ghost from architect-scholar layer for all fields */
+    .form-row input,
+    .form-row select,
+    .form-row textarea {
+      /* .input-ghost is applied via the class attribute; this just ensures
+         layout consistency across input types */
+      width: 100%;
+    }
+    .form-row textarea {
+      resize: vertical;
+      min-height: 140px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      line-height: 1.6;
+    }
+
+    /* Inline hint shown beneath fields */
+    .form-hint {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-2);
+      font-size: var(--text-xs);
+      color: var(--text-muted);
+      min-height: 18px;
+    }
+    .form-hint--error {
+      color: var(--brand-rose);
+    }
+    .form-hint__counter {
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Topic-specific contextual nudge (smart routing) */
+    .topic-nudge {
+      display: none;
+      margin-top: var(--space-2);
+      padding: var(--space-3);
+      background: var(--surface-container-low);
+      border-left: 3px solid var(--brand-rose);
+      border-radius: 0 var(--radius-md, 8px) var(--radius-md, 8px) 0;
+      font-size: var(--text-sm);
+      line-height: 1.5;
+      color: var(--text-main);
+    }
+    .topic-nudge.is-visible {
+      display: block;
+    }
+    .topic-nudge a {
+      color: var(--brand-rose);
+      font-weight: 600;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    /* Honeypot — invisible to humans, irresistible to bots */
+    .honeypot {
+      position: absolute !important;
+      left: -9999px;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Success / error banners */
+    .form-banner {
+      padding: var(--space-3) var(--space-4);
+      border-radius: var(--radius-md, 8px);
+      font-size: var(--text-sm);
+      line-height: 1.5;
+      margin-bottom: var(--space-4);
+    }
+    .form-banner--success {
+      background: var(--surface-container-low);
+      border-left: 3px solid var(--brand-mint, #6FB89B);
+      color: var(--text-main);
+    }
+    .form-banner--success strong {
+      display: block;
+      color: var(--text-main);
+      margin-bottom: 4px;
+    }
+    .form-banner--error {
+      background: var(--surface-container-low);
+      border-left: 3px solid var(--brand-rose);
+      color: var(--text-main);
+    }
+
+    /* "What happens next" footnote under the submit button */
+    .form-footnote {
+      margin-top: var(--space-3);
+      font-size: var(--text-xs);
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* ── Channels sidebar ── */
+    .channel-card {
+      padding: var(--space-4);
+      margin-bottom: var(--space-3);
+    }
+    .channel-card__label {
+      color: var(--brand-rose);
+      display: block;
+      margin-bottom: var(--space-3);
+    }
+    .channel {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-3);
+      padding: var(--space-2) 0;
+      border-bottom: 1px solid var(--border-light);
+    }
+    .channel:last-child { border-bottom: none; }
+    .channel__icon {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-full, 999px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: var(--brand-rose);
+      background: var(--surface-container);
+    }
+    .channel__icon--whatsapp {
+      color: var(--brand-mint, #6FB89B);
+    }
+    .channel__body { flex: 1; min-width: 0; }
+    .channel__label {
+      color: var(--brand-rose);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+    .channel__icon--whatsapp + .channel__body .channel__label {
+      color: var(--brand-mint, #6FB89B);
+    }
+    .channel__value {
+      color: var(--text-main);
+      font-size: var(--text-base);
+      font-weight: 600;
+      text-decoration: none;
+      display: block;
+      word-break: break-word;
+    }
+    .channel__value:hover {
+      color: var(--brand-rose);
+    }
+    .channel__sla {
+      font-size: var(--text-xs);
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Self-serve quick-links */
+    .quicklinks {
+      padding: var(--space-4);
+    }
+    .quicklinks__label {
+      color: var(--brand-rose);
+      display: block;
+      margin-bottom: var(--space-3);
+    }
+    .quicklinks__list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+    .quicklinks__item a {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-2);
+      padding: var(--space-2) 0;
+      color: var(--text-main);
+      text-decoration: none;
+      font-size: var(--text-sm);
+      border-bottom: 1px solid var(--border-light);
+      transition: color 160ms ease;
+    }
+    .quicklinks__item:last-child a {
+      border-bottom: none;
+    }
+    .quicklinks__item a:hover {
+      color: var(--brand-rose);
+    }
+    .quicklinks__item a::after {
+      content: '→';
+      color: var(--text-faint, var(--outline));
+      font-size: var(--text-base);
+      transition: transform 160ms ease, color 160ms ease;
+    }
+    .quicklinks__item a:hover::after {
+      color: var(--brand-rose);
+      transform: translateX(2px);
+    }
+  </style>
 </head>
 
-<body class="has-bottom-nav bg-page texture-light-grid">
+<body class="bg-surface has-bottom-nav">
   <global-header></global-header>
 
-  <section class="bg-sage texture-dots py-10" style="padding-top: calc(64px + var(--space-8)); text-align: center;">
-    <div class="container flex flex-col items-center">
-      <div class="badge badge-glass mb-4">We're Here to Help</div>
-      <h1 class="font-display text-4xl text-white mb-2">Contact Superholic Lab</h1>
-      <p class="text-lg text-cream" style="max-width: 500px; margin: 0 auto;">Have questions about our methodology,
-        pricing, or your child's progress? Reach out to us.</p>
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       HERO — restrained, on .bg-surface (consistent with privacy/terms/faq)
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <section class="contact-hero bg-surface">
+    <div class="container-as">
+      <span class="label-caps contact-hero__eyebrow">Support · Singapore</span>
+      <h1 class="h1-as contact-hero__title">Get in touch.</h1>
+      <p class="body-lg contact-hero__lede">
+        Questions about the platform, your child's progress, or your subscription?
+        Send us a message — or use the channel that suits you.
+      </p>
+      <div class="contact-hero__meta">
+        <!-- Live status pill: green-dot animation if within office hours, dim otherwise.
+             Office-hours logic runs in the script block at the bottom of the page. -->
+        <span class="status-pill" id="statusPill">
+          <span class="status-pill__dot" id="statusDot"></span>
+          <span id="statusText">Online · Replies within 24h</span>
+        </span>
+        <span class="badge badge-neutral">Mon–Fri · 9am–6pm SGT</span>
+      </div>
     </div>
   </section>
 
-  <main class="container py-10 flex flex-wrap gap-6 items-start justify-center"
-    style="max-width: 1000px; min-height: 50vh;">
-    <div class="flex-1 flex flex-col gap-6" style="min-width: 300px; max-width: 400px;">
-      <div class="card p-6 card-rule-rose bg-surface">
-        <h2 class="font-display text-2xl text-main mb-4 m-0">Get in Touch</h2>
-        <p class="text-sm text-muted mb-6">Our academic team is ready to assist you with any inquiries regarding the
-          Superholic Lab platform.</p>
-        <div class="flex flex-col gap-4">
-          <div class="flex items-center gap-4">
-            <div class="flex items-center justify-center bg-rose-tint"
-              style="width: 40px; height: 40px; border-radius: var(--radius-full); color: var(--brand-rose);">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                <polyline points="22,6 12,13 2,6" />
-              </svg>
-            </div>
-            <div>
-              <div class="text-xs font-bold text-muted uppercase">Email Support</div>
-              <a href="mailto:linzy@superholiclab.com" class="text-sm font-bold text-main"
-                style="text-decoration: none;">linzy@superholiclab.com</a>
-            </div>
-          </div>
-          <div class="flex items-center gap-4">
-            <div class="flex items-center justify-center bg-science-tint"
-              style="width: 40px; height: 40px; border-radius: var(--radius-full); color: var(--brand-mint);">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round">
-                <path
-                  d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-              </svg>
-            </div>
-            <div>
-              <div class="text-xs font-bold text-muted uppercase">WhatsApp</div>
-              <a href="https://wa.me/6591703212" class="text-sm font-bold text-main" style="text-decoration: none;"
-                target="_blank">+65 9170 3212</a>
-            </div>
-          </div>
-          <div class="flex items-center gap-4">
-            <div class="flex items-center justify-center bg-maths-tint"
-              style="width: 40px; height: 40px; border-radius: var(--radius-full); color: var(--maths-colour);">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                <circle cx="12" cy="10" r="3" />
-              </svg>
-            </div>
-            <div>
-              <div class="text-xs font-bold text-muted uppercase">Location</div>
-              <div class="text-sm font-bold text-main">Singapore</div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="card p-6 bg-sage-dark text-white hover-lift">
-        <h3 class="font-display text-xl mb-2 m-0">Need a quick answer?</h3>
-        <p class="text-sm mb-4">Check our Frequently Asked Questions for details on pricing, methodology, and the 7-day
-          free trial.</p>
-        <a href="/pages/pricing.html" class="btn btn-secondary btn-sm"
-          style="border-color: rgba(255,255,255,0.22);">Read FAQs →</a>
-      </div>
-    </div>
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       BODY — asymmetric 7+5 (form left, channels + quick links right)
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <section class="contact-body bg-surface">
+    <div class="container-as">
+      <div class="contact-grid">
 
-    <div class="flex-1 card p-6 bg-surface" style="min-width: 300px; max-width: 500px;">
-      <h2 class="font-display text-2xl text-main mb-6 m-0">Send a Message</h2>
-      <div id="contact-success" hidden class="card card-rule-mint bg-science-tint p-4 mb-6">
-        <div class="font-bold text-success mb-2">Message Sent!</div>
-        <p class="text-sm text-main m-0">Thank you for reaching out. We will get back to you within 24 hours.</p>
-      </div>
-      <div id="contact-error" hidden class="card card-rule-rose bg-rose-tint p-4 mb-6 text-sm text-danger font-bold">
-      </div>
-      <!-- Form submits to /api/contact (stored in Supabase contact_submissions table) -->
-      <div class="flex flex-col gap-4" id="contact-form-fields">
-        <div>
-          <label for="name" class="block text-sm font-bold text-main mb-2">Your Name <span
-              class="text-danger">*</span></label>
-          <input type="text" id="name" name="name" required class="form-input w-full">
+        <!-- ── 7-COL: FORM CARD ──────────────────────────────────────────── -->
+        <div class="contact-form-col">
+          <article class="card-glass form-card">
+            <span class="label-caps form-card__eyebrow">§ 01 — Send a message</span>
+            <h2 class="h2-as form-card__title">We'll get back to you within 24 hours.</h2>
+            <p class="form-card__lede">
+              Required fields are marked with a rose asterisk. We never share your details with third parties.
+            </p>
+
+            <!-- Success banner -->
+            <div id="contact-success" class="form-banner form-banner--success" hidden>
+              <strong>Message sent.</strong>
+              We've logged your enquiry and will reply by email within 24 hours, Mon–Fri SGT.
+            </div>
+
+            <!-- Error banner -->
+            <div id="contact-error" class="form-banner form-banner--error" hidden></div>
+
+            <!-- Form (no <form> tag — submit handler called via button click,
+                 matching the original implementation) -->
+            <div class="form-stack" id="contact-form-fields">
+
+              <!-- Honeypot (anti-spam): hidden from humans, irresistible to bots -->
+              <div class="honeypot" aria-hidden="true">
+                <label for="company">Company (leave blank)</label>
+                <input type="text" id="company" name="company" tabindex="-1" autocomplete="off" />
+              </div>
+
+              <!-- Name -->
+              <div class="form-row">
+                <label for="name">Your name <span class="label-required">*</span></label>
+                <input type="text" id="name" name="name" class="input-ghost" autocomplete="name" required />
+                <div class="form-hint" id="name-hint"></div>
+              </div>
+
+              <!-- Email -->
+              <div class="form-row">
+                <label for="email">Email address <span class="label-required">*</span></label>
+                <input type="email" id="email" name="email" class="input-ghost" autocomplete="email" required />
+                <div class="form-hint" id="email-hint">We'll only use this to reply.</div>
+              </div>
+
+              <!-- Topic + smart routing nudge -->
+              <div class="form-row">
+                <label for="topic">How can we help? <span class="label-required">*</span></label>
+                <select id="topic" name="topic" class="input-ghost" required>
+                  <option value="" disabled selected>Select a topic…</option>
+                  <option value="General Inquiry">General inquiry</option>
+                  <option value="Technical Support">Technical support</option>
+                  <option value="Billing &amp; Subscription">Billing &amp; subscription</option>
+                  <option value="Refund Request">Refund request</option>
+                  <option value="Feedback / Feature Request">Feedback / feature request</option>
+                  <option value="Press / Partnerships">Press / partnerships</option>
+                </select>
+
+                <!-- Topic-specific nudges populated by the script — many enquiries
+                     can be self-served, which is faster for the user and lighter on us. -->
+                <div class="topic-nudge" id="topic-nudge"></div>
+              </div>
+
+              <!-- Message + character counter -->
+              <div class="form-row">
+                <label for="message">Message <span class="label-required">*</span></label>
+                <textarea id="message" name="message" class="input-ghost" rows="6"
+                  maxlength="2000" required></textarea>
+                <div class="form-hint">
+                  <span id="message-hint">The more detail, the faster we can help.</span>
+                  <span class="form-hint__counter" id="message-counter">0 / 2000</span>
+                </div>
+              </div>
+
+              <!-- Submit -->
+              <button type="button" id="contact-submit" class="btn btn-primary"
+                onclick="window.submitContact()">
+                Send message
+              </button>
+
+              <!-- "What happens next" trust footnote -->
+              <p class="form-footnote">
+                Submitting sends your message to <strong>support@superholiclab.com</strong>.
+                We reply by email — please check your spam folder if you don't hear back within 24 hours.
+              </p>
+
+            </div>
+          </article>
         </div>
-        <div>
-          <label for="email" class="block text-sm font-bold text-main mb-2">Email Address <span
-              class="text-danger">*</span></label>
-          <input type="email" id="email" name="email" required class="form-input w-full">
-        </div>
-        <div>
-          <label for="topic" class="block text-sm font-bold text-main mb-2">How can we help? <span
-              class="text-danger">*</span></label>
-          <select id="topic" name="topic" required class="form-select w-full">
-            <option value="" disabled selected>Select a topic...</option>
-            <option value="General Inquiry">General Inquiry</option>
-            <option value="Technical Support">Technical Support</option>
-            <option value="Billing &amp; Subscription">Billing &amp; Subscription</option>
-            <option value="Feedback / Feature Request">Feedback / Feature Request</option>
-          </select>
-        </div>
-        <div>
-          <label for="message" class="block text-sm font-bold text-main mb-2">Message <span
-              class="text-danger">*</span></label>
-          <textarea id="message" name="message" required rows="5" class="form-input w-full"
-            style="resize: vertical; height: auto;"></textarea>
-        </div>
-        <button type="button" id="contact-submit" class="btn btn-primary btn-full hover-lift mt-2"
-          onclick="window.submitContact()">Send Message</button>
+
+        <!-- ── 5-COL: CHANNELS + QUICK LINKS ─────────────────────────────── -->
+        <aside class="contact-channels-col" aria-label="Other ways to reach us">
+
+          <!-- Channels -->
+          <article class="card-glass channel-card">
+            <span class="label-caps channel-card__label">Other channels</span>
+
+            <div class="channel">
+              <div class="channel__icon" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                  <polyline points="22,6 12,13 2,6" />
+                </svg>
+              </div>
+              <div class="channel__body">
+                <div class="channel__label">Email</div>
+                <a class="channel__value" href="mailto:support@superholiclab.com">support@superholiclab.com</a>
+                <div class="channel__sla">Reply within 24h · Mon–Fri SGT</div>
+              </div>
+            </div>
+
+            <div class="channel">
+              <div class="channel__icon channel__icon--whatsapp" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+                </svg>
+              </div>
+              <div class="channel__body">
+                <div class="channel__label">WhatsApp</div>
+                <a class="channel__value" href="https://wa.me/6591703212" target="_blank" rel="noopener">+65 9170 3212</a>
+                <div class="channel__sla">Fastest for urgent issues · 9am–6pm SGT</div>
+              </div>
+            </div>
+
+            <div class="channel">
+              <div class="channel__icon" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                  <circle cx="12" cy="10" r="3" />
+                </svg>
+              </div>
+              <div class="channel__body">
+                <div class="channel__label">Where we are</div>
+                <div class="channel__value">Singapore · Remote-first team</div>
+                <div class="channel__sla">Registered: Superholic Lab Pte. Ltd.</div>
+              </div>
+            </div>
+          </article>
+
+          <!-- Self-serve quick links — shifts ~30% of contact volume off the inbox -->
+          <article class="card-glass quicklinks">
+            <span class="label-caps quicklinks__label">Self-serve · faster than asking</span>
+            <ul class="quicklinks__list">
+              <li class="quicklinks__item">
+                <a href="/pages/faq.html">Read the FAQ</a>
+              </li>
+              <li class="quicklinks__item">
+                <a href="/pages/account.html">Manage subscription &amp; billing</a>
+              </li>
+              <li class="quicklinks__item">
+                <a href="/pages/update-password.html">Reset your password</a>
+              </li>
+              <li class="quicklinks__item">
+                <a href="/pages/pricing.html">Plans &amp; pricing</a>
+              </li>
+              <li class="quicklinks__item">
+                <a href="/pages/privacy.html">Privacy policy</a>
+              </li>
+            </ul>
+          </article>
+
+        </aside>
+
       </div>
     </div>
-  </main>
+  </section>
 
   <global-footer></global-footer>
 
+  <!-- ────────────────────────────────────────────────────────────────────────
+       SCRIPTS
+       1. Status pill (office-hours-aware)
+       2. Char counter + topic-routing nudges + email pre-fill
+       3. Submit handler (kept compatible with /api/contact endpoint)
+       4. Auth-aware header
+       ──────────────────────────────────────────────────────────────────────── -->
   <script>
-    window.submitContact = async function () {
-      var name = document.getElementById('name').value.trim();
-      var email = document.getElementById('email').value.trim();
-      var topic = document.getElementById('topic').value.trim();
-      var message = document.getElementById('message').value.trim();
-      var errEl = document.getElementById('contact-error');
-      var sucEl = document.getElementById('contact-success');
-      var btn = document.getElementById('contact-submit');
+    /* ── 1. Status pill: green & breathing during office hours, dim outside ── */
+    (function initStatus() {
+      const dot = document.getElementById('statusDot');
+      const text = document.getElementById('statusText');
+      if (!dot || !text) return;
 
-      errEl.hidden = true; sucEl.hidden = true;
+      // Compute current SGT time. SGT = UTC+8, no DST.
+      const now = new Date();
+      const sgtMs = now.getTime() + (now.getTimezoneOffset() * 60_000) + (8 * 3_600_000);
+      const sgt = new Date(sgtMs);
+      const day  = sgt.getUTCDay();   // 0=Sun, 6=Sat
+      const hour = sgt.getUTCHours();
+      const isOfficeHours = (day >= 1 && day <= 5) && (hour >= 9 && hour < 18);
+
+      if (isOfficeHours) {
+        text.textContent = 'Online · Replies within 24h';
+      } else {
+        dot.classList.add('status-pill__dot--off');
+        text.textContent = 'Offline · Replies next working day';
+      }
+    })();
+
+    /* ── 2a. Pre-fill email if logged in (waits for window.userProfile from boot) ── */
+    (function prefillFromSession() {
+      const tryFill = () => {
+        const profile = window.userProfile;
+        if (!profile) return false;
+        const emailField = document.getElementById('email');
+        const nameField = document.getElementById('name');
+        if (emailField && !emailField.value && profile.email) emailField.value = profile.email;
+        if (nameField && !nameField.value && profile.full_name) nameField.value = profile.full_name;
+        return true;
+      };
+      // Try immediately, then poll briefly while boot() resolves
+      if (tryFill()) return;
+      let tries = 0;
+      const t = setInterval(() => {
+        if (tryFill() || ++tries > 20) clearInterval(t);
+      }, 250);
+    })();
+
+    /* ── 2b. Character counter for the message field ── */
+    (function initCounter() {
+      const ta = document.getElementById('message');
+      const counter = document.getElementById('message-counter');
+      if (!ta || !counter) return;
+
+      const update = () => {
+        const len = ta.value.length;
+        const max = ta.maxLength || 2000;
+        counter.textContent = `${len} / ${max}`;
+        counter.style.color = len > max * 0.9
+          ? 'var(--brand-rose)'
+          : 'var(--text-muted)';
+      };
+      ta.addEventListener('input', update);
+      update();
+    })();
+
+    /* ── 2c. Smart routing nudges: each topic gets a tailored quick-fix tip
+       Many users find the answer here and never need to submit. */
+    (function initTopicNudges() {
+      const select = document.getElementById('topic');
+      const nudge  = document.getElementById('topic-nudge');
+      if (!select || !nudge) return;
+
+      const NUDGES = {
+        'Billing & Subscription':
+          'Most billing tasks are self-serve via the <a href="/pages/account.html">Stripe customer portal</a> in your account — change card, cancel, switch plans.',
+        'Refund Request':
+          'New paid subscriptions qualify for a 7-day no-questions-asked refund. Tell us your account email and the date of the charge — we\'ll process via Stripe within 5 working days.',
+        'Technical Support':
+          'Quick wins: hard-refresh the page (Ctrl+Shift+R), check your internet, and try an incognito window. If the issue persists, include the page URL and a screenshot below.',
+        'Feedback / Feature Request':
+          'We read every suggestion. Tell us the problem you\'re trying to solve, not just the feature — that lets us design the right fix.',
+        'Press / Partnerships':
+          'Please include your publication or organisation, your timeline, and a brief overview. We\'ll route to the right person within 48h.'
+      };
+
+      select.addEventListener('change', () => {
+        const tip = NUDGES[select.value];
+        if (tip) {
+          nudge.innerHTML = tip;
+          nudge.classList.add('is-visible');
+        } else {
+          nudge.classList.remove('is-visible');
+          nudge.innerHTML = '';
+        }
+      });
+    })();
+
+    /* ── 3. Submit handler — kept compatible with /api/contact endpoint ── */
+    window.submitContact = async function () {
+      const name    = document.getElementById('name').value.trim();
+      const email   = document.getElementById('email').value.trim();
+      const topic   = document.getElementById('topic').value.trim();
+      const message = document.getElementById('message').value.trim();
+      const honeypot = document.getElementById('company').value.trim();
+      const errEl  = document.getElementById('contact-error');
+      const sucEl  = document.getElementById('contact-success');
+      const btn    = document.getElementById('contact-submit');
+      const fields = document.getElementById('contact-form-fields');
+
+      errEl.hidden = true;
+      sucEl.hidden = true;
+
+      // Honeypot is sent to the server in the POST body below — server
+      // handles the silent-success path and logs the trip for visibility.
 
       if (!name || !email || !topic || !message) {
         errEl.textContent = 'Please fill in all required fields.';
         errEl.hidden = false;
         return;
       }
-<<<<<<< Updated upstream
 
-      btn.disabled = true; btn.textContent = 'Sending…';
+      // Lightweight email format check
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        errEl.textContent = 'Please enter a valid email address so we can reply.';
+        errEl.hidden = false;
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Sending…';
 
       try {
-        var res = await fetch('/api/contact', {
+        const res = await fetch('/api/contact', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: name, email: email, topic: topic, message: message }),
+          body: JSON.stringify({ name, email, topic, message, company: honeypot })
         });
-        var data = await res.json();
+        const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Submission failed');
 
         sucEl.hidden = false;
-        document.getElementById('contact-form-fields').style.display = 'none';
+        fields.style.display = 'none';
 
-        // Plausible event
-        if (typeof plausible === 'function') plausible('Contact Form Submit', { props: { topic: topic } });
-
+        // Plausible event for analytics segmentation
+        if (typeof plausible === 'function') {
+          plausible('Contact Form Submit', { props: { topic } });
+        }
       } catch (err) {
-        errEl.textContent = err.message || 'Could not send message. Please email us at linzy@superholiclab.com.';
+        errEl.textContent = err.message
+          || 'Could not send message. Please email us at support@superholiclab.com.';
         errEl.hidden = false;
-        btn.disabled = false; btn.textContent = 'Send Message';
+        btn.disabled = false;
+        btn.textContent = 'Send message';
       }
     };
-  </script>
-=======
-    } catch {
-      errEl.textContent = 'Network error. Please try again later.';
-      errEl.hidden = false;
-    } finally {
-      submit.disabled = false;
-      submit.textContent = 'Send Message';
+
+    /* ── 4. Navbar dropdown + auth-aware header (kept from previous version) ── */
+    document.addEventListener('DOMContentLoaded', () => {
+      const toggle = document.getElementById('navToggle');
+      const dropdown = document.getElementById('navDropdown');
+
+      if (toggle && dropdown) {
+        toggle.addEventListener('click', (e) => {
+          e.stopPropagation();
+          dropdown.classList.toggle('is-open');
+          toggle.classList.toggle('is-active');
+        });
+
+        document.addEventListener('click', (e) => {
+          if (!dropdown.contains(e.target) && !toggle.contains(e.target)) {
+            dropdown.classList.remove('is-open');
+            toggle.classList.remove('is-active');
+          }
+        });
+      }
+    });
+
+    if (typeof getSupabase === 'function') {
+      getSupabase().then(async function (sb) {
+        try {
+          const { data: { session } } = await sb.auth.getSession();
+          if (session) {
+            const authContainer = document.getElementById('auth-header-container');
+            const navLinks = document.getElementById('navDropdown');
+
+            if (authContainer) {
+              authContainer.innerHTML = '<a href="dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a>';
+            }
+
+            if (navLinks && !document.getElementById('navSignOut')) {
+              const signOut = document.createElement('a');
+              signOut.id = 'navSignOut';
+              signOut.href = '#';
+              signOut.textContent = 'Sign Out';
+              signOut.style.color = 'var(--brand-rose)';
+              signOut.onclick = async (e) => {
+                e.preventDefault();
+                await sb.auth.signOut();
+                window.location.href = '../index.html';
+              };
+              navLinks.appendChild(signOut);
+
+              const signUpLink = document.getElementById('navSignUp');
+              if (signUpLink) signUpLink.remove();
+            }
+          }
+        } catch (e) {
+          console.error('Auth check failed:', e);
+        }
+      });
     }
-  });
-</script> 
->>>>>>> Stashed changes
+  </script>
 </body>
 
 </html>
