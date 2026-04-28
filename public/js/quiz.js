@@ -447,7 +447,9 @@ window.initQuizEngine = function () {
     let wordBankHtml = '';
 
     // 🚀 MASTERCLASS: Sub-Topic UI Router for Cloze
-    const isGrammar = (q.sub_topic || '').toLowerCase() === 'grammar';
+    // Matches the legacy short form ('Grammar') AND the canonical form
+    // ('Grammar Cloze With Word Bank') introduced by sub_topic harmonisation.
+    const isGrammar = (q.sub_topic || '').toLowerCase().startsWith('grammar');
 
     // Only build a Word Bank if it is explicitly a Grammar Cloze
     if (isGrammar) {
