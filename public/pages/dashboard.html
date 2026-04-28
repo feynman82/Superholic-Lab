@@ -306,6 +306,61 @@
       padding: var(--space-2) 0;
     }
 
+    /* ── Weekly digest card (Phase 3 — "This week so far") ── */
+    .digest-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-2);
+      margin: var(--space-2) 0 var(--space-3) 0;
+    }
+    .digest-stat {
+      text-align: center;
+      padding: var(--space-3) var(--space-2);
+      background: var(--surface-container-lowest);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+    }
+    .digest-stat__val {
+      font-family: var(--font-display, 'Bebas Neue', sans-serif);
+      font-size: 26px;
+      letter-spacing: 0.02em;
+      color: var(--text-main);
+      line-height: 1.05;
+    }
+    .digest-stat__val--mint  { color: var(--brand-mint); }
+    .digest-stat__val--rose  { color: var(--brand-rose); }
+    .digest-stat__val--amber { color: var(--brand-amber, #D4A24A); }
+    .digest-stat__lbl {
+      color: var(--text-muted);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+    .digest-pacer {
+      color: var(--text-muted);
+      font-size: var(--text-sm);
+      line-height: 1.5;
+      margin: 0;
+      padding-top: var(--space-2);
+      border-top: 1px solid var(--border-light);
+    }
+    .digest-pacer strong { color: var(--text-main); font-weight: 600; }
+    .digest-empty {
+      color: var(--text-muted);
+      font-size: var(--text-sm);
+      line-height: 1.5;
+      margin: 0;
+    }
+    .digest-range {
+      color: var(--text-muted);
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      margin-top: 2px;
+    }
+
     /* ── Section heading (mirrors account.html) ── */
     .dash-section__head {
       display: flex;
@@ -1002,6 +1057,18 @@
             </ul>
           </article>
 
+          <!-- Weekly digest (Phase 3 — "This week so far") -->
+          <article class="card-glass aside-card" id="digest-card">
+            <header class="aside-card__head">
+              <span class="label-caps aside-card__eyebrow">This week so far</span>
+              <h2 class="aside-card__title" id="digest-title">Family pace</h2>
+              <div class="digest-range" id="digest-range">—</div>
+            </header>
+            <div id="digest-content">
+              <div class="spinner-sm"></div>
+            </div>
+          </article>
+
         </aside>
 
       </div>
@@ -1254,11 +1321,13 @@
         document.getElementById('manageBillingBtn').classList.remove('hidden');
       }
 
-      // Phase 2 — kick off family activity feed in parallel with loadStudents
-      // so the aside lights up at roughly the same time as the learner grid.
+      // Phase 2 + 3 — fire family activity feed and weekly digest in parallel
+      // with loadStudents so the aside lights up at the same time as the
+      // learner grid.
       await Promise.all([
         loadStudents(),
         loadFamilyActivity(),
+        loadWeeklyDigest(),
       ]);
 
       // Render HUD strip for the most recently active student
@@ -1623,6 +1692,73 @@
           // Generic dot
           return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>';
       }
+    }
+
+    /* ─── WEEKLY DIGEST (Phase 3) ─────────────────────────────────────────────
+       Pulls /api/weekly-digest (server-side compute, 5-min in-memory cache
+       per parent) and renders three stat blocks plus a one-sentence
+       last-week pacer at the bottom of the 5-col aside. Empty state shows
+       zeros + a "week resets each Monday" nudge. */
+
+    async function loadWeeklyDigest() {
+      const content  = document.getElementById('digest-content');
+      const rangeEl  = document.getElementById('digest-range');
+      if (!content) return;
+      try {
+        const sb = await getSupabase();
+        const { data: { session } } = await sb.auth.getSession();
+        if (!session) return;
+        const res = await fetch('/api/weekly-digest', {
+          headers: { 'Authorization': 'Bearer ' + session.access_token },
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        if (rangeEl && data.this_week && data.this_week.range_label) {
+          rangeEl.textContent = data.this_week.range_label;
+        }
+        renderWeeklyDigest(data);
+      } catch (err) {
+        console.error('[weekly-digest] load error:', err && err.message);
+        content.innerHTML = '<p class="digest-empty">Weekly summary unavailable right now.</p>';
+      }
+    }
+
+    function renderWeeklyDigest(data) {
+      const content = document.getElementById('digest-content');
+      if (!content) return;
+      const tw = (data && data.this_week) || { questions: 0, mastery_gains: 0, streak_days: 0 };
+      const lw = (data && data.last_week) || { questions: 0, mastery_gains: 0 };
+      const empty = (tw.questions === 0 && tw.mastery_gains === 0 && tw.streak_days === 0);
+
+      const escape = (s) => String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+      // Last-week pacer — only shown if last week has any signal
+      let pacer = '';
+      if (lw.questions > 0 || lw.mastery_gains > 0) {
+        const qLbl  = lw.questions    + ' question'      + (lw.questions    === 1 ? '' : 's');
+        const mLbl  = lw.mastery_gains + ' level gained' + (lw.mastery_gains === 1 ? '' : 's');
+        pacer = '<p class="digest-pacer">Last week\'s pace: <strong>' + escape(qLbl) + '</strong>, ' + escape(mLbl) + '.</p>';
+      }
+
+      content.innerHTML = ''
+        + '<div class="digest-stats">'
+          + '<div class="digest-stat">'
+            + '<div class="digest-stat__val digest-stat__val--rose">'  + escape(tw.questions)     + '</div>'
+            + '<div class="digest-stat__lbl">Questions</div>'
+          + '</div>'
+          + '<div class="digest-stat">'
+            + '<div class="digest-stat__val digest-stat__val--mint">'  + escape(tw.mastery_gains) + '</div>'
+            + '<div class="digest-stat__lbl">Levels gained</div>'
+          + '</div>'
+          + '<div class="digest-stat">'
+            + '<div class="digest-stat__val digest-stat__val--amber">' + escape(tw.streak_days)   + '</div>'
+            + '<div class="digest-stat__lbl">Active days</div>'
+          + '</div>'
+        + '</div>'
+        + (empty
+            ? '<p class="digest-empty">No activity this week yet. The week resets each Monday.</p>'
+            : pacer);
     }
 
     function relativeTime(iso) {

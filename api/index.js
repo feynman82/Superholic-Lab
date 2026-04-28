@@ -31,6 +31,7 @@ import {
   handleLogActivity,
   handleLearnerExport,
   handleFamilyActivity,
+  handleWeeklyDigest,
 } from '../lib/api/handlers.js';
 
 export const config = { api: { bodyParser: false } };
@@ -90,6 +91,7 @@ export default async function handler(req, res) {
     case 'log-activity':       return handleLogActivity(req, res);
     case 'learner-export':     return handleLearnerExport(req, res);
     case 'family-activity':    return handleFamilyActivity(req, res);
+    case 'weekly-digest':      return handleWeeklyDigest(req, res);
     default:
       return res.status(404).json({ error: 'Route /api/' + route + ' not found.' });
   }
