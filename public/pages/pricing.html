@@ -5,28 +5,31 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pricing — Superholic Lab</title>
+
   <!-- SEO -->
   <meta name="description"
-    content="All Subjects from S$12.99/month. Family Plan from S$19.99/month. 7-day free trial, no credit card required. MOE-aligned Maths, Science &amp; English for Singapore P1–P6.">
-  <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://www.superholiclab.com/pages/pricing.html">
+    content="All Subjects from S$12.99/month. Family Plan from S$19.99/month. 7-day free trial, no credit card required. MOE-aligned Maths, Science &amp; English for Singapore P1–P6." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://www.superholiclab.com/pages/pricing.html" />
+
   <!-- Open Graph -->
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Superholic Lab">
-  <meta property="og:title" content="Pricing — Superholic Lab">
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Superholic Lab" />
+  <meta property="og:title" content="Pricing — Superholic Lab" />
   <meta property="og:description"
-    content="All Subjects from S$12.99/month. 7-day free trial, no credit card. MOE-aligned AI tutor for Singapore P1–P6.">
-  <meta property="og:url" content="https://www.superholiclab.com/pages/pricing.html">
-  <meta property="og:image" content="https://www.superholiclab.com/assets/og.png">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:locale" content="en_SG">
-  <!-- Twitter/X Card -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Pricing — Superholic Lab">
-  <meta name="twitter:description"
-    content="All Subjects from S$12.99/month. 7-day free trial, no credit card required.">
-  <meta name="twitter:image" content="https://www.superholiclab.com/assets/og.png">
+    content="All Subjects from S$12.99/month. 7-day free trial, no credit card. MOE-aligned AI tutor for Singapore P1–P6." />
+  <meta property="og:url" content="https://www.superholiclab.com/pages/pricing.html" />
+  <meta property="og:image" content="https://www.superholiclab.com/assets/og.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:locale" content="en_SG" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Pricing — Superholic Lab" />
+  <meta name="twitter:description" content="All Subjects from S$12.99/month. 7-day free trial, no credit card required." />
+  <meta name="twitter:image" content="https://www.superholiclab.com/assets/og.png" />
+
   <!-- JSON-LD: FAQPage -->
   <script type="application/ld+json">
   {
@@ -47,10 +50,16 @@
         "@type": "Question",
         "name": "Can I change or cancel my plan?",
         "acceptedAnswer": { "@type": "Answer", "text": "Yes. You can upgrade, downgrade, update your payment method, or cancel at any time from your account settings." }
+      },
+      {
+        "@type": "Question",
+        "name": "Do you offer refunds?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Yes. All paid plans are backed by a 7-day no-questions-asked refund — email support@superholiclab.com within 7 days of your charge." }
       }
     ]
   }
   </script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="../css/style.css" />
@@ -62,196 +71,876 @@
     import { guardPage } from '/js/auth.js';
     await guardPage(false);
   </script>
+
+<style>
+    /* Page background — architect-scholar drawing grid */
+    body.has-bottom-nav {
+      background: var(--surface);
+      background-image:
+        linear-gradient(rgba(81, 97, 94, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(81, 97, 94, 0.025) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+
+    /* ── Hero ── */
+    .pricing-hero {
+      padding-top: calc(64px + var(--space-8));
+      padding-bottom: var(--space-6);
+      border-bottom: 1px solid var(--border-light);
+      text-align: center;
+    }
+    .pricing-hero__eyebrow {
+      color: var(--brand-rose);
+      display: block;
+      margin-bottom: var(--space-3);
+    }
+    .pricing-hero__title {
+      color: var(--text-main);
+      margin: 0 auto var(--space-2) auto;
+      max-width: 720px;
+    }
+    .pricing-hero__title em {
+      color: var(--brand-rose);
+      font-style: normal;
+    }
+    .pricing-hero__lede {
+      color: var(--text-muted);
+      max-width: 560px;
+      margin: 0 auto var(--space-5) auto;
+    }
+
+    /* Active-subscriber badge in hero (revealed by JS for paid users) */
+    .hero-active-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-1) var(--space-3);
+      background: rgba(111, 184, 155, 0.12);
+      color: var(--brand-mint);
+      border: 1px solid rgba(111, 184, 155, 0.25);
+      border-radius: var(--radius-full, 999px);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: var(--space-3);
+    }
+    .hero-active-pill[hidden] { display: none; }
+
+    /* ── Billing toggle (class-based state) ── */
+    .billing-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px;
+      background: var(--surface-container-low);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-full, 999px);
+    }
+    .billing-toggle .btn {
+      background: transparent;
+      color: var(--text-muted);
+      border: none;
+      border-radius: var(--radius-full, 999px);
+      min-width: 110px;
+      white-space: nowrap;
+      box-shadow: none;
+      transition: background 160ms ease, color 160ms ease;
+    }
+    .billing-toggle .btn.is-active {
+      background: var(--surface-container-lowest);
+      color: var(--text-main);
+      box-shadow: 0 1px 3px rgba(44, 62, 58, 0.08);
+    }
+    .billing-toggle .save-tag {
+      display: inline-block;
+      margin-left: 6px;
+      padding: 1px 6px;
+      background: var(--brand-rose);
+      color: white;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+
+    /* ── Body ── */
+    .pricing-body {
+      padding-top: var(--space-6);
+      padding-bottom: var(--space-8);
+    }
+
+    /* "Everything in both plans" base feature strip */
+    .base-features {
+      max-width: 880px;
+      margin: 0 auto var(--space-5) auto;
+      padding: var(--space-4) var(--space-5);
+    }
+    .base-features__head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-2);
+      margin-bottom: var(--space-3);
+      flex-wrap: wrap;
+    }
+    .base-features__title {
+      color: var(--text-main);
+      margin: 0;
+      font-size: 22px;
+      font-family: var(--font-display, 'Bebas Neue', sans-serif);
+      letter-spacing: 0.04em;
+    }
+    .base-features__eyebrow {
+      color: var(--brand-rose);
+    }
+    .base-features__list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: var(--space-2) var(--space-3);
+    }
+    .base-features__list li {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-2);
+      color: var(--text-main);
+      font-size: var(--text-sm);
+      line-height: 1.5;
+    }
+    .base-features__check {
+      flex-shrink: 0;
+      color: var(--brand-mint);
+      margin-top: 2px;
+    }
+
+    /* ── Family upgrade banner (preserved + restyled) ── */
+    .upgrade-banner {
+      max-width: 880px;
+      margin: 0 auto var(--space-4) auto;
+      padding: var(--space-3) var(--space-4);
+      border-radius: var(--radius-md);
+      background: var(--surface-container-low);
+      border-left: 3px solid var(--brand-rose);
+      color: var(--text-main);
+      font-size: var(--text-sm);
+      line-height: 1.5;
+    }
+    .upgrade-banner strong { color: var(--brand-rose); font-weight: 700; }
+
+    /* ── Plan grid ── */
+    .plan-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: var(--space-4);
+      max-width: 880px;
+      margin: 0 auto;
+    }
+
+    /* Card */
+    .plan-card {
+      padding: var(--space-5);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      position: relative;
+      transition: transform 200ms ease, box-shadow 200ms ease;
+    }
+    .plan-card:hover { transform: translateY(-3px); }
+
+    .plan-card--featured {
+      border: 2px solid var(--brand-rose);
+    }
+
+    /* "Most popular" pill at top of featured card */
+    .plan-card__popular {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 4px 12px;
+      background: var(--brand-rose);
+      color: white;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border-radius: var(--radius-full, 999px);
+      box-shadow: 0 4px 12px rgba(183, 110, 121, 0.3);
+    }
+
+    .plan-card__head {
+      text-align: center;
+      padding-bottom: var(--space-3);
+      border-bottom: 1px solid var(--border-light);
+    }
+    .plan-card__name {
+      font-family: var(--font-display, 'Bebas Neue', sans-serif);
+      font-size: 24px;
+      letter-spacing: 0.04em;
+      color: var(--text-main);
+      margin: 0 0 var(--space-2) 0;
+    }
+    .plan-card__price {
+      font-family: var(--font-display, 'Bebas Neue', sans-serif);
+      font-size: 48px;
+      letter-spacing: 0.02em;
+      color: var(--text-main);
+      line-height: 1;
+      margin: 0;
+    }
+    .plan-card--featured .plan-card__price { color: var(--brand-rose); }
+    .plan-card__price-suffix {
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--text-muted);
+      font-weight: 400;
+      letter-spacing: 0.02em;
+      margin-left: 2px;
+    }
+    .plan-card__annual-note {
+      color: var(--text-muted);
+      font-size: 12px;
+      margin: var(--space-2) 0 0 0;
+      letter-spacing: 0.02em;
+    }
+    .plan-card__annual-note[style*="display: none"],
+    .plan-card__annual-note.hidden { display: none !important; }
+    .plan-card__savings {
+      color: var(--brand-mint);
+      font-weight: 700;
+    }
+    .plan-card__tag {
+      color: var(--text-muted);
+      font-size: 13px;
+      margin: var(--space-2) 0 0 0;
+      line-height: 1.5;
+    }
+
+    /* Differentiator block — what's UNIQUE about this plan */
+    .plan-card__diff {
+      padding: var(--space-3);
+      background: var(--surface-container-low);
+      border-radius: var(--radius-md);
+      flex: 1;
+    }
+    .plan-card__diff-eyebrow {
+      color: var(--brand-rose);
+      display: block;
+      margin-bottom: var(--space-2);
+    }
+    .plan-card__diff-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+    .plan-card__diff-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-2);
+      color: var(--text-main);
+      font-size: var(--text-sm);
+      font-weight: 600;
+      line-height: 1.5;
+    }
+    .plan-card__diff-list li svg {
+      flex-shrink: 0;
+      color: var(--brand-rose);
+      margin-top: 2px;
+    }
+
+    .plan-card__cta {
+      width: 100%;
+    }
+    .plan-card__cta:disabled {
+      cursor: default;
+    }
+    .plan-card__note {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 12px;
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    /* Confidence indicator strip below CTA — stripe / encrypted / no auto-renewal */
+    .confidence-strip {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+      padding-top: var(--space-2);
+      border-top: 1px solid var(--border-light);
+      margin-top: var(--space-1);
+    }
+    .confidence-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-muted);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .confidence-item svg { flex-shrink: 0; color: var(--brand-sage); }
+
+    /* ── Trust strip below cards ── */
+    .trust-strip {
+      max-width: 880px;
+      margin: var(--space-5) auto 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-4);
+      flex-wrap: wrap;
+      padding: var(--space-3) var(--space-4);
+      background: var(--surface-container-lowest);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+    }
+    .trust-item {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-1);
+      color: var(--text-main);
+      font-size: var(--text-sm);
+    }
+    .trust-item svg { color: var(--brand-mint); flex-shrink: 0; }
+
+    /* Refund footnote */
+    .refund-note {
+      max-width: 880px;
+      margin: var(--space-3) auto 0 auto;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+    .refund-note a { color: var(--brand-rose); }
+
+    /* ── FAQ section ── */
+    .pricing-faq {
+      padding-top: var(--space-6);
+      padding-bottom: var(--space-8);
+      border-top: 1px solid var(--border-light);
+    }
+    .pricing-faq__head {
+      text-align: center;
+      margin-bottom: var(--space-5);
+    }
+    .pricing-faq__eyebrow {
+      color: var(--brand-rose);
+      display: block;
+      margin-bottom: var(--space-2);
+    }
+    .pricing-faq__title {
+      color: var(--text-main);
+      margin: 0;
+    }
+
+    .faq-list {
+      max-width: 720px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+
+    /* FAQ accordion — matches faq.html aesthetic */
+    .faq-item {
+      padding: var(--space-3) var(--space-4);
+      cursor: pointer;
+      transition: border-color 160ms ease;
+    }
+    .faq-item--open {
+      border-left: 3px solid var(--brand-rose);
+    }
+    .faq-item__head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-3);
+      color: var(--text-main);
+      font-weight: 600;
+      font-size: var(--text-base);
+      line-height: 1.4;
+    }
+    .faq-icon {
+      flex-shrink: 0;
+      color: var(--brand-rose);
+      transition: transform 240ms ease;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .faq-item--open .faq-icon { transform: rotate(45deg); }
+    .faq-answer {
+      color: var(--text-muted);
+      font-size: var(--text-sm);
+      line-height: 1.6;
+      margin-top: var(--space-2);
+      padding-top: var(--space-2);
+      border-top: 1px solid var(--border-light);
+    }
+    .faq-answer.hidden { display: none; }
+
+    .faq-cta {
+      text-align: center;
+      margin-top: var(--space-4);
+    }
+
+    /* ── Bottom CTA — restrained: surface with rose accent strip ── */
+    .pricing-cta {
+      padding: var(--space-6) 0;
+      border-top: 1px solid var(--border-light);
+    }
+    .pricing-cta__inner {
+      max-width: 720px;
+      margin: 0 auto;
+      text-align: center;
+      padding: var(--space-5) var(--space-4);
+      border-left: 3px solid var(--brand-rose);
+      background: var(--surface-container-lowest);
+      border-radius: var(--radius-md);
+    }
+    .pricing-cta__eyebrow {
+      color: var(--brand-rose);
+      display: block;
+      margin-bottom: var(--space-2);
+    }
+    .pricing-cta__title {
+      color: var(--text-main);
+      margin: 0 0 var(--space-2) 0;
+    }
+    .pricing-cta__lede {
+      color: var(--text-muted);
+      max-width: 480px;
+      margin: 0 auto var(--space-4) auto;
+    }
+  </style>
 </head>
 
 <body class="has-bottom-nav">
 
   <global-header></global-header>
 
-  <section class="bg-sage texture-dots py-10" style="padding-top: calc(64px + var(--space-8)); text-align: center;">
-    <div class="container flex flex-col items-center gap-4">
-      <div class="badge"
-        style="background: rgba(0, 0, 0, 0.25); color: var(--brand-rose); backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.1);">
-        Transparent Pricing</div>
-      <h1 class="font-display text-4xl text-white mt-2 mb-2" style="font-size: 3.5rem; line-height: 1.1;">
-        Invest in Understanding.<br><span class="text-rose">Not Just Practice.</span>
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       HERO — restrained on .bg-surface, with billing toggle
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <section class="pricing-hero bg-surface">
+    <div class="container-as">
+      <!-- Active-subscriber pill — revealed by JS when profile.subscription_tier is paid -->
+      <span id="activeSubscriberPill" class="hero-active-pill" hidden>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        You're on <span id="activeSubscriberPlan" style="margin-left: 4px;">—</span>
+      </span>
+
+      <span class="label-caps pricing-hero__eyebrow">Transparent pricing</span>
+      <h1 class="h1-as pricing-hero__title">
+        Invest in understanding. <em>Not just practice.</em>
       </h1>
-      <p class="text-lg mb-6" style="color: rgba(255,255,255,0.8); max-width: 600px;">
+      <p class="body-lg pricing-hero__lede">
         Try everything free for 7 days — no credit card. Subscribe when you're ready.
       </p>
 
-      <div class="flex items-center gap-2 p-2 rounded"
-        style="background: rgba(0,0,0,0.2); backdrop-filter: blur(8px); border-radius: var(--radius-full);">
-        <button id="toggleMonthly" class="btn btn-sm"
-          style="background: var(--bg-surface); color: var(--text-main); border-radius: var(--radius-full); width: auto; min-width: 100px; white-space: nowrap;">Monthly</button>
-        <button id="toggleYearly" class="btn btn-sm btn-ghost"
-          style="color: rgba(255,255,255,0.9); border-radius: var(--radius-full); width: auto; min-width: 140px; white-space: nowrap;">Annually
-          <span class="text-xs text-rose ml-1 font-bold">Save 17%</span></button>
+      <div class="billing-toggle" role="tablist" aria-label="Billing cycle">
+        <button id="toggleMonthly" class="btn btn-sm is-active" role="tab" aria-selected="true">
+          Monthly
+        </button>
+        <button id="toggleYearly" class="btn btn-sm" role="tab" aria-selected="false">
+          Annually <span class="save-tag">Save 17%</span>
+        </button>
       </div>
     </div>
   </section>
 
-  <section class="py-10 bg-page">
-    <div class="container">
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       BODY — base features + plan grid + trust strip
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <section class="pricing-body">
+    <div class="container-as">
 
-      <!-- Phase 4 — Family upgrade banner. Hidden by default; revealed by JS
-           when the page is loaded with ?upgrade=family from the account page. -->
-      <div id="upgrade-family-banner"
-           role="status"
-           hidden
-           style="
-             max-width: 760px;
-             margin: 0 auto var(--space-4) auto;
-             padding: var(--space-3) var(--space-4);
-             border-radius: var(--radius-md);
-             background: var(--surface-container-low);
-             border-left: 3px solid var(--brand-rose);
-             color: var(--text-main);
-             font-size: var(--text-sm);
-             line-height: 1.5;
-           ">
-        <strong style="color: var(--brand-rose); font-weight: 700;">Upgrading from All Subjects?</strong>
+      <!-- Family upgrade banner (preserved — revealed by ?upgrade=family) -->
+      <div id="upgrade-family-banner" class="upgrade-banner" role="status" hidden>
+        <strong>Upgrading from All Subjects?</strong>
         You'll be prorated for the difference — Stripe handles the math automatically when you subscribe to Family below.
       </div>
 
-      <div class="flex flex-wrap gap-4 items-start justify-center">
+      <!-- Base features — shared by both plans, shown ONCE -->
+      <article class="card-glass base-features">
+        <header class="base-features__head">
+          <span class="label-caps base-features__eyebrow">Everything in both plans</span>
+          <h2 class="base-features__title">The complete toolkit.</h2>
+        </header>
+        <ul class="base-features__list">
+          <li>
+            <svg class="base-features__check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            All 3 subjects (Maths, Science, English)
+          </li>
+          <li>
+            <svg class="base-features__check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Unlimited MOE-aligned questions
+          </li>
+          <li>
+            <svg class="base-features__check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Wrong-answer explanations on every option
+          </li>
+          <li>
+            <svg class="base-features__check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            WA · EOY · PSLE practice papers
+          </li>
+          <li>
+            <svg class="base-features__check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            AL1–AL8 live progress tracking
+          </li>
+          <li>
+            <svg class="base-features__check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Plan Quest — AI-generated action plan
+          </li>
+          <li>
+            <svg class="base-features__check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Miss Wena AI tutor — all subjects
+          </li>
+          <li>
+            <svg class="base-features__check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Study Notes Backpack
+          </li>
+        </ul>
+      </article>
 
-        <!-- All Subjects -->
-        <div class="card pricing-card-hover card-featured flex flex-col gap-4 p-6 text-center"
-          style="min-width: 300px; max-width: 380px; border-color: var(--brand-rose); border-width: 2px; position: relative;">
-          <div class="badge self-center absolute" style="top: -12px; background: var(--brand-rose); color: white;">Most
-            Popular</div>
-          <div class="text-center mb-2 mt-2">
-            <h2 class="font-display text-2xl text-main">All Subjects</h2>
-            <div class="font-display text-4xl text-rose mt-2">S$<span id="price-all">12.99</span><span
-                class="text-sm text-muted font-body" style="text-transform: none;">/mo</span></div>
-            <div id="annual-note-all" class="text-xs text-muted mt-2" style="display: none;">Billed S$129.90/year · 2
-              months free</div>
-            <p class="text-sm text-muted mt-4">The complete P1–P6 toolkit — Maths, Science &amp; English.</p>
-          </div>
-          <div class="flex-1 flex flex-col gap-3 text-sm text-main mb-6">
-            <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> All 3 subjects (Maths,
-              Science, English)</div>
-            <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Unlimited MOE-aligned
-              questions</div>
-            <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Wrong-answer explanations,
-              every option</div>
-            <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> WA · EOY Exam · PSLE practice
-              papers</div>
-            <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> AL1–AL8 live progress
-              tracking</div>
-            <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Plan Quest (AI action plan)
+      <!-- Plan grid — focused on the DIFFERENCE between plans -->
+      <div class="plan-grid">
+
+        <!-- All Subjects (featured) -->
+        <article class="card-glass plan-card plan-card--featured">
+          <span class="plan-card__popular">Most popular</span>
+
+          <header class="plan-card__head">
+            <h2 class="plan-card__name">All Subjects</h2>
+            <div class="plan-card__price">
+              S$<span id="price-all">12.99</span><span class="plan-card__price-suffix font-display text-sm font-body">/mo</span>
             </div>
-            <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Miss Wena AI Tutor — all
-              subjects</div>
-            <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Study Notes Backpack</div>
-            <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> 1 child profile</div>
+            <p id="annual-note-all" class="plan-card__annual-note" style="display: none;">
+              Billed S$129.90/year · <span class="plan-card__savings">Save S$26</span> · 2 months free
+            </p>
+            <p class="plan-card__tag">For one child practising across all P1–P6 subjects.</p>
+          </header>
+
+          <div class="plan-card__diff">
+            <span class="label-caps plan-card__diff-eyebrow">What you also get</span>
+            <ul class="plan-card__diff-list">
+              <li>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                </svg>
+                1 child profile
+              </li>
+            </ul>
           </div>
-          <button id="btn-sub-all" class="btn btn-primary w-full" data-plan="all_subjects">Start Free Trial</button>
-          <div id="sub-note-all" class="text-xs text-center text-muted mt-2">7 days free · No credit card</div>
-        </div>
+
+          <button id="btn-sub-all" class="btn btn-primary plan-card__cta" data-plan="all_subjects">
+            Start free trial
+          </button>
+          <p id="sub-note-all" class="plan-card__note">7 days free · No credit card</p>
+
+          <div class="confidence-strip">
+            <span class="confidence-item">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+              </svg>
+              Stripe-secured
+            </span>
+            <span class="confidence-item">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              256-bit SSL
+            </span>
+            <span class="confidence-item">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+              </svg>
+              Cancel anytime
+            </span>
+          </div>
+        </article>
 
         <!-- Family -->
-        <div id="plan-family" class="glass-panel-1 pricing-card-hover flex-1 flex flex-col gap-4 p-6"
-          style="min-width: 300px; max-width: 380px; margin-top: 16px;">
-          <div class="text-center mb-2">
-            <h2 class="font-display text-2xl text-main">Family Plan</h2>
-            <div class="font-display text-4xl text-main mt-2">S$<span id="price-family">19.99</span><span
-                class="text-sm text-muted font-body" style="text-transform: none;">/mo</span></div>
-            <div id="annual-note-family" class="text-xs text-muted mt-2" style="display: none;">Billed S$199.90/year · 2
-              months free</div>
-            <p class="text-sm text-muted mt-4">Everything in All Subjects — for up to 3 children, with a parent
-              dashboard for all.</p>
-          </div>
-          <div class="flex-1 flex flex-col gap-3 text-sm text-main mb-6">
-            <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> All 3 subjects (Maths,
-              Science, English)</div>
-            <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Unlimited MOE-aligned
-              questions</div>
-            <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Wrong-answer explanations,
-              every option</div>
-            <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> WA · EOY Exam · PSLE practice
-              papers</div>
-            <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> AL1–AL8 live progress
-              tracking</div>
-            <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Plan Quest (AI action plan)
+        <article id="plan-family" class="card-glass plan-card">
+
+          <header class="plan-card__head">
+            <h2 class="plan-card__name">Family</h2>
+            <div class="plan-card__price">
+              S$<span id="price-family">19.99</span><span class="plan-card__price-suffix font-display text-sm font-body">/mo</span>
             </div>
-            <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Miss Wena AI Tutor — all
-              subjects</div>
-            <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> Study Notes Backpack</div>
-            <div class="flex items-start gap-2"><span class="text-rose font-bold">✓</span> 3 child profiles + parent
-              dashboard</div>
+            <p id="annual-note-family" class="plan-card__annual-note" style="display: none;">
+              Billed S$199.90/year · <span class="plan-card__savings">Save S$40</span> · 2 months free
+            </p>
+            <p class="plan-card__tag">For multiple children — separate dashboards, shared billing.</p>
+          </header>
+
+          <div class="plan-card__diff">
+            <span class="label-caps plan-card__diff-eyebrow">What you also get</span>
+            <ul class="plan-card__diff-list">
+              <li>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                Up to 3 child profiles
+              </li>
+              <li>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/>
+                  <line x1="9" y1="21" x2="9" y2="9"/>
+                </svg>
+                Parent dashboard for all learners
+              </li>
+              <li>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2 4 6v6c0 5 3.5 9.5 8 10 4.5-.5 8-5 8-10V6l-8-4z"/>
+                </svg>
+                Per-child progress &amp; AL tracking
+              </li>
+            </ul>
           </div>
-          <button id="btn-sub-family" class="btn btn-secondary w-full" data-plan="family">Start Free Trial</button>
-          <div id="sub-note-family" class="text-xs text-center text-muted mt-2">7 days free · No credit card</div>
-        </div>
 
+          <button id="btn-sub-family" class="btn btn-secondary plan-card__cta" data-plan="family">
+            Start free trial
+          </button>
+          <p id="sub-note-family" class="plan-card__note">7 days free · No credit card</p>
+
+          <div class="confidence-strip">
+            <span class="confidence-item">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+              </svg>
+              Stripe-secured
+            </span>
+            <span class="confidence-item">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              256-bit SSL
+            </span>
+            <span class="confidence-item">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+              </svg>
+              Cancel anytime
+            </span>
+          </div>
+        </article>
+
+      </div>
+
+      <!-- Trust strip below the plan grid -->
+      <div class="trust-strip" aria-label="Plan guarantees">
+        <span class="trust-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 12l2 2 4-4"/><path d="M21 12c0 5-3.5 9.5-9 10C6.5 21.5 3 17 3 12c0-2.4 1-4.7 2.6-6.4L12 3l6.4 2.6C20 7.3 21 9.6 21 12z"/>
+          </svg>
+          PDPA-compliant
+        </span>
+        <span class="trust-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          </svg>
+          Singapore servers
+        </span>
+        <span class="trust-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>
+          </svg>
+          7-day refund
+        </span>
+        <span class="trust-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+          No auto-renewal trap
+        </span>
+      </div>
+
+      <!-- Refund footnote -->
+      <p class="refund-note">
+        All paid plans are backed by our 7-day no-questions-asked refund —
+        <a href="/pages/terms.html#refunds">see our refund policy</a>.
+        Single Subject is no longer offered to new subscribers but remains active for existing customers.
+      </p>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       FAQ
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <section class="pricing-faq">
+    <div class="container-as">
+      <header class="pricing-faq__head">
+        <span class="label-caps pricing-faq__eyebrow">Common questions</span>
+        <h2 class="h2-as pricing-faq__title">Pricing FAQ.</h2>
+      </header>
+
+      <div class="faq-list">
+        <article class="card-glass faq-item">
+          <div class="faq-item__head">
+            Do I need a credit card to start the free trial?
+            <span class="faq-icon" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+            </span>
+          </div>
+          <div class="faq-answer hidden">
+            No. Your 7-day free trial starts the moment you create an account — no payment details required.
+            You only enter your card when you decide to subscribe.
+          </div>
+        </article>
+
+        <article class="card-glass faq-item">
+          <div class="faq-item__head">
+            What happens when my free trial ends?
+            <span class="faq-icon" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+            </span>
+          </div>
+          <div class="faq-answer hidden">
+            When your 7-day trial ends, you'll need to subscribe to continue practising. We will never charge
+            you automatically — you choose when to subscribe by clicking Subscribe above.
+          </div>
+        </article>
+
+        <article class="card-glass faq-item">
+          <div class="faq-item__head">
+            Can I change or cancel my plan?
+            <span class="faq-icon" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+            </span>
+          </div>
+          <div class="faq-answer hidden">
+            Yes. Once you subscribe, you can upgrade, downgrade, update your payment method, or cancel at any
+            time from your account settings. Cancellation takes effect at the end of your current billing period.
+          </div>
+        </article>
+
+        <article class="card-glass faq-item">
+          <div class="faq-item__head">
+            Do you offer refunds?
+            <span class="faq-icon" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+            </span>
+          </div>
+          <div class="faq-answer hidden">
+            Yes. All paid plans come with a 7-day no-questions-asked refund. Email
+            <a href="mailto:support@superholiclab.com" style="color: var(--brand-rose);">support@superholiclab.com</a>
+            within 7 days of your charge and we'll process the refund — no forms, no friction.
+          </div>
+        </article>
+
+        <article class="card-glass faq-item">
+          <div class="faq-item__head">
+            Is my child's data secure?
+            <span class="faq-icon" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+            </span>
+          </div>
+          <div class="faq-answer hidden">
+            Yes. We're fully PDPA-compliant. All student data is encrypted at rest and in transit, stored on
+            Singapore servers (Supabase SG region). We do not sell your data and never will.
+          </div>
+        </article>
+      </div>
+
+      <div class="faq-cta">
+        <a href="/pages/faq.html#payment" class="btn btn-secondary">View all FAQs →</a>
       </div>
     </div>
   </section>
 
-  <section class="py-10 bg-white">
-    <div class="container" style="max-width: 800px;">
-      <div class="flex flex-col items-center text-center mb-8">
-        <div class="badge badge-info mb-2">Questions?</div>
-        <h2 class="font-display text-3xl mb-2 text-main">Frequently Asked Questions</h2>
-      </div>
-      <div class="flex flex-col gap-4">
-        <div class="glass-panel-1 hover-lift cursor-pointer faq-item" style="padding: var(--space-4);">
-          <div class="flex justify-between items-center font-bold text-main">Do I need a credit card to start the free
-            trial?<span class="text-rose text-xl transition-transform duration-300 faq-icon">+</span></div>
-          <div class="text-muted text-sm mt-2 hidden faq-answer">No. Your 7-day free trial starts the moment you create
-            an account — no payment details required. You only enter your card when you decide to subscribe.</div>
-        </div>
-        <div class="glass-panel-1 hover-lift cursor-pointer faq-item" style="padding: var(--space-4);">
-          <div class="flex justify-between items-center font-bold text-main">What happens when my free trial ends?<span
-              class="text-rose text-xl transition-transform duration-300 faq-icon">+</span></div>
-          <div class="text-muted text-sm mt-2 hidden faq-answer">When your 7-day trial ends, you'll need to subscribe to
-            continue practising. We will never charge you automatically — you choose when to subscribe by clicking the
-            Subscribe button above.</div>
-        </div>
-        <div class="glass-panel-1 hover-lift cursor-pointer faq-item" style="padding: var(--space-4);">
-          <div class="flex justify-between items-center font-bold text-main">Can I change or cancel my plan?<span
-              class="text-rose text-xl transition-transform duration-300 faq-icon">+</span></div>
-          <div class="text-muted text-sm mt-2 hidden faq-answer">Yes. Once you subscribe, you can upgrade, downgrade,
-            update your payment method, or cancel at any time from your dashboard billing settings.</div>
-        </div>
-        <div class="glass-panel-1 hover-lift cursor-pointer faq-item" style="padding: var(--space-4);">
-          <div class="flex justify-between items-center font-bold text-main">Is my child's data secure?<span
-              class="text-rose text-xl transition-transform duration-300 faq-icon">+</span></div>
-          <div class="text-muted text-sm mt-2 hidden faq-answer">Absolutely. We are fully PDPA-compliant. All student
-            data is encrypted and stored on Singapore servers (Supabase SG region).</div>
-        </div>
-        <div class="text-center mt-6">
-          <a href="/pages/faq.html#payment" class="btn btn-secondary hover-lift" style="display:inline-flex;align-items:center;gap:8px;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            View all FAQs
-          </a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="bg-rose py-10">
-    <div class="container flex flex-col items-center text-center gap-4">
-      <h2 class="font-display text-4xl text-white">Ready to boost those AL scores?</h2>
-      <p class="text-lg mb-4" style="color: rgba(255,255,255,0.8); max-width: 500px;">Start your free trial in 30
-        seconds. No credit card. No commitment.</p>
-      <div class="flex flex-wrap gap-4 justify-center">
-        <a href="signup.html" class="btn hover-lift" style="background: white; color: var(--brand-rose);">Start 7-Day
-          Free Trial</a>
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       BOTTOM CTA — restrained surface block with rose left-rail
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <section class="pricing-cta">
+    <div class="container-as">
+      <div class="pricing-cta__inner">
+        <span class="label-caps pricing-cta__eyebrow">Ready when you are</span>
+        <h2 class="h2-as pricing-cta__title">Boost those AL scores.</h2>
+        <p class="body-lg pricing-cta__lede">
+          Start your free trial in 30 seconds. No credit card. No commitment.
+        </p>
+        <a href="signup.html" class="btn btn-primary">Start 7-day free trial →</a>
       </div>
     </div>
   </section>
 
   <global-footer></global-footer>
 
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       JS — preserved logic with surgical changes:
+         - All 8 element IDs preserved verbatim
+         - setBilling() now toggles .is-active classes (no inline-style mutation)
+         - updateButtonStates() now bakes price into trial-user CTAs
+         - Hero adapts when user is paid subscriber
+       ═══════════════════════════════════════════════════════════════════════ -->
   <script src="/js/supabase-client.js"></script>
   <script>
     let session = null;
     let profileData = null;
 
-    /* ── 1. Auth state ── */
+    /* ── 1. Auth state ─────────────────────────────────────────────────────── */
     getSupabase().then(async function (sb) {
       try {
         const { data } = await sb.auth.getSession();
@@ -260,15 +949,16 @@
           const { data: prof } = await sb.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
           profileData = prof || {};
           updateButtonStates();
+          updateHeroForActive();
         }
       } catch (e) { console.error('Auth check failed:', e); }
     });
 
-    /* ── 2. Billing toggle ── */
+    /* ── 2. Billing toggle — class-based state ─────────────────────────────── */
     let currentBilling = 'monthly';
     const prices = {
-      monthly: { all: '12.99', family: '19.99' },
-      yearly: { all: '129.90', family: '199.90' },
+      monthly: { all: '12.99',  family: '19.99'  },
+      yearly:  { all: '129.90', family: '199.90' },
     };
 
     function setBilling(mode) {
@@ -276,52 +966,94 @@
       const isYearly = mode === 'yearly';
       const tglMo = document.getElementById('toggleMonthly');
       const tglYr = document.getElementById('toggleYearly');
-      tglMo.style.background = isYearly ? 'transparent' : 'var(--bg-surface)';
-      tglMo.style.color = isYearly ? 'rgba(255,255,255,0.9)' : 'var(--text-main)';
-      tglMo.classList.toggle('btn-ghost', isYearly);
-      tglYr.style.background = isYearly ? 'var(--bg-surface)' : 'transparent';
-      tglYr.style.color = isYearly ? 'var(--text-main)' : 'rgba(255,255,255,0.9)';
-      tglYr.classList.toggle('btn-ghost', !isYearly);
+
+      tglMo.classList.toggle('is-active', !isYearly);
+      tglMo.setAttribute('aria-selected', !isYearly);
+      tglYr.classList.toggle('is-active', isYearly);
+      tglYr.setAttribute('aria-selected', isYearly);
+
       document.getElementById('price-all').textContent = prices[mode].all;
       document.getElementById('price-family').textContent = prices[mode].family;
-      document.querySelectorAll('.font-display .text-sm.font-body').forEach(el => { el.textContent = isYearly ? '/yr' : '/mo'; });
+
+      // Swap /mo ↔ /yr suffix on price spans (relies on .font-display .text-sm.font-body selector)
+      document.querySelectorAll('.font-display .text-sm.font-body').forEach(el => {
+        el.textContent = isYearly ? '/yr' : '/mo';
+      });
+
       document.getElementById('annual-note-all').style.display = isYearly ? 'block' : 'none';
       document.getElementById('annual-note-family').style.display = isYearly ? 'block' : 'none';
+
+      // Re-render CTA copy if logged in (price text changes)
+      updateButtonStates();
     }
 
     document.getElementById('toggleMonthly').addEventListener('click', () => setBilling('monthly'));
     document.getElementById('toggleYearly').addEventListener('click', () => setBilling('yearly'));
 
-    /* ── 3. Button states ── */
+    /* ── 3. Auth-aware CTA copy + active-subscriber hero pill ──────────────── */
     function updateButtonStates() {
+      // Guest: CTA copy stays as default ("Start free trial") — set in HTML.
+      // No need to mutate anything until we have a profile.
       if (!profileData || !session) return;
+
       const tier = profileData.subscription_tier || 'trial';
       const isPaid = ['all_subjects', 'family', 'single_subject'].includes(tier);
       const plans = ['all_subjects', 'family'];
-      const idMap = { all_subjects: 'btn-sub-all', family: 'btn-sub-family' };
+      const idMap   = { all_subjects: 'btn-sub-all',  family: 'btn-sub-family' };
       const noteMap = { all_subjects: 'sub-note-all', family: 'sub-note-family' };
+      const priceMap = { all_subjects: prices[currentBilling].all, family: prices[currentBilling].family };
+      const cycleSuffix = currentBilling === 'yearly' ? '/yr' : '/mo';
+
       plans.forEach(plan => {
-        const btn = document.getElementById(idMap[plan]);
+        const btn  = document.getElementById(idMap[plan]);
         const note = document.getElementById(noteMap[plan]);
         if (!btn) return;
+
         if (isPaid && tier === plan) {
-          btn.textContent = '✓ Current Plan'; btn.disabled = true;
-          btn.classList.remove('btn-primary'); btn.classList.add('btn-secondary');
+          // Currently on this plan
+          btn.textContent = '✓ Current plan';
+          btn.disabled = true;
+          btn.classList.remove('btn-primary');
+          btn.classList.add('btn-secondary');
           if (note) note.textContent = 'Your active plan';
         } else if (isPaid) {
-          btn.textContent = 'Switch Plan'; btn.disabled = false;
+          // On a different paid plan
+          btn.textContent = 'Switch plan';
+          btn.disabled = false;
+          if (note) note.textContent = 'Charged immediately · Cancel anytime';
+        } else if (tier === 'trial') {
+          // Trial — bake price into the button for clarity
+          btn.textContent = `Subscribe · S$${priceMap[plan]}${cycleSuffix}`;
+          btn.disabled = false;
           if (note) note.textContent = 'Charged immediately · Cancel anytime';
         } else {
-          btn.textContent = 'Subscribe Now →'; btn.disabled = false;
+          // Other states (paused, expired, etc.)
+          btn.textContent = 'Subscribe now →';
+          btn.disabled = false;
           if (note) note.textContent = 'Charged immediately · Cancel anytime';
         }
       });
     }
 
-    /* ── 4. Click handlers ── */
+    function updateHeroForActive() {
+      if (!profileData) return;
+      const tier = profileData.subscription_tier;
+      const planLabels = { all_subjects: 'All Subjects', family: 'Family', single_subject: 'Single Subject' };
+      if (['all_subjects', 'family', 'single_subject'].includes(tier)) {
+        const pill = document.getElementById('activeSubscriberPill');
+        const planEl = document.getElementById('activeSubscriberPlan');
+        if (pill && planEl) {
+          planEl.textContent = planLabels[tier] || tier;
+          pill.hidden = false;
+        }
+      }
+    }
+
+    /* ── 4. Click handlers (preserved) ─────────────────────────────────────── */
     document.querySelectorAll('[id^="btn-sub-"]').forEach(btn => {
       btn.addEventListener('click', async (e) => {
         const plan = e.currentTarget.dataset.plan;
+        const originalText = e.currentTarget.textContent;
 
         // Guest → go to signup (free trial, no Stripe)
         if (!session) { window.location.href = `signup.html?plan=${plan}`; return; }
@@ -337,7 +1069,6 @@
           });
           const data = await res.json();
           if (data.url) {
-            // Analytics: record checkout intent before redirect
             if (window.plausible) window.plausible('Subscribe Click', { props: { plan, billing: currentBilling } });
             window.location.href = data.url;
           } else {
@@ -345,38 +1076,42 @@
           }
         } catch (err) {
           alert('Could not start checkout: ' + err.message);
-          updateButtonStates();
+          e.currentTarget.textContent = originalText;
           e.currentTarget.disabled = false;
+          updateButtonStates();
         }
       });
     });
 
-    /* ── 5. FAQ accordion ── */
+    /* ── 5. FAQ accordion — class-based open state ─────────────────────────── */
     document.querySelectorAll('.faq-item').forEach(item => {
       item.addEventListener('click', () => {
         const answer = item.querySelector('.faq-answer');
-        const icon = item.querySelector('.faq-icon');
         const isOpen = !answer.classList.contains('hidden');
-        document.querySelectorAll('.faq-answer').forEach(a => a.classList.add('hidden'));
-        document.querySelectorAll('.faq-icon').forEach(i => { i.textContent = '+'; i.style.transform = 'rotate(0deg)'; });
-        if (!isOpen) { answer.classList.remove('hidden'); icon.textContent = '−'; icon.style.transform = 'rotate(180deg)'; }
+
+        // Close all
+        document.querySelectorAll('.faq-item').forEach(i => {
+          i.classList.remove('faq-item--open');
+          i.querySelector('.faq-answer').classList.add('hidden');
+        });
+
+        // Open this one if it was closed
+        if (!isOpen) {
+          item.classList.add('faq-item--open');
+          answer.classList.remove('hidden');
+        }
       });
     });
 
-    /* ── 6. Family upgrade entry (Phase 4 — from /account.html upsell card) ──
-       URL pattern: /pages/pricing.html?upgrade=family
-       Reveals the prorating banner above the pricing grid and scrolls the
-       Family card into view. Done after a microtask delay so the layout has
-       settled and smooth-scroll lands at the right offset. */
+    /* ── 6. Family upgrade entry — preserved ───────────────────────────────── */
     (function () {
       try {
-        var params = new URLSearchParams(window.location.search);
+        const params = new URLSearchParams(window.location.search);
         if (params.get('upgrade') !== 'family') return;
-        var banner = document.getElementById('upgrade-family-banner');
+        const banner = document.getElementById('upgrade-family-banner');
         if (banner) banner.hidden = false;
-        // Wait one frame for the banner to occupy its space, then scroll.
         requestAnimationFrame(function () {
-          var card = document.getElementById('plan-family');
+          const card = document.getElementById('plan-family');
           if (card && typeof card.scrollIntoView === 'function') {
             card.scrollIntoView({ behavior: 'smooth', block: 'center' });
           }
