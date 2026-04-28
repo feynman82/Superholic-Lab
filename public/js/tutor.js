@@ -701,14 +701,19 @@
       const { data: { session } } = await sb.auth.getSession();
       const token = session?.access_token;
 
-      // Auto-save Study Note (non-blocking — proceed even if this fails)
+      // Auto-save Study Note. Was previously fire-and-forget; now we check the
+      // response so the parent sees a clear retry path if the AI summarise fails.
       const cleanMessages = history
         .filter(m => (m.role === 'user' || m.role === 'assistant') && m.content)
         .map(m => ({ role: m.role, content: m.content }));
 
       if (cleanMessages.length >= 2) {
+        let saveOk = false;
+        let saveErr = null;
         try {
-          await fetch('/api/summarize-chat', {
+          const ctrl  = new AbortController();
+          const timer = setTimeout(() => ctrl.abort(), 20000);
+          const summRes = await fetch('/api/summarize-chat', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -720,10 +725,36 @@
               topic: currentTopicContext,
               messages: cleanMessages,
               quest_id: fromQuestId
-            })
+            }),
+            signal: ctrl.signal,
           });
+          clearTimeout(timer);
+          if (summRes.ok) {
+            const sd = await summRes.json().catch(() => ({}));
+            saveOk = !!(sd && sd.success);
+            if (!saveOk) saveErr = sd.error || 'Server returned no success flag';
+          } else {
+            const errBody = await summRes.json().catch(() => ({}));
+            saveErr = `HTTP ${summRes.status}: ${errBody.error || 'unknown error'}`;
+            console.error('[Day 2 auto-save] HTTP error:', summRes.status, errBody);
+          }
         } catch (e) {
-          console.error('Summarize chat failed (non-blocking):', e);
+          saveErr = e.message || String(e);
+          console.error('[Day 2 auto-save] Network/timeout:', e);
+        }
+
+        if (!saveOk) {
+          const goAhead = confirm(
+            'Could not auto-save your Miss Wena notes to the dashboard.\n\n' +
+            'Reason: ' + (saveErr || 'unknown') + '\n\n' +
+            'Click OK to mark Day 2 complete anyway (notes will be lost), or ' +
+            'Cancel to stay on this page and try the "Save Notes" button manually first.'
+          );
+          if (!goAhead) {
+            markCompleteBtn.disabled = false;
+            markCompleteBtn.textContent = 'Mark Day 2 Complete';
+            return;
+          }
         }
       }
 

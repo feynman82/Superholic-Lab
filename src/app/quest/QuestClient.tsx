@@ -1167,7 +1167,14 @@ function HUDStrip({
 // AVATAR SLOT — circle with rotating magic ring
 // ═══════════════════════════════════════════════════════════════════
 
-function AvatarSlot({ photoUrl: _ }: { photoUrl: string }) {
+function AvatarSlot({ photoUrl }: { photoUrl: string }) {
+  // Treat the placeholder fallback URL the same as "no photo" so the emoji
+  // shows for students who never uploaded one.
+  const hasRealPhoto =
+    !!photoUrl &&
+    !photoUrl.includes("placeholder_space_marine") &&
+    !photoUrl.includes("kid_studying")
+
   return (
     <div style={{ position: "relative", width: 64, height: 64, flexShrink: 0 }}>
       <div
@@ -1203,7 +1210,16 @@ function AvatarSlot({ photoUrl: _ }: { photoUrl: string }) {
             fontSize: "1.6rem",
           }}
         >
-          <span aria-label="avatar placeholder">👨‍🚀</span>
+          {hasRealPhoto ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={photoUrl}
+              alt="Student avatar"
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+          ) : (
+            <span aria-label="avatar placeholder">👨‍🚀</span>
+          )}
         </div>
       </div>
     </div>

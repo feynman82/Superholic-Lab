@@ -108,26 +108,26 @@ export function ReturningCelebration({ data, onDismiss }: CelebrationProps) {
     }
 
     if (stage === "banner") {
-      go("xp", 1300)
+      go("xp", 600)
     } else if (stage === "xp") {
       const next: Stage = data.levelUp
         ? "level"
         : data.badgesUnlocked.length > 0
           ? "badge"
           : "done"
-      go(next, 1400)
+      go(next, 700)
     } else if (stage === "level") {
       const next: Stage = data.badgesUnlocked.length > 0 ? "badge" : "done"
-      go(next, 2000)
+      go(next, 1100)
     } else if (stage === "badge") {
       // Cycle through badges 1-by-1
       if (badgeIndex < data.badgesUnlocked.length - 1) {
         setTimeout(() => {
           if (cancelled) return
           setBadgeIndex(badgeIndex + 1)
-        }, 1800)
+        }, 1000)
       } else {
-        go("done", 2000)
+        go("done", 1100)
       }
     }
 
