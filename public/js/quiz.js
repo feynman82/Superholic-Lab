@@ -1886,16 +1886,11 @@ window.initQuizEngine = function () {
       'letter-spacing:0.08em',
       'text-transform:uppercase',
       'position:sticky',
-      'top:var(--navbar-h, 66px)',
-      'z-index:100'
+      'top:0',
+      'z-index:210'
     ].join(';');
     banner.textContent = `Plan Quest · Day ${dayNum} · ${topicDisplay}`;
-    const globalHeader = document.querySelector('global-header');
-    if (globalHeader && globalHeader.parentNode === document.body) {
-      globalHeader.insertAdjacentElement('afterend', banner);
-    } else {
-      document.body.insertBefore(banner, document.body.firstChild);
-    }
+    document.body.insertBefore(banner, document.body.firstChild);
   }
 
   function disableSubjectSwitcher() {

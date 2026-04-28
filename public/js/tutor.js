@@ -70,6 +70,7 @@
       currentTopicContext = questParams.get('topic') || currentTopicContext;
       injectQuestTutorBanner(fromQuestStep, currentTopicContext);
       insertMarkCompleteBtn();
+      injectQuestChips();
     }
 
     // Event Listeners
@@ -85,11 +86,14 @@
     modeDrawBtn.addEventListener('click', () => setMode('draw'));
     if (saveBtn) saveBtn.addEventListener('click', generateStudyNote);
 
-    // If the student clicked "Ask Miss Wena", auto-trigger the data-driven greeting.
-    // If not, drop the standard greeting.
-    const isRemedial = await handleRemedialIntent();
-    if (!isRemedial) {
-      appendBubble('tutor', "Hello! I'm Miss Wena. 😊 I'm your Superholic Tutor, so you can ask me about Mathematics, Science, or English all in one place! Need help with a bar model, a science experiment, or grammar? Let's figure it out together!");
+    // Quest mode: fire diagnostic opener. Otherwise use the standard or remedial greeting.
+    if (fromQuestId) {
+      await fireQuestOpener();
+    } else {
+      const isRemedial = await handleRemedialIntent();
+      if (!isRemedial) {
+        appendBubble('tutor', "Hello! I'm Miss Wena. 😊 I'm your Superholic Tutor, so you can ask me about Mathematics, Science, or English all in one place! Need help with a bar model, a science experiment, or grammar? Let's figure it out together!");
+      }
     }
   }
 
@@ -240,13 +244,20 @@
     }
 
     try {
-      const res = await fetch('/api/chat', {
+      // from_quest must be a URL query param — server reads it from req.url, not body
+      const chatUrl = fromQuestId
+        ? `/api/chat?from_quest=${encodeURIComponent(fromQuestId)}`
+        : '/api/chat';
+      const sb = await getSupabase();
+      const { data: { session: chatSession } } = await sb.auth.getSession();
+      const chatToken = chatSession?.access_token;
+      const res = await fetch(chatUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: history,
-          ...(fromQuestId && { from_quest: fromQuestId })
-        }),
+        headers: {
+          'Content-Type': 'application/json',
+          ...(chatToken && { 'Authorization': `Bearer ${chatToken}` }),
+        },
+        body: JSON.stringify({ messages: history }),
       });
 
       const data = await res.json();
@@ -537,6 +548,81 @@
 
   // ── QUEST INTEGRATION ──
 
+  // Replaces generic "Try asking" chips with topic-targeted quest chips.
+  function injectQuestChips() {
+    const section = document.getElementById('tutor-starter-prompts');
+    if (!section) return;
+    const topic = currentTopicContext
+      ? decodeURIComponent(currentTopicContext).replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+      : 'this topic';
+    section.innerHTML = '';
+    const label = document.createElement('p');
+    label.className = 'text-xs font-bold text-muted uppercase tracking-wider mb-4';
+    label.textContent = `Ask Miss Wena about ${topic}:`;
+    section.appendChild(label);
+    const chipWrap = document.createElement('div');
+    chipWrap.className = 'flex flex-wrap gap-3';
+    const chips = [
+      `What were my mistakes from yesterday's ${topic} practice?`,
+      `Explain a key concept in ${topic} step by step.`,
+      `Give me a hint — what should I focus on in ${topic}?`,
+      `What do examiners look for in ${topic} questions?`,
+    ];
+    chips.forEach(text => {
+      const btn = document.createElement('button');
+      btn.className = 'btn btn-secondary btn-sm starter-prompt hover-lift';
+      btn.textContent = text;
+      btn.addEventListener('click', () => {
+        if (!chatInput.disabled) {
+          chatInput.value = text;
+          chatInput.focus();
+          adjustTextareaHeight();
+        }
+      });
+      chipWrap.appendChild(btn);
+    });
+    section.appendChild(chipWrap);
+  }
+
+  // Fires an AI-generated diagnostic opener at the start of Day 2 (Socratic mode).
+  // Uses the from_quest URL param so the server builds the full Socratic system prompt.
+  async function fireQuestOpener() {
+    if (!fromQuestId) return;
+    if (!currentTypingEl) currentTypingEl = appendTyping();
+    try {
+      const sb = await getSupabase();
+      const { data: { session: openerSession } } = await sb.auth.getSession();
+      const openerToken = openerSession?.access_token;
+      const trigger = `Please open our Day 2 session. In under 100 words, briefly diagnose what I struggled with in yesterday's quiz and what we will focus on together today.`;
+      const res = await fetch(`/api/chat?from_quest=${encodeURIComponent(fromQuestId)}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(openerToken && { 'Authorization': `Bearer ${openerToken}` }),
+        },
+        body: JSON.stringify({ messages: [{ role: 'user', content: trigger }] }),
+      });
+      if (currentTypingEl) { currentTypingEl.remove(); currentTypingEl = null; }
+      if (res.ok) {
+        const data = await res.json();
+        if (data.reply) {
+          appendBubble('tutor', data.reply);
+          // Keep hidden trigger in history so subsequent turns have context
+          history.push({ role: 'user', content: trigger });
+          history.push({ role: 'assistant', content: data.reply });
+          questMessageCount = data.quest_message_count ?? 1;
+          updateMarkCompleteBtn();
+        }
+      } else {
+        appendBubble('tutor', `Hi! Let's work on ${currentTopicContext || 'your topic'} today. What from yesterday's practice would you like to revisit first?`);
+      }
+    } catch (err) {
+      console.error('[quest-opener] failed:', err);
+      if (currentTypingEl) { currentTypingEl.remove(); currentTypingEl = null; }
+      appendBubble('tutor', `Hi! Today we're focusing on ${currentTopicContext || 'your topic'}. What part from yesterday tripped you up?`);
+    }
+  }
+
   function injectQuestTutorBanner(stepIndex, topicSlug) {
     const dayNum = stepIndex + 1;
     const topicDisplay = topicSlug
@@ -568,7 +654,7 @@
 
   function insertMarkCompleteBtn() {
     if (!saveBtn) return;
-    saveBtn.style.display = 'none';
+    // Keep Save Notes visible — insert Mark Day 2 Complete to its LEFT
 
     markCompleteBtn = document.createElement('button');
     markCompleteBtn.id = 'quest-mark-complete-btn';
@@ -588,7 +674,8 @@
       'transition:all 200ms ease'
     ].join(';');
     markCompleteBtn.addEventListener('click', handleDay2Complete);
-    saveBtn.parentNode.insertBefore(markCompleteBtn, saveBtn.nextSibling);
+    // Insert BEFORE saveBtn so it appears to its left in the flex container
+    saveBtn.parentNode.insertBefore(markCompleteBtn, saveBtn);
   }
 
   function updateMarkCompleteBtn() {
@@ -657,12 +744,27 @@
       const celebData = await res.json();
       if (res.ok) {
         try {
-          sessionStorage.setItem(
-            `quest_celebration_${fromQuestId}`,
-            JSON.stringify(celebData)
-          );
+          const xp = celebData.xp || {};
+          const levelData = xp.levelData || {};
+          const shaped = {
+            completedDay:   fromQuestStep + 1,
+            trigger:        'tutor',
+            score:          null,
+            xpAwarded:      (xp.totalXpAfter || 0) - (xp.totalXpBefore || 0),
+            levelUp:        levelData.leveled_up ? {
+              fromLevel: levelData.level_before,
+              toLevel:   levelData.level_after,
+              fromRank:  levelData.rank_before,
+              toRank:    levelData.rank_after,
+            } : null,
+            badgesUnlocked: (celebData.badges_earned || []).map(b => ({
+              id: b.id, name: b.name, description: b.description || '', rarity: b.rarity || 'common',
+            })),
+            questComplete: celebData.quest?.status === 'completed',
+          };
+          sessionStorage.setItem(`quest_celebration_${fromQuestId}`, JSON.stringify(shaped));
         } catch (e) { }
-        window.location.href = `/quest?id=${fromQuestId}&completed=${fromQuestStep}&trigger=tutor`;
+        window.location.href = `/quest?id=${fromQuestId}&returning=true`;
       } else {
         throw new Error(celebData.error || 'Failed to complete quest step');
       }
