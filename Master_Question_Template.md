@@ -1,6 +1,7 @@
 ### SUPERHOLIC LAB — MASTER QUESTION TEMPLATE
-### Version 4.0 | Source of truth for all Data Generation
+### Version 4.1 | Source of truth for all Data Generation
 ### Reference: MOE/SEAB PSLE Exam Formats 2025-2026
+### v4.1 changes: subject 'English Language' → 'English'; full canonical sub_topic taxonomy added; FK constraints + anti-hallucination rules.
 
 ═══════════════════════════════════════════════════════════════
 SECTION 1: SYSTEM DIRECTIVES & AI PERSONA
@@ -23,6 +24,7 @@ To ensure that generated data is valid, deployable, and avoids frontend crashes,
 2. **Stringified JSON:** Fields that store arrays or objects MUST be strictly stringified JSON when written in the SQL INSERT statement (e.g., `parts`, `options`, `visual_payload`, `accept_also`, `wrong_explanations`, `progressive_hints`, `keywords`, `blanks`). Do NOT use raw arrays in SQL.
 3. **Valid HTML:** Use `<br><br>` for paragraph breaks instead of `\n` in `question_text`, `passage`, and `worked_solution`. Do not use markdown bold (`**`) inside these specific columns unless wrapped in proper HTML `<b>`.
 4. **No Hallucinated Columns:** You may ONLY populate the exact columns listed in Section 3. Do not invent new columns.
+5. **No Hallucinated Taxonomy:** `subject`, `topic`, and `sub_topic` MUST come from Section 4's canonical taxonomy. The database FK-enforces `subject` and `(subject, topic)` via `fk_question_bank_subject` and `fk_question_bank_topic`. `sub_topic` is API-validated against `canon_sub_topics`. INSERTs with off-canon values will fail with HTTP 422 / Postgres error 23503.
 
 ═══════════════════════════════════════════════════════════════
 SECTION 3: DATABASE SCHEMA (question_bank fields)
@@ -30,7 +32,7 @@ SECTION 3: DATABASE SCHEMA (question_bank fields)
 * `id`: UUID (e.g., `gen_random_uuid()`)
 * `seed_id`: UUID or `NULL`
 * `is_ai_cloned`: Boolean (`true` or `false`)
-* `subject`: Exactly 'Mathematics', 'Science', or 'English Language'
+* `subject`: Exactly 'Mathematics', 'Science', or 'English' (FK → `canon_subjects.subject`)
 * `level`: Exactly 'Primary 1' through 'Primary 6'
 * `topic`: Must exactly match the Taxonomy in Section 4
 * `sub_topic`: A specific micro-concept of the topic (e.g., 'Improper Fractions', 'Model Drawing', 'Vocabulary').
@@ -64,27 +66,103 @@ SECTION 3: DATABASE SCHEMA (question_bank fields)
 * **AO3 (Analysis/HOTS):** 'Non-Routine / Heuristics', 'Synthesis & Evaluation', or 'CER (Claim-Evidence-Reasoning)'
 
 ═══════════════════════════════════════════════════════════════
-SECTION 4: THE UNIFIED SYLLABUS MAP (TAXONOMY)
+SECTION 4: THE CANONICAL TAXONOMY (FK-ENFORCED)
 ═══════════════════════════════════════════════════════════════
-You MUST strictly match the `topic` and `type` fields to the combinations below. NEVER invent topics outside this list.
 
-**MATHEMATICS (Types: `mcq`, `short_ans`, `word_problem`)**
-- *P1/P2:* Whole Numbers, Addition and Subtraction, Multiplication and Division, Money, Length and Mass, Volume, Shapes, Picture Graphs, Time.
-- *P3/P4:* Adds Fractions, Decimals, Angles, Area and Perimeter, Bar/Line Graphs, Factors and Multiples, Symmetry.
-- *P5/P6:* Adds Ratio, Percentage, Rate, Speed, Algebra, Circles, Pie Charts, Average.
+⚠️ **ANTI-HALLUCINATION RULES — READ BEFORE GENERATING**
 
-**SCIENCE (Types: `mcq`, `open_ended`)**
-- *P3/P4 (Lower Block):* Diversity, Cycles, Systems, Interactions, Heat, Light, Magnets, Matter.
-- *P5/P6 (Upper Block):* Cycles, Systems, Interactions, Energy, Cells, Forces.
+1. Every question MUST use a `(subject, topic, sub_topic)` triple from the lists below.
+2. `subject` and `(subject, topic)` are foreign-key-enforced at the database. INSERT will fail with PG error 23503 if mismatched.
+3. `sub_topic` is API-validated against `canon_sub_topics` before INSERT. Hallucinated sub_topics are rejected with HTTP 422.
+4. **NEVER** invent new subjects, topics, or sub_topics. If a question doesn't fit any canonical sub_topic listed below, REJECT generation — do NOT improvise a near-fit.
+5. Live source of truth: tables `canon_subjects`, `canon_topics`, `canon_sub_topics` in Supabase. Query `canon_sub_topics` for the latest list at runtime.
 
-**ENGLISH LANGUAGE (Types: `mcq`, `cloze`, `editing`, `comprehension`, `visual_text`, `short_ans`)**
-- *P1/P2:* Grammar, Vocabulary, Comprehension, Cloze.
-- *P3/P4:* Adds Editing, Synthesis.
-- *P5/P6:* Adds Visual Text (sub-type of Comprehension).
-Cloze sub-types (via sub_topic column):
-  - Grammar (fill-in-the-blank grammar items)
-  - Vocabulary (passage-based word choice)
-  - Comprehension (passage-based free-text blanks)
+---
+
+**SUBJECT VALUES** (exact, case-sensitive):
+
+| Slug (URL/code) | Database value | Allowed `type` values |
+|-----------------|---------------|----------------------|
+| `mathematics`   | `Mathematics` | `mcq`, `short_ans`, `word_problem` |
+| `science`       | `Science`     | `mcq`, `open_ended` |
+| `english`       | `English`     | `mcq`, `cloze`, `editing`, `comprehension`, `visual_text`, `short_ans` |
+
+---
+
+**MATHEMATICS — 23 topics, 103 sub_topics**
+
+- **Whole Numbers**: Counting To One Hundred · Number Notation And Place Values · Comparing And Ordering Numbers · Patterns In Number Sequences · Rounding Numbers To The Nearest Ten, Hundred Or Thousand · Order Of Operations · Use Of Brackets
+- **Multiplication Tables**: Multiplication Tables Of Two, Three, Four, Five And Ten · Multiplication Tables Of Six, Seven, Eight And Nine · Mental Calculation Involving Multiplication Within Tables
+- **Addition and Subtraction**: Concepts Of Addition And Subtraction · Addition And Subtraction Within One Hundred · Addition And Subtraction Algorithms · Mental Calculation Involving Addition And Subtraction
+- **Multiplication and Division**: Concepts Of Multiplication And Division · Multiplication And Division Algorithms · Division With Remainder · Multiplying And Dividing By Ten, One Hundred And One Thousand · Mental Calculation Involving Multiplication And Division
+- **Fractions**: Fraction As Part Of A Whole · Equivalent Fractions · Comparing And Ordering Fractions · Mixed Numbers · Improper Fractions · Adding Unlike Fractions · Subtracting Unlike Fractions · Fractions Of A Set · Fraction Multiplied By Fraction · Division By A Proper Fraction
+- **Decimals**: Notation And Place Values Of Decimals · Comparing And Ordering Decimals · Converting Fractions To Decimals · Converting Decimals To Fractions · Rounding Decimals · Four Operations With Decimals · Multiplying And Dividing Decimals By Ten, One Hundred And One Thousand
+- **Percentage**: Expressing Part Of A Whole As Percentage · Finding Percentage Part Of A Whole · Discount, Goods And Services Tax And Annual Interest · Finding The Whole Given A Part And Percentage · Percentage Increase And Decrease
+- **Ratio**: Part-Whole Ratio · Comparison Ratio · Equivalent Ratios · Expressing Ratio In Simplest Form · Dividing A Quantity In A Given Ratio · Ratio Of Three Quantities · Relationship Between Fraction And Ratio · Ratio Word Problems
+- **Rate**: Rate As Amount Of Quantity Per Unit · Finding Rate, Total Amount Or Number Of Units
+- **Speed**: Concepts Of Speed · Calculating Distance, Time And Speed · Average Speed
+- **Average**: Average As Total Value Divided By Number Of Data · Relationship Between Average, Total Value And Number Of Data
+- **Algebra**: Using A Letter To Represent An Unknown Number · Interpretation Of Algebraic Expressions · Simplifying Linear Expressions · Evaluating Linear Expressions By Substitution · Solving Simple Linear Equations
+- **Angles**: Concepts Of Angle · Right Angles · Measuring Angles In Degrees · Drawing Angles · Angles On A Straight Line · Angles At A Point · Vertically Opposite Angles · Finding Unknown Angles
+- **Geometry**: Perpendicular And Parallel Lines · Properties Of Rectangle And Square · Properties Of Triangles · Properties Of Parallelogram, Rhombus And Trapezium
+- **Area and Perimeter**: Concepts Of Area And Perimeter · Area And Perimeter Of Rectangle And Square · Finding One Dimension Given Area Or Perimeter · Area And Perimeter Of Composite Rectilinear Figures
+- **Area of Triangle**: Concepts Of Base And Height · Calculating Area Of Triangle · Area Of Composite Figures With Triangles
+- **Circles**: Area And Circumference Of Circle · Area And Perimeter Of Semicircle And Quarter Circle · Area And Perimeter Of Composite Figures With Circles
+- **Volume**: Building Solids With Unit Cubes · Measuring Volume In Cubic Units · Volume Of Cube And Cuboid · Finding Volume Of Liquid In Rectangular Tank · Finding Unknown Dimension Given Volume
+- **Symmetry**: Identifying Symmetric Figures · Lines Of Symmetry · Completing Symmetric Figures
+- **Shapes and Patterns**: Identifying And Naming Two-Dimensional Shapes · Classifying Three-Dimensional Shapes · Making Patterns With Two-Dimensional Shapes
+- **Factors and Multiples**: Identifying Factors And Multiples · Finding Common Factors · Finding Common Multiples
+- **Pie Charts**: Reading And Interpreting Pie Charts · Solving Problems Using Pie Chart Data
+- **Data Analysis**: Reading Picture Graphs · Reading Bar Graphs · Reading Line Graphs · Reading Tables
+
+---
+
+**SCIENCE — 10 topics, 41 sub_topics**
+
+- **Diversity**: General Characteristics Of Living And Non-Living Things · Classification Of Living And Non-Living Things · Diversity Of Materials And Their Properties
+- **Matter**: States Of Matter · Properties Of Solids, Liquids And Gases · Changes In State Of Matter
+- **Systems**: Plant Parts And Functions · Human Digestive System · Plant Respiratory And Circulatory Systems · Human Respiratory And Circulatory Systems · Electrical Systems And Circuits
+- **Cycles**: Life Cycles Of Insects · Life Cycles Of Amphibians · Life Cycles Of Flowering Plants · Life Cycles Of Fungi · Reproduction In Plants And Animals · Stages Of The Water Cycle
+- **Interactions**: Interaction Of Magnetic Forces · Interaction Of Frictional, Gravitational And Elastic Spring Forces · Interactions Within The Environment · Food Chains And Food Webs
+- **Energy**: Light Energy Forms And Uses · Heat Energy Forms And Uses · Photosynthesis And Energy Pathways · Energy Conversion In Everyday Objects
+- **Forces**: Push And Pull Forces · Effects Of Forces On Objects · Frictional Force And Its Applications · Gravitational Force · Elastic Spring Force
+- **Heat**: Sources Of Heat · Effects Of Heat Gain And Heat Loss · Temperature And Use Of Thermometers · Good And Poor Conductors Of Heat
+- **Light**: Sources Of Light · Reflection Of Light · Formation Of Shadows · Transparent, Translucent And Opaque Materials
+- **Cells**: Plant And Animal Cells · Parts Of A Cell And Their Functions · Cell Division
+
+---
+
+**ENGLISH — 7 topics, 30 sub_topics**
+
+- **Grammar**: Simple Present And Past Tenses · Perfect And Continuous Tenses · Subject-Verb Agreement · Singular And Plural Nouns · Prepositions And Phrasal Verbs · Conjunctions · Active And Passive Voice · Relative Pronouns
+- **Vocabulary**: Thematic Vocabulary Recall · Contextual Vocabulary Meaning · Synonyms And Antonyms
+- **Cloze**: Grammar Cloze With Word Bank · Vocabulary Cloze With Dropdowns · Comprehension Free-Text Cloze
+- **Editing**: Correcting Spelling Errors · Correcting Grammatical Errors
+- **Comprehension**: Direct Visual Retrieval · True Or False With Reason · Pronoun Referent Table · Sequencing Of Events · Deep Inference And Claim Evidence Reasoning
+- **Synthesis**: Combining With Conjunctions · Relative Clauses · Participle Phrases · Conditional Sentences · Reported Speech Transformation · Active To Passive Voice Transformation · Inversion
+- **Summary Writing**: Identifying Key Information · Paraphrasing And Condensing Text
+
+---
+
+**Level guidance** (which topics typically appear at which level — informational; not FK-enforced):
+
+| Level | Mathematics | Science | English |
+|-------|-------------|---------|---------|
+| P1/P2 | Whole Numbers, Multiplication Tables, Addition and Subtraction, Shapes and Patterns | (no Science syllabus at this level) | Grammar, Vocabulary, Comprehension, Cloze |
+| P3/P4 | + Multiplication and Division, Fractions, Decimals, Angles, Geometry, Area and Perimeter, Symmetry, Factors and Multiples, Data Analysis | Diversity, Matter, Cycles, Systems, Interactions, Heat, Light | + Editing, Synthesis |
+| P5/P6 | + Percentage, Ratio, Rate, Speed, Average, Algebra, Area of Triangle, Circles, Volume, Pie Charts | + Energy, Forces, Cells | + Summary Writing |
+
+---
+
+**Cloze sub_topic mapping** (engine UI router):
+
+When `topic = "Cloze"`, the canonical `sub_topic` controls UI behavior in `quiz.js`:
+
+| `sub_topic` | UI behavior |
+|-------------|------------|
+| `Grammar Cloze With Word Bank` | Shared word-bank UI; same array injected into every blank's `options` field |
+| `Vocabulary Cloze With Dropdowns` | Localized 4-option dropdowns per blank |
+| `Comprehension Free-Text Cloze` | Free-text input boxes (omit the `options` key on each blank) |
 
 ═══════════════════════════════════════════════════════════════
 SECTION 5: THE 8 CORE DATABASE SCHEMAS
@@ -119,7 +197,7 @@ This type behaves differently depending on the Subject.
 - `accept_also`: `["0.5"]` (Alternative correct formats).
 - `instructions`: `null`
 
-**FOR ENGLISH (SYNTHESIS & TRANSFORMATION):**
+**FOR ENGLISH (SYNTHESIS):**
 - `topic`: MUST be "Synthesis"
 - `question_text`: This column must contain ONLY the original sentences. DO NOT add `<br><br>`, blank lines, or the connector word here. Just the raw sentences.
 - `correct_answer`: Grammatically perfect complete sentence (with full stop).
