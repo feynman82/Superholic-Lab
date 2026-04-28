@@ -778,6 +778,38 @@
       border-top: 1px solid var(--border-light);
     }
 
+    /* ── Family-plan upsell (Phase 4) ── */
+    .upsell-card {
+      padding: var(--space-4) var(--space-5);
+      border-radius: var(--radius-md);
+      background: var(--surface-container-lowest);
+      border: 1px solid var(--border-light);
+      border-left: 3px solid var(--brand-rose);
+      margin-top: var(--space-3);
+    }
+    .upsell-card__eyebrow {
+      color: var(--brand-rose);
+      display: block;
+      margin-bottom: var(--space-1);
+    }
+    .upsell-card__title {
+      color: var(--text-main);
+      margin: 0 0 var(--space-2) 0;
+      font-size: 22px;
+      line-height: 1.2;
+    }
+    .upsell-card__body {
+      color: var(--text-muted);
+      font-size: var(--text-sm);
+      line-height: 1.55;
+      margin: 0 0 var(--space-3) 0;
+    }
+    .upsell-card__actions {
+      display: flex;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+    }
+
     /* Spinner */
     .spinner-sm {
       width: 18px; height: 18px;
@@ -1699,7 +1731,92 @@
           btn.title = 'Your plan supports up to ' + maxCh + ' learner' + (maxCh > 1 ? 's' : '');
         }
       }
+
+      // Phase 4 — Family plan upsell. Non-blocking, runs after cards render
+      // so the card (when shown) sits immediately below the last learner.
+      maybeShowFamilyUpsell(profile, students);
     }
+
+    /* ─── FAMILY UPSELL (Phase 4) ─────────────────────────────────────────────────
+       Tasteful nudge: only on All Subjects monthly, only at the learner cap,
+       only when not previously dismissed, and never on Family / annual / trial.
+       One dismissal kills it forever (writes notification_preferences). */
+
+    async function maybeShowFamilyUpsell(profile, students) {
+      try {
+        if (!profile || !students) return;
+        if (profile.subscription_tier !== 'all_subjects') return;            // covers trial / family / single / paused
+        var prefs = profile.notification_preferences || {};
+        if (prefs.family_upsell_dismissed === true) return;
+        var max = profile.max_children || 1;
+        if ((students.length || 0) < max) return;
+
+        // Skip annual subscribers — cycle-switch comes with proration
+        // headache that's better handled via the billing portal.
+        try {
+          var sb = await getSupabase();
+          var { data: sub } = await sb.from('subscriptions')
+            .select('billing_cycle')
+            .eq('profile_id', profile.id)
+            .in('status', ['active', 'past_due', 'paused'])
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if (sub && sub.billing_cycle === 'annual') return;
+        } catch (_) { /* if the lookup fails, default to NOT showing */ return; }
+
+        renderFamilyUpsellCard(max);
+      } catch (err) {
+        console.error('[upsell] non-fatal:', err && err.message);
+      }
+    }
+
+    function renderFamilyUpsellCard(currentMax) {
+      var existing = document.getElementById('upsell-family');
+      if (existing) existing.remove();
+
+      var content = document.getElementById('learnersContent');
+      if (!content) return;
+
+      var card = document.createElement('div');
+      card.id = 'upsell-family';
+      card.className = 'upsell-card';
+      card.setAttribute('role', 'region');
+      card.setAttribute('aria-label', 'Upgrade suggestion');
+      card.innerHTML = ''
+        + '<span class="label-caps upsell-card__eyebrow">Recommended for your family</span>'
+        + '<h3 class="h2-as upsell-card__title">Switch to Family for more learners.</h3>'
+        + '<p class="upsell-card__body">'
+          + "You've reached your " + currentMax + '-learner limit on All Subjects. '
+          + 'Upgrade to Family for up to 3 learners — just S$7/mo more, with separate dashboards for each child.'
+        + '</p>'
+        + '<div class="upsell-card__actions">'
+          + '<a class="btn btn-primary btn-sm" href="/pages/pricing.html?upgrade=family">View Family plan →</a>'
+          + '<button class="btn btn-ghost btn-sm" type="button" onclick="window.dismissFamilyUpsell()">Maybe later</button>'
+        + '</div>';
+      content.appendChild(card);
+    }
+
+    window.dismissFamilyUpsell = async function () {
+      var card = document.getElementById('upsell-family');
+      if (card) card.remove();
+      try {
+        var sb = await getSupabase();
+        var { data: current } = await sb.from('profiles')
+          .select('notification_preferences')
+          .eq('id', window.userProfile.id)
+          .single();
+        var prefs = (current && current.notification_preferences) || {};
+        prefs.family_upsell_dismissed = true;
+        await sb.from('profiles')
+          .update({ notification_preferences: prefs })
+          .eq('id', window.userProfile.id);
+        // Mirror onto the in-memory profile so a later loadLearners doesn't re-render
+        window.userProfile.notification_preferences = prefs;
+      } catch (err) {
+        console.error('[upsell] dismiss save failed (non-fatal):', err && err.message);
+      }
+    };
 
     window.toggleLearnerEdit = function (id) {
       document.getElementById('edit-' + id).classList.toggle('is-open');
