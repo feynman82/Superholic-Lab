@@ -9,84 +9,277 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="icon" href="../assets/favicon.ico" />
+
+  <!-- Auth shell styles + confirm-specific extensions -->
+  <style>
+    body.auth-page {
+      background: var(--surface);
+      background-image:
+        linear-gradient(rgba(81, 97, 94, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(81, 97, 94, 0.025) 1px, transparent 1px);
+      background-size: 48px 48px;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-4);
+    }
+
+    .auth-card {
+      width: 100%;
+      max-width: 480px;
+      padding: var(--space-6);
+      text-align: center;
+    }
+
+    .auth-wordmark {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+      margin-bottom: var(--space-5);
+      text-decoration: none;
+    }
+    .auth-wordmark__logo { width: 24px; height: 24px; flex-shrink: 0; }
+    .auth-wordmark__text {
+      color: var(--brand-sage);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 12px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+    }
+
+    /* Mail icon — clean SVG, no emoji. Sage stroke, rose corner accent. */
+    .confirm-icon {
+      width: 64px;
+      height: 64px;
+      margin: var(--space-2) auto var(--space-4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--surface-container);
+      border-radius: var(--radius-md);
+      color: var(--brand-sage);
+      position: relative;
+    }
+    .confirm-icon__dot {
+      position: absolute;
+      top: -4px; right: -4px;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: var(--brand-rose);
+      border: 2px solid var(--surface);
+      animation: confirm-dot 2.4s ease-in-out infinite;
+    }
+    @keyframes confirm-dot {
+      0%, 100% { transform: scale(1); }
+      50%      { transform: scale(1.1); }
+    }
+
+    .auth-heading {
+      margin-bottom: var(--space-5);
+    }
+    .auth-heading__eyebrow {
+      color: var(--brand-rose);
+      display: block;
+      margin-bottom: var(--space-2);
+    }
+    .auth-heading__title {
+      color: var(--text-main);
+      margin: 0 0 var(--space-3) 0;
+    }
+    .auth-heading__lede {
+      color: var(--text-muted);
+      font-size: var(--text-sm);
+      max-width: 360px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+    .auth-heading__lede strong { color: var(--text-main); font-weight: 600; }
+
+    .meta-line {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: var(--space-2);
+      letter-spacing: 0.04em;
+    }
+
+    /* Troubleshooting tips card */
+    .tips-card {
+      padding: var(--space-4);
+      margin: var(--space-5) 0;
+      text-align: left;
+    }
+    .tips-card__label {
+      color: var(--brand-rose);
+      display: block;
+      margin-bottom: var(--space-2);
+    }
+    .tips-card__list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      font-size: var(--text-sm);
+      color: var(--text-main);
+      line-height: 1.5;
+    }
+    .tips-card__list li {
+      position: relative;
+      padding-left: var(--space-3);
+    }
+    .tips-card__list li::before {
+      content: '▸';
+      position: absolute;
+      left: 0;
+      color: var(--brand-rose);
+    }
+    .tips-card__list strong { color: var(--text-main); font-weight: 600; }
+
+    /* Resend section */
+    .resend-block {
+      margin-bottom: var(--space-3);
+    }
+    .resend-block .btn { width: 100%; }
+
+    .resend-msg {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: var(--space-2);
+      min-height: 14px;
+      line-height: 1.5;
+      display: none;
+    }
+    .resend-msg.is-visible { display: block; }
+    .resend-msg--success { color: var(--brand-sage); }
+    .resend-msg--error   { color: var(--brand-rose); }
+
+    /* Footer link strip */
+    .auth-footer {
+      margin-top: var(--space-5);
+      padding-top: var(--space-4);
+      border-top: 1px solid var(--border-light);
+      font-size: var(--text-sm);
+      color: var(--text-muted);
+    }
+    .auth-footer a {
+      color: var(--brand-rose);
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .auth-footer a:hover { text-decoration: underline; }
+    .auth-footer__sep {
+      display: inline-block;
+      margin: 0 var(--space-2);
+      color: var(--border-dark);
+    }
+  </style>
 </head>
 
-<body class="bg-page texture-light-grid flex items-center justify-center"
-  style="min-height: 100vh; padding: var(--space-4);">
+<body class="auth-page">
 
-  <main class="card p-8 w-full hover-lift flex flex-col items-center text-center"
-    style="max-width: 480px; background: var(--bg-surface);">
+  <main class="card-glass auth-card">
 
-    <div class="w-full bg-sage-dark mb-6 py-2 flex justify-center items-center"
-      style="border-radius: var(--radius-md); border-bottom: 3px solid var(--brand-rose);">
-      <a href="../index.html" class="flex items-center gap-2 font-display text-2xl text-white"
-        style="text-decoration: none;">
-        <img src="../assets/logo.svg" width="32" height="32" alt="" aria-hidden="true"
-          style="border-radius: var(--radius-sm); flex-shrink:0;">
-        Superholic Lab
-      </a>
+    <!-- Wordmark -->
+    <a href="../index.html" class="auth-wordmark">
+      <img class="auth-wordmark__logo" src="../assets/logo.svg" width="24" height="24" alt="" aria-hidden="true" />
+      <span class="auth-wordmark__text">Superholic Lab</span>
+    </a>
+
+    <!-- Mail icon -->
+    <div class="confirm-icon" aria-hidden="true">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+        <polyline points="22,6 12,13 2,6" />
+      </svg>
+      <span class="confirm-icon__dot"></span>
     </div>
 
-    <div style="font-size: 3.5rem; margin-bottom: 1rem;">📬</div>
+    <!-- Heading -->
+    <header class="auth-heading">
+      <span class="label-caps auth-heading__eyebrow">Almost there</span>
+      <h1 class="h2-as auth-heading__title">Check your inbox.</h1>
+      <p class="auth-heading__lede">
+        We've sent a confirmation link to
+        <strong id="emailDisplay">your email address</strong>.
+        Click it to verify your account.
+      </p>
+      <p class="meta-line">Link expires in 24 hours</p>
+    </header>
 
-    <h1 class="font-display text-3xl text-main mb-4">Check your inbox</h1>
-    <br>
-    <p class="text-muted mb-2" style="max-width: 360px; text-align: justify;">
-      We've sent a confirmation link to <strong id="emailDisplay" class="text-main">your email address</strong>.
-    </p>
-    <br>
-    <p class="text-muted mb-6" style="max-width: 360px; font-size: 0.9rem; text-align: justify;">
-      Click the link in the email to verify your account and complete setup.
-      The link expires in 24 hours.
-    </p>
-
-    <div class="card w-full p-4 mb-6"
-      style="background: var(--bg-elevated); border: 1px solid var(--border-light); text-align: left;">
-      <p class="text-sm font-bold text-muted mb-2">Didn't get the email?</p>
-      <ul class="text-sm text-muted flex flex-col gap-2" style="padding-left: 1.25rem;">
-        <li>Check your <strong class="text-main">spam or junk folder</strong></li>
-        <li>Make sure you used the correct email address</li>
-        <li>Wait a minute — sometimes delivery takes a moment</li>
+    <!-- Tips card -->
+    <article class="card-glass tips-card">
+      <span class="label-caps tips-card__label">Didn't get the email?</span>
+      <ul class="tips-card__list">
+        <li>Check your <strong>spam or junk folder</strong>.</li>
+        <li>Make sure you used the correct email address.</li>
+        <li>Wait a minute — sometimes delivery takes a moment.</li>
       </ul>
+    </article>
+
+    <!-- Resend -->
+    <div class="resend-block">
+      <button id="resendBtn" class="btn btn-secondary" type="button">
+        Resend confirmation email
+      </button>
+      <div id="resendMsg" class="resend-msg"></div>
     </div>
 
-    <button id="resendBtn" class="btn btn-secondary w-full hover-lift mb-4" onclick="resendEmail()">
-      Resend confirmation email
-    </button>
-
-    <div id="resendMsg" class="text-sm text-muted mb-4" style="display: none;"></div>
-
-    <div class="text-sm text-muted">
-      Wrong email? <a href="signup.html" class="text-rose font-bold" style="text-decoration: none;">Start over</a>
-      &nbsp;&middot;&nbsp;
-      Already confirmed? <a href="login.html" class="text-rose font-bold" style="text-decoration: none;">Log in</a>
+    <!-- Footer -->
+    <div class="auth-footer">
+      Wrong email? <a href="signup.html">Start over</a>
+      <span class="auth-footer__sep">·</span>
+      Already confirmed? <a href="login.html">Log in</a>
     </div>
 
   </main>
 
   <script src="/js/supabase-client.js"></script>
   <script>
-    // Show the email address from the URL query param
     const params = new URLSearchParams(window.location.search);
-    const email = params.get('email');
+    const email  = params.get('email');
     if (email) {
       document.getElementById('emailDisplay').textContent = email;
     }
 
-    async function resendEmail() {
-      const btn = document.getElementById('resendBtn');
-      const msgEl = document.getElementById('resendMsg');
+    const RESEND_COOLDOWN_SECONDS = 60;
+    const btn   = document.getElementById('resendBtn');
+    const msgEl = document.getElementById('resendMsg');
+
+    function showMsg(text, kind = 'info') {
+      msgEl.textContent = text;
+      msgEl.className = `resend-msg is-visible resend-msg--${kind}`;
+    }
+
+    function startCooldown() {
+      let remaining = RESEND_COOLDOWN_SECONDS;
+      btn.disabled = true;
+      const tick = () => {
+        if (remaining <= 0) {
+          btn.disabled = false;
+          btn.textContent = 'Resend confirmation email';
+          return;
+        }
+        btn.textContent = `Resend available in ${remaining}s`;
+        remaining -= 1;
+        setTimeout(tick, 1000);
+      };
+      tick();
+    }
+
+    btn.addEventListener('click', async () => {
       const appUrl = window.location.origin;
       const plan = localStorage.getItem('pendingPlan') || 'all_subjects';
 
       if (!email) {
-        msgEl.textContent = 'Could not determine your email. Please sign up again.';
-        msgEl.style.display = 'block';
+        showMsg('Could not determine your email. Please sign up again.', 'error');
         return;
       }
 
       btn.disabled = true;
       btn.textContent = 'Sending…';
+      msgEl.className = 'resend-msg';
 
       try {
         const sb = await getSupabase();
@@ -97,23 +290,17 @@
             emailRedirectTo: `${appUrl}/pages/setup.html?plan=${encodeURIComponent(plan)}`,
           },
         });
-
         if (error) throw error;
 
-        msgEl.textContent = '✓ Confirmation email resent. Check your inbox.';
-        msgEl.style.color = 'var(--brand-sage)';
-        msgEl.style.display = 'block';
-        btn.textContent = 'Resend confirmation email';
-        btn.disabled = false;
-
+        showMsg('✓ Confirmation email resent. Check your inbox.', 'success');
+        // 60-second cooldown to discourage spamming the resend
+        startCooldown();
       } catch (err) {
-        msgEl.textContent = 'Could not resend: ' + (err.message || 'please try again.');
-        msgEl.style.color = 'var(--brand-error)';
-        msgEl.style.display = 'block';
-        btn.textContent = 'Resend confirmation email';
+        showMsg('Could not resend: ' + (err.message || 'please try again.'), 'error');
         btn.disabled = false;
+        btn.textContent = 'Resend confirmation email';
       }
-    }
+    });
   </script>
 </body>
 

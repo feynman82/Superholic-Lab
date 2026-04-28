@@ -5,181 +5,549 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Log In — Superholic Lab</title>
-  <!-- SEO -->
-  <meta name="description"
-    content="Log in to Superholic Lab and continue your child's learning journey. Singapore’s MOE-aligned AI tutor and quiz platform for P1–P6.">
-  <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://www.superholiclab.com/pages/login.html">
-  <!-- Open Graph -->
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Superholic Lab">
-  <meta property="og:title" content="Log In — Superholic Lab">
-  <meta property="og:description"
-    content="Log in to continue your child’s MOE-aligned learning journey on Superholic Lab.">
-  <meta property="og:url" content="https://www.superholiclab.com/pages/login.html">
-  <meta property="og:image" content="https://www.superholiclab.com/assets/og.png">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:locale" content="en_SG">
-  <!-- Twitter/X Card -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Log In — Superholic Lab">
-  <meta name="twitter:description"
-    content="Log in to continue your child’s MOE-aligned learning journey on Superholic Lab.">
-  <meta name="twitter:image" content="https://www.superholiclab.com/assets/og.png">
-  <!-- Plausible Analytics -->
+  <meta name="description" content="Log in to Superholic Lab and continue your child's learning journey. Singapore's MOE-aligned AI tutor and quiz platform for P1–P6." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://www.superholiclab.com/pages/login.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Superholic Lab" />
+  <meta property="og:title" content="Log In — Superholic Lab" />
+  <meta property="og:description" content="Log in to continue your child's MOE-aligned learning journey on Superholic Lab." />
+  <meta property="og:url" content="https://www.superholiclab.com/pages/login.html" />
+  <meta property="og:image" content="https://www.superholiclab.com/assets/og.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:locale" content="en_SG" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Log In — Superholic Lab" />
+  <meta name="twitter:description" content="Log in to continue your child's MOE-aligned learning journey on Superholic Lab." />
+  <meta name="twitter:image" content="https://www.superholiclab.com/assets/og.png" />
+
   <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="icon" href="../assets/favicon.ico" />
+
+  <style>
+    /* ── Page-level: sage-tinted bg with the architect-scholar drawing grid
+       as a single page-level visual signature (per doctrine: once per page). */
+    body.auth-page {
+      background: var(--surface);
+      background-image:
+        linear-gradient(rgba(81, 97, 94, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(81, 97, 94, 0.025) 1px, transparent 1px);
+      background-size: 48px 48px;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-4);
+    }
+
+    .auth-card {
+      width: 100%;
+      max-width: 440px;
+      padding: var(--space-6);
+    }
+
+    /* ── Wordmark: small, scholarly, replaces the dark-sage banner ── */
+    .auth-wordmark {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+      margin-bottom: var(--space-5);
+      text-decoration: none;
+    }
+    .auth-wordmark__logo {
+      width: 24px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+    .auth-wordmark__text {
+      color: var(--brand-sage);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    /* ── Heading + lede ── */
+    .auth-heading {
+      text-align: center;
+      margin-bottom: var(--space-5);
+    }
+    .auth-heading__eyebrow {
+      color: var(--brand-rose);
+      display: block;
+      margin-bottom: var(--space-2);
+    }
+    .auth-heading__title {
+      color: var(--text-main);
+      margin: 0 0 var(--space-2) 0;
+    }
+    .auth-heading__lede {
+      color: var(--text-muted);
+      font-size: var(--text-sm);
+      margin: 0;
+    }
+
+    /* ── Banner messages (success / error / info) ── */
+    .auth-banner {
+      padding: var(--space-3) var(--space-4);
+      border-radius: var(--radius-md);
+      font-size: var(--text-sm);
+      line-height: 1.5;
+      margin-bottom: var(--space-4);
+      display: none;
+    }
+    .auth-banner.is-visible { display: block; }
+    .auth-banner--error {
+      background: var(--surface-container-low);
+      border-left: 3px solid var(--brand-rose);
+      color: var(--text-main);
+    }
+    .auth-banner--success {
+      background: var(--surface-container-low);
+      border-left: 3px solid var(--brand-mint);
+      color: var(--text-main);
+    }
+    .auth-banner--info {
+      background: var(--surface-container-low);
+      border-left: 3px solid var(--brand-sage);
+      color: var(--text-main);
+    }
+
+    /* ── Form rows ── */
+    .auth-form {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+    .auth-row {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+    .auth-row__label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-2);
+    }
+    .auth-row__label label {
+      color: var(--brand-sage);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .auth-row__label a {
+      color: var(--brand-rose);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      text-decoration: none;
+    }
+    .auth-row__label a:hover { text-decoration: underline; }
+
+    /* ── Password field with show/hide toggle ── */
+    .password-wrap {
+      position: relative;
+    }
+    .password-wrap input {
+      padding-right: 44px; /* room for the toggle */
+    }
+    .password-toggle {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: transparent;
+      border: none;
+      padding: 8px;
+      cursor: pointer;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-sm);
+      transition: color 160ms ease, background 160ms ease;
+    }
+    .password-toggle:hover {
+      color: var(--brand-rose);
+      background: var(--surface-container);
+    }
+    .password-toggle svg { display: block; }
+
+    /* ── Inline hint / caps-lock warning ── */
+    .auth-hint {
+      font-size: 11px;
+      color: var(--text-muted);
+      min-height: 14px;
+      line-height: 1.4;
+    }
+    .auth-hint--error { color: var(--brand-rose); }
+    .auth-hint--warn  {
+      color: var(--brand-sage);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* ── Divider "or continue with" ── */
+    .auth-divider {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      margin: var(--space-4) 0;
+    }
+    .auth-divider::before,
+    .auth-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border-light);
+    }
+    .auth-divider__text {
+      color: var(--text-muted);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    /* ── Alt-method buttons (Google, magic link) ── */
+    .auth-alt-stack {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+    .btn-auth-alt {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+    }
+
+    /* ── Footer link strip ── */
+    .auth-footer {
+      margin-top: var(--space-5);
+      padding-top: var(--space-4);
+      border-top: 1px solid var(--border-light);
+      text-align: center;
+      font-size: var(--text-sm);
+      color: var(--text-muted);
+    }
+    .auth-footer a {
+      color: var(--brand-rose);
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .auth-footer a:hover { text-decoration: underline; }
+
+    /* ── Trust strip (signup) ── */
+    .auth-trust {
+      margin-top: var(--space-4);
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+    }
+    .auth-trust span {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .auth-trust svg {
+      color: var(--brand-mint);
+      flex-shrink: 0;
+    }
+
+    /* Submit button — full width to match form rhythm */
+    .btn-auth-primary {
+      width: 100%;
+      margin-top: var(--space-2);
+    }
+  </style>
 </head>
 
-<body class="bg-page texture-light-grid flex items-center justify-center"
-  style="min-height: 100vh; padding: var(--space-4);">
+<body class="auth-page">
 
-  <main class="card p-6 w-full hover-lift" style="max-width: 420px; background: var(--bg-surface);">
-    <div class="flex flex-col items-center text-center mb-6">
-      <div class="w-full bg-sage-dark mb-6 py-2 flex justify-center items-center"
-        style="border-radius: var(--radius-md); border-bottom: 3px solid var(--brand-rose);">
-        <a href="../index.html" class="flex items-center gap-2 font-display text-2xl text-white"
-          style="text-decoration: none;">
-          <img src="../assets/logo.svg" width="32" height="32" alt="" aria-hidden="true"
-            style="border-radius: var(--radius-sm); flex-shrink:0;">
-          Superholic Lab
-        </a>
-      </div>
-      <h1 class="font-display text-3xl text-main mb-2">Welcome back</h1>
-      <p class="text-sm text-muted">Log in to continue your learning journey.</p>
-    </div>
+  <main class="card-glass auth-card">
 
-    <div id="errorMsg" class="mb-4 p-4 text-sm text-danger font-bold"
-      style="display: none; border-radius: var(--radius-md); background: rgba(220, 38, 38, 0.1); border: 1px solid var(--brand-error);">
-    </div>
+    <!-- Wordmark (replaces dark-sage banner) -->
+    <a href="../index.html" class="auth-wordmark">
+      <img class="auth-wordmark__logo" src="../assets/logo.svg" width="24" height="24" alt="" aria-hidden="true" />
+      <span class="auth-wordmark__text">Superholic Lab</span>
+    </a>
 
-    <div class="flex flex-col gap-4 mb-6">
-      <div class="flex flex-col gap-2">
-        <label class="text-sm font-bold text-muted" for="email">Email</label>
-        <input class="form-input" type="email" id="email" placeholder="you@email.com" autocomplete="email" />
-      </div>
-      <div class="flex flex-col gap-2">
-        <div class="flex justify-between items-center">
-          <label class="text-sm font-bold text-muted" for="password">Password</label>
-          <a href="#" onclick="handleForgotPassword(event)" class="text-xs text-rose"
-            style="text-decoration: none; font-weight: 600;">Forgot password?</a>
+    <!-- Heading -->
+    <header class="auth-heading">
+      <span class="label-caps auth-heading__eyebrow">Welcome back</span>
+      <h1 class="h2-as auth-heading__title">Log in.</h1>
+      <p class="auth-heading__lede">Continue your child's learning journey.</p>
+    </header>
+
+    <!-- Banner -->
+    <div id="authBanner" class="auth-banner" role="alert"></div>
+
+    <!-- Form -->
+    <form class="auth-form" id="loginForm" novalidate>
+
+      <!-- Email -->
+      <div class="auth-row">
+        <div class="auth-row__label">
+          <label for="email">Email</label>
         </div>
-        <input class="form-input" type="password" id="password" placeholder="••••••••"
-          autocomplete="current-password" />
+        <input class="input-ghost" type="email" id="email" name="email"
+               placeholder="you@email.com" autocomplete="email"
+               autofocus required />
+        <div class="auth-hint" id="emailHint"></div>
       </div>
+
+      <!-- Password (with show/hide toggle + caps lock warn) -->
+      <div class="auth-row">
+        <div class="auth-row__label">
+          <label for="password">Password</label>
+          <a href="#" id="forgotLink">Forgot?</a>
+        </div>
+        <div class="password-wrap">
+          <input class="input-ghost" type="password" id="password" name="password"
+                 placeholder="••••••••" autocomplete="current-password" required />
+          <button type="button" class="password-toggle" id="passwordToggle"
+                  aria-label="Show password" data-state="hidden">
+            <!-- Eye-open icon by default -->
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+          </button>
+        </div>
+        <div class="auth-hint auth-hint--warn" id="capsHint" hidden>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 19V5M5 12l7-7 7 7" />
+          </svg>
+          Caps Lock is on
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-auth-primary" id="loginBtn">Log in</button>
+    </form>
+
+    <!-- Divider -->
+    <div class="auth-divider">
+      <span class="auth-divider__text">or continue with</span>
     </div>
 
-    <button class="btn btn-primary w-full hover-lift mb-6" id="loginBtn" onclick="handleLogin()">Log in</button>
+    <!-- Alt methods: Magic link + Google -->
+    <div class="auth-alt-stack">
+      <button type="button" class="btn btn-secondary btn-auth-alt" id="magicBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+          <polyline points="22,6 12,13 2,6" />
+        </svg>
+        Email me a magic link
+      </button>
 
-    <div class="flex items-center gap-3 mb-6">
-      <div class="flex-1" style="height: 1px; background: var(--border-light);"></div>
-      <div class="text-xs text-muted font-bold uppercase tracking-wider">or continue with</div>
-      <div class="flex-1" style="height: 1px; background: var(--border-light);"></div>
-    </div>
-
-    <div class="flex flex-col gap-3 mb-6">
-      <button class="btn btn-secondary w-full flex items-center justify-center gap-2 hover-lift" id="googleBtn"
-        onclick="handleGoogle()">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <path
-            d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"
-            fill="#4285F4" />
-          <path
-            d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"
-            fill="#34A853" />
-          <path
-            d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"
-            fill="#FBBC05" />
-          <path
-            d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z"
-            fill="#EA4335" />
+      <button type="button" class="btn btn-secondary btn-auth-alt" id="googleBtn">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+          <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4" />
+          <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853" />
+          <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05" />
+          <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335" />
         </svg>
         Continue with Google
       </button>
     </div>
 
-    <div class="text-center text-sm text-muted">
-      Don't have an account? <a href="signup.html" class="text-rose font-bold" style="text-decoration: none;">Sign
-        up</a>
+    <!-- Footer -->
+    <div class="auth-footer">
+      Don't have an account? <a href="signup.html">Sign up</a>
     </div>
+
   </main>
 
   <script src="/js/supabase-client.js"></script>
   <script type="module">
     import { signIn, signInWithGoogle } from '/js/auth.js';
 
-    function showMessage(msg, isSuccess = false) {
-      const el = document.getElementById('errorMsg');
-      el.textContent = msg;
-      el.style.display = 'block';
-      if (isSuccess) {
-        el.style.background = 'rgba(5, 150, 105, 0.1)';
-        el.style.borderColor = 'rgba(5, 150, 105, 0.2)';
-        el.style.color = 'var(--brand-mint)';
-      } else {
-        el.style.background = 'rgba(220, 38, 38, 0.1)';
-        el.style.borderColor = 'rgba(220, 38, 38, 0.2)';
-        el.style.color = 'var(--brand-error)';
-      }
+    /* ── Banner helper ── */
+    const banner = document.getElementById('authBanner');
+    function showBanner(msg, kind = 'error') {
+      banner.textContent = msg;
+      banner.className = `auth-banner is-visible auth-banner--${kind}`;
+    }
+    function hideBanner() {
+      banner.className = 'auth-banner';
     }
 
-    window.handleLogin = async function () {
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-      const btn = document.getElementById('loginBtn');
-      document.getElementById('errorMsg').style.display = 'none';
-      if (!email || !password) { showMessage('Please fill in both fields.'); return; }
-      btn.disabled = true;
-      btn.textContent = 'Logging in…';
+    /* ── Field-level email validation on blur ── */
+    const emailField = document.getElementById('email');
+    const emailHint  = document.getElementById('emailHint');
+    emailField.addEventListener('blur', () => {
+      const v = emailField.value.trim();
+      if (v && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) {
+        emailHint.textContent = 'That doesn\'t look like a valid email.';
+        emailHint.classList.add('auth-hint--error');
+      } else {
+        emailHint.textContent = '';
+        emailHint.classList.remove('auth-hint--error');
+      }
+    });
+
+    /* ── Show/hide password toggle ── */
+    const passwordField = document.getElementById('password');
+    const toggleBtn     = document.getElementById('passwordToggle');
+    toggleBtn.addEventListener('click', () => {
+      const isHidden = toggleBtn.dataset.state === 'hidden';
+      passwordField.type = isHidden ? 'text' : 'password';
+      toggleBtn.dataset.state = isHidden ? 'shown' : 'hidden';
+      toggleBtn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+      // Swap icon (eye-off when shown, eye when hidden)
+      toggleBtn.innerHTML = isHidden
+        ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+             <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+             <line x1="1" y1="1" x2="23" y2="23" />
+           </svg>`
+        : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+             <circle cx="12" cy="12" r="3" />
+           </svg>`;
+    });
+
+    /* ── Caps Lock detection ── */
+    const capsHint = document.getElementById('capsHint');
+    function checkCaps(e) {
+      if (e.getModifierState && e.getModifierState('CapsLock')) {
+        capsHint.hidden = false;
+      } else {
+        capsHint.hidden = true;
+      }
+    }
+    passwordField.addEventListener('keydown', checkCaps);
+    passwordField.addEventListener('keyup', checkCaps);
+    passwordField.addEventListener('blur', () => { capsHint.hidden = true; });
+
+    /* ── Login submit ── */
+    const form    = document.getElementById('loginForm');
+    const loginBtn = document.getElementById('loginBtn');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideBanner();
+      const email = emailField.value.trim();
+      const password = passwordField.value;
+      if (!email || !password) {
+        showBanner('Please fill in both fields.');
+        return;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        showBanner('Please enter a valid email address.');
+        emailField.focus();
+        return;
+      }
+
+      loginBtn.disabled = true;
+      loginBtn.textContent = 'Logging in…';
       try {
         await signIn(email, password);
       } catch (err) {
-        showMessage(err.message || 'Login failed. Please check your credentials.');
-        btn.disabled = false;
-        btn.textContent = 'Log in';
+        showBanner(err.message || 'Login failed. Please check your credentials.');
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Log in';
       }
-    };
+    });
 
-    window.handleForgotPassword = async function (e) {
+    /* ── Forgot password ── */
+    document.getElementById('forgotLink').addEventListener('click', async (e) => {
       e.preventDefault();
-      const email = document.getElementById('email').value.trim();
-      document.getElementById('errorMsg').style.display = 'none';
-      if (!email) { showMessage('Please enter your email address first, then click “Forgot password?”.'); return; }
-      const btn = document.getElementById('loginBtn');
-      const orig = btn.textContent;
-      btn.disabled = true;
-      btn.textContent = 'Sending reset link...';
+      hideBanner();
+      const email = emailField.value.trim();
+      if (!email) {
+        showBanner('Enter your email above first, then click "Forgot?" to receive a reset link.', 'info');
+        emailField.focus();
+        return;
+      }
       try {
         const sb = await getSupabase();
         const { error } = await sb.auth.resetPasswordForEmail(email, {
-          redirectTo: window.location.origin + '/pages/update-password.html',
+          redirectTo: window.location.origin + '/pages/update-password.html'
         });
         if (error) throw error;
-        showMessage('Reset link sent! Please check your email.', true);
+        showBanner('Reset link sent. Check your email (including spam).', 'success');
       } catch (err) {
-        showMessage(err.message || 'Could not send reset link. Please try again.');
+        showBanner(err.message || 'Could not send reset link. Please try again.');
+      }
+    });
+
+    /* ── Magic link (passwordless) ── */
+    const magicBtn = document.getElementById('magicBtn');
+    magicBtn.addEventListener('click', async () => {
+      hideBanner();
+      const email = emailField.value.trim();
+      if (!email) {
+        showBanner('Enter your email above first, then click "Email me a magic link".', 'info');
+        emailField.focus();
+        return;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        showBanner('Please enter a valid email address.');
+        emailField.focus();
+        return;
+      }
+      magicBtn.disabled = true;
+      magicBtn.textContent = 'Sending magic link…';
+      try {
+        const sb = await getSupabase();
+        const { error } = await sb.auth.signInWithOtp({
+          email,
+          options: {
+            emailRedirectTo: window.location.origin + '/pages/dashboard.html',
+            shouldCreateUser: false   // login-only — we don't want magic-link to create a new account
+          }
+        });
+        if (error) throw error;
+        showBanner('Magic link sent. Open the email on this device and click the link to log in.', 'success');
+      } catch (err) {
+        // Supabase returns a friendly error if shouldCreateUser=false and email isn't registered
+        showBanner(err.message || 'Could not send magic link. Please try again.');
       } finally {
-        btn.disabled = false;
-        btn.textContent = orig;
+        magicBtn.disabled = false;
+        magicBtn.innerHTML = `
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+            <polyline points="22,6 12,13 2,6" />
+          </svg>
+          Email me a magic link`;
       }
-    };
+    });
 
-    window.handleGoogle = async function () {
-      document.getElementById('errorMsg').style.display = 'none';
-      document.getElementById('googleBtn').disabled = true;
-      try { await signInWithGoogle(); }
-      catch (err) {
-        showMessage('Google sign-in failed. Please try again.');
-        document.getElementById('googleBtn').disabled = false;
+    /* ── Google OAuth ── */
+    const googleBtn = document.getElementById('googleBtn');
+    googleBtn.addEventListener('click', async () => {
+      hideBanner();
+      googleBtn.disabled = true;
+      try {
+        await signInWithGoogle();
+      } catch (err) {
+        showBanner('Google sign-in failed. Please try again.');
+        googleBtn.disabled = false;
       }
-    };
-
-    document.getElementById('password').addEventListener('keydown', e => {
-      if (e.key === 'Enter') window.handleLogin();
     });
   </script>
 </body>

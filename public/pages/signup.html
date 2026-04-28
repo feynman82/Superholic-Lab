@@ -5,251 +5,738 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Start Free Trial — Superholic Lab</title>
-  <!-- SEO -->
-  <meta name="description"
-    content="Start your 7-day free trial on Superholic Lab — Singapore’s AI-powered learning platform for P1–P6. MOE-aligned Maths, Science &amp; English. No credit card required.">
-  <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://www.superholiclab.com/pages/signup.html">
-  <!-- Open Graph -->
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Superholic Lab">
-  <meta property="og:title" content="Start Free Trial — Superholic Lab">
-  <meta property="og:description"
-    content="7-day free trial. No credit card. MOE-aligned Maths, Science &amp; English for Singapore P1–P6 students.">
-  <meta property="og:url" content="https://www.superholiclab.com/pages/signup.html">
-  <meta property="og:image" content="https://www.superholiclab.com/assets/og.png">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:locale" content="en_SG">
-  <!-- Twitter/X Card -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Start Free Trial — Superholic Lab">
-  <meta name="twitter:description"
-    content="7-day free trial. No credit card. MOE-aligned learning for Singapore P1–P6.">
-  <meta name="twitter:image" content="https://www.superholiclab.com/assets/og.png">
-  <!-- Plausible Analytics -->
+  <meta name="description" content="Start your 7-day free trial on Superholic Lab — Singapore's AI-powered learning platform for P1–P6. MOE-aligned Maths, Science &amp; English. No credit card required." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://www.superholiclab.com/pages/signup.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Superholic Lab" />
+  <meta property="og:title" content="Start Free Trial — Superholic Lab" />
+  <meta property="og:description" content="7-day free trial. No credit card. MOE-aligned Maths, Science &amp; English for Singapore P1–P6 students." />
+  <meta property="og:url" content="https://www.superholiclab.com/pages/signup.html" />
+  <meta property="og:image" content="https://www.superholiclab.com/assets/og.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:locale" content="en_SG" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Start Free Trial — Superholic Lab" />
+  <meta name="twitter:description" content="7-day free trial. No credit card. MOE-aligned learning for Singapore P1–P6." />
+  <meta name="twitter:image" content="https://www.superholiclab.com/assets/og.png" />
+
   <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="icon" href="../assets/favicon.ico" />
+
+  <!-- Auth shell styles + signup-specific extensions -->
+  <style>
+    /* ── Auth shell (shared visual chrome with login / confirm-email / update-password) ── */
+    body.auth-page {
+      background: var(--surface);
+      background-image:
+        linear-gradient(rgba(81, 97, 94, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(81, 97, 94, 0.025) 1px, transparent 1px);
+      background-size: 48px 48px;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-4);
+    }
+
+    .auth-card {
+      width: 100%;
+      max-width: 480px;   /* signup is slightly wider than login to fit plan cards */
+      padding: var(--space-6);
+    }
+
+    .auth-wordmark {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+      margin-bottom: var(--space-5);
+      text-decoration: none;
+    }
+    .auth-wordmark__logo { width: 24px; height: 24px; flex-shrink: 0; }
+    .auth-wordmark__text {
+      color: var(--brand-sage);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .auth-heading {
+      text-align: center;
+      margin-bottom: var(--space-5);
+    }
+    .auth-heading__eyebrow {
+      color: var(--brand-rose);
+      display: block;
+      margin-bottom: var(--space-2);
+    }
+    .auth-heading__title {
+      color: var(--text-main);
+      margin: 0 0 var(--space-2) 0;
+    }
+    .auth-heading__lede {
+      color: var(--text-muted);
+      font-size: var(--text-sm);
+      margin: 0;
+    }
+
+    /* Banners */
+    .auth-banner {
+      padding: var(--space-3) var(--space-4);
+      border-radius: var(--radius-md);
+      font-size: var(--text-sm);
+      line-height: 1.5;
+      margin-bottom: var(--space-4);
+      display: none;
+    }
+    .auth-banner.is-visible { display: block; }
+    .auth-banner--error   { background: var(--surface-container-low); border-left: 3px solid var(--brand-rose); color: var(--text-main); }
+    .auth-banner--success { background: var(--surface-container-low); border-left: 3px solid var(--brand-mint); color: var(--text-main); }
+    .auth-banner--info    { background: var(--surface-container-low); border-left: 3px solid var(--brand-sage); color: var(--text-main); }
+
+    /* Form */
+    .auth-form { display: flex; flex-direction: column; gap: var(--space-3); }
+    .auth-row  { display: flex; flex-direction: column; gap: var(--space-1); }
+    .auth-row__label {
+      display: flex; align-items: center; justify-content: space-between; gap: var(--space-2);
+    }
+    .auth-row__label label {
+      color: var(--brand-sage);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    }
+    .auth-hint {
+      font-size: 11px; color: var(--text-muted); min-height: 14px; line-height: 1.4;
+    }
+    .auth-hint--error { color: var(--brand-rose); }
+    .auth-hint--warn  {
+      color: var(--brand-sage); display: flex; align-items: center; gap: 4px;
+    }
+
+    /* Password field with toggle */
+    .password-wrap { position: relative; }
+    .password-wrap input { padding-right: 44px; }
+    .password-toggle {
+      position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+      background: transparent; border: none; padding: 8px; cursor: pointer;
+      color: var(--text-muted); display: flex; align-items: center; justify-content: center;
+      border-radius: var(--radius-sm); transition: color 160ms ease, background 160ms ease;
+    }
+    .password-toggle:hover { color: var(--brand-rose); background: var(--surface-container); }
+    .password-toggle svg { display: block; }
+
+    /* Honeypot — invisible to humans */
+    .honeypot {
+      position: absolute !important;
+      left: -9999px;
+      width: 1px; height: 1px; opacity: 0; pointer-events: none;
+    }
+
+    /* Divider */
+    .auth-divider {
+      display: flex; align-items: center; gap: var(--space-2);
+      margin: var(--space-4) 0;
+    }
+    .auth-divider::before, .auth-divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border-light);
+    }
+    .auth-divider__text {
+      color: var(--text-muted);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    }
+
+    .btn-auth-alt {
+      width: 100%;
+      display: flex; align-items: center; justify-content: center; gap: var(--space-2);
+    }
+    .btn-auth-primary {
+      width: 100%;
+      margin-top: var(--space-2);
+    }
+
+    .auth-footer {
+      margin-top: var(--space-5);
+      padding-top: var(--space-4);
+      border-top: 1px solid var(--border-light);
+      text-align: center;
+      font-size: var(--text-sm);
+      color: var(--text-muted);
+    }
+    .auth-footer a { color: var(--brand-rose); font-weight: 600; text-decoration: none; }
+    .auth-footer a:hover { text-decoration: underline; }
+
+    /* ──────────────────────────────────────────────────────────────────
+       SIGNUP-SPECIFIC EXTENSIONS
+       ────────────────────────────────────────────────────────────────── */
+
+    /* Plan picker — two cards, rose left-rail on selected, .card-glass aesthetic */
+    .plan-picker {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      margin-bottom: var(--space-4);
+    }
+    .plan-picker__heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--space-1);
+    }
+    .plan-picker__label {
+      color: var(--brand-sage);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .plan-picker__hint {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .plan-card {
+      position: relative;
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      border: 1px solid var(--border-light);
+      border-left: 3px solid var(--border-light);
+      border-radius: var(--radius-md);
+      background: var(--surface-container-lowest);
+      cursor: pointer;
+      transition: border-color 160ms ease, background 160ms ease;
+    }
+    .plan-card:hover {
+      border-color: var(--border-dark);
+    }
+    .plan-card:has(input[type="radio"]:checked) {
+      border-color: var(--brand-rose);
+      border-left-color: var(--brand-rose);
+      background: var(--surface-container-low);
+    }
+    .plan-card input[type="radio"] {
+      accent-color: var(--brand-rose);
+      width: 16px; height: 16px;
+      margin-top: 4px;
+      flex-shrink: 0;
+    }
+    .plan-card__body { flex: 1; min-width: 0; }
+    .plan-card__top {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: var(--space-2);
+      margin-bottom: 4px;
+    }
+    .plan-card__name {
+      color: var(--text-main);
+      font-weight: 600;
+      font-size: var(--text-base);
+    }
+    .plan-card__name-meta {
+      color: var(--text-muted);
+      font-size: var(--text-xs);
+      font-weight: 400;
+    }
+    .plan-card__price {
+      font-family: 'Bebas Neue', sans-serif;
+      letter-spacing: 0.02em;
+      font-size: 22px;
+      color: var(--text-main);
+      flex-shrink: 0;
+    }
+    .plan-card:has(input[type="radio"]:checked) .plan-card__price {
+      color: var(--brand-rose);
+    }
+    .plan-card__price-suffix {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: 0;
+      text-transform: none;
+      color: var(--text-muted);
+      margin-left: 2px;
+    }
+    .plan-card__desc {
+      color: var(--text-muted);
+      font-size: var(--text-xs);
+      line-height: 1.5;
+      margin: 0;
+    }
+    .plan-card__badge {
+      position: absolute;
+      top: -8px;
+      right: 12px;
+      background: var(--brand-rose);
+      color: white;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: var(--radius-full, 999px);
+    }
+
+    .plan-picker__footnote {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: center;
+      margin: var(--space-2) 0 0 0;
+    }
+    .plan-picker__footnote strong { color: var(--text-main); font-weight: 600; }
+
+    /* Password strength meter */
+    .pwd-meter {
+      margin-top: var(--space-1);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .pwd-meter__bar {
+      display: flex;
+      gap: 3px;
+    }
+    .pwd-meter__bar span {
+      flex: 1;
+      height: 3px;
+      background: var(--surface-container-high);
+      border-radius: 2px;
+      transition: background 200ms ease;
+    }
+    .pwd-meter[data-score="1"] .pwd-meter__bar span:nth-child(-n+1) { background: var(--brand-rose); }
+    .pwd-meter[data-score="2"] .pwd-meter__bar span:nth-child(-n+2) { background: var(--brand-amber, #D4A24A); }
+    .pwd-meter[data-score="3"] .pwd-meter__bar span:nth-child(-n+3) { background: var(--brand-sage); }
+    .pwd-meter[data-score="4"] .pwd-meter__bar span:nth-child(-n+4) { background: var(--brand-mint); }
+
+    .pwd-meter__criteria {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 12px;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .pwd-meter__criteria li {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .pwd-meter__criteria li.is-met {
+      color: var(--brand-mint);
+    }
+    .pwd-meter__criteria li::before {
+      content: '○';
+      font-size: 10px;
+      flex-shrink: 0;
+    }
+    .pwd-meter__criteria li.is-met::before {
+      content: '✓';
+    }
+
+    /* Trust strip below CTA */
+    .auth-trust {
+      margin-top: var(--space-4);
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: var(--space-2) var(--space-3);
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+    }
+    .auth-trust span {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .auth-trust svg {
+      color: var(--brand-mint);
+      flex-shrink: 0;
+    }
+
+    /* Tiny legal disclaimer above the footer */
+    .auth-legal {
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-top: var(--space-4);
+    }
+    .auth-legal a {
+      color: var(--brand-rose);
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .auth-legal a:hover { text-decoration: underline; }
+  </style>
 </head>
 
-<body class="bg-page texture-light-grid flex items-center justify-center"
-  style="min-height: 100vh; padding: var(--space-4); padding-top: var(--space-8); padding-bottom: var(--space-8);">
+<body class="auth-page">
 
-  <main class="glass-panel-1 p-6 w-full hover-lift" style="max-width: 480px; background: var(--bg-surface);">
+  <main class="card-glass auth-card">
 
-    <div class="flex flex-col items-center text-center mb-6">
-      <div class="w-full bg-sage-dark mb-6 py-2 flex justify-center items-center"
-        style="border-radius: var(--radius-md); border-bottom: 3px solid var(--brand-rose);">
-        <a href="../index.html" class="flex items-center gap-2 font-display text-2xl text-white"
-          style="text-decoration: none;">
-          <img src="../assets/logo.svg" width="32" height="32" alt="" aria-hidden="true"
-            style="border-radius: var(--radius-sm); flex-shrink:0;">
-          Superholic Lab
-        </a>
+    <!-- Wordmark -->
+    <a href="../index.html" class="auth-wordmark">
+      <img class="auth-wordmark__logo" src="../assets/logo.svg" width="24" height="24" alt="" aria-hidden="true" />
+      <span class="auth-wordmark__text">Superholic Lab</span>
+    </a>
+
+    <!-- Heading -->
+    <header class="auth-heading">
+      <span class="label-caps auth-heading__eyebrow">7-day free trial · No card</span>
+      <h1 class="h2-as auth-heading__title">Create your account.</h1>
+      <p class="auth-heading__lede">Cancel anytime. Subscribe only when you're ready.</p>
+    </header>
+
+    <!-- Banner -->
+    <div id="authBanner" class="auth-banner" role="alert"></div>
+
+    <!-- Plan picker -->
+    <div class="plan-picker" role="radiogroup" aria-label="Choose a plan">
+      <div class="plan-picker__heading">
+        <span class="plan-picker__label">Preferred plan</span>
+        <span class="plan-picker__hint">Subscribe after trial</span>
       </div>
 
-      <h1 class="font-display text-3xl text-main mb-2">Start your 7-day free trial</h1>
-      <p class="text-sm text-muted">No credit card required &middot; Cancel anytime</p>
-    </div>
-
-    <div id="errorMsg" class="mb-4 p-4 text-sm text-danger font-bold"
-      style="display: none; border-radius: var(--radius-md); background: rgba(220, 38, 38, 0.1); border: 1px solid var(--brand-error);">
-    </div>
-
-    <div class="flex flex-col gap-3 mb-6">
-      <div class="flex justify-between items-center">
-        <span class="text-xs font-bold text-muted uppercase tracking-wider">Choose your preferred plan</span>
-        <span class="text-xs text-muted">Subscribe anytime after trial</span>
-      </div>
-
-      <label class="plan-card relative flex items-start gap-3 p-4 rounded-lg cursor-pointer"
-        style="border: 2px solid var(--brand-rose); background: rgba(183, 110, 121, 0.05); transition: all 0.2s ease;">
-        <input type="radio" name="plan" id="plan_all" value="all_subjects" checked onchange="updatePlanStyles()"
-          style="accent-color: var(--brand-rose); width: 18px; height: 18px; margin-top: 2px;" />
-        <div class="flex-1">
-          <div class="flex justify-between items-center mb-2">
-            <span class="font-bold text-main">All Subjects</span>
-            <span class="badge"
-              style="background: var(--brand-rose); color: white; padding: 4px 10px; font-size: 0.65rem;">Most
-              Popular</span>
-            <span class="plan-price font-display text-xl text-rose">S$12.99<span class="text-xs text-rose font-body"
-                style="text-transform: none; opacity: 0.8;">/mo</span></span>
+      <label class="plan-card">
+        <input type="radio" name="plan" id="plan_all" value="all_subjects" checked />
+        <div class="plan-card__body">
+          <div class="plan-card__top">
+            <div>
+              <span class="plan-card__name">All Subjects</span>
+              <span class="plan-card__name-meta">· 1 child</span>
+            </div>
+            <span class="plan-card__price">S$12.99<span class="plan-card__price-suffix">/mo</span></span>
           </div>
-          <p class="text-xs text-muted m-0">The complete PSLE toolkit — Maths, Science &amp; English.</p>
+          <p class="plan-card__desc">The complete PSLE toolkit — Maths, Science &amp; English.</p>
+          <span class="plan-card__badge">Most popular</span>
         </div>
       </label>
 
-      <label class="plan-card relative flex items-start gap-3 p-4 rounded-lg cursor-pointer"
-        style="border: 2px solid var(--border-light); background: var(--bg-surface); transition: all 0.2s ease;">
-        <input type="radio" name="plan" id="plan_family" value="family" onchange="updatePlanStyles()"
-          style="accent-color: var(--brand-rose); width: 18px; height: 18px; margin-top: 2px;" />
-        <div class="flex-1">
-          <div class="flex justify-between items-center mb-2">
-            <span class="font-bold text-main">Family <span class="font-normal text-xs text-muted ml-1">(up to 3
-                children)</span></span>
-            <span class="plan-price font-display text-xl text-main">S$19.99<span class="text-xs text-muted font-body"
-                style="text-transform: none;">/mo</span></span>
+      <label class="plan-card">
+        <input type="radio" name="plan" id="plan_family" value="family" />
+        <div class="plan-card__body">
+          <div class="plan-card__top">
+            <div>
+              <span class="plan-card__name">Family</span>
+              <span class="plan-card__name-meta">· up to 3 children</span>
+            </div>
+            <span class="plan-card__price">S$19.99<span class="plan-card__price-suffix">/mo</span></span>
           </div>
-          <p class="text-xs text-muted m-0">Independent profiles &amp; parent dashboard for all children.</p>
+          <p class="plan-card__desc">Independent profiles &amp; parent dashboard for siblings.</p>
         </div>
       </label>
 
-      <p class="text-xs text-center text-muted mt-2">Prices shown are for when you're ready to subscribe — <strong>you
-          won't be charged today</strong>.</p>
+      <p class="plan-picker__footnote">
+        <strong>You won't be charged today.</strong> Trial is free for 7 days, no card required.
+      </p>
     </div>
 
-    <div class="flex flex-col gap-4 mb-6">
-      <div class="flex flex-col gap-2">
-        <label class="text-sm font-bold text-muted" for="fullName">Your name</label>
-        <input class="form-input" type="text" id="fullName" placeholder="e.g. Sarah Tan" autocomplete="name" />
+    <!-- Form -->
+    <form class="auth-form" id="signupForm" novalidate>
+
+      <!-- Honeypot (anti-spam) -->
+      <div class="honeypot" aria-hidden="true">
+        <label for="company">Company (leave blank)</label>
+        <input type="text" id="company" name="company" tabindex="-1" autocomplete="off" />
       </div>
 
-      <div class="flex flex-col gap-2">
-        <label class="text-sm font-bold text-muted" for="email">Email</label>
-        <input class="form-input" type="email" id="email" placeholder="you@email.com" autocomplete="email" />
+      <!-- Name -->
+      <div class="auth-row">
+        <div class="auth-row__label"><label for="fullName">Your name</label></div>
+        <input class="input-ghost" type="text" id="fullName" placeholder="e.g. Sarah Tan"
+               autocomplete="name" autofocus required />
+        <div class="auth-hint" id="nameHint"></div>
       </div>
 
-      <div class="flex flex-col gap-2">
-        <label class="text-sm font-bold text-muted" for="password">Password</label>
-        <input class="form-input" type="password" id="password" placeholder="At least 8 characters"
-          autocomplete="new-password" />
+      <!-- Email -->
+      <div class="auth-row">
+        <div class="auth-row__label"><label for="email">Email</label></div>
+        <input class="input-ghost" type="email" id="email" placeholder="you@email.com"
+               autocomplete="email" required />
+        <div class="auth-hint" id="emailHint"></div>
       </div>
 
-      <div class="flex flex-col gap-2">
-        <label class="text-sm font-bold text-muted" for="confirmPassword">Confirm Password</label>
-        <input class="form-input" type="password" id="confirmPassword" placeholder="Repeat your password"
-          autocomplete="new-password" />
+      <!-- Password + strength meter + show/hide -->
+      <div class="auth-row">
+        <div class="auth-row__label"><label for="password">Password</label></div>
+        <div class="password-wrap">
+          <input class="input-ghost" type="password" id="password"
+                 placeholder="At least 8 characters" autocomplete="new-password" required />
+          <button type="button" class="password-toggle" id="passwordToggle"
+                  aria-label="Show password" data-state="hidden">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Password strength meter (4 criteria, 4-segment bar) -->
+        <div class="pwd-meter" id="pwdMeter" data-score="0">
+          <div class="pwd-meter__bar" aria-hidden="true">
+            <span></span><span></span><span></span><span></span>
+          </div>
+          <ul class="pwd-meter__criteria">
+            <li id="crit-len">8+ characters</li>
+            <li id="crit-mix">Letters &amp; numbers</li>
+            <li id="crit-upper">Uppercase</li>
+            <li id="crit-special">Symbol</li>
+          </ul>
+        </div>
+
+        <div class="auth-hint auth-hint--warn" id="capsHint" hidden>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 19V5M5 12l7-7 7 7" />
+          </svg>
+          Caps Lock is on
+        </div>
       </div>
-    </div>
 
-    <button class="btn btn-primary w-full hover-lift mb-6" id="signupBtn" onclick="handleSignup()">Start Free Trial — No
-      Credit Card →</button>
+      <!-- Confirm password -->
+      <div class="auth-row">
+        <div class="auth-row__label"><label for="confirmPassword">Confirm password</label></div>
+        <input class="input-ghost" type="password" id="confirmPassword"
+               placeholder="Repeat your password" autocomplete="new-password" required />
+        <div class="auth-hint" id="confirmHint"></div>
+      </div>
 
-    <div class="flex items-center gap-3 mb-6">
-      <div class="flex-1" style="height: 1px; background: var(--border-light);"></div>
-      <div class="text-xs text-muted font-bold uppercase tracking-wider">or sign up with</div>
-      <div class="flex-1" style="height: 1px; background: var(--border-light);"></div>
-    </div>
-
-    <div class="flex flex-col gap-3 mb-6">
-      <button class="btn btn-secondary w-full flex items-center justify-center gap-2 hover-lift" id="googleBtn"
-        onclick="handleGoogle()">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <path
-            d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"
-            fill="#4285F4" />
-          <path
-            d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"
-            fill="#34A853" />
-          <path
-            d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"
-            fill="#FBBC05" />
-          <path
-            d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z"
-            fill="#EA4335" />
-        </svg>
-        Continue with Google
+      <button type="submit" class="btn btn-primary btn-auth-primary" id="signupBtn">
+        Start free trial — no card required
       </button>
+
+      <!-- Trust strip -->
+      <div class="auth-trust" aria-hidden="true">
+        <span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          PDPA-compliant
+        </span>
+        <span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          Cancel anytime
+        </span>
+        <span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          Data in Singapore
+        </span>
+      </div>
+    </form>
+
+    <!-- Divider -->
+    <div class="auth-divider">
+      <span class="auth-divider__text">or sign up with</span>
     </div>
 
-    <div class="text-center text-xs text-muted mb-4">
-      By signing up you agree to our <a href="../pages/terms.html" class="text-rose font-bold"
-        style="text-decoration: none;">Terms</a> and <a href="../pages/privacy.html" class="text-rose font-bold"
-        style="text-decoration: none;">Privacy Policy</a>.
-    </div>
+    <!-- Google -->
+    <button type="button" class="btn btn-secondary btn-auth-alt" id="googleBtn">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+        <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4" />
+        <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853" />
+        <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05" />
+        <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335" />
+      </svg>
+      Continue with Google
+    </button>
 
-    <div class="text-center text-sm text-muted">
-      Already have an account? <a href="../pages/login.html" class="text-rose font-bold"
-        style="text-decoration: none;">Log in</a>
+    <!-- Legal -->
+    <p class="auth-legal">
+      By signing up you agree to our <a href="../pages/terms.html">Terms</a>
+      and <a href="../pages/privacy.html">Privacy Policy</a>.
+    </p>
+
+    <!-- Footer -->
+    <div class="auth-footer">
+      Already have an account? <a href="login.html">Log in</a>
     </div>
 
   </main>
 
   <script src="/js/supabase-client.js"></script>
-  <script>
-    function updatePlanStyles() {
-      document.querySelectorAll('.plan-card').forEach(card => {
-        const radio = card.querySelector('input[type="radio"]');
-        const price = card.querySelector('.plan-price');
-        const moText = price.querySelector('span');
-        if (radio.checked) {
-          card.style.borderColor = 'var(--brand-rose)';
-          card.style.background = 'rgba(183, 110, 121, 0.05)';
-          price.classList.add('text-rose'); price.classList.remove('text-main');
-          moText.classList.add('text-rose'); moText.classList.remove('text-muted');
-          moText.style.opacity = '0.8';
-        } else {
-          card.style.borderColor = 'var(--border-light)';
-          card.style.background = 'var(--bg-surface)';
-          price.classList.remove('text-rose'); price.classList.add('text-main');
-          moText.classList.remove('text-rose'); moText.classList.add('text-muted');
-          moText.style.opacity = '1';
-        }
-      });
-    }
-
-    const urlPlan = new URLSearchParams(window.location.search).get('plan');
-    if (urlPlan === 'family') {
-      document.getElementById('plan_family').checked = true;
-      updatePlanStyles();
-    }
-  </script>
-
   <script type="module">
     import { signUp, signInWithGoogle } from '/js/auth.js';
 
-    function showError(msg) {
-      const el = document.getElementById('errorMsg');
-      el.textContent = msg;
-      el.style.display = 'block';
+    /* ── Banner helpers ── */
+    const banner = document.getElementById('authBanner');
+    function showBanner(msg, kind = 'error') {
+      banner.textContent = msg;
+      banner.className = `auth-banner is-visible auth-banner--${kind}`;
+    }
+    function hideBanner() { banner.className = 'auth-banner'; }
+
+    /* ── Plan from URL (?plan=family) ── */
+    const urlPlan = new URLSearchParams(window.location.search).get('plan');
+    if (urlPlan === 'family') {
+      document.getElementById('plan_family').checked = true;
     }
 
-    window.handleSignup = async function () {
-      const name = document.getElementById('fullName').value.trim();
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-      const confirm = document.getElementById('confirmPassword').value;
-      const plan = document.querySelector('input[name="plan"]:checked')?.value || 'all_subjects';
-      const btn = document.getElementById('signupBtn');
+    /* ── Show/hide password ── */
+    const passwordField = document.getElementById('password');
+    const toggleBtn = document.getElementById('passwordToggle');
+    toggleBtn.addEventListener('click', () => {
+      const isHidden = toggleBtn.dataset.state === 'hidden';
+      passwordField.type = isHidden ? 'text' : 'password';
+      toggleBtn.dataset.state = isHidden ? 'shown' : 'hidden';
+      toggleBtn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+      toggleBtn.innerHTML = isHidden
+        ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+             <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+             <line x1="1" y1="1" x2="23" y2="23" />
+           </svg>`
+        : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+             <circle cx="12" cy="12" r="3" />
+           </svg>`;
+    });
 
-      document.getElementById('errorMsg').style.display = 'none';
+    /* ── Caps Lock detection ── */
+    const capsHint = document.getElementById('capsHint');
+    function checkCaps(e) {
+      capsHint.hidden = !(e.getModifierState && e.getModifierState('CapsLock'));
+    }
+    passwordField.addEventListener('keydown', checkCaps);
+    passwordField.addEventListener('keyup', checkCaps);
+    passwordField.addEventListener('blur', () => { capsHint.hidden = true; });
 
-      if (!name) { showError('Please enter your name.'); return; }
-      if (!email) { showError('Please enter your email.'); return; }
-      if (!password || password.length < 8) { showError('Password must be at least 8 characters.'); return; }
-      if (password !== confirm) { showError('Passwords do not match.'); return; }
+    /* ── Password strength meter ── */
+    const meter = document.getElementById('pwdMeter');
+    const critEls = {
+      len:     document.getElementById('crit-len'),
+      mix:     document.getElementById('crit-mix'),
+      upper:   document.getElementById('crit-upper'),
+      special: document.getElementById('crit-special'),
+    };
+    function evaluatePassword(p) {
+      const checks = {
+        len:     p.length >= 8,
+        mix:     /[A-Za-z]/.test(p) && /[0-9]/.test(p),
+        upper:   /[A-Z]/.test(p),
+        special: /[^A-Za-z0-9]/.test(p),
+      };
+      const score = Object.values(checks).filter(Boolean).length;
+      Object.entries(checks).forEach(([k, met]) => {
+        critEls[k].classList.toggle('is-met', met);
+      });
+      meter.dataset.score = String(score);
+      return { score, checks };
+    }
+    passwordField.addEventListener('input', () => evaluatePassword(passwordField.value));
 
-      btn.disabled = true;
-      btn.textContent = 'Creating account…';
+    /* ── Email validation on blur ── */
+    const emailField = document.getElementById('email');
+    const emailHint  = document.getElementById('emailHint');
+    emailField.addEventListener('blur', () => {
+      const v = emailField.value.trim();
+      if (v && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) {
+        emailHint.textContent = 'That doesn\'t look like a valid email.';
+        emailHint.classList.add('auth-hint--error');
+      } else {
+        emailHint.textContent = '';
+        emailHint.classList.remove('auth-hint--error');
+      }
+    });
+
+    /* ── Confirm-password match check on blur ── */
+    const confirmField = document.getElementById('confirmPassword');
+    const confirmHint  = document.getElementById('confirmHint');
+    confirmField.addEventListener('blur', () => {
+      const a = passwordField.value;
+      const b = confirmField.value;
+      if (b && a !== b) {
+        confirmHint.textContent = 'Passwords don\'t match.';
+        confirmHint.classList.add('auth-hint--error');
+      } else {
+        confirmHint.textContent = '';
+        confirmHint.classList.remove('auth-hint--error');
+      }
+    });
+
+    /* ── Submit ── */
+    const form = document.getElementById('signupForm');
+    const signupBtn = document.getElementById('signupBtn');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideBanner();
+
+      const company  = document.getElementById('company').value.trim();
+      const name     = document.getElementById('fullName').value.trim();
+      const email    = emailField.value.trim();
+      const password = passwordField.value;
+      const confirm  = confirmField.value;
+      const plan     = document.querySelector('input[name="plan"]:checked')?.value || 'all_subjects';
+
+      // Honeypot trip — silently "succeed" (don't tell the bot)
+      if (company) {
+        showBanner('Account created. Check your email for the confirmation link.', 'success');
+        return;
+      }
+
+      if (!name)                 return showBanner('Please enter your name.');
+      if (!email)                return showBanner('Please enter your email.');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+                                 return showBanner('Please enter a valid email address.');
+      if (!password || password.length < 8)
+                                 return showBanner('Password must be at least 8 characters.');
+      if (password !== confirm)  return showBanner('Passwords do not match.');
+
+      // Soft strength gate: warn (not block) at score < 2
+      const { score } = evaluatePassword(password);
+      if (score < 2) {
+        showBanner('Your password is weak. Add letters and numbers for better security.', 'info');
+      }
+
+      signupBtn.disabled = true;
+      signupBtn.textContent = 'Creating account…';
 
       try {
         await signUp(email, password, name, plan);
-        // Analytics: fire Signup event on success
         if (window.plausible) window.plausible('Signup', { props: { plan } });
       } catch (err) {
-        showError(err.message || 'Sign-up failed. Please try again.');
-        btn.disabled = false;
-        btn.textContent = 'Start Free Trial — No Credit Card →';
+        showBanner(err.message || 'Sign-up failed. Please try again.');
+        signupBtn.disabled = false;
+        signupBtn.textContent = 'Start free trial — no card required';
       }
-    };
+    });
 
-    window.handleGoogle = async function () {
+    /* ── Google OAuth ── */
+    const googleBtn = document.getElementById('googleBtn');
+    googleBtn.addEventListener('click', async () => {
+      hideBanner();
       const plan = document.querySelector('input[name="plan"]:checked')?.value || 'all_subjects';
       localStorage.setItem('pendingPlan', plan);
-      document.getElementById('googleBtn').disabled = true;
-      document.getElementById('errorMsg').style.display = 'none';
+      googleBtn.disabled = true;
       try {
         await signInWithGoogle();
-        // Note: Google OAuth redirects away — Signup event not fired here
-        // as we can't intercept the OAuth callback directly
       } catch (err) {
-        showError('Google sign-in failed. Please try again.');
-        document.getElementById('googleBtn').disabled = false;
+        showBanner('Google sign-in failed. Please try again.');
+        googleBtn.disabled = false;
       }
-    };
+    });
   </script>
 </body>
 
