@@ -27,7 +27,8 @@
     { "source": "/api/quests",             "destination": "/api/index" },
     { "source": "/api/quests/:path*",      "destination": "/api/index" },
     { "source": "/api/account-activity",   "destination": "/api/index" },
-    { "source": "/api/log-activity",       "destination": "/api/index" }
+    { "source": "/api/log-activity",       "destination": "/api/index" },
+    { "source": "/api/learner-export",     "destination": "/api/index" }
   ],
   "headers": [
     {

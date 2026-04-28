@@ -1668,6 +1668,7 @@
               + '<div class="learner-card__shortcuts">'
                 + '<a class="learner-card__shortcut" href="/pages/quiz.html' + studentParam + '">Practise</a>'
                 + '<a class="learner-card__shortcut" href="/pages/progress.html' + studentParam + '">Progress</a>'
+                + '<a class="learner-card__shortcut" href="#" onclick="window.exportLearnerData(\'' + s.id + '\', ' + JSON.stringify(s.name || 'learner') + '); return false;">Export data</a>'
               + '</div>'
             + '</div>'
             + '<button class="btn btn-ghost btn-sm" onclick="window.toggleLearnerEdit(\'' + s.id + '\')">Edit</button>'
@@ -1852,6 +1853,51 @@
         a.click();
         URL.revokeObjectURL(a.href);
       } catch (err) { showMsg('error', 'Export failed: ' + err.message); }
+    };
+
+    /* ─── PER-LEARNER DATA EXPORT (Phase 3) ───────────────────────────────────────
+       Pulls /api/learner-export?student_id=… as a JSON blob and triggers a
+       client-side download. Filename uses a slug of the learner's name so a
+       parent sharing two children's data with different tutors gets two
+       distinguishable files. The server emits "learner-data-{uuid}.json" in
+       the Content-Disposition header for log readability; the browser uses
+       the .download attribute below for the actual saved name. */
+    function _slugify(name) {
+      return String(name || 'learner')
+        .toLowerCase()
+        .normalize('NFKD').replace(/[̀-ͯ]/g, '') // strip accents
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 40) || 'learner';
+    }
+
+    window.exportLearnerData = async function (studentId, studentName) {
+      if (!studentId) return;
+      if (!confirm('Download all of ' + (studentName || 'this learner') + "'s quiz, exam, and tutor history as a JSON file?")) return;
+      try {
+        var sb = await getSupabase();
+        var { data: { session } } = await sb.auth.getSession();
+        if (!session) throw new Error('Not authenticated');
+        var res = await fetch('/api/learner-export?student_id=' + encodeURIComponent(studentId), {
+          headers: { 'Authorization': 'Bearer ' + session.access_token },
+        });
+        if (!res.ok) {
+          var msg = 'Export failed.';
+          try { var errBody = await res.json(); if (errBody.error) msg = errBody.error; } catch (_) {}
+          throw new Error(msg);
+        }
+        var blob = await res.blob();
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'superholiclab-' + _slugify(studentName) + '-data.json';
+        a.click();
+        URL.revokeObjectURL(a.href);
+        showMsg('success', "Downloaded " + (studentName || 'learner') + "'s data.");
+        // Refresh activity list — the server logged a 'data_exported' event
+        if (typeof loadActivityList === 'function') setTimeout(loadActivityList, 600);
+      } catch (err) {
+        showMsg('error', 'Export failed: ' + (err.message || 'Please try again.'));
+      }
     };
 
     /* ─── ACCOUNT ACTIVITY — fire log events + render the right-rail list ─────────
