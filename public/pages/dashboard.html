@@ -177,6 +177,72 @@
       }
     }
 
+    /* ── Resume card (Phase 1 — pick up where you left off) ── */
+    .resume-card {
+      padding: var(--space-4) var(--space-5);
+      margin-bottom: var(--space-4);
+      border-left: 3px solid var(--brand-rose);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+    .resume-card__head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+    }
+    .resume-card__eyebrow {
+      color: var(--brand-rose);
+    }
+    .resume-card__title {
+      color: var(--text-main);
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.2;
+    }
+    .resume-card__rows {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+    .resume-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3);
+      border-radius: var(--radius-md);
+      background: var(--surface-container-lowest);
+      border: 1px solid var(--border-light);
+    }
+    .resume-row__icon {
+      width: 36px; height: 36px; flex-shrink: 0;
+      border-radius: var(--radius-full, 999px);
+      background: var(--surface-container);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--brand-rose);
+    }
+    .resume-row__icon--warn { color: var(--brand-amber, #D4A24A); }
+    .resume-row__body {
+      flex: 1;
+      min-width: 0;
+      font-size: var(--text-sm);
+      color: var(--text-main);
+      line-height: 1.45;
+    }
+    .resume-row__cta {
+      flex-shrink: 0;
+    }
+    @media (max-width: 600px) {
+      .resume-row {
+        flex-wrap: wrap;
+      }
+      .resume-row__body { flex: 1 1 100%; }
+      .resume-row__cta  { flex: 1 1 100%; }
+      .resume-row__cta .btn { width: 100%; }
+    }
+
     /* ── Section heading (mirrors account.html) ── */
     .dash-section__head {
       display: flex;
@@ -806,6 +872,13 @@
 
         <!-- ── 7-COL: LEARNER GRID ──────────────────────────────────────── -->
         <section class="dash-main">
+
+          <!-- Resume CTA — rendered by renderResumeCard(rows) when there's
+               an active Plan Quest or a stale streak. Stays empty (no mount
+               markup) when there's nothing to surface, so the layout is
+               unchanged for first-time users. -->
+          <div id="resume-card-mount" aria-live="polite"></div>
+
           <header class="dash-section__head">
             <div>
               <span class="label-caps dash-section__eyebrow">Your family</span>
@@ -1143,6 +1216,10 @@
       let masteryMap = {};   // { student_id: { Mathematics: AL3, Science: AL2, English: AL5 } }
       let activityMap = {};  // { student_id: { lastActive: Date, streak: number } }
 
+      // Resume rows are populated alongside the existing parallel fetches —
+      // see fetchResumeRows below.
+      let resumeRows = [];
+
       if (studentIds.length > 0) {
         // Unread notes
         const notesPromise = sb.from('study_notes').select('student_id, is_read').in('student_id', studentIds);
@@ -1158,7 +1235,13 @@
           .in('student_id', studentIds)
           .order('created_at', { ascending: false });
 
-        const [notesRes, masteryRes, activityRes] = await Promise.all([notesPromise, masteryPromise, activityPromise]);
+        // Phase 1 — Resume CTA: active Plan Quests + stale streaks
+        const resumePromise = fetchResumeRows(sb, currentStudents);
+
+        const [notesRes, masteryRes, activityRes, resumeRes] = await Promise.all([
+          notesPromise, masteryPromise, activityPromise, resumePromise,
+        ]);
+        resumeRows = resumeRes || [];
 
         // Unread map
         (notesRes.data || []).forEach(n => {
@@ -1196,6 +1279,10 @@
       // Render health strip with full data
       renderHealthStrip(profile, currentStudents, familyStreakInfo);
 
+      // Render or clear the Resume CTA — must run after currentStudents is
+      // populated so renderResumeCard can rely on the in-memory list.
+      renderResumeCard(resumeRows);
+
       renderGrid(unreadMap, masteryMap, activityMap);
 
       const addBtn = document.getElementById('addChildBtn');
@@ -1204,6 +1291,162 @@
       } else {
         addBtn.style.display = 'inline-flex';
       }
+    }
+
+    /* ─── RESUME CTA (Phase 1) ─────────────────────────────────────────────────
+       Surfaces up to 3 "pick up where you left off" rows ABOVE the learner
+       grid, sourced from data the platform already tracks server-side:
+
+         • Active Plan Quest rows  (remedial_quests where status='active'
+           and current_step < 3) — always shown when present.
+         • Stale-streak rows       (student_streaks with current_days >= 3
+           and last_active < today SGT, only after 18:00 SGT). Capped to one
+           row per learner so a kid with both an active quest AND a stale
+           streak shows only the higher-priority quest line.
+
+       In-progress quizzes are intentionally NOT surfaced — the quiz engine
+       holds session state in-memory only (see public/js/quiz.js); there is
+       no server-side flag for an interrupted quiz today. Adding one is
+       tracked as a follow-up; the row will plug in here when it lands. */
+
+    async function fetchResumeRows(sb, students) {
+      if (!students || students.length === 0) return [];
+      const studentIds = students.map(s => s.id);
+      try {
+        const [questsRes, streaksRes] = await Promise.all([
+          sb.from('remedial_quests')
+            .select('id, student_id, topic, current_step, status, updated_at')
+            .in('student_id', studentIds)
+            .eq('status', 'active')
+            .lt('current_step', 3)
+            .order('updated_at', { ascending: false }),
+          sb.from('student_streaks')
+            .select('student_id, current_days, last_active')
+            .in('student_id', studentIds)
+            .gte('current_days', 3),
+        ]);
+
+        const nameOf = (id) => {
+          const s = students.find(x => x.id === id);
+          return (s && s.name) || 'Your child';
+        };
+
+        const rows = [];
+        const seenStudents = new Set();
+
+        // Priority 1 — active Plan Quest rows
+        (questsRes.data || []).forEach(q => {
+          if (rows.length >= 3) return;
+          if (seenStudents.has(q.student_id)) return; // one row per student
+          rows.push({
+            kind:        'quest',
+            iconKey:     'quest',
+            studentId:   q.student_id,
+            studentName: nameOf(q.student_id),
+            summary:     `${nameOf(q.student_id)} — Day ${(q.current_step || 0) + 1} of their ${q.topic} Plan Quest is unlocked.`,
+            ctaLabel:    'Continue quest',
+            ctaUrl:      '/quest?id=' + encodeURIComponent(q.id),
+            ctaVariant:  'primary',
+          });
+          seenStudents.add(q.student_id);
+        });
+
+        // Priority 2 — stale-streak rows (only after 18:00 SGT)
+        const sgt = sgtNow();
+        if (sgt.hour >= 18) {
+          (streaksRes.data || []).forEach(s => {
+            if (rows.length >= 3) return;
+            if (seenStudents.has(s.student_id)) return;
+            const lastActive = s.last_active || '';
+            // last_active is a date string (YYYY-MM-DD); compare lexically.
+            // Stale = strictly before today's SGT date.
+            if (!lastActive || lastActive >= sgt.dateStr) return;
+            rows.push({
+              kind:        'streak',
+              iconKey:     'flame',
+              streakDays:  s.current_days,
+              studentId:   s.student_id,
+              studentName: nameOf(s.student_id),
+              summary:     `${nameOf(s.student_id)} had a ${s.current_days}-day streak — practise today to keep it alive.`,
+              ctaLabel:    'Start a quick session',
+              ctaUrl:      `/pages/quiz.html?student=${encodeURIComponent(s.student_id)}&length=5`,
+              ctaVariant:  'ghost',
+            });
+            seenStudents.add(s.student_id);
+          });
+        }
+
+        return rows;
+      } catch (err) {
+        console.error('[resume] fetch error (non-fatal):', err && err.message);
+        return [];
+      }
+    }
+
+    function sgtNow() {
+      // CLAUDE.md doctrine: every SGT-midnight calculation uses Intl with
+      // timeZone: 'Asia/Singapore'. Returns { dateStr: 'YYYY-MM-DD', hour: 0-23 }.
+      const fmt = new Intl.DateTimeFormat('en-CA', {
+        timeZone:  'Asia/Singapore',
+        year:      'numeric',
+        month:     '2-digit',
+        day:       '2-digit',
+        hour:      '2-digit',
+        hour12:    false,
+      });
+      const parts = fmt.formatToParts(new Date());
+      const get = t => (parts.find(p => p.type === t) || {}).value || '';
+      return {
+        dateStr: `${get('year')}-${get('month')}-${get('day')}`,
+        hour:    parseInt(get('hour') || '0', 10),
+      };
+    }
+
+    function renderResumeCard(rows) {
+      const mount = document.getElementById('resume-card-mount');
+      if (!mount) return;
+      if (!rows || rows.length === 0) {
+        mount.innerHTML = '';
+        return;
+      }
+
+      const escape = (s) => String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+      const iconSvg = (key) => {
+        // Reuse existing icons.js render paths so the resume row icons match
+        // the rest of the dashboard's icon language. Fallback: empty string.
+        if (window.shlIcon) return window.shlIcon(key, { size: 18 });
+        return '';
+      };
+
+      const variantClass = (v) => v === 'ghost' ? 'btn btn-ghost btn-sm' : 'btn btn-primary btn-sm';
+
+      const rowsHtml = rows.map(r => {
+        const iconClass = r.kind === 'streak' ? 'resume-row__icon resume-row__icon--warn' : 'resume-row__icon';
+        return ''
+          + '<div class="resume-row">'
+            + '<div class="' + iconClass + '">' + iconSvg(r.iconKey) + '</div>'
+            + '<div class="resume-row__body">' + escape(r.summary) + '</div>'
+            + '<div class="resume-row__cta">'
+              + '<a class="' + variantClass(r.ctaVariant) + '" href="' + escape(r.ctaUrl) + '">'
+                + escape(r.ctaLabel)
+              + '</a>'
+            + '</div>'
+          + '</div>';
+      }).join('');
+
+      mount.innerHTML = ''
+        + '<article class="card-glass resume-card" id="resume-card" role="region" aria-label="Pick up where you left off">'
+          + '<header class="resume-card__head">'
+            + '<div>'
+              + '<span class="label-caps resume-card__eyebrow">Pick up where you left off</span>'
+              + '<h2 class="h2-as resume-card__title">Your child\'s next move.</h2>'
+            + '</div>'
+          + '</header>'
+          + '<div class="resume-card__rows">' + rowsHtml + '</div>'
+        + '</article>';
     }
 
     function probabilityToALBand(p) {
