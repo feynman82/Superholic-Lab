@@ -1862,9 +1862,15 @@
 
     function fireActivity(eventType, metadata) {
       try {
-        if (window.logActivityClient) {
-          window.logActivityClient(eventType, metadata).catch(function () {});
-        }
+        if (!window.logActivityClient) return;
+        // Fire, then refresh the visible list once the server insert lands.
+        // Both the helper and the refresh are no-throw — a logging miss never
+        // breaks the user-visible flow that called us.
+        window.logActivityClient(eventType, metadata)
+          .then(function () {
+            if (typeof loadActivityList === 'function') loadActivityList();
+          })
+          .catch(function () {});
       } catch (_) { /* never block a mutation on activity logging */ }
     }
 
