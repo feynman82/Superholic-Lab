@@ -243,6 +243,69 @@
       .resume-row__cta .btn { width: 100%; }
     }
 
+    /* ── Family activity feed (Phase 2 — "What's been happening") ── */
+    .activity-feed-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .activity-feed-row {
+      display: flex;
+      gap: var(--space-2);
+      align-items: flex-start;
+      padding: var(--space-2) 0;
+      border-bottom: 1px solid var(--border-light);
+      text-decoration: none;
+      color: inherit;
+      transition: background 120ms ease;
+    }
+    .activity-feed-row:last-child { border-bottom: none; }
+    .activity-feed-row:hover {
+      background: var(--surface-container-low);
+      border-radius: var(--radius-sm);
+      padding-left: var(--space-2);
+      padding-right: var(--space-2);
+      margin-left: calc(-1 * var(--space-2));
+      margin-right: calc(-1 * var(--space-2));
+    }
+    .activity-feed-row__icon {
+      width: 24px; height: 24px; flex-shrink: 0;
+      border-radius: var(--radius-full, 999px);
+      background: var(--surface-container);
+      color: var(--brand-sage);
+      display: flex; align-items: center; justify-content: center;
+      margin-top: 1px;
+    }
+    .activity-feed-row__icon--rose { color: var(--brand-rose); }
+    .activity-feed-row__icon--mint { color: var(--brand-mint); }
+    .activity-feed-row__icon--amber { color: var(--brand-amber, #D4A24A); }
+    .activity-feed-row__body {
+      flex: 1; min-width: 0;
+    }
+    .activity-feed-row__summary {
+      color: var(--text-main);
+      font-size: var(--text-sm);
+      line-height: 1.4;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+              line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+    .activity-feed-row__time {
+      color: var(--text-muted);
+      font-size: 11px;
+      margin-top: 2px;
+      letter-spacing: 0.02em;
+    }
+    .activity-feed-empty {
+      color: var(--text-muted);
+      font-size: var(--text-sm);
+      line-height: 1.5;
+      padding: var(--space-2) 0;
+    }
+
     /* ── Section heading (mirrors account.html) ── */
     .dash-section__head {
       display: flex;
@@ -914,6 +977,17 @@
             </div>
           </article>
 
+          <!-- Recent activity feed (Phase 2 — populated by loadFamilyActivity) -->
+          <article class="card-glass aside-card" id="activity-feed-card">
+            <header class="aside-card__head">
+              <span class="label-caps aside-card__eyebrow">Activity</span>
+              <h2 class="aside-card__title">What's been happening</h2>
+            </header>
+            <div id="activity-feed-content">
+              <div class="spinner-sm"></div>
+            </div>
+          </article>
+
           <!-- Quick links -->
           <article class="card-glass aside-card">
             <header class="aside-card__head">
@@ -1180,7 +1254,12 @@
         document.getElementById('manageBillingBtn').classList.remove('hidden');
       }
 
-      await loadStudents();
+      // Phase 2 — kick off family activity feed in parallel with loadStudents
+      // so the aside lights up at roughly the same time as the learner grid.
+      await Promise.all([
+        loadStudents(),
+        loadFamilyActivity(),
+      ]);
 
       // Render HUD strip for the most recently active student
       const hudStudentId = localStorage.getItem('shl_active_student_id');
@@ -1447,6 +1526,114 @@
           + '</header>'
           + '<div class="resume-card__rows">' + rowsHtml + '</div>'
         + '</article>';
+    }
+
+    /* ─── FAMILY ACTIVITY FEED (Phase 2) ──────────────────────────────────────
+       Pulls /api/family-activity, renders 5 most-recent events across all
+       learners in the 5-col aside between "Today's focus" and "Quick links".
+       Each row is a clickable link to the relevant page (progress, quest,
+       backpack). Empty / failure states are visible but never blocking. */
+
+    async function loadFamilyActivity() {
+      const content = document.getElementById('activity-feed-content');
+      if (!content) return;
+      try {
+        const sb = await getSupabase();
+        const { data: { session } } = await sb.auth.getSession();
+        if (!session) {
+          content.innerHTML = '<div class="activity-feed-empty">Sign in to see family activity.</div>';
+          return;
+        }
+        const res = await fetch('/api/family-activity?limit=5', {
+          headers: { 'Authorization': 'Bearer ' + session.access_token },
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        renderActivityFeed(data.events || []);
+      } catch (err) {
+        console.error('[family-activity] load error:', err && err.message);
+        content.innerHTML = '<div class="activity-feed-empty">Activity feed unavailable right now.</div>';
+      }
+    }
+
+    function renderActivityFeed(events) {
+      const content = document.getElementById('activity-feed-content');
+      if (!content) return;
+      if (!events || events.length === 0) {
+        content.innerHTML =
+          '<div class="activity-feed-empty">Nothing to show yet. Pick a learner to get started.</div>';
+        return;
+      }
+
+      const escape = (s) => String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+      content.innerHTML = '<div class="activity-feed-list">'
+        + events.map(ev => {
+            const tone     = activityFeedTone(ev.type);
+            const iconCls  = tone ? (' activity-feed-row__icon--' + tone) : '';
+            const href     = ev.action_url || '#';
+            const time     = relativeTime(ev.occurred_at);
+            return ''
+              + '<a class="activity-feed-row" href="' + escape(href) + '">'
+                + '<span class="activity-feed-row__icon' + iconCls + '" aria-hidden="true">'
+                  + activityFeedIcon(ev.type)
+                + '</span>'
+                + '<span class="activity-feed-row__body">'
+                  + '<span class="activity-feed-row__summary">' + escape(ev.summary) + '</span>'
+                  + '<span class="activity-feed-row__time">' + escape(time) + '</span>'
+                + '</span>'
+              + '</a>';
+          }).join('')
+        + '</div>';
+    }
+
+    function activityFeedTone(type) {
+      // Maps event type → icon-color modifier for visual scanning.
+      // Quest creation = rose (action required). Mastery = mint (success).
+      // Exam = amber (milestone). Default sage for quiz / note.
+      switch (type) {
+        case 'quest_created':  return 'rose';
+        case 'mastery_gained': return 'mint';
+        case 'exam_result':    return 'amber';
+        default:               return null;
+      }
+    }
+
+    function activityFeedIcon(type) {
+      // 16x16 stroke-1.75 currentColor — matches the rest of the icon set.
+      switch (type) {
+        case 'quiz_attempt':
+          // Checkmark in circle
+          return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>';
+        case 'mastery_gained':
+          // Five-point star
+          return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
+        case 'quest_created':
+          // Flag (rose accent)
+          return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>';
+        case 'study_note':
+          // Bookmark
+          return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>';
+        case 'exam_result':
+          // Trophy
+          return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>';
+        default:
+          // Generic dot
+          return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>';
+      }
+    }
+
+    function relativeTime(iso) {
+      if (!iso) return '—';
+      const d = new Date(iso);
+      const diff = Date.now() - d.getTime();
+      if (diff < 60 * 1000)        return 'Just now';
+      if (diff < 60 * 60 * 1000)   return Math.floor(diff / 60000) + 'm ago';
+      if (diff < 24 * 3600 * 1000) return Math.floor(diff / 3600000) + 'h ago';
+      if (diff < 7  * 86400000)    return Math.floor(diff / 86400000) + 'd ago';
+      return d.toLocaleDateString('en-SG', { day: 'numeric', month: 'short' });
     }
 
     function probabilityToALBand(p) {

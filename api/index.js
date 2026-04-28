@@ -30,6 +30,7 @@ import {
   handleAccountActivity,
   handleLogActivity,
   handleLearnerExport,
+  handleFamilyActivity,
 } from '../lib/api/handlers.js';
 
 export const config = { api: { bodyParser: false } };
@@ -88,6 +89,7 @@ export default async function handler(req, res) {
     case 'account-activity':   return handleAccountActivity(req, res);
     case 'log-activity':       return handleLogActivity(req, res);
     case 'learner-export':     return handleLearnerExport(req, res);
+    case 'family-activity':    return handleFamilyActivity(req, res);
     default:
       return res.status(404).json({ error: 'Route /api/' + route + ' not found.' });
   }
