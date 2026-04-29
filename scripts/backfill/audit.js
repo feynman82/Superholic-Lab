@@ -71,12 +71,25 @@ async function main() {
     } catch { /* skip malformed */ }
   }
 
-  // Bulk fetch the original rows so we don't N+1 the DB.
+  // Bulk fetch the original rows so we don't N+1 the DB. Chunked because
+  // PostgREST has a URL-length cap around 14k bytes — 582 UUIDs in one
+  // .in() clause silently returns empty and every row gets skipped below
+  // (the symptom: tally shows total=N but high/med/low all 0).
   const ids = recs.map(r => r.id);
-  const { data: rows } = await sb.from('question_bank')
-    .select('id, subject, topic, sub_topic, cognitive_skill, type, question_text')
-    .in('id', ids);
-  const rowById = Object.fromEntries((rows || []).map(r => [r.id, r]));
+  const CHUNK = 100;
+  const allRows = [];
+  for (let i = 0; i < ids.length; i += CHUNK) {
+    const chunk = ids.slice(i, i + CHUNK);
+    const { data, error } = await sb.from('question_bank')
+      .select('id, subject, topic, sub_topic, cognitive_skill, type, question_text')
+      .in('id', chunk);
+    if (error) {
+      console.error('[audit] chunk fetch error:', error.message);
+      continue;
+    }
+    if (data) allRows.push(...data);
+  }
+  const rowById = Object.fromEntries(allRows.map(r => [r.id, r]));
 
   const tally = { high: 0, medium: 0, low: 0, nonCanonSub: 0, badEnum: 0, total: recs.length };
 
