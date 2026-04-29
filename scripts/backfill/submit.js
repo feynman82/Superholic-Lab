@@ -18,6 +18,7 @@
  * Reads OPENAI_API_KEY from env. Uses native fetch (Node ≥ 18).
  */
 
+import 'dotenv/config'; // auto-loads .env in repo root so OPENAI_API_KEY works without --env-file
 import fs from 'node:fs';
 import path from 'node:path';
 

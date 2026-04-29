@@ -28,6 +28,7 @@
  * Reads SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY from .env or process env.
  */
 
+import 'dotenv/config'; // auto-loads .env in repo root so SUPABASE_*/OPENAI_API_KEY work without --env-file
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';

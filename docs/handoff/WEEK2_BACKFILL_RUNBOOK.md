@@ -43,12 +43,29 @@ data in `question_bank`:
 
 ## Prerequisites
 
-Set in shell (or `.env` and source it):
+The scripts auto-load `.env` from the repo root via `dotenv/config`, so
+no pre-sourcing is needed — just ensure these three keys are present:
+
+```
+SUPABASE_URL=https://rlmqsbxevuutugtyysjr.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=<service-role-key>
+OPENAI_API_KEY=<openai-key>
+```
+
+If you'd rather not put these in `.env`, set them in your shell:
+
+```powershell
+# PowerShell
+$env:SUPABASE_URL='https://rlmqsbxevuutugtyysjr.supabase.co'
+$env:SUPABASE_SERVICE_ROLE_KEY='<key>'
+$env:OPENAI_API_KEY='<key>'
+```
 
 ```bash
+# bash
 export SUPABASE_URL=https://rlmqsbxevuutugtyysjr.supabase.co
-export SUPABASE_SERVICE_ROLE_KEY=<service-role-key>
-export OPENAI_API_KEY=<openai-key>
+export SUPABASE_SERVICE_ROLE_KEY=<key>
+export OPENAI_API_KEY=<key>
 ```
 
 Migration 027 (`backfill_run_id` column) must be applied.

@@ -21,6 +21,7 @@
  *   node scripts/backfill/audit.js backfill_pass1.output.jsonl --csv > audit.csv
  */
 
+import 'dotenv/config'; // auto-loads .env in repo root so SUPABASE_*/OPENAI_API_KEY work without --env-file
 import fs from 'node:fs';
 import { createClient } from '@supabase/supabase-js';
 import { SYLLABUS_DEPENDENCIES } from '../../lib/api/quest-pedagogy.js';
