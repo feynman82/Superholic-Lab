@@ -661,11 +661,13 @@
       }
 
       // ── HERO BLOCK BUILDER ──────────────────────────────────────────────
+      // The breadcrumb above already conveys the step (§ 01 · Subject ›
+      // § 02 · Topic › § 03 · Format), so we omit the redundant per-step
+      // eyebrow inside the hero.
       function heroHtml(eyebrow, titleHtml, lede) {
         return `
           ${breadcrumbHtml()}
           <header class="wizard-hero">
-            <span class="label-caps" style="color: var(--brand-rose);">${esc(eyebrow)}</span>
             <h1 class="h1-as wizard-hero__title">${titleHtml}</h1>
             <p class="body-lg wizard-hero__lede">${esc(lede)}</p>
           </header>`;
@@ -905,7 +907,6 @@
         app.innerHTML = `
           ${breadcrumbHtml()}
           <header class="wizard-hero">
-            <span class="label-caps" style="color: var(--brand-rose);">§ 01 — LOADING</span>
             <h1 class="h1-as wizard-hero__title">Preparing your lab…</h1>
             <p class="body-lg wizard-hero__lede">Pulling the latest curriculum from the syllabus archive.</p>
           </header>
@@ -1198,8 +1199,7 @@
           if (!student) {
             app.innerHTML = `
               <div class="wizard-empty">
-                <span class="label-caps" style="color: var(--brand-rose);">§ — NO LEARNER</span>
-                <h2 class="h2-as" style="color: var(--text-main); margin-top: var(--space-2);">No learners found.</h2>
+                <h2 class="h2-as" style="color: var(--text-main);">No learners found.</h2>
                 <p class="body-md" style="color: var(--text-muted); margin-top: var(--space-3);">Please set up a learner profile to begin.</p>
                 <a class="btn btn-primary" href="setup.html" style="margin-top: var(--space-4); display: inline-block;">Set up a profile →</a>
               </div>`;
@@ -1227,8 +1227,7 @@
           console.error('[subjects] init failed:', err);
           app.innerHTML = `
             <div class="wizard-empty">
-              <span class="label-caps" style="color: var(--brand-rose);">§ — ERROR</span>
-              <h2 class="h2-as" style="color: var(--text-main); margin-top: var(--space-2);">Could not load profile.</h2>
+              <h2 class="h2-as" style="color: var(--text-main);">Could not load profile.</h2>
               <p class="body-md" style="color: var(--text-muted); margin-top: var(--space-3);">Please refresh the page or check your connection.</p>
             </div>`;
         }
