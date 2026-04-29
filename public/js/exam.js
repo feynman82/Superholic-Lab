@@ -1249,15 +1249,33 @@ window.initExamEngine = function () {
       const globalIdx = q.globalIdx;
       const ans = state.answers[globalIdx] || '';
 
+      // ── Additive fields for window.SHL_FEEDBACK.renderReviewFeedback ──
+      // correctAnswer / wrongExplanations / cognitiveSkill / studentAnswer
+      // are pure pass-throughs from the question_bank row; they don't affect
+      // the existing legacy review code path because that code never reads
+      // them. Safe to add unconditionally.
+      let safeWrongExpl = {};
+      try {
+        safeWrongExpl = typeof q.wrong_explanations === 'string'
+          ? JSON.parse(q.wrong_explanations)
+          : (q.wrong_explanations || {});
+      } catch (_) { safeWrongExpl = {}; }
+      let safeOptions = q.options || null;
+      if (typeof safeOptions === 'string') {
+        try { safeOptions = JSON.parse(safeOptions); } catch (_) { safeOptions = null; }
+      }
+
       if (q.type === 'mcq') {
         const isCorrect = String(ans).trim() === String(q.correct_answer).trim();
-        state.results[globalIdx] = { isCorrect, score: isCorrect ? q.marks : 0, maxScore: q.marks, text: isCorrect ? 'Spot on!' : `Expected: ${q.correct_answer}`, workedSolution: q.worked_solution };
+        state.results[globalIdx] = { isCorrect, score: isCorrect ? q.marks : 0, maxScore: q.marks, text: isCorrect ? 'Spot on!' : `Expected: ${q.correct_answer}`, workedSolution: q.worked_solution,
+          correctAnswer: q.correct_answer, wrongExplanations: safeWrongExpl, cognitiveSkill: q.cognitive_skill || '', studentAnswer: String(ans || ''), options: safeOptions };
       }
       else if (q.type === 'short_ans') {
         let accept = []; try { accept = JSON.parse(q.accept_also || '[]'); } catch (e) { }
         const isMath = state.paper.template.subject.toLowerCase() === 'mathematics' || state.paper.template.subject.toLowerCase() === 'maths';
         const isCorrect = isHeuristicMatch(ans, q.correct_answer, accept, isMath);
-        state.results[globalIdx] = { isCorrect, score: isCorrect ? q.marks : 0, maxScore: q.marks, text: isCorrect ? 'Excellent!' : `Expected: ${q.correct_answer}`, workedSolution: q.worked_solution };
+        state.results[globalIdx] = { isCorrect, score: isCorrect ? q.marks : 0, maxScore: q.marks, text: isCorrect ? 'Excellent!' : `Expected: ${q.correct_answer}`, workedSolution: q.worked_solution,
+          correctAnswer: q.correct_answer, wrongExplanations: safeWrongExpl, cognitiveSkill: q.cognitive_skill || '', studentAnswer: String(ans || '') };
       }
       else if (q.type === 'cloze' || q.type === 'editing') {
         let bData = []; try { bData = typeof q.blanks === 'string' ? JSON.parse(q.blanks) : (q.blanks || []); } catch (e) { }
@@ -1269,7 +1287,18 @@ window.initExamEngine = function () {
           if (userA === corA) score++;
         });
         const isCorrect = score === bData.length;
-        state.results[globalIdx] = { isCorrect, isPartial: score > 0 && score < bData.length, score, maxScore: bData.length, text: `${score} / ${bData.length} blanks correct.`, workedSolution: null };
+        // Synthesise a flat "your answer" string for the cloze/editing review
+        // panel — modal expects a string, not the {1: 'a', 2: 'b'} map.
+        const flatAns = (bData || []).map(b => {
+          const num = b.number || b.id;
+          return `${num}. ${ans[num] || '—'}`;
+        }).join(' · ');
+        const flatCorrect = (bData || []).map(b => {
+          const num = b.number || b.id;
+          return `${num}. ${b.correct_answer || b.correct_word || ''}`;
+        }).join(' · ');
+        state.results[globalIdx] = { isCorrect, isPartial: score > 0 && score < bData.length, score, maxScore: bData.length, text: `${score} / ${bData.length} blanks correct.`, workedSolution: q.worked_solution || null,
+          correctAnswer: flatCorrect, wrongExplanations: {}, cognitiveSkill: q.cognitive_skill || '', studentAnswer: flatAns };
       }
       else if (q.type === 'visual_text') {
         // Visual Text parts are always MCQ
@@ -1413,20 +1442,6 @@ window.initExamEngine = function () {
         outcomeBadge = `<span class="badge badge-amber">${r.score} / ${r.maxScore}</span>`;
       }
 
-      const savedAns = state.answers[globalIdx];
-      let yourAnsHtml = '<em>No answer given</em>';
-      if (savedAns) {
-        if (typeof savedAns === 'object') {
-          yourAnsHtml = Object.entries(savedAns)
-            .map(([k, v]) => `<strong>${esc(k)}:</strong> ${esc(v)}`)
-            .join('<br>');
-        } else {
-          yourAnsHtml = esc(String(savedAns));
-        }
-      }
-
-      const correctAnsHtml = esc(String(q.correct_answer || q.model_answer || 'See worked solution'));
-
       // Drawings (working) — preserved feature
       let drawingHtml = '';
       Object.keys(state.drawings).filter(k => k.startsWith(globalIdx)).forEach(k => {
@@ -1435,21 +1450,53 @@ window.initExamEngine = function () {
         }
       });
 
-      const feedbackHtml = r && r.text
-        ? `<div style="margin-top: var(--space-3); padding: var(--space-2); background: var(--surface); border: 1px solid var(--border-light); border-radius: 10px; font-size: 13px; color: var(--text-main); line-height: 1.5;"><strong style="color: var(--brand-sage);">Miss Wena:</strong> ${r.text}</div>`
-        : '';
+      // ── Body: new misconception-led renderer for mcq/short_ans/cloze/editing,
+      // legacy two-column compare for word_problem / open_ended / comprehension. ──
+      const useNewRenderer =
+        ['mcq', 'short_ans', 'cloze', 'editing'].includes(q.type) &&
+        typeof window !== 'undefined' &&
+        window.SHL_FEEDBACK &&
+        typeof window.SHL_FEEDBACK.renderReviewFeedback === 'function';
 
-      const workedHtml = r && r.workedSolution
-        ? `<details style="margin-top: var(--space-2);"><summary style="cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--brand-sage);">Worked solution</summary><div style="margin-top: var(--space-2); font-size: 13px; color: var(--text-main); line-height: 1.6;">${window.formatWorkedSolution(r.workedSolution)}</div></details>`
-        : '';
-
-      return `
-        <div class="review-card ${outcomeClass}">
-          <div class="review-card__eyebrow">${esc(secLabel)} · Q ${i + 1}</div>
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-2); margin-bottom: var(--space-2);">
-            <div style="flex: 1;"><p class="review-card__stem">${esc(q.question_text || 'See passage / diagram')}</p></div>
-            <div>${outcomeBadge}</div>
-          </div>
+      let bodyHtml;
+      if (useNewRenderer && r) {
+        // Map exam result outcome to feedback panel status. The panel handles
+        // its own "your answer" line via showYourAnswer=true, so we don't
+        // duplicate the legacy two-column compare here.
+        const status = r.isCorrect ? 'correct' : (r.isPartial ? 'partial' : 'wrong');
+        bodyHtml = window.SHL_FEEDBACK.renderReviewFeedback({
+          status,
+          studentAnswer:     r.studentAnswer || '',
+          correctAnswer:     r.correctAnswer || q.correct_answer || '',
+          wrongExplanations: r.wrongExplanations || {},
+          options:           r.options || null,
+          workedSolution:    r.workedSolution || '',
+          cognitiveSkill:    r.cognitiveSkill || '',
+          xpAwarded:         0,
+          marks:             q.marks || 1,
+        });
+      } else {
+        // Legacy review for multi-part word_problem / open_ended / comprehension.
+        // AI-graded text feedback + side-by-side answer compare stays as-is.
+        const savedAns = state.answers[globalIdx];
+        let yourAnsHtml = '<em>No answer given</em>';
+        if (savedAns) {
+          if (typeof savedAns === 'object') {
+            yourAnsHtml = Object.entries(savedAns)
+              .map(([k, v]) => `<strong>${esc(k)}:</strong> ${esc(v)}`)
+              .join('<br>');
+          } else {
+            yourAnsHtml = esc(String(savedAns));
+          }
+        }
+        const correctAnsHtml = esc(String(q.correct_answer || q.model_answer || 'See worked solution'));
+        const feedbackHtml = r && r.text
+          ? `<div style="margin-top: var(--space-3); padding: var(--space-2); background: var(--surface); border: 1px solid var(--border-light); border-radius: 10px; font-size: 13px; color: var(--text-main); line-height: 1.5;"><strong style="color: var(--brand-sage);">Miss Wena:</strong> ${r.text}</div>`
+          : '';
+        const workedHtml = r && r.workedSolution
+          ? `<details style="margin-top: var(--space-2);"><summary style="cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--brand-sage);">Worked solution</summary><div style="margin-top: var(--space-2); font-size: 13px; color: var(--text-main); line-height: 1.6;">${window.formatWorkedSolution(r.workedSolution)}</div></details>`
+          : '';
+        bodyHtml = `
           <div class="review-card__compare">
             <div class="review-card__col">
               <div class="review-card__col-label">Your answer</div>
@@ -1460,9 +1507,19 @@ window.initExamEngine = function () {
               <div class="review-card__col-value">${correctAnsHtml}</div>
             </div>
           </div>
-          ${drawingHtml}
           ${feedbackHtml}
-          ${workedHtml}
+          ${workedHtml}`;
+      }
+
+      return `
+        <div class="review-card ${outcomeClass}">
+          <div class="review-card__eyebrow">${esc(secLabel)} · Q ${i + 1}</div>
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-2); margin-bottom: var(--space-2);">
+            <div style="flex: 1;"><p class="review-card__stem">${esc(q.question_text || 'See passage / diagram')}</p></div>
+            <div>${outcomeBadge}</div>
+          </div>
+          ${drawingHtml}
+          ${bodyHtml}
         </div>`;
     }).join('');
 

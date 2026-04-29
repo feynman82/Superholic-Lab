@@ -889,15 +889,52 @@ window.initQuizEngine = function () {
     if (state.isAnswered && state.feedback) {
       const fb = state.feedback;
 
+      // ── New unified feedback renderer for mcq / short_ans / cloze / editing ──
+      // Layer 1 (misconception-led wrong path) + Layer 3 (CER- and step-aware
+      // worked solution) live in window.SHL_FEEDBACK. Multi-part open-ended,
+      // comprehension, and word_problem keep their existing flows below.
+      const useNewRenderer =
+        ['mcq', 'short_ans', 'cloze', 'editing'].includes(q.type) &&
+        !fb.isModel &&
+        fb.status !== 'loading' &&
+        typeof window !== 'undefined' &&
+        window.SHL_FEEDBACK &&
+        typeof window.SHL_FEEDBACK.renderFeedback === 'function';
+
       if (q.type === 'comprehension') {
         feedbackHtml = ''; // Completely suppress bottom feedback for comprehension
+      } else if (useNewRenderer) {
+        let safeWrongExpl = {};
+        try {
+          safeWrongExpl = typeof q.wrong_explanations === 'string'
+            ? JSON.parse(q.wrong_explanations)
+            : (q.wrong_explanations || {});
+        } catch (_) { safeWrongExpl = {}; }
+
+        let safeOptions = q.options || null;
+        if (typeof safeOptions === 'string') {
+          try { safeOptions = JSON.parse(safeOptions); } catch (_) { safeOptions = null; }
+        }
+
+        feedbackHtml = window.SHL_FEEDBACK.renderFeedback({
+          status:            fb.status,
+          studentAnswer:     String(state.answers[state.currentIndex] ?? ''),
+          correctAnswer:     q.correct_answer,
+          wrongExplanations: safeWrongExpl,
+          options:           safeOptions,
+          workedSolution:    q.worked_solution || '',
+          cognitiveSkill:    q.cognitive_skill || '',
+          xpAwarded:         state.xpJustAwarded || 0,
+          marks:             q.marks || 1,
+        });
       } else if (fb.isModel) {
         feedbackHtml = `<div class="glass-panel-2 card-rule-mint bg-science-tint p-4 mt-4">
           <div class="font-bold text-sm mb-2 text-success">Worked Solution</div>
           <div class="text-sm text-main leading-relaxed">${window.formatWorkedSolution(q.worked_solution || q.model_answer)}</div>
         </div>`;
       } else if (fb.status === 'correct') {
-        // 🚀 MASTERCLASS FIX: Safely render the HTML worked solution below the success message
+        // Legacy correct path — kept for multi-part open-ended / word_problem
+        // where the new renderer doesn't apply (different shape of answers).
         feedbackHtml = `<div class="glass-panel-2 card-rule-mint bg-science-tint p-4 mt-4">
           <div class="font-bold mb-2 text-success">🎉 Spot on!</div>
           ${fb.text && fb.text !== 'Perfectly executed!' ? `<p class="text-sm text-main leading-relaxed mb-4">${esc(fb.text)}</p>` : ''}
