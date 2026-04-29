@@ -126,6 +126,20 @@
         <div class="glass-panel-1 p-6 text-center text-sm text-muted">Loading mastery data...</div>
       </div>
 
+      <!-- Topic Dependencies (Week 2 Commit B) — DAG of SYLLABUS_DEPENDENCIES
+           rendered as SVG. Weakest topic ringed in rose; node fill encodes
+           mastery probability. Hidden until renderDependencyTree() injects
+           the SVG. -->
+      <section class="dep-tree-section" id="dep-tree-section" hidden>
+        <h2 class="dep-tree-section__title font-display">Topic Dependencies</h2>
+        <p class="dep-tree-section__hint">
+          Mastering an upstream topic strengthens everything downstream. The rose-ringed topic is your current focus.
+        </p>
+        <div class="dep-tree-container" id="dep-tree-container">
+          <!-- SVG injected by renderDependencyTree() -->
+        </div>
+      </section>
+
       <h2 class="font-display text-2xl text-main mb-4 uppercase">Areas of Weakness</h2>
       <div id="areas-of-weakness-list" class="flex flex-col gap-4 mb-8"></div>
 

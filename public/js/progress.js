@@ -293,12 +293,25 @@ async function init() {
     // 🚀 MASTERCLASS: Fetch and Render BKT Mastery Data
     await renderBKT(db, student.id);
 
-    // Hero diagnosis sentence (Pillar 2). Pick the subject with the most
-    // quiz attempts so the parent sees the diagnosis for the subject the
-    // child has actually engaged with. Empty-state students fall through
-    // to the "hasn't attempted" template.
+    // Hero diagnosis sentence + dependency tree (Pillar 2). Pick the
+    // subject with the most quiz attempts so the parent sees the diagnosis
+    // grounded in real engagement. Empty-state students fall through to the
+    // "hasn't attempted" template + the tree stays hidden when the BKT
+    // map for the chosen subject has no rows.
     const heroSubject = pickHeroSubject(subjectStats);
-    renderDiagnosisHero(student.id, heroSubject, session?.access_token);
+    (async () => {
+      const diag = await renderDiagnosisHero(student.id, heroSubject, session?.access_token);
+      try {
+        const { data: masteryRows } = await db.from('mastery_levels')
+          .select('topic, sub_topic, probability, attempts')
+          .eq('student_id', student.id)
+          .eq('subject', heroSubject);
+        const masteryByTopic = buildMasteryByTopic(masteryRows || []);
+        await renderDependencyTree('dep-tree-container', heroSubject, diag?.weakest_topic || null, masteryByTopic);
+      } catch (err) {
+        console.warn('[progress] dependency tree mastery fetch failed:', err.message || err);
+      }
+    })();
 
     // Quest tray (replaces old single-quest renderQuestMap)
     renderQuestTrayFromData(activeQuestsList);
@@ -1473,6 +1486,160 @@ window.toggleDeepDive = async function (studentId, subject, btnEl, quizCount) {
   }
 };
 
+// ── SYLLABUS TREE CACHE (Week 2 Commit B) ────────────────────────────────────
+// Module-level cache for SYLLABUS_DEPENDENCIES. The endpoint sets a 1-hour
+// Cache-Control header so this is double-cached (browser + module). Hit once
+// per page load; subject switches inside the same load reuse the cached map.
+let _syllabusTreeCache = null;
+async function getSyllabusTree() {
+  if (_syllabusTreeCache) return _syllabusTreeCache;
+  const res = await fetch('/api/syllabus-tree');
+  if (!res.ok) throw new Error('syllabus-tree HTTP ' + res.status);
+  _syllabusTreeCache = await res.json();
+  return _syllabusTreeCache;
+}
+
+// ── DEPENDENCY TREE RENDERER (Week 2 Commit B — Pillar 2) ───────────────────
+//
+// Renders a DAG of SYLLABUS_DEPENDENCIES[subject] as inline SVG. Topics
+// laid out in columns by topological depth (depth 0 = no prerequisites,
+// leftmost). Edges are smooth bezier curves prereq→dependent. Weakest topic
+// gets a rose ring; node fill encodes mastery probability bucket.
+async function renderDependencyTree(containerId, subject, weakTopic, masteryByTopic) {
+  const sectionEl = document.getElementById('dep-tree-section');
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  try {
+    const tree = await getSyllabusTree();
+    const subjectMap = tree[String(subject || '').toLowerCase()];
+    if (!subjectMap || Object.keys(subjectMap).length === 0) {
+      if (sectionEl) sectionEl.hidden = true;
+      return;
+    }
+
+    // 1. Compute depth per topic (memoised; tolerates self-reference loops).
+    const depths = {};
+    const visiting = new Set();
+    function depthOf(t) {
+      if (depths[t] !== undefined) return depths[t];
+      if (visiting.has(t)) return 0; // cycle guard
+      visiting.add(t);
+      const prereqs = subjectMap[t]?.prerequisites || [];
+      const d = prereqs.length === 0 ? 0 : 1 + Math.max(...prereqs.map(p => subjectMap[p] ? depthOf(p) : 0));
+      visiting.delete(t);
+      depths[t] = d;
+      return d;
+    }
+    for (const t of Object.keys(subjectMap)) depthOf(t);
+
+    // 2. Group by depth into columns; sort topics alphabetically within a column.
+    const cols = {};
+    for (const [t, d] of Object.entries(depths)) {
+      if (!cols[d]) cols[d] = [];
+      cols[d].push(t);
+    }
+    Object.values(cols).forEach(arr => arr.sort());
+
+    const colKeys = Object.keys(cols).map(Number).sort((a, b) => a - b);
+    const maxRows = Math.max(...colKeys.map(k => cols[k].length));
+
+    // 3. Geometry — keep every constant in one place so the layout is easy
+    // to retune without hunting through string literals.
+    const COL_W   = 170;
+    const ROW_H   = 70;
+    const NODE_RX = 56;   // ellipse — wider than tall so longer topic names fit
+    const NODE_RY = 22;
+    const PAD     = 28;
+    const width   = PAD * 2 + colKeys.length * COL_W;
+    const height  = PAD * 2 + maxRows * ROW_H;
+
+    const positions = {};
+    colKeys.forEach((d, ci) => {
+      const topics = cols[d];
+      // Vertically centre the column inside the SVG so short columns don't
+      // float at the top while tall columns fill the box.
+      const colHeight = topics.length * ROW_H;
+      const offsetY   = (height - colHeight) / 2;
+      topics.forEach((t, ri) => {
+        positions[t] = {
+          x: PAD + ci * COL_W + COL_W / 2,
+          y: offsetY + ri * ROW_H + ROW_H / 2,
+        };
+      });
+    });
+
+    // 4. Edge paths — bezier from prereq right edge to dependent left edge.
+    const edgePaths = [];
+    for (const [topic, node] of Object.entries(subjectMap)) {
+      const p2 = positions[topic];
+      if (!p2) continue;
+      for (const prereq of (node.prerequisites || [])) {
+        const p1 = positions[prereq];
+        if (!p1) continue;
+        const startX = p1.x + NODE_RX;
+        const endX   = p2.x - NODE_RX;
+        const c1x    = startX + 50;
+        const c2x    = endX   - 50;
+        edgePaths.push(
+          `<path class="dep-tree__edge" d="M ${startX} ${p1.y} C ${c1x} ${p1.y}, ${c2x} ${p2.y}, ${endX} ${p2.y}" />`
+        );
+      }
+    }
+
+    // 5. Node fills — bucket by mastery probability.
+    function fillFor(topic) {
+      const p = masteryByTopic ? masteryByTopic[topic] : null;
+      if (p == null)    return 'var(--cream)';
+      if (p < 0.40)     return 'var(--rose)';
+      if (p < 0.70)     return 'var(--brand-amber)';
+      return 'var(--brand-mint)';
+    }
+    function escapeXml(s) {
+      return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    const nodeMarkup = Object.entries(positions).map(([topic, p]) => {
+      const isWeak = topic === weakTopic;
+      const stroke = isWeak ? 'var(--brand-rose)' : 'var(--brand-sage)';
+      const strokeW = isWeak ? 3 : 1;
+      const fill = fillFor(topic);
+      const safe = escapeXml(topic);
+      return `<g>
+        <ellipse cx="${p.x}" cy="${p.y}" rx="${NODE_RX}" ry="${NODE_RY}" fill="${fill}" stroke="${stroke}" stroke-width="${strokeW}" />
+        <text class="dep-tree__node-label" x="${p.x}" y="${p.y + 4}" text-anchor="middle">${safe}</text>
+      </g>`;
+    }).join('');
+
+    container.innerHTML = `<svg viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" role="img" aria-label="Topic dependency tree for ${escapeXml(subject)}">
+      ${edgePaths.join('')}
+      ${nodeMarkup}
+    </svg>`;
+    if (sectionEl) sectionEl.hidden = false;
+  } catch (err) {
+    console.warn('[progress] dependency tree failed:', err.message || err);
+    if (sectionEl) sectionEl.hidden = true;
+  }
+}
+
+// Builds a topic→meanProbability map from a list of mastery_levels rows.
+// Multiple sub_topic rows under the same topic get attempt-weighted averaged
+// so a low-attempt sub_topic doesn't dominate.
+function buildMasteryByTopic(masteryRows) {
+  const acc = {};
+  for (const r of (masteryRows || [])) {
+    if (!r.topic) continue;
+    if (!acc[r.topic]) acc[r.topic] = { weighted: 0, total: 0 };
+    const a = r.attempts || 0;
+    acc[r.topic].weighted += (r.probability || 0) * a;
+    acc[r.topic].total    += a;
+  }
+  const out = {};
+  for (const [t, v] of Object.entries(acc)) {
+    out[t] = v.total > 0 ? v.weighted / v.total : null;
+  }
+  return out;
+}
+
 // ── HERO DIAGNOSIS SENTENCE (Week 2 Commit A — Pillar 2) ────────────────────
 //
 // Picks the subject with the most quiz attempts so the parent sees a
@@ -1489,14 +1656,14 @@ function pickHeroSubject(subjectStats) {
   return best;
 }
 
-// Fetches /api/analyze-weakness for the chosen subject and binds the
-// response.diagnosis.hero_sentence into #diagnosis-hero-sentence. Empty-
-// state styling switches the rose left-border to amber so visual difference
-// is obvious without copy-duplicating the template into CSS.
+// Fetches /api/analyze-weakness for the chosen subject, binds the
+// response.diagnosis.hero_sentence into #diagnosis-hero-sentence, and
+// returns the full diagnosis object so the caller can drive downstream
+// renders (e.g. dependency-tree weakest-topic ring) without re-fetching.
 async function renderDiagnosisHero(studentId, subject, accessToken) {
   const container = document.getElementById('diagnosis-hero');
   const sentenceEl = document.getElementById('diagnosis-hero-sentence');
-  if (!container || !sentenceEl) return;
+  if (!container || !sentenceEl) return null;
 
   try {
     const res = await fetch('/api/analyze-weakness', {
@@ -1509,16 +1676,18 @@ async function renderDiagnosisHero(studentId, subject, accessToken) {
     const diag = data?.diagnosis;
     if (!diag?.hero_sentence) {
       container.hidden = true;
-      return;
+      return diag || null;
     }
     sentenceEl.textContent = diag.hero_sentence;
     container.classList.toggle('diagnosis-hero--empty', !diag.al_band);
     container.hidden = false;
+    return diag;
   } catch (err) {
     // Hero is non-critical chrome — fail silently so the rest of progress
     // page still renders. Log so dev can spot regressions.
     console.warn('[progress] diagnosis hero failed:', err.message || err);
     container.hidden = true;
+    return null;
   }
 }
 

@@ -4022,3 +4022,53 @@ ul.rose-list li::before {
 @media (max-width: 480px) {
   .diagnosis-hero__sentence { font-size: 1.0625rem; }
 }
+
+/* ── Dependency tree (Week 2 Commit B — Pillar 2) ─────────────────────────── */
+/* DAG of SYLLABUS_DEPENDENCIES laid out by topological depth. SVG is built by
+   progress.js renderDependencyTree(). Container scrolls horizontally on
+   mobile so the layout never compresses below readable. */
+.dep-tree-section {
+  margin-bottom: var(--space-5);
+}
+.dep-tree-section__title {
+  font-size: 1.5rem;
+  color: var(--sage-dark);
+  margin: 0 0 var(--space-1) 0;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.dep-tree-section__hint {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  margin: 0 0 var(--space-3) 0;
+}
+.dep-tree-container {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  background: var(--surface-container-low);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+}
+.dep-tree-container svg {
+  min-width: 600px;
+  height: auto;
+  display: block;
+}
+.dep-tree__node-label {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  fill: var(--sage-dark);
+  pointer-events: none;
+  user-select: none;
+}
+.dep-tree__edge {
+  fill: none;
+  stroke: var(--brand-sage);
+  stroke-width: 1.5;
+  opacity: 0.4;
+}
+@media (max-width: 480px) {
+  .dep-tree-container { padding: var(--space-2); }
+}
