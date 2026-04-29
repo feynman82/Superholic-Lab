@@ -32,7 +32,6 @@
     }
     boot();
   </script>
-
   <style>
     /* ════════════════════════════════════════════════════════════════════════
        A. PAGE CHROME
@@ -87,20 +86,27 @@
     }
     .progress-hero__actions {
       display: flex;
-      flex-direction: column;
-      gap: var(--space-2);
-      align-items: flex-end;
-      flex-wrap: wrap;
-    }
-    .progress-hero__action-row {
-      display: flex;
+      flex-direction: row;
       gap: var(--space-2);
       align-items: center;
       flex-wrap: wrap;
       justify-content: flex-end;
     }
+    .progress-hero__action-row {
+      /* Legacy wrapper — no longer needed. Inner content is now a sibling
+         of student-selector inside .progress-hero__actions directly. */
+      display: contents;
+    }
 
-    /* Student selector — restyled from form-select-glass */
+    /* ════════════════════════════════════════════════════════════════════════
+       UNIFIED HERO CONTROL APPEARANCE
+       Make the 3 hero controls (selector, range filter, Print) visually
+       consistent: same height, same pill radius, same border treatment.
+       ════════════════════════════════════════════════════════════════════════ */
+    .progress-hero__actions > * {
+      height: 38px;
+    }
+    /* Student selector */
     #student-selector {
       max-width: none;
       margin: 0;
@@ -110,24 +116,56 @@
       display: none !important;
     }
     #student-select {
-      background: rgba(255, 255, 255, 0.5);
-      border: 1px solid var(--glass-border-dim);
-      border-radius: var(--radius-md);
-      padding: var(--space-2) var(--space-3);
+      background: var(--surface-container-lowest);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-full, 999px);
+      padding: 0 var(--space-3);
+      height: 38px;
       font-family: var(--font-body);
-      font-size: var(--text-sm);
-      color: var(--text-main);
+      font-size: 13px;
       font-weight: 600;
+      color: var(--text-main);
       cursor: pointer;
       width: auto;
-      min-width: 200px;
-      text-align: center;
-      text-align-last: center;
+      min-width: 180px;
+      text-align: left;
+      text-align-last: left;
+      box-shadow: 0 1px 3px rgba(44, 62, 58, 0.04);
     }
     #student-select:focus {
       outline: none;
       border-color: var(--brand-rose);
       box-shadow: 0 0 0 3px rgba(183, 110, 121, 0.12);
+    }
+    /* Range toggle pill */
+    .range-toggle {
+      height: 38px;
+      padding: 3px;
+      background: var(--surface-container-lowest);
+      border: 1px solid var(--border-light);
+      box-shadow: 0 1px 3px rgba(44, 62, 58, 0.04);
+    }
+    .range-toggle button {
+      height: 30px;
+      padding: 0 12px;
+      font-size: 12px;
+    }
+    /* Print button — match radius + border + height */
+    .progress-hero__actions .btn-icon {
+      height: 38px;
+      border-radius: var(--radius-full, 999px) !important;
+      background: var(--surface-container-lowest);
+      border: 1px solid var(--border-light);
+      color: var(--text-main);
+      font-weight: 600;
+      font-size: 13px;
+      padding: 0 14px;
+      box-shadow: 0 1px 3px rgba(44, 62, 58, 0.04);
+      transition: border-color 160ms ease, color 160ms ease;
+    }
+    .progress-hero__actions .btn-icon:hover {
+      border-color: var(--brand-rose);
+      color: var(--brand-rose);
     }
 
     /* Body container */
@@ -967,6 +1005,16 @@
       }
       .progress-hero__actions {
         order: 2;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        width: 100%;
+      }
+      /* On very narrow viewports, allow elements to flex naturally */
+      .progress-hero__actions > * {
+        flex-shrink: 0;
+      }
+      #student-select {
+        min-width: 160px;
       }
       .heatmap__row {
         grid-template-columns: 120px 1fr;
@@ -1042,86 +1090,212 @@
     }
 
     /* ════════════════════════════════════════════════════════════════════════
-       P. AREAS OF WEAKNESS — compact 2-column grid (was full-width stack)
+       P. AREAS OF WEAKNESS — architect-scholar BEM (was legacy .glass-panel-2)
+       Now: 2-col grid of compact .weakness-card tiles with severity accent.
        ════════════════════════════════════════════════════════════════════════ */
 
-    /* The JS injects .glass-panel-2 elements and an h3 subject heading
-       inside #areas-of-weakness-list. We wrap them into a 2-col grid by
-       overriding the container layout. h3 elements get full-width treatment;
-       .glass-panel-2 weakness items become tiles. */
     #areas-of-weakness-list {
-      display: grid !important;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: var(--space-3) !important;
-    }
-    #areas-of-weakness-list h3 {
-      grid-column: 1 / -1;
-      margin: var(--space-3) 0 0 0 !important;
-    }
-    #areas-of-weakness-list h3:first-child {
-      margin-top: 0 !important;
-    }
-    /* Make weakness items more like compact cards */
-    #areas-of-weakness-list .glass-panel-2 {
-      flex-direction: column !important;
-      align-items: flex-start !important;
-      gap: var(--space-2) !important;
-      background: var(--surface-container-lowest) !important;
-      border: 1px solid var(--border-light) !important;
-      border-radius: var(--radius-md) !important;
-    }
-    #areas-of-weakness-list .glass-panel-2 > div:first-child {
-      width: 100%;
-    }
-    #areas-of-weakness-list .glass-panel-2 > div:last-child {
-      width: 100%;
-      justify-content: flex-end;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: var(--space-3);
     }
 
+    /* Subject grouping headings span full width */
+    .weakness-subject-heading {
+      grid-column: 1 / -1;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin: var(--space-2) 0 0 0;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border-light);
+    }
+    .weakness-subject-heading:first-child {
+      margin-top: 0;
+    }
+    .weakness-subject-heading--mathematics { color: var(--maths-colour, #4A6FA5); }
+    .weakness-subject-heading--science     { color: var(--science-colour, #6FB89B); }
+    .weakness-subject-heading--english     { color: var(--english-colour, #B76E79); }
+
+    /* Compact weakness card */
+    .weakness-card {
+      padding: var(--space-3) var(--space-4);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      position: relative;
+      border-left: 3px solid var(--brand-amber, #D4A24A);
+      transition: transform 160ms ease, box-shadow 160ms ease;
+    }
+    .weakness-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(44, 62, 58, 0.08);
+    }
+    .weakness-card--critical {
+      border-left-color: var(--brand-rose);
+    }
+
+    .weakness-card__head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    .weakness-card__severity {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--brand-amber, #D4A24A);
+    }
+    .weakness-card--critical .weakness-card__severity {
+      color: var(--brand-rose);
+    }
+    .weakness-card__pct {
+      font-family: var(--font-display, 'Bebas Neue', sans-serif);
+      font-size: 22px;
+      letter-spacing: 0.02em;
+      color: var(--text-main);
+      line-height: 1;
+    }
+    .weakness-card--critical .weakness-card__pct {
+      color: var(--brand-rose);
+    }
+
+    .weakness-card__topic {
+      margin: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-main);
+      text-transform: capitalize;
+      line-height: 1.3;
+    }
+
+    .weakness-card__meta {
+      display: flex;
+      gap: 6px;
+    }
+
+    .weakness-card__actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+    .weakness-card__actions .btn {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .weakness-empty {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+      padding: var(--space-5) var(--space-4);
+      background: var(--surface-container-lowest);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      color: var(--brand-mint);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: var(--text-sm);
+      font-weight: 600;
+    }
+    .weakness-empty svg { color: var(--brand-mint); flex-shrink: 0; }
+
     /* ════════════════════════════════════════════════════════════════════════
-       Q. EXAM HISTORY — compact card grid (was full-width row stack)
+       Q. EXAM HISTORY — architect-scholar BEM (.exam-card)
+       Compact card grid: type badge + date / score number / progress bar / band
        ════════════════════════════════════════════════════════════════════════ */
 
     #exam-history-list {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: var(--space-2) var(--space-3);
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: var(--space-3);
     }
-    /* Subject heading spans the full width */
-    #exam-history-list > p {
+    .exam-history__subject-heading {
       grid-column: 1 / -1;
-      font-family: 'Plus Jakarta Sans', sans-serif !important;
-      font-size: 11px !important;
-      font-weight: 700 !important;
-      letter-spacing: 0.1em !important;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
-      margin: var(--space-3) 0 0 0 !important;
+      margin: var(--space-2) 0 0 0;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border-light);
     }
-    #exam-history-list > p:first-child {
-      margin-top: 0 !important;
+    .exam-history__subject-heading:first-child {
+      margin-top: 0;
     }
-    /* Each .progress-history-row inside exam-history is a compact card */
-    #exam-history-list .progress-history-row {
-      flex-wrap: wrap !important;
-      padding: var(--space-3) !important;
-      background: var(--surface-container-lowest);
-      border: 1px solid var(--border-light);
-      border-radius: var(--radius-md);
-      gap: var(--space-2);
-      align-items: center;
-    }
-    #exam-history-list .progress-bar-wrap {
-      flex: 1 1 100%;
+    .exam-history__subject-heading--mathematics { color: var(--maths-colour, #4A6FA5); }
+    .exam-history__subject-heading--science     { color: var(--science-colour, #6FB89B); }
+    .exam-history__subject-heading--english     { color: var(--english-colour, #B76E79); }
+
+    .exam-card {
+      padding: var(--space-3) var(--space-4);
       display: flex;
       flex-direction: column;
-      gap: 4px;
-      margin-top: 4px;
+      gap: var(--space-2);
+      transition: transform 160ms ease, box-shadow 160ms ease;
     }
-    #exam-history-list .progress-bar-track {
-      height: 6px;
+    .exam-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(44, 62, 58, 0.08);
+    }
+    .exam-card__head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    .exam-card__type {
+      font-size: 10px;
+      letter-spacing: 0.06em;
+    }
+    .exam-card__date {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .exam-card__score {
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-2);
+    }
+    .exam-card__pct {
+      font-family: var(--font-display, 'Bebas Neue', sans-serif);
+      font-size: 32px;
+      letter-spacing: 0.02em;
+      color: var(--text-main);
+      line-height: 1;
+    }
+    .exam-card__raw {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .exam-card__bar-track {
+      height: 4px;
       background: var(--surface-container-high);
-      border-radius: 3px;
+      border-radius: 2px;
       overflow: hidden;
+    }
+    .exam-card__bar-fill {
+      height: 100%;
+      transition: width 800ms cubic-bezier(0.16, 1, 0.3, 1);
+      border-radius: inherit;
+    }
+    .exam-card__bar-fill--high { background: var(--brand-mint); }
+    .exam-card__bar-fill--mid  { background: var(--brand-amber, #D4A24A); }
+    .exam-card__bar-fill--low  { background: var(--brand-rose); }
+    .exam-card__band {
+      display: flex;
+      justify-content: flex-start;
+      margin-top: 2px;
     }
 
     /* Empty exam history state */
@@ -1209,30 +1383,28 @@
         </div>
 
         <div class="progress-hero__actions">
-          <!-- Student selector — now top-right of hero, aligned with H1 -->
+          <!-- Student selector — first because it identifies whose progress this is -->
           <div id="student-selector" style="display: none;">
             <select id="student-select" aria-label="Switch learner"></select>
           </div>
 
-          <div class="progress-hero__action-row">
-            <!-- Time-range filter -->
-            <div class="range-toggle" role="tablist" aria-label="Time range">
-              <button id="range-7"   role="tab" aria-selected="false">7 days</button>
-              <button id="range-30"  role="tab" aria-selected="false">30 days</button>
-              <button id="range-all" role="tab" aria-selected="true" class="is-active">All time</button>
-            </div>
-
-            <!-- Print button -->
-            <button class="btn btn-secondary btn-sm btn-icon" onclick="window.print()" aria-label="Print report">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="6 9 6 2 18 2 18 9"/>
-                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
-                <rect x="6" y="14" width="12" height="8"/>
-              </svg>
-              Print
-            </button>
+          <!-- Time-range filter -->
+          <div class="range-toggle" role="tablist" aria-label="Time range">
+            <button id="range-7"   role="tab" aria-selected="false">7 days</button>
+            <button id="range-30"  role="tab" aria-selected="false">30 days</button>
+            <button id="range-all" role="tab" aria-selected="true" class="is-active">All time</button>
           </div>
+
+          <!-- Print button -->
+          <button class="btn btn-icon" onclick="window.print()" aria-label="Print report">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 6 2 18 2 18 9"/>
+              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+              <rect x="6" y="14" width="12" height="8"/>
+            </svg>
+            Print
+          </button>
         </div>
       </div>
     </div>
@@ -1273,12 +1445,16 @@
       <!-- HUD strip (existing mount point) -->
       <div id="progress-hud-strip"></div>
 
-      <!-- §01 — Diagnosis hero (Pillar 2 — populated by JS) -->
+      <!-- Diagnosis hero (unnumbered, top — single-sentence headline) -->
       <section class="diagnosis-hero" id="diagnosis-hero" aria-live="polite" hidden>
         <p class="diagnosis-hero__sentence" id="diagnosis-hero-sentence"></p>
       </section>
 
-      <!-- §02 — Subject Proficiency (3-up grid) -->
+      <!-- ─────────────────────────────────────────────────────────────────
+           HOT DECISIONS — what parents need to know to act tonight
+           ───────────────────────────────────────────────────────────────── -->
+
+      <!-- §01 — Subject Proficiency: at-a-glance ALs -->
       <section class="progress-section" id="section-subject-proficiency">
         <header class="progress-section__head">
           <div>
@@ -1314,46 +1490,57 @@
         </div>
       </section>
 
-      <!-- §02 — Quests (own standalone section, was previously embedded silently) -->
+      <!-- §02 — What's most useful next (the single highest-leverage decision) -->
+      <section class="progress-section" id="recommend-section" hidden>
+        <header class="progress-section__head">
+          <div>
+            <span class="label-caps progress-section__eyebrow">§ 02 — Next step</span>
+            <h2 class="h2-as progress-section__title">What's most useful next.</h2>
+          </div>
+        </header>
+        <div class="recommend-tiles" id="recommend-tiles-container">
+          <!-- Populated by progress.js renderRecommendNext() -->
+        </div>
+      </section>
+
+      <!-- §03 — Action items (parent's full to-do list) -->
+      <section class="progress-section">
+        <header class="progress-section__head">
+          <div>
+            <span class="label-caps progress-section__eyebrow">§ 03 — Action items</span>
+            <h2 class="h2-as progress-section__title">Areas of weakness.</h2>
+          </div>
+        </header>
+        <div id="areas-of-weakness-list"></div>
+      </section>
+
+      <!-- §04 — Quests (active missions) -->
       <section class="progress-section" id="section-quests">
         <header class="progress-section__head">
           <div>
-            <span class="label-caps progress-section__eyebrow">§ 02 — Active missions</span>
+            <span class="label-caps progress-section__eyebrow">§ 04 — Active missions</span>
             <h2 class="h2-as progress-section__title">Quests.</h2>
           </div>
         </header>
-        <!-- This inner slot is what renderQuestTrayFromData() writes to. The JS
-             always populates it (with either active-quest tiles or an empty state)
-             and sets display:block — so we leave its inline display:none for the
-             pre-render phase, and rely on the JS to reveal it. -->
         <div id="quest-map-section" style="display: none;"></div>
       </section>
 
-      <!-- §04 — Streak strip (Last 30 Days, Honest Compass) -->
-      <section class="progress-section streak-strip-section" id="streak-strip-section" hidden>
-        <header class="progress-section__head">
-          <div>
-            <span class="label-caps progress-section__eyebrow">§ 03 — Activity rhythm</span>
-            <h2 class="h2-as progress-section__title">Last 30 days.</h2>
-          </div>
-        </header>
-        <div class="streak-strip" id="streak-strip" role="img" aria-label="Activity over the last 30 days"></div>
-      </section>
+      <!-- ─────────────────────────────────────────────────────────────────
+           DIAGNOSTIC DEEP-DIVE — granular mastery + skill data
+           ───────────────────────────────────────────────────────────────── -->
 
-      <!-- §05 — Topic Mastery Heatmap (Pillar 2) -->
+      <!-- §05 — Topic Mastery Heatmap -->
       <section class="progress-section heatmap-section" id="heatmap-section" hidden>
         <header class="progress-section__head">
           <div>
-            <span class="label-caps progress-section__eyebrow">§ 04 — Mastery</span>
+            <span class="label-caps progress-section__eyebrow">§ 05 — Mastery</span>
             <h2 class="h2-as progress-section__title">Topic mastery.</h2>
           </div>
-          <!-- Subject selector — calls window.switchHeatmapSubject() defined in progress.js.
-               Buttons start disabled; progress.js enables them once subjectStats is
-               computed (only enables subjects with quiz history). -->
+          <!-- Subject selector — calls window.switchHeatmapSubject() in progress.js -->
           <div class="heatmap-subject-selector" role="tablist" aria-label="Subject for topic mastery">
-            <button type="button" class="heatmap-subject-btn" data-subject="mathematics" role="tab" aria-selected="false" disabled>Maths</button>
-            <button type="button" class="heatmap-subject-btn" data-subject="science"     role="tab" aria-selected="false" disabled>Science</button>
-            <button type="button" class="heatmap-subject-btn" data-subject="english"     role="tab" aria-selected="false" disabled>English</button>
+            <button type="button" class="heatmap-subject-btn" data-subject="mathematics" role="tab" aria-selected="false">Maths</button>
+            <button type="button" class="heatmap-subject-btn" data-subject="science"     role="tab" aria-selected="false">Science</button>
+            <button type="button" class="heatmap-subject-btn" data-subject="english"     role="tab" aria-selected="false">English</button>
           </div>
         </header>
         <div class="heatmap" id="heatmap-container"></div>
@@ -1377,23 +1564,7 @@
         </div>
       </div>
 
-      <!-- §06 — Topic Dependencies (DAG, Pillar 2) -->
-      <section class="progress-section dep-tree-section" id="dep-tree-section" hidden>
-        <header class="progress-section__head">
-          <div>
-            <span class="label-caps progress-section__eyebrow">§ 05 — Knowledge graph</span>
-            <h2 class="h2-as progress-section__title">Topic dependencies.</h2>
-          </div>
-        </header>
-        <p class="dep-tree-section__hint">
-          Mastering an upstream topic strengthens everything downstream. The rose-ringed topic is the current focus.
-        </p>
-        <div class="dep-tree-container" id="dep-tree-container">
-          <!-- SVG injected by renderDependencyTree() -->
-        </div>
-      </section>
-
-      <!-- §07 — Skill mastery (AO1/2/3) — STATIC SECTION (was JS-injected) -->
+      <!-- §06 — Skill mastery (AO1/AO2/AO3) -->
       <section class="progress-section" id="ao-mastery-section" hidden>
         <header class="progress-section__head">
           <div>
@@ -1407,39 +1578,56 @@
         </article>
       </section>
 
-      <!-- §08 — "What's most useful next" (NEW — proactive recommendations) -->
-      <section class="progress-section" id="recommend-section" hidden>
+      <!-- ─────────────────────────────────────────────────────────────────
+           CONTEXT — engagement + history + reference
+           ───────────────────────────────────────────────────────────────── -->
+
+      <!-- §07 — Activity rhythm (last 30 days) -->
+      <section class="progress-section streak-strip-section" id="streak-strip-section" hidden>
         <header class="progress-section__head">
           <div>
-            <span class="label-caps progress-section__eyebrow">§ 07 — Next step</span>
-            <h2 class="h2-as progress-section__title">What's most useful next.</h2>
+            <span class="label-caps progress-section__eyebrow">§ 07 — Activity rhythm</span>
+            <h2 class="h2-as progress-section__title">Last 30 days.</h2>
           </div>
         </header>
-        <div class="recommend-tiles" id="recommend-tiles-container">
-          <!-- Populated by JS recommendNext() — see patch instructions -->
+        <div class="streak-strip" id="streak-strip" role="img" aria-label="Activity over the last 30 days"></div>
+      </section>
+
+      <!-- §08 — Topic dependencies (DAG, abstract — late in the page) -->
+      <section class="progress-section dep-tree-section" id="dep-tree-section" hidden>
+        <header class="progress-section__head">
+          <div>
+            <span class="label-caps progress-section__eyebrow">§ 08 — Knowledge graph</span>
+            <h2 class="h2-as progress-section__title">Topic dependencies.</h2>
+          </div>
+        </header>
+        <p class="dep-tree-section__hint">
+          Mastering an upstream topic strengthens everything downstream. The rose-ringed topic is the current focus.
+        </p>
+        <div class="dep-tree-container" id="dep-tree-container">
+          <!-- SVG injected by renderDependencyTree() -->
         </div>
       </section>
 
-      <!-- §09 — Areas of weakness (populated by JS, IDs preserved) -->
-      <section class="progress-section">
+      <!-- §09 — Exam history (practice papers, historical context) -->
+      <section class="progress-section" id="section-exam-history">
         <header class="progress-section__head">
           <div>
-            <span class="label-caps progress-section__eyebrow">§ 08 — Action items</span>
-            <h2 class="h2-as progress-section__title">Areas of weakness.</h2>
+            <span class="label-caps progress-section__eyebrow">§ 09 — Practice papers</span>
+            <h2 class="h2-as progress-section__title">Exam history.</h2>
           </div>
         </header>
-        <div id="areas-of-weakness-list" class="flex flex-col gap-4"></div>
+        <div id="exam-history-empty" hidden>
+          No exam papers attempted yet. Practice papers help track exam-style performance over time.
+        </div>
+        <div id="exam-history-list" hidden></div>
       </section>
 
-      <!-- §10 — Subject breakdown removed in v2.1 — replaced by per-subject AL bands
-           in §01 Subject proficiency cards. The JS guards #subject-breakdown-list
-           with a null-check so removing it here is safe. -->
-
-      <!-- §11 — Statistics (5 tiles incl. NEW avg time per question) -->
+      <!-- §10 — Statistics (last — vanity numbers) -->
       <section class="progress-section">
         <header class="progress-section__head">
           <div>
-            <span class="label-caps progress-section__eyebrow">§ 09 — Numbers</span>
+            <span class="label-caps progress-section__eyebrow">§ 10 — Numbers</span>
             <h2 class="h2-as progress-section__title">Statistics.</h2>
           </div>
         </header>
@@ -1473,25 +1661,8 @@
         </div>
       </section>
 
-      <!-- §10 — Exam history (own labelled section, compact card grid) -->
-      <section class="progress-section" id="section-exam-history">
-        <header class="progress-section__head">
-          <div>
-            <span class="label-caps progress-section__eyebrow">§ 10 — Practice papers</span>
-            <h2 class="h2-as progress-section__title">Exam history.</h2>
-          </div>
-        </header>
-
-        <!-- Empty state — visible when no exams yet -->
-        <div id="exam-history-empty" hidden>
-          No exam papers attempted yet. Practice papers help track exam-style performance over time.
-        </div>
-
-        <!-- List — populated by renderExamHistory() in progress.js -->
-        <div id="exam-history-list" hidden></div>
-      </section>
-
-      <!-- Hidden internal containers (preserved IDs) -->
+      <!-- Hidden internal containers (preserved IDs — JS writes to these but
+           they are not visible UI sections) -->
       <div id="recent-history" hidden></div>
 
     </div>

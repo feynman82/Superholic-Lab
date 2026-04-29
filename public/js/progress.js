@@ -308,6 +308,31 @@ async function init() {
     // dependency tree (topic-level aggregate) and the heatmap (cell-level
     // per-row data) so the page makes a single round-trip for both.
     const heroSubject = pickHeroSubject(subjectStats);
+
+    // ── Expose heatmap context for the subject-switcher (v2 reskin) ──
+    // The inline script in progress.html binds the .heatmap-subject-btn
+    // buttons to window.switchHeatmapSubject() which re-fetches mastery
+    // for the selected subject without re-running the full progress load.
+    window.__heatmapContext = {
+      db,
+      studentId: student.id,
+      accessToken: session?.access_token,
+      currentSubject: heroSubject,
+      subjectStats,
+    };
+
+    // Mark the initial active button. All buttons remain enabled — the
+    // heatmap renderer always draws the syllabus skeleton (empty cells where
+    // no mastery data exists) so clicking any subject is meaningful even
+    // for ones with no quiz history yet. Greyed-out buttons confused parents.
+    document.querySelectorAll('.heatmap-subject-btn').forEach(btn => {
+      const sub = btn.dataset.subject;
+      btn.classList.toggle('is-active', sub === heroSubject);
+      btn.setAttribute('aria-selected', sub === heroSubject);
+      btn.disabled = false;
+      btn.title = '';
+    });
+
     (async () => {
       const diag = await renderDiagnosisHero(student.id, heroSubject, session?.access_token);
       try {
@@ -578,6 +603,50 @@ function escapeHtml(s) {
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
+
+// ── NEW (v2 reskin) ─────────────────────────────────────────────────────────
+// Switch the heatmap + dependency tree to a different subject without
+// re-running the full progress load. Triggered by the .heatmap-subject-btn
+// buttons in the heatmap section header.
+window.switchHeatmapSubject = async function (subject) {
+  const ctx = window.__heatmapContext;
+  if (!ctx || !ctx.db || !ctx.studentId) return;
+  if (subject === ctx.currentSubject) return;
+
+  // Update button states
+  document.querySelectorAll('.heatmap-subject-btn').forEach(btn => {
+    const isActive = btn.dataset.subject === subject;
+    btn.classList.toggle('is-active', isActive);
+    btn.setAttribute('aria-selected', isActive);
+  });
+
+  ctx.currentSubject = subject;
+
+  // Re-fetch mastery for the new subject and re-render heatmap + dep tree
+  try {
+    const { data: masteryRows } = await ctx.db.from('mastery_levels')
+      .select('topic, sub_topic, probability, attempts')
+      .eq('student_id', ctx.studentId)
+      .eq('subject', subject);
+    const rows = masteryRows || [];
+    const masteryByTopic = buildMasteryByTopic(rows);
+
+    // Re-render. renderMasteryHeatmap and renderDependencyTree both clear
+    // their containers internally before injecting new content.
+    await renderMasteryHeatmap('heatmap-container', rows, subject, ctx.studentId, ctx.accessToken);
+
+    // For the dep tree, re-fetch the diagnosis to pick the new weakest
+    // topic for the rose ring. Falls back gracefully if the call fails.
+    let weakestTopic = null;
+    try {
+      const diag = await renderDiagnosisHero(ctx.studentId, subject, ctx.accessToken);
+      weakestTopic = diag?.weakest_topic || null;
+    } catch (_) { /* non-fatal */ }
+    await renderDependencyTree('dep-tree-container', subject, weakestTopic, masteryByTopic);
+  } catch (err) {
+    console.warn('[progress] switchHeatmapSubject fetch failed:', err.message || err);
+  }
+};
 
 // ── Quest: tray render ─────────────────────────────────────────────────────────
 
@@ -1344,12 +1413,8 @@ function renderExamHistory(exams) {
   listEl.innerHTML = '';
 
   const typeLabels = { WA1: 'WA1', WA2: 'WA2', EOY: 'EOY', PRELIM: 'Prelim', PRACTICE: 'Practice' };
-  const subColours = {
-    mathematics: 'var(--maths-colour)',
-    science: 'var(--science-colour)',
-    english: 'var(--english-colour)',
-  };
 
+  // Group by subject
   const grouped = {};
   exams.forEach(function (e) {
     const sub = (e.subject || 'other').toLowerCase();
@@ -1357,63 +1422,41 @@ function renderExamHistory(exams) {
     grouped[sub].push(e);
   });
 
-  Object.entries(grouped).forEach(function ([sub, subExams]) {
-    const subLabel = sub.charAt(0).toUpperCase() + sub.slice(1);
-    const colour = subColours[sub] || 'var(--cream)';
+  const subLabels = { mathematics: 'Mathematics', science: 'Science', english: 'English' };
+  const html = [];
 
-    const heading = document.createElement('p');
-    heading.style.fontWeight   = '700';
-    heading.style.fontSize     = '.875rem';
-    heading.style.color        = colour;
-    heading.style.marginBottom = 'var(--space-2)';
-    heading.style.marginTop    = 'var(--space-4)';
-    heading.textContent = subLabel;
-    listEl.appendChild(heading);
+  Object.entries(grouped).forEach(function ([sub, subExams]) {
+    html.push(`<h3 class="exam-history__subject-heading exam-history__subject-heading--${sub}">${subLabels[sub] || sub}</h3>`);
 
     subExams.forEach(function (e) {
       const pct = e.total_marks > 0 ? Math.round((e.score / e.total_marks) * 100) : 0;
       const label = typeLabels[e.exam_type] || e.exam_type || 'Paper';
       const mins = e.time_taken ? Math.round(e.time_taken / 60) + ' min' : '';
+      const sevClass = pct >= 85 ? 'high' : pct >= 55 ? 'mid' : 'low';
+      const bandText = pct >= 85 ? 'AL1–2' : pct >= 70 ? 'AL3–4' : pct >= 55 ? 'AL5–6' : 'Needs Work';
 
-      const row = document.createElement('div');
-      row.className = 'progress-history-row';
-
-      const dateEl = document.createElement('span');
-      dateEl.className = 'text-secondary text-sm';
-      dateEl.style.minWidth = '72px';
-      dateEl.textContent = formatDate(e.completed_at);
-
-      const typeEl = document.createElement('span');
-      typeEl.className = 'badge badge-info';
-      typeEl.textContent = label;
-
-      const barWrap = document.createElement('div');
-      barWrap.className = 'progress-bar-wrap';
-
-      const track = document.createElement('div');
-      track.className = 'progress-bar-track';
-      const fill = document.createElement('div');
-      fill.style.height       = '100%';
-      fill.style.width        = pct + '%';
-      fill.style.borderRadius = '999px';
-      fill.style.background   = colour;
-      fill.style.transition   = 'width .8s cubic-bezier(.16,1,.3,1)';
-      track.appendChild(fill);
-
-      const scoreLabel = document.createElement('span');
-      scoreLabel.className = 'text-secondary text-sm';
-      scoreLabel.textContent = e.score + '/' + e.total_marks + ' (' + pct + '%)' + (mins ? ' · ' + mins : '');
-
-      barWrap.append(track, scoreLabel);
-
-      const bandEl = document.createElement('span');
-      bandEl.className = pct >= 85 ? 'badge badge-success' : pct >= 55 ? 'badge badge-amber' : 'badge badge-danger';
-      bandEl.textContent = pct >= 85 ? 'AL1–2' : pct >= 70 ? 'AL3–4' : pct >= 55 ? 'AL5–6' : 'Needs Work';
-
-      row.append(dateEl, typeEl, barWrap, bandEl);
-      listEl.appendChild(row);
+      html.push(`
+        <article class="card-glass exam-card" data-subject="${sub}">
+          <header class="exam-card__head">
+            <span class="badge badge-neutral exam-card__type">${label}</span>
+            <time class="exam-card__date">${formatDate(e.completed_at)}</time>
+          </header>
+          <div class="exam-card__score">
+            <span class="exam-card__pct">${pct}%</span>
+            <span class="exam-card__raw">${e.score}/${e.total_marks}${mins ? ' · ' + mins : ''}</span>
+          </div>
+          <div class="exam-card__bar-track">
+            <div class="exam-card__bar-fill exam-card__bar-fill--${sevClass}" style="width: ${pct}%;"></div>
+          </div>
+          <footer class="exam-card__band">
+            <span class="badge badge-${sevClass === 'high' ? 'success' : sevClass === 'mid' ? 'amber' : 'danger'}">${bandText}</span>
+          </footer>
+        </article>
+      `);
     });
   });
+
+  listEl.innerHTML = html.join('');
 }
 
 /** Safely sets textContent on an element by ID. */
@@ -1449,6 +1492,7 @@ function renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subject
   });
 
   // 2. LAYER 2: Areas of Weakness (Grouped by Subject, AL2 and worse / < 85%)
+  // Architect-scholar v2 — uses .weakness-card BEM classes defined in progress.html
   const weaknessList = document.getElementById('areas-of-weakness-list');
   if (weaknessList) {
     const weakHtml = [];
@@ -1460,37 +1504,46 @@ function renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subject
         .slice(0, 3);
 
       if (subTopics.length > 0) {
-        const colorVar = `var(--${sub === 'mathematics' ? 'maths' : sub}-colour)`;
-        weakHtml.push(`<h3 style="color:${colorVar}; font-size:0.9rem; text-transform:uppercase; letter-spacing:1px; margin:var(--space-2) 0 0 0;">${sub}</h3>`);
+        const subLabels = { mathematics: 'Mathematics', science: 'Science', english: 'English' };
+        weakHtml.push(`<h3 class="weakness-subject-heading weakness-subject-heading--${sub}">${subLabels[sub] || sub}</h3>`);
 
         subTopics.forEach(t => {
           const topicLabel = t.topic.replace(/-/g, ' ');
-          const sub = t.subject?.toLowerCase();
-          const slotTaken = subjectSlotsTaken.has(sub);
+          const subLower = t.subject?.toLowerCase();
+          const slotTaken = subjectSlotsTaken.has(subLower);
           const existingQ = slotTaken
-            ? (window.activeQuestsList || []).find(q => q.subject?.toLowerCase() === sub)
+            ? (window.activeQuestsList || []).find(q => q.subject?.toLowerCase() === subLower)
             : null;
           const attrEsc = s => String(s || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+          const sevClass = t.pct < 45 ? 'weakness-card--critical' : 'weakness-card--moderate';
+          const sevLabel = t.pct < 45 ? 'Critical' : 'Moderate';
+
           const questBtnHtml = slotTaken
-            ? `<button class="btn btn-secondary btn-sm" disabled title="Active ${attrEsc(t.subject)} quest in progress">Quest taken</button>${existingQ ? `<a href="/quest?id=${attrEsc(existingQ.id)}" class="btn btn-ghost btn-sm" style="color:var(--brand-mint);">View →</a>` : ''}`
+            ? `<button class="btn btn-secondary btn-sm" disabled title="Active ${attrEsc(t.subject)} quest in progress">Quest taken</button>${existingQ ? `<a href="/quest?id=${attrEsc(existingQ.id)}" class="btn btn-ghost btn-sm">View →</a>` : ''}`
             : `<button class="btn btn-primary btn-sm" onclick="window.generateQuestFor(this,'${attrEsc(t.subject)}','${attrEsc(student.level)}','${attrEsc(t.topic)}',${parseFloat(t.pct)})">+ Plan Quest</button>`;
+
           weakHtml.push(`
-            <div class="glass-panel-2" style="display:flex; justify-content:space-between; align-items:center; padding:var(--space-3) var(--space-4); flex-wrap:wrap; gap:10px;">
-              <div>
-                <span style="font-size:1.2rem; margin-right:8px;">${t.pct < 45 ? '🔴' : '🟠'}</span>
-                <strong style="color:var(--text-main); text-transform:capitalize;">${topicLabel}</strong>
-                <span class="text-secondary text-sm"> — ${t.pct}% (${getALBand(t.pct)})</span>
+            <article class="card-glass weakness-card ${sevClass}">
+              <header class="weakness-card__head">
+                <span class="weakness-card__severity">${sevLabel}</span>
+                <span class="weakness-card__pct">${t.pct}%</span>
+              </header>
+              <h4 class="weakness-card__topic">${topicLabel}</h4>
+              <div class="weakness-card__meta">
+                <span class="badge badge-sage">${getALBand(t.pct)}</span>
               </div>
-              <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                 <a href="tutor.html?intent=remedial&subject=${t.subject}&topic=${t.topic}&score=${t.pct}" class="btn btn-secondary btn-sm" style="border-color:var(--rose); color:var(--rose);">Ask Miss Wena</a>
-                 ${questBtnHtml}
+              <div class="weakness-card__actions">
+                <a href="tutor.html?intent=remedial&subject=${t.subject}&topic=${t.topic}&score=${t.pct}" class="btn btn-secondary btn-sm">Ask Miss Wena</a>
+                ${questBtnHtml}
               </div>
-            </div>`);
+            </article>`);
         });
       }
     });
 
-    weaknessList.innerHTML = weakHtml.length > 0 ? weakHtml.join('') : '<div class="glass-panel-2" style="padding:var(--space-4); text-align:center; color:var(--mint);">🎉 Excellent! No weak areas detected (All topics AL1).</div>';
+    weaknessList.innerHTML = weakHtml.length > 0
+      ? weakHtml.join('')
+      : '<div class="weakness-empty"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>All topics at AL1. No weak areas detected.</span></div>';
   }
 
   // 3. LAYER 3: Subject Breakdown & Deep Dive
