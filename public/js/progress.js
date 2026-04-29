@@ -322,6 +322,12 @@ async function init() {
     renderActionPlanUI(totalSeconds, questionsMastered, overallPct, advancedSubjectStats, weakTopics, student, session, activeQuest, allActivity, improvedText, subjectSlotsTaken);
     insertAOMasteryUI(aoStats);
 
+    // PSLE forecast (Phase 2) — fires non-blocking; runs its own 90-day fetch
+    // independent of the Phase 1 range filter so the projection horizon is
+    // stable. No-ops for P1–P4. Failures swallow silently so the rest of
+    // the page still renders.
+    renderPSLEForecast(db, student).catch(err => console.warn('[psle-forecast] error:', err.message || err));
+
     // ── NEW (v2 reskin) — proactive recommendations + avg time per question ──
     renderRecommendNext(weakTopics, student, subjectSlotsTaken);
     renderAvgTimePerQuestion(totalSeconds, allActivity);
@@ -1646,6 +1652,165 @@ window.handlePlanQuest = async function (btnEl, studentId, studentLevel, topic, 
     console.error("Plan Quest Trigger Error:", err);
   }
 };
+
+// ── PSLE FORECAST (Phase 2 — P5/P6 only) ───────────────────────────────────
+//
+// Linear-trajectory projection of AL band at PSLE date based on the last
+// 90 days of quiz_attempts per subject. Deliberately separate from the
+// time-range filter (Phase 1) — the forecast always uses 90 days regardless
+// of the range pill, because the projection horizon needs a stable input
+// window to be meaningful.
+//
+// Projection method: ordinary least-squares fit of pct vs day_index, then
+// extrapolate to the PSLE day. Clamped to [0, 100]. Confidence = 'high' if
+// ≥30 attempts in the subject, else 'low'. < 5 attempts skips the regression
+// entirely and renders the no-data tile.
+
+// PSLE is held early October in Singapore. P6 takes it this year (or next
+// year if today is already past 1 Oct). P5 takes it the year after P6's.
+function _pslteDateFor(level) {
+  if (!level) return null;
+  const now = new Date();
+  const y = now.getFullYear();
+  const cutoff = new Date(y, 9, 1); // Oct 1 of current year (month index 9)
+  const p6Year = now < cutoff ? y : y + 1;
+  if (/Primary 6/i.test(level)) return new Date(p6Year, 9, 1);
+  if (/Primary 5/i.test(level)) return new Date(p6Year + 1, 9, 1);
+  return null;
+}
+
+// Ordinary least squares. Returns { m, c } or null when n < 2 or the
+// denominator collapses (all x values identical).
+function _linearRegression(points) {
+  const n = points.length;
+  if (n < 2) return null;
+  let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+  for (const { x, y } of points) {
+    sumX += x; sumY += y; sumXY += x * y; sumXX += x * x;
+  }
+  const denom = n * sumXX - sumX * sumX;
+  if (denom === 0) return null;
+  const m = (n * sumXY - sumX * sumY) / denom;
+  const c = (sumY - m * sumX) / n;
+  return { m, c };
+}
+
+// Returns the forecast object for one subject, or null if unrenderable.
+function _forecastSubject(subjectAttempts, pslteDate, windowStartMs) {
+  const points = [];
+  for (const a of subjectAttempts) {
+    if (!a.completed_at) continue;
+    const total = a.total_questions || 0;
+    if (total <= 0) continue;
+    const ts = new Date(a.completed_at).getTime();
+    const dayIndex = Math.floor((ts - windowStartMs) / 86400000);
+    points.push({ x: dayIndex, y: (a.score || 0) / total * 100 });
+  }
+  const n = points.length;
+  if (n < 5) return { sampleSize: n, confidence: 'none' };
+
+  const reg = _linearRegression(points);
+  let projected;
+  if (reg) {
+    const projDayIndex = Math.floor((pslteDate.getTime() - windowStartMs) / 86400000);
+    projected = reg.m * projDayIndex + reg.c;
+  } else {
+    projected = points.reduce((s, p) => s + p.y, 0) / n;
+  }
+  projected = Math.max(0, Math.min(100, projected));
+
+  return {
+    sampleSize: n,
+    confidence:  n < 30 ? 'low' : 'high',
+    projectedPct: Math.round(projected),
+    projectedAL:  getALBand(projected),
+  };
+}
+
+// Renders the PSLE forecast section. No-ops for non-P5/P6 students. Pulls
+// the last 90 days of quiz_attempts independently of the Phase 1 range
+// filter so the projection horizon is stable.
+async function renderPSLEForecast(db, student) {
+  const section = document.getElementById('psle-forecast-section');
+  if (!section || !student) return;
+  if (!/Primary [56]/i.test(student.level || '')) return;
+
+  const pslteDate = _pslteDateFor(student.level);
+  if (!pslteDate) return;
+
+  // 90-day window — independent of the page-level range filter.
+  const windowStartMs = Date.now() - 90 * 86400000;
+  const { data: rows, error } = await db.from('quiz_attempts')
+    .select('subject, score, total_questions, completed_at')
+    .eq('student_id', student.id)
+    .gte('completed_at', new Date(windowStartMs).toISOString())
+    .order('completed_at', { ascending: true });
+  if (error) {
+    console.warn('[psle-forecast] fetch failed:', error.message);
+    return;
+  }
+
+  const subjects = [
+    { key: 'mathematics', label: 'Mathematics' },
+    { key: 'science',     label: 'Science' },
+    { key: 'english',     label: 'English' },
+  ];
+
+  const grid = document.getElementById('psle-forecast-grid');
+  const titleEl = document.getElementById('psle-forecast-title');
+  const confEl  = document.getElementById('psle-forecast-confidence');
+  if (!grid) return;
+
+  const pslteYear = pslteDate.getFullYear();
+  if (titleEl) titleEl.textContent = `On track for PSLE ${pslteYear}.`;
+
+  let highCount = 0, anyData = false;
+  const tiles = subjects.map(({ key, label }) => {
+    const subjectRows = (rows || []).filter(r => String(r.subject || '').toLowerCase() === key);
+    const f = _forecastSubject(subjectRows, pslteDate, windowStartMs);
+    if (f.confidence === 'high')   highCount++;
+    if (f.confidence !== 'none')   anyData = true;
+
+    if (f.confidence === 'none') {
+      // Not enough data — render a faint placeholder tile rather than hide
+      // entirely so the parent still sees we're tracking 3 subjects.
+      return `
+        <article class="psle-forecast-tile psle-forecast-tile--no-data" data-subject="${key}">
+          <div class="psle-forecast-tile__stamp">Projected</div>
+          <div class="psle-forecast-tile__label">${label}</div>
+          <div class="psle-forecast-tile__al">Not enough data</div>
+          <div class="psle-forecast-tile__sample">${f.sampleSize} ${f.sampleSize === 1 ? 'quiz' : 'quizzes'} in 90 days</div>
+        </article>`;
+    }
+    const lowCls = f.confidence === 'low' ? ' psle-forecast-tile--low-confidence' : '';
+    return `
+      <article class="psle-forecast-tile${lowCls}" data-subject="${key}">
+        <div class="psle-forecast-tile__stamp">Projected</div>
+        <div class="psle-forecast-tile__label">${label}</div>
+        <div class="psle-forecast-tile__al">${f.projectedAL}</div>
+        <div class="psle-forecast-tile__pct">${f.projectedPct}% projected</div>
+        <div class="psle-forecast-tile__sample">${f.sampleSize} ${f.sampleSize === 1 ? 'quiz' : 'quizzes'} · ${f.confidence === 'low' ? 'low' : 'high'} confidence</div>
+      </article>`;
+  });
+
+  grid.innerHTML = tiles.join('');
+  if (confEl) {
+    if (!anyData) {
+      confEl.textContent = 'Insufficient data';
+      confEl.className = 'badge';
+    } else if (highCount === 3) {
+      confEl.textContent = 'High confidence';
+      confEl.className = 'badge badge-rose';
+    } else if (highCount > 0) {
+      confEl.textContent = 'Mixed confidence';
+      confEl.className = 'badge';
+    } else {
+      confEl.textContent = 'Low confidence';
+      confEl.className = 'badge';
+    }
+  }
+  section.hidden = false;
+}
 
 /** Helper: MOE AL Banding */
 function getALBand(pct) {

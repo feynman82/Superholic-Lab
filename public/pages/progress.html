@@ -252,6 +252,93 @@
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: var(--space-3);
     }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       PSLE forecast (Phase 2 — P5/P6 only)
+       Distinguished visually from .subject-card via dashed border + a
+       "PROJECTED" stamp so parents never read the projection as a current
+       score. Low-confidence tiles ghost back to muted text.
+       ════════════════════════════════════════════════════════════════════════ */
+    .psle-forecast-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: var(--space-3);
+    }
+    .psle-forecast-tile {
+      padding: var(--space-4);
+      text-align: center;
+      position: relative;
+      border: 1.5px dashed var(--subject-accent, var(--brand-sage));
+      border-radius: var(--radius-md);
+      background: var(--surface-container-lowest, transparent);
+    }
+    .psle-forecast-tile[data-subject="mathematics"] { --subject-accent: var(--maths-colour, #4A6FA5); }
+    .psle-forecast-tile[data-subject="science"]     { --subject-accent: var(--science-colour, #6FB89B); }
+    .psle-forecast-tile[data-subject="english"]     { --subject-accent: var(--english-colour, #B76E79); }
+    .psle-forecast-tile__stamp {
+      position: absolute;
+      top: 8px; right: 10px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--subject-accent, var(--brand-sage));
+      opacity: 0.7;
+    }
+    .psle-forecast-tile__label {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--subject-accent, var(--brand-sage));
+      margin-bottom: var(--space-2);
+    }
+    .psle-forecast-tile__al {
+      font-family: 'Bebas Neue', 'Plus Jakarta Sans', sans-serif;
+      font-size: 2.2rem;
+      letter-spacing: 0.04em;
+      color: var(--text-main);
+      line-height: 1;
+      margin-bottom: var(--space-1);
+    }
+    .psle-forecast-tile__pct {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: var(--space-2);
+    }
+    .psle-forecast-tile__sample {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+    }
+    .psle-forecast-tile--low-confidence {
+      opacity: 0.6;
+      border-style: dotted;
+    }
+    .psle-forecast-tile--low-confidence .psle-forecast-tile__al {
+      color: var(--text-muted);
+    }
+    .psle-forecast-tile--no-data {
+      opacity: 0.45;
+    }
+    .psle-forecast-tile--no-data .psle-forecast-tile__al {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+    }
+    .psle-forecast-footnote {
+      margin: var(--space-3) 0 0 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--text-muted);
+      max-width: 640px;
+    }
     .subject-card {
       padding: var(--space-4);
       text-align: center;
@@ -1453,6 +1540,29 @@
       <!-- ─────────────────────────────────────────────────────────────────
            HOT DECISIONS — what parents need to know to act tonight
            ───────────────────────────────────────────────────────────────── -->
+
+      <!-- §00 — PSLE Forecast (P5/P6 only). Renders a projected AL band per
+           subject based on a 90-day linear trajectory. Hidden by default;
+           progress.js renderPSLEForecast() unhides for P5/P6 students with
+           sufficient data. Low-confidence subjects (<30 attempts) render
+           with the dashed-border treatment so the projection's reliability
+           is visually obvious. -->
+      <section class="progress-section psle-forecast" id="psle-forecast-section" hidden>
+        <header class="progress-section__head">
+          <div>
+            <span class="label-caps progress-section__eyebrow">PSLE projection</span>
+            <h2 class="h2-as progress-section__title" id="psle-forecast-title">On track for PSLE.</h2>
+          </div>
+          <span class="badge" id="psle-forecast-confidence">High confidence</span>
+        </header>
+        <div class="psle-forecast-grid" id="psle-forecast-grid">
+          <!-- 3 tiles injected by renderPSLEForecast() -->
+        </div>
+        <p class="psle-forecast-footnote">
+          Projections are based on the trajectory of the last 90 days and are not predictions.
+          Children commonly improve significantly closer to PSLE.
+        </p>
+      </section>
 
       <!-- §01 — Subject Proficiency: at-a-glance ALs -->
       <section class="progress-section" id="section-subject-proficiency">
