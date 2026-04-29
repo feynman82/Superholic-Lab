@@ -123,18 +123,18 @@ generating) via `/generate-batch`.
 - [x] icons.js + src/components/icons/index.tsx (13-icon set)
 - [x] `api/cron/snapshot-mastery.js` — daily 03:00 SGT mastery snapshot + `mastery_gain` XP
 - [x] `vercel.json` cron registered (`0 19 * * *`)
-- [x] `supabase/020_seed_pedagogy_badges.sql` — 4 pedagogy badges (pending SQL Editor apply)
+- [x] `supabase/020_seed_pedagogy_badges.sql` — 4 pedagogy badges (applied to prod)
+- [x] `supabase/019_reclassify_difficulty_heuristic.sql` — difficulty backfill (applied to prod)
+- [x] Day 3 redo lineage — `parent_quest_id` chain + +100 growth-mindset XP (E2E Round 7)
 - [x] `public/pages/faq.html` — consolidated 9-section parent FAQ with Schema.org JSON-LD
 - [x] `docs/PARENT_FAQ.md` — markdown twin of faq.html (source of truth)
 - [x] `docs/GAMIFICATION_RULES.md` — XP table, level math, rank ladder, 33 badges, anti-cheat
 
 ### IN PROGRESS 🟡
 
-- [ ] **E2E testing the Lily Tan flow** (`docs/QUEST_PAGE_SPEC.md` §18)
-- [ ] **Supabase migrations** — apply in SQL Editor:
-  - `supabase/019_reclassify_difficulty_heuristic.sql`
-  - `supabase/020_seed_pedagogy_badges.sql`
-- [ ] **Vercel env vars** — add all `AI_*_PROVIDER` and `AI_*_MODEL` vars to Production + Preview + Development (see `.env.example`)
+- [ ] **E2E testing the Lily Tan flow** (`docs/QUEST_PAGE_SPEC.md` §18) — multiple bug fix rounds shipped (R4-R7); next pass should validate the redo lineage + Day 3 retry XP
+- [ ] **Vercel env vars** — add all `AI_*_PROVIDER` and `AI_*_MODEL` vars to Production + Preview + Development (see `.env.example`). Defaults already work; this is for explicit ops control.
+- [ ] **Manual cron smoke** — `curl https://www.superholiclab.com/api/cron/snapshot-mastery` and confirm `mastery_levels_snapshots` rows + `xp_events.mastery_gain` entries land
 
 ### NEXT 📋
 - [ ] **Question bank expansion** (P4 → P2 → P5 → P6 → P3 → P1 generation order)
@@ -164,7 +164,7 @@ generating) via `/generate-batch`.
 
 | Issue | Impact | Owner | Status |
 |---|---|---|---|
-| Supabase migrations 019 + 020 not applied | Medium — difficulty reclassification + pedagogy badges pending | Backend | Apply in Supabase SQL Editor |
+| Supabase migrations 019 + 020 | (resolved) — difficulty reclassification + pedagogy badges live | Backend | ✅ Applied |
 | `data/questions/MANIFEST.md` is stale vs Supabase | Medium — generation deduplication can't be trusted | Content | Needs recalibration before next batch |
 | Stripe in test mode | High — blocks paid customers | Platform | Switch before launch |
 | Plausible analytics on `pricing.html` only | Low — limits funnel visibility | Platform | Roll out before launch |

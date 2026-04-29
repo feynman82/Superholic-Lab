@@ -10,6 +10,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
+import { xpToLevel, xpInCurrentLevel } from '../../lib/api/badge-engine.js';
 
 // AL band derivation — mirrors progress.js so frontend and cron always agree.
 // AL1: ≥0.90, AL2: 0.80-0.89, AL3: 0.70-0.79, AL4: 0.60-0.69,
@@ -125,21 +126,25 @@ export default async function handler(req, res) {
       },
     });
 
-    // Update student_xp aggregate — try RPC first, manual upsert as fallback
-    await db.rpc('increment_student_xp', { p_student_id: row.student_id, p_amount: xpAmount })
-      .then(() => {})
-      .catch(async () => {
-        const { data: cur } = await db
-          .from('student_xp')
-          .select('total_xp')
-          .eq('student_id', row.student_id)
-          .maybeSingle();
-        const newTotal = (cur?.total_xp || 0) + xpAmount;
-        await db.from('student_xp').upsert(
-          { student_id: row.student_id, total_xp: newTotal },
-          { onConflict: 'student_id' }
-        );
-      });
+    // Update student_xp aggregate. The increment_student_xp RPC isn't deployed
+    // in this project, so we always take the manual-upsert path. Recompute
+    // current_level + xp_in_level so the kid's level pill on the dashboard
+    // reflects mastery_gain XP without waiting for the next quiz/quest
+    // grantXP call to refresh it.
+    const { data: cur } = await db
+      .from('student_xp')
+      .select('total_xp')
+      .eq('student_id', row.student_id)
+      .maybeSingle();
+    const newTotal = (cur?.total_xp || 0) + xpAmount;
+    const newLevel = xpToLevel(newTotal);
+    await db.from('student_xp').upsert({
+      student_id:    row.student_id,
+      total_xp:      newTotal,
+      current_level: newLevel,
+      xp_in_level:   xpInCurrentLevel(newTotal, newLevel),
+      updated_at:    new Date().toISOString(),
+    }, { onConflict: 'student_id' });
 
     xpAwarded += xpAmount;
   }

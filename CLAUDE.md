@@ -174,7 +174,7 @@ mastery gain). Never reward empty clicks.
 | Quest Day 3 no_improvement | 0 (Day 1+2 XP retained) |
 | Quest Day 3 redo selected | +100 growth-mindset bonus |
 | Exam complete | 100 (+50 if ≥80%) |
-| **Mastery level gain** | **75 per AL band jump** (daily cron, deferred to commit 6) |
+| **Mastery level gain** | **75 per AL band jump** (daily cron — `/api/cron/snapshot-mastery`, 03:00 SGT) |
 | Daily login streak | 5/day, max 50 |
 | Badge earned | varies (`badge_definitions.xp_reward`) |
 
@@ -183,7 +183,7 @@ Cumulative `100 * N * (N-1)` XP per level. Cap at level 50.
 Rank ladder: Cadet (1–4) → Operator (5–9) → Specialist (10–14) → Lieutenant (15–19) → Captain (20–29) → Commander (30–39) → Vanguard (40–49) → Legend (50).
 
 ### Badges
-**33 total** (29 launch + 4 pedagogy badges). Seeded via migrations 017 + 019.
+**33 total** (29 launch + 4 pedagogy badges). Seeded via migrations 017 + 020.
 Notable IP badge: `honest_compass` — earned for marking a quest as
 `no_improvement`. Signals to parents that the platform values self-awareness.
 
@@ -225,10 +225,11 @@ Authority: `docs/QUEST_PAGE_SPEC.md` §12 (XP rules), §14 (badge list).
 | 3 | /quest page wired + new states (EmptyState, QuestPicker, Day3OutcomeModal, etc.) | ✅ Done |
 | 4 | quiz.js + tutor.js integration (from_quest, advance-step, Socratic mode) | ✅ Done |
 | 5 | progress.html quest tray + HUD strip + auto-modal | ✅ Done |
-| 6 | Mastery cron + parent FAQ page + doc cascade (PARENT_FAQ.md, GAMIFICATION_RULES.md) | ⏳ Pending |
+| 6 | Mastery cron + parent FAQ page + doc cascade (PARENT_FAQ.md, GAMIFICATION_RULES.md) | ✅ Done |
 
-Currently in E2E testing for the Lily Tan flow (`docs/QUEST_PAGE_SPEC.md` §18).
-Commit 6 will be combined with the AI Provider Migration handoff (Workstream B).
+Phase 3 (Plan Quest) is complete end-to-end. The Lily Tan E2E flow
+(`docs/QUEST_PAGE_SPEC.md` §18) is the regression suite — run it on the
+Vercel preview before any quest-touching merge.
 
 ## Development Workflow (Research-First)
 

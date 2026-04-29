@@ -258,9 +258,8 @@ For full table definitions, see `ARCHITECTURE.md` → SUPABASE DATABASE SCHEMA.
 | student_badges | Earned badges (unique per student+badge) |
 | avatar_rerolls | Avatar audit + cost ceiling (deferred to post-launch) |
 
-**Migrations applied (in `supabase/`):** 002, 003, 004, 006, 007, 008, 009,
-010, 011, 012, 013, 015, 016, 017, 018.
-**Pending (apply in Supabase SQL Editor):** `019_reclassify_difficulty_heuristic.sql`, `020_seed_pedagogy_badges.sql`.
+**Migrations applied to production Supabase:** 002, 003, 004, 006, 007, 008,
+009, 010, 011, 012, 013, 015, 016, 017, 018, 019, 020, 021, 022, 023, 024, 025.
 
 ---
 
