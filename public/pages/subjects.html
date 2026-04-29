@@ -6,58 +6,582 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Choose a Subject — Superholic Lab</title>
   <meta name="description" content="Choose a subject and topic to start practising MOE-aligned questions." />
+  <meta name="robots" content="noindex, nofollow" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="icon" href="../assets/favicon.ico" />
+
   <script src="/js/header.js" defer></script>
   <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js"></script>
   <script src="/js/footer.js" defer></script>
   <script src="/js/icons.js" defer></script>
   <script src="/js/bottom-nav.js" defer></script>
-  <script type="module">
-    import { guardPage } from '/js/auth.js';
-    import { initAppShell } from '/js/app-shell.js';
+  <script src="../js/supabase-client.js"></script>
 
-    async function boot() {
-      try {
-        window.userProfile = await guardPage(true);
-        const runInit = () => {
-          if (typeof initAppShell === 'function') initAppShell(window.userProfile);
-          if (typeof window.initSubjectsEngine === 'function') window.initSubjectsEngine();
-        };
+  <!-- ═══════════════════ PAGE-LEVEL ARCHITECT-SCHOLAR STYLES ═══════════════════ -->
+  <style>
+    /* ── Page chrome ───────────────────────────────────────────────── */
+    body.subjects-page {
+      background: var(--surface);
+      background-image:
+        linear-gradient(rgba(81, 97, 94, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(81, 97, 94, 0.025) 1px, transparent 1px);
+      background-size: 48px 48px;
+      background-attachment: fixed;
+    }
 
-        if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', runInit);
-        } else {
-          runInit();
-        }
-      } catch (err) {
-        console.error('Boot sequence failed:', err);
+    /* ── Wizard hero header ────────────────────────────────────────── */
+    .wizard-hero {
+      width: 100%;
+      max-width: 960px;
+      margin: 0 auto var(--space-8);
+      text-align: center;
+    }
+
+    .wizard-hero__title {
+      margin: var(--space-2) 0 var(--space-3);
+      color: var(--text-main);
+      line-height: 1.05;
+    }
+
+    .wizard-hero__title em {
+      color: var(--brand-rose);
+      font-style: normal;
+    }
+
+    .wizard-hero__lede {
+      max-width: 560px;
+      margin: 0 auto;
+      color: var(--text-muted);
+    }
+
+    /* ── Breadcrumb step indicator ─────────────────────────────────── */
+    .wizard-breadcrumb {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      margin: 0 0 var(--space-4);
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .wizard-breadcrumb__step {
+      color: var(--text-muted);
+      opacity: 0.55;
+      transition: opacity 200ms ease, color 200ms ease;
+    }
+
+    .wizard-breadcrumb__step.is-active {
+      color: var(--brand-rose);
+      opacity: 1;
+    }
+
+    .wizard-breadcrumb__step.is-done {
+      color: var(--text-main);
+      opacity: 0.85;
+    }
+
+    .wizard-breadcrumb__sep {
+      color: var(--text-muted);
+      opacity: 0.4;
+      font-size: 10px;
+    }
+
+    /* ── The Trio Card (canonical for all 3 steps) ─────────────────── */
+    .trio-grid {
+      display: grid;
+      gap: var(--space-4);
+      width: 100%;
+    }
+
+    .trio-grid--three {
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      max-width: 920px;
+    }
+
+    .trio-grid--many {
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      max-width: 1100px;
+    }
+
+    .trio-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      gap: var(--space-3);
+      padding: var(--space-4) var(--space-3);
+      background: var(--glass-bg, rgba(255, 255, 255, 0.4));
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-light);
+      border-radius: 24px;
+      box-shadow: 0 1px 2px rgba(81, 97, 94, 0.04);
+      cursor: pointer;
+      transition: transform 280ms cubic-bezier(.2, .7, .2, 1),
+        border-color 200ms ease,
+        box-shadow 280ms ease;
+      overflow: hidden;
+    }
+
+    .trio-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(183, 110, 121, 0.45);
+      box-shadow: 0 8px 24px rgba(81, 97, 94, 0.08);
+    }
+
+    /* Sonar pulse on hover (single ring, ::after) */
+    .trio-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 24px;
+      border: 1px solid var(--brand-rose);
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(1);
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .trio-card:hover::after {
+        animation: trioSonarPulse 1200ms ease-out forwards;
       }
     }
-    boot();
-  </script>
+
+    @keyframes trioSonarPulse {
+      0% {
+        opacity: 0.55;
+        transform: scale(1);
+      }
+
+      100% {
+        opacity: 0;
+        transform: scale(1.06);
+      }
+    }
+
+    .trio-card.is-selected {
+      border-color: var(--brand-rose);
+      box-shadow: 0 0 0 1px rgba(183, 110, 121, 0.35),
+        0 8px 24px rgba(183, 110, 121, 0.12);
+    }
+
+    .trio-card.is-locked {
+      opacity: 0.45;
+      cursor: not-allowed;
+      filter: saturate(0.6);
+    }
+
+    .trio-card.is-locked:hover {
+      transform: none;
+      border-color: var(--border-light);
+      box-shadow: none;
+    }
+
+    .trio-card.is-locked::after {
+      display: none;
+    }
+
+    .trio-card__lock {
+      position: absolute;
+      top: var(--space-2);
+      right: var(--space-2);
+      width: 18px;
+      height: 18px;
+      color: var(--text-muted);
+      opacity: 0.6;
+    }
+
+    .trio-card__check {
+      position: absolute;
+      top: var(--space-2);
+      right: var(--space-2);
+      width: 22px;
+      height: 22px;
+      color: var(--brand-rose);
+      opacity: 0;
+      transition: opacity 200ms ease;
+    }
+
+    .trio-card.is-selected .trio-card__check {
+      opacity: 1;
+    }
+
+    /* Title & subtitle */
+    .trio-card__title {
+      font-family: var(--font-display, 'Bebas Neue'), sans-serif;
+      font-size: 32px;
+      letter-spacing: 0.05em;
+      color: var(--text-main);
+      text-align: center;
+      line-height: 1;
+      margin: 0;
+    }
+
+    .trio-card__title--small {
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: 0;
+      color: var(--text-main);
+      text-transform: none;
+    }
+
+    .trio-card__sub {
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      font-weight: 600;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      text-align: center;
+      margin: 0;
+    }
+
+    .trio-card__sub--accent {
+      color: var(--brand-sage);
+    }
+
+    /* ── ORB (Step 1, Subject) — glass sphere with micro-world ─────── */
+    .trio-orb {
+      width: 200px;
+      height: 200px;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .trio-orb {
+        animation: trioOrbBob 6s ease-in-out infinite;
+      }
+
+      .trio-card[data-orb-stagger="1"] .trio-orb {
+        animation-delay: -2s;
+      }
+
+      .trio-card[data-orb-stagger="2"] .trio-orb {
+        animation-delay: -4s;
+      }
+    }
+
+    @keyframes trioOrbBob {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-6px);
+      }
+    }
+
+    .trio-orb svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Inner micro-world rotation/drift, paused on reduced motion */
+    @media (prefers-reduced-motion: no-preference) {
+
+      .orb-rot-slow {
+        transform-origin: 100px 100px;
+        animation: orbRot 16s linear infinite;
+      }
+
+      .orb-rot-med {
+        transform-origin: 100px 100px;
+        animation: orbRot 12s linear infinite;
+      }
+
+      .orb-rot-fast {
+        transform-origin: 100px 100px;
+        animation: orbRot 8s linear infinite reverse;
+      }
+
+      .orb-drift {
+        animation: orbDrift 7s ease-in-out infinite alternate;
+      }
+
+      .orb-drift-2 {
+        animation: orbDrift 9s ease-in-out infinite alternate-reverse;
+      }
+
+      .orb-drift-3 {
+        animation: orbDrift 11s ease-in-out infinite alternate;
+      }
+
+      .orb-glyph-fade {
+        animation: orbGlyphFade 6s ease-in-out infinite;
+      }
+
+      .orb-glyph-fade-2 {
+        animation: orbGlyphFade 6s ease-in-out infinite;
+        animation-delay: -2s;
+      }
+
+      .orb-glyph-fade-3 {
+        animation: orbGlyphFade 6s ease-in-out infinite;
+        animation-delay: -4s;
+      }
+    }
+
+    @keyframes orbRot {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes orbDrift {
+      0% {
+        transform: translate(0, 0);
+      }
+
+      100% {
+        transform: translate(6px, -4px);
+      }
+    }
+
+    @keyframes orbGlyphFade {
+
+      0%,
+      100% {
+        opacity: 0.35;
+        transform: translateY(0);
+      }
+
+      50% {
+        opacity: 1;
+        transform: translateY(-4px);
+      }
+    }
+
+    /* ── TOPIC GLYPH (Step 2) — small SVG signature ────────────────── */
+    .trio-glyph {
+      width: 64px;
+      height: 64px;
+      flex-shrink: 0;
+      color: var(--brand-sage);
+    }
+
+    .trio-card.is-selected .trio-glyph {
+      color: var(--brand-rose);
+    }
+
+    .trio-glyph svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* ── TYPE PREVIEW (Step 3) — typographic preview ───────────────── */
+    .trio-preview {
+      width: 100%;
+      max-width: 200px;
+      height: 80px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: var(--space-2);
+      background: var(--surface-container-lowest, #fff);
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+    }
+
+    .trio-preview__line {
+      height: 8px;
+      background: var(--border-light);
+      border-radius: 4px;
+    }
+
+    .trio-preview__line--full {
+      width: 100%;
+    }
+
+    .trio-preview__line--med {
+      width: 70%;
+    }
+
+    .trio-preview__line--short {
+      width: 40%;
+    }
+
+    .trio-preview__line--blank {
+      width: 30%;
+      background: var(--brand-rose);
+      opacity: 0.55;
+    }
+
+    .trio-preview__bullet {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .trio-preview__radio {
+      width: 8px;
+      height: 8px;
+      border: 1.5px solid var(--text-muted);
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .trio-preview__radio.is-on {
+      background: var(--brand-rose);
+      border-color: var(--brand-rose);
+    }
+
+    /* ── Action row ────────────────────────────────────────────────── */
+    .wizard-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-3);
+      margin-top: var(--space-6);
+      width: 100%;
+      max-width: 360px;
+    }
+
+    .wizard-actions .btn {
+      width: 100%;
+    }
+
+    /* ── Loading & empty states ────────────────────────────────────── */
+    .wizard-loading,
+    .wizard-empty {
+      max-width: 480px;
+      width: 100%;
+      padding: var(--space-6);
+      text-align: center;
+      background: var(--glass-bg, rgba(255, 255, 255, 0.4));
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-light);
+      border-radius: 24px;
+    }
+
+    .wizard-skeleton {
+      width: 100%;
+      max-width: 920px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-4);
+    }
+
+    .wizard-skeleton__card {
+      height: 320px;
+      background: linear-gradient(90deg,
+          rgba(255, 255, 255, 0.4) 25%,
+          rgba(255, 255, 255, 0.7) 50%,
+          rgba(255, 255, 255, 0.4) 75%);
+      background-size: 200% 100%;
+      border: 1px solid var(--border-light);
+      border-radius: 24px;
+      animation: wizardSkeletonShimmer 1800ms linear infinite;
+    }
+
+    @keyframes wizardSkeletonShimmer {
+      0% {
+        background-position: 200% 0;
+      }
+
+      100% {
+        background-position: -200% 0;
+      }
+    }
+
+    /* ── Mobile responsive ─────────────────────────────────────────── */
+    @media (max-width: 640px) {
+      .wizard-hero {
+        margin-bottom: var(--space-6);
+      }
+
+      .trio-grid--three,
+      .trio-grid--many {
+        grid-template-columns: 1fr;
+        max-width: 480px;
+      }
+
+      .wizard-skeleton {
+        grid-template-columns: 1fr;
+      }
+
+      .trio-orb {
+        width: 160px;
+        height: 160px;
+      }
+
+      @keyframes trioOrbBob {
+
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+
+        50% {
+          transform: translateY(-3px);
+        }
+      }
+    }
+
+    /* ── Bottom-nav clearance (consistent with architect-scholar pattern) ── */
+    body.subjects-page #app {
+      padding-bottom: calc(96px + env(safe-area-inset-bottom));
+    }
+
+    @media (min-width: 768px) and (max-width: 1279px) {
+      body.subjects-page #app {
+        padding-right: 120px;
+      }
+    }
+  </style>
 </head>
 
-<body id="mainBody" class="has-bottom-nav bg-page texture-light-grid">
+<body id="mainBody" class="has-bottom-nav subjects-page">
 
   <global-header></global-header>
 
   <!-- ═══════════════════ MAIN WIZARD APP ═══════════════════ -->
-  <main id="app" class="container py-10 flex flex-col items-center"
-    style="padding-top: calc(64px + var(--space-10)); min-height: 80vh; max-width: 800px;"></main>
+  <main id="app" class="container-as flex flex-col items-center w-full"
+    style="padding-top: calc(64px + var(--space-8)); min-height: 80vh;">
+  </main>
 
-  <!-- ═══════════════════ GLOBAL FOOTER ═══════════════════ -->
   <global-footer></global-footer>
-
-  <!-- ═══════════════════ BOTTOM NAV (web component) ═══════════════════ -->
   <global-bottom-nav></global-bottom-nav>
 
-  <script src="../js/supabase-client.js"></script>
-  <script>
-    // ── ROBUST EVENT DELEGATION FOR NAVBAR ──
+  <!-- ═══════════════════ MODULE BOOT ═══════════════════ -->
+  <script type="module">
+    import { guardPage } from '/js/auth.js';
+    import { initAppShell } from '/js/app-shell.js';
+    import {
+      slugify,
+      unslugify,
+      topicsForLevelSubject,
+      questionTypesFor,
+      subTopicsFor,
+      loadLiveCanon,
+      countsBySubject,
+      countsByTopic,
+      countsByType,
+      readShowCountsFlag,
+      TOPIC_TYPE_BYPASS,
+      SUBJECT_DB_NAME
+    } from '/js/syllabus.js';
+
+    // ── ROBUST EVENT DELEGATION FOR NAVBAR (preserved from legacy) ──
     document.addEventListener('click', (e) => {
       const toggleBtn = e.target.closest('#navToggle');
       const dropdown = document.getElementById('navDropdown');
@@ -85,339 +609,652 @@
       }
     });
 
+    // ────────────────────────────────────────────────────────────────────
+    // SUBJECTS WIZARD ENGINE
+    // ────────────────────────────────────────────────────────────────────
     window.initSubjectsEngine = function () {
       'use strict';
 
-      const TOPIC_MAP = {
-        'primary-1:mathematics': ['whole-numbers'],
-        'primary-3:science': ['diversity'],
-        'primary-4:mathematics': ['fractions', 'decimals', 'geometry', 'whole-numbers'],
-        'primary-4:science': ['heat', 'light', 'magnets', 'matter'],
-        'primary-4:english': ['grammar', 'cloze', 'editing', 'vocabulary', 'comprehension'],
-        'primary-6:mathematics': ['fractions'],
-        'primary-6:science': ['cells'],
-        'primary-6:english': ['grammar', 'cloze', 'editing'],
+      const state = {
+        phase: 'INIT',
+        level: '',          // e.g. 'Primary 4'
+        levelSlug: '',      // e.g. 'primary-4'
+        subject: '',        // canonical lowercase slug ('mathematics')
+        tier: '',
+        topic: '',          // canonical topic name ('Fractions') or 'all'
+        qtype: '',
+        studentId: null,
+        showCounts: true,
+        // Cached count maps for the current resolved (level, subject, topic)
+        countsBySubjectMap: {},
+        countsByTopicMap: {},
+        countsByTypeMap: {}
       };
 
-      // ── SYLLABUS_MAP ─────────────────────────────────────────────────────────
-      // Verified against MOE Primary Mathematics Syllabus (2021, updated Oct 2025).
-      // Topic names must match subject-mathematics.html panel chips.
-      // Slugs derived as: name.toLowerCase().replace(/ /g, '-')
-      // ─────────────────────────────────────────────────────────────────────────
-      const SYLLABUS_MAP = {
-        // Mathematics — P1 to P6 (MOE 2021, Oct 2025 update)
-        // P1: No formal WA/EOY. Times tables not yet introduced (concepts only).
-        'primary-1:mathematics': [
-          'Whole Numbers',
-          'Addition and Subtraction',
-          'Multiplication and Division',
-          'Money',
-          'Length and Mass',
-          'Shapes and Patterns',
-          'Picture Graphs'
-        ],
-        // P2: Times tables introduced (×2,×3,×4,×5,×10). Fractions (½,¼,¾).
-        //     Standard units of measurement. 3D shapes. No formal WA/EOY.
-        'primary-2:mathematics': [
-          'Whole Numbers',
-          'Multiplication Tables',
-          'Fractions',
-          'Money',
-          'Time',
-          'Length, Mass and Volume',
-          'Shapes',
-          'Picture Graphs'
-        ],
-        // P3: WAs begin. 24-hour clock, angles, perpendicular/parallel lines added.
-        'primary-3:mathematics': [
-          'Whole Numbers',
-          'Fractions',
-          'Length, Mass and Volume',
-          'Time',
-          'Angles',
-          'Area and Perimeter',
-          'Bar Graphs'
-        ],
-        // P4: Factors/multiples, mixed number fractions, decimals, angles (measuring).
-        'primary-4:mathematics': [
-          'Whole Numbers',
-          'Factors and Multiples',
-          'Fractions',
-          'Decimals',
-          'Angles',
-          'Area and Perimeter',
-          'Symmetry',
-          'Data Analysis'
-        ],
-        // P5: Most content-dense year. Ratio, Percentage, Rate all new.
-        //     Triangle area, volume of solids, parallelogram/rhombus/trapezium.
-        'primary-5:mathematics': [
-          'Whole Numbers',
-          'Fractions',
-          'Decimals',
-          'Percentage',
-          'Ratio',
-          'Rate',
-          'Area of Triangle',
-          'Volume',
-          'Angles and Geometry',
-          'Average'
-        ],
-        // P6: PSLE year. Algebra and Circles new. Speed, complex Ratio, Percentage.
-        'primary-6:mathematics': [
-          'Fractions',
-          'Percentage',
-          'Ratio',
-          'Speed',
-          'Algebra',
-          'Circles',
-          'Volume',
-          'Geometry',
-          'Pie Charts'
-        ],
-
-        'primary-3:science': ['Diversity', 'Systems', 'Interactions'],
-        'primary-4:science': ['Cycles', 'Energy', 'Heat', 'Light', 'Magnets', 'Matter'],
-        'primary-5:science': ['Cycles', 'Systems', 'Energy', 'Interactions'],
-        'primary-6:science': ['Interactions', 'Energy', 'Cells', 'Forces'],
-
-        'primary-1:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze'],
-        'primary-2:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze'],
-        'primary-3:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing', 'Synthesis'],
-        'primary-4:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing', 'Synthesis'],
-        'primary-5:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing', 'Synthesis'],
-        'primary-6:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing', 'Synthesis']
-      };
-
-      const TYPE_MAP = {
-        mathematics: ['mcq', 'short_ans', 'word_problem'],
-        science: ['mcq', 'open_ended'],
-        english: ['mcq', 'cloze', 'editing'],
-      };
-
-      const ALL_TYPES = {
-        mathematics: [{ id: 'mcq', label: 'MCQ' }, { id: 'short_ans', label: 'Short Answer' }, { id: 'word_problem', label: 'Word Problem' }],
-        science: [{ id: 'mcq', label: 'MCQ' }, { id: 'open_ended', label: 'Open-Ended' }],
-        english: [{ id: 'mcq', label: 'MCQ' }, { id: 'cloze', label: 'Cloze' }, { id: 'editing', label: 'Editing' }, { id: 'comprehension', label: 'Comprehension' }]
-      };
-
-      const state = { phase: 'INIT', level: '', subject: '', tier: '', topic: '', qtype: '', studentId: null };
       const app = document.getElementById('app');
 
+      // ── ESCAPE / TITLE-CASE HELPERS ────────────────────────────────────
+      const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const titleCase = (s) => String(s).replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+      // ── BREADCRUMB ──────────────────────────────────────────────────────
+      function breadcrumbHtml() {
+        const steps = state.tier === 'single_subject'
+          ? [{ key: 'TOPIC', label: '§ 01 · Topic' }, { key: 'TYPE', label: '§ 02 · Format' }]
+          : [{ key: 'SUBJECT', label: '§ 01 · Subject' }, { key: 'TOPIC', label: '§ 02 · Topic' }, { key: 'TYPE', label: '§ 03 · Format' }];
+
+        const order = ['SUBJECT', 'TOPIC', 'TYPE'];
+        const currentIdx = order.indexOf(state.phase);
+
+        return `<nav class="wizard-breadcrumb" aria-label="Wizard progress">
+          ${steps.map((s, i) => {
+          const stepIdx = order.indexOf(s.key);
+          let cls = 'wizard-breadcrumb__step';
+          if (stepIdx === currentIdx) cls += ' is-active';
+          else if (stepIdx < currentIdx) cls += ' is-done';
+          const sep = i < steps.length - 1
+            ? '<span class="wizard-breadcrumb__sep" aria-hidden="true">›</span>'
+            : '';
+          return `<span class="${cls}">${esc(s.label)}</span>${sep}`;
+        }).join('')}
+        </nav>`;
+      }
+
+      // ── HERO BLOCK BUILDER ──────────────────────────────────────────────
+      function heroHtml(eyebrow, titleHtml, lede) {
+        return `
+          ${breadcrumbHtml()}
+          <header class="wizard-hero">
+            <span class="label-caps" style="color: var(--brand-rose);">${esc(eyebrow)}</span>
+            <h1 class="h1-as wizard-hero__title">${titleHtml}</h1>
+            <p class="body-lg wizard-hero__lede">${esc(lede)}</p>
+          </header>`;
+      }
+
+      // ────────────────────────────────────────────────────────────────────
+      // ORB SVGs — glass spheres with micro-worlds
+      // ────────────────────────────────────────────────────────────────────
+      function orbSvg(subjectSlug) {
+        // Common: glass sphere base + specular highlight + rim
+        const base = `
+          <defs>
+            <radialGradient id="grad-${subjectSlug}" cx="40%" cy="35%" r="65%">
+              <stop offset="0%" stop-color="#F4FBF9" stop-opacity="0.85"/>
+              <stop offset="55%" stop-color="#A8C4BB" stop-opacity="0.18"/>
+              <stop offset="100%" stop-color="#51615E" stop-opacity="0.05"/>
+            </radialGradient>
+            <radialGradient id="spec-${subjectSlug}" cx="35%" cy="28%" r="22%">
+              <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.7"/>
+              <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+          <circle cx="100" cy="100" r="92" fill="url(#grad-${subjectSlug})"/>
+          <ellipse cx="78" cy="68" rx="34" ry="22" fill="url(#spec-${subjectSlug})"/>
+          <circle cx="100" cy="100" r="92" fill="none" stroke="#51615E" stroke-opacity="0.18" stroke-width="1"/>`;
+
+        if (subjectSlug === 'mathematics') {
+          // Wireframe primitives: cube, octahedron, sphere outline
+          return `<svg viewBox="0 0 200 200" aria-hidden="true">
+            ${base}
+            <g class="orb-rot-slow" stroke="#51615E" stroke-width="1.25" fill="none" stroke-linejoin="round">
+              <!-- Cube top-left -->
+              <g class="orb-drift">
+                <polygon points="55,75 75,68 75,88 55,95"/>
+                <polygon points="75,68 95,75 95,95 75,88"/>
+                <polygon points="55,75 75,68 95,75 75,82"/>
+                <line x1="75" y1="82" x2="75" y2="88"/>
+              </g>
+            </g>
+            <g class="orb-rot-med" stroke="#B76E79" stroke-width="1.25" fill="none" stroke-linejoin="round">
+              <!-- Octahedron right -->
+              <g class="orb-drift-2">
+                <polygon points="135,90 150,75 165,90 150,115 135,90"/>
+                <line x1="135" y1="90" x2="165" y2="90"/>
+                <line x1="150" y1="75" x2="150" y2="115"/>
+              </g>
+            </g>
+            <g class="orb-rot-fast" stroke="#3A4E4A" stroke-width="1" fill="none">
+              <!-- Sphere outline bottom -->
+              <g class="orb-drift-3">
+                <circle cx="95" cy="140" r="18"/>
+                <ellipse cx="95" cy="140" rx="18" ry="6"/>
+                <ellipse cx="95" cy="140" rx="6" ry="18"/>
+              </g>
+            </g>
+          </svg>`;
+        }
+
+        if (subjectSlug === 'science') {
+          // 3-atom molecule: sage central node + two rose outer + bonds
+          return `<svg viewBox="0 0 200 200" aria-hidden="true">
+            ${base}
+            <g class="orb-rot-med">
+              <line x1="100" y1="100" x2="60" y2="75" stroke="#51615E" stroke-width="1.25" stroke-opacity="0.6"/>
+              <line x1="100" y1="100" x2="140" y2="120" stroke="#51615E" stroke-width="1.25" stroke-opacity="0.6"/>
+              <line x1="100" y1="100" x2="115" y2="150" stroke="#51615E" stroke-width="1.25" stroke-opacity="0.6"/>
+              <circle cx="100" cy="100" r="11" fill="#51615E" fill-opacity="0.85"/>
+              <circle cx="60"  cy="75"  r="7"  fill="#B76E79" fill-opacity="0.8"/>
+              <circle cx="140" cy="120" r="7"  fill="#B76E79" fill-opacity="0.8"/>
+              <circle cx="115" cy="150" r="6"  fill="#D4A24A" fill-opacity="0.75"/>
+            </g>
+            <!-- Electron orbit hint -->
+            <ellipse cx="100" cy="100" rx="58" ry="20" fill="none" stroke="#51615E" stroke-width="0.75" stroke-opacity="0.25" transform="rotate(-25 100 100)"/>
+          </svg>`;
+        }
+
+        if (subjectSlug === 'english') {
+          // Three serif glyphs drifting independently
+          return `<svg viewBox="0 0 200 200" aria-hidden="true">
+            ${base}
+            <g font-family="Georgia, 'Times New Roman', serif" text-anchor="middle">
+              <text x="68" y="92" class="orb-glyph-fade" font-size="38" font-style="italic" fill="#51615E">Aa</text>
+              <text x="138" y="100" class="orb-glyph-fade-2" font-size="44" fill="#B76E79">&amp;</text>
+              <text x="100" y="148" class="orb-glyph-fade-3" font-size="36" fill="#3A4E4A">&#8220;&#8221;</text>
+            </g>
+          </svg>`;
+        }
+
+        return `<svg viewBox="0 0 200 200">${base}</svg>`;
+      }
+
+      // ────────────────────────────────────────────────────────────────────
+      // TOPIC GLYPHS — small SVG signatures per canonical topic
+      // ────────────────────────────────────────────────────────────────────
+      function topicGlyph(topicCanonical) {
+        // Map canonical topic → glyph SVG. Falls back to a generic chip-line.
+        const map = {
+          // Mathematics
+          'Whole Numbers': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><text x="32" y="40" text-anchor="middle" font-family="Bebas Neue, sans-serif" font-size="28" fill="currentColor" stroke="none">123</text></svg>`,
+          'Multiplication Tables': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="22" x2="42" y2="42"/><line x1="42" y1="22" x2="22" y2="42"/></svg>`,
+          'Addition and Subtraction': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="20" y1="22" x2="32" y2="22"/><line x1="26" y1="16" x2="26" y2="28"/><line x1="34" y1="42" x2="46" y2="42"/></svg>`,
+          'Multiplication and Division': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><line x1="20" y1="20" x2="36" y2="36"/><line x1="36" y1="20" x2="20" y2="36"/><circle cx="44" cy="44" r="2.5" fill="currentColor"/><line x1="38" y1="50" x2="50" y2="50"/><circle cx="44" cy="56" r="2.5" fill="currentColor"/></svg>`,
+          'Fractions': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><circle cx="32" cy="32" r="22"/><line x1="32" y1="10" x2="32" y2="54"/><line x1="10" y1="32" x2="54" y2="32"/><path d="M32 10 A22 22 0 0 1 54 32 L32 32 Z" fill="currentColor" fill-opacity="0.3" stroke="none"/></svg>`,
+          'Decimals': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><text x="32" y="42" text-anchor="middle" font-family="Bebas Neue, sans-serif" font-size="24" fill="currentColor" stroke="none">0.5</text></svg>`,
+          'Percentage': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="22" cy="22" r="4"/><circle cx="42" cy="42" r="4"/><line x1="42" y1="20" x2="22" y2="44"/></svg>`,
+          'Ratio': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><rect x="10" y="24" width="14" height="16" fill="currentColor" fill-opacity="0.3"/><rect x="26" y="24" width="14" height="16"/><rect x="42" y="24" width="14" height="16"/></svg>`,
+          'Rate': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><circle cx="32" cy="32" r="20"/><line x1="32" y1="32" x2="32" y2="18"/><line x1="32" y1="32" x2="44" y2="40"/></svg>`,
+          'Speed': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M16 38 Q32 22 48 38"/><line x1="48" y1="38" x2="48" y2="32"/><line x1="48" y1="38" x2="54" y2="38"/></svg>`,
+          'Average': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><line x1="14" y1="48" x2="50" y2="48"/><rect x="16" y="36" width="6" height="12" fill="currentColor" fill-opacity="0.3"/><rect x="26" y="28" width="6" height="20" fill="currentColor" fill-opacity="0.3"/><rect x="36" y="32" width="6" height="16" fill="currentColor" fill-opacity="0.3"/><line x1="14" y1="22" x2="50" y2="22" stroke-dasharray="3 3"/></svg>`,
+          'Algebra': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><text x="32" y="42" text-anchor="middle" font-family="Georgia, serif" font-size="28" font-style="italic" fill="currentColor" stroke="none">x</text></svg>`,
+          'Angles': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="14" y1="50" x2="50" y2="50"/><line x1="14" y1="50" x2="44" y2="22"/><path d="M28 50 A14 14 0 0 0 25 41" fill="none"/></svg>`,
+          'Geometry': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><polygon points="32,12 52,46 12,46"/></svg>`,
+          'Area and Perimeter': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><rect x="14" y="18" width="36" height="28" fill="currentColor" fill-opacity="0.18"/></svg>`,
+          'Area of Triangle': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><polygon points="14,46 50,46 32,18" fill="currentColor" fill-opacity="0.18"/><line x1="32" y1="18" x2="32" y2="46" stroke-dasharray="3 3"/></svg>`,
+          'Circles': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><circle cx="32" cy="32" r="20"/><line x1="32" y1="32" x2="52" y2="32" stroke-dasharray="3 3"/><circle cx="32" cy="32" r="2.5" fill="currentColor"/></svg>`,
+          'Volume': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><polygon points="16,46 16,26 32,18 48,26 48,46 32,54"/><line x1="16" y1="26" x2="32" y2="34"/><line x1="48" y1="26" x2="32" y2="34"/><line x1="32" y1="34" x2="32" y2="54"/></svg>`,
+          'Symmetry': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><polygon points="32,12 22,32 32,52" fill="currentColor" fill-opacity="0.2"/><polygon points="32,12 42,32 32,52"/><line x1="32" y1="8" x2="32" y2="56" stroke-dasharray="3 3"/></svg>`,
+          'Shapes and Patterns': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><circle cx="20" cy="20" r="6"/><rect x="36" y="14" width="14" height="14"/><polygon points="20,42 14,52 26,52"/><circle cx="46" cy="48" r="5"/></svg>`,
+          'Factors and Multiples': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><circle cx="20" cy="32" r="8"/><circle cx="44" cy="22" r="6"/><circle cx="44" cy="42" r="6"/><line x1="28" y1="32" x2="38" y2="22"/><line x1="28" y1="32" x2="38" y2="42"/></svg>`,
+          'Pie Charts': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><circle cx="32" cy="32" r="20"/><path d="M32 32 L32 12 A20 20 0 0 1 52 32 Z" fill="currentColor" fill-opacity="0.3" stroke="none"/><line x1="32" y1="32" x2="32" y2="12"/><line x1="32" y1="32" x2="52" y2="32"/></svg>`,
+          'Data Analysis': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><line x1="14" y1="50" x2="50" y2="50"/><line x1="14" y1="50" x2="14" y2="14"/><polyline points="18,40 28,32 38,36 48,20"/></svg>`,
+
+          // Science
+          'Diversity': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><circle cx="20" cy="20" r="6"/><polygon points="44,14 52,28 36,28"/><rect x="14" y="36" width="14" height="14"/><circle cx="44" cy="44" r="7"/></svg>`,
+          'Matter': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><rect x="14" y="32" width="14" height="14"/><circle cx="40" cy="22" r="3" fill="currentColor"/><circle cx="48" cy="30" r="3" fill="currentColor"/><circle cx="42" cy="38" r="3" fill="currentColor"/><circle cx="50" cy="44" r="3" fill="currentColor"/></svg>`,
+          'Systems': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><rect x="14" y="22" width="36" height="20" rx="6"/><line x1="14" y1="32" x2="6" y2="32"/><line x1="50" y1="32" x2="58" y2="32"/></svg>`,
+          'Cycles': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M48 32 A16 16 0 1 1 32 16"/><polyline points="32,12 32,18 38,18"/></svg>`,
+          'Interactions': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><circle cx="22" cy="32" r="10"/><circle cx="42" cy="32" r="10"/></svg>`,
+          'Energy': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><polygon points="34,10 22,36 32,36 28,54 44,28 32,28" fill="currentColor" fill-opacity="0.3"/></svg>`,
+          'Forces': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="14" y1="32" x2="50" y2="32"/><polyline points="42,24 50,32 42,40"/></svg>`,
+          'Heat': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 14 Q14 24 22 32 Q14 40 22 50"/><path d="M32 14 Q24 24 32 32 Q24 40 32 50"/><path d="M42 14 Q34 24 42 32 Q34 40 42 50"/></svg>`,
+          'Light': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="32" cy="32" r="8" fill="currentColor" fill-opacity="0.4"/><line x1="32" y1="10" x2="32" y2="18"/><line x1="32" y1="46" x2="32" y2="54"/><line x1="10" y1="32" x2="18" y2="32"/><line x1="46" y1="32" x2="54" y2="32"/><line x1="16" y1="16" x2="22" y2="22"/><line x1="42" y1="42" x2="48" y2="48"/><line x1="48" y1="16" x2="42" y2="22"/><line x1="22" y1="42" x2="16" y2="48"/></svg>`,
+          'Cells': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><circle cx="32" cy="32" r="20"/><circle cx="32" cy="32" r="8" fill="currentColor" fill-opacity="0.3"/><circle cx="32" cy="32" r="3" fill="currentColor"/></svg>`,
+
+          // English
+          'Grammar': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="22" x2="40" y2="22"/><line x1="12" y1="32" x2="52" y2="32"/><line x1="12" y1="42" x2="32" y2="42"/><circle cx="44" cy="42" r="3" fill="currentColor"/></svg>`,
+          'Vocabulary': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="14" y="14" width="36" height="36" rx="3"/><line x1="22" y1="26" x2="42" y2="26"/><line x1="22" y1="34" x2="42" y2="34"/><line x1="22" y1="42" x2="34" y2="42"/></svg>`,
+          'Cloze': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="22" x2="20" y2="22"/><rect x="24" y="16" width="14" height="12" fill="currentColor" fill-opacity="0.3"/><line x1="42" y1="22" x2="52" y2="22"/><line x1="12" y1="38" x2="32" y2="38"/><rect x="36" y="32" width="14" height="12" fill="currentColor" fill-opacity="0.3"/></svg>`,
+          'Editing': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 44 L40 18 L48 26 L22 52 L14 52 Z"/><line x1="36" y1="22" x2="44" y2="30"/></svg>`,
+          'Comprehension': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M14 16 Q32 12 50 16 L50 46 Q32 42 14 46 Z"/><line x1="32" y1="14" x2="32" y2="44"/></svg>`,
+          'Synthesis': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="22" x2="24" y2="22"/><line x1="12" y1="42" x2="24" y2="42"/><path d="M24 22 Q34 22 34 32 Q34 42 24 42"/><line x1="34" y1="32" x2="52" y2="32"/></svg>`,
+          'Summary Writing': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="18" x2="50" y2="18"/><line x1="12" y1="26" x2="50" y2="26"/><line x1="12" y1="34" x2="50" y2="34"/><line x1="20" y1="46" x2="44" y2="46" stroke-width="3"/></svg>`
+        };
+        return `<div class="trio-glyph">${map[topicCanonical] || `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><circle cx="32" cy="32" r="14"/></svg>`}</div>`;
+      }
+
+      // "All Topics" custom glyph
+      function allTopicsGlyph() {
+        return `<div class="trio-glyph">
+          <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="20" cy="20" r="6"/>
+            <circle cx="44" cy="20" r="6"/>
+            <circle cx="20" cy="44" r="6"/>
+            <circle cx="44" cy="44" r="6"/>
+            <line x1="26" y1="20" x2="38" y2="20" stroke-dasharray="2 2"/>
+            <line x1="20" y1="26" x2="20" y2="38" stroke-dasharray="2 2"/>
+            <line x1="44" y1="26" x2="44" y2="38" stroke-dasharray="2 2"/>
+            <line x1="26" y1="44" x2="38" y2="44" stroke-dasharray="2 2"/>
+          </svg>
+        </div>`;
+      }
+
+      // ────────────────────────────────────────────────────────────────────
+      // TYPE PREVIEW — typographic miniatures per question type
+      // ────────────────────────────────────────────────────────────────────
+      function typePreview(typeId) {
+        const map = {
+          'mcq': `<div class="trio-preview">
+            <div class="trio-preview__bullet"><span class="trio-preview__radio is-on"></span><span class="trio-preview__line trio-preview__line--med"></span></div>
+            <div class="trio-preview__bullet"><span class="trio-preview__radio"></span><span class="trio-preview__line trio-preview__line--full"></span></div>
+            <div class="trio-preview__bullet"><span class="trio-preview__radio"></span><span class="trio-preview__line trio-preview__line--short"></span></div>
+            <div class="trio-preview__bullet"><span class="trio-preview__radio"></span><span class="trio-preview__line trio-preview__line--med"></span></div>
+          </div>`,
+          'short_ans': `<div class="trio-preview">
+            <div class="trio-preview__line trio-preview__line--full"></div>
+            <div class="trio-preview__line trio-preview__line--short" style="background: var(--brand-rose); opacity: 0.7;"></div>
+          </div>`,
+          'word_problem': `<div class="trio-preview">
+            <div class="trio-preview__line trio-preview__line--full"></div>
+            <div class="trio-preview__line trio-preview__line--full"></div>
+            <div style="display:flex; gap:4px; margin-top:4px;">
+              <div style="flex:2; height:10px; background: var(--brand-sage); opacity:0.55; border-radius:2px;"></div>
+              <div style="flex:1; height:10px; background: var(--brand-rose); opacity:0.55; border-radius:2px;"></div>
+            </div>
+          </div>`,
+          'open_ended': `<div class="trio-preview">
+            <div class="trio-preview__line trio-preview__line--full"></div>
+            <div class="trio-preview__line trio-preview__line--full"></div>
+            <div class="trio-preview__line trio-preview__line--med"></div>
+          </div>`,
+          'cloze': `<div class="trio-preview">
+            <div style="display:flex; align-items:center; gap:4px;">
+              <span class="trio-preview__line" style="width:25%;"></span>
+              <span class="trio-preview__line trio-preview__line--blank"></span>
+              <span class="trio-preview__line" style="width:25%;"></span>
+            </div>
+            <div style="display:flex; align-items:center; gap:4px;">
+              <span class="trio-preview__line trio-preview__line--blank"></span>
+              <span class="trio-preview__line" style="width:35%;"></span>
+            </div>
+          </div>`,
+          'editing': `<div class="trio-preview">
+            <div style="display:flex; align-items:center; gap:4px;">
+              <span class="trio-preview__line" style="width:30%;"></span>
+              <span class="trio-preview__line" style="width:25%; background: var(--brand-rose); opacity:0.5; text-decoration:line-through;"></span>
+              <span class="trio-preview__line" style="width:25%;"></span>
+            </div>
+            <div class="trio-preview__line trio-preview__line--full"></div>
+          </div>`,
+          'comprehension': `<div class="trio-preview" style="flex-direction: row;">
+            <div style="flex:1; display:flex; flex-direction:column; gap:3px;">
+              <div class="trio-preview__line trio-preview__line--full"></div>
+              <div class="trio-preview__line trio-preview__line--med"></div>
+              <div class="trio-preview__line trio-preview__line--full"></div>
+            </div>
+            <div style="width:1px; background: var(--border-light); margin: 0 4px;"></div>
+            <div style="flex:1; display:flex; flex-direction:column; gap:3px;">
+              <div class="trio-preview__bullet"><span class="trio-preview__radio is-on"></span><span class="trio-preview__line trio-preview__line--med"></span></div>
+              <div class="trio-preview__bullet"><span class="trio-preview__radio"></span><span class="trio-preview__line trio-preview__line--med"></span></div>
+            </div>
+          </div>`
+        };
+        return map[typeId] || map['mcq'];
+      }
+
+      // ────────────────────────────────────────────────────────────────────
+      // RENDER ROUTER
+      // ────────────────────────────────────────────────────────────────────
       function render() {
         if (state.phase === 'SUBJECT') renderSubject();
         else if (state.phase === 'TOPIC') renderTopic();
         else if (state.phase === 'TYPE') renderType();
       }
 
-      function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
-      function titleCase(s) { return s.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()); }
+      // ── Skeleton loading ───────────────────────────────────────────────
+      function renderSkeleton() {
+        app.innerHTML = `
+          ${breadcrumbHtml()}
+          <header class="wizard-hero">
+            <span class="label-caps" style="color: var(--brand-rose);">§ 01 — LOADING</span>
+            <h1 class="h1-as wizard-hero__title">Preparing your lab…</h1>
+            <p class="body-lg wizard-hero__lede">Pulling the latest curriculum from the syllabus archive.</p>
+          </header>
+          <div class="wizard-skeleton">
+            <div class="wizard-skeleton__card"></div>
+            <div class="wizard-skeleton__card"></div>
+            <div class="wizard-skeleton__card"></div>
+          </div>`;
+      }
 
+      // ────────────────────────────────────────────────────────────────────
+      // PHASE 1 — SUBJECT
+      // ────────────────────────────────────────────────────────────────────
       function renderSubject() {
-        const isJunior = state.level.toLowerCase().includes('primary 1') || state.level.toLowerCase().includes('primary 2');
-
+        const isJunior = state.levelSlug === 'primary-1' || state.levelSlug === 'primary-2';
         const subjects = [
-          { id: 'mathematics', icon: '📐', label: 'Mathematics', tag: 'P1–P6' },
-          ...(isJunior ? [] : [{ id: 'science', icon: '🔬', label: 'Science', tag: 'P3–P6' }]),
-          { id: 'english', icon: '📖', label: 'English', tag: 'P1–P6' }
+          { id: 'mathematics', label: 'Mathematics', tag: isJunior ? 'P1–P2 essentials' : 'P1–P6 syllabus' },
+          ...(isJunior ? [] : [{ id: 'science', label: 'Science', tag: 'P3–P6 syllabus' }]),
+          { id: 'english', label: 'English', tag: 'P1–P6 syllabus' }
         ];
 
-        const cards = subjects.map(s => {
+        const cards = subjects.map((s, i) => {
           const locked = state.tier === 'single_subject' && s.id !== state.subject;
+          const isSel = state.subject === s.id;
+          const dbName = SUBJECT_DB_NAME[s.id];
+          const count = state.countsBySubjectMap[dbName] || 0;
+          const countLine = state.showCounts && count > 0
+            ? `${count} question${count === 1 ? '' : 's'} · ${esc(s.tag)}`
+            : esc(s.tag);
+
           return `
-        <div class="glass-panel-1 hover-lift flex flex-col items-center justify-center p-6 text-center ${locked ? 'opacity-50' : 'cursor-pointer'}" 
-             ${locked ? '' : `onclick="window.pickSubject('${s.id}')"`}>
-          <div class="text-4xl mb-4">${s.icon}</div>
-          <h3 class="font-display text-2xl text-main">${s.label}</h3>
-          <div class="badge ${locked ? 'badge-danger' : 'badge-info'} mt-2">${locked ? '🔒 Locked to Plan' : s.tag}</div>
-        </div>`;
+            <button type="button" class="trio-card ${isSel ? 'is-selected' : ''} ${locked ? 'is-locked' : ''}"
+                    data-orb-stagger="${i}"
+                    ${locked ? 'aria-disabled="true"' : `onclick="window.pickSubject('${s.id}')"`}>
+              ${locked ? `<svg class="trio-card__lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>` : ''}
+              <svg class="trio-card__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="8,12 11,15 16,9"/></svg>
+              <div class="trio-orb">${orbSvg(s.id)}</div>
+              <h2 class="trio-card__title">${esc(s.label)}</h2>
+              <p class="trio-card__sub">${countLine}</p>
+            </button>`;
         }).join('');
 
         app.innerHTML = `
-      <div class="text-center mb-8 w-full">
-        <div class="badge badge-info mb-2">Step 1 of 3</div>
-        <h1 class="font-display text-4xl text-main">Choose a Subject</h1>
-        <p class="text-muted text-lg mt-2">${esc(state.level)} — Select your mission</p>
-      </div>
-      <div class="w-full" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-6);">
-        ${cards}
-      </div>`;
+          ${heroHtml(
+          '§ 01 — SUBJECT',
+          `Pick the subject for <em>today's</em> session.`,
+          `${esc(state.level)} · MOE-aligned curriculum across all primary levels.`
+        )}
+          <div class="trio-grid trio-grid--three">${cards}</div>`;
       }
 
       window.pickSubject = (subj) => {
-        state.subject = subj; state.topic = ''; state.qtype = ''; state.phase = 'TOPIC'; render();
+        state.subject = subj;
+        state.topic = '';
+        state.qtype = '';
+        state.phase = 'TOPIC';
+        // Refresh topic-counts for this subject
+        loadTopicCounts().then(() => render());
+        render();
       };
 
-      // Topics that map directly to one question type — skip the TYPE step entirely.
-      // Key = topic slug, value = type param to pass to quiz URL.
-      const TOPIC_TYPE_BYPASS = {
-        'grammar': 'mcq',
-        'vocabulary': 'mcq',
-        'cloze': 'cloze',
-        'editing': 'editing',
-        'comprehension': 'comprehension', // 🚀 FIX: Mapped to the correct split-screen type
-        'synthesis': 'short_ans',     // 🚀 NEW: Mapped exactly to short_ans
-      };
-
+      // ────────────────────────────────────────────────────────────────────
+      // PHASE 2 — TOPIC
+      // ────────────────────────────────────────────────────────────────────
       function renderTopic() {
-        const key = state.level.toLowerCase().replace(' ', '-') + ':' + state.subject;
-        const allTopicsForSubj = SYLLABUS_MAP[key] || [];
-        const stepText = state.tier === 'single_subject' ? 'Step 1 of 2' : 'Step 2 of 3';
+        const allTopics = topicsForLevelSubject(state.levelSlug, state.subject);
+        const totalForSubject = Object.values(state.countsByTopicMap).reduce((a, b) => a + b, 0);
 
-        const buildCard = (id, title, sub, isSelected, isLocked) => `
-      <div class="glass-panel-1 p-6 ${isLocked ? 'opacity-50' : 'cursor-pointer hover-lift'} flex flex-col justify-center text-center relative" 
-           style="border: 2px solid ${isSelected ? 'var(--brand-mint)' : 'var(--border-light)'}; background: ${isSelected ? 'var(--bg-elevated)' : 'var(--bg-surface)'};"
-           ${isLocked ? '' : `onclick="window.pickTopic('${id}')"`}>
-        ${isLocked ? '<div class="absolute top-2 right-2 text-xs text-muted" title="More questions coming soon">🔒</div>' : ''}
-        <div class="font-bold text-lg text-main">${esc(title)}</div>
-        <div class="text-xs text-muted mt-2">${esc(sub)}</div>
-      </div>`;
+        const buildCard = (id, title, glyph, sub, isSel, isLocked) => {
+          const cls = `trio-card ${isSel ? 'is-selected' : ''} ${isLocked ? 'is-locked' : ''}`;
+          const handler = isLocked ? 'aria-disabled="true"' : `onclick="window.pickTopic('${id}')"`;
+          return `
+            <button type="button" class="${cls}" ${handler}>
+              ${isLocked ? `<svg class="trio-card__lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>` : ''}
+              <svg class="trio-card__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="8,12 11,15 16,9"/></svg>
+              ${glyph}
+              <h2 class="trio-card__title trio-card__title--small">${esc(title)}</h2>
+              <p class="trio-card__sub">${esc(sub)}</p>
+            </button>`;
+        };
 
-        const allBtn = buildCard('all', '📚 All Topics', 'Practise everything', state.topic === 'all', false);
-        const topicBtns = allTopicsForSubj.map(t => {
-          const slug = t.toLowerCase().replace(/ /g, '-');
-          const isLocked = false; // 🌟 FIX: Instantly unlock all topics
-          return buildCard(slug, t, 'Focused topic practice', state.topic === slug, isLocked);
+        // "All Topics" — first card, always present
+        const allSubLine = state.showCounts && totalForSubject > 0
+          ? `${totalForSubject} question${totalForSubject === 1 ? '' : 's'} · all areas`
+          : 'Practise across every area';
+        const allBtn = buildCard('all', 'All Topics', allTopicsGlyph(), allSubLine, state.topic === 'all', false);
+
+        // Canonical topic cards
+        const topicBtns = allTopics.map(canon => {
+          const slug = slugify(canon);
+          const count = state.countsByTopicMap[canon] || 0;
+          const subTopicCount = subTopicsFor(state.subject, canon).length;
+          const subLine = state.showCounts && count > 0
+            ? `${count} question${count === 1 ? '' : 's'} · ${subTopicCount} sub-topic${subTopicCount === 1 ? '' : 's'}`
+            : `${subTopicCount} sub-topic${subTopicCount === 1 ? '' : 's'}`;
+          return buildCard(slug, canon, topicGlyph(canon), subLine, state.topic === slug, false);
         }).join('');
 
-        // Show "Choose Question Type" button only when the selected topic is NOT auto-bypassed
-        const selectedHasBypass = state.topic && TOPIC_TYPE_BYPASS[state.topic];
+        const selectedHasBypass = state.topic && state.topic !== 'all' && TOPIC_TYPE_BYPASS[state.topic];
+        const continueBtn = !selectedHasBypass
+          ? `<button class="btn btn-primary" ${!state.topic ? 'disabled' : ''} onclick="window.goToType()">Choose Question Type →</button>`
+          : '';
+        const backBtn = state.tier !== 'single_subject'
+          ? `<button class="btn btn-ghost" onclick="window.goBack('SUBJECT')">← Back to Subjects</button>`
+          : '';
+
         app.innerHTML = `
-      <div class="text-center mb-8 w-full">
-        <div class="badge badge-info mb-2">${stepText}</div>
-        <h1 class="font-display text-4xl text-main">Choose a Topic</h1>
-        <p class="text-muted text-lg mt-2">${esc(titleCase(state.subject))} · ${esc(state.level)}</p>
-      </div>
-      <div class="w-full mb-8" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--space-4);">
-        ${allBtn} ${topicBtns}
-      </div>
-      <div class="w-full flex flex-col items-center gap-4" style="max-width: 400px;">
-        ${!selectedHasBypass ? `<button class="btn btn-primary btn-lg w-full hover-lift" ${!state.topic ? 'disabled' : ''} onclick="window.goToType()">Choose Question Type →</button>` : ''}
-        ${state.tier !== 'single_subject' ? `<button class="btn btn-ghost" onclick="window.goBack('SUBJECT')">← Back to Subjects</button>` : ''}
-      </div>`;
+          ${heroHtml(
+          state.tier === 'single_subject' ? '§ 01 — TOPIC' : '§ 02 — TOPIC',
+          `Where shall we <em>focus</em>?`,
+          `${esc(titleCase(state.subject))} · ${esc(state.level)}`
+        )}
+          <div class="trio-grid trio-grid--many">${allBtn}${topicBtns}</div>
+          <div class="wizard-actions">${continueBtn}${backBtn}</div>`;
       }
 
       window.pickTopic = (t) => {
         state.topic = t;
 
-        // 🚀 MASTERCLASS UX: Pure 2-Step Flow for English
+        // English: any topic pick launches directly (per existing routing)
         if (state.subject === 'english') {
-          // If they pick "All Topics" in English, instantly launch a mixed paper.
           state.qtype = (t === 'all') ? 'mixed' : (TOPIC_TYPE_BYPASS[t] || 'mixed');
           window.launchQuiz();
+          return;
         }
-        // Math and Science bypass logic
-        else if (TOPIC_TYPE_BYPASS[t]) {
+
+        // Math/Science bypass
+        if (t !== 'all' && TOPIC_TYPE_BYPASS[t]) {
           state.qtype = TOPIC_TYPE_BYPASS[t];
           window.launchQuiz();
+          return;
         }
-        // Proceed to Step 3 for Math/Science
-        else {
-          render();
-        }
-      };
-      window.goToType = () => { if (state.topic) { state.qtype = ''; state.phase = 'TYPE'; render(); } };
 
-      function renderType() {
-        const allTypesForSubj = ALL_TYPES[state.subject] || [];
-        const stepText = state.tier === 'single_subject' ? 'Step 2 of 2' : 'Step 3 of 3';
-
-        const buildCard = (id, title, sub, isSelected, isLocked) => `
-      <div class="glass-panel-1 p-6 ${isLocked ? 'opacity-50' : 'cursor-pointer hover-lift'} flex flex-col justify-center text-center relative" 
-           style="border: 2px solid ${isSelected ? 'var(--brand-mint)' : 'var(--border-light)'}; background: ${isSelected ? 'var(--bg-elevated)' : 'var(--bg-surface)'};"
-           ${isLocked ? '' : `onclick="window.pickType('${id}')"`}>
-        ${isLocked ? '<div class="absolute top-2 right-2 text-xs text-muted" title="More questions coming soon">🔒</div>' : ''}
-        <div class="font-bold text-lg text-main">${esc(title)}</div>
-        <div class="text-xs text-muted mt-2">${esc(sub)}</div>
-      </div>`;
-
-        const mixedBtn = buildCard('mixed', '🎲 Mixed', 'A balanced mix of questions', state.qtype === 'mixed', false);
-        const typeBtns = allTypesForSubj.map(t => {
-          const isLocked = false; // 🌟 FIX: Instantly unlock all types
-          return buildCard(t.id, t.label, 'Specific question format', state.qtype === t.id, isLocked);
-        }).join('');
-
-        app.innerHTML = `
-      <div class="text-center mb-8 w-full">
-        <div class="badge badge-info mb-2">${stepText}</div>
-        <h1 class="font-display text-4xl text-main">Question Format</h1>
-        <p class="text-muted text-lg mt-2">${esc(state.topic === 'all' ? 'All Topics' : titleCase(state.topic))} · ${esc(titleCase(state.subject))}</p>
-      </div>
-      <div class="w-full mb-8" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--space-4);">
-        ${mixedBtn} ${typeBtns}
-      </div>
-      <div class="w-full flex flex-col items-center gap-4" style="max-width: 400px;">
-        <button class="btn btn-primary btn-lg w-full hover-lift" ${!state.qtype ? 'disabled' : ''} onclick="window.launchQuiz()">Enter Training Lab →</button>
-        <button class="btn btn-ghost" onclick="window.goBack('TOPIC')">← Back to Topics</button>
-      </div>`;
-      }
-
-      window.pickType = (t) => { state.qtype = t; render(); };
-      window.goBack = (phase) => {
-        if (phase === 'SUBJECT') { state.subject = ''; state.topic = ''; state.qtype = ''; state.phase = 'SUBJECT'; }
-        else if (phase === 'TOPIC') { state.qtype = ''; state.phase = 'TOPIC'; }
+        // Otherwise refresh per-type counts and re-render
+        const canonicalTopic = (t === 'all') ? null : unslugify(t, state.subject);
+        loadTypeCounts(canonicalTopic).then(() => render());
         render();
       };
 
+      window.goToType = () => {
+        if (!state.topic) return;
+        state.qtype = '';
+        state.phase = 'TYPE';
+        const canonicalTopic = (state.topic === 'all') ? null : unslugify(state.topic, state.subject);
+        loadTypeCounts(canonicalTopic).then(() => render());
+        render();
+      };
+
+      // ────────────────────────────────────────────────────────────────────
+      // PHASE 3 — TYPE
+      // ────────────────────────────────────────────────────────────────────
+      function renderType() {
+        const types = questionTypesFor(state.subject);
+        const totalForScope = Object.values(state.countsByTypeMap).reduce((a, b) => a + b, 0);
+
+        const buildCard = (id, title, sub, isSel, isLocked) => {
+          const cls = `trio-card ${isSel ? 'is-selected' : ''} ${isLocked ? 'is-locked' : ''}`;
+          const handler = isLocked ? 'aria-disabled="true"' : `onclick="window.pickType('${id}')"`;
+          return `
+            <button type="button" class="${cls}" ${handler}>
+              ${isLocked ? `<svg class="trio-card__lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>` : ''}
+              <svg class="trio-card__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="8,12 11,15 16,9"/></svg>
+              ${typePreview(id)}
+              <h2 class="trio-card__title trio-card__title--small">${esc(title)}</h2>
+              <p class="trio-card__sub">${esc(sub)}</p>
+            </button>`;
+        };
+
+        // "Mixed" first
+        const mixedSub = state.showCounts && totalForScope > 0
+          ? `${totalForScope} question${totalForScope === 1 ? '' : 's'} · all formats`
+          : 'A balanced mix of formats';
+        const mixedBtn = `
+          <button type="button" class="trio-card ${state.qtype === 'mixed' ? 'is-selected' : ''}" onclick="window.pickType('mixed')">
+            <svg class="trio-card__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="8,12 11,15 16,9"/></svg>
+            <div class="trio-preview">
+              <div class="trio-preview__bullet"><span class="trio-preview__radio is-on"></span><span class="trio-preview__line trio-preview__line--med"></span></div>
+              <div class="trio-preview__line trio-preview__line--full"></div>
+              <div style="display:flex; align-items:center; gap:4px;"><span class="trio-preview__line" style="width:30%;"></span><span class="trio-preview__line trio-preview__line--blank"></span></div>
+            </div>
+            <h2 class="trio-card__title trio-card__title--small">Mixed</h2>
+            <p class="trio-card__sub">${esc(mixedSub)}</p>
+          </button>`;
+
+        const typeBtns = types.map(t => {
+          const count = state.countsByTypeMap[t.id] || 0;
+          const sub = state.showCounts && count > 0
+            ? `${count} question${count === 1 ? '' : 's'}`
+            : 'Specific format practice';
+          return buildCard(t.id, t.label, sub, state.qtype === t.id, false);
+        }).join('');
+
+        app.innerHTML = `
+          ${heroHtml(
+          state.tier === 'single_subject' ? '§ 02 — FORMAT' : '§ 03 — FORMAT',
+          `How do you want to be <em>tested</em>?`,
+          `${esc(state.topic === 'all' ? 'All Topics' : titleCase(state.topic))} · ${esc(titleCase(state.subject))}`
+        )}
+          <div class="trio-grid trio-grid--many">${mixedBtn}${typeBtns}</div>
+          <div class="wizard-actions">
+            <button class="btn btn-primary" ${!state.qtype ? 'disabled' : ''} onclick="window.launchQuiz()">Enter Training Lab →</button>
+            <button class="btn btn-ghost" onclick="window.goBack('TOPIC')">← Back to Topics</button>
+          </div>`;
+      }
+
+      window.pickType = (t) => {
+        state.qtype = t;
+        render();
+      };
+
+      // ── Navigation ─────────────────────────────────────────────────────
+      window.goBack = (phase) => {
+        if (phase === 'SUBJECT') {
+          state.subject = '';
+          state.topic = '';
+          state.qtype = '';
+          state.phase = 'SUBJECT';
+        } else if (phase === 'TOPIC') {
+          state.qtype = '';
+          state.phase = 'TOPIC';
+        }
+        render();
+      };
+
+      // ── LAUNCH ──────────────────────────────────────────────────────────
       window.launchQuiz = function () {
         if (!state.qtype) return;
-        const levelSlug = state.level.toLowerCase().replace(' ', '-');
-        const params = new URLSearchParams({ subject: state.subject, level: levelSlug });
+        const params = new URLSearchParams({ subject: state.subject, level: state.levelSlug });
         if (state.studentId) params.set('student', state.studentId);
         if (state.topic && state.topic !== 'all') params.set('topic', state.topic);
         if (state.qtype && state.qtype !== 'mixed') params.set('type', state.qtype);
         window.location.href = 'quiz.html?' + params.toString();
       };
 
+      // ────────────────────────────────────────────────────────────────────
+      // COUNT LOADERS
+      // ────────────────────────────────────────────────────────────────────
+      async function loadSubjectCounts(sb) {
+        if (!state.showCounts) return;
+        state.countsBySubjectMap = await countsBySubject(sb, state.level);
+      }
+
+      async function loadTopicCounts() {
+        if (!state.showCounts) {
+          state.countsByTopicMap = {};
+          return;
+        }
+        const sb = await getSupabase();
+        const dbSubject = SUBJECT_DB_NAME[state.subject];
+        if (!dbSubject) return;
+        state.countsByTopicMap = await countsByTopic(sb, state.level, dbSubject);
+      }
+
+      async function loadTypeCounts(canonicalTopic) {
+        if (!state.showCounts) {
+          state.countsByTypeMap = {};
+          return;
+        }
+        const sb = await getSupabase();
+        const dbSubject = SUBJECT_DB_NAME[state.subject];
+        if (!dbSubject) return;
+        state.countsByTypeMap = await countsByType(sb, state.level, dbSubject, canonicalTopic);
+      }
+
+      // ────────────────────────────────────────────────────────────────────
+      // INIT
+      // ────────────────────────────────────────────────────────────────────
       async function init() {
-        app.innerHTML = `<div class="flex flex-col items-center justify-center p-20"><div class="spinner-sm mb-4"></div><p class="text-muted font-bold">Loading mission files...</p></div>`;
+        renderSkeleton();
         try {
           const profile = window.userProfile;
           if (!profile) return;
 
           const sb = await getSupabase();
 
-          // --- UNIFIED STATE RESOLVER ---
+          // Load live canon (replaces baked-in cache on success)
+          await loadLiveCanon(sb);
+
+          // Load admin toggle for question counts
+          state.showCounts = await readShowCountsFlag(sb);
+
+          // Resolve active student (existing pattern preserved verbatim)
           const urlParams = new URLSearchParams(window.location.search);
-          let activeStudentId = urlParams.get('student') || localStorage.getItem('shl_active_student_id');
-
-          // Fetch all children for this parent
-          const { data: students } = await sb.from('students').select('id, level, selected_subject').eq('parent_id', profile.id);
-
-          // Find the specific student, or fallback to the first one
-          let student = (students || []).find(s => s.id === activeStudentId) || (students || [])[0];
+          const activeStudentId = urlParams.get('student') || localStorage.getItem('shl_active_student_id');
+          const { data: students } = await sb.from('students')
+            .select('id, level, selected_subject')
+            .eq('parent_id', profile.id);
+          const student = (students || []).find(s => s.id === activeStudentId) || (students || [])[0];
 
           if (!student) {
-            app.innerHTML = `<div class="glass-panel-1 p-8 text-center text-amber font-bold">No learners found. Please set up a profile.</div>`;
+            app.innerHTML = `
+              <div class="wizard-empty">
+                <span class="label-caps" style="color: var(--brand-rose);">§ — NO LEARNER</span>
+                <h2 class="h2-as" style="color: var(--text-main); margin-top: var(--space-2);">No learners found.</h2>
+                <p class="body-md" style="color: var(--text-muted); margin-top: var(--space-3);">Please set up a learner profile to begin.</p>
+                <a class="btn btn-primary" href="setup.html" style="margin-top: var(--space-4); display: inline-block;">Set up a profile →</a>
+              </div>`;
             return;
           }
 
-          // Persist the truth
           state.studentId = student.id;
           localStorage.setItem('shl_active_student_id', student.id);
-          // ------------------------------
-
           state.level = student.level || 'Primary 4';
+          state.levelSlug = state.level.toLowerCase().replace(/ /g, '-');
           state.tier = profile.subscription_tier || 'trial';
 
-          // app-shell.js already handles bottom-nav student propagation and
-          // junior guardrail. No need to duplicate that logic here.
+          // Pre-load subject-level counts for the SUBJECT phase
+          await loadSubjectCounts(sb);
 
           if (state.tier === 'single_subject' && student.selected_subject) {
             state.subject = student.selected_subject.toLowerCase();
             state.phase = 'TOPIC';
+            await loadTopicCounts();
           } else {
             state.phase = 'SUBJECT';
           }
           render();
         } catch (err) {
-          console.error(err);
-          app.innerHTML = `<div class="glass-panel-1 p-8 text-center text-danger font-bold">Could not load profile. Please refresh.</div>`;
+          console.error('[subjects] init failed:', err);
+          app.innerHTML = `
+            <div class="wizard-empty">
+              <span class="label-caps" style="color: var(--brand-rose);">§ — ERROR</span>
+              <h2 class="h2-as" style="color: var(--text-main); margin-top: var(--space-2);">Could not load profile.</h2>
+              <p class="body-md" style="color: var(--text-muted); margin-top: var(--space-3);">Please refresh the page or check your connection.</p>
+            </div>`;
         }
       }
 
-      setTimeout(init, 100);
+      setTimeout(init, 50);
     };
+
+    // ── BOOT ────────────────────────────────────────────────────────────
+    async function boot() {
+      try {
+        window.userProfile = await guardPage(true);
+        const runInit = () => {
+          if (typeof initAppShell === 'function') initAppShell(window.userProfile);
+          if (typeof window.initSubjectsEngine === 'function') window.initSubjectsEngine();
+        };
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', runInit);
+        } else {
+          runInit();
+        }
+      } catch (err) {
+        console.error('Boot sequence failed:', err);
+      }
+    }
+    boot();
   </script>
 </body>
 

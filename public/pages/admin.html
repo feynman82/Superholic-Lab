@@ -906,7 +906,317 @@
         </div>
       </div>
     </section>
+<!-- ────────────────────────────────────────────────────────────────────────
+     ADMIN TOGGLE — System Settings Section
+     Drop into admin.html main area. Self-contained: includes its own CSS
+     scoped under .admin-settings__ prefix and its own JS bound to
+     #admin-settings-section. No global side effects.
 
+     Backing table: public.system_settings (created in
+     sql/01-subjects-reskin-companion.sql).
+     RLS: only profiles.is_admin = true can write.
+─────────────────────────────────────────────────────────────────────── -->
+
+<section id="admin-settings-section" class="admin-settings">
+  <header class="admin-settings__header">
+    <span class="label-caps" style="color: var(--brand-rose);">§ — SYSTEM SETTINGS</span>
+    <h2 class="h2-as" style="margin-top: var(--space-2); color: var(--text-main);">Display controls.</h2>
+    <p class="body-md" style="color: var(--text-muted); margin-top: var(--space-2); max-width: 560px;">
+      Site-wide toggles for student-facing surfaces. Changes apply to all users immediately.
+    </p>
+  </header>
+
+  <div class="admin-settings__grid">
+    <!-- TOGGLE: show_question_counts -->
+    <div class="admin-settings__row" data-setting-key="show_question_counts">
+      <div class="admin-settings__row-text">
+        <h3 class="admin-settings__row-title">Show question counts in subjects wizard</h3>
+        <p class="admin-settings__row-desc">
+          When enabled, subject / topic / format cards display "N questions" sub-lines.
+          Disable while the question bank is filling to avoid surfacing empty topics.
+        </p>
+      </div>
+      <div class="admin-settings__row-control">
+        <label class="admin-settings__switch">
+          <input type="checkbox" id="toggle-show-counts" />
+          <span class="admin-settings__switch-track" aria-hidden="true">
+            <span class="admin-settings__switch-thumb"></span>
+          </span>
+          <span class="admin-settings__switch-label" data-on="On" data-off="Off">Off</span>
+        </label>
+        <span class="admin-settings__status" aria-live="polite"></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* ── Admin settings — scoped styles ──────────────────────────────── */
+  .admin-settings {
+    width: 100%;
+    max-width: 880px;
+    margin: var(--space-6) auto;
+    padding: var(--space-5);
+    background: var(--glass-bg, rgba(255, 255, 255, 0.4));
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border-light);
+    border-radius: 24px;
+  }
+
+  .admin-settings__header {
+    margin-bottom: var(--space-5);
+  }
+
+  .admin-settings__grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .admin-settings__row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--space-4);
+    align-items: center;
+    padding: var(--space-4);
+    background: var(--surface-container-lowest, #fff);
+    border: 1px solid var(--border-light);
+    border-radius: 16px;
+    transition: border-color 200ms ease;
+  }
+
+  .admin-settings__row:hover {
+    border-color: rgba(81, 97, 94, 0.25);
+  }
+
+  .admin-settings__row-title {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--text-main);
+    margin: 0 0 6px;
+  }
+
+  .admin-settings__row-desc {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text-muted);
+    margin: 0;
+    max-width: 520px;
+  }
+
+  .admin-settings__row-control {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+  }
+
+  /* ── iOS-style switch ─────────────────────────────────────────────── */
+  .admin-settings__switch {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .admin-settings__switch input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .admin-settings__switch-track {
+    position: relative;
+    display: inline-block;
+    width: 48px;
+    height: 28px;
+    background: var(--border-light);
+    border-radius: 999px;
+    transition: background-color 200ms ease;
+  }
+
+  .admin-settings__switch-thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 22px;
+    height: 22px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    transition: transform 200ms cubic-bezier(.2, .7, .2, 1);
+  }
+
+  .admin-settings__switch input:checked ~ .admin-settings__switch-track {
+    background: var(--brand-rose);
+  }
+
+  .admin-settings__switch input:checked ~ .admin-settings__switch-track .admin-settings__switch-thumb {
+    transform: translateX(20px);
+  }
+
+  .admin-settings__switch input:focus-visible ~ .admin-settings__switch-track {
+    box-shadow: 0 0 0 3px rgba(183, 110, 121, 0.3);
+  }
+
+  .admin-settings__switch input:disabled ~ .admin-settings__switch-track {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .admin-settings__switch-label {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--text-main);
+    min-width: 28px;
+  }
+
+  .admin-settings__status {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-size: 12px;
+    color: var(--text-muted);
+    min-height: 16px;
+  }
+
+  .admin-settings__status.is-success {
+    color: var(--brand-mint);
+  }
+
+  .admin-settings__status.is-error {
+    color: var(--brand-rose);
+  }
+
+  /* ── Responsive ───────────────────────────────────────────────────── */
+  @media (max-width: 640px) {
+    .admin-settings__row {
+      grid-template-columns: 1fr;
+      gap: var(--space-3);
+    }
+
+    .admin-settings__row-control {
+      align-items: flex-start;
+    }
+  }
+</style>
+
+<script type="module">
+  // ── Admin settings controller ──────────────────────────────────────
+  // Reads/writes public.system_settings via Supabase. RLS on the table
+  // ensures only profiles.is_admin = true can write; non-admins will see
+  // the toggle reflect current state but writes will fail silently with
+  // a status message.
+
+  (async function initAdminSettings() {
+    'use strict';
+
+    const section = document.getElementById('admin-settings-section');
+    if (!section) return;
+
+    const checkbox = section.querySelector('#toggle-show-counts');
+    const labelEl = section.querySelector('.admin-settings__switch-label');
+    const statusEl = section.querySelector('.admin-settings__status');
+
+    if (!checkbox || !labelEl || !statusEl) {
+      console.error('[admin-settings] Required elements missing.');
+      return;
+    }
+
+    // Wait for getSupabase to be available (loaded by supabase-client.js)
+    let sb;
+    try {
+      sb = await window.getSupabase();
+    } catch (err) {
+      statusEl.textContent = 'Supabase unavailable.';
+      statusEl.classList.add('is-error');
+      checkbox.disabled = true;
+      return;
+    }
+
+    // ── Read current value ────────────────────────────────────────────
+    function setUi(enabled) {
+      checkbox.checked = Boolean(enabled);
+      labelEl.textContent = enabled ? labelEl.dataset.on : labelEl.dataset.off;
+    }
+
+    function setStatus(text, kind) {
+      statusEl.textContent = text;
+      statusEl.classList.remove('is-success', 'is-error');
+      if (kind) statusEl.classList.add(`is-${kind}`);
+    }
+
+    async function loadCurrent() {
+      try {
+        const { data, error } = await sb
+          .from('system_settings')
+          .select('value, updated_at')
+          .eq('key', 'show_question_counts')
+          .maybeSingle();
+
+        if (error) throw error;
+
+        let enabled = true; // default ON if row missing
+        if (data) {
+          const v = data.value;
+          if (typeof v === 'boolean') enabled = v;
+          else if (typeof v === 'string') enabled = v.toLowerCase() !== 'false';
+          else if (v && typeof v === 'object' && 'enabled' in v) enabled = Boolean(v.enabled);
+        }
+        setUi(enabled);
+
+        if (data?.updated_at) {
+          const when = new Date(data.updated_at).toLocaleString();
+          setStatus(`Last updated ${when}`);
+        } else {
+          setStatus('Default value (ON)');
+        }
+      } catch (err) {
+        console.error('[admin-settings] read failed:', err);
+        setStatus('Could not read setting. Check connection.', 'error');
+      }
+    }
+
+    // ── Write on toggle ────────────────────────────────────────────────
+    async function writeValue(enabled) {
+      checkbox.disabled = true;
+      setStatus('Saving…');
+      try {
+        // Upsert by primary key (key = 'show_question_counts')
+        const { error } = await sb
+          .from('system_settings')
+          .upsert({
+            key: 'show_question_counts',
+            value: enabled,
+            description: 'Wizard surfaces (subjects.html) — show "N questions" subline on subject/topic/type cards.'
+          }, { onConflict: 'key' });
+
+        if (error) throw error;
+
+        setUi(enabled);
+        setStatus('Saved · ' + new Date().toLocaleTimeString(), 'success');
+      } catch (err) {
+        console.error('[admin-settings] write failed:', err);
+        setStatus('Save failed. You may not have admin permissions.', 'error');
+        // Revert UI to last-known server state
+        await loadCurrent();
+      } finally {
+        checkbox.disabled = false;
+      }
+    }
+
+    // ── Wire up ───────────────────────────────────────────────────────
+    checkbox.addEventListener('change', (e) => {
+      writeValue(e.target.checked);
+    });
+
+    await loadCurrent();
+  })();
+</script>
     <section class="py-8 bg-white">
       <div class="container">
         <div class="flex justify-between items-center mb-4 flex-wrap gap-3">

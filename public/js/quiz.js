@@ -1,6 +1,19 @@
 window.initQuizEngine = function () {
   'use strict';
 
+  // ── Canonical syllabus helpers (loaded by /js/syllabus.js) ──
+  // syllabus.js exposes window.SHL_SYLLABUS for non-module consumers like
+  // this file. If the module hasn't loaded yet (script order accident), we
+  // fall back to a no-op shim so the page still renders, with a warning.
+  const SYL = window.SHL_SYLLABUS || {
+    unslugify: (s) => s,
+    SUBJECT_DB_NAME: { mathematics: 'Mathematics', science: 'Science', english: 'English' }
+  };
+  if (!window.SHL_SYLLABUS) {
+    console.warn('[quiz] /js/syllabus.js not loaded; using inline fallback. Verify <script> order in quiz.html.');
+  }
+  // ────────────────────────────────────────────────────────────
+
   // 🚀 GLOBAL UTILITY: The Vanilla JS Pen Tool Engine
   window.togglePenTool = function (canvasId) {
     const container = document.getElementById(canvasId + '-container');
@@ -1601,28 +1614,20 @@ window.initQuizEngine = function () {
 
       const db = await window.getSupabase();
 
-      let dbSubject = subject;
-      if (subject === 'mathematics') dbSubject = 'Mathematics';
-      if (subject === 'science') dbSubject = 'Science';
-      if (subject === 'english') dbSubject = 'English Language';
+      // ── Resolve canonical DB values via /js/syllabus.js ──
+      // Subject FK value (Mathematics / Science / English — note: NOT
+      // "English Language", which was the v4.0 legacy value).
+      const dbSubject = SYL.SUBJECT_DB_NAME[subject] || subject;
 
-      let dbLevel = levelSlug ? levelSlug.replace('primary-', 'Primary ') : null;
+      // Level: 'primary-4' → 'Primary 4'
+      const dbLevel = levelSlug ? levelSlug.replace('primary-', 'Primary ') : null;
 
-      const MOE_TOPICS = [
-        'Whole Numbers', 'Addition and Subtraction', 'Multiplication and Division', 'Money', 'Length and Mass', 'Shapes and Patterns', 'Picture Graphs',
-        'Multiplication Tables', 'Fractions', 'Time', 'Length, Mass and Volume', 'Shapes',
-        'Diversity', 'Systems', 'Interactions', 'Angles', 'Area and Perimeter', 'Bar Graphs',
-        'Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing',
-        'Cycles', 'Energy', 'Heat', 'Light', 'Magnets', 'Matter', 'Factors and Multiples', 'Decimals', 'Symmetry', 'Data Analysis',
-        'Percentage', 'Ratio', 'Rate', 'Area of Triangle', 'Volume', 'Angles and Geometry', 'Average', 'Synthesis',
-        'Cells', 'Forces', 'Speed', 'Algebra', 'Circles', 'Geometry', 'Pie Charts'
-      ];
-
+      // Topic: slug → canonical name via the shared module. Returns null
+      // if the slug doesn't round-trip (broken URL or stale link).
       let dbTopic = null;
       if (topic && topic !== 'all' && topic !== 'mixed') {
         const decoded = decodeURIComponent(topic);
-        const matched = MOE_TOPICS.find(t => t.toLowerCase().replace(/ /g, '-').replace(/,/g, '') === decoded);
-        dbTopic = matched || decoded;
+        dbTopic = SYL.unslugify(decoded, subject) || decoded;
       }
 
       state.dbSubject = dbSubject;
