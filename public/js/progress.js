@@ -290,6 +290,10 @@ async function init() {
     renderActionPlanUI(totalSeconds, questionsMastered, overallPct, advancedSubjectStats, weakTopics, student, session, activeQuest, allActivity, improvedText, subjectSlotsTaken);
     insertAOMasteryUI(aoStats);
 
+    // ── NEW (v2 reskin) — proactive recommendations + avg time per question ──
+    renderRecommendNext(weakTopics, student, subjectSlotsTaken);
+    renderAvgTimePerQuestion(totalSeconds, allActivity);
+
     // Streak strip — last 30 days of cross-subject question_attempts.
     // Fires in parallel with the other Pillar 2 renders so the page
     // doesn't serialise on this network hop.
@@ -299,16 +303,26 @@ async function init() {
     })();
 
     // Hero diagnosis sentence + heatmap + dependency tree (Pillar 2).
-    // Heatmap replaces the legacy vertical BKT list. The subject switcher
-    // pill toggles between Mathematics / Science / English by re-running
-    // renderPillar2() for the picked subject. Initial selection picks the
-    // most-attempted subject so the parent lands on the most informative
-    // view for their child.
-    const initialSubject = pickHeroSubject(subjectStats);
-    mountSubjectSwitcher('subject-switcher', initialSubject, async (subject) => {
-      await renderPillar2(db, student.id, subject, session?.access_token, subjectStats);
-    });
-    renderPillar2(db, student.id, initialSubject, session?.access_token, subjectStats);
+    // Heatmap replaces the legacy vertical BKT list. We fetch
+    // mastery_levels filtered by hero subject ONCE and feed both the
+    // dependency tree (topic-level aggregate) and the heatmap (cell-level
+    // per-row data) so the page makes a single round-trip for both.
+    const heroSubject = pickHeroSubject(subjectStats);
+    (async () => {
+      const diag = await renderDiagnosisHero(student.id, heroSubject, session?.access_token);
+      try {
+        const { data: masteryRows } = await db.from('mastery_levels')
+          .select('topic, sub_topic, probability, attempts')
+          .eq('student_id', student.id)
+          .eq('subject', heroSubject);
+        const rows = masteryRows || [];
+        const masteryByTopic = buildMasteryByTopic(rows);
+        await renderMasteryHeatmap('heatmap-container', rows, heroSubject, student.id, session?.access_token);
+        await renderDependencyTree('dep-tree-container', heroSubject, diag?.weakest_topic || null, masteryByTopic);
+      } catch (err) {
+        console.warn('[progress] heatmap/tree mastery fetch failed:', err.message || err);
+      }
+    })();
 
     // Quest tray (replaces old single-quest renderQuestMap)
     renderQuestTrayFromData(activeQuestsList);
@@ -412,7 +426,60 @@ window.openVaultNote = async (noteId) => {
 };
 
 // ── COGNITIVE SKILL (AO) UI INJECTION ──
+// Rewritten in v2 (architect-scholar reskin). Was: dynamically inserted
+// a new container before #areas-of-weakness-list. Now: populates the
+// static #ao-mastery-card section in progress.html. Falls back gracefully
+// if the static section doesn't exist (legacy HTML, before reskin).
 function insertAOMasteryUI(aoStats) {
+  const aoSection = document.getElementById('ao-mastery-section');
+  const aoCard = document.getElementById('ao-mastery-card');
+
+  // Build inner HTML using architect-scholar BEM classes
+  const aoRowsHtml = Object.keys(aoStats).map(key => {
+    const stat = aoStats[key];
+    const pct = stat.total > 0 ? Math.round((stat.earned / stat.total) * 100) : 0;
+    if (pct === 0 && stat.total === 0) return '';
+    const bandClass = pct >= 75 ? 'high' : pct >= 50 ? 'mid' : 'low';
+    return `
+      <div class="ao-mastery__row">
+        <div class="ao-mastery__label-row">
+          <span class="ao-mastery__name">${stat.label}</span>
+          <span class="ao-mastery__pct ao-mastery__pct--${bandClass}">${pct}%</span>
+        </div>
+        <div class="ao-mastery__bar-track">
+          <div class="ao-mastery__bar-fill ao-mastery__bar-fill--${bandClass}" style="width: ${pct}%;"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  const footnoteHtml = `
+    <p class="ao-mastery__footnote">
+      <strong>AO1</strong>
+      <span class="ao-info" data-tooltip="AO1 — Recall &amp; Concepts. Tests whether your child remembers definitions, formulas, and core ideas. The foundation everything else builds on." tabindex="0" role="tooltip">i</span>
+      is the foundation.
+      <strong>AO2</strong>
+      <span class="ao-info" data-tooltip="AO2 — Application. Tests whether your child can apply concepts to standard problems. The 'doing the work' tier — most exam questions sit here." tabindex="0" role="tooltip">i</span>
+      tests standard problem-solving.
+      <strong>AO3</strong>
+      <span class="ao-info" data-tooltip="AO3 — Heuristics &amp; Reasoning. Tests whether your child can synthesise, infer, and tackle non-routine problems. The hardest exam questions belong here, including PSLE bonus marks." tabindex="0" role="tooltip">i</span>
+      tests complex heuristics and synthesis.
+    </p>
+  `;
+
+  // Path A: static section exists (v2 architect-scholar HTML)
+  if (aoSection && aoCard) {
+    if (aoRowsHtml) {
+      aoCard.innerHTML = aoRowsHtml + footnoteHtml;
+      aoSection.hidden = false;
+    } else {
+      aoCard.innerHTML = '<p class="ao-mastery__empty">No skill data yet. Skill mastery shows after the first 5 questions are answered.</p>';
+      aoSection.hidden = false;
+    }
+    return;
+  }
+
+  // Path B: legacy fallback (pre-reskin HTML) — keeps old behaviour
   const weakAreasContainer = document.getElementById('areas-of-weakness-list');
   if (!weakAreasContainer) return;
 
@@ -420,42 +487,96 @@ function insertAOMasteryUI(aoStats) {
   aoContainer.id = 'ao-mastery-container';
   aoContainer.style.marginBottom = 'var(--space-8)';
 
-  const aoHtml = Object.keys(aoStats).map(key => {
-    const stat = aoStats[key];
-    const pct = stat.total > 0 ? Math.round((stat.earned / stat.total) * 100) : 0;
-    if (pct === 0 && stat.total === 0) return '';
-    const color = pct >= 75 ? 'var(--mint)' : pct >= 50 ? 'var(--amber)' : 'var(--danger)';
-    return `
-      <div style="margin-bottom: var(--space-4);">
-        <div style="display:flex; justify-content:space-between; margin-bottom: 6px; font-size: 0.95rem;">
-          <span style="font-weight: 600; color: var(--text-main);">${stat.label}</span>
-          <span style="font-weight: 700; color: ${color};">${pct}%</span>
-        </div>
-        <div style="height: 8px; background: var(--glass-border); border-radius: 4px; overflow: hidden;">
-          <div style="height: 100%; width: ${pct}%; background: ${color}; transition: width 1s ease-out;"></div>
-        </div>
-      </div>
-    `;
-  }).join('');
-
-  if (aoHtml) {
+  if (aoRowsHtml) {
     aoContainer.innerHTML = `
       <div class="flex justify-between items-center mb-4">
         <h2 class="font-display text-2xl text-main m-0 uppercase">Skill Mastery</h2>
         <span class="badge" style="background: rgba(81,97,94,0.1); color: var(--sage-dark);">MOE Analytics</span>
       </div>
       <div class="glass-panel-1 p-6 border border-light shadow-sm">
-        ${aoHtml}
-        <div class="mt-4 pt-3 border-t border-light flex gap-2 items-start">
-          <span style="font-size: 1.2rem;">🧠</span>
-          <p class="text-xs text-muted mb-0" style="line-height: 1.5;">
-            <strong>AO1</strong> (Concepts) is the foundation. <strong>AO2</strong> (Application) tests standard problem-solving. <strong>AO3</strong> (Reasoning) tests complex heuristics and synthesis.
-          </p>
-        </div>
+        ${aoRowsHtml}
+        ${footnoteHtml}
       </div>
     `;
     weakAreasContainer.parentNode.insertBefore(aoContainer, weakAreasContainer.previousElementSibling);
   }
+}
+
+// ── NEW (v2 reskin) ─────────────────────────────────────────────────────────
+// Proactive recommendation tiles. Picks the 1–3 weakest topics across all
+// subjects and surfaces them as deep-link CTAs. Reads from existing
+// weakTopics array — no new fetches. Hidden if no weak topics qualify.
+function renderRecommendNext(weakTopics, student, subjectSlotsTaken) {
+  const section = document.getElementById('recommend-section');
+  const container = document.getElementById('recommend-tiles-container');
+  if (!section || !container) return;
+
+  const top3 = (weakTopics || [])
+    .filter(t => t.pct < 75 && t.pct > 0)
+    .sort((a, b) => a.pct - b.pct)
+    .slice(0, 3);
+
+  if (top3.length === 0) {
+    section.hidden = true;
+    return;
+  }
+
+  const tiles = top3.map(t => {
+    const sub = (t.subject || '').toLowerCase();
+    const topicLabel = (t.topic || '').replace(/-/g, ' ');
+    const slotTaken = subjectSlotsTaken && subjectSlotsTaken.has(sub);
+    const ctaHref = slotTaken
+      ? `tutor.html?intent=remedial&subject=${encodeURIComponent(t.subject)}&topic=${encodeURIComponent(t.topic)}&score=${t.pct}`
+      : `subjects.html?subject=${encodeURIComponent(t.subject)}&topic=${encodeURIComponent(t.topic)}&student=${encodeURIComponent(student.id)}`;
+    const ctaLabel = slotTaken ? 'Ask Miss Wena →' : 'Practise this topic →';
+    const reason = t.pct < 45
+      ? `Lowest mastery in ${t.subject} — ${t.pct}%. Building this up first will lift the whole subject.`
+      : `Currently at ${t.pct}% (${getALBand(t.pct)}). Targeted practice here is high-yield.`;
+
+    return `
+      <article class="card-glass recommend-tile">
+        <div class="recommend-tile__topic">${escapeHtml(topicLabel)}</div>
+        <div class="recommend-tile__body">${escapeHtml(reason)}</div>
+        <a href="${ctaHref}" class="recommend-tile__cta">${ctaLabel}</a>
+      </article>
+    `;
+  }).join('');
+
+  container.innerHTML = tiles;
+  container.classList.remove('is-empty');
+  section.hidden = false;
+}
+
+// Avg time per question — pacing signal. Total seconds / total questions.
+function renderAvgTimePerQuestion(totalSeconds, allActivity) {
+  const el = document.getElementById('stat-avg-time');
+  if (!el) return;
+
+  const totalQuestions = (allActivity || []).reduce((sum, a) => {
+    return sum + (a.total_questions || a.questions_attempted || 0);
+  }, 0);
+
+  if (totalQuestions === 0 || totalSeconds === 0) {
+    el.textContent = '—';
+    return;
+  }
+
+  const avgSeconds = Math.round(totalSeconds / totalQuestions);
+  if (avgSeconds < 60) {
+    el.textContent = avgSeconds + 's';
+  } else {
+    const m = Math.floor(avgSeconds / 60);
+    const s = avgSeconds % 60;
+    el.textContent = m + 'm ' + (s > 0 ? s + 's' : '');
+  }
+}
+
+// Tiny helper used by renderRecommendNext (mirrors progress.js _escHtml)
+function escapeHtml(s) {
+  if (s == null) return '';
+  return String(s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 // ── Quest: tray render ─────────────────────────────────────────────────────────
@@ -1491,132 +1612,6 @@ window.toggleDeepDive = async function (studentId, subject, btnEl, quizCount) {
   }
 };
 
-// ── SUBJECT SWITCHER (Pillar 2) ────────────────────────────────────────────
-//
-// Renders 3 pill buttons (Mathematics / Science / English). Click rebinds
-// hero / heatmap / dependency tree to the picked subject by invoking the
-// supplied `onSwitch` callback. Streak strip stays cross-subject and is not
-// re-rendered. Active state persists in module scope so the styling is
-// authoritative even if onSwitch is fired programmatically.
-let _activeSubject = null;
-function mountSubjectSwitcher(containerId, initialSubject, onSwitch) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
-  const subjects = [
-    { key: 'mathematics', label: 'Mathematics' },
-    { key: 'science',     label: 'Science' },
-    { key: 'english',     label: 'English' },
-  ];
-  _activeSubject = initialSubject;
-  container.innerHTML = subjects.map(s => `
-    <button type="button" class="subject-switcher__btn" role="tab"
-            data-subject="${s.key}" aria-pressed="${s.key === initialSubject ? 'true' : 'false'}">
-      ${s.label}
-    </button>
-  `).join('');
-  container.addEventListener('click', (ev) => {
-    const btn = ev.target.closest('.subject-switcher__btn');
-    if (!btn) return;
-    const subj = btn.dataset.subject;
-    if (subj === _activeSubject) return;
-    _activeSubject = subj;
-    container.querySelectorAll('.subject-switcher__btn').forEach(b => {
-      b.setAttribute('aria-pressed', b.dataset.subject === subj ? 'true' : 'false');
-    });
-    onSwitch(subj);
-  });
-}
-
-// ── PILLAR 2 ORCHESTRATION ─────────────────────────────────────────────────
-//
-// Single function that re-renders hero / heatmap / dependency tree for a
-// chosen subject. Called once on initial page-render, then again on every
-// subject-switcher click. Includes a degraded fallback path: when
-// mastery_levels has no rows for the chosen subject (e.g. all attempts
-// predate the BKT trigger fix from 2026-04-29), we synthesise a topic-
-// level mastery map from quiz_attempts so the heatmap rows still colour
-// meaningfully. The hero sentence in that case explains the gap honestly
-// instead of "hasn't attempted this subject yet".
-async function renderPillar2(db, studentId, subject, accessToken, subjectStats) {
-  // Always re-fetch the analyze-weakness diagnosis for the picked subject.
-  const diag = await renderDiagnosisHero(studentId, subject, accessToken);
-
-  let masteryRows = [];
-  let degraded = false;
-  try {
-    const { data } = await db.from('mastery_levels')
-      .select('topic, sub_topic, probability, attempts')
-      .eq('student_id', studentId)
-      .eq('subject', subject);
-    masteryRows = data || [];
-  } catch (err) {
-    console.warn('[pillar2] mastery_levels read failed:', err.message || err);
-  }
-
-  if (masteryRows.length === 0) {
-    // Degraded path — pull quiz_attempts for this subject so at least the
-    // topic-level signal drives heatmap row colours. sub_topic cells stay
-    // no-data because quiz_attempts doesn't carry sub_topic granularity.
-    const fallback = await fetchQuizAttemptsFallback(db, studentId, subject);
-    if (fallback.length > 0) {
-      degraded = true;
-      masteryRows = fallback;
-      // Override hero sentence to be honest about the gap instead of the
-      // misleading "hasn't attempted yet" template the server returns when
-      // mastery_levels is empty.
-      const totalAttempts = subjectStats?.[subject]?.quizzes ?? 0;
-      const SUBJECT_DISPLAY = { mathematics: 'Mathematics', science: 'Science', english: 'English' };
-      const subjectDisplay = SUBJECT_DISPLAY[subject] || subject;
-      bindHeroFallbackSentence(`${totalAttempts} ${subjectDisplay} ${totalAttempts === 1 ? 'quiz' : 'quizzes'} logged — keep practising so the granular mastery view fills in.`, false);
-    }
-  }
-
-  const masteryByTopic = buildMasteryByTopic(masteryRows);
-  await renderMasteryHeatmap('heatmap-container', masteryRows, subject, studentId, accessToken);
-  await renderDependencyTree('dep-tree-container', subject, diag?.weakest_topic || null, masteryByTopic);
-}
-
-// Quiz_attempts fallback — aggregates score/total_questions per topic into
-// a synthetic mastery_levels-shaped row list so renderMasteryHeatmap and
-// buildMasteryByTopic don't need to know about the degraded path.
-async function fetchQuizAttemptsFallback(db, studentId, subject) {
-  try {
-    const { data } = await db.from('quiz_attempts')
-      .select('topic, score, total_questions')
-      .eq('student_id', studentId)
-      .eq('subject', subject);
-    if (!data || data.length === 0) return [];
-    const byTopic = {};
-    for (const r of data) {
-      if (!r.topic) continue;
-      if (!byTopic[r.topic]) byTopic[r.topic] = { score: 0, total: 0, attempts: 0 };
-      byTopic[r.topic].score    += r.score || 0;
-      byTopic[r.topic].total    += r.total_questions || 0;
-      byTopic[r.topic].attempts += 1;
-    }
-    return Object.entries(byTopic).map(([topic, agg]) => ({
-      topic,
-      sub_topic:   null,
-      probability: agg.total > 0 ? agg.score / agg.total : 0,
-      attempts:    agg.attempts,
-    }));
-  } catch (err) {
-    console.warn('[pillar2] quiz_attempts fallback failed:', err.message || err);
-    return [];
-  }
-}
-
-// Force-binds a hero sentence string (used by the degraded fallback path
-// to override what the server returned when mastery_levels was empty).
-function bindHeroFallbackSentence(sentence, hasAlBand) {
-  const container  = document.getElementById('diagnosis-hero');
-  const sentenceEl = document.getElementById('diagnosis-hero-sentence');
-  if (!container || !sentenceEl) return;
-  sentenceEl.textContent = sentence;
-  container.classList.toggle('diagnosis-hero--empty', !hasAlBand);
-  container.hidden = false;
-}
-
 // ── STREAK STRIP (Week 2 Commit D — Honest Compass) ────────────────────────
 //
 // Renders 30 cells, oldest left, today right, shaded by the day's
@@ -2157,4 +2152,3 @@ async function renderBKT(db, studentId) {
     container.innerHTML = '<div class="glass-panel-1 p-6 text-center text-sm" style="color: var(--rose);">Failed to load mastery data.</div>';
   }
 }
-

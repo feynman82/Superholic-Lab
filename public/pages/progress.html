@@ -22,7 +22,6 @@
     import { guardPage } from '/js/auth.js';
     import { initAppShell } from '/js/app-shell.js';
 
-    // Boot sequence: Ensure profile loads BEFORE we trigger DOM manipulations
     async function boot() {
       try {
         window.userProfile = await guardPage(true);
@@ -33,114 +32,1106 @@
     }
     boot();
   </script>
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+       PAGE-LEVEL CSS — progress.html (architect-scholar reskin)
+
+       This stylesheet provides:
+         A. Page chrome: hero, container, sections, headings
+         B. Time-range filter pill toggle
+         C. Subject proficiency cards (3-up grid)
+         D. AO mastery section with hover tooltip (NEW — was JS-injected)
+         E. "What's most useful next" recommendation tiles (NEW)
+         F. Statistics tile grid (5 tiles incl. new avg-time-per-question)
+         G. Streak strip module (CSS contract: streak-strip__day, --low/mid/high)
+         H. Heatmap module (CSS contract: heatmap__row/__cell, --low/mid/high/none)
+         I. Heatmap modal (CSS contract: heatmap-modal__header/body/attempt etc)
+         J. Dependency tree (CSS contract: dep-tree__edge/__node-label)
+         K. Diagnosis hero
+         L. Skeleton loading state (replaces simple spinner)
+         M. @media print rules
+         N. @media (max-width: 768px) mobile responsive
+
+       The 5 BEM modules (G/H/I/J/K) currently have no CSS in style.css —
+       written here from scratch in architect-scholar style.
+       ════════════════════════════════════════════════════════════════════════ */
+  <style>
+    /* ════════════════════════════════════════════════════════════════════════
+       A. PAGE CHROME
+       ════════════════════════════════════════════════════════════════════════ */
+
+    body.has-bottom-nav {
+      background: var(--surface);
+      background-image:
+        linear-gradient(rgba(81, 97, 94, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(81, 97, 94, 0.025) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+
+    /* Hero: restrained — .h1-as on .bg-surface */
+    .progress-hero {
+      padding-top: calc(64px + var(--space-8));
+      padding-bottom: var(--space-5);
+      border-bottom: 1px solid var(--border-light);
+    }
+    .progress-hero__inner {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 var(--space-4);
+    }
+    .progress-hero__header-row {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: var(--space-4);
+      flex-wrap: wrap;
+    }
+    .progress-hero__main {
+      flex: 1;
+      min-width: 240px;
+    }
+    .progress-hero__eyebrow {
+      color: var(--brand-rose);
+      display: block;
+      margin-bottom: var(--space-2);
+    }
+    .progress-hero__title {
+      color: var(--text-main);
+      margin: 0 0 var(--space-2) 0;
+    }
+    .progress-hero__title em {
+      color: var(--brand-rose);
+      font-style: normal;
+    }
+    .progress-hero__lede {
+      color: var(--text-muted);
+      margin: 0;
+    }
+    .progress-hero__actions {
+      display: flex;
+      gap: var(--space-2);
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    /* Student selector — restyled from form-select-glass */
+    #student-selector {
+      max-width: none;
+      margin: 0 0 var(--space-3) 0;
+    }
+    #student-selector[hidden],
+    #student-selector[style*="display:none"] {
+      display: none !important;
+    }
+    #student-select {
+      background: rgba(255, 255, 255, 0.5);
+      border: 1px solid var(--glass-border-dim);
+      border-radius: var(--radius-md);
+      padding: var(--space-2) var(--space-3);
+      font-family: var(--font-body);
+      font-size: var(--text-sm);
+      color: var(--text-main);
+      font-weight: 600;
+      cursor: pointer;
+      width: auto;
+      min-width: 200px;
+      text-align: center;
+      text-align-last: center;
+    }
+    #student-select:focus {
+      outline: none;
+      border-color: var(--brand-rose);
+      box-shadow: 0 0 0 3px rgba(183, 110, 121, 0.12);
+    }
+
+    /* Body container */
+    .progress-body {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: var(--space-6) var(--space-4) var(--space-10);
+    }
+
+    /* Section headings — match other reskinned pages */
+    .progress-section {
+      margin-bottom: var(--space-6);
+    }
+    .progress-section__head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-3);
+      margin-bottom: var(--space-3);
+      flex-wrap: wrap;
+    }
+    .progress-section__eyebrow {
+      color: var(--brand-rose);
+      display: block;
+      margin-bottom: var(--space-1);
+    }
+    .progress-section__title {
+      color: var(--text-main);
+      margin: 0;
+    }
+
+    /* Print button + print eyebrow */
+    .btn-icon {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-icon svg {
+      flex-shrink: 0;
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       B. TIME-RANGE FILTER (3-segment toggle)
+       ════════════════════════════════════════════════════════════════════════ */
+
+    .range-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px;
+      background: var(--surface-container-low);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-full, 999px);
+    }
+    .range-toggle button {
+      background: transparent;
+      color: var(--text-muted);
+      border: none;
+      border-radius: var(--radius-full, 999px);
+      padding: 6px 12px;
+      cursor: pointer;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      transition: background 160ms ease, color 160ms ease;
+      white-space: nowrap;
+    }
+    .range-toggle button.is-active {
+      background: var(--surface-container-lowest);
+      color: var(--text-main);
+      box-shadow: 0 1px 3px rgba(44, 62, 58, 0.08);
+    }
+    .range-toggle button:hover:not(.is-active) {
+      color: var(--text-main);
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       C. SUBJECT PROFICIENCY CARDS (3-up grid)
+       ════════════════════════════════════════════════════════════════════════ */
+
+    .subject-proficiency-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: var(--space-3);
+    }
+    .subject-card {
+      padding: var(--space-4);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .subject-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--subject-accent, var(--brand-sage));
+    }
+    .subject-card[data-subject="mathematics"] { --subject-accent: var(--maths-colour, #4A6FA5); }
+    .subject-card[data-subject="science"]     { --subject-accent: var(--science-colour, #6FB89B); }
+    .subject-card[data-subject="english"]     { --subject-accent: var(--english-colour, #B76E79); }
+
+    .subject-card__label {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--subject-accent, var(--brand-sage));
+      margin-bottom: var(--space-2);
+    }
+    .subject-card__metrics {
+      display: flex;
+      justify-content: center;
+      align-items: baseline;
+      gap: var(--space-2);
+    }
+    .subject-card__pct {
+      font-family: var(--font-display, 'Bebas Neue', sans-serif);
+      font-size: 40px;
+      letter-spacing: 0.02em;
+      color: var(--text-main);
+      line-height: 1;
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       D. AO MASTERY SECTION (now static — was JS-injected via insertAOMasteryUI)
+       ════════════════════════════════════════════════════════════════════════ */
+
+    .ao-mastery-card {
+      padding: var(--space-4) var(--space-5);
+    }
+    .ao-mastery__row {
+      margin-bottom: var(--space-3);
+    }
+    .ao-mastery__row:last-child {
+      margin-bottom: 0;
+    }
+    .ao-mastery__label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      font-size: var(--text-sm);
+    }
+    .ao-mastery__name {
+      color: var(--text-main);
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ao-mastery__pct {
+      font-weight: 700;
+    }
+    .ao-mastery__pct--high { color: var(--brand-mint); }
+    .ao-mastery__pct--mid  { color: var(--brand-amber, #D4A24A); }
+    .ao-mastery__pct--low  { color: var(--brand-rose); }
+    .ao-mastery__bar-track {
+      height: 8px;
+      background: var(--surface-container-high);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .ao-mastery__bar-fill {
+      height: 100%;
+      transition: width 800ms ease-out;
+      border-radius: inherit;
+    }
+    .ao-mastery__bar-fill--high { background: var(--brand-mint); }
+    .ao-mastery__bar-fill--mid  { background: var(--brand-amber, #D4A24A); }
+    .ao-mastery__bar-fill--low  { background: var(--brand-rose); }
+
+    .ao-mastery__footnote {
+      margin-top: var(--space-3);
+      padding-top: var(--space-3);
+      border-top: 1px solid var(--border-light);
+      color: var(--text-muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+    .ao-mastery__empty {
+      color: var(--text-muted);
+      font-size: var(--text-sm);
+      text-align: center;
+      padding: var(--space-3);
+      font-style: italic;
+    }
+
+    /* ── AO Hover tooltip ── */
+    .ao-info {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--surface-container-high);
+      color: var(--text-muted);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      cursor: help;
+      position: relative;
+      transition: background 160ms ease, color 160ms ease;
+    }
+    .ao-info:hover,
+    .ao-info:focus-visible {
+      background: var(--brand-rose);
+      color: white;
+      outline: none;
+    }
+    .ao-info::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      width: 260px;
+      padding: var(--space-2) var(--space-3);
+      background: var(--text-main);
+      color: var(--cream);
+      border-radius: var(--radius-md);
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: normal;
+      line-height: 1.5;
+      text-align: left;
+      text-transform: none;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 200ms ease, transform 200ms ease;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+      z-index: 100;
+      white-space: normal;
+    }
+    .ao-info::before {
+      content: '';
+      position: absolute;
+      bottom: calc(100% + 2px);
+      left: 50%;
+      transform: translateX(-50%);
+      border: 6px solid transparent;
+      border-top-color: var(--text-main);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 200ms ease;
+      z-index: 100;
+    }
+    .ao-info:hover::after,
+    .ao-info:hover::before,
+    .ao-info:focus-visible::after,
+    .ao-info:focus-visible::before {
+      opacity: 1;
+    }
+    /* On mobile, anchor tooltip below + center within viewport */
+    @media (max-width: 768px) {
+      .ao-info::after { width: min(260px, calc(100vw - 32px)); }
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       E. "MOST USEFUL NEXT" RECOMMENDATION TILES (NEW — populated by JS)
+       ════════════════════════════════════════════════════════════════════════ */
+
+    .recommend-tiles {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: var(--space-3);
+    }
+    .recommend-tile {
+      padding: var(--space-3) var(--space-4);
+      border-left: 3px solid var(--brand-rose);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+    .recommend-tile__topic {
+      font-family: var(--font-display, 'Bebas Neue', sans-serif);
+      font-size: 18px;
+      letter-spacing: 0.02em;
+      color: var(--text-main);
+      text-transform: capitalize;
+    }
+    .recommend-tile__body {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      flex: 1;
+    }
+    .recommend-tile__cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--brand-rose);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      text-decoration: none;
+    }
+    .recommend-tile__cta:hover {
+      text-decoration: underline;
+    }
+    #recommend-tiles-container.is-empty {
+      display: none;
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       F. STATISTICS TILE GRID (now 5 tiles)
+       ════════════════════════════════════════════════════════════════════════ */
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: var(--space-3);
+    }
+    .stat-tile {
+      padding: var(--space-4);
+      text-align: center;
+    }
+    .stat-tile__label {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: var(--space-2);
+    }
+    .stat-tile__value {
+      font-family: var(--font-display, 'Bebas Neue', sans-serif);
+      font-size: 28px;
+      letter-spacing: 0.02em;
+      color: var(--text-main);
+      line-height: 1.1;
+    }
+    .stat-tile__value--ok { color: var(--brand-mint); }
+    .stat-tile__sub {
+      color: var(--text-muted);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-top: var(--space-1);
+      font-weight: 700;
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       G. STREAK STRIP (BEM contract: streak-strip__day + --low/mid/high)
+
+       Honest Compass: no flame icons, no "X day streak" tally. Empty days
+       look identical to filled (cream with subtle outline). Native title
+       attribute for tooltip — no celebratory copy.
+       ════════════════════════════════════════════════════════════════════════ */
+
+    .streak-strip-section__title {
+      font-family: var(--font-display, 'Bebas Neue', sans-serif);
+      font-size: 24px;
+      letter-spacing: 0.04em;
+      color: var(--text-main);
+      margin: 0 0 var(--space-3) 0;
+    }
+    .streak-strip {
+      display: grid;
+      grid-template-columns: repeat(30, minmax(0, 1fr));
+      gap: 4px;
+      padding: var(--space-3) var(--space-4);
+      background: var(--surface-container-lowest);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+    }
+    .streak-strip__day {
+      aspect-ratio: 1;
+      border-radius: 3px;
+      background: var(--surface-container-low);
+      border: 1px solid var(--border-light);
+      transition: transform 160ms ease;
+      cursor: default;
+    }
+    .streak-strip__day:hover {
+      transform: scale(1.4);
+      z-index: 5;
+    }
+    .streak-strip__day--low  { background: rgba(111, 184, 155, 0.25); border-color: rgba(111, 184, 155, 0.35); }
+    .streak-strip__day--mid  { background: rgba(111, 184, 155, 0.55); border-color: rgba(111, 184, 155, 0.6); }
+    .streak-strip__day--high { background: var(--brand-mint); border-color: var(--brand-mint); }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       H. HEATMAP (BEM: heatmap__row/__cell/__topic-label/__cells, --low/mid/high/none)
+       ════════════════════════════════════════════════════════════════════════ */
+
+    .heatmap {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+      padding: var(--space-3) var(--space-4);
+      background: var(--surface-container-lowest);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      overflow-x: auto;
+    }
+    .heatmap__row {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: var(--space-3);
+      align-items: center;
+      min-width: 480px; /* preserves cell readability on mobile horizontal scroll */
+    }
+    .heatmap__row--single {
+      grid-template-columns: 160px auto;
+    }
+    .heatmap__topic-label {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--text-main);
+      text-transform: capitalize;
+      position: sticky;
+      left: 0;
+      background: var(--surface-container-lowest);
+      padding-right: var(--space-2);
+      z-index: 1;
+    }
+    .heatmap__cells {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+      gap: 4px;
+    }
+    .heatmap__cell {
+      aspect-ratio: 1;
+      border-radius: 3px;
+      background: var(--surface-container);
+      border: 1px solid var(--border-light);
+      cursor: pointer;
+      transition: transform 160ms ease, box-shadow 160ms ease;
+    }
+    .heatmap__cell:hover,
+    .heatmap__cell:focus-visible {
+      transform: scale(1.15);
+      box-shadow: 0 4px 12px rgba(44, 62, 58, 0.15);
+      z-index: 5;
+      outline: none;
+    }
+    .heatmap__cell--none { background: var(--surface-container);            border-color: var(--border-light); }
+    .heatmap__cell--low  { background: rgba(183, 110, 121, 0.55);          border-color: rgba(183, 110, 121, 0.7); }
+    .heatmap__cell--mid  { background: rgba(212, 162, 74, 0.6);            border-color: rgba(212, 162, 74, 0.75); }
+    .heatmap__cell--high { background: var(--brand-mint);                   border-color: var(--brand-mint); }
+
+    .heatmap-legend {
+      display: flex;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+      margin-top: var(--space-2);
+      padding: 0 var(--space-1);
+      color: var(--text-muted);
+      font-size: 11px;
+      letter-spacing: 0.04em;
+    }
+    .heatmap-legend > span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .heatmap-legend__swatch {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      border: 1px solid var(--border-light);
+    }
+    .heatmap-legend__swatch--none { background: var(--surface-container); }
+    .heatmap-legend__swatch--low  { background: rgba(183, 110, 121, 0.55); }
+    .heatmap-legend__swatch--mid  { background: rgba(212, 162, 74, 0.6); }
+    .heatmap-legend__swatch--high { background: var(--brand-mint); }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       I. HEATMAP MODAL (BEM: heatmap-modal__header/body/attempt/etc)
+       ════════════════════════════════════════════════════════════════════════ */
+
+    .heatmap-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-4);
+    }
+    .heatmap-modal[hidden] { display: none; }
+    .heatmap-modal__backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(44, 62, 58, 0.5);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+    .heatmap-modal__panel {
+      position: relative;
+      max-width: 600px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      background: var(--surface-container-lowest);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg, 12px);
+      box-shadow: 0 16px 48px rgba(44, 62, 58, 0.18);
+    }
+    .heatmap-modal__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-3);
+      padding: var(--space-4) var(--space-5);
+      border-bottom: 1px solid var(--border-light);
+    }
+    .heatmap-modal__title {
+      margin: 0;
+      font-family: var(--font-display, 'Bebas Neue', sans-serif);
+      font-size: 22px;
+      letter-spacing: 0.04em;
+      color: var(--text-main);
+      text-transform: capitalize;
+    }
+    .heatmap-modal__close {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-md);
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      font-size: 20px;
+      line-height: 1;
+      cursor: pointer;
+      transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
+    }
+    .heatmap-modal__close:hover {
+      background: var(--surface-container);
+      color: var(--text-main);
+      border-color: var(--border-light);
+    }
+    .heatmap-modal__body {
+      padding: var(--space-4) var(--space-5);
+    }
+    .heatmap-modal__stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: var(--space-2);
+      margin-bottom: var(--space-4);
+      padding-bottom: var(--space-4);
+      border-bottom: 1px solid var(--border-light);
+    }
+    .heatmap-modal__stat {
+      text-align: center;
+    }
+    .heatmap-modal__stat-value {
+      font-family: var(--font-display, 'Bebas Neue', sans-serif);
+      font-size: 24px;
+      letter-spacing: 0.02em;
+      color: var(--text-main);
+      line-height: 1.1;
+    }
+    .heatmap-modal__stat-label {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    .heatmap-modal__attempts {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+    .heatmap-modal__attempt {
+      padding: var(--space-2) var(--space-3);
+      background: var(--surface-container-low);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+    }
+    .heatmap-modal__attempt-date {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+    .heatmap-modal__attempt-stem {
+      color: var(--text-main);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .heatmap-modal__empty,
+    .heatmap-modal__error {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: var(--text-sm);
+      padding: var(--space-4);
+      font-style: italic;
+    }
+    .heatmap-modal__error {
+      color: var(--brand-rose);
+      font-style: normal;
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       J. DEPENDENCY TREE (BEM: dep-tree__edge/__node-label)
+       ════════════════════════════════════════════════════════════════════════ */
+
+    .dep-tree-section__title {
+      font-family: var(--font-display, 'Bebas Neue', sans-serif);
+      font-size: 24px;
+      letter-spacing: 0.04em;
+      color: var(--text-main);
+      margin: 0 0 var(--space-1) 0;
+    }
+    .dep-tree-section__hint {
+      color: var(--text-muted);
+      font-size: 13px;
+      line-height: 1.6;
+      margin: 0 0 var(--space-3) 0;
+    }
+    .dep-tree-container {
+      padding: var(--space-3) var(--space-4);
+      background: var(--surface-container-lowest);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      overflow-x: auto;
+    }
+    .dep-tree-container svg {
+      max-width: 100%;
+      height: auto;
+    }
+    .dep-tree__edge {
+      stroke: var(--border-dark);
+      stroke-width: 1.5;
+      fill: none;
+    }
+    .dep-tree__node-label {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      fill: var(--text-main);
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       K. DIAGNOSIS HERO (Pillar 2 — "Analyse Weakness")
+       ════════════════════════════════════════════════════════════════════════ */
+
+    .diagnosis-hero {
+      padding: var(--space-4) var(--space-5);
+      background: var(--surface-container-low);
+      border-left: 3px solid var(--brand-rose);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-5);
+    }
+    .diagnosis-hero[hidden] { display: none; }
+    .diagnosis-hero--empty .diagnosis-hero__sentence {
+      color: var(--text-muted);
+      font-style: italic;
+    }
+    .diagnosis-hero__sentence {
+      margin: 0;
+      color: var(--text-main);
+      font-size: 17px;
+      line-height: 1.5;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 500;
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       L. SKELETON LOADING STATE (replaces simple spinner)
+       ════════════════════════════════════════════════════════════════════════ */
+
+    .skeleton {
+      background: linear-gradient(
+        90deg,
+        var(--surface-container) 0%,
+        var(--surface-container-high) 50%,
+        var(--surface-container) 100%
+      );
+      background-size: 200% 100%;
+      animation: skeletonShimmer 1.4s ease-in-out infinite;
+      border-radius: var(--radius-md);
+    }
+    @keyframes skeletonShimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    .skeleton-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: var(--space-3);
+      margin-bottom: var(--space-6);
+    }
+    .skeleton-card {
+      height: 110px;
+    }
+    .skeleton-bar {
+      height: 60px;
+      margin-bottom: var(--space-3);
+    }
+    .skeleton-strip {
+      height: 100px;
+      margin-bottom: var(--space-6);
+    }
+    .skeleton-heatmap {
+      height: 240px;
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       M. PRINT STYLES — strip chrome, keep data
+       ════════════════════════════════════════════════════════════════════════ */
+
+    @media print {
+      /* Reset for print */
+      body.has-bottom-nav {
+        background: white !important;
+      }
+
+      /* Hide all interactive chrome */
+      global-header,
+      global-footer,
+      global-bottom-nav,
+      .progress-hero__actions,
+      #student-selector,
+      .heatmap-modal,
+      .ao-info,
+      button,
+      .recommend-tile__cta,
+      a.btn,
+      .btn {
+        display: none !important;
+      }
+
+      /* Section breaks for readability */
+      .progress-section {
+        page-break-inside: avoid;
+        margin-bottom: var(--space-4);
+      }
+
+      /* Print header */
+      .print-header {
+        display: block !important;
+        text-align: center;
+        margin-bottom: var(--space-4);
+        padding-bottom: var(--space-3);
+        border-bottom: 2px solid var(--text-main);
+      }
+      .print-header__brand {
+        font-family: var(--font-display);
+        font-size: 18px;
+        letter-spacing: 0.04em;
+        color: var(--text-main);
+      }
+      .print-header__date {
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-top: 4px;
+      }
+
+      /* Make hero fit print */
+      .progress-hero {
+        padding-top: 0;
+        border-bottom: 1px solid var(--text-main);
+      }
+      .progress-body {
+        padding-top: var(--space-3);
+      }
+
+      /* Hide sections with no print value */
+      #recent-history,
+      #exam-history-empty {
+        display: none !important;
+      }
+
+      /* Force colour printing for charts */
+      .heatmap__cell, .streak-strip__day,
+      .ao-mastery__bar-fill, .subject-card::before {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+    }
+    .print-header { display: none; }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       N. MOBILE RESPONSIVE OVERRIDES
+       ════════════════════════════════════════════════════════════════════════ */
+
+    @media (max-width: 768px) {
+      .progress-hero__header-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .progress-hero__actions {
+        order: 2;
+      }
+      .heatmap__row {
+        grid-template-columns: 120px 1fr;
+        min-width: 380px;
+      }
+      .heatmap__topic-label {
+        font-size: 11px;
+      }
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .stat-tile__value {
+        font-size: 22px;
+      }
+      .progress-hero__title {
+        font-size: 32px;
+      }
+    }
+
+    /* Loading helpers */
+    #progress-loading[hidden],
+    #progress-empty[hidden],
+    #progress-content[hidden] { display: none !important; }
+    .spinner-sm {
+      width: 24px; height: 24px;
+      border: 3px solid var(--border-light);
+      border-top-color: var(--brand-rose);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
 </head>
 
-<body id="mainBody" class="has-bottom-nav bg-page texture-light-grid">
+<body id="mainBody" class="has-bottom-nav">
+
+  <!-- Print-only header (hidden on screen, shown on print) -->
+  <div class="print-header">
+    <div class="print-header__brand">SUPERHOLIC LAB · PROGRESS REPORT</div>
+    <div class="print-header__date" id="print-date"></div>
+  </div>
 
   <global-header></global-header>
 
-  <div class="bg-sage texture-dots py-10"
-    style="padding-top: calc(var(--navbar-h) + var(--space-8)); position:relative; overflow:hidden;">
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       HERO — restrained, with student selector + time-range filter + print
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <section class="progress-hero">
+    <div class="progress-hero__inner">
 
-    <div id="student-selector" class="animate-in delay-2 mb-4 relative z-10"
-      style="display:none; max-width: 240px; margin: 0 auto 1rem auto;">
-      <select id="student-select" class="form-select form-select-sm form-select-glass"
-        style="font-weight: 600; text-align-last: center;">
-      </select>
+      <!-- Student selector (preserved IDs: student-selector, student-select) -->
+      <div id="student-selector" style="display: none;">
+        <select id="student-select" aria-label="Switch learner"></select>
+      </div>
+
+      <div class="progress-hero__header-row">
+        <div class="progress-hero__main">
+          <span class="label-caps progress-hero__eyebrow">Mission report</span>
+          <h1 class="h1-as progress-hero__title">
+            <span id="student-name">Your child</span>'s <em>progress</em>.
+          </h1>
+          <p class="body-lg progress-hero__lede">
+            Honest signal on what's mastered, what's not, and what to do next.
+          </p>
+        </div>
+
+        <div class="progress-hero__actions">
+          <!-- Time-range filter (NEW) -->
+          <div class="range-toggle" role="tablist" aria-label="Time range">
+            <button id="range-7"   role="tab" aria-selected="false">7 days</button>
+            <button id="range-30"  role="tab" aria-selected="false">30 days</button>
+            <button id="range-all" role="tab" aria-selected="true" class="is-active">All time</button>
+          </div>
+
+          <!-- Print button (NEW) -->
+          <button class="btn btn-secondary btn-sm btn-icon" onclick="window.print()" aria-label="Print report">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 6 2 18 2 18 9"/>
+              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+              <rect x="6" y="14" width="12" height="8"/>
+            </svg>
+            Print
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       MAIN BODY — single 960px column
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <main id="app" class="progress-body">
+
+    <!-- ── Loading state (skeleton) ────────────────────────────────────── -->
+    <div id="progress-loading">
+      <div class="skeleton-grid-3">
+        <div class="skeleton skeleton-card"></div>
+        <div class="skeleton skeleton-card"></div>
+        <div class="skeleton skeleton-card"></div>
+      </div>
+      <div class="skeleton skeleton-bar"></div>
+      <div class="skeleton skeleton-strip"></div>
+      <div class="skeleton skeleton-heatmap"></div>
     </div>
 
-    <div class="container relative z-10 text-center flex flex-col items-center">
-      <div class="badge badge-glass mb-4">Mission Report</div>
-      <h1 class="font-display text-4xl text-white mb-2" style="font-size: 3rem;">
-        <span id="student-name"></span>'s Progress
-      </h1>
-    </div>
-  </div>
-
-  <main id="app" class="container py-10 flex flex-col items-center" style="max-width:800px; min-height: 80vh;">
-
-    <div id="progress-loading" class="w-full text-center py-10">
-      <div class="spinner-sm mx-auto mb-4"></div>
-      <h2 class="font-display text-2xl text-main">Crunching Data...</h2>
-      <p class="text-sm text-muted mt-2">Loading your latest mission report</p>
-    </div>
-
-    <div id="progress-empty" class="w-full" hidden>
-      <div class="glass-panel-1 p-20 text-center hover-lift" style="max-width: 600px; margin: 0 auto;">
-        <div class="text-4xl mb-4">🚀</div>
-        <h2 class="font-display text-2xl text-main mb-2">Ready for Liftoff!</h2>
-        <p class="text-muted text-sm mb-6">Complete your first practice paper or quiz to unlock your personalized Action
-          Plan.</p>
-        <a href="subjects.html" class="btn btn-primary hover-lift">Start Practising</a>
+    <!-- ── Empty state ──────────────────────────────────────────────────── -->
+    <div id="progress-empty" hidden>
+      <div class="card-glass" style="max-width: 600px; margin: var(--space-6) auto; padding: var(--space-8); text-align: center; border-left: 3px solid var(--brand-rose);">
+        <div style="font-size: 32px; margin-bottom: var(--space-3);">🚀</div>
+        <h2 class="h2-as" style="margin: 0 0 var(--space-2) 0;">Ready for liftoff.</h2>
+        <p style="color: var(--text-muted); font-size: var(--text-sm); margin: 0 0 var(--space-4) 0;">
+          Complete the first practice paper or quiz to unlock the personalised action plan.
+        </p>
+        <a href="subjects.html" class="btn btn-primary">Start practising →</a>
       </div>
     </div>
 
-    <div id="progress-content" class="w-full" hidden>
+    <!-- ── Main content ─────────────────────────────────────────────────── -->
+    <div id="progress-content" hidden>
 
+      <!-- HUD strip (existing mount point) -->
       <div id="progress-hud-strip"></div>
 
-      <h2 class="font-display text-2xl text-main mb-4 uppercase">Subject Proficiency</h2>
-
-      <div class="flex flex-wrap gap-4 mb-8">
-        <div class="glass-panel-1 flex-1 p-6 text-center hover-lift bg-maths-tint" style="min-width: 200px;">
-          <div class="text-sm mb-2 uppercase font-bold tracking-wider" style="color: var(--maths-colour);">Mathematics
-          </div>
-          <div class="flex justify-center items-baseline gap-3">
-            <div class="font-display text-4xl text-main" id="stat-mathematics-pct">-</div>
-            <div id="stat-mathematics-al" class="badge text-sm">-</div>
-          </div>
-        </div>
-        <div class="glass-panel-1 flex-1 p-6 text-center hover-lift bg-science-tint" style="min-width: 200px;">
-          <div class="text-sm mb-2 uppercase font-bold tracking-wider" style="color: var(--science-colour);">Science
-          </div>
-          <div class="flex justify-center items-baseline gap-3">
-            <div class="font-display text-4xl text-main" id="stat-science-pct">-</div>
-            <div id="stat-science-al" class="badge text-sm">-</div>
-          </div>
-        </div>
-        <div class="glass-panel-1 flex-1 p-6 text-center hover-lift bg-english-tint" style="min-width: 200px;">
-          <div class="text-sm mb-2 uppercase font-bold tracking-wider" style="color: var(--english-colour);">English
-          </div>
-          <div class="flex justify-center items-baseline gap-3">
-            <div class="font-display text-4xl text-main" id="stat-english-pct">-</div>
-            <div id="stat-english-al" class="badge text-sm">-</div>
-          </div>
-        </div>
-      </div>
-
-      <div id="quest-map-section" style="display: none;"></div>
-
-      <!-- Pillar 2 subject switcher — toggles hero / heatmap / dependency
-           tree between Mathematics / Science / English. The streak strip
-           stays cross-subject (it reads question_attempts directly). -->
-      <div class="subject-switcher" id="subject-switcher" role="tablist" aria-label="Subject for diagnosis"></div>
-
-      <!-- Hero diagnosis sentence — Pillar 2 (Analyse Weakness). Bound by
-           progress.js renderDiagnosisHero() from /api/analyze-weakness
-           response.diagnosis.hero_sentence. aria-live announces updates
-           on subject switch. -->
+      <!-- §01 — Diagnosis hero (Pillar 2 — populated by JS) -->
       <section class="diagnosis-hero" id="diagnosis-hero" aria-live="polite" hidden>
         <p class="diagnosis-hero__sentence" id="diagnosis-hero-sentence"></p>
       </section>
 
-      <!-- Streak strip (Week 2 Commit D) — last 30 days of cross-subject
-           question_attempts. Honest Compass: no flame icons, no celebratory
-           copy, no "X day streak" tally. Empty days styled identically to
-           filled (cream). Native title tooltips only. -->
-      <section class="streak-strip-section" id="streak-strip-section" hidden>
-        <h2 class="streak-strip-section__title font-display">Last 30 Days</h2>
+      <!-- §02 — Subject Proficiency (3-up grid) -->
+      <section class="progress-section" id="section-subject-proficiency">
+        <header class="progress-section__head">
+          <div>
+            <span class="label-caps progress-section__eyebrow">§ 01 — Performance</span>
+            <h2 class="h2-as progress-section__title">Subject proficiency.</h2>
+          </div>
+        </header>
+
+        <div class="subject-proficiency-grid">
+          <article class="card-glass subject-card" data-subject="mathematics">
+            <div class="subject-card__label">Mathematics</div>
+            <div class="subject-card__metrics">
+              <div class="subject-card__pct" id="stat-mathematics-pct">-</div>
+              <div id="stat-mathematics-al" class="badge">-</div>
+            </div>
+          </article>
+
+          <article class="card-glass subject-card" data-subject="science">
+            <div class="subject-card__label">Science</div>
+            <div class="subject-card__metrics">
+              <div class="subject-card__pct" id="stat-science-pct">-</div>
+              <div id="stat-science-al" class="badge">-</div>
+            </div>
+          </article>
+
+          <article class="card-glass subject-card" data-subject="english">
+            <div class="subject-card__label">English</div>
+            <div class="subject-card__metrics">
+              <div class="subject-card__pct" id="stat-english-pct">-</div>
+              <div id="stat-english-al" class="badge">-</div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- §03 — Quest Map / Tray (populated by JS into existing slot) -->
+      <section id="quest-map-section" style="display: none;"></section>
+
+      <!-- §04 — Streak strip (Last 30 Days, Honest Compass) -->
+      <section class="progress-section streak-strip-section" id="streak-strip-section" hidden>
+        <header class="progress-section__head">
+          <div>
+            <span class="label-caps progress-section__eyebrow">§ 02 — Activity rhythm</span>
+            <h2 class="h2-as progress-section__title">Last 30 days.</h2>
+          </div>
+        </header>
         <div class="streak-strip" id="streak-strip" role="img" aria-label="Activity over the last 30 days"></div>
       </section>
 
-      <!-- Topic mastery heatmap (Week 2 Commit C) — replaces the legacy
-           vertical BKT list. Cells map to (topic, sub_topic) BKT rows;
-           click opens a modal with the last 5 question_attempts via
-           /api/recent-attempts. Bound by progress.js renderMasteryHeatmap. -->
-      <section class="heatmap-section" id="heatmap-section" hidden>
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="font-display text-2xl text-main m-0 uppercase">Topic Mastery</h2>
-          <span class="badge" style="background: rgba(81,97,94,0.1); color: var(--sage-dark);">Live Analysis</span>
-        </div>
+      <!-- §05 — Topic Mastery Heatmap (Pillar 2) -->
+      <section class="progress-section heatmap-section" id="heatmap-section" hidden>
+        <header class="progress-section__head">
+          <div>
+            <span class="label-caps progress-section__eyebrow">§ 03 — Mastery</span>
+            <h2 class="h2-as progress-section__title">Topic mastery.</h2>
+          </div>
+          <span class="badge badge-sage">Live analysis</span>
+        </header>
         <div class="heatmap" id="heatmap-container"></div>
         <div class="heatmap-legend" aria-hidden="true">
           <span><span class="heatmap-legend__swatch heatmap-legend__swatch--low"></span> Needs work</span>
@@ -150,7 +1141,7 @@
         </div>
       </section>
 
-      <!-- Heatmap cell drill-down modal — populated on cell click. -->
+      <!-- Heatmap drill-down modal -->
       <div class="heatmap-modal" id="heatmap-cell-modal" hidden role="dialog" aria-modal="true" aria-labelledby="heatmap-cell-modal-title">
         <div class="heatmap-modal__backdrop" data-heatmap-modal-close></div>
         <div class="heatmap-modal__panel" role="document">
@@ -162,47 +1153,110 @@
         </div>
       </div>
 
-      <!-- Topic Dependencies (Week 2 Commit B) — DAG of SYLLABUS_DEPENDENCIES
-           rendered as SVG. Weakest topic ringed in rose; node fill encodes
-           mastery probability. Hidden until renderDependencyTree() injects
-           the SVG. -->
-      <section class="dep-tree-section" id="dep-tree-section" hidden>
-        <h2 class="dep-tree-section__title font-display">Topic Dependencies</h2>
+      <!-- §06 — Topic Dependencies (DAG, Pillar 2) -->
+      <section class="progress-section dep-tree-section" id="dep-tree-section" hidden>
+        <header class="progress-section__head">
+          <div>
+            <span class="label-caps progress-section__eyebrow">§ 04 — Knowledge graph</span>
+            <h2 class="h2-as progress-section__title">Topic dependencies.</h2>
+          </div>
+        </header>
         <p class="dep-tree-section__hint">
-          Mastering an upstream topic strengthens everything downstream. The rose-ringed topic is your current focus.
+          Mastering an upstream topic strengthens everything downstream. The rose-ringed topic is the current focus.
         </p>
         <div class="dep-tree-container" id="dep-tree-container">
           <!-- SVG injected by renderDependencyTree() -->
         </div>
       </section>
 
-      <h2 class="font-display text-2xl text-main mb-4 uppercase">Areas of Weakness</h2>
-      <div id="areas-of-weakness-list" class="flex flex-col gap-4 mb-8"></div>
+      <!-- §07 — Skill mastery (AO1/2/3) — STATIC SECTION (was JS-injected) -->
+      <section class="progress-section" id="ao-mastery-section" hidden>
+        <header class="progress-section__head">
+          <div>
+            <span class="label-caps progress-section__eyebrow">§ 05 — Cognitive skills</span>
+            <h2 class="h2-as progress-section__title">Skill mastery.</h2>
+          </div>
+          <span class="badge badge-sage">MOE assessment objectives</span>
+        </header>
+        <article class="card-glass ao-mastery-card" id="ao-mastery-card">
+          <!-- Populated by progress.js insertAOMasteryUI() -->
+        </article>
+      </section>
 
-      <h2 class="font-display text-2xl text-main mb-4 uppercase">Subject Breakdown</h2>
-      <div id="subject-breakdown-list" class="flex flex-col gap-4 mb-8"></div>
+      <!-- §08 — "What's most useful next" (NEW — proactive recommendations) -->
+      <section class="progress-section" id="recommend-section" hidden>
+        <header class="progress-section__head">
+          <div>
+            <span class="label-caps progress-section__eyebrow">§ 06 — Next step</span>
+            <h2 class="h2-as progress-section__title">What's most useful next.</h2>
+          </div>
+        </header>
+        <div class="recommend-tiles" id="recommend-tiles-container">
+          <!-- Populated by JS recommendNext() — see patch instructions -->
+        </div>
+      </section>
 
-      <h2 class="font-display text-2xl text-main mb-4 uppercase">Statistics</h2>
-      <div class="flex flex-wrap gap-4 mb-8">
-        <div class="glass-panel-2 flex-1 p-6 text-center hover-lift" id="stat-card-papers" style="min-width: 200px;">
-          <div class="text-muted text-sm mb-2 uppercase font-bold tracking-wider">Papers Attempted</div>
-          <div id="stat-papers" class="font-display text-3xl text-main">-</div>
-        </div>
-        <div class="glass-panel-2 flex-1 p-6 text-center hover-lift" style="min-width: 200px;">
-          <div class="text-muted text-sm mb-2 uppercase font-bold tracking-wider">Questions Mastered</div>
-          <div id="stat-mastered-new" class="font-display text-3xl text-success">-</div>
-        </div>
-        <div class="glass-panel-2 flex-1 p-6 text-center hover-lift" style="min-width: 200px;">
-          <div class="text-muted text-sm mb-2 uppercase font-bold tracking-wider">Total Practice Time</div>
-          <div id="stat-time-new" class="font-display text-3xl text-main">-</div>
-        </div>
-        <div class="glass-panel-2 flex-1 p-6 text-center hover-lift" style="min-width: 200px;">
-          <div class="text-muted text-sm mb-2 uppercase font-bold tracking-wider">Topics Improved</div>
-          <div class="font-bold text-lg text-amber"><span id="stat-improved">-</span></div>
-          <div class="text-muted text-xs uppercase font-bold mt-2">vs Last Week</div>
-        </div>
-      </div>
+      <!-- §09 — Areas of weakness (populated by JS, IDs preserved) -->
+      <section class="progress-section">
+        <header class="progress-section__head">
+          <div>
+            <span class="label-caps progress-section__eyebrow">§ 07 — Action items</span>
+            <h2 class="h2-as progress-section__title">Areas of weakness.</h2>
+          </div>
+        </header>
+        <div id="areas-of-weakness-list" class="flex flex-col gap-4"></div>
+      </section>
 
+      <!-- §10 — Subject breakdown -->
+      <section class="progress-section">
+        <header class="progress-section__head">
+          <div>
+            <span class="label-caps progress-section__eyebrow">§ 08 — Drill down</span>
+            <h2 class="h2-as progress-section__title">Subject breakdown.</h2>
+          </div>
+        </header>
+        <div id="subject-breakdown-list" class="flex flex-col gap-4"></div>
+      </section>
+
+      <!-- §11 — Statistics (5 tiles incl. NEW avg time per question) -->
+      <section class="progress-section">
+        <header class="progress-section__head">
+          <div>
+            <span class="label-caps progress-section__eyebrow">§ 09 — Numbers</span>
+            <h2 class="h2-as progress-section__title">Statistics.</h2>
+          </div>
+        </header>
+        <div class="stats-grid">
+          <article class="card-glass stat-tile" id="stat-card-papers">
+            <div class="stat-tile__label">Papers attempted</div>
+            <div class="stat-tile__value" id="stat-papers">-</div>
+          </article>
+
+          <article class="card-glass stat-tile">
+            <div class="stat-tile__label">Questions mastered</div>
+            <div class="stat-tile__value stat-tile__value--ok" id="stat-mastered-new">-</div>
+          </article>
+
+          <article class="card-glass stat-tile">
+            <div class="stat-tile__label">Total practice time</div>
+            <div class="stat-tile__value" id="stat-time-new">-</div>
+          </article>
+
+          <article class="card-glass stat-tile">
+            <div class="stat-tile__label">Avg time per question</div>
+            <div class="stat-tile__value" id="stat-avg-time">-</div>
+            <div class="stat-tile__sub">Pacing signal</div>
+          </article>
+
+          <article class="card-glass stat-tile">
+            <div class="stat-tile__label">Topics improved</div>
+            <div class="stat-tile__value" id="stat-improved">-</div>
+            <div class="stat-tile__sub">vs last week</div>
+          </article>
+        </div>
+      </section>
+
+      <!-- Hidden containers (preserved IDs) -->
       <div id="recent-history" hidden></div>
       <div id="exam-history-empty" hidden></div>
       <div id="exam-history-list" hidden></div>
@@ -211,12 +1265,50 @@
   </main>
 
   <global-footer></global-footer>
-
   <global-bottom-nav></global-bottom-nav>
+
+  <!-- Print date stamp -->
+  <script>
+    document.getElementById('print-date').textContent =
+      'Generated ' + new Date().toLocaleDateString('en-SG', {
+        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+      });
+  </script>
 
   <script src="/js/hud-strip.js" defer></script>
   <script src="../js/supabase-client.js"></script>
   <script src="../js/progress.js"></script>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       Time-range filter handler — soft-reload the page with ?range= param so
+       progress.js (which reads from URL) can pick it up. Non-invasive: if
+       progress.js doesn't yet read this param, the toggle still works
+       client-side as a UI affordance for the next iteration.
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <script>
+    (function () {
+      const params = new URLSearchParams(window.location.search);
+      const currentRange = params.get('range') || 'all';
+      const buttonMap = { '7': 'range-7', '30': 'range-30', 'all': 'range-all' };
+      const activeId = buttonMap[currentRange] || 'range-all';
+      Object.values(buttonMap).forEach(id => {
+        const btn = document.getElementById(id);
+        if (!btn) return;
+        btn.classList.toggle('is-active', id === activeId);
+        btn.setAttribute('aria-selected', id === activeId);
+      });
+      Object.entries(buttonMap).forEach(([range, id]) => {
+        const btn = document.getElementById(id);
+        if (!btn) return;
+        btn.addEventListener('click', () => {
+          const url = new URL(window.location.href);
+          if (range === 'all') url.searchParams.delete('range');
+          else url.searchParams.set('range', range);
+          window.location.href = url.toString();
+        });
+      });
+    })();
+  </script>
 
 </body>
 
