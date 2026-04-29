@@ -73,6 +73,21 @@ Verify: `SELECT column_name FROM information_schema.columns WHERE table_name='qu
 
 ---
 
+## Choose your inference mode — Batch vs Sync
+
+| Mode | Speed | Cost (50 rows) | Cost (~1,586 rows) | Best for |
+|---|---|---|---|---|
+| **Batch** (`submit.js`) | 10 min – 24 h, often hours for small jobs | ~$0.0025 | ~$0.10 | Production Pass 2, when you can afford to wait |
+| **Sync**  (`run-sync.js`)  | ~1–2 min for 50 rows; ~5–10 min for 1,586 with concurrency 10 | ~$0.005 | ~$0.20 | Pass 1 dry-run, debugging prompts, "I want to look at it now" |
+
+The two modes share the SAME input JSONL (from `build.js`) and produce the
+SAME output shape, so `audit.js` and `apply.js` are mode-agnostic. Pick
+whichever fits your wait tolerance — both are pennies for this scope.
+
+If a Batch run is stuck in `in_progress` past your patience threshold,
+just kill `submit.js` and re-run with `run-sync.js` on the same input
+file. You'll lose the Batch discount but you won't lose the work.
+
 ## Pass 1 — Dry-run on 50 rows
 
 Goal: human-verify the AI output **before** scaling to the full ~1,586 rows.
@@ -86,19 +101,30 @@ node scripts/backfill/build.js --sample 50 --out backfill_pass1.jsonl
 Inspect the file — confirm sample rows look sensible (correct subject,
 canon list present, MISSING field declared correctly).
 
-### 1.2 Submit to OpenAI Batch API
+### 1.2 Run inference — pick ONE mode
+
+**Sync (recommended for Pass 1):**
+
+```bash
+node scripts/backfill/run-sync.js backfill_pass1.jsonl --concurrency 5
+```
+
+Hits `/v1/chat/completions` directly with a 5-wide concurrency pool. ~1–2
+minutes for 50 rows. Auto-retries on 429/5xx with exponential backoff.
+Output: `backfill_pass1.output.jsonl` in the same shape Batch produces.
+
+**Batch (cheaper, slower):**
 
 ```bash
 node scripts/backfill/submit.js backfill_pass1.jsonl
 ```
 
-This:
-- Uploads the JSONL to OpenAI Files (`purpose=batch`)
-- Creates the batch (24h completion window)
-- Polls every 15s until `completed`/`failed`/`expired`/`cancelled`
-- Downloads `backfill_pass1.output.jsonl` on success
-
-Typical completion time for 50 rows: 5–30 minutes.
+Uploads → creates batch → polls every 15s until `completed`. Typical
+completion time 5–60 min for small jobs, but the Batch API SLA is "up
+to 24 hours" — so if you see status stuck at `in_progress` after 4
+hours, that's annoying but not broken. Ctrl-C is safe (the batch keeps
+running server-side; you can re-poll later by re-running submit.js
+or hitting `/v1/batches/<id>` directly).
 
 ### 1.3 Audit the output
 
@@ -149,14 +175,24 @@ node scripts/backfill/build.js --subject Science --out backfill_science.jsonl
 node scripts/backfill/build.js --subject English --out backfill_english.jsonl
 ```
 
-### 2.2 Submit each subject
+### 2.2 Run inference per subject — pick ONE mode
+
+**Sync (faster, ~5–10 min for ~1,500 rows):**
+
+```bash
+node scripts/backfill/run-sync.js backfill_science.jsonl --concurrency 10
+node scripts/backfill/run-sync.js backfill_english.jsonl --concurrency 10
+```
+
+**Batch (cheaper, hours):**
 
 ```bash
 node scripts/backfill/submit.js backfill_science.jsonl
 node scripts/backfill/submit.js backfill_english.jsonl
 ```
 
-Run them sequentially or in parallel — they're independent batches.
+Both modes can run in parallel — the OpenAI account-level RPM/TPM
+budgets are well above what these jobs consume.
 
 ### 2.3 Apply with a unique run id per subject
 
