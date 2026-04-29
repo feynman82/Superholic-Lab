@@ -1044,6 +1044,80 @@
     }
 
     /* ════════════════════════════════════════════════════════════════════════
+       L2. STALE-DATA REFRESH TOAST (Phase 4)
+       Bottom-right pill with mint left-rail. Slides in from the right
+       when initStaleDataPoll() detects new question_attempts since
+       page load. One-shot per detection, dismissible without reload.
+       Sits above the bottom-nav on mobile (clear of the 64px tab bar).
+       ════════════════════════════════════════════════════════════════════════ */
+    .refresh-toast {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      z-index: 95;
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-2) var(--space-3) var(--space-2) calc(var(--space-3) + 4px);
+      background: var(--sage-dark, #3A4E4A);
+      color: var(--cream, #F9F6F0);
+      border-radius: var(--radius-md, 12px);
+      box-shadow: 0 6px 20px rgba(44, 62, 58, 0.32);
+      max-width: calc(100vw - 48px);
+      transform: translateX(0);
+      opacity: 1;
+      transition: transform 240ms cubic-bezier(0.2, 0.7, 0.2, 1), opacity 240ms ease;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .refresh-toast[hidden] {
+      display: none;
+    }
+    .refresh-toast--leaving {
+      transform: translateX(16px);
+      opacity: 0;
+    }
+    .refresh-toast__rail {
+      position: absolute;
+      left: 0; top: 8px; bottom: 8px;
+      width: 3px;
+      background: var(--brand-mint, #059669);
+      border-radius: var(--radius-full, 999px);
+    }
+    .refresh-toast__text {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+    }
+    .refresh-toast__dismiss {
+      background: transparent;
+      border: none;
+      color: var(--cream, #F9F6F0);
+      opacity: 0.55;
+      font-size: 18px;
+      line-height: 1;
+      width: 24px; height: 24px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 150ms ease;
+    }
+    .refresh-toast__dismiss:hover { opacity: 1; }
+    .refresh-toast__dismiss:focus-visible {
+      outline: 2px solid var(--brand-mint, #059669);
+      outline-offset: 2px;
+      border-radius: 4px;
+      opacity: 1;
+    }
+    @media (max-width: 768px) {
+      .refresh-toast {
+        right: 16px; left: 16px; bottom: calc(64px + 16px); /* clear bottom-nav */
+        max-width: none;
+        justify-content: space-between;
+      }
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
        M. PRINT STYLES — strip chrome, keep data
        ════════════════════════════════════════════════════════════════════════ */
 
@@ -1061,6 +1135,7 @@
       #student-selector,
       .heatmap-modal,
       .ao-info,
+      .refresh-toast,
       button,
       .recommend-tile__cta,
       a.btn,
@@ -1814,6 +1889,17 @@
 
     </div>
   </main>
+
+  <!-- Stale-data refresh toast (Phase 4) — appears when a polled fetch
+       finds question_attempts created since the page loaded. Hidden by
+       default; progress.js initStaleDataPoll() unhides on detection.
+       Survives subject-switch and is one-shot per detection. -->
+  <div class="refresh-toast" id="refresh-toast" role="status" aria-live="polite" hidden>
+    <span class="refresh-toast__rail" aria-hidden="true"></span>
+    <span class="refresh-toast__text">New activity detected</span>
+    <button type="button" class="btn btn-primary btn-sm" id="refresh-toast-action">Refresh</button>
+    <button type="button" class="refresh-toast__dismiss" id="refresh-toast-dismiss" aria-label="Dismiss">×</button>
+  </div>
 
   <global-footer></global-footer>
   <global-bottom-nav></global-bottom-nav>

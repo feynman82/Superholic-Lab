@@ -333,6 +333,13 @@ async function init() {
     // Fires after renderActionPlanUI so the .subject-card elements exist.
     renderSubjectTrends(db, student.id).catch(err => console.warn('[subject-trends] error:', err.message || err));
 
+    // Stale-data refresh poll (Phase 4) — surfaces a bottom-right toast
+    // when new question_attempts arrive for this student while the page
+    // is open (e.g. kid practising on another device). 60s poll, 30 min
+    // lifetime cap. Single-instance guard inside the helper so re-render
+    // (student switch) doesn't accumulate intervals.
+    initStaleDataPoll(db, student.id);
+
     // ── NEW (v2 reskin) — proactive recommendations + avg time per question ──
     renderRecommendNext(weakTopics, student, subjectSlotsTaken);
     renderAvgTimePerQuestion(totalSeconds, allActivity);
@@ -1815,6 +1822,97 @@ async function renderPSLEForecast(db, student) {
     }
   }
   section.hidden = false;
+}
+
+// ── STALE-DATA REFRESH POLL (Phase 4) ──────────────────────────────────────
+//
+// 60-second poll for new question_attempts on this student. If the parent
+// is on the page while the kid practises on another device, we surface a
+// non-blocking toast at bottom-right. One-shot per detection so the toast
+// doesn't spam — once shown, lastSeen advances to that row's timestamp,
+// so only newer activity triggers it again. Polling stops after 30 min
+// of wall-time so a forgotten tab doesn't drain the kid's data plan.
+//
+// Single-instance guard: re-rendering renderUI (e.g. on student switch)
+// clears any prior interval before starting a new one.
+
+const _STALE_POLL_MS         = 60_000;
+const _STALE_POLL_LIFETIME_MS = 30 * 60_000;
+let _stalePollInterval = null;
+let _stalePollLastSeen = null;
+
+function _showRefreshToast() {
+  const toast = document.getElementById('refresh-toast');
+  if (!toast) return;
+  toast.hidden = false;
+  toast.classList.remove('refresh-toast--leaving');
+}
+
+function _hideRefreshToast() {
+  const toast = document.getElementById('refresh-toast');
+  if (!toast) return;
+  toast.classList.add('refresh-toast--leaving');
+  // Wait out the 240ms slide before flipping hidden so the transition
+  // actually plays. If the user reloads we don't bother.
+  setTimeout(() => { toast.hidden = true; }, 280);
+}
+
+function initStaleDataPoll(db, studentId) {
+  if (!studentId) return;
+
+  // Wire the toast buttons once. The toast may have been left visible from
+  // a prior render of the same page (rare, but defensive); make sure
+  // dismiss/refresh wiring doesn't double-bind.
+  const action  = document.getElementById('refresh-toast-action');
+  const dismiss = document.getElementById('refresh-toast-dismiss');
+  if (action && !action.__shlBound) {
+    action.addEventListener('click', () => {
+      // Drop the ?range= param on refresh so the parent gets the freshest
+      // all-time view rather than re-loading a stale 7-day filter that
+      // may not include the new activity.
+      const url = new URL(window.location.href);
+      url.searchParams.delete('range');
+      window.location.href = url.toString();
+    });
+    action.__shlBound = true;
+  }
+  if (dismiss && !dismiss.__shlBound) {
+    dismiss.addEventListener('click', _hideRefreshToast);
+    dismiss.__shlBound = true;
+  }
+
+  // Reset state for this run.
+  if (_stalePollInterval) clearInterval(_stalePollInterval);
+  _stalePollLastSeen = new Date().toISOString();
+  window.__lastSeenActivity = _stalePollLastSeen;
+
+  const startedAt = Date.now();
+  _stalePollInterval = setInterval(async () => {
+    if (Date.now() - startedAt > _STALE_POLL_LIFETIME_MS) {
+      clearInterval(_stalePollInterval);
+      _stalePollInterval = null;
+      return;
+    }
+    try {
+      const { data, error } = await db.from('question_attempts')
+        .select('created_at')
+        .eq('student_id', studentId)
+        .gt('created_at', _stalePollLastSeen)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      if (error) return; // tolerate transient errors silently
+      if (data && data.length > 0) {
+        // Advance the cursor to the newest row we saw — prevents the toast
+        // from re-firing every 60s for the same activity. Subsequent polls
+        // only match strictly-newer rows.
+        _stalePollLastSeen = data[0].created_at;
+        window.__lastSeenActivity = _stalePollLastSeen;
+        _showRefreshToast();
+      }
+    } catch (err) {
+      console.warn('[stale-poll]', err.message || err);
+    }
+  }, _STALE_POLL_MS);
 }
 
 // ── SUBJECT TRENDS (Phase 3) ───────────────────────────────────────────────
