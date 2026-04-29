@@ -73,6 +73,33 @@ async function init() {
     // ------------------------------
     window.currentStudentId = student.id;
 
+    // ── Time-range filter (Phase 1) ─────────────────────────────────────────
+    // The pill toggle in progress.html soft-reloads with ?range=7|30|<none>.
+    // Read it once here and thread the resulting cutoff timestamp into every
+    // historical query below so subject proficiency, AO mastery, exam table,
+    // weak topics, and the heatmap all respect the picked window.
+    //
+    // Skipped intentionally:
+    //   - daily_usage  (single-day "questions today" lookup, range-independent)
+    //   - streak strip (always 30 days by design — not a filter target)
+    const rangeFilter = (urlParams.get('range') || '').trim();
+    const rangeStartDate = rangeFilter === '7'
+      ? new Date(Date.now() - 7  * 86400000)
+      : rangeFilter === '30'
+        ? new Date(Date.now() - 30 * 86400000)
+        : null;
+    const rangeStartIso = rangeStartDate ? rangeStartDate.toISOString() : null;
+    window.__progressRange = rangeFilter || 'all';
+
+    // Update the hero lede so the parent immediately sees what window the
+    // page is showing. Falls back to the locked default when range is "all".
+    const ledeEl = document.querySelector('.progress-hero__lede');
+    if (ledeEl) {
+      if (rangeFilter === '7')       ledeEl.textContent = "Honest signal from the last 7 days.";
+      else if (rangeFilter === '30') ledeEl.textContent = "Honest signal from the last 30 days.";
+      // else: leave the existing copy untouched
+    }
+
     // Render HUD strip — non-blocking, fails silently
     if (window.renderHUDStrip) {
       window.renderHUDStrip('progress-hud-strip', { studentId: student.id }).catch(() => {});
@@ -103,11 +130,12 @@ async function init() {
     updateStudentLabel(student);
 
     // ── Fetch quiz attempts ───────────────────────────────────────────────────
-    const { data: attempts, error: attErr } = await db
+    let quizQuery = db
       .from('quiz_attempts')
       .select('id, subject, topic, score, total_questions, time_taken_seconds, completed_at')
-      .eq('student_id', student.id)
-      .order('completed_at', { ascending: false });
+      .eq('student_id', student.id);
+    if (rangeStartIso) quizQuery = quizQuery.gte('completed_at', rangeStartIso);
+    const { data: attempts, error: attErr } = await quizQuery.order('completed_at', { ascending: false });
 
     if (attErr) throw attErr;
 
@@ -163,7 +191,11 @@ async function init() {
       .slice(0, 5);
 
     // ── Fetch exam results & Active Quest ──
-    const { data: examResults } = await db.from('exam_results').select('id, subject, level, exam_type, score, total_marks, questions_attempted, time_taken, completed_at').eq('student_id', student.id).order('completed_at', { ascending: false }).limit(20);
+    let examQuery = db.from('exam_results')
+      .select('id, subject, level, exam_type, score, total_marks, questions_attempted, time_taken, completed_at')
+      .eq('student_id', student.id);
+    if (rangeStartIso) examQuery = examQuery.gte('completed_at', rangeStartIso);
+    const { data: examResults } = await examQuery.order('completed_at', { ascending: false }).limit(20);
     const activeQuest = await loadActiveQuest(db, student.id);
 
     // Fetch active quests for tray + per-subject eligibility gating
@@ -180,11 +212,11 @@ async function init() {
     window.activeQuestsList = activeQuestsList;
 
     // ── 🚀 Fetch Question Attempts for Cognitive Skill (AO) Analysis ──
-    const { data: qAttempts } = await db.from('question_attempts')
+    let qAttemptsQuery = db.from('question_attempts')
       .select('cognitive_skill, correct, marks_earned, marks_total')
-      .eq('student_id', student.id)
-      .order('created_at', { ascending: false })
-      .limit(500);
+      .eq('student_id', student.id);
+    if (rangeStartIso) qAttemptsQuery = qAttemptsQuery.gte('created_at', rangeStartIso);
+    const { data: qAttempts } = await qAttemptsQuery.order('created_at', { ascending: false }).limit(500);
 
     const aoStats = {
       AO1: { earned: 0, total: 0, label: 'AO1 (Recall & Concepts)' },
@@ -319,6 +351,10 @@ async function init() {
       accessToken: session?.access_token,
       currentSubject: heroSubject,
       subjectStats,
+      // Phase 1 — propagate the active range so subject-switcher re-fetches
+      // also respect the picked window. mastery_levels filter uses
+      // last_updated since each row is timestamped at the BKT update.
+      rangeStartIso,
     };
 
     // Mark the initial active button. All buttons remain enabled — the
@@ -336,10 +372,12 @@ async function init() {
     (async () => {
       const diag = await renderDiagnosisHero(student.id, heroSubject, session?.access_token);
       try {
-        const { data: masteryRows } = await db.from('mastery_levels')
-          .select('topic, sub_topic, probability, attempts')
+        let masteryQuery = db.from('mastery_levels')
+          .select('topic, sub_topic, probability, attempts, last_updated')
           .eq('student_id', student.id)
           .eq('subject', heroSubject);
+        if (rangeStartIso) masteryQuery = masteryQuery.gte('last_updated', rangeStartIso);
+        const { data: masteryRows } = await masteryQuery;
         const rows = masteryRows || [];
         const masteryByTopic = buildMasteryByTopic(rows);
         await renderMasteryHeatmap('heatmap-container', rows, heroSubject, student.id, session?.access_token);
@@ -624,10 +662,14 @@ window.switchHeatmapSubject = async function (subject) {
 
   // Re-fetch mastery for the new subject and re-render heatmap + dep tree
   try {
-    const { data: masteryRows } = await ctx.db.from('mastery_levels')
-      .select('topic, sub_topic, probability, attempts')
+    let masteryQuery = ctx.db.from('mastery_levels')
+      .select('topic, sub_topic, probability, attempts, last_updated')
       .eq('student_id', ctx.studentId)
       .eq('subject', subject);
+    // Phase 1 — respect the range filter on subject switch, same column
+    // (last_updated) as the initial fetch in renderUI.
+    if (ctx.rangeStartIso) masteryQuery = masteryQuery.gte('last_updated', ctx.rangeStartIso);
+    const { data: masteryRows } = await masteryQuery;
     const rows = masteryRows || [];
     const masteryByTopic = buildMasteryByTopic(rows);
 
