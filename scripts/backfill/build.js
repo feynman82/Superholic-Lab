@@ -226,10 +226,16 @@ async function main() {
   }
   const sb = createClient(url, key, { auth: { persistSession: false } });
 
+  // Pull every row that still has at least one of (sub_topic, cog_skill)
+  // missing. Deliberately NOT filtering by backfill_run_id IS NULL — a
+  // prior run may have enriched only one of the two fields (e.g. cog_skill
+  // succeeded but sub_topic returned low confidence), and we want
+  // subsequent runs to be able to retry the still-missing field. apply.js
+  // de-dupes inside a single RUN_ID via row.backfill_run_id === RUN_ID,
+  // and a new RUN_ID will re-process rows correctly.
   let q = sb.from('question_bank')
-    .select('id, subject, topic, sub_topic, cognitive_skill, type, question_text, passage')
-    .or('sub_topic.is.null,cognitive_skill.is.null')
-    .is('backfill_run_id', null);
+    .select('id, subject, topic, sub_topic, cognitive_skill, type, question_text, passage, backfill_run_id')
+    .or('sub_topic.is.null,cognitive_skill.is.null');
   if (SUBJECT_FILTER) q = q.eq('subject', SUBJECT_FILTER);
   if (TOPIC_FILTER)   q = q.eq('topic',   TOPIC_FILTER);
   if (SAMPLE_SIZE > 0) q = q.limit(SAMPLE_SIZE);
