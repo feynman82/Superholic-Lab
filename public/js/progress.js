@@ -290,14 +290,11 @@ async function init() {
     renderActionPlanUI(totalSeconds, questionsMastered, overallPct, advancedSubjectStats, weakTopics, student, session, activeQuest, allActivity, improvedText, subjectSlotsTaken);
     insertAOMasteryUI(aoStats);
 
-    // 🚀 MASTERCLASS: Fetch and Render BKT Mastery Data
-    await renderBKT(db, student.id);
-
-    // Hero diagnosis sentence + dependency tree (Pillar 2). Pick the
-    // subject with the most quiz attempts so the parent sees the diagnosis
-    // grounded in real engagement. Empty-state students fall through to the
-    // "hasn't attempted" template + the tree stays hidden when the BKT
-    // map for the chosen subject has no rows.
+    // Hero diagnosis sentence + heatmap + dependency tree (Pillar 2).
+    // Heatmap replaces the legacy vertical BKT list. We fetch
+    // mastery_levels filtered by hero subject ONCE and feed both the
+    // dependency tree (topic-level aggregate) and the heatmap (cell-level
+    // per-row data) so the page makes a single round-trip for both.
     const heroSubject = pickHeroSubject(subjectStats);
     (async () => {
       const diag = await renderDiagnosisHero(student.id, heroSubject, session?.access_token);
@@ -306,10 +303,12 @@ async function init() {
           .select('topic, sub_topic, probability, attempts')
           .eq('student_id', student.id)
           .eq('subject', heroSubject);
-        const masteryByTopic = buildMasteryByTopic(masteryRows || []);
+        const rows = masteryRows || [];
+        const masteryByTopic = buildMasteryByTopic(rows);
+        await renderMasteryHeatmap('heatmap-container', rows, heroSubject, student.id, session?.access_token);
         await renderDependencyTree('dep-tree-container', heroSubject, diag?.weakest_topic || null, masteryByTopic);
       } catch (err) {
-        console.warn('[progress] dependency tree mastery fetch failed:', err.message || err);
+        console.warn('[progress] heatmap/tree mastery fetch failed:', err.message || err);
       }
     })();
 
@@ -1639,6 +1638,194 @@ function buildMasteryByTopic(masteryRows) {
   }
   return out;
 }
+
+// ── TOPIC MASTERY HEATMAP (Week 2 Commit C — Pillar 2) ─────────────────────
+//
+// Replaces the legacy vertical BKT list. Rows = topics from
+// SYLLABUS_DEPENDENCIES[subject]; columns = sub_topics under that topic.
+// Topics with a single canonical sub_topic render as one wide cell. Cells
+// use mastery_levels.probability bucketed into low/mid/high; missing rows
+// render the no-data diagonal-stripe pattern. Click any cell to open
+// #heatmap-cell-modal which fetches /api/recent-attempts.
+
+const _heatmapState = { studentId: null, accessToken: null };
+
+function _heatmapBucketClass(p) {
+  if (p == null)  return 'heatmap__cell--none';
+  if (p < 0.40)   return 'heatmap__cell--low';
+  if (p < 0.70)   return 'heatmap__cell--mid';
+  return 'heatmap__cell--high';
+}
+
+function _escHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+function _truncate(s, n) {
+  const t = String(s == null ? '' : s);
+  return t.length > n ? t.slice(0, n - 1) + '…' : t;
+}
+function _formatAttemptDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '';
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+async function renderMasteryHeatmap(containerId, masteryRows, subject, studentId, accessToken) {
+  const container = document.getElementById(containerId);
+  const sectionEl = document.getElementById('heatmap-section');
+  if (!container) return;
+
+  // Cache the auth context so modal handlers can re-use it without
+  // re-parsing the session every cell click.
+  _heatmapState.studentId   = studentId;
+  _heatmapState.accessToken = accessToken;
+
+  try {
+    const tree = await getSyllabusTree();
+    const subjectMap = tree[String(subject || '').toLowerCase()];
+    if (!subjectMap || Object.keys(subjectMap).length === 0) {
+      if (sectionEl) sectionEl.hidden = true;
+      return;
+    }
+
+    // Index mastery rows by (topic|sub_topic) for O(1) lookup. NULL/empty
+    // sub_topic rows are stored under the topic-only key.
+    const masteryByCell = {};
+    for (const row of (masteryRows || [])) {
+      const sub = (row.sub_topic || '').trim();
+      const key = sub ? `${row.topic}|${sub}` : `${row.topic}|`;
+      masteryByCell[key] = row;
+    }
+
+    const rowsHtml = Object.entries(subjectMap).map(([topic, node]) => {
+      const subs = (node.sub_topics || []).slice();
+      // Single-sub_topic rendered as a single full-width cell so narrow
+      // topics don't get a thin strip cell.
+      const isSingle = subs.length <= 1;
+      const cellList = subs.length === 0 ? [''] : subs;
+      const cellsHtml = cellList.map(sub => {
+        const key  = sub ? `${topic}|${sub}` : `${topic}|`;
+        const row  = masteryByCell[key];
+        const prob = row?.probability ?? null;
+        const cls  = _heatmapBucketClass(prob);
+        const ariaTopic = _escHtml(topic);
+        const ariaSub   = sub ? _escHtml(sub) : '(no specific sub-topic)';
+        const titleText = prob == null
+          ? `${topic}${sub ? ' · ' + sub : ''} — no attempts yet`
+          : `${topic}${sub ? ' · ' + sub : ''} — ${Math.round(prob * 100)}% mastery`;
+        return `<button type="button" class="heatmap__cell ${cls}"
+            data-topic="${ariaTopic}" data-sub-topic="${_escHtml(sub || '')}"
+            aria-label="Open details for ${ariaTopic} ${ariaSub}"
+            title="${_escHtml(titleText)}"></button>`;
+      }).join('');
+      return `<div class="heatmap__row ${isSingle ? 'heatmap__row--single' : ''}" style="--cols: ${Math.max(1, cellList.length)};">
+        <div class="heatmap__topic-label">${_escHtml(topic)}</div>
+        <div class="heatmap__cells">${cellsHtml}</div>
+      </div>`;
+    }).join('');
+
+    container.innerHTML = rowsHtml;
+    if (sectionEl) sectionEl.hidden = false;
+
+    // Delegate clicks rather than wiring per-cell listeners so the
+    // function can be re-rendered cheaply on subject switch.
+    container.onclick = (ev) => {
+      const btn = ev.target.closest('.heatmap__cell');
+      if (!btn) return;
+      const topic    = btn.dataset.topic;
+      const subTopic = btn.dataset.subTopic || '';
+      openHeatmapCellModal(topic, subTopic);
+    };
+  } catch (err) {
+    console.warn('[progress] heatmap render failed:', err.message || err);
+    if (sectionEl) sectionEl.hidden = true;
+  }
+}
+
+async function openHeatmapCellModal(topic, subTopic) {
+  const modal   = document.getElementById('heatmap-cell-modal');
+  const titleEl = document.getElementById('heatmap-cell-modal-title');
+  const bodyEl  = document.getElementById('heatmap-cell-modal-body');
+  if (!modal || !titleEl || !bodyEl) return;
+
+  titleEl.textContent = subTopic ? `${topic} — ${subTopic}` : topic;
+  bodyEl.innerHTML    = '<p class="heatmap-modal__empty">Loading…</p>';
+  modal.hidden        = false;
+
+  const studentId   = _heatmapState.studentId;
+  const accessToken = _heatmapState.accessToken;
+  if (!studentId) {
+    bodyEl.innerHTML = '<p class="heatmap-modal__error">No student context. Please reload the page.</p>';
+    return;
+  }
+
+  try {
+    const params = new URLSearchParams({
+      student_id: studentId,
+      topic,
+      sub_topic:  subTopic || '',
+      limit:      '5',
+    });
+    const res = await fetch(`/api/recent-attempts?${params.toString()}`, {
+      headers: { 'Authorization': `Bearer ${accessToken || ''}` },
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    bodyEl.innerHTML = _renderHeatmapModalBody(data);
+  } catch (err) {
+    console.error('[heatmap modal] fetch error:', err.message || err);
+    bodyEl.innerHTML = '<p class="heatmap-modal__error">Could not load attempts. Please try again.</p>';
+  }
+}
+
+function _renderHeatmapModalBody(data) {
+  const stats    = data?.stats || {};
+  const attempts = data?.attempts || [];
+  const accuracyPct = stats.accuracy != null ? `${(stats.accuracy * 100).toFixed(1)}%` : '—';
+  const masteryPct  = stats.mastery_probability != null ? `${Math.round(stats.mastery_probability * 100)}%` : '—';
+  const total       = stats.total_attempts ?? 0;
+
+  const statsHtml = `<div class="heatmap-modal__stats">
+    <div class="heatmap-modal__stat"><span class="heatmap-modal__stat-value">${total}</span><span class="heatmap-modal__stat-label">attempts</span></div>
+    <div class="heatmap-modal__stat"><span class="heatmap-modal__stat-value">${accuracyPct}</span><span class="heatmap-modal__stat-label">accuracy</span></div>
+    <div class="heatmap-modal__stat"><span class="heatmap-modal__stat-value">${masteryPct}</span><span class="heatmap-modal__stat-label">mastery</span></div>
+  </div>`;
+
+  if (!attempts.length) {
+    return statsHtml + '<p class="heatmap-modal__empty">No attempts logged yet for this sub-topic.</p>';
+  }
+
+  const attemptsHtml = `<ul class="heatmap-modal__attempts">${attempts.map(a => `
+    <li class="heatmap-modal__attempt heatmap-modal__attempt--${a.correct ? 'correct' : 'incorrect'}">
+      <span class="heatmap-modal__attempt-date">${_escHtml(_formatAttemptDate(a.created_at))}</span>
+      <span class="heatmap-modal__attempt-stem">${_escHtml(_truncate(a.question_text, 80))}</span>
+    </li>
+  `).join('')}</ul>`;
+
+  return statsHtml + attemptsHtml;
+}
+
+// One-time global wiring for ESC + click-outside close. Runs after the DOM
+// is ready (script loads at end of body) so document is queryable.
+(function _wireHeatmapModalCloseHandlers() {
+  const closeModal = () => {
+    const m = document.getElementById('heatmap-cell-modal');
+    if (m) m.hidden = true;
+  };
+  document.addEventListener('click', (ev) => {
+    if (ev.target.matches('[data-heatmap-modal-close]')) closeModal();
+  });
+  document.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Escape') {
+      const m = document.getElementById('heatmap-cell-modal');
+      if (m && !m.hidden) closeModal();
+    }
+  });
+})();
 
 // ── HERO DIAGNOSIS SENTENCE (Week 2 Commit A — Pillar 2) ────────────────────
 //

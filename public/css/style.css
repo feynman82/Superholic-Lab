@@ -4072,3 +4072,205 @@ ul.rose-list li::before {
 @media (max-width: 480px) {
   .dep-tree-container { padding: var(--space-2); }
 }
+
+/* ── Topic mastery heatmap (Week 2 Commit C — Pillar 2) ───────────────────── */
+/* Rows = topics, cols = sub_topics (1 col fallback for single-sub_topic
+   topics). Cell colour bucketed by mastery_levels.probability. Click any
+   cell to open the .heatmap-modal drill-down. */
+.heatmap-section { margin-bottom: var(--space-5); }
+.heatmap {
+  display: grid;
+  gap: var(--space-1);
+  width: 100%;
+  margin-bottom: var(--space-3);
+}
+.heatmap__row {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: var(--space-2);
+  align-items: stretch;
+}
+.heatmap__topic-label {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--sage-dark);
+  display: flex;
+  align-items: center;
+  padding-right: var(--space-2);
+}
+.heatmap__cells {
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 1), 1fr);
+  gap: 2px;
+}
+.heatmap__cell {
+  aspect-ratio: 1.5 / 1;
+  min-height: 32px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+  border: none;
+  padding: 0;
+  position: relative;
+}
+.heatmap__cell:hover,
+.heatmap__cell:focus-visible {
+  transform: scale(1.04);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  outline: 2px solid var(--brand-sage);
+  outline-offset: 2px;
+}
+.heatmap__cell--low  { background: var(--error); }
+.heatmap__cell--mid  { background: var(--brand-amber); }
+.heatmap__cell--high { background: var(--brand-mint); }
+.heatmap__cell--none {
+  background: var(--cream);
+  background-image: repeating-linear-gradient(
+    45deg, transparent, transparent 4px,
+    rgba(0,0,0,0.05) 4px, rgba(0,0,0,0.05) 8px
+  );
+}
+.heatmap__row--single .heatmap__cells { grid-template-columns: 1fr; }
+.heatmap-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  align-items: center;
+}
+.heatmap-legend__swatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.heatmap-legend__swatch--low  { background: var(--error); }
+.heatmap-legend__swatch--mid  { background: var(--brand-amber); }
+.heatmap-legend__swatch--high { background: var(--brand-mint); }
+.heatmap-legend__swatch--none {
+  background: var(--cream);
+  background-image: repeating-linear-gradient(
+    45deg, transparent, transparent 3px,
+    rgba(0,0,0,0.08) 3px, rgba(0,0,0,0.08) 6px
+  );
+}
+@media (max-width: 480px) {
+  .heatmap__row { grid-template-columns: 110px 1fr; }
+  .heatmap__topic-label { font-size: 11px; }
+}
+
+/* ── Heatmap drill-down modal ──────────────────────────────────────────────── */
+.heatmap-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 240;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-3);
+}
+.heatmap-modal[hidden] { display: none; }
+.heatmap-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(58, 73, 71, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.heatmap-modal__panel {
+  position: relative;
+  background: var(--cream);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 520px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+}
+.heatmap-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--glass-border-dim);
+}
+.heatmap-modal__title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  color: var(--sage-dark);
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+.heatmap-modal__close {
+  background: transparent;
+  border: none;
+  font-size: 1.75rem;
+  line-height: 1;
+  color: var(--sage-dark);
+  cursor: pointer;
+  padding: 0 var(--space-1);
+}
+.heatmap-modal__body { padding: var(--space-3) var(--space-4); }
+.heatmap-modal__stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+.heatmap-modal__stat {
+  text-align: center;
+  padding: var(--space-2);
+  background: var(--surface-container-low);
+  border-radius: var(--radius-md);
+}
+.heatmap-modal__stat-value {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  color: var(--sage-dark);
+}
+.heatmap-modal__stat-label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 2px;
+}
+.heatmap-modal__attempts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.heatmap-modal__attempt {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--surface-container-low);
+  border-left: 3px solid var(--brand-mint);
+  font-size: 0.875rem;
+}
+.heatmap-modal__attempt--incorrect { border-left-color: var(--error); }
+.heatmap-modal__attempt-date { color: var(--text-muted); font-size: 0.8125rem; }
+.heatmap-modal__attempt-stem {
+  color: var(--sage-dark);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.heatmap-modal__empty,
+.heatmap-modal__error {
+  color: var(--text-muted);
+  text-align: center;
+  padding: var(--space-3) 0;
+}
+.heatmap-modal__error { color: var(--error); }

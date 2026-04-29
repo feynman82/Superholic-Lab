@@ -118,12 +118,34 @@
         <p class="diagnosis-hero__sentence" id="diagnosis-hero-sentence"></p>
       </section>
 
-      <div class="flex justify-between items-center mb-4">
-        <h2 class="font-display text-2xl text-main m-0 uppercase">AI Mastery Tracker (BKT)</h2>
-        <span class="badge" style="background: rgba(81,97,94,0.1); color: var(--sage-dark);">Live Analysis</span>
-      </div>
-      <div id="bkt-mastery-list" class="flex flex-col gap-4 mb-8 w-full">
-        <div class="glass-panel-1 p-6 text-center text-sm text-muted">Loading mastery data...</div>
+      <!-- Topic mastery heatmap (Week 2 Commit C) — replaces the legacy
+           vertical BKT list. Cells map to (topic, sub_topic) BKT rows;
+           click opens a modal with the last 5 question_attempts via
+           /api/recent-attempts. Bound by progress.js renderMasteryHeatmap. -->
+      <section class="heatmap-section" id="heatmap-section" hidden>
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="font-display text-2xl text-main m-0 uppercase">Topic Mastery</h2>
+          <span class="badge" style="background: rgba(81,97,94,0.1); color: var(--sage-dark);">Live Analysis</span>
+        </div>
+        <div class="heatmap" id="heatmap-container"></div>
+        <div class="heatmap-legend" aria-hidden="true">
+          <span><span class="heatmap-legend__swatch heatmap-legend__swatch--low"></span> Needs work</span>
+          <span><span class="heatmap-legend__swatch heatmap-legend__swatch--mid"></span> Developing</span>
+          <span><span class="heatmap-legend__swatch heatmap-legend__swatch--high"></span> Strong</span>
+          <span><span class="heatmap-legend__swatch heatmap-legend__swatch--none"></span> No data</span>
+        </div>
+      </section>
+
+      <!-- Heatmap cell drill-down modal — populated on cell click. -->
+      <div class="heatmap-modal" id="heatmap-cell-modal" hidden role="dialog" aria-modal="true" aria-labelledby="heatmap-cell-modal-title">
+        <div class="heatmap-modal__backdrop" data-heatmap-modal-close></div>
+        <div class="heatmap-modal__panel" role="document">
+          <header class="heatmap-modal__header">
+            <h3 class="heatmap-modal__title" id="heatmap-cell-modal-title"></h3>
+            <button type="button" class="heatmap-modal__close" data-heatmap-modal-close aria-label="Close">×</button>
+          </header>
+          <div class="heatmap-modal__body" id="heatmap-cell-modal-body"></div>
+        </div>
       </div>
 
       <!-- Topic Dependencies (Week 2 Commit B) — DAG of SYLLABUS_DEPENDENCIES
