@@ -29,7 +29,7 @@ import { createClient } from "@supabase/supabase-js"
 import { motion, AnimatePresence } from "framer-motion"
 import { Icon } from "../../components/icons"
 import { ReturningCelebration, type CelebrationData } from "./components/ReturningCelebration"
-import { EmptyState } from "./components/EmptyState"
+import { EmptyState, type CompletedQuest } from "./components/EmptyState"
 import { QuestPicker } from "./components/QuestPicker"
 import { Day3OutcomeModal } from "./components/Day3OutcomeModal"
 
@@ -565,6 +565,7 @@ export function QuestClient({ searchParams }: QuestClientProps) {
   const [showDay3Modal,   setShowDay3Modal]   = useState(false)
   const [earnedBadges,    setEarnedBadges]    = useState<BadgeDefinition[]>([])
   const [badgeCatalog,    setBadgeCatalog]    = useState<BadgeDefinition[]>([])
+  const [completedQuests, setCompletedQuests] = useState<CompletedQuest[]>([])
 
   // ─── Init ───────────────────────────────────────────────────────
   useEffect(() => {
@@ -614,9 +615,20 @@ export function QuestClient({ searchParams }: QuestClientProps) {
 
         if (!questsRes.ok) throw new Error("Failed to load quests")
         const questsData = await questsRes.json()
-        const activeQuests: Quest[] = (questsData.quests ?? []).filter(
-          (q: Quest) => q.status === "active"
-        )
+        const allQuests: Quest[] = questsData.quests ?? []
+        const activeQuests: Quest[] = allQuests.filter(q => q.status === "active")
+        // Completed quests power the "Past Quests" rail on EmptyState — kid sees
+        // a record of what they finished even when nothing's pending.
+        const doneQuests: CompletedQuest[] = allQuests
+          .filter(q => q.status === "completed")
+          .map(q => ({
+            id:           q.id,
+            subject:      q.subject,
+            topic:        q.topic,
+            day3_outcome: q.day3_outcome ?? null,
+            created_at:   q.created_at,
+          }))
+        setCompletedQuests(doneQuests)
 
         // Build student + HUD from Supabase data
         const studentData = studentRes.data
@@ -861,9 +873,9 @@ export function QuestClient({ searchParams }: QuestClientProps) {
 
   if (loadState === "empty") {
     return (
-      <main style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", paddingTop: "var(--navbar-h)", paddingBottom: 96 }}>
+      <main style={{ minHeight: "100vh", display: "flex", alignItems: "flex-start", justifyContent: "center", paddingTop: "calc(var(--navbar-h) + 24px)", paddingBottom: 96 }}>
         <div style={{ maxWidth: 760, width: "100%", padding: "0 16px" }}>
-          <EmptyState />
+          <EmptyState completedQuests={completedQuests} />
         </div>
       </main>
     )
@@ -1795,7 +1807,7 @@ function QuestCompleteCard({ outcome }: { outcome: string }) {
         borderColor: isMastered ? "var(--brand-mint)" : "var(--brand-amber)",
       }}
     >
-      <div style={{ fontSize: "3rem", marginBottom: 16 }}>{isMastered ? "🏆" : "✅"}</div>
+      <div style={{ fontSize: "3rem", marginBottom: 16, textAlign: "center" }}>{isMastered ? "🏆" : "✅"}</div>
       <h2
         style={{
           fontFamily: "var(--font-display)",
@@ -1803,6 +1815,7 @@ function QuestCompleteCard({ outcome }: { outcome: string }) {
           letterSpacing: "0.04em",
           color: isMastered ? "var(--brand-mint)" : "var(--brand-amber)",
           margin: "0 0 12px 0",
+          textAlign: "center",
         }}
       >
         {label}

@@ -1870,7 +1870,7 @@ window.initQuizEngine = function () {
     setTimeout(() => {
       const flag = outcomePending ? 'pending_outcome=true' : 'returning=true';
       window.location.href = `/quest?id=${state.fromQuest.questId}&${flag}&score=${pctScore}`;
-    }, 2000);
+    }, 1000);
   }
 
   function injectQuestBanner(questId, stepRaw, topicSlug, subjectSlug) {

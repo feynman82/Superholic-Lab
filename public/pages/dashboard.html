@@ -1885,12 +1885,14 @@
     function activityFeedTone(type) {
       // Maps event type → icon-color modifier for visual scanning.
       // Quest creation = rose (action required). Mastery = mint (success).
-      // Exam = amber (milestone). Default sage for quiz / note.
+      // Quest completed = mint (a win to celebrate). Exam = amber (milestone).
+      // Default sage for quiz / note.
       switch (type) {
-        case 'quest_created':  return 'rose';
-        case 'mastery_gained': return 'mint';
-        case 'exam_result':    return 'amber';
-        default:               return null;
+        case 'quest_created':   return 'rose';
+        case 'quest_completed': return 'mint';
+        case 'mastery_gained':  return 'mint';
+        case 'exam_result':     return 'amber';
+        default:                return null;
       }
     }
 
@@ -1906,6 +1908,9 @@
         case 'quest_created':
           // Flag (rose accent)
           return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>';
+        case 'quest_completed':
+          // Shield-check (mint accent — quest finished)
+          return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>';
         case 'study_note':
           // Bookmark
           return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>';
