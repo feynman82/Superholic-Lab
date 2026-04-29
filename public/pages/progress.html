@@ -379,6 +379,43 @@
       line-height: 1;
     }
 
+    /* Subject trend (Phase 3) — small directional indicator below the AL
+       badge. Three live variants (up / down / steady) plus a neutral
+       fallback when there's not enough data. */
+    .subject-card__trend {
+      margin-top: var(--space-2);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: var(--radius-full, 999px);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .subject-card__trend svg {
+      flex-shrink: 0;
+    }
+    .subject-card__trend--up {
+      color: var(--brand-mint, #059669);
+      background: color-mix(in srgb, var(--brand-mint, #059669) 12%, transparent);
+    }
+    .subject-card__trend--down {
+      color: var(--brand-rose, #B76E79);
+      background: color-mix(in srgb, var(--brand-rose, #B76E79) 12%, transparent);
+    }
+    .subject-card__trend--steady {
+      color: var(--text-muted);
+      background: color-mix(in srgb, var(--brand-sage, #51615E) 8%, transparent);
+    }
+    .subject-card__trend--neutral {
+      color: var(--text-muted);
+      background: transparent;
+      font-weight: 600;
+      opacity: 0.7;
+    }
+
     /* ════════════════════════════════════════════════════════════════════════
        D. AO MASTERY SECTION (now static — was JS-injected via insertAOMasteryUI)
        ════════════════════════════════════════════════════════════════════════ */

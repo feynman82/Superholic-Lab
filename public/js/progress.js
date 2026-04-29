@@ -328,6 +328,11 @@ async function init() {
     // the page still renders.
     renderPSLEForecast(db, student).catch(err => console.warn('[psle-forecast] error:', err.message || err));
 
+    // Subject trends (Phase 3) — directional indicator below each AL badge.
+    // Own 14-day fetch (last 7d vs prev 7d) so it's independent of ?range=.
+    // Fires after renderActionPlanUI so the .subject-card elements exist.
+    renderSubjectTrends(db, student.id).catch(err => console.warn('[subject-trends] error:', err.message || err));
+
     // ── NEW (v2 reskin) — proactive recommendations + avg time per question ──
     renderRecommendNext(weakTopics, student, subjectSlotsTaken);
     renderAvgTimePerQuestion(totalSeconds, allActivity);
@@ -1810,6 +1815,94 @@ async function renderPSLEForecast(db, student) {
     }
   }
   section.hidden = false;
+}
+
+// ── SUBJECT TRENDS (Phase 3) ───────────────────────────────────────────────
+//
+// Directional indicator inside each .subject-card showing this-week vs
+// previous-week accuracy delta. Uses its own 14-day fetch independent of
+// the Phase 1 ?range= filter — when the parent has range=7 active, the
+// page-level `attempts` array only spans 7 days so the previous-7-day
+// window would be empty.
+//
+// Decision thresholds per handoff:
+//   delta > +5   → up arrow (mint)         "+X% this week"
+//   delta < -5   → down arrow (rose)       "−X% this week"
+//   else         → right arrow (sage muted) "Steady this week"
+//   < 5 attempts in either window → neutral "Not enough data"
+
+const _TREND_SVG = {
+  up:      '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>',
+  down:    '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>',
+  steady:  '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+  neutral: '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
+};
+
+// Computes one subject's trend block. Returns { variant, label } where
+// variant is 'up' | 'down' | 'steady' | 'neutral'.
+function _computeTrend(thisWeekRows, prevWeekRows) {
+  const sumPct = (rows) => {
+    let earned = 0, total = 0;
+    for (const r of rows) {
+      total  += r.total_questions || 0;
+      earned += r.score || 0;
+    }
+    return { earned, total };
+  };
+  const tw = sumPct(thisWeekRows);
+  const pw = sumPct(prevWeekRows);
+
+  if (thisWeekRows.length < 5 || prevWeekRows.length < 5) {
+    return { variant: 'neutral', label: 'Not enough data' };
+  }
+  const pctThis = tw.total > 0 ? (tw.earned / tw.total) * 100 : 0;
+  const pctPrev = pw.total > 0 ? (pw.earned / pw.total) * 100 : 0;
+  const delta   = Math.round(pctThis - pctPrev);
+
+  if (delta > 5)  return { variant: 'up',     label: `+${delta}% this week` };
+  if (delta < -5) return { variant: 'down',   label: `${delta}% this week` };
+  // Render a signed delta on steady too so the parent doesn't think the
+  // number disappeared — "+2%" / "−3%" / "0%" all read as "steady".
+  const sign = delta > 0 ? '+' : delta < 0 ? '' : '±';
+  return { variant: 'steady', label: `${sign}${delta}% — steady` };
+}
+
+// Injects the trend pill into each .subject-card. Re-runs are safe — any
+// existing .subject-card__trend is replaced.
+async function renderSubjectTrends(db, studentId) {
+  if (!studentId) return;
+  // 14-day window: previous 7d ∪ this 7d. Independent of ?range= filter.
+  const now = Date.now();
+  const since = new Date(now - 14 * 86400000).toISOString();
+  const cutoff = now - 7 * 86400000;
+
+  const { data: rows, error } = await db.from('quiz_attempts')
+    .select('subject, score, total_questions, completed_at')
+    .eq('student_id', studentId)
+    .gte('completed_at', since);
+  if (error) {
+    console.warn('[subject-trends] fetch failed:', error.message);
+    return;
+  }
+
+  const subjects = ['mathematics', 'science', 'english'];
+  for (const sub of subjects) {
+    const card = document.querySelector(`.subject-card[data-subject="${sub}"]`);
+    if (!card) continue;
+    const subjectRows = (rows || []).filter(r => String(r.subject || '').toLowerCase() === sub);
+    const thisWeek = subjectRows.filter(r => new Date(r.completed_at).getTime() >= cutoff);
+    const prevWeek = subjectRows.filter(r => new Date(r.completed_at).getTime() <  cutoff);
+    const { variant, label } = _computeTrend(thisWeek, prevWeek);
+
+    // Replace any existing trend pill (re-run safe).
+    const existing = card.querySelector('.subject-card__trend');
+    if (existing) existing.remove();
+
+    const trend = document.createElement('div');
+    trend.className = `subject-card__trend subject-card__trend--${variant}`;
+    trend.innerHTML = `${_TREND_SVG[variant]}<span>${label}</span>`;
+    card.appendChild(trend);
+  }
 }
 
 /** Helper: MOE AL Banding */
