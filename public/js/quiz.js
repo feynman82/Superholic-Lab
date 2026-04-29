@@ -1494,9 +1494,19 @@ window.initQuizEngine = function () {
         }
         const marksEarned = r.isCorrect ? marksTotal : 0;
 
-        // 🚀 NOT-NULL guards — string fallbacks for every required text column
+        // 🚀 NOT-NULL guards — string fallbacks for every required text column.
+        // 'Unknown' is a sentinel: 'Mixed' silently classed broken rows as a
+        // legitimate topic and contaminated heatmaps. 'Unknown' surfaces them
+        // so the upstream gap (missing question_bank.topic) is visible.
         const safeQuestionText = String(q.question_text || q.passage || 'Diagram/Passage Question').slice(0, 500) || 'Untitled';
-        const safeTopic = String(q.topic || state.dbTopic || 'Mixed') || 'Mixed';
+        let safeTopic = String(q.topic || state.dbTopic || '').trim();
+        if (!safeTopic) {
+          console.error('[quiz.js] Question missing topic — quizQuestionId:', q.id);
+          safeTopic = 'Unknown';
+        }
+        if (!q.sub_topic) {
+          console.warn('[quiz.js] Question missing sub_topic — quizQuestionId:', q.id, 'topic:', safeTopic);
+        }
         const safeDifficulty = String(q.difficulty || 'standard') || 'standard';
         const safeAnswerChosen = String(r.studentAns != null ? r.studentAns : '').slice(0, 200) || '(no answer)';
         const safeCorrectAnswer = String(r.correctAns || q.correct_answer || 'See model solution').slice(0, 500) || 'See model solution';
