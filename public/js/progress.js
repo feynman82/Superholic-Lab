@@ -299,26 +299,16 @@ async function init() {
     })();
 
     // Hero diagnosis sentence + heatmap + dependency tree (Pillar 2).
-    // Heatmap replaces the legacy vertical BKT list. We fetch
-    // mastery_levels filtered by hero subject ONCE and feed both the
-    // dependency tree (topic-level aggregate) and the heatmap (cell-level
-    // per-row data) so the page makes a single round-trip for both.
-    const heroSubject = pickHeroSubject(subjectStats);
-    (async () => {
-      const diag = await renderDiagnosisHero(student.id, heroSubject, session?.access_token);
-      try {
-        const { data: masteryRows } = await db.from('mastery_levels')
-          .select('topic, sub_topic, probability, attempts')
-          .eq('student_id', student.id)
-          .eq('subject', heroSubject);
-        const rows = masteryRows || [];
-        const masteryByTopic = buildMasteryByTopic(rows);
-        await renderMasteryHeatmap('heatmap-container', rows, heroSubject, student.id, session?.access_token);
-        await renderDependencyTree('dep-tree-container', heroSubject, diag?.weakest_topic || null, masteryByTopic);
-      } catch (err) {
-        console.warn('[progress] heatmap/tree mastery fetch failed:', err.message || err);
-      }
-    })();
+    // Heatmap replaces the legacy vertical BKT list. The subject switcher
+    // pill toggles between Mathematics / Science / English by re-running
+    // renderPillar2() for the picked subject. Initial selection picks the
+    // most-attempted subject so the parent lands on the most informative
+    // view for their child.
+    const initialSubject = pickHeroSubject(subjectStats);
+    mountSubjectSwitcher('subject-switcher', initialSubject, async (subject) => {
+      await renderPillar2(db, student.id, subject, session?.access_token, subjectStats);
+    });
+    renderPillar2(db, student.id, initialSubject, session?.access_token, subjectStats);
 
     // Quest tray (replaces old single-quest renderQuestMap)
     renderQuestTrayFromData(activeQuestsList);
@@ -1500,6 +1490,132 @@ window.toggleDeepDive = async function (studentId, subject, btnEl, quizCount) {
     container.dataset.loaded = ""; // Allow retry
   }
 };
+
+// ── SUBJECT SWITCHER (Pillar 2) ────────────────────────────────────────────
+//
+// Renders 3 pill buttons (Mathematics / Science / English). Click rebinds
+// hero / heatmap / dependency tree to the picked subject by invoking the
+// supplied `onSwitch` callback. Streak strip stays cross-subject and is not
+// re-rendered. Active state persists in module scope so the styling is
+// authoritative even if onSwitch is fired programmatically.
+let _activeSubject = null;
+function mountSubjectSwitcher(containerId, initialSubject, onSwitch) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const subjects = [
+    { key: 'mathematics', label: 'Mathematics' },
+    { key: 'science',     label: 'Science' },
+    { key: 'english',     label: 'English' },
+  ];
+  _activeSubject = initialSubject;
+  container.innerHTML = subjects.map(s => `
+    <button type="button" class="subject-switcher__btn" role="tab"
+            data-subject="${s.key}" aria-pressed="${s.key === initialSubject ? 'true' : 'false'}">
+      ${s.label}
+    </button>
+  `).join('');
+  container.addEventListener('click', (ev) => {
+    const btn = ev.target.closest('.subject-switcher__btn');
+    if (!btn) return;
+    const subj = btn.dataset.subject;
+    if (subj === _activeSubject) return;
+    _activeSubject = subj;
+    container.querySelectorAll('.subject-switcher__btn').forEach(b => {
+      b.setAttribute('aria-pressed', b.dataset.subject === subj ? 'true' : 'false');
+    });
+    onSwitch(subj);
+  });
+}
+
+// ── PILLAR 2 ORCHESTRATION ─────────────────────────────────────────────────
+//
+// Single function that re-renders hero / heatmap / dependency tree for a
+// chosen subject. Called once on initial page-render, then again on every
+// subject-switcher click. Includes a degraded fallback path: when
+// mastery_levels has no rows for the chosen subject (e.g. all attempts
+// predate the BKT trigger fix from 2026-04-29), we synthesise a topic-
+// level mastery map from quiz_attempts so the heatmap rows still colour
+// meaningfully. The hero sentence in that case explains the gap honestly
+// instead of "hasn't attempted this subject yet".
+async function renderPillar2(db, studentId, subject, accessToken, subjectStats) {
+  // Always re-fetch the analyze-weakness diagnosis for the picked subject.
+  const diag = await renderDiagnosisHero(studentId, subject, accessToken);
+
+  let masteryRows = [];
+  let degraded = false;
+  try {
+    const { data } = await db.from('mastery_levels')
+      .select('topic, sub_topic, probability, attempts')
+      .eq('student_id', studentId)
+      .eq('subject', subject);
+    masteryRows = data || [];
+  } catch (err) {
+    console.warn('[pillar2] mastery_levels read failed:', err.message || err);
+  }
+
+  if (masteryRows.length === 0) {
+    // Degraded path — pull quiz_attempts for this subject so at least the
+    // topic-level signal drives heatmap row colours. sub_topic cells stay
+    // no-data because quiz_attempts doesn't carry sub_topic granularity.
+    const fallback = await fetchQuizAttemptsFallback(db, studentId, subject);
+    if (fallback.length > 0) {
+      degraded = true;
+      masteryRows = fallback;
+      // Override hero sentence to be honest about the gap instead of the
+      // misleading "hasn't attempted yet" template the server returns when
+      // mastery_levels is empty.
+      const totalAttempts = subjectStats?.[subject]?.quizzes ?? 0;
+      const SUBJECT_DISPLAY = { mathematics: 'Mathematics', science: 'Science', english: 'English' };
+      const subjectDisplay = SUBJECT_DISPLAY[subject] || subject;
+      bindHeroFallbackSentence(`${totalAttempts} ${subjectDisplay} ${totalAttempts === 1 ? 'quiz' : 'quizzes'} logged — keep practising so the granular mastery view fills in.`, false);
+    }
+  }
+
+  const masteryByTopic = buildMasteryByTopic(masteryRows);
+  await renderMasteryHeatmap('heatmap-container', masteryRows, subject, studentId, accessToken);
+  await renderDependencyTree('dep-tree-container', subject, diag?.weakest_topic || null, masteryByTopic);
+}
+
+// Quiz_attempts fallback — aggregates score/total_questions per topic into
+// a synthetic mastery_levels-shaped row list so renderMasteryHeatmap and
+// buildMasteryByTopic don't need to know about the degraded path.
+async function fetchQuizAttemptsFallback(db, studentId, subject) {
+  try {
+    const { data } = await db.from('quiz_attempts')
+      .select('topic, score, total_questions')
+      .eq('student_id', studentId)
+      .eq('subject', subject);
+    if (!data || data.length === 0) return [];
+    const byTopic = {};
+    for (const r of data) {
+      if (!r.topic) continue;
+      if (!byTopic[r.topic]) byTopic[r.topic] = { score: 0, total: 0, attempts: 0 };
+      byTopic[r.topic].score    += r.score || 0;
+      byTopic[r.topic].total    += r.total_questions || 0;
+      byTopic[r.topic].attempts += 1;
+    }
+    return Object.entries(byTopic).map(([topic, agg]) => ({
+      topic,
+      sub_topic:   null,
+      probability: agg.total > 0 ? agg.score / agg.total : 0,
+      attempts:    agg.attempts,
+    }));
+  } catch (err) {
+    console.warn('[pillar2] quiz_attempts fallback failed:', err.message || err);
+    return [];
+  }
+}
+
+// Force-binds a hero sentence string (used by the degraded fallback path
+// to override what the server returned when mastery_levels was empty).
+function bindHeroFallbackSentence(sentence, hasAlBand) {
+  const container  = document.getElementById('diagnosis-hero');
+  const sentenceEl = document.getElementById('diagnosis-hero-sentence');
+  if (!container || !sentenceEl) return;
+  sentenceEl.textContent = sentence;
+  container.classList.toggle('diagnosis-hero--empty', !hasAlBand);
+  container.hidden = false;
+}
 
 // ── STREAK STRIP (Week 2 Commit D — Honest Compass) ────────────────────────
 //

@@ -110,6 +110,11 @@
 
       <div id="quest-map-section" style="display: none;"></div>
 
+      <!-- Pillar 2 subject switcher — toggles hero / heatmap / dependency
+           tree between Mathematics / Science / English. The streak strip
+           stays cross-subject (it reads question_attempts directly). -->
+      <div class="subject-switcher" id="subject-switcher" role="tablist" aria-label="Subject for diagnosis"></div>
+
       <!-- Hero diagnosis sentence — Pillar 2 (Analyse Weakness). Bound by
            progress.js renderDiagnosisHero() from /api/analyze-weakness
            response.diagnosis.hero_sentence. aria-live announces updates

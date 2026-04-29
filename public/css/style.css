@@ -3996,6 +3996,48 @@ ul.rose-list li::before {
   .faq-section h2 { font-size: 1.5rem; }
 }
 
+/* ── Pillar 2 subject switcher ────────────────────────────────────────────── */
+/* 3-pill toggle that swaps the hero / heatmap / dependency tree between
+   Mathematics / Science / English. Sits directly above .diagnosis-hero so
+   the parent's eye lands on the current subject before reading the sentence. */
+.subject-switcher {
+  display: flex;
+  gap: var(--space-1);
+  margin-bottom: var(--space-3);
+  padding: 4px;
+  background: var(--surface-container-low);
+  border-radius: var(--radius-full);
+  width: fit-content;
+}
+.subject-switcher__btn {
+  appearance: none;
+  border: none;
+  background: transparent;
+  padding: 8px 18px;
+  border-radius: var(--radius-full);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--sage-dark);
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease;
+  letter-spacing: 0.02em;
+}
+.subject-switcher__btn:hover {
+  background: color-mix(in srgb, var(--brand-rose) 8%, transparent);
+}
+.subject-switcher__btn[aria-pressed="true"] {
+  background: var(--brand-rose);
+  color: var(--white);
+}
+.subject-switcher__btn:focus-visible {
+  outline: 2px solid var(--brand-sage);
+  outline-offset: 2px;
+}
+@media (max-width: 480px) {
+  .subject-switcher__btn { padding: 8px 14px; font-size: 0.8125rem; }
+}
+
 /* ── Diagnosis hero (Week 2 Commit A — Pillar 2) ──────────────────────────── */
 /* Parent-facing single sentence above the BKT card. Bound at runtime from
    /api/analyze-weakness response.diagnosis.hero_sentence. Empty-state variant
