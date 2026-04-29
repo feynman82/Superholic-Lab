@@ -5,107 +5,590 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Set Up Your Account — Superholic Lab</title>
-
-  <!-- Fonts & Styles -->
+  <meta name="robots" content="noindex, nofollow" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="/css/style.css" />
   <link rel="icon" href="/assets/favicon.ico" />
+
+  <style>
+    /* Page background — architect-scholar drawing grid */
+    body {
+      background: var(--surface);
+      background-image:
+        linear-gradient(rgba(81, 97, 94, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(81, 97, 94, 0.025) 1px, transparent 1px);
+      background-size: 48px 48px;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* ── Setup card shell — single centred 480px column ── */
+    .setup-shell {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-8) var(--space-4);
+    }
+    .setup-card {
+      width: 100%;
+      max-width: 480px;
+      padding: var(--space-6);
+      position: relative;
+    }
+
+    /* ── Brand mark band — matches global-header pattern (light logo + Bebas
+       wordmark on dark sage band, rose 3px border-bottom) ── */
+    .auth-brand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: var(--sage-dark);
+      border-radius: var(--radius-md);
+      padding: var(--space-2) var(--space-3);
+      margin: calc(var(--space-6) * -1) calc(var(--space-6) * -1) var(--space-5);
+      margin-top: calc(var(--space-3) * -1);
+      text-decoration: none;
+      border-bottom: 3px solid var(--brand-rose);
+    }
+    .auth-brand__logo {
+      width: 32px; height: 32px;
+      flex-shrink: 0;
+      border-radius: var(--radius-sm);
+    }
+    .auth-brand__text {
+      font-family: var(--font-display, 'Bebas Neue', sans-serif);
+      font-size: 1.5rem;
+      letter-spacing: 0.04em;
+      color: var(--text-logo, var(--cream));
+      line-height: 1;
+    }
+
+    /* ── Step indicator (numbered + labelled) ── */
+    .step-indicator {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      margin-bottom: var(--space-5);
+    }
+    .step-indicator__item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .step-indicator__bar {
+      height: 4px;
+      background: var(--border-light);
+      border-radius: 2px;
+      transition: background 240ms ease;
+    }
+    .step-indicator__bar--active {
+      background: var(--brand-rose);
+    }
+    .step-indicator__label {
+      color: var(--text-muted);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      transition: color 240ms ease;
+    }
+    .step-indicator__label--active {
+      color: var(--brand-rose);
+    }
+
+    /* ── Step heading ── */
+    .step-head {
+      text-align: center;
+      margin-bottom: var(--space-5);
+    }
+    .step-head__eyebrow {
+      color: var(--brand-rose);
+      display: block;
+      margin-bottom: var(--space-2);
+    }
+    .step-head__title {
+      color: var(--text-main);
+      margin: 0 0 var(--space-2) 0;
+      font-family: var(--font-display, 'Bebas Neue', sans-serif);
+      font-size: 32px;
+      letter-spacing: 0.04em;
+      line-height: 1.1;
+    }
+    .step-head__lede {
+      color: var(--text-muted);
+      font-size: var(--text-sm);
+      margin: 0;
+      line-height: 1.6;
+    }
+
+    /* ── Form rows ── */
+    .form-row {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+      margin-bottom: var(--space-3);
+    }
+    .form-row__label {
+      color: var(--brand-sage);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .form-row__hint {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .form-row--has-error .form-row__feedback {
+      color: var(--brand-rose);
+    }
+    .form-row--valid .form-row__feedback {
+      color: var(--brand-mint);
+    }
+    .form-row__feedback {
+      font-size: 11px;
+      line-height: 1.4;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      min-height: 14px;
+    }
+
+    /* Force input-ghost on inputs the JS targets via #childName, #childLevel, #childSubject */
+    #childName, #childLevel, #childSubject {
+      background: rgba(255, 255, 255, 0.45);
+      border: 1px solid var(--glass-border-dim);
+      border-radius: var(--radius-md);
+      padding: var(--space-2) var(--space-3);
+      font-family: var(--font-body);
+      font-size: var(--text-base);
+      color: var(--text-main);
+      width: 100%;
+      outline: none;
+      transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    #childName:focus, #childLevel:focus, #childSubject:focus {
+      border-color: var(--brand-rose);
+      background: rgba(255, 255, 255, 0.6);
+      box-shadow: 0 0 0 3px rgba(183, 110, 121, 0.12);
+    }
+    .form-row--has-error #childName,
+    .form-row--has-error #childLevel,
+    .form-row--has-error #childSubject {
+      border-color: rgba(183, 110, 121, 0.5);
+    }
+    .form-row--valid #childName,
+    .form-row--valid #childLevel,
+    .form-row--valid #childSubject {
+      border-color: rgba(111, 184, 155, 0.4);
+    }
+
+    select#childLevel, select#childSubject { cursor: pointer; }
+
+    /* ── Avatar colour picker ── */
+    .avatar-picker {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      margin-bottom: var(--space-3);
+    }
+    .avatar-preview-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3);
+      background: var(--surface-container-low);
+      border-radius: var(--radius-md);
+    }
+    .avatar-preview {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display, 'Bebas Neue', sans-serif);
+      font-size: 28px;
+      letter-spacing: 0.04em;
+      color: var(--cream);
+      background: var(--brand-sage);
+      flex-shrink: 0;
+      transition: background 200ms ease;
+    }
+    .avatar-preview-text {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .avatar-preview-text strong {
+      color: var(--text-main);
+      font-weight: 600;
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .avatar-swatches {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: var(--space-1);
+    }
+    .swatch-btn {
+      aspect-ratio: 1;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: transform 160ms ease, border-color 160ms ease;
+      padding: 0;
+    }
+    .swatch-btn:hover { transform: scale(1.08); }
+    .swatch-btn.is-selected {
+      border-color: var(--text-main);
+      transform: scale(1.05);
+    }
+    .swatch-btn:focus-visible {
+      outline: 2px solid var(--brand-rose);
+      outline-offset: 2px;
+    }
+
+    /* ── Step 1 error block (replaces the inline-styled one) ── */
+    #step1Error {
+      padding: var(--space-3) var(--space-4);
+      border-radius: var(--radius-md);
+      background: var(--surface-container-low);
+      border-left: 3px solid var(--brand-rose);
+      color: var(--text-main);
+      font-size: var(--text-sm);
+      line-height: 1.5;
+      margin-top: var(--space-2);
+    }
+    #step1Error.hidden { display: none; }
+
+    /* ── Continue button & primary CTAs ── */
+    .step-cta {
+      width: 100%;
+      margin-top: var(--space-2);
+    }
+
+    /* ── Step 2: success state ── */
+    .step2-icon-wrap {
+      display: flex;
+      justify-content: center;
+      margin-bottom: var(--space-3);
+    }
+    .step2-icon {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      background: rgba(111, 184, 155, 0.12);
+      color: var(--brand-mint);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: popIn 320ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.6); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    /* Trial badge — restyled */
+    #trialBadge {
+      background: var(--surface-container-low);
+      border: 1px solid var(--border-light);
+      color: var(--brand-sage);
+      padding: 6px 14px;
+      border-radius: var(--radius-full, 999px);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      display: none;
+      align-items: center;
+      gap: 6px;
+    }
+    #trialBadge.is-visible { display: inline-flex; }
+    #trialBadge svg { color: var(--brand-rose); }
+
+    /* Summary card — restyled */
+    #summaryCard {
+      padding: var(--space-3) var(--space-4);
+      background: var(--surface-container-low);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-light);
+    }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-2) 0;
+      border-bottom: 1px solid var(--border-light);
+    }
+    .summary-row:last-child { border-bottom: none; }
+    .summary-row__label {
+      color: var(--brand-sage);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .summary-row__value {
+      color: var(--text-main);
+      font-size: var(--text-sm);
+      font-weight: 600;
+      text-align: right;
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    .summary-row__avatar-mini {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display, 'Bebas Neue', sans-serif);
+      font-size: 14px;
+      color: var(--cream);
+      background: var(--brand-sage);
+    }
+
+    /* "What's next" preview — 3 numbered steps */
+    .next-steps {
+      margin-top: var(--space-4);
+      padding: var(--space-4);
+      background: var(--surface-container-low);
+      border-radius: var(--radius-md);
+      border-left: 3px solid var(--brand-rose);
+    }
+    .next-steps__head {
+      color: var(--brand-rose);
+      display: block;
+      margin-bottom: var(--space-2);
+    }
+    .next-steps__list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      counter-reset: stepcount;
+    }
+    .next-steps__list li {
+      counter-increment: stepcount;
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-3);
+      color: var(--text-main);
+      font-size: var(--text-sm);
+      line-height: 1.5;
+    }
+    .next-steps__list li::before {
+      content: counter(stepcount);
+      flex-shrink: 0;
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: var(--brand-rose);
+      color: white;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1px;
+    }
+    .next-steps__list strong {
+      color: var(--text-main);
+      font-weight: 600;
+    }
+
+    /* Add-another (Family-plan only) link */
+    .add-another-link {
+      display: block;
+      text-align: center;
+      margin-top: var(--space-3);
+      color: var(--brand-rose);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-decoration: none;
+    }
+    .add-another-link:hover { text-decoration: underline; }
+    .add-another-link.hidden { display: none; }
+
+    /* Hidden helper (matches Tailwind .hidden semantics already in repo) */
+    .hidden { display: none !important; }
+  </style>
 </head>
 
-<body class="bg-page texture-light-grid" style="display: flex; flex-direction: column; min-height: 100vh;">
+<body>
 
-  <!-- ═══════════════════ MINIMAL NAVBAR (Focus on Setup) ═══════════════════ -->
-  <header class="navbar justify-between bg-sage-dark" id="navbar" style="position: relative;">
-    <a href="../index.html" class="flex items-center gap-2 font-display text-2xl"
-      style="text-decoration: none; color: #FFFFFF;">
-      <img src="../assets/logo.svg" width="32" height="32" alt="" aria-hidden="true"
-        style="border-radius: var(--radius-sm); flex-shrink:0;">
-      Superholic Lab
-    </a>
-    <div class="navbar-actions flex items-center">
-      <button onclick="history.back()" class="btn btn-sm hover-lift"
-        style="background: rgba(255,255,255,0.15); color: #FFFFFF; border: 1px solid rgba(255,255,255,0.1);">←
-        Back</button>
-    </div>
-  </header>
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       SETUP CARD — single centred 480px shell
+       (Header.js intentionally NOT loaded here — onboarding is focus mode.
+       Brand mark band inside the card mirrors auth pages.)
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <main class="setup-shell">
+    <div class="card-glass setup-card">
 
-  <!-- ═══════════════════ SETUP CARD ═══════════════════ -->
-  <main class="flex-1 flex items-center justify-center p-4 py-10">
-    <div class="glass-panel-1 p-6 hover-lift w-full" style="max-width: 480px; background: var(--bg-surface);">
+      <!-- Brand mark band -->
+      <a href="/index.html" class="auth-brand">
+        <img class="auth-brand__logo" src="/assets/images/SL%20logo.png" width="32" height="32" alt="Superholic Lab Logo" />
+        <span class="auth-brand__text">Superholic Lab</span>
+      </a>
 
-      <!-- Step Indicator -->
-      <div class="flex gap-2 mb-8 justify-center">
-        <div id="dot1" class="flex-1"
-          style="height: 6px; background: var(--brand-rose); border-radius: var(--radius-full); transition: background 0.3s ease;">
+      <!-- Step indicator: 2 numbered, labelled bars -->
+      <div class="step-indicator" role="progressbar" aria-label="Setup progress">
+        <div class="step-indicator__item">
+          <div id="dot1" class="step-indicator__bar step-indicator__bar--active"></div>
+          <span id="dot1Label" class="step-indicator__label step-indicator__label--active">Step 1 — Add learner</span>
         </div>
-        <div id="dot2" class="flex-1"
-          style="height: 6px; background: var(--border-light); border-radius: var(--radius-full); transition: background 0.3s ease;">
+        <div class="step-indicator__item">
+          <div id="dot2" class="step-indicator__bar"></div>
+          <span id="dot2Label" class="step-indicator__label">Step 2 — Confirm</span>
         </div>
       </div>
 
-      <!-- Step 1 -->
-      <div id="step1" class="flex flex-col gap-6">
-        <div class="text-center mb-2">
-          <h1 class="font-display text-3xl text-main">Add your child 👦</h1>
-          <p class="text-sm text-muted">Tell us about the learner — we'll personalise the experience.</p>
+      <!-- ─────────────────────────────────────────────
+           STEP 1 — Add learner
+           ───────────────────────────────────────────── -->
+      <div id="step1">
+        <header class="step-head">
+          <span class="label-caps step-head__eyebrow">Welcome aboard</span>
+          <h1 class="step-head__title">Add your child.</h1>
+          <p class="step-head__lede">Tell us about the learner — we'll personalise the experience.</p>
+        </header>
+
+        <!-- Name -->
+        <div class="form-row" id="row-name">
+          <label class="form-row__label" for="childName">Child's first name</label>
+          <input type="text" id="childName" placeholder="e.g. Kai" autocomplete="off"
+                 maxlength="40" name="given-name-child" />
+          <span class="form-row__feedback" id="feedback-name">&nbsp;</span>
         </div>
 
-        <div class="flex flex-col gap-4">
-          <div class="flex flex-col gap-2">
-            <label class="text-sm font-bold text-muted" for="childName">Child's name</label>
-            <input class="form-input" type="text" id="childName" placeholder="e.g. Kai" autocomplete="off" />
-          </div>
+        <!-- Level -->
+        <div class="form-row" id="row-level">
+          <label class="form-row__label" for="childLevel">Primary level</label>
+          <select id="childLevel">
+            <option value="">Select level…</option>
+            <option value="Primary 1">Primary 1</option>
+            <option value="Primary 2">Primary 2</option>
+            <option value="Primary 3">Primary 3</option>
+            <option value="Primary 4">Primary 4</option>
+            <option value="Primary 5">Primary 5</option>
+            <option value="Primary 6">Primary 6</option>
+          </select>
+          <span class="form-row__feedback" id="feedback-level">&nbsp;</span>
+        </div>
 
-          <div class="flex flex-col gap-2">
-            <label class="text-sm font-bold text-muted" for="childLevel">Primary level</label>
-            <select class="form-input" id="childLevel" style="cursor: pointer;">
-              <option value="">Select level…</option>
-              <option value="Primary 1">Primary 1</option>
-              <option value="Primary 2">Primary 2</option>
-              <option value="Primary 3">Primary 3</option>
-              <option value="Primary 4">Primary 4</option>
-              <option value="Primary 5">Primary 5</option>
-              <option value="Primary 6">Primary 6</option>
-            </select>
-          </div>
+        <!-- Subject (only shown for legacy single_subject users) -->
+        <div class="form-row" id="subjectGroup" style="display: none;">
+          <label class="form-row__label" for="childSubject">Subject</label>
+          <select id="childSubject">
+            <option value="">Select subject…</option>
+            <option value="Mathematics">Mathematics</option>
+            <option value="Science" id="scienceOption">Science</option>
+            <option value="English">English</option>
+          </select>
+          <span class="form-row__hint" id="scienceHint" style="display: none;">
+            Science is available from Primary 3 onwards.
+          </span>
+        </div>
 
-          <div class="flex flex-col gap-2" id="subjectGroup" style="display:none">
-            <label class="text-sm font-bold text-muted" for="childSubject">Subject</label>
-            <select class="form-input" id="childSubject" style="cursor: pointer;">
-              <option value="">Select subject…</option>
-              <option value="Mathematics">Mathematics</option>
-              <option value="Science" id="scienceOption">Science</option>
-              <option value="English">English</option>
-            </select>
-            <p class="text-xs text-amber font-bold mt-2" id="scienceHint" style="display:none">Science is available from
-              Primary 3 onwards.</p>
+        <!-- Avatar colour picker -->
+        <div class="avatar-picker">
+          <span class="form-row__label">Avatar colour</span>
+          <div class="avatar-preview-row">
+            <div class="avatar-preview" id="avatarPreview" aria-hidden="true">?</div>
+            <div class="avatar-preview-text">
+              <strong id="avatarPreviewName">Your child</strong>
+              <span>Pick a colour they'll recognise on their dashboard.</span>
+            </div>
+          </div>
+          <div class="avatar-swatches" role="radiogroup" aria-label="Avatar colour">
+            <button type="button" class="swatch-btn is-selected" data-color="sage"   style="background: #51615E;" aria-label="Sage"></button>
+            <button type="button" class="swatch-btn"             data-color="rose"   style="background: #B76E79;" aria-label="Rose"></button>
+            <button type="button" class="swatch-btn"             data-color="mint"   style="background: #6FB89B;" aria-label="Mint"></button>
+            <button type="button" class="swatch-btn"             data-color="amber"  style="background: #D4A24A;" aria-label="Amber"></button>
+            <button type="button" class="swatch-btn"             data-color="indigo" style="background: #5C6E8E;" aria-label="Indigo"></button>
+            <button type="button" class="swatch-btn"             data-color="peach"  style="background: #B88078;" aria-label="Peach"></button>
           </div>
         </div>
 
-        <div id="step1Error" class="p-3 text-sm text-danger font-bold rounded hidden"
-          style="background: rgba(220, 38, 38, 0.1); border: 1px solid rgba(220, 38, 38, 0.2);"></div>
+        <!-- Error message (block-level; keeps #step1Error contract) -->
+        <div id="step1Error" class="hidden" role="alert"></div>
 
-        <button class="btn btn-primary w-full mt-2 hover-lift" id="step1Btn" onclick="submitStep1()">Continue →</button>
+        <button class="btn btn-primary step-cta" id="step1Btn" onclick="submitStep1()">
+          Continue →
+        </button>
       </div>
 
-      <!-- Step 2 -->
-      <div id="step2" class="flex flex-col gap-6 hidden">
-        <div class="text-center mb-2">
-          <h1 class="font-display text-3xl text-main">You're all set! 🎉</h1>
-          <p class="text-sm text-muted">Here's a summary of your account.</p>
+      <!-- ─────────────────────────────────────────────
+           STEP 2 — Confirm + what's next
+           ───────────────────────────────────────────── -->
+      <div id="step2" class="hidden">
+        <div class="step2-icon-wrap">
+          <div class="step2-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
         </div>
 
-        <div class="flex justify-center mb-2">
-          <div id="trialBadge" class="badge badge-amber" style="display: none;"></div>
+        <header class="step-head">
+          <span class="label-caps step-head__eyebrow">All set</span>
+          <h1 class="step-head__title">You're ready to go.</h1>
+          <p class="step-head__lede">Here's a summary of your account.</p>
+        </header>
+
+        <div style="display: flex; justify-content: center; margin-bottom: var(--space-4);">
+          <div id="trialBadge">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+            <span id="trialBadgeText"></span>
+          </div>
         </div>
 
-        <div class="glass-panel-1 p-4" id="summaryCard" style="background: var(--bg-elevated); border: none;">
-          <!-- Filled by JS -->
+        <div id="summaryCard">
+          <!-- filled by JS -->
         </div>
 
-        <button class="btn btn-primary w-full mt-2 hover-lift" onclick="window.location.href='/pages/dashboard.html'">Go
-          to Mission Control →</button>
+        <!-- What happens next -->
+        <div class="next-steps">
+          <span class="label-caps next-steps__head">What happens next</span>
+          <ol class="next-steps__list">
+            <li><strong>Pick a topic together.</strong> Browse Maths, Science, or English from the dashboard.</li>
+            <li><strong>Watch their first quiz.</strong> Sit alongside them — questions adapt to their level.</li>
+            <li><strong>Review with Miss Wena.</strong> Save what they got wrong as study notes for revision.</li>
+          </ol>
+        </div>
+
+        <button class="btn btn-primary step-cta" onclick="window.location.href='/pages/dashboard.html'">
+          Go to dashboard →
+        </button>
+
+        <a href="#" id="addAnotherLink" class="add-another-link hidden" onclick="window.resetToStep1(); return false;">
+          + Add another learner
+        </a>
       </div>
     </div>
   </main>
@@ -116,75 +599,163 @@
 
     let profile = null;
     let planToShow = null;
+    let selectedAvatarColor = 'sage';
 
+    /* ── BOOT ──────────────────────────────────────────────────────────────── */
     async function init() {
       profile = await guardPage(true);
       if (!profile) return;
 
-      // URL param is source of truth — guards against DB race condition on new signups
       const urlPlan = new URLSearchParams(window.location.search).get('plan');
       planToShow = urlPlan || profile.subscription_tier;
 
+      // Subject picker only shown for legacy single_subject users
       if (planToShow === 'single_subject') {
         document.getElementById('subjectGroup').style.display = 'flex';
       }
 
-      // Filter Science option based on level — Science is P3 and above only
+      // Wire up listeners
       document.getElementById('childLevel').addEventListener('change', handleLevelChange);
+      document.getElementById('childLevel').addEventListener('blur', () => validateField('level'));
+
+      const nameField = document.getElementById('childName');
+      nameField.addEventListener('blur',  () => validateField('name'));
+      nameField.addEventListener('input', () => {
+        // Live update of avatar preview
+        const name = nameField.value.trim();
+        const initial = name ? name.charAt(0).toUpperCase() : '?';
+        document.getElementById('avatarPreview').textContent = initial;
+        document.getElementById('avatarPreviewName').textContent = name || 'Your child';
+        // Clear error state on edit
+        const row = document.getElementById('row-name');
+        if (row.classList.contains('form-row--has-error')) {
+          row.classList.remove('form-row--has-error');
+          document.getElementById('feedback-name').innerHTML = '&nbsp;';
+        }
+      });
+
+      // Avatar swatches
+      document.querySelectorAll('.swatch-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.swatch-btn').forEach(b => b.classList.remove('is-selected'));
+          btn.classList.add('is-selected');
+          selectedAvatarColor = btn.dataset.color;
+          // Update live preview background
+          const colorVarMap = {
+            sage:   '#51615E',
+            rose:   '#B76E79',
+            mint:   '#6FB89B',
+            amber:  '#D4A24A',
+            indigo: '#5C6E8E',
+            peach:  '#B88078',
+          };
+          document.getElementById('avatarPreview').style.background = colorVarMap[selectedAvatarColor] || '#51615E';
+        });
+      });
     }
 
-    // Show/hide Science option depending on selected level
+    /* ── REAL-TIME VALIDATION ──────────────────────────────────────────────── */
+    function validateField(field) {
+      if (field === 'name') {
+        const row = document.getElementById('row-name');
+        const fb  = document.getElementById('feedback-name');
+        const value = document.getElementById('childName').value.trim();
+        row.classList.remove('form-row--has-error', 'form-row--valid');
+        if (!value) {
+          fb.innerHTML = '&nbsp;';
+        } else if (value.length < 2) {
+          row.classList.add('form-row--has-error');
+          fb.textContent = 'Name should be at least 2 characters';
+        } else if (value.length > 40) {
+          row.classList.add('form-row--has-error');
+          fb.textContent = 'Name is too long';
+        } else {
+          row.classList.add('form-row--valid');
+          fb.innerHTML = '✓ Looks good';
+        }
+      }
+      if (field === 'level') {
+        const row = document.getElementById('row-level');
+        const fb  = document.getElementById('feedback-level');
+        const value = document.getElementById('childLevel').value;
+        row.classList.remove('form-row--has-error', 'form-row--valid');
+        if (value) {
+          row.classList.add('form-row--valid');
+          fb.innerHTML = '✓';
+        } else {
+          fb.innerHTML = '&nbsp;';
+        }
+      }
+    }
+
+    /* ── SCIENCE GATING (legacy single_subject path only) ──────────────────── */
     function handleLevelChange() {
+      validateField('level');
       const level = document.getElementById('childLevel').value;
       const scienceOption = document.getElementById('scienceOption');
       const scienceHint = document.getElementById('scienceHint');
       const subjectSelect = document.getElementById('childSubject');
+      if (!scienceOption) return;
+
       const juniorLevels = ['Primary 1', 'Primary 2'];
       const isJunior = juniorLevels.includes(level);
 
       scienceOption.disabled = isJunior;
       scienceOption.style.display = isJunior ? 'none' : '';
-      scienceHint.style.display = isJunior ? 'block' : 'none';
+      if (scienceHint) scienceHint.style.display = isJunior ? 'block' : 'none';
 
-      // Reset subject selection if Science was chosen but level no longer supports it
-      if (isJunior && subjectSelect.value === 'Science') {
+      if (isJunior && subjectSelect && subjectSelect.value === 'Science') {
         subjectSelect.value = '';
       }
     }
 
+    /* ── SUBMIT STEP 1 ─────────────────────────────────────────────────────── */
     window.submitStep1 = async function () {
-      const name = document.getElementById('childName').value.trim();
-      const level = document.getElementById('childLevel').value;
+      const name    = document.getElementById('childName').value.trim();
+      const level   = document.getElementById('childLevel').value;
       const subject = document.getElementById('childSubject')?.value || null;
-      const errEl = document.getElementById('step1Error');
-      const btn = document.getElementById('step1Btn');
+      const errEl   = document.getElementById('step1Error');
+      const btn     = document.getElementById('step1Btn');
 
       errEl.classList.add('hidden');
 
-      if (!name) { showErr("Please enter your child's name."); return; }
-      if (!level) { showErr('Please select a level.'); return; }
+      // Re-run validation on submit
+      validateField('name');
+      validateField('level');
+
+      if (!name)         { showErr("Please enter your child's name."); return; }
+      if (name.length < 2) { showErr('Name should be at least 2 characters.'); return; }
+      if (!level)        { showErr('Please select a level.'); return; }
       if (planToShow === 'single_subject' && !subject) {
         showErr('Please select a subject.'); return;
       }
 
       btn.disabled = true;
-      btn.textContent = 'Saving...';
+      btn.textContent = 'Saving…';
 
       try {
-        // Use getSupabase() global (supabase-client.js loaded above)
         const supabase = await getSupabase();
 
+        // Build insert payload — avatar_color is optional, only included if column exists
         const insert = {
           parent_id: profile.id,
           name,
           level,
           ...(subject ? { selected_subject: subject } : {}),
+          ...(selectedAvatarColor ? { avatar_color: selectedAvatarColor } : {}),
         };
 
-        const { data, error } = await supabase.from('students').insert(insert).select().single();
-        if (error) throw error;
+        const { error } = await supabase.from('students').insert(insert).select().single();
 
-        // Mark setup complete 
+        // Graceful degrade: if avatar_color column hasn't been added yet, retry without it
+        if (error && /avatar_color/i.test(error.message || '')) {
+          delete insert.avatar_color;
+          const retry = await supabase.from('students').insert(insert).select().single();
+          if (retry.error) throw retry.error;
+        } else if (error) {
+          throw error;
+        }
+
         await supabase.from('profiles').update({ setup_complete: true }).eq('id', profile.id);
 
         showStep2(name, level, subject);
@@ -195,49 +766,118 @@
         btn.textContent = 'Continue →';
       }
 
-      function showErr(msg) { errEl.textContent = msg; errEl.classList.remove('hidden'); }
+      function showErr(msg) {
+        errEl.textContent = msg;
+        errEl.classList.remove('hidden');
+      }
     };
 
+    /* ── SHOW STEP 2 ───────────────────────────────────────────────────────── */
     function showStep2(name, level, subject) {
       document.getElementById('step1').classList.add('hidden');
       document.getElementById('step2').classList.remove('hidden');
 
-      // Update progress dots
-      document.getElementById('dot1').style.background = 'var(--border-dark)';
-      document.getElementById('dot2').style.background = 'var(--brand-rose)';
+      // Update progress dots + labels
+      document.getElementById('dot1').classList.remove('step-indicator__bar--active');
+      document.getElementById('dot1Label').classList.remove('step-indicator__label--active');
+      document.getElementById('dot2').classList.add('step-indicator__bar--active');
+      document.getElementById('dot2Label').classList.add('step-indicator__label--active');
 
+      // Trial badge
       const badge = document.getElementById('trialBadge');
+      const badgeText = document.getElementById('trialBadgeText');
       if (profile.trial_ends_at) {
         const days = Math.ceil((new Date(profile.trial_ends_at) - new Date()) / 86400000);
-        badge.textContent = `🎁 ${days}-day free trial active`;
-        badge.style.display = 'inline-flex';
+        badgeText.textContent = `${days}-day free trial active`;
+        badge.classList.add('is-visible');
       }
 
+      // Plan label
       const planNames = {
         single_subject: 'Single Subject',
-        all_subjects: 'All Subjects',
-        family: 'Family Plan',
-        trial: '7-Day Free Trial',
+        all_subjects:   'All Subjects',
+        family:         'Family Plan',
+        trial:          '7-day free trial',
       };
 
+      const initial = name ? name.charAt(0).toUpperCase() : '?';
+      const colorVarMap = {
+        sage: '#51615E', rose: '#B76E79', mint: '#6FB89B',
+        amber: '#D4A24A', indigo: '#5C6E8E', peach: '#B88078',
+      };
+      const swatchColor = colorVarMap[selectedAvatarColor] || '#51615E';
+      const avatarMini = `<span class="summary-row__avatar-mini" style="background: ${swatchColor};">${initial}</span>`;
+
       const rows = [
-        ['Learner Name', name],
-        ['Academic Level', level],
-        ...(subject ? [['Focus Subject', subject]] : []),
-        ['Active Plan', planNames[planToShow] || planToShow]
+        ['Learner',       `${avatarMini}<span>${escapeHtml(name)}</span>`],
+        ['Level',         escapeHtml(level)],
+        ...(subject ? [['Focus subject', escapeHtml(subject)]] : []),
+        ['Active plan',   planNames[planToShow] || planToShow],
       ];
 
-      document.getElementById('summaryCard').innerHTML = rows.map(([label, value], index) => `
-      <div class="flex justify-between items-center py-2 ${index !== rows.length - 1 ? 'border-b border-light' : ''}" style="border-bottom: ${index !== rows.length - 1 ? '1px solid var(--border-dark)' : 'none'};">
-        <span class="text-sm font-bold text-muted">${label}</span>
-        <span class="text-sm font-bold text-main">${escapeHtml(String(value))}</span>
-      </div>
-    `).join('');
+      document.getElementById('summaryCard').innerHTML = rows.map(([label, value]) => `
+        <div class="summary-row">
+          <span class="summary-row__label">${label}</span>
+          <span class="summary-row__value">${value}</span>
+        </div>
+      `).join('');
+
+      // "Add another" CTA — Family plan only
+      if (planToShow === 'family') {
+        const addBtn = document.getElementById('addAnotherLink');
+        if (addBtn) addBtn.classList.remove('hidden');
+      }
     }
+
+    /* ── RESET TO STEP 1 (Family-plan add-another flow) ────────────────────── */
+    window.resetToStep1 = function () {
+      // Clear form
+      document.getElementById('childName').value = '';
+      document.getElementById('childLevel').value = '';
+      if (document.getElementById('childSubject')) document.getElementById('childSubject').value = '';
+
+      // Reset avatar
+      selectedAvatarColor = 'sage';
+      document.querySelectorAll('.swatch-btn').forEach(b => b.classList.remove('is-selected'));
+      const firstSwatch = document.querySelector('.swatch-btn[data-color="sage"]');
+      if (firstSwatch) firstSwatch.classList.add('is-selected');
+      document.getElementById('avatarPreview').textContent = '?';
+      document.getElementById('avatarPreview').style.background = '#51615E';
+      document.getElementById('avatarPreviewName').textContent = 'Your child';
+
+      // Reset validation state
+      ['row-name', 'row-level'].forEach(id => {
+        const row = document.getElementById(id);
+        if (row) row.classList.remove('form-row--has-error', 'form-row--valid');
+      });
+      document.getElementById('feedback-name').innerHTML = '&nbsp;';
+      document.getElementById('feedback-level').innerHTML = '&nbsp;';
+
+      // Hide step 2, show step 1
+      document.getElementById('step2').classList.add('hidden');
+      document.getElementById('step1').classList.remove('hidden');
+
+      // Step indicator back to step 1
+      document.getElementById('dot2').classList.remove('step-indicator__bar--active');
+      document.getElementById('dot2Label').classList.remove('step-indicator__label--active');
+      document.getElementById('dot1').classList.add('step-indicator__bar--active');
+      document.getElementById('dot1Label').classList.add('step-indicator__label--active');
+
+      // Re-enable submit button
+      const btn = document.getElementById('step1Btn');
+      btn.disabled = false;
+      btn.textContent = 'Continue →';
+
+      // Hide trial badge (already shown once)
+      document.getElementById('trialBadge').classList.remove('is-visible');
+
+      // Focus name field
+      document.getElementById('childName').focus();
+    };
 
     function escapeHtml(str) {
       if (!str) return '';
-      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
     init();
