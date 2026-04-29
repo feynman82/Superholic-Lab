@@ -722,7 +722,8 @@
             if (!saveOk) saveErr = sd.error || 'Server returned no success flag';
           } else {
             const errBody = await summRes.json().catch(() => ({}));
-            saveErr = `HTTP ${summRes.status}: ${errBody.error || 'unknown error'}`;
+            const detail  = errBody.detail ? ` (${errBody.stage || 'server'}: ${errBody.detail})` : '';
+            saveErr = `HTTP ${summRes.status}: ${errBody.error || 'unknown error'}${detail}`;
             console.error('[Day 2 auto-save] HTTP error:', summRes.status, errBody);
           }
         } catch (e) {

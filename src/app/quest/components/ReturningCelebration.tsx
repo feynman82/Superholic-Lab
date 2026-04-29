@@ -152,7 +152,7 @@ export function ReturningCelebration({ data, onDismiss }: CelebrationProps) {
       onClick={onDismiss}
       role="dialog"
       aria-label="Quest day completion celebration"
-      style={{ color: "var(--cream)" }}
+      style={{ color: "var(--sage-dark)" }}
     >
       <ConfettiBurst />
 
@@ -187,11 +187,11 @@ export function ReturningCelebration({ data, onDismiss }: CelebrationProps) {
               letterSpacing: "0.04em",
               lineHeight: 0.95,
               margin: 0,
-              background: `linear-gradient(180deg, var(--cream) 0%, var(--brand-mint) 100%)`,
+              background: `linear-gradient(180deg, var(--sage-dark) 0%, var(--brand-rose) 100%)`,
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
-              filter: "drop-shadow(0 0 24px color-mix(in srgb, var(--brand-mint) 35%, transparent))",
+              filter: "drop-shadow(0 2px 12px color-mix(in srgb, var(--brand-rose) 25%, transparent))",
             }}
           >
             {isFinalDay ? "QUEST COMPLETE" : `DAY ${data.completedDay} COMPLETE`}
@@ -201,7 +201,7 @@ export function ReturningCelebration({ data, onDismiss }: CelebrationProps) {
             <p
               style={{
                 fontSize: "1rem",
-                color: "color-mix(in srgb, var(--cream) 75%, transparent)",
+                color: "color-mix(in srgb, var(--sage-dark) 80%, transparent)",
                 margin: "12px 0 0 0",
               }}
             >
@@ -258,7 +258,7 @@ export function ReturningCelebration({ data, onDismiss }: CelebrationProps) {
                   style={{
                     fontFamily: "'Bebas Neue', sans-serif",
                     fontSize: "2.4rem",
-                    color: "var(--cream)",
+                    color: "var(--sage-dark)",
                     letterSpacing: "0.04em",
                     display: "flex",
                     alignItems: "center",
@@ -268,8 +268,8 @@ export function ReturningCelebration({ data, onDismiss }: CelebrationProps) {
                   }}
                 >
                   <span style={{ opacity: 0.5 }}>{data.levelUp.fromLevel}</span>
-                  <span style={{ color: "var(--brand-mint)" }}>→</span>
-                  <span style={{ color: "var(--brand-mint)" }}>{data.levelUp.toLevel}</span>
+                  <span style={{ color: "var(--brand-rose)" }}>→</span>
+                  <span style={{ color: "var(--brand-rose)" }}>{data.levelUp.toLevel}</span>
                 </div>
                 <div
                   className="label-caps"
@@ -298,7 +298,7 @@ export function ReturningCelebration({ data, onDismiss }: CelebrationProps) {
               <div
                 className="label-caps"
                 style={{
-                  color: "var(--rarity-color, var(--cream))",
+                  color: "var(--rarity-color, var(--sage-dark))",
                   marginBottom: 8,
                 }}
               >
@@ -326,7 +326,7 @@ export function ReturningCelebration({ data, onDismiss }: CelebrationProps) {
                       fontFamily: "'Plus Jakarta Sans', sans-serif",
                       fontSize: "1.1rem",
                       fontWeight: 700,
-                      color: "var(--cream)",
+                      color: "var(--sage-dark)",
                       lineHeight: 1.2,
                     }}
                   >
@@ -335,7 +335,7 @@ export function ReturningCelebration({ data, onDismiss }: CelebrationProps) {
                   <div
                     style={{
                       fontSize: "0.8rem",
-                      color: "color-mix(in srgb, var(--cream) 65%, transparent)",
+                      color: "color-mix(in srgb, var(--sage-dark) 70%, transparent)",
                       marginTop: 2,
                     }}
                   >
@@ -348,6 +348,7 @@ export function ReturningCelebration({ data, onDismiss }: CelebrationProps) {
         </AnimatePresence>
 
         {/* ─── Continue button (visible after stage 1) ─── */}
+        {/* Day 3 of 3 routes the kid back to the quest hub instead of "Day 4". */}
         <motion.button
           className="quest-continue-btn"
           initial={{ opacity: 0, y: 10 }}
@@ -355,8 +356,8 @@ export function ReturningCelebration({ data, onDismiss }: CelebrationProps) {
           transition={{ delay: 1.0, duration: 0.5 }}
           onClick={onDismiss}
         >
-          {isFinalDay
-            ? "Claim Your Reward"
+          {isFinalDay || data.completedDay >= 3
+            ? "Let's head back"
             : `Continue to Day ${data.completedDay + 1}`}
           <span style={{ marginLeft: 4 }}>→</span>
         </motion.button>
@@ -364,7 +365,7 @@ export function ReturningCelebration({ data, onDismiss }: CelebrationProps) {
         <div
           style={{
             fontSize: "0.75rem",
-            color: "color-mix(in srgb, var(--cream) 40%, transparent)",
+            color: "color-mix(in srgb, var(--sage-dark) 50%, transparent)",
             marginTop: 16,
           }}
         >

@@ -3632,6 +3632,7 @@ ul.rose-list li::before {
 }
 
 /* ── Celebration overlay ── */
+/* Light radial wash so the dark hero text stays legible. */
 .quest-celebration-backdrop {
   position: fixed;
   inset: 0;
@@ -3641,8 +3642,9 @@ ul.rose-list li::before {
   justify-content: center;
   background: radial-gradient(
     circle at 50% 40%,
-    color-mix(in srgb, var(--brand-mint) 18%, transparent),
-    color-mix(in srgb, var(--sage-dark) 92%, transparent) 60%
+    color-mix(in srgb, var(--cream) 88%, transparent),
+    color-mix(in srgb, var(--cream) 60%, transparent) 55%,
+    color-mix(in srgb, var(--sage-dark) 60%, transparent) 100%
   );
   backdrop-filter: var(--blur-2);
   -webkit-backdrop-filter: var(--blur-2);
@@ -3707,7 +3709,7 @@ ul.rose-list li::before {
   gap: 8px;
   box-shadow: 0 4px 24px color-mix(in srgb, var(--brand-mint) 30%, transparent);
   font-family: var(--font-body);
-  margin-top: 8px;
+  margin-top: 24px;
 }
 
 /* ── HUD Strip ──────────────────────────────────────────────────────────────── */

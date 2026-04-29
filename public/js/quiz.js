@@ -1804,6 +1804,10 @@ window.initQuizEngine = function () {
       </div>`;
     document.body.appendChild(overlay);
 
+    // Day 3 with score<70 returns outcome_pending — kid must pick redo / slight / no_improvement
+    // via the modal instead of seeing the cheery celebration overlay.
+    let outcomePending = false;
+
     try {
       const sb = await window.getSupabase();
       const { data: { session } } = await sb.auth.getSession();
@@ -1825,34 +1829,37 @@ window.initQuizEngine = function () {
 
       const celebData = await res.json();
       if (res.ok) {
-        try {
-          const xp        = celebData.xp || {};
-          const levelData = xp.levelData || {};
-          const stepIdx   = state.fromQuest.stepIndex;
-          const shaped = {
-            completedDay:   stepIdx + 1,
-            trigger:        'quiz',
-            score:          pctScore,
-            xpAwarded:      (xp.totalXpAfter || 0) - (xp.totalXpBefore || 0),
-            levelUp:        levelData.leveled_up ? {
-              fromLevel: levelData.level_before,
-              toLevel:   levelData.level_after,
-              fromRank:  levelData.rank_before,
-              toRank:    levelData.rank_after,
-            } : null,
-            badgesUnlocked: (celebData.badges_earned || []).map(b => ({
-              id:          b.id,
-              name:        b.name,
-              description: b.description || '',
-              rarity:      b.rarity || 'common',
-            })),
-            questComplete:  celebData.quest?.status === 'completed',
-          };
-          sessionStorage.setItem(
-            `quest_celebration_${state.fromQuest.questId}`,
-            JSON.stringify(shaped)
-          );
-        } catch (e) { }
+        outcomePending = celebData.outcome_pending === true;
+        if (!outcomePending) {
+          try {
+            const xp        = celebData.xp || {};
+            const levelData = xp.levelData || {};
+            const stepIdx   = state.fromQuest.stepIndex;
+            const shaped = {
+              completedDay:   stepIdx + 1,
+              trigger:        'quiz',
+              score:          pctScore,
+              xpAwarded:      (xp.totalXpAfter || 0) - (xp.totalXpBefore || 0),
+              levelUp:        levelData.leveled_up ? {
+                fromLevel: levelData.level_before,
+                toLevel:   levelData.level_after,
+                fromRank:  levelData.rank_before,
+                toRank:    levelData.rank_after,
+              } : null,
+              badgesUnlocked: (celebData.badges_earned || []).map(b => ({
+                id:          b.id,
+                name:        b.name,
+                description: b.description || '',
+                rarity:      b.rarity || 'common',
+              })),
+              questComplete:  celebData.quest?.status === 'completed',
+            };
+            sessionStorage.setItem(
+              `quest_celebration_${state.fromQuest.questId}`,
+              JSON.stringify(shaped)
+            );
+          } catch (e) { }
+        }
       } else {
         console.error('advance-step failed:', celebData.error);
       }
@@ -1861,7 +1868,8 @@ window.initQuizEngine = function () {
     }
 
     setTimeout(() => {
-      window.location.href = `/quest?id=${state.fromQuest.questId}&returning=true&score=${pctScore}`;
+      const flag = outcomePending ? 'pending_outcome=true' : 'returning=true';
+      window.location.href = `/quest?id=${state.fromQuest.questId}&${flag}&score=${pctScore}`;
     }, 2000);
   }
 

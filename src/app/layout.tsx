@@ -34,15 +34,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script defer src="/js/footer.js" />
         <script defer src="/js/bottom-nav.js" />
       </head>
-      {/* body classes match the vanilla HTML pages: bg-page sets #F9FAFA, texture-light-grid adds the subtle grid watermark */}
-      <body className="has-bottom-nav bg-page texture-light-grid">
+      {/* body classes match the vanilla HTML pages: bg-page sets #F9FAFA, texture-light-grid adds the subtle grid watermark.
+          suppressHydrationWarning on body + custom elements: deferred scripts upgrade the
+          web components and inject children before React hydrates, which would otherwise
+          surface as React #418. The mismatch is benign — the custom elements own their own
+          DOM subtree and React doesn't manage it. */}
+      <body className="has-bottom-nav bg-page texture-light-grid" suppressHydrationWarning>
         {/* @ts-expect-error vanilla web component */}
-        <global-header />
+        <global-header suppressHydrationWarning />
         {children}
         {/* @ts-expect-error vanilla web component */}
-        <global-footer />
+        <global-footer suppressHydrationWarning />
         {/* @ts-expect-error vanilla web component */}
-        <global-bottom-nav />
+        <global-bottom-nav suppressHydrationWarning />
       </body>
     </html>
   )

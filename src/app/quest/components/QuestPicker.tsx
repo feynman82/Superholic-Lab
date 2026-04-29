@@ -32,7 +32,7 @@ const SUBJECT_ICONS: Record<string, "quiz" | "tutor" | "quest"> = {
 const SUBJECT_CHIP_CLASS: Record<string, string> = {
   mathematics: "quest-chip quest-chip-mint",
   science: "quest-chip quest-chip-rose",
-  english: "quest-chip",
+  english: "quest-chip quest-chip-amber",
 }
 
 export function QuestPicker({ quests, onSelect }: QuestPickerProps) {

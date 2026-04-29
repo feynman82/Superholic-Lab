@@ -683,18 +683,33 @@ export function QuestClient({ searchParams }: QuestClientProps) {
 
     setQuestDetail(detail)
 
-    // Diagnosis from mastery_levels (best-effort — table may not yet be provisioned)
-    let mastery: { al_band?: number; pct_correct?: number } | null = null
+    // Diagnosis from mastery_levels (best-effort — table may not yet be provisioned).
+    // mastery_levels stores BKT `probability` (0-1); we derive AL band + pct from it.
+    let mastery: { probability?: number } | null = null
     try {
       const supabase = getSupabase()
       const { data } = await supabase.from("mastery_levels")
-        .select("al_band, pct_correct")
+        .select("probability")
         .eq("student_id", studentId)
         .eq("subject",    detail.subject.toLowerCase())
         .eq("topic",      detail.topic)
         .maybeSingle()
       mastery = data
     } catch { /* table missing or schema mismatch — use fallback values below */ }
+
+    // Map probability → AL band (1-7, lower = stronger). Mirrors progress.js thresholds.
+    const probToAL = (p: number): number => {
+      if (p >= 0.90) return 1
+      if (p >= 0.80) return 2
+      if (p >= 0.70) return 3
+      if (p >= 0.60) return 4
+      if (p >= 0.45) return 5
+      if (p >= 0.30) return 6
+      return 7
+    }
+    const masteryProb = typeof mastery?.probability === "number" ? mastery.probability : null
+    const masteryAL   = masteryProb !== null ? probToAL(masteryProb) : null
+    const masteryPct  = masteryProb !== null ? Math.round(masteryProb * 100) : null
 
     const subjectKey  = detail.subject.toLowerCase()
     const subjectDeps = TOPIC_DEPS[subjectKey] ?? {}
@@ -710,8 +725,8 @@ export function QuestClient({ searchParams }: QuestClientProps) {
 
     setDiagnosis({
       topic:       detail.topic,
-      current_al:  mastery?.al_band  ?? 5,
-      current_pct: mastery?.pct_correct ?? detail.trigger_score,
+      current_al:  masteryAL  ?? 5,
+      current_pct: masteryPct ?? detail.trigger_score,
       unlocks:     topicDeps,
     })
 
