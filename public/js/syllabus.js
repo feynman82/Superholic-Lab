@@ -87,15 +87,15 @@ export const LEVEL_TOPICS = {
   'primary-4:science': ['Diversity', 'Matter', 'Cycles', 'Systems', 'Interactions', 'Heat', 'Light'],
   'primary-4:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing', 'Synthesis'],
 
-  // P5: + Percentage, Ratio, Rate, Speed, Average, Algebra, Area of Triangle, Circles, Volume, Pie Charts. + Energy, Forces, Cells. + Summary Writing.
+  // P5: + Percentage, Ratio, Rate, Speed, Average, Algebra, Area of Triangle, Circles, Volume, Pie Charts. + Energy, Forces, Cells.
   'primary-5:mathematics': ['Whole Numbers', 'Multiplication and Division', 'Fractions', 'Decimals', 'Percentage', 'Ratio', 'Rate', 'Average', 'Angles', 'Geometry', 'Area and Perimeter', 'Area of Triangle', 'Volume', 'Data Analysis', 'Factors and Multiples'],
   'primary-5:science': ['Diversity', 'Matter', 'Cycles', 'Systems', 'Interactions', 'Heat', 'Light', 'Energy', 'Forces', 'Cells'],
-  'primary-5:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing', 'Synthesis', 'Summary Writing'],
+  'primary-5:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing', 'Synthesis'],
 
   // P6: PSLE year. + Speed, Algebra, Circles, Pie Charts (full PSLE topic set).
   'primary-6:mathematics': ['Whole Numbers', 'Fractions', 'Decimals', 'Percentage', 'Ratio', 'Rate', 'Speed', 'Average', 'Algebra', 'Angles', 'Geometry', 'Area and Perimeter', 'Area of Triangle', 'Circles', 'Volume', 'Data Analysis', 'Pie Charts'],
   'primary-6:science': ['Diversity', 'Matter', 'Cycles', 'Systems', 'Interactions', 'Heat', 'Light', 'Energy', 'Forces', 'Cells'],
-  'primary-6:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing', 'Synthesis', 'Summary Writing']
+  'primary-6:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing', 'Synthesis']
 };
 
 // ── ALLOWED QUESTION TYPES PER SUBJECT ──
@@ -264,25 +264,51 @@ export async function loadLiveCanon(supabaseClient) {
 // ─────────────────────────────────────────────────────────────────────────
 // QUESTION COUNTS — for "23 topics · 412 questions" UI displays
 // ─────────────────────────────────────────────────────────────────────────
+//
+// IMPLEMENTATION NOTE — pagination
+// ────────────────────────────────
+// Supabase JS client caps a single .select() at 1000 rows by default. The
+// Superholic question_bank now exceeds 10,000 rows, so a single-shot select
+// truncates and tail topics return zero (the bug that made Science P6 Heat,
+// Light, Forces, etc. all show no count). We page through with .range()
+// until we've consumed the full result set, then aggregate in JS.
+//
+// Per call we expect at most ~3,000 rows (one subject × one level), so 4
+// pages of 1000 rows is the worst case. Keep PAGE_SIZE small enough that
+// the URL/header stays well within Postgres limits.
+
+const COUNT_PAGE_SIZE = 1000;
+
+async function paginatedSelect(query, columnList) {
+  // Helper: fully consume a Supabase query, returning every row.
+  // `query` must already have all .eq()/.in() filters applied.
+  const out = [];
+  let from = 0;
+  while (true) {
+    const to = from + COUNT_PAGE_SIZE - 1;
+    const { data, error } = await query.range(from, to);
+    if (error) throw error;
+    if (!data || data.length === 0) break;
+    out.push(...data);
+    if (data.length < COUNT_PAGE_SIZE) break;     // last page
+    from += COUNT_PAGE_SIZE;
+    if (from > 50000) break;                       // safety guard
+  }
+  return out;
+}
 
 /**
- * Returns a per-subject question count, optionally scoped by level and topic.
+ * Returns a per-subject question count, optionally scoped by level.
  * Reads from question_bank with FK-correct casing.
- *
- * Usage:
- *   countsBySubject(sb, 'Primary 4')              → { Mathematics: 120, Science: 80, English: 65 }
- *   countsByTopic(sb, 'Primary 4', 'Mathematics') → { 'Fractions': 32, 'Decimals': 18, ... }
- *   countsByType(sb, 'Primary 4', 'Mathematics', 'Fractions') → { mcq: 12, word_problem: 8, ... }
  */
 export async function countsBySubject(supabaseClient, levelDisplay) {
   if (!supabaseClient) return {};
   try {
-    let query = supabaseClient.from('question_bank').select('subject', { count: 'exact', head: false });
+    let query = supabaseClient.from('question_bank').select('subject');
     if (levelDisplay) query = query.eq('level', levelDisplay);
-    const { data, error } = await query;
-    if (error) throw error;
+    const rows = await paginatedSelect(query);
     const out = {};
-    for (const row of (data || [])) {
+    for (const row of rows) {
       out[row.subject] = (out[row.subject] || 0) + 1;
     }
     return out;
@@ -297,10 +323,9 @@ export async function countsByTopic(supabaseClient, levelDisplay, subjectDb) {
   try {
     let query = supabaseClient.from('question_bank').select('topic').eq('subject', subjectDb);
     if (levelDisplay) query = query.eq('level', levelDisplay);
-    const { data, error } = await query;
-    if (error) throw error;
+    const rows = await paginatedSelect(query);
     const out = {};
-    for (const row of (data || [])) {
+    for (const row of rows) {
       if (!row.topic) continue;
       out[row.topic] = (out[row.topic] || 0) + 1;
     }
@@ -317,10 +342,9 @@ export async function countsByType(supabaseClient, levelDisplay, subjectDb, topi
     let query = supabaseClient.from('question_bank').select('type').eq('subject', subjectDb);
     if (levelDisplay) query = query.eq('level', levelDisplay);
     if (topicCanonical) query = query.eq('topic', topicCanonical);
-    const { data, error } = await query;
-    if (error) throw error;
+    const rows = await paginatedSelect(query);
     const out = {};
-    for (const row of (data || [])) {
+    for (const row of rows) {
       if (!row.type) continue;
       out[row.type] = (out[row.type] || 0) + 1;
     }

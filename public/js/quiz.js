@@ -1,10 +1,9 @@
 window.initQuizEngine = function () {
   'use strict';
 
-  // ── Canonical syllabus helpers (loaded by /js/syllabus.js) ──
-  // syllabus.js exposes window.SHL_SYLLABUS for non-module consumers like
-  // this file. If the module hasn't loaded yet (script order accident), we
-  // fall back to a no-op shim so the page still renders, with a warning.
+  // ── Canonical syllabus shim (loaded by /js/syllabus.js) ──
+  // syllabus.js exposes window.SHL_SYLLABUS for non-module consumers.
+  // If the module hasn't loaded yet, fall back to a no-op shim.
   const SYL = window.SHL_SYLLABUS || {
     unslugify: (s) => s,
     SUBJECT_DB_NAME: { mathematics: 'Mathematics', science: 'Science', english: 'English' }
@@ -166,6 +165,26 @@ window.initQuizEngine = function () {
     return false;
   }
 
+  // ── XP award helper (masterclass: video-game feedback) ──
+  // Call awardXp(true) on a correct answer, awardXp(false) on a wrong answer.
+  // Sets state.xpJustAwarded and state.showXpToast so the next render() draws
+  // the floating "+N XP" pill. Streak bonus kicks in from 3+ in a row.
+  // Note: streak counter is incremented separately in each scoring site (we
+  // can't centralise that because some sites have multi-part rules), so this
+  // helper only handles XP — it READS state.streak (already updated upstream).
+  function awardXp(isCorrect) {
+    if (isCorrect) {
+      const streakBonus = state.streak >= 3 ? (state.streak - 2) * 5 : 0;
+      const awarded = 10 + streakBonus;
+      state.xp += awarded;
+      state.xpJustAwarded = awarded;
+      state.showXpToast = true;
+    } else {
+      state.xpJustAwarded = 0;
+      state.showXpToast = false;
+    }
+  }
+
   const state = {
     phase: 'LOAD',
     questions: [],
@@ -187,7 +206,12 @@ window.initQuizEngine = function () {
     dbSubject: '',
     dbLevel: '',
     dbTopic: '',
-    fromQuest: null
+    fromQuest: null,
+    // ── Masterclass additions (additive, do not break legacy reads) ──
+    xp: 0,                  // total XP this session
+    xpJustAwarded: 0,       // XP from last answer (for +XP toast)
+    streakMilestones: {},   // { 3: true, 5: true, 10: true } — fired-once flags
+    showXpToast: false      // one-shot, cleared after render
   };
 
   const app = document.getElementById('app');
@@ -203,7 +227,12 @@ window.initQuizEngine = function () {
   }
 
   function renderLoading() {
-    app.innerHTML = `<div class="glass-panel-1 flex flex-col items-center w-full p-6" style="max-width: 600px;"><div class="spinner-sm mb-4"></div><h2 class="font-display text-2xl text-main">Preparing Training Lab...</h2><p class="text-sm text-muted mt-2">Loading MOE-aligned questions</p></div>`;
+    app.innerHTML = `
+      <div class="quiz-loading">
+        <div class="quiz-skeleton__bar"></div>
+        <div class="quiz-skeleton__card"></div>
+        <p class="quiz-loading__msg">Pulling MOE-aligned questions from the bank…</p>
+      </div>`;
   }
 
   // ── PROCEDURAL DIAGRAM RENDERER (WITH ERROR SHIELD) ──
@@ -824,7 +853,12 @@ window.initQuizEngine = function () {
 
   function renderQuiz() {
     if (state.questions.length === 0) {
-      app.innerHTML = `<div class="glass-panel-1 text-center w-full hover-lift p-4" style="max-width: 680px; transition: max-width 0.3s ease;"><div class="text-4xl mb-4">🕵️</div><h2 class="font-display text-2xl text-main">No questions found!</h2><p class="text-muted text-sm my-4">Miss Wena hasn't added questions for this specific combination yet. Check back soon!</p><button class="btn btn-primary hover-lift" onclick="window.location.href='subjects.html'">Return to Subjects</button></div>`;
+      app.innerHTML = `
+        <div class="quiz-empty">
+          <h2 class="h2-as">No questions yet for this combination.</h2>
+          <p class="body-md">Miss Wena's bank doesn't have questions for this exact topic and format yet. Try another topic or check back soon.</p>
+          <button class="btn btn-primary" onclick="window.location.href='subjects.html'">Choose another topic →</button>
+        </div>`;
       return;
     }
 
@@ -919,34 +953,86 @@ window.initQuizEngine = function () {
 
     const diagramHtml = renderVisualPayload(q.visual_payload);
 
-    // Expand to 1200px for Split-Screen formats, keep 680px for others
-    const maxWidth = isSplitScreen ? '1200px' : '680px';
+    // Expand to 1200px for Split-Screen formats, keep 720px for others
+    const maxWidth = isSplitScreen ? '1200px' : '720px';
+
+    // ── Segmented progress dots (one per question) ──
+    // Each prior question is filled; current is rose-ringed; future are faint.
+    const totalQs = state.questions.length;
+    const segmentDots = Array.from({ length: totalQs }, (_, i) => {
+      let cls = 'quiz-segment';
+      if (i < state.currentIndex) cls += ' is-done';
+      else if (i === state.currentIndex) cls += ' is-active';
+      return `<span class="${cls}"></span>`;
+    }).join('');
+
+    // ── Streak chip (video-game styling) ──
+    let streakChip = '';
+    if (state.streak > 0) {
+      const onFire = state.streak >= 3;
+      streakChip = `<div class="streak-chip${onFire ? ' is-on-fire' : ''}" aria-live="polite">
+        <span class="streak-chip__flame">${onFire ? '🔥' : '✦'}</span>
+        <span class="streak-chip__count">${state.streak}</span>
+        <span class="streak-chip__label">${onFire ? 'On fire' : 'Streak'}</span>
+      </div>`;
+    }
+
+    // ── XP ticker (purely visual — animates the score climb each correct) ──
+    const xpDisplay = `<div class="xp-ticker">
+      <span class="xp-ticker__label">XP</span>
+      <span class="xp-ticker__value" data-xp="${state.score}">${state.score}</span>
+    </div>`;
+
+    // ── Topic + difficulty badges ──
+    const topicBadge = `<span class="badge badge-sage">${esc(titleCase(q.topic || 'Mixed'))}</span>`;
+    const diffBadge = q.difficulty
+      ? `<span class="badge badge-${q.difficulty.toLowerCase()}">${esc(q.difficulty)}</span>`
+      : '';
+
+    // ── Outcome wrapper class for animation ──
+    let cardOutcomeClass = '';
+    if (state.isAnswered && state.feedback) {
+      if (state.feedback.status === 'correct') cardOutcomeClass = 'quiz-q-card--correct';
+      else if (state.feedback.status === 'wrong') cardOutcomeClass = 'quiz-q-card--wrong';
+      else if (state.feedback.status === 'partial') cardOutcomeClass = 'quiz-q-card--partial';
+    }
+
+    // ── Masterclass: one-shot floating "+N XP" toast on correct answer ──
+    // state.showXpToast is armed by awardXp() in checkAnswer flow. We render
+    // the pill inside the card, then trigger fade/spring via class toggle next
+    // frame. After the animation completes the flag is cleared so it doesn't
+    // replay on the same render.
+    let xpToastHtml = '';
+    if (state.showXpToast && state.xpJustAwarded > 0) {
+      xpToastHtml = `<div class="quiz-xp-toast" id="quiz-xp-toast">+${state.xpJustAwarded} XP</div>`;
+    }
 
     app.innerHTML = `
-      <div class="w-full" style="max-width: ${maxWidth}; transition: max-width 0.3s ease;">
-        <div class="flex justify-between items-center mb-6">
-          <div class="flex flex-col gap-2">
-            <div class="text-xs font-bold text-muted uppercase">Question ${state.currentIndex + 1} of ${state.questions.length}</div>
-            <div class="quiz-progress-bar" style="width:120px;height:6px;">
-              <div class="quiz-progress-fill" style="width:${((state.currentIndex) / state.questions.length) * 100}%;background:var(--brand-rose);"></div>
-            </div>
+      <div class="quiz-shell" style="max-width: ${maxWidth}; transition: max-width 0.3s ease;">
+        <div class="quiz-headerbar">
+          <div class="quiz-progress">
+            <span class="quiz-progress__count">Q ${state.currentIndex + 1} / ${totalQs}</span>
+            <div class="quiz-segments">${segmentDots}</div>
           </div>
-          <div class="badge ${state.streak >= 3 ? 'badge-amber' : 'badge-info'}" style="font-size:1rem; padding:6px 12px;">
-            <span class="${state.streak > 0 ? 'streak-fire' : ''} mr-1">🔥</span> Streak: ${state.streak}
+          <div class="quiz-headerbar__right">
+            ${xpDisplay}
+            ${streakChip}
           </div>
         </div>
 
-        <div class="glass-panel-1 p-4 hover-lift w-full relative">
-          <div class="badge badge-info absolute top-0 left-8" style="transform:translateY(-50%);">${esc(titleCase(q.topic || 'Mixed'))}</div>
-          ${q.difficulty ? `<div class="badge badge-${q.difficulty.toLowerCase()} absolute top-0 right-8" style="transform:translateY(-50%);">${esc(q.difficulty)}</div>` : ''}
+        <div class="quiz-q-card ${cardOutcomeClass}">
+          ${xpToastHtml}
+          <div class="quiz-q-card__head">
+            <div class="quiz-q-card__badges">${topicBadge}${diffBadge}</div>
+          </div>
 
-          ${diagramHtml}${displayInstruction ? `<h3 class="text-xl font-bold text-main mb-6 mt-2 leading-relaxed" style="white-space:pre-line;">${displayInstruction}</h3>` : ''}
+          ${diagramHtml}${displayInstruction ? `<h3 class="quiz-q-stem" style="white-space:pre-line;">${displayInstruction}</h3>` : ''}
 
           <div class="w-full">${inputUi}</div>
 
           ${hintsUi} ${feedbackHtml}
 
-          <div class="flex justify-between items-center mt-8 pt-6 border-t border-light">
+          <div class="quiz-actions">
             <button class="btn btn-ghost" onclick="window.navQuiz(-1)" ${isFirst ? 'style="visibility:hidden;"' : ''}>← Previous</button>
             ${actionBtn}
           </div>
@@ -954,9 +1040,31 @@ window.initQuizEngine = function () {
       </div>
     `;
 
+    // Trigger toast animation, then clear the one-shot flag.
+    if (xpToastHtml) {
+      requestAnimationFrame(() => {
+        const t = document.getElementById('quiz-xp-toast');
+        if (t) t.classList.add('is-visible');
+      });
+      setTimeout(() => {
+        const t = document.getElementById('quiz-xp-toast');
+        if (t) t.classList.remove('is-visible');
+        state.showXpToast = false;
+      }, 1800);
+    }
+
     if (document.getElementById('scratchpadCanvas')) {
       initCanvas(state.currentIndex);
     }
+
+    // ── Masterclass: XP bump animation ─────────────────────────────────
+    // If the score went up since last render, briefly animate the XP value.
+    const xpEl = document.querySelector('.xp-ticker__value');
+    if (xpEl && typeof state._lastRenderedScore === 'number' && state.score > state._lastRenderedScore) {
+      xpEl.classList.add('is-bumped');
+      setTimeout(() => xpEl.classList.remove('is-bumped'), 520);
+    }
+    state._lastRenderedScore = state.score;
   }
 
   // ── INTERACTIONS ──
@@ -1163,6 +1271,7 @@ window.initQuizEngine = function () {
       const fbText = isCorrect ? 'Perfectly executed!' : (safeWrongExpl[ans] || `The correct answer is ${q.correct_answer}.`);
 
       if (isCorrect) { state.score++; state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak; } else state.streak = 0;
+      awardXp(isCorrect);
 
       state.resultsObj[q.id] = { isCorrect, correctAns: q.correct_answer, studentAns: ans };
       state.isAnswered = true;
@@ -1187,6 +1296,7 @@ window.initQuizEngine = function () {
       const allCorrect = correctCount === blanks.length && blanks.length > 0;
       state.score += correctCount;
       if (allCorrect) { state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak; } else state.streak = 0;
+      awardXp(allCorrect);
 
       state.resultsObj[q.id] = { isCorrect: allCorrect, correctAns: 'Passage format', studentAns: JSON.stringify(ans) };
       state.isAnswered = true;
@@ -1307,6 +1417,7 @@ window.initQuizEngine = function () {
     const correct = isHeuristicMatch(ans, q.correct_answer, safeAccept, isMath);
 
     if (correct) { state.score++; state.streak++; if (state.streak > state.maxStreak) state.maxStreak = state.streak; } else state.streak = 0;
+    awardXp(correct);
 
     state.resultsObj[q.id] = { isCorrect: correct, correctAns: q.correct_answer, studentAns: ans };
     state.isAnswered = true;
@@ -1325,27 +1436,48 @@ window.initQuizEngine = function () {
     // Analytics: record quiz session completion
     if (window.plausible) window.plausible('Quiz Complete', { props: { score: pct, subject: new URLSearchParams(window.location.search).get('subject') || 'mixed' } });
 
+    // Compute AL band for context (same scale as exam)
+    let band = '', bandCol = 'var(--brand-rose)';
+    if (pct >= 90) { band = 'Mastered'; bandCol = 'var(--brand-mint)'; }
+    else if (pct >= 75) { band = 'Strong'; bandCol = 'var(--brand-sage)'; }
+    else if (pct >= 50) { band = 'Developing'; bandCol = 'var(--brand-amber)'; }
+    else { band = 'Needs Practice'; bandCol = 'var(--brand-rose)'; }
+
+    // XP earned this session = score (1 XP per mark earned)
+    const xpEarned = state.score;
+    const isCelebrate = pct >= 75;
+
     app.innerHTML = `
-      <div class="glass-panel-1 flex flex-col items-center text-center w-full hover-lift p-6 card-rule-mint" style="max-width: 600px;">
-        <h1 class="font-display text-4xl text-main mb-2">Training Complete!</h1>
-        <p class="text-muted text-lg mb-6">You've successfully completed the lab session.</p>
-        
-        <div class="flex flex-wrap gap-6 mb-6 w-full justify-center">
-          <div class="glass-panel-1 p-6 flex-1 bg-page" style="border: none; max-width: 200px;">
-            <div class="text-sm font-bold text-muted uppercase">Score</div>
-            <div class="font-display text-5xl text-success mt-2">${pct}%</div>
-            <div class="text-sm text-main mt-2">${state.score} / ${maxScore} Marks</div>
+      <div class="quiz-results ${isCelebrate ? 'is-celebrate' : ''}">
+        ${isCelebrate ? '<div class="quiz-results__confetti" aria-hidden="true"></div>' : ''}
+
+        <header class="quiz-results__head">
+          <span class="label-caps quiz-results__eyebrow" style="color: ${bandCol};">Lab session complete</span>
+          <h1 class="h1-as quiz-results__title">${esc(band)}.</h1>
+          <p class="body-lg quiz-results__lede">You finished ${state.questions.length} question${state.questions.length === 1 ? '' : 's'}. Here's how it went.</p>
+        </header>
+
+        <div class="quiz-results__verdict" style="border-top: 4px solid ${bandCol};">
+          <div class="quiz-results__col">
+            <span class="quiz-results__col-label">Score</span>
+            <div class="quiz-results__col-value-lg" style="color: ${bandCol};">${pct}<span class="quiz-results__col-pct">%</span></div>
+            <div class="quiz-results__col-sub">${state.score} / ${maxScore} marks</div>
           </div>
-          <div class="glass-panel-1 p-6 flex-1 bg-amber-tint" style="border: none; max-width: 200px;">
-            <div class="text-sm font-bold text-amber uppercase">Best Streak</div>
-            <div class="font-display text-5xl text-amber mt-2">🔥 ${state.maxStreak}</div>
-            <div class="text-sm text-amber mt-2">In a row!</div>
+          <div class="quiz-results__col">
+            <span class="quiz-results__col-label">Best Streak</span>
+            <div class="quiz-results__col-value-lg" style="color: var(--brand-amber);">${state.maxStreak > 0 ? '🔥 ' : ''}${state.maxStreak}</div>
+            <div class="quiz-results__col-sub">in a row</div>
+          </div>
+          <div class="quiz-results__col">
+            <span class="quiz-results__col-label">XP Earned</span>
+            <div class="quiz-results__col-value-lg" style="color: var(--brand-sage);">+${xpEarned}</div>
+            <div class="quiz-results__col-sub">added to your total</div>
           </div>
         </div>
 
-        <div class="flex flex-wrap gap-4 justify-center">
-          <button class="btn btn-primary hover-lift" onclick="window.location.href='subjects.html'">Train Another Topic</button>
-          <button class="btn btn-secondary hover-lift" onclick="window.location.href='dashboard.html'">Mission Control</button>
+        <div class="quiz-results__actions">
+          <button class="btn btn-primary" onclick="window.location.href='subjects.html'">Train Another Topic →</button>
+          <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'">Mission Control</button>
         </div>
       </div>
     `;
@@ -1809,15 +1941,24 @@ window.initQuizEngine = function () {
       });
 
     const overlay = document.createElement('div');
-    overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--surface,#fff);';
+    overlay.className = 'quiz-quest-overlay';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-label', 'Quest day complete');
     overlay.innerHTML = `
-      <div style="text-align:center;padding:40px 24px;">
-        <div style="font-family:var(--font-display,sans-serif);font-size:clamp(2rem,6vw,3rem);color:var(--brand-rose,#B76E79);margin-bottom:16px;letter-spacing:0.04em;">
-          Day ${state.fromQuest.stepIndex + 1} Complete!
-        </div>
-        <p style="color:var(--text-muted,#666);font-size:0.95rem;margin:0;">Returning to your quest…</p>
+      <div class="quiz-quest-overlay__card">
+        <span class="label-caps quiz-quest-overlay__eyebrow">Plan Quest</span>
+        <h1 class="h1-as quiz-quest-overlay__title">Day <em>${state.fromQuest.stepIndex + 1}</em> complete!</h1>
+        <p class="body-md quiz-quest-overlay__lede">Returning to your quest…</p>
+        <button type="button" class="quiz-quest-overlay__close" aria-label="Dismiss">×</button>
       </div>`;
     document.body.appendChild(overlay);
+
+    // Click anywhere (or × button) to dismiss the overlay early.
+    const dismiss = () => { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); };
+    overlay.addEventListener('click', dismiss);
+    // Also dismiss on Escape key for keyboard users.
+    const escHandler = (e) => { if (e.key === 'Escape') { dismiss(); document.removeEventListener('keydown', escHandler); } };
+    document.addEventListener('keydown', escHandler);
 
     // Day 3 with score<70 returns outcome_pending — kid must pick redo / slight / no_improvement
     // via the modal instead of seeing the cheery celebration overlay.
@@ -1955,30 +2096,33 @@ window.initQuizEngine = function () {
 
       const modal = document.createElement('div');
       modal.id = 'quest-suggest-modal';
-      modal.style.cssText = 'position:fixed;inset:0;z-index:9998;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,0.6);backdrop-filter:blur(6px);';
+      modal.className = 'quiz-suggest-modal';
+      modal.setAttribute('role', 'dialog');
+      modal.setAttribute('aria-modal', 'true');
+      modal.setAttribute('aria-labelledby', 'quest-suggest-title');
       modal.innerHTML = `
-        <div style="max-width:440px;width:100%;padding:32px 24px;background:var(--surface,#fff);border:1.5px solid var(--border-light);border-radius:16px;">
-          <div style="text-align:center;margin-bottom:24px;">
-            <div style="font-family:var(--font-display,sans-serif);font-size:clamp(1.5rem,4vw,2rem);color:var(--text-main);letter-spacing:0.04em;margin-bottom:8px;">
-              ${pctScore}% on ${topic}
-            </div>
-            <p style="font-size:0.875rem;color:var(--text-muted);line-height:1.5;margin:0;">
-              Want a 3-day Plan Quest to master this topic?
-              Miss Wena will guide you through it step by step.
-            </p>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:10px;">
-            <button id="quest-suggest-yes" style="padding:14px;border-radius:9999px;background:var(--brand-rose,#B76E79);color:var(--cream,#e3d9ca);border:none;font-weight:700;font-size:0.95rem;cursor:pointer;">
-              Yes, start my Quest
-            </button>
-            <button id="quest-suggest-no" style="padding:14px;border-radius:9999px;background:transparent;color:var(--text-muted);border:1.5px solid var(--border-light);font-weight:600;font-size:0.875rem;cursor:pointer;">
-              Not now
-            </button>
+        <div class="quiz-suggest-modal__backdrop" data-close="1"></div>
+        <div class="quiz-suggest-modal__card">
+          <button type="button" class="quiz-suggest-modal__close" data-close="1" aria-label="Dismiss">×</button>
+          <span class="label-caps quiz-suggest-modal__eyebrow">Plan Quest available</span>
+          <h2 id="quest-suggest-title" class="h2-as quiz-suggest-modal__title">${pctScore}% on ${esc(topic)}.</h2>
+          <p class="body-md quiz-suggest-modal__lede">
+            Want a 3-day Plan Quest to master this topic? Miss Wena will guide you through it step by step.
+          </p>
+          <div class="quiz-suggest-modal__actions">
+            <button id="quest-suggest-yes" class="btn btn-primary">Yes, start my Quest</button>
+            <button id="quest-suggest-no" class="btn btn-ghost" data-close="1">Not now</button>
           </div>
         </div>`;
       document.body.appendChild(modal);
 
-      document.getElementById('quest-suggest-no').addEventListener('click', () => modal.remove());
+      // Multiple dismiss affordances: backdrop, × button, "Not now", Esc key.
+      const closeModal = () => { if (modal.parentNode) modal.parentNode.removeChild(modal); document.removeEventListener('keydown', escHandler); };
+      const escHandler = (e) => { if (e.key === 'Escape') closeModal(); };
+      modal.addEventListener('click', (e) => {
+        if (e.target.dataset && e.target.dataset.close === '1') closeModal();
+      });
+      document.addEventListener('keydown', escHandler);
 
       document.getElementById('quest-suggest-yes').addEventListener('click', async () => {
         const yesBtn = document.getElementById('quest-suggest-yes');
