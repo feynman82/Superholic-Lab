@@ -293,6 +293,13 @@ async function init() {
     // 🚀 MASTERCLASS: Fetch and Render BKT Mastery Data
     await renderBKT(db, student.id);
 
+    // Hero diagnosis sentence (Pillar 2). Pick the subject with the most
+    // quiz attempts so the parent sees the diagnosis for the subject the
+    // child has actually engaged with. Empty-state students fall through
+    // to the "hasn't attempted" template.
+    const heroSubject = pickHeroSubject(subjectStats);
+    renderDiagnosisHero(student.id, heroSubject, session?.access_token);
+
     // Quest tray (replaces old single-quest renderQuestMap)
     renderQuestTrayFromData(activeQuestsList);
     renderRecentHistory(attempts.slice(0, 10));
@@ -1465,6 +1472,55 @@ window.toggleDeepDive = async function (studentId, subject, btnEl, quizCount) {
     container.dataset.loaded = ""; // Allow retry
   }
 };
+
+// ── HERO DIAGNOSIS SENTENCE (Week 2 Commit A — Pillar 2) ────────────────────
+//
+// Picks the subject with the most quiz attempts so the parent sees a
+// diagnosis grounded in real engagement. If no subject has any attempts,
+// defaults to mathematics so the empty-state template still renders.
+function pickHeroSubject(subjectStats) {
+  const order = ['mathematics', 'science', 'english'];
+  let best = order[0];
+  let bestCount = -1;
+  for (const sub of order) {
+    const c = subjectStats?.[sub]?.quizzes || 0;
+    if (c > bestCount) { best = sub; bestCount = c; }
+  }
+  return best;
+}
+
+// Fetches /api/analyze-weakness for the chosen subject and binds the
+// response.diagnosis.hero_sentence into #diagnosis-hero-sentence. Empty-
+// state styling switches the rose left-border to amber so visual difference
+// is obvious without copy-duplicating the template into CSS.
+async function renderDiagnosisHero(studentId, subject, accessToken) {
+  const container = document.getElementById('diagnosis-hero');
+  const sentenceEl = document.getElementById('diagnosis-hero-sentence');
+  if (!container || !sentenceEl) return;
+
+  try {
+    const res = await fetch('/api/analyze-weakness', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${accessToken || ''}` },
+      body: JSON.stringify({ studentId, subject }),
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const diag = data?.diagnosis;
+    if (!diag?.hero_sentence) {
+      container.hidden = true;
+      return;
+    }
+    sentenceEl.textContent = diag.hero_sentence;
+    container.classList.toggle('diagnosis-hero--empty', !diag.al_band);
+    container.hidden = false;
+  } catch (err) {
+    // Hero is non-critical chrome — fail silently so the rest of progress
+    // page still renders. Log so dev can spot regressions.
+    console.warn('[progress] diagnosis hero failed:', err.message || err);
+    container.hidden = true;
+  }
+}
 
 // ── BKT RENDERING ENGINE (PHASE 3) ────────────────────────────────────────────
 

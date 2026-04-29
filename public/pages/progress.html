@@ -110,6 +110,14 @@
 
       <div id="quest-map-section" style="display: none;"></div>
 
+      <!-- Hero diagnosis sentence — Pillar 2 (Analyse Weakness). Bound by
+           progress.js renderDiagnosisHero() from /api/analyze-weakness
+           response.diagnosis.hero_sentence. aria-live announces updates
+           on subject switch. -->
+      <section class="diagnosis-hero" id="diagnosis-hero" aria-live="polite" hidden>
+        <p class="diagnosis-hero__sentence" id="diagnosis-hero-sentence"></p>
+      </section>
+
       <div class="flex justify-between items-center mb-4">
         <h2 class="font-display text-2xl text-main m-0 uppercase">AI Mastery Tracker (BKT)</h2>
         <span class="badge" style="background: rgba(81,97,94,0.1); color: var(--sage-dark);">Live Analysis</span>
