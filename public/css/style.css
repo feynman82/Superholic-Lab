@@ -4274,3 +4274,58 @@ ul.rose-list li::before {
   padding: var(--space-3) 0;
 }
 .heatmap-modal__error { color: var(--error); }
+
+/* ── Streak strip (Week 2 Commit D — Honest Compass) ──────────────────────── */
+/* 30 calendar-day grid of cross-subject activity. Empty days share the same
+   cream tint as filled days so the absence of activity is never visually
+   "punished". Tooltip only — no celebratory copy anywhere. */
+.streak-strip-section {
+  margin-bottom: var(--space-3);
+}
+.streak-strip-section__title {
+  font-size: 1rem;
+  color: var(--sage-dark);
+  margin: 0 0 var(--space-1) 0;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.streak-strip {
+  display: grid;
+  grid-template-columns: repeat(30, 1fr);
+  gap: 2px;
+  width: 100%;
+  max-width: 480px;
+}
+.streak-strip__day {
+  aspect-ratio: 1;
+  border-radius: 2px;
+  background: var(--cream);
+}
+.streak-strip__day--low  { background: color-mix(in srgb, var(--brand-mint) 40%, transparent); }
+.streak-strip__day--mid  { background: color-mix(in srgb, var(--brand-mint) 70%, transparent); }
+.streak-strip__day--high { background: var(--brand-mint); }
+@media (max-width: 480px) {
+  .streak-strip          { max-width: 100%; }
+  .streak-strip__day     { border-radius: 1px; }
+}
+
+/* ── Progress page dynamic-card utility classes ───────────────────────────── */
+/* Used by progress.js renderers that build cards/timelines via createElement.
+   Replaces former inline el.style.cssText assignments — static styling is
+   class-based now, only computed values stay in JS. */
+.progress-action-card        { border-top: 3px solid var(--brand-mint); margin-bottom: var(--space-6); }
+.progress-action-header      { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-3); }
+.progress-action-label       { display: flex; align-items: center; gap: var(--space-3); }
+.progress-action-title       { margin: 0; font-size: 1rem; font-weight: 700; }
+.progress-timeline           { display: flex; align-items: center; gap: 0; margin-bottom: var(--space-6); }
+.progress-day-labels         { display: flex; align-items: flex-start; margin-bottom: var(--space-5); }
+.progress-day-icon           { font-size: 0.7rem; margin-top: var(--space-1); }
+.progress-step-title         { font-weight: 600; font-size: 0.9375rem; margin-bottom: var(--space-2); }
+.progress-error-text         { color: var(--error); display: block; margin-top: var(--space-1); }
+.progress-mastery-row        { margin-bottom: var(--space-5); }
+.progress-mastery-label-row  { display: flex; justify-content: space-between; margin-bottom: var(--space-2); }
+.progress-history-row        { display: flex; align-items: center; padding: var(--space-3) 0; border-bottom: 1px solid var(--glass-border-dim); flex-wrap: wrap; row-gap: var(--space-2); }
+.progress-history-badge      { min-width: 44px; justify-content: center; }
+.progress-history-date       { min-width: 80px; }
+.progress-bar-wrap           { flex: 1; min-width: 120px; }
+.progress-bar-track          { height: 6px; border-radius: 999px; background: var(--glass-border-dim); overflow: hidden; margin-bottom: var(--space-1); }

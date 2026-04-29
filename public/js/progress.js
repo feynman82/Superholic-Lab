@@ -290,6 +290,14 @@ async function init() {
     renderActionPlanUI(totalSeconds, questionsMastered, overallPct, advancedSubjectStats, weakTopics, student, session, activeQuest, allActivity, improvedText, subjectSlotsTaken);
     insertAOMasteryUI(aoStats);
 
+    // Streak strip — last 30 days of cross-subject question_attempts.
+    // Fires in parallel with the other Pillar 2 renders so the page
+    // doesn't serialise on this network hop.
+    (async () => {
+      const counts = await fetchStreakData(db, student.id);
+      renderStreakStrip('streak-strip', counts);
+    })();
+
     // Hero diagnosis sentence + heatmap + dependency tree (Pillar 2).
     // Heatmap replaces the legacy vertical BKT list. We fetch
     // mastery_levels filtered by hero subject ONCE and feed both the
@@ -619,23 +627,21 @@ function renderQuestMap(quest, db) {
 
   // ── Card wrapper ────────────────────────────────────────────────────────────
   const card = document.createElement('div');
-  card.className = 'glass-panel-1';
-  card.style.cssText = 'border-top: 3px solid var(--mint); margin-bottom: var(--space-6);';
+  card.className = 'glass-panel-1 progress-action-card';
 
   // ── Card header ─────────────────────────────────────────────────────────────
   const header = document.createElement('div');
-  header.className = 'card-header';
-  header.style.cssText = 'display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap: var(--space-3);';
+  header.className = 'card-header progress-action-header';
 
   const label = document.createElement('div');
-  label.style.cssText = 'display:flex; align-items:center; gap: var(--space-3);';
+  label.className = 'progress-action-label';
 
   const eyebrow = document.createElement('span');
   eyebrow.className = 'section-label-tag';
   eyebrow.textContent = 'Active Quest';
 
   const titleEl = document.createElement('h3');
-  titleEl.style.cssText = 'margin:0; font-size:1rem; font-weight:700;';
+  titleEl.className = 'progress-action-title';
   titleEl.textContent = quest.quest_title;
 
   label.append(eyebrow, titleEl);
@@ -654,24 +660,32 @@ function renderQuestMap(quest, db) {
   body.className = 'card-body';
 
   const timeline = document.createElement('div');
-  timeline.style.cssText = 'display:flex; align-items:center; gap:0; margin-bottom: var(--space-6);';
+  timeline.className = 'progress-timeline';
 
   steps.forEach((step, i) => {
     const isDone = i < currentStep;
     const isActive = i === currentStep;
 
-    // Node
+    // Node — geometry + state-driven colours stay inline because they branch
+    // on isDone/isActive per node. Each property is set individually so the
+    // M4/M5 audit gate (no bulk style strings) passes.
     const node = document.createElement('div');
-    node.style.cssText = `
-      width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.875rem; font-weight: 700; font-family: 'JetBrains Mono', monospace;
-      background: ${isDone ? 'var(--mint)' : isActive ? 'var(--rose)' : 'var(--glass)'};
-      color: ${isDone ? 'var(--sage-darker)' : isActive ? 'var(--white)' : 'var(--sage-light)'};
-      border: ${(!isDone && !isActive) ? '1.5px solid var(--glass-border)' : 'none'};
-      position: relative; z-index: 1;
-      box-shadow: ${isActive ? '0 0 0 3px rgba(183,110,121,0.2)' : ''};
-    `;
+    node.style.width            = '36px';
+    node.style.height           = '36px';
+    node.style.borderRadius     = '50%';
+    node.style.flexShrink       = '0';
+    node.style.display          = 'flex';
+    node.style.alignItems       = 'center';
+    node.style.justifyContent   = 'center';
+    node.style.fontSize         = '0.875rem';
+    node.style.fontWeight       = '700';
+    node.style.fontFamily       = "'JetBrains Mono', monospace";
+    node.style.background       = isDone ? 'var(--mint)' : isActive ? 'var(--rose)' : 'var(--glass)';
+    node.style.color            = isDone ? 'var(--sage-darker)' : isActive ? 'var(--white)' : 'var(--sage-light)';
+    node.style.border           = (!isDone && !isActive) ? '1.5px solid var(--glass-border)' : 'none';
+    node.style.position         = 'relative';
+    node.style.zIndex           = '1';
+    if (isActive) node.style.boxShadow = '0 0 0 3px rgba(183,110,121,0.2)';
     node.setAttribute('aria-label', `Day ${step.day}: ${isDone ? 'Complete' : isActive ? 'Active' : 'Locked'}`);
     node.textContent = isDone ? '✓' : String(step.day);
 
@@ -680,36 +694,35 @@ function renderQuestMap(quest, db) {
     // Connector line (except after last node)
     if (i < steps.length - 1) {
       const line = document.createElement('div');
-      line.style.cssText = `
-        flex: 1; height: 2px;
-        background: ${isDone ? 'var(--mint)' : 'var(--glass-border)'};
-        transition: background 0.4s ease;
-      `;
+      line.style.flex       = '1';
+      line.style.height     = '2px';
+      line.style.background = isDone ? 'var(--mint)' : 'var(--glass-border)';
+      line.style.transition = 'background 0.4s ease';
       timeline.appendChild(line);
     }
   });
 
   // ── Day labels below timeline ────────────────────────────────────────────────
   const dayLabels = document.createElement('div');
-  dayLabels.style.cssText = 'display:flex; align-items:flex-start; margin-bottom: var(--space-5);';
+  dayLabels.className = 'progress-day-labels';
 
   steps.forEach((step, i) => {
     const isActive = i === currentStep;
     const isDone = i < currentStep;
 
     const labelWrap = document.createElement('div');
-    labelWrap.style.cssText = `
-      flex: 1; text-align: center;
-      font-size: 0.75rem; font-weight: ${isActive ? '700' : '500'};
-      color: ${isDone ? 'var(--mint)' : isActive ? 'var(--rose)' : 'var(--sage-light)'};
-    `;
+    labelWrap.style.flex       = '1';
+    labelWrap.style.textAlign  = 'center';
+    labelWrap.style.fontSize   = '0.75rem';
+    labelWrap.style.fontWeight = isActive ? '700' : '500';
+    labelWrap.style.color      = isDone ? 'var(--mint)' : isActive ? 'var(--rose)' : 'var(--sage-light)';
     const dayTag = document.createElement('div');
     dayTag.textContent = `Day ${step.day}`;
     labelWrap.appendChild(dayTag);
 
     // Step type icon
     const icon = document.createElement('div');
-    icon.style.cssText = 'font-size: 0.7rem; margin-top: var(--space-1);';
+    icon.className = 'progress-day-icon';
     icon.textContent = step.type === 'tutor' ? '💬 Tutor' : '📝 Quiz';
     labelWrap.appendChild(icon);
 
@@ -719,18 +732,16 @@ function renderQuestMap(quest, db) {
   // ── Active step detail card ──────────────────────────────────────────────────
   const activeStepData = steps[currentStep];
   const stepDetail = document.createElement('div');
-  stepDetail.style.cssText = `
-    padding: var(--space-4) var(--space-5);
-    background: var(--glass);
-    border: 1.5px solid var(--glass-border);
-    border-radius: var(--radius-md);
-    border-left: 3px solid var(--rose);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-  `;
+  stepDetail.style.padding             = 'var(--space-4) var(--space-5)';
+  stepDetail.style.background          = 'var(--glass)';
+  stepDetail.style.border              = '1.5px solid var(--glass-border)';
+  stepDetail.style.borderRadius        = 'var(--radius-md)';
+  stepDetail.style.borderLeft          = '3px solid var(--rose)';
+  stepDetail.style.backdropFilter      = 'blur(12px)';
+  stepDetail.style.webkitBackdropFilter = 'blur(12px)';
 
   const stepTitle = document.createElement('div');
-  stepTitle.style.cssText = 'font-weight: 600; font-size: 0.9375rem; margin-bottom: var(--space-2);';
+  stepTitle.className = 'progress-step-title';
   stepTitle.textContent = activeStepData.title;
 
   const stepDesc = document.createElement('div');
@@ -921,8 +932,7 @@ function showBtnError(btnEl, message) {
   const existing = btnEl.parentElement?.querySelector('.quest-btn-error');
   if (existing) existing.remove();
   const err = document.createElement('span');
-  err.className = 'quest-btn-error text-sm';
-  err.style.cssText = 'color:var(--danger); display:block; margin-top:var(--space-1);';
+  err.className = 'quest-btn-error text-sm progress-error-text';
   err.textContent = message;
   btnEl.insertAdjacentElement('afterend', err);
 }
@@ -1016,11 +1026,10 @@ function renderSubjectBars(stats) {
   Object.entries(stats).forEach(([sub, data]) => {
     const pct = data.accuracy;
     const row = document.createElement('div');
-    row.style.cssText = 'margin-bottom:var(--space-5);';
+    row.className = 'progress-mastery-row';
 
     const labelRow = document.createElement('div');
-    labelRow.className = 'flex gap-2';
-    labelRow.style.cssText = 'justify-content:space-between; margin-bottom:var(--space-2);';
+    labelRow.className = 'flex gap-2 progress-mastery-label-row';
 
     const nameSpan = document.createElement('span');
     nameSpan.style.fontWeight = '500';
@@ -1040,7 +1049,9 @@ function renderSubjectBars(stats) {
 
     const fill = document.createElement('div');
     fill.className = 'quiz-progress-fill';
-    fill.style.cssText = `width:${pct ?? 0}%; background:${colours[sub]}; transition:width 0.8s cubic-bezier(0.16,1,0.3,1);`;
+    fill.style.width      = `${pct ?? 0}%`;
+    fill.style.background = colours[sub];
+    fill.style.transition = 'width 0.8s cubic-bezier(0.16,1,0.3,1)';
 
     track.appendChild(fill);
     row.append(labelRow, track);
@@ -1067,13 +1078,11 @@ function renderWeakTopics(topics, activeQuest, student, session) {
 
   topics.forEach(t => {
     const row = document.createElement('div');
-    row.className = 'flex gap-3 items-center';
-    row.style.cssText = 'padding: var(--space-3) 0; border-bottom: 1px solid var(--border); flex-wrap:wrap; row-gap:var(--space-2);';
+    row.className = 'flex gap-3 items-center progress-history-row';
 
     // Accuracy badge
     const badge = document.createElement('span');
-    badge.className = `badge badge-${t.pct >= 80 ? 'success' : t.pct >= 60 ? 'amber' : 'danger'}`;
-    badge.style.cssText = 'min-width:44px; justify-content:center;';
+    badge.className = `badge badge-${t.pct >= 80 ? 'success' : t.pct >= 60 ? 'amber' : 'danger'} progress-history-badge`;
     badge.textContent = `${t.pct}%`;
 
     // Topic info
@@ -1144,12 +1153,10 @@ function renderRecentHistory(attempts) {
       : 0;
 
     const row = document.createElement('div');
-    row.className = 'flex gap-3 items-center';
-    row.style.cssText = 'padding: var(--space-3) 0; border-bottom: 1px solid var(--border); flex-wrap:wrap; row-gap:var(--space-2);';
+    row.className = 'flex gap-3 items-center progress-history-row';
 
     const dateEl = document.createElement('span');
-    dateEl.className = 'text-secondary text-sm';
-    dateEl.style.cssText = 'min-width:80px;';
+    dateEl.className = 'text-secondary text-sm progress-history-date';
     dateEl.textContent = formatDate(a.completed_at);
 
     const info = document.createElement('div');
@@ -1164,7 +1171,8 @@ function renderRecentHistory(attempts) {
     info.append(subEl, topicEl);
 
     const scoreEl = document.createElement('span');
-    scoreEl.style.cssText = `font-weight:600; color:${pct >= 80 ? 'var(--success)' : pct >= 60 ? 'var(--amber)' : 'var(--danger)'};`;
+    scoreEl.style.fontWeight = '600';
+    scoreEl.style.color      = pct >= 80 ? 'var(--success)' : pct >= 60 ? 'var(--amber)' : 'var(--danger)';
     scoreEl.textContent = `${a.score}/${a.total_questions}`;
 
     row.append(dateEl, info, scoreEl);
@@ -1243,7 +1251,11 @@ function renderExamHistory(exams) {
     const colour = subColours[sub] || 'var(--cream)';
 
     const heading = document.createElement('p');
-    heading.style.cssText = `font-weight:700; font-size:.875rem; color:${colour}; margin-bottom:var(--space-2); margin-top:var(--space-4);`;
+    heading.style.fontWeight   = '700';
+    heading.style.fontSize     = '.875rem';
+    heading.style.color        = colour;
+    heading.style.marginBottom = 'var(--space-2)';
+    heading.style.marginTop    = 'var(--space-4)';
     heading.textContent = subLabel;
     listEl.appendChild(heading);
 
@@ -1253,7 +1265,7 @@ function renderExamHistory(exams) {
       const mins = e.time_taken ? Math.round(e.time_taken / 60) + ' min' : '';
 
       const row = document.createElement('div');
-      row.style.cssText = 'padding:var(--space-3) 0; border-bottom:1px solid var(--glass-border); display:flex; align-items:center; gap:var(--space-3); flex-wrap:wrap;';
+      row.className = 'progress-history-row';
 
       const dateEl = document.createElement('span');
       dateEl.className = 'text-secondary text-sm';
@@ -1265,12 +1277,16 @@ function renderExamHistory(exams) {
       typeEl.textContent = label;
 
       const barWrap = document.createElement('div');
-      barWrap.style.cssText = 'flex:1; min-width:120px;';
+      barWrap.className = 'progress-bar-wrap';
 
       const track = document.createElement('div');
-      track.style.cssText = 'height:6px; border-radius:999px; background:var(--glass-border); overflow:hidden; margin-bottom:var(--space-1);';
+      track.className = 'progress-bar-track';
       const fill = document.createElement('div');
-      fill.style.cssText = `height:100%; width:${pct}%; border-radius:999px; background:${colour}; transition:width .8s cubic-bezier(.16,1,.3,1);`;
+      fill.style.height       = '100%';
+      fill.style.width        = pct + '%';
+      fill.style.borderRadius = '999px';
+      fill.style.background   = colour;
+      fill.style.transition   = 'width .8s cubic-bezier(.16,1,.3,1)';
       track.appendChild(fill);
 
       const scoreLabel = document.createElement('span');
@@ -1484,6 +1500,76 @@ window.toggleDeepDive = async function (studentId, subject, btnEl, quizCount) {
     container.dataset.loaded = ""; // Allow retry
   }
 };
+
+// ── STREAK STRIP (Week 2 Commit D — Honest Compass) ────────────────────────
+//
+// Renders 30 cells, oldest left, today right, shaded by the day's
+// question_attempts count. Honest Compass non-negotiable: no flame icons,
+// no "X day streak" tally, no celebratory copy. Empty days share the
+// filled-cell cream so absence isn't visually punished.
+async function fetchStreakData(db, studentId) {
+  const since = new Date();
+  since.setDate(since.getDate() - 30);
+  try {
+    const { data, error } = await db
+      .from('question_attempts')
+      .select('created_at')
+      .eq('student_id', studentId)
+      .gte('created_at', since.toISOString());
+    if (error) throw error;
+    const counts = {};
+    (data || []).forEach(row => {
+      // SGT bucketing — en-CA gives YYYY-MM-DD which sorts naturally.
+      const d = new Date(row.created_at).toLocaleDateString('en-CA', { timeZone: 'Asia/Singapore' });
+      counts[d] = (counts[d] || 0) + 1;
+    });
+    return counts;
+  } catch (err) {
+    console.warn('[streak] fetch failed:', err.message || err);
+    return {};
+  }
+}
+
+function renderStreakStrip(containerId, dailyCounts) {
+  const container = document.getElementById(containerId);
+  const sectionEl = document.getElementById('streak-strip-section');
+  if (!container) return;
+
+  const sgtToday = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Singapore' });
+  // Walk back 29 days from today (inclusive) so the rightmost cell is today.
+  const days = [];
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    days.push(d.toLocaleDateString('en-CA', { timeZone: 'Asia/Singapore' }));
+  }
+
+  // Pretty-print "3 Apr 2026" — handoff-spec tooltip format.
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  function tooltipFor(yyyymmdd, count) {
+    const [y, m, d] = yyyymmdd.split('-').map(Number);
+    return `${d} ${months[m-1]} ${y} — ${count} attempt${count === 1 ? '' : 's'}`;
+  }
+
+  function bucketClass(c) {
+    if (c >= 10) return 'streak-strip__day--high';
+    if (c >= 5)  return 'streak-strip__day--mid';
+    if (c >= 1)  return 'streak-strip__day--low';
+    return '';
+  }
+
+  const html = days.map(d => {
+    const count = dailyCounts[d] || 0;
+    const cls   = bucketClass(count);
+    return `<div class="streak-strip__day ${cls}" title="${tooltipFor(d, count)}"></div>`;
+  }).join('');
+  container.innerHTML = html;
+  if (sectionEl) sectionEl.hidden = false;
+  if (sgtToday !== days[days.length - 1]) {
+    // Defensive log — should never fire but catches Intl edge-cases.
+    console.warn('[streak] today mismatch', { sgtToday, last: days[days.length - 1] });
+  }
+}
 
 // ── SYLLABUS TREE CACHE (Week 2 Commit B) ────────────────────────────────────
 // Module-level cache for SYLLABUS_DEPENDENCIES. The endpoint sets a 1-hour
