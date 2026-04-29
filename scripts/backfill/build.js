@@ -20,10 +20,19 @@
  *      only writes fields where confidence === 'high'.
  *
  * Usage:
- *   node scripts/backfill/build.js              # full run (every missing row)
- *   node scripts/backfill/build.js --sample 50  # dry-run sample (Pass 1)
- *   node scripts/backfill/build.js --subject English --sample 20
- *   node scripts/backfill/build.js --out backfill_pass1.jsonl
+ *   node scripts/backfill/build.js                                # full run (every missing row)
+ *   node scripts/backfill/build.js --sample 50                    # dry-run sample (Pass 1)
+ *   node scripts/backfill/build.js --subject English --sample 20  # restrict by subject
+ *   node scripts/backfill/build.js --subject English --topic Cloze --out english_cloze.jsonl
+ *                                                                 # restrict by (subject, topic)
+ *   node scripts/backfill/build.js --out backfill_pass1.jsonl     # name the output file
+ *
+ * Why --topic exists: some topics produce reliably-classifiable question
+ * stems (English Cloze sub_topics have obvious "word bank" / "dropdown" /
+ * "free-text" markers). Others — English Synthesis, Comprehension fragments,
+ * Summary Writing — give the model too little context to pick a sub_topic
+ * confidently and it correctly returns null. Scope your batches to the
+ * topics you trust the prompt on; iterate prompt for the rest separately.
  *
  * Reads SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY from .env or process env.
  */
@@ -43,6 +52,7 @@ function arg(name, def) {
 }
 const SAMPLE_SIZE = parseInt(arg('--sample', '0'), 10) || 0;
 const SUBJECT_FILTER = arg('--subject', null);
+const TOPIC_FILTER   = arg('--topic',   null);
 const OUT_PATH = arg('--out', SAMPLE_SIZE > 0 ? 'backfill_pass1.jsonl' : 'backfill_pass2.jsonl');
 
 // ─── Config ────────────────────────────────────────────────────────
@@ -221,6 +231,7 @@ async function main() {
     .or('sub_topic.is.null,cognitive_skill.is.null')
     .is('backfill_run_id', null);
   if (SUBJECT_FILTER) q = q.eq('subject', SUBJECT_FILTER);
+  if (TOPIC_FILTER)   q = q.eq('topic',   TOPIC_FILTER);
   if (SAMPLE_SIZE > 0) q = q.limit(SAMPLE_SIZE);
 
   const { data: rows, error } = await q;
@@ -233,7 +244,12 @@ async function main() {
     return;
   }
 
-  console.log(`Pulled ${rows.length} rows from question_bank.`);
+  const filterDesc = [
+    SUBJECT_FILTER ? `subject=${SUBJECT_FILTER}` : null,
+    TOPIC_FILTER   ? `topic=${TOPIC_FILTER}`     : null,
+    SAMPLE_SIZE > 0 ? `sample=${SAMPLE_SIZE}`    : null,
+  ].filter(Boolean).join(', ') || 'all rows missing sub_topic OR cognitive_skill';
+  console.log(`Pulled ${rows.length} rows from question_bank (${filterDesc}).`);
   const sysPrompt = buildSystemPrompt();
 
   const lines = rows.map(r => {

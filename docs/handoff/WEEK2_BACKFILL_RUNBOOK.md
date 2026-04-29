@@ -166,13 +166,30 @@ first 5 update payloads. Confirms the apply gate behaves correctly.
 
 Only proceed if Pass 1 acceptance gate passed.
 
-### 2.1 Build the full JSONL
+### 2.1 Build the scoped JSONLs
+
+Pass 1 dry-run audits will surface that some topics produce thin
+question stems the model can't classify confidently — English Synthesis,
+Comprehension, Editing, and Grammar/Vocabulary all give the model
+fragments without enough context to pick a sub_topic. The model
+correctly returns null on those (zero hallucinations is the win), but
+the effective acceptance rate falls below the gate.
+
+The recommended Pass 2 scope is the topics where the question stem is
+self-classifying:
+  - All Science topics (sub_topic markers are explicit in the stem)
+  - English Cloze (Word Bank vs Dropdown vs Free-text are obvious)
+
+Skipped this round (revisit with a stronger prompt later):
+  - English Synthesis, Comprehension, Editing, Grammar, Vocabulary
+
+Build:
 
 ```bash
-# Subject-by-subject is safer than one mega-batch — easier to roll back
-# a single subject if you spot a systematic issue post-write.
+# Subject-by-subject + topic-scoped is safer than one mega-batch —
+# easier to roll back a single batch if you spot a systematic issue.
 node scripts/backfill/build.js --subject Science --out backfill_science.jsonl
-node scripts/backfill/build.js --subject English --out backfill_english.jsonl
+node scripts/backfill/build.js --subject English --topic Cloze --out backfill_english_cloze.jsonl
 ```
 
 ### 2.2 Run inference per subject — pick ONE mode
@@ -194,12 +211,12 @@ node scripts/backfill/submit.js backfill_english.jsonl
 Both modes can run in parallel — the OpenAI account-level RPM/TPM
 budgets are well above what these jobs consume.
 
-### 2.3 Apply with a unique run id per subject
+### 2.3 Apply with a unique run id per batch
 
 ```bash
 RUN_ID=backfill_$(date +%Y_%m_%d)
-node scripts/backfill/apply.js backfill_science.output.jsonl ${RUN_ID}_science
-node scripts/backfill/apply.js backfill_english.output.jsonl ${RUN_ID}_english
+node scripts/backfill/apply.js backfill_science.output.jsonl       ${RUN_ID}_science
+node scripts/backfill/apply.js backfill_english_cloze.output.jsonl ${RUN_ID}_english_cloze
 ```
 
 Save the run ids. You'll need them for rollback.
