@@ -811,23 +811,34 @@ export function QuestClient({ searchParams }: QuestClientProps) {
   }
 
   // ─── Day 3 outcome: user chose redo / slight / no improvement ──
-  async function handleDay3OutcomeDone(outcome: "redo" | "slight_improvement" | "no_improvement") {
+  // Server now spawns the child quest server-side and returns its id, so
+  // the redo path navigates straight to the new quest instead of bouncing
+  // through progress.html for manual generation.
+  async function handleDay3OutcomeDone(
+    outcome: "redo" | "slight_improvement" | "no_improvement",
+    result: { new_quest_id?: string | null },
+  ) {
     setShowDay3Modal(false)
+    if (outcome === "redo" && result.new_quest_id) {
+      window.location.href = `/quest?id=${encodeURIComponent(result.new_quest_id)}`
+      return
+    }
     if (outcome === "redo" && questDetail) {
-      // Navigate to progress page; a new redo quest will be generated there
+      // Server didn't return a new quest id (rare — failed spawn): fall back
+      // to the legacy progress.html redo trigger so the kid isn't stuck.
       window.location.href = `/pages/progress.html?redo_quest=${questDetail.id}`
-    } else {
-      // Refresh quest data
-      if (questDetail) {
-        setLoadState("loading")
-        try {
-          const supabase = getSupabase()
-          const { data: { session } } = await supabase.auth.getSession()
-          if (!session) { window.location.href = "/pages/login.html"; return }
-          await loadQuest(questDetail.id, session.access_token, student?.id ?? session.user.id)
-        } catch {
-          setLoadState("quest")
-        }
+      return
+    }
+    if (questDetail) {
+      // slight_improvement / no_improvement — refresh the same quest detail.
+      setLoadState("loading")
+      try {
+        const supabase = getSupabase()
+        const { data: { session } } = await supabase.auth.getSession()
+        if (!session) { window.location.href = "/pages/login.html"; return }
+        await loadQuest(questDetail.id, session.access_token, student?.id ?? session.user.id)
+      } catch {
+        setLoadState("quest")
       }
     }
   }

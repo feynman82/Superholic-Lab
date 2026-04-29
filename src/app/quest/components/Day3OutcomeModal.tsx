@@ -11,11 +11,18 @@ import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Icon } from "../../../components/icons"
 
+export type Day3OutcomeResult = {
+  new_quest_id?: string | null
+}
+
 type Day3OutcomeModalProps = {
   questId: string
   score: number
   token: string
-  onDone: (outcome: "redo" | "slight_improvement" | "no_improvement") => void
+  onDone: (
+    outcome: "redo" | "slight_improvement" | "no_improvement",
+    result: Day3OutcomeResult,
+  ) => void
 }
 
 type OutcomeOption = {
@@ -66,7 +73,9 @@ export function Day3OutcomeModal({ questId, score, token, onDone }: Day3OutcomeM
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || "Failed to save outcome")
-      onDone(selected)
+      const newQuestId: string | null =
+        (data.new_quest && typeof data.new_quest.id === "string") ? data.new_quest.id : null
+      onDone(selected, { new_quest_id: newQuestId })
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.")
     } finally {
