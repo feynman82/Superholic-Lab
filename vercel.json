@@ -30,7 +30,9 @@
     { "source": "/api/log-activity",       "destination": "/api/index" },
     { "source": "/api/learner-export",     "destination": "/api/index" },
     { "source": "/api/family-activity",    "destination": "/api/index" },
-    { "source": "/api/weekly-digest",      "destination": "/api/index" }
+    { "source": "/api/weekly-digest",      "destination": "/api/index" },
+    { "source": "/api/syllabus-tree",      "destination": "/api/index" },
+    { "source": "/api/recent-attempts",    "destination": "/api/index" }
   ],
   "headers": [
     {

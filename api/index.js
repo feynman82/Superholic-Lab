@@ -32,6 +32,8 @@ import {
   handleLearnerExport,
   handleFamilyActivity,
   handleWeeklyDigest,
+  handleSyllabusTree,
+  handleRecentAttempts,
 } from '../lib/api/handlers.js';
 
 export const config = { api: { bodyParser: false } };
@@ -92,6 +94,8 @@ export default async function handler(req, res) {
     case 'learner-export':     return handleLearnerExport(req, res);
     case 'family-activity':    return handleFamilyActivity(req, res);
     case 'weekly-digest':      return handleWeeklyDigest(req, res);
+    case 'syllabus-tree':      return handleSyllabusTree(req, res);
+    case 'recent-attempts':    return handleRecentAttempts(req, res);
     default:
       return res.status(404).json({ error: 'Route /api/' + route + ' not found.' });
   }
