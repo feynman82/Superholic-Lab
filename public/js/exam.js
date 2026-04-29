@@ -1,6 +1,17 @@
 window.initExamEngine = function () {
   'use strict';
 
+  // ── Canonical syllabus shim (loaded by /js/syllabus.js) ──
+  // syllabus.js exposes window.SHL_SYLLABUS for non-module consumers like
+  // exam.js. If the module hasn't loaded yet, we fall back to a no-op
+  // shim so the page still renders, with a warning.
+  const SYL = window.SHL_SYLLABUS || {
+    SUBJECT_DB_NAME: { mathematics: 'Mathematics', science: 'Science', english: 'English' }
+  };
+  if (!window.SHL_SYLLABUS) {
+    console.warn('[exam] /js/syllabus.js not loaded; using inline fallback. Verify <script> order in exam.html.');
+  }
+
   // ── 🚀 UTILITIES ──
   const app = document.getElementById('app');
   function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
@@ -80,7 +91,10 @@ window.initExamEngine = function () {
     drawings: {},
     results: null,
     timerSeconds: 0,
-    timerInterval: null
+    timerInterval: null,
+    // ── Masterclass additions (additive, do not break legacy reads) ──
+    initialDuration: 0,        // total seconds the timer started at
+    warningShared: false       // toast already fired once
   };
 
   function render() {
@@ -96,7 +110,16 @@ window.initExamEngine = function () {
 
   // ── 1. INITIALISATION & NAVIGATION PHASES ──
   async function renderInit() {
-    app.innerHTML = `<div class="glass-panel-1 flex flex-col items-center w-full" style="padding: var(--space-8); max-width: 600px;"><div class="spinner-sm mb-4"></div><h2 class="font-display text-2xl text-main">Preparing Exam Room...</h2><p class="text-sm text-muted mt-2">Loading student profile</p></div>`;
+    app.innerHTML = `
+      <header class="exam-hero">
+        <h1 class="h1-as exam-hero__title">Preparing exam room…</h1>
+        <p class="body-lg exam-hero__lede">Loading your student profile and the latest paper templates.</p>
+      </header>
+      <div class="exam-skeleton">
+        <div class="exam-skeleton__card"></div>
+        <div class="exam-skeleton__card"></div>
+        <div class="exam-skeleton__card"></div>
+      </div>`;
     try {
       const profile = window.userProfile;
       if (!profile) { window.location.href = 'login.html?redirect=exam'; return; }
@@ -108,7 +131,12 @@ window.initExamEngine = function () {
       const student = (students || []).find(s => s.id === activeStudentId) || (students || [])[0];
 
       if (!student) {
-        app.innerHTML = `<div class="glass-panel-1 p-6 text-center w-full" style="max-width: 600px;"><p class="text-amber font-bold mb-4">No student profile found. Please set one up.</p></div>`;
+        app.innerHTML = `
+          <div class="dossier" style="text-align: center;">
+            <h2 class="h2-as" style="color: var(--text-main);">No learner profile found.</h2>
+            <p class="body-md" style="color: var(--text-muted); margin: var(--space-3) 0;">Set up a learner before starting an exam.</p>
+            <a href="setup.html" class="btn btn-primary">Set up a profile →</a>
+          </div>`;
         return;
       }
 
@@ -134,38 +162,163 @@ window.initExamEngine = function () {
       }
       render();
     } catch (err) {
-      app.innerHTML = `<div class="glass-panel-1 p-6 text-center w-full" style="max-width: 600px;"><p class="text-danger font-bold mb-4">Failed to load profile.</p><button class="btn btn-primary" onclick="location.reload()">Reload</button></div>`;
+      app.innerHTML = `
+        <div class="dossier" style="text-align: center;">
+          <h2 class="h2-as" style="color: var(--text-main);">Could not load profile.</h2>
+          <p class="body-md" style="color: var(--text-muted); margin: var(--space-3) 0;">Refresh the page or check your connection.</p>
+          <button class="btn btn-primary" onclick="location.reload()">Reload</button>
+        </div>`;
     }
   }
 
+  // ── BREADCRUMB (matches subjects.html pattern) ─────────────────────
+  function breadcrumbHtml() {
+    const steps = state.tier === 'single_subject'
+      ? [{ key: 'TYPE', label: '§ 01 · Paper' }]
+      : [{ key: 'SUBJECT', label: '§ 01 · Subject' }, { key: 'TYPE', label: '§ 02 · Paper' }];
+
+    const order = ['SUBJECT', 'TYPE'];
+    const currentIdx = order.indexOf(state.phase);
+
+    return `<nav class="exam-breadcrumb" aria-label="Wizard progress">
+      ${steps.map((s, i) => {
+        const stepIdx = order.indexOf(s.key);
+        let cls = 'exam-breadcrumb__step';
+        if (stepIdx === currentIdx) cls += ' is-active';
+        else if (stepIdx < currentIdx) cls += ' is-done';
+        const sep = i < steps.length - 1
+          ? '<span class="exam-breadcrumb__sep" aria-hidden="true">›</span>'
+          : '';
+        return `<span class="${cls}">${esc(s.label)}</span>${sep}`;
+      }).join('')}
+    </nav>`;
+  }
+
+  // ── TOAST (masterclass timer warning) ───────────────────────────────
+  // Single one-shot toast that auto-dismisses after 7s. Re-fires never.
+  function showExamToast(title, body) {
+    if (state.warningShared) return;
+    state.warningShared = true;
+
+    let toast = document.getElementById('exam-warning-toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'exam-warning-toast';
+      toast.className = 'exam-toast';
+      toast.setAttribute('role', 'alert');
+      document.body.appendChild(toast);
+    }
+    toast.innerHTML = `
+      <div class="exam-toast__title">${esc(title)}</div>
+      <p class="exam-toast__body">${esc(body)}</p>`;
+    // Trigger transition next frame
+    requestAnimationFrame(() => toast.classList.add('is-visible'));
+
+    // Auto-dismiss after 7s
+    setTimeout(() => {
+      toast.classList.remove('is-visible');
+      setTimeout(() => { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 280);
+    }, 7000);
+  }
+
+  // ── ORB SVGs (matches subjects.html) ───────────────────────────────
+  function orbSvg(subjectSlug) {
+    const base = `
+      <defs>
+        <radialGradient id="exam-grad-${subjectSlug}" cx="40%" cy="35%" r="65%">
+          <stop offset="0%" stop-color="#F4FBF9" stop-opacity="0.85"/>
+          <stop offset="55%" stop-color="#A8C4BB" stop-opacity="0.18"/>
+          <stop offset="100%" stop-color="#51615E" stop-opacity="0.05"/>
+        </radialGradient>
+        <radialGradient id="exam-spec-${subjectSlug}" cx="35%" cy="28%" r="22%">
+          <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.7"/>
+          <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <circle cx="100" cy="100" r="92" fill="url(#exam-grad-${subjectSlug})"/>
+      <ellipse cx="78" cy="68" rx="34" ry="22" fill="url(#exam-spec-${subjectSlug})"/>
+      <circle cx="100" cy="100" r="92" fill="none" stroke="#51615E" stroke-opacity="0.18" stroke-width="1"/>`;
+
+    if (subjectSlug === 'mathematics') {
+      return `<svg viewBox="0 0 200 200" aria-hidden="true">
+        ${base}
+        <g class="orb-rot-slow" stroke="#51615E" stroke-width="1.25" fill="none" stroke-linejoin="round">
+          <g class="orb-drift">
+            <polygon points="55,75 75,68 75,88 55,95"/>
+            <polygon points="75,68 95,75 95,95 75,88"/>
+            <polygon points="55,75 75,68 95,75 75,82"/>
+            <line x1="75" y1="82" x2="75" y2="88"/>
+          </g>
+        </g>
+        <g class="orb-rot-med" stroke="#B76E79" stroke-width="1.25" fill="none" stroke-linejoin="round">
+          <g class="orb-drift-2">
+            <polygon points="135,90 150,75 165,90 150,115 135,90"/>
+            <line x1="135" y1="90" x2="165" y2="90"/>
+            <line x1="150" y1="75" x2="150" y2="115"/>
+          </g>
+        </g>
+        <g class="orb-rot-fast" stroke="#3A4E4A" stroke-width="1" fill="none">
+          <g class="orb-drift-3">
+            <circle cx="95" cy="140" r="18"/>
+            <ellipse cx="95" cy="140" rx="18" ry="6"/>
+            <ellipse cx="95" cy="140" rx="6" ry="18"/>
+          </g>
+        </g>
+      </svg>`;
+    }
+
+    if (subjectSlug === 'science') {
+      return `<svg viewBox="0 0 200 200" aria-hidden="true">
+        ${base}
+        <g class="orb-rot-med">
+          <line x1="100" y1="100" x2="60" y2="75" stroke="#51615E" stroke-width="1.25" stroke-opacity="0.6"/>
+          <line x1="100" y1="100" x2="140" y2="120" stroke="#51615E" stroke-width="1.25" stroke-opacity="0.6"/>
+          <line x1="100" y1="100" x2="115" y2="150" stroke="#51615E" stroke-width="1.25" stroke-opacity="0.6"/>
+          <circle cx="100" cy="100" r="11" fill="#51615E" fill-opacity="0.85"/>
+          <circle cx="60"  cy="75"  r="7"  fill="#B76E79" fill-opacity="0.8"/>
+          <circle cx="140" cy="120" r="7"  fill="#B76E79" fill-opacity="0.8"/>
+          <circle cx="115" cy="150" r="6"  fill="#D4A24A" fill-opacity="0.75"/>
+        </g>
+        <ellipse cx="100" cy="100" rx="58" ry="20" fill="none" stroke="#51615E" stroke-width="0.75" stroke-opacity="0.25" transform="rotate(-25 100 100)"/>
+      </svg>`;
+    }
+
+    if (subjectSlug === 'english') {
+      return `<svg viewBox="0 0 200 200" aria-hidden="true">
+        ${base}
+        <g font-family="Georgia, 'Times New Roman', serif" text-anchor="middle">
+          <text x="68" y="92" class="orb-glyph-fade" font-size="38" font-style="italic" fill="#51615E">Aa</text>
+          <text x="138" y="100" class="orb-glyph-fade-2" font-size="44" fill="#B76E79">&amp;</text>
+          <text x="100" y="148" class="orb-glyph-fade-3" font-size="36" fill="#3A4E4A">&#8220;&#8221;</text>
+        </g>
+      </svg>`;
+    }
+
+    return `<svg viewBox="0 0 200 200">${base}</svg>`;
+  }
+
   function renderSubject() {
-    const levelNum = state.level.replace('Primary ', '');
     const subjects = [
-      { name: 'Mathematics', icon: '📐', tag: 'P1–P6' },
-      { name: 'Science', icon: '🔬', tag: 'P3–P6' },
-      { name: 'English', icon: '📖', tag: 'P1–P6' }
+      { name: 'Mathematics', key: 'mathematics' },
+      { name: 'Science',     key: 'science' },
+      { name: 'English',     key: 'english' }
     ];
 
-    const cards = subjects.map(s => `
-      <div class="glass-panel-1 hover-lift flex flex-col items-center justify-center p-6 text-center cursor-pointer" onclick="window.selectSubject('${s.name}')">
-        <div class="text-4xl mb-4">${s.icon}</div>
-        <h3 class="font-display text-2xl text-main">${s.name}</h3>
-        <div class="badge badge-info mt-2">${s.tag}</div>
-      </div>
+    const cards = subjects.map((s, i) => `
+      <button type="button" class="trio-card" data-orb-stagger="${i}" onclick="window.selectSubject('${s.name}')">
+        <div class="trio-orb">${orbSvg(s.key)}</div>
+        <h2 class="trio-card__title">${esc(s.name)}</h2>
+        <p class="trio-card__sub">${esc(state.level)}</p>
+      </button>
     `).join('');
 
     app.innerHTML = `
-      <div class="w-full flex flex-col items-center" style="max-width: 800px;">
-        <div class="text-center mb-8 w-full">
-          <div class="badge badge-info mb-2">Step 1 of 2</div>
-          <h1 class="font-display text-4xl text-main">Choose a Subject</h1>
-          <p class="text-muted text-lg mt-2">Primary ${esc(levelNum)}</p>
-        </div>
-        <div class="w-full" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-6);">
-          ${cards}
-        </div>
-      </div>
-    `;
+      ${breadcrumbHtml()}
+      <header class="exam-hero">
+        <h1 class="h1-as exam-hero__title">Pick a <em>subject</em>.</h1>
+        <p class="body-lg exam-hero__lede">Choose the subject for today's practice paper.</p>
+      </header>
+      <div class="trio-grid trio-grid--three">${cards}</div>`;
   }
 
   window.selectSubject = (sub) => {
@@ -191,57 +344,51 @@ window.initExamEngine = function () {
       let label = qType.toUpperCase();
       let colour = 'var(--text-main)';
 
-      // 1 & 2. Label formatting and CSS 3.0 Colour Mapping
       if (qType === 'mcq') {
         label = 'MCQ';
         colour = 'var(--brand-rose)';
       } else if (qType === 'short_ans') {
-        label = 'SHORT<br>ANS';
-        colour = 'var(--maths-colour)';
+        label = 'SHORT ANS';
+        colour = 'var(--maths-colour, var(--brand-sage))';
       } else if (qType === 'word_problem') {
-        label = 'WORD<br>PROBLEM';
-        colour = 'var(--maths-colour)';
+        label = 'WORD PROBLEM';
+        colour = 'var(--maths-colour, var(--brand-sage))';
       } else if (qType === 'open_ended') {
-        label = 'OPEN<br>ENDED';
-        colour = 'var(--english-colour)';
+        label = 'OPEN ENDED';
+        colour = 'var(--english-colour, var(--brand-sage))';
       } else if (qType === 'editing') {
         label = 'EDITING';
-        colour = 'var(--brand-error)';
+        colour = 'var(--brand-rose)';
       } else if (qType === 'comprehension') {
         label = 'COMPREHENSION';
-        colour = 'var(--english-colour)';
+        colour = 'var(--english-colour, var(--brand-sage))';
       } else if (qType === 'visual_text') {
-        label = 'VISUAL TEXT<br>COMPREHENSION';
-        colour = 'var(--english-colour)';
+        label = 'VISUAL TEXT';
+        colour = 'var(--english-colour, var(--brand-sage))';
       } else if (qType === 'cloze') {
         colour = 'var(--brand-mint)';
         const sub = (sec.subTopics && sec.subTopics[0]) ? sec.subTopics[0].toUpperCase() : '';
-        if (sub) {
-          label = `${sub}<br>CLOZE`;
-        } else {
-          label = 'CLOZE';
-        }
+        label = sub ? `${sub.replace(' WITH ', ' · ')} CLOZE` : 'CLOZE';
       }
 
-      // Cleaned up circular styling for transparent outline pills
-      const pills = Array.from({ length: qCount }, (_, i) => `<span class="mock-q-pill" style="border: 1px solid ${colour}; border-radius: 50%; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color:${colour}; background: transparent; padding: 0;">${i + 1}</span>`).join('');
+      const pills = Array.from({ length: qCount }, (_, i) =>
+        `<span class="blueprint-pill" style="color: ${colour};">${i + 1}</span>`
+      ).join('');
 
-      // 3. Subheader Grouping (Booklet A, Booklet B, etc.)
       if (sec.label !== currentLabel) {
-        strips += `<div class="font-bold text-main text-base mt-6 mb-2">${esc(sec.label)}</div>`;
+        strips += `<div class="blueprint-section__head">${esc(sec.label)}</div>`;
         currentLabel = sec.label;
       }
 
-      // 4 & 5. Unbolded text-sm font mapping, flex-1 alignment right, & padding (py-2)
       strips += `
-        <div class="flex items-center gap-2 py-2" style="border-bottom: 1px dashed var(--border-light);">
-          <div class="text-sm uppercase tracking-wide" style="min-width: 140px; white-space: normal; line-height: 1.3; color: ${colour}; font-family: var(--font-body);">${label}</div>
-          <div class="flex flex-wrap gap-2 flex-1 justify-start">${pills}</div>
-          <div class="font-bold text-sm text-main text-right" style="min-width: 40px;">${sectionMarks}M</div>
+        <div class="blueprint-row">
+          <div class="blueprint-row__label" style="color: ${colour};">${label}</div>
+          <div class="blueprint-row__pills">${pills}</div>
+          <div class="blueprint-row__marks">${sectionMarks}<span style="font-size: 11px; opacity: 0.6;">M</span></div>
         </div>`;
     });
 
-    return `<div class="mt-4 glass-panel-2 p-4"><div class="text-xs font-bold uppercase tracking-wider text-muted mb-2 pb-4 pt-4 border-b border-light">Paper Format Preview</div>${strips}</div>`;
+    return `<div class="blueprint-section">${strips}</div>`;
   }
 
   function renderType() {
@@ -250,7 +397,6 @@ window.initExamEngine = function () {
       { id: 'WA2', label: 'WA 2', sub: 'Weighted Assessment 2' }
     ];
     if (state.levelKey === 'primary-6') {
-      // Maths gets split papers; Science & English get single PSLE paper
       if (state.subjectKey === 'mathematics') {
         types.push({ id: 'PSLE-P1', label: 'PSLE Paper 1', sub: 'No calculator · 50 marks' });
         types.push({ id: 'PSLE-P2', label: 'PSLE Paper 2', sub: 'Calculator allowed · 50 marks' });
@@ -265,12 +411,10 @@ window.initExamEngine = function () {
     if (!state.examType) state.examType = types[0].id;
 
     const chips = types.map(t => `
-      <div class="glass-panel-1 p-4 flex-1 cursor-pointer hover-lift flex flex-col justify-center ${t.id === state.examType ? 'bg-white text-rose' : 'text-main'}" 
-           style="min-width: 140px; border: 2px solid ${t.id === state.examType ? 'var(--brand-rose)' : 'var(--border-light)'};"
-           onclick="window.selectType('${t.id}')">
-        <div class="font-bold text-lg" style="color: inherit;">${esc(t.label)}</div>
-        <div class="text-xs mt-2" style="color: ${t.id === state.examType ? 'var(--sage-dark)' : 'var(--text-muted)'};">${esc(t.sub)}</div>
-      </div>
+      <button type="button" class="paper-format-chip ${t.id === state.examType ? 'is-active' : ''}" onclick="window.selectType('${t.id}')">
+        ${esc(t.label)}
+        <span class="paper-format-chip__sub">${esc(t.sub)}</span>
+      </button>
     `).join('');
 
     let tpl = null;
@@ -284,48 +428,74 @@ window.initExamEngine = function () {
       tpl = getTemplate(specificKey) || getTemplate(state.subjectKey, state.levelKey);
     }
 
-    let blueprintHtml = '<p class="text-muted text-sm">Loading blueprint...</p>';
+    let dossierHtml = '<p class="body-md" style="color: var(--text-muted); text-align: center;">Loading paper blueprint…</p>';
+    let paceStatsHtml = '';
+
     if (tpl) {
       const duration = tpl.durationMinutes || tpl.duration || 0;
-      const durationText = typeof formatDuration === 'function' ? formatDuration(duration) : `${duration} mins`;
-      blueprintHtml = `
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="font-display text-2xl text-main m-0">Exam Dossier</h2>
-          <div class="badge badge-info">DRAFT</div>
-        </div>
-        <ul class="flex flex-col gap-2 text-sm text-main mb-4 list-reset">
-          <li class="flex justify-between" style="border-bottom: 1px solid var(--border-light); padding-bottom: var(--space-2);">
-            <span>Total Duration</span> <span class="font-bold">⏱ ${esc(durationText)}</span>
-          </li>
-          <li class="flex justify-between" style="border-bottom: 1px solid var(--border-light); padding-bottom: var(--space-2);">
-            <span>Total Marks</span> <span class="font-bold">${tpl.totalMarks || 0} M</span>
-          </li>
-        </ul>
-        ${renderMockPreview(tpl)}
-      `;
-    }
+      const totalMarks = tpl.totalMarks || 0;
+      const calc = tpl.calculatorAllowed;
+      const durationText = typeof formatDuration === 'function' ? formatDuration(duration) : `${duration} min`;
+      const paceMin = totalMarks > 0 ? (duration / totalMarks).toFixed(1) : '—';
 
-    app.innerHTML = `
-      <div class="w-full flex flex-col items-center" style="max-width: 800px;">
-        <div class="text-center mb-8 w-full">
-          <div class="badge badge-info mb-2">${state.tier === 'single_subject' ? 'Step 1 of 1' : 'Step 2 of 2'}</div>
-          <h1 class="font-display text-4xl text-main">Select Paper Type</h1>
-        </div>
-        <div class="flex flex-wrap gap-6 items-start w-full">
-          <div class="flex-1 flex flex-col gap-4" style="min-width: 300px;">
-            <div class="flex flex-wrap gap-4">${chips}</div>
-            ${state.tier !== 'single_subject' ? `<div class="text-center mt-4"><button class="btn btn-ghost" onclick="window.backToSubject()">← Back to Subjects</button></div>` : ''}
-          </div>
-          <div class="flex-1" style="min-width: 300px;">
-            <div class="glass-panel-1 p-4 card-rule-mint w-full">
-              ${blueprintHtml}
-              <button id="printPaperBtn" class="btn btn-secondary w-full mt-4 hover-lift" onclick="window.printBlankPaper()">🖨️ Print Paper</button>
-              <button class="btn btn-primary w-full mt-4 hover-lift" onclick="window.triggerGen()">Generate Paper →</button>
+      dossierHtml = `
+        <div class="dossier__head">
+          <h2 class="dossier__title">${esc(tpl.displayName || 'Exam Paper')}</h2>
+          <div class="dossier__meta">
+            <div class="dossier__meta-item">
+              <span class="dossier__meta-label">Duration</span>
+              <span class="dossier__meta-value">${esc(durationText)}</span>
+            </div>
+            <div class="dossier__meta-item">
+              <span class="dossier__meta-label">Total Marks</span>
+              <span class="dossier__meta-value">${totalMarks}</span>
+            </div>
+            <div class="dossier__meta-item">
+              <span class="dossier__meta-label">Calculator</span>
+              <span class="dossier__meta-value" style="color: ${calc ? 'var(--brand-mint)' : 'var(--brand-rose)'};">${calc ? 'Allowed' : 'No'}</span>
             </div>
           </div>
         </div>
-      </div>
-    `;
+        ${renderMockPreview(tpl)}
+        <div class="dossier-actions">
+          <button id="printPaperBtn" class="btn btn-secondary" onclick="window.printBlankPaper()">Print Blank Paper</button>
+          <button class="btn btn-primary" onclick="window.triggerGen()">Begin Exam →</button>
+        </div>`;
+
+      paceStatsHtml = `
+        <div class="pace-stats">
+          <div class="pace-stat">
+            <span class="pace-stat__label">Time</span>
+            <div class="pace-stat__value">${esc(durationText)}</div>
+            <div class="pace-stat__sub">total allowance</div>
+          </div>
+          <div class="pace-stat">
+            <span class="pace-stat__label">Marks</span>
+            <div class="pace-stat__value">${totalMarks}</div>
+            <div class="pace-stat__sub">across all sections</div>
+          </div>
+          <div class="pace-stat">
+            <span class="pace-stat__label">Pace</span>
+            <div class="pace-stat__value">${paceMin}</div>
+            <div class="pace-stat__sub">min per mark</div>
+          </div>
+        </div>`;
+    }
+
+    const backLink = state.tier !== 'single_subject'
+      ? `<div style="text-align: center; margin-top: var(--space-4);"><button class="btn btn-ghost" onclick="window.backToSubject()">← Back to Subjects</button></div>`
+      : '';
+
+    app.innerHTML = `
+      ${breadcrumbHtml()}
+      <header class="exam-hero">
+        <h1 class="h1-as exam-hero__title">Choose your <em>paper format</em>.</h1>
+        <p class="body-lg exam-hero__lede">${esc(state.subject)} · ${esc(state.level)}</p>
+      </header>
+      <div class="paper-format-row">${chips}</div>
+      <div class="dossier">${dossierHtml}</div>
+      ${paceStatsHtml}
+      ${backLink}`;
   }
 
   window.selectType = (id) => { state.examType = id; render(); };
@@ -336,7 +506,7 @@ window.initExamEngine = function () {
     const btn = document.getElementById('printPaperBtn');
     const originalText = btn.innerHTML;
     btn.disabled = true;
-    btn.innerHTML = '<span class="spinner-sm" style="width:14px;height:14px;border-width:2px;display:inline-block;margin-right:6px;border-top-color:currentColor;"></span> Assembling...';
+    btn.innerHTML = 'Assembling…';
 
     try {
       const shortSubj = state.subjectKey === 'mathematics' ? 'maths' : state.subjectKey;
@@ -354,6 +524,17 @@ window.initExamEngine = function () {
       if (pc && typeof ExamRenderer !== 'undefined') {
         pc.innerHTML = '';
         ExamRenderer.render(paper, pc);
+
+        // ── Append answer key on a new page ──
+        // Per design: back of paper shows answers ONLY (no step-by-step
+        // worked solutions). renderMarkingScheme already strips workings.
+        if (typeof ExamRenderer.renderMarkingScheme === 'function') {
+          const breakEl = document.createElement('div');
+          breakEl.style.cssText = 'page-break-before: always; break-before: page;';
+          pc.appendChild(breakEl);
+          ExamRenderer.renderMarkingScheme(paper, pc);
+        }
+
         setTimeout(() => {
           window.print();
           btn.disabled = false;
@@ -373,16 +554,23 @@ window.initExamEngine = function () {
 
   function renderGenerating() {
     app.innerHTML = `
-      <div class="glass-panel-1 flex flex-col items-center justify-center text-center w-full" style="padding: var(--space-8); max-width: 600px;">
-        <div class="spinner-sm mb-6"></div>
-        <h2 class="font-display text-3xl text-main mb-2" id="genMsg">Assembling Paper...</h2>
-        <p class="text-muted text-sm">Applying MOE difficulty calibration</p>
-      </div>
-    `;
+      <header class="exam-hero">
+        <h1 class="h1-as exam-hero__title" id="genMsg">Assembling paper…</h1>
+        <p class="body-lg exam-hero__lede">Applying MOE difficulty calibration.</p>
+      </header>
+      <div class="exam-skeleton">
+        <div class="exam-skeleton__card"></div>
+        <div class="exam-skeleton__card"></div>
+        <div class="exam-skeleton__card"></div>
+      </div>`;
 
-    const msgs = ['Gathering questions...', 'Calibrating difficulty...', 'Checking syllabus alignment...'];
+    const msgs = ['Gathering questions…', 'Calibrating difficulty…', 'Checking syllabus alignment…'];
     let m = 0;
-    const int = setInterval(() => { m = (m + 1) % msgs.length; const el = document.getElementById('genMsg'); if (el) el.textContent = msgs[m]; }, 1000);
+    const int = setInterval(() => {
+      m = (m + 1) % msgs.length;
+      const el = document.getElementById('genMsg');
+      if (el) el.textContent = msgs[m];
+    }, 1000);
 
     const shortSubj = state.subjectKey === 'mathematics' ? 'maths' : state.subjectKey;
     const shortLvl = state.levelKey.replace('primary-', 'p');
@@ -409,11 +597,10 @@ window.initExamEngine = function () {
 
       if (flat.length === 0) {
         app.innerHTML = `
-          <div class="glass-panel-1 p-6 text-center w-full hover-lift" style="max-width: 600px;">
-            <div class="text-4xl mb-4">🗂️</div>
-            <h2 class="text-danger font-display text-2xl mb-2">Insufficient Questions</h2>
-            <p class="text-muted mb-6">Miss Wena's database doesn't have enough questions to assemble a full <strong>${esc(state.examType)}</strong> paper for this subject yet.</p>
-            <button class="btn btn-primary hover-lift" onclick="location.reload()">Return to Menu</button>
+          <div class="dossier" style="text-align: center;">
+            <h2 class="h2-as" style="color: var(--text-main);">Not enough questions yet.</h2>
+            <p class="body-md" style="color: var(--text-muted); margin: var(--space-3) 0;">The bank doesn't have enough questions to assemble a full <strong>${esc(state.examType)}</strong> paper for this subject yet.</p>
+            <button class="btn btn-primary" onclick="location.reload()">Return to Menu</button>
           </div>`;
         return;
       }
@@ -425,15 +612,22 @@ window.initExamEngine = function () {
       state.answers = {};
       state.drawings = {};
       state.results = null;
+      state.warningShared = false;
       const totalMinutes = state.paper.duration || state.paper.template?.durationMinutes || 60;
       state.timerSeconds = totalMinutes * 60;
+      state.initialDuration = state.timerSeconds;
 
       state.phase = 'EXAM';
       render();
       startTimer();
     }).catch(err => {
       clearInterval(int);
-      app.innerHTML = `<div class="glass-panel-1 p-6 text-center w-full" style="max-width: 600px;"><p class="text-danger font-bold mb-4">Error: ${err.message}</p><button class="btn btn-primary hover-lift" onclick="location.reload()">Try Again</button></div>`;
+      app.innerHTML = `
+        <div class="dossier" style="text-align: center;">
+          <h2 class="h2-as" style="color: var(--text-main);">Generation failed.</h2>
+          <p class="body-md" style="color: var(--text-muted); margin: var(--space-3) 0;">${esc(err.message)}</p>
+          <button class="btn btn-primary" onclick="location.reload()">Try Again</button>
+        </div>`;
     });
   }
 
@@ -445,17 +639,42 @@ window.initExamEngine = function () {
       if (state.timerSeconds > 0) state.timerSeconds--;
       const el = document.getElementById('nav-timer-container');
       if (el) {
-        el.classList.remove('hidden'); // Force show if hidden by header.js
+        el.classList.remove('hidden');
         const h = Math.floor(state.timerSeconds / 3600);
         const m = Math.floor((state.timerSeconds % 3600) / 60);
         const s = state.timerSeconds % 60;
         const timeStr = h > 0 ? `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}` : `${m}:${s.toString().padStart(2, '0')}`;
-        el.innerHTML = `<div class="badge bg-elevated border border-light text-main font-bold shadow-sm" style="font-size: 1rem; padding: 6px 16px;">⏱ ${timeStr}</div>`;
-        if (state.timerSeconds < 300) el.querySelector('.badge').style.color = 'var(--brand-error)';
+
+        // Determine state for the pill
+        let pillState = 'normal';
+        if (state.timerSeconds < 300) pillState = 'danger';
+        else if (state.initialDuration > 0 && state.timerSeconds < state.initialDuration * 0.2) pillState = 'warning';
+
+        el.innerHTML = `<span class="exam-timer" data-state="${pillState}">⏱ ${timeStr}</span>`;
+
+        // ── Masterclass warning toast ──
+        // Fire ONCE when: ≥80% of allotted time has elapsed AND ≥30% questions still unanswered.
+        if (!state.warningShared && state.initialDuration > 0 && state.allQs.length > 0) {
+          const elapsedRatio = (state.initialDuration - state.timerSeconds) / state.initialDuration;
+          const answeredCount = state.allQs.filter(qx => {
+            const a = state.answers[qx.globalIdx];
+            return a && (typeof a === 'object' ? Object.keys(a).length > 0 : String(a).length > 0);
+          }).length;
+          const unansweredRatio = (state.allQs.length - answeredCount) / state.allQs.length;
+
+          if (elapsedRatio >= 0.8 && unansweredRatio >= 0.3) {
+            const minsLeft = Math.ceil(state.timerSeconds / 60);
+            const remainingQs = state.allQs.length - answeredCount;
+            showExamToast(
+              'Pace check',
+              `${minsLeft} min remaining · ${remainingQs} question${remainingQs === 1 ? '' : 's'} unanswered. Consider flagging tough ones and moving on.`
+            );
+          }
+        }
       }
     };
 
-    updateTimer(); // Trigger immediately
+    updateTimer();
     state.timerInterval = setInterval(updateTimer, 1000);
   }
 
@@ -471,24 +690,29 @@ window.initExamEngine = function () {
 
     // 🚀 MASTERCLASS: The Focus Room Side Navigator Map
     const navPips = state.allQs.map((_, i) => {
-      let classes = 'nav-pip hover-lift';
-      // Fallback styling in case style.css misses nav-pip
-      let inlineStyle = 'display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:8px; font-weight:bold; border:2px solid var(--border-light); background:var(--bg-surface); cursor:pointer; color:var(--text-main); transition:all 0.2s ease;';
-
-      if (i === state.currentQIdx) {
-        classes += ' is-active';
-        inlineStyle += ' border-color:var(--brand-sage); background:var(--brand-sage); color:white;';
-      }
-      else if (state.flagged[i]) {
-        classes += ' is-flagged';
-        inlineStyle += ' border-color:var(--brand-amber); background:rgba(217,119,6,0.1); color:var(--brand-amber);';
-      }
-      else if (state.answers[state.allQs[i].globalIdx] && Object.keys(state.answers[state.allQs[i].globalIdx]).length !== 0) {
-        classes += ' is-answered';
-        inlineStyle += ' border-color:var(--brand-mint); background:rgba(5,150,105,0.1); color:var(--brand-mint);';
-      }
-      return `<button class="${classes}" style="${inlineStyle}" onclick="window.jumpToQ(${i})">${i + 1}</button>`;
+      const cls = ['focus-pip'];
+      const isAnswered = state.answers[state.allQs[i].globalIdx] && Object.keys(state.answers[state.allQs[i].globalIdx] || {}).length !== 0;
+      if (i === state.currentQIdx) cls.push('is-active');
+      else if (state.flagged[i]) cls.push('is-flagged');
+      else if (isAnswered) cls.push('is-answered');
+      return `<button type="button" class="${cls.join(' ')}" onclick="window.jumpToQ(${i})" aria-label="Question ${i + 1}">${i + 1}</button>`;
     }).join('');
+
+    // ── Section pacing strip (masterclass feature) ──
+    // Compute current section's question position. Pure presentation cue.
+    let sectionPaceLine = '';
+    if (state.allQs.length > 0 && p.template && p.template.sections) {
+      const currentSection = q.sectionLabel || '';
+      const sectionQs = state.allQs.filter(x => x.sectionLabel === currentSection);
+      const positionInSection = sectionQs.findIndex(x => x.globalIdx === q.globalIdx) + 1;
+      // Estimate section time allowance proportional to its share of marks
+      const totalMarks = p.template.totalMarks || p.totalMarks || 0;
+      const totalMins = p.template.durationMinutes || p.duration || 0;
+      const sectionMarks = (p.template.sections.find(s => s.label === currentSection)?.totalMarks)
+        || sectionQs.reduce((acc, x) => acc + (x.marks || 1), 0);
+      const allowMins = totalMarks > 0 ? Math.round((sectionMarks / totalMarks) * totalMins) : null;
+      sectionPaceLine = `<div class="focus-pacing">${esc(currentSection)} · question ${positionInSection} of ${sectionQs.length}${allowMins ? ` · allow ~${allowMins} min for this section` : ''}</div>`;
+    }
 
     // 🚀 3-TIER ROUTER (Applied to Single Question)
     const isSplitScreen = q.type === 'comprehension' || q.type === 'visual_text';
@@ -518,51 +742,53 @@ window.initExamEngine = function () {
     }
 
     const diagramHtml = renderVisualPayload(q.visual_payload);
-    const paneMaxWidth = isSplitScreen ? '100%' : '680px';
+    const paneMaxWidth = isSplitScreen ? '100%' : '720px';
 
     app.innerHTML = `
-      <div class="sticky top-[var(--navbar-h)] z-40 glass-panel-2 w-full p-4 mb-6 flex flex-col justify-center items-center text-center max-w-[1440px]">
-        <h2 class="font-display text-xl text-main m-0">${p.template.displayName || p.displayName}</h2>
-        <div class="text-sm text-muted mt-2">${p.template.totalMarks || p.totalMarks} Marks • ${p.template.durationMinutes || p.duration} mins</div>
+      <div class="focus-paper-header">
+        <p class="focus-paper-header__title">${esc(p.template.displayName || p.displayName || 'Practice Paper')}</p>
+        <div class="focus-paper-header__sub">${p.template.totalMarks || p.totalMarks} Marks · ${p.template.durationMinutes || p.duration} min</div>
+        ${sectionPaceLine}
       </div>
 
-      <div class="flex flex-wrap gap-6 items-start w-full justify-center max-w-[1440px]">
-        <div class="flex flex-col" style="flex: 1 1 300px; max-width: ${paneMaxWidth}; width: 100%; transition: max-width 0.3s ease;">
-          <div class="badge badge-info mb-4 self-start">${esc(q.sectionLabel || 'Exam')}</div>
-          
-          <div class="glass-panel-1 p-4 mb-4 flex-1 relative">
-            <div class="absolute top-6 right-6 badge badge-info">${q.marks} mark${q.marks > 1 ? 's' : ''}</div>
-            <div class="flex justify-between items-center mb-4" style="border-bottom: 1px solid var(--border-light); padding-bottom: var(--space-2);">
-              <div class="font-bold text-brand-sage text-lg">Question ${state.currentQIdx + 1} of ${totalQs}</div>
+      <div class="flex flex-wrap gap-6 items-start w-full justify-center" style="max-width: 1440px; margin: 0 auto;">
+        <div class="flex flex-col" style="flex: 1 1 320px; max-width: ${paneMaxWidth}; width: 100%; transition: max-width 0.3s ease;">
+          <div class="focus-q-card">
+            <div class="focus-q-card__head">
+              <div>
+                <span class="badge badge-sage">${esc(q.sectionLabel || 'Exam')}</span>
+                <span class="focus-q-card__num" style="margin-left: var(--space-2);">Q ${state.currentQIdx + 1} / ${totalQs}</span>
+              </div>
+              <span class="badge badge-rose">${q.marks} mark${q.marks > 1 ? 's' : ''}</span>
             </div>
-            
-            ${q.sectionInstr ? `<p class="text-sm text-muted italic mb-4">${esc(q.sectionInstr)}</p>` : ''}
-            
+
+            ${q.sectionInstr ? `<p class="focus-q-card__instr">${esc(q.sectionInstr)}</p>` : ''}
+
             ${diagramHtml}
             ${!isSplitScreen && !isInlinePassage ? qTextHtml : ''}
             ${inputUi}
           </div>
 
-          <div class="glass-panel-2 p-4 flex flex-wrap justify-between items-center gap-4">
+          <div class="focus-actions">
             <button class="btn btn-ghost" onclick="window.navExam(-1)" ${state.currentQIdx === 0 ? 'disabled' : ''}>← Previous</button>
-            <button class="btn btn-ghost hover-lift" onclick="window.toggleFlag()" style="color: ${state.flagged[state.currentQIdx] ? 'var(--brand-amber)' : 'var(--text-muted)'}; border: 1px solid ${state.flagged[state.currentQIdx] ? 'var(--brand-amber)' : 'transparent'};">
-              ${state.flagged[state.currentQIdx] ? '🚩 Flagged' : '🚩 Flag for review'}
+            <button class="btn btn-ghost" onclick="window.toggleFlag()" style="color: ${state.flagged[state.currentQIdx] ? 'var(--brand-amber)' : 'var(--text-muted)'};">
+              ${state.flagged[state.currentQIdx] ? '⚐ Flagged' : '⚐ Flag for review'}
             </button>
             ${state.currentQIdx === totalQs - 1
-        ? `<button class="btn btn-primary hover-lift" onclick="window.manualSubmit()">Submit Paper →</button>`
-        : `<button class="btn btn-secondary hover-lift" onclick="window.navExam(1)">Next →</button>`
+        ? `<button class="btn btn-primary" onclick="window.manualSubmit()">Submit Paper →</button>`
+        : `<button class="btn btn-primary" onclick="window.navExam(1)">Next →</button>`
       }
           </div>
         </div>
 
         <div style="flex: 0 0 280px; width: 100%;">
-          <div class="glass-panel-1 p-4" style="position: sticky; top: 100px;">
-            <h3 class="font-bold text-main mb-4 m-0">Exam Navigator</h3>
-            <div class="exam-navigator flex flex-wrap gap-2">${navPips}</div>
-            <div class="flex flex-col gap-2 mt-4 pt-4 text-xs text-muted font-medium" style="border-top: 1px solid var(--border-light);">
-              <div class="flex items-center gap-2"><div style="width: 12px; height: 12px; border-radius: 4px; background: var(--bg-elevated); border:1px solid var(--border-light);"></div> Unanswered</div>
-              <div class="flex items-center gap-2"><div style="width: 12px; height: 12px; border-radius: 4px; background: rgba(5, 150, 105, 0.1); border:1px solid var(--brand-mint);"></div> Answered</div>
-              <div class="flex items-center gap-2"><div style="width: 12px; height: 12px; border-radius: 4px; background: rgba(217, 119, 6, 0.1); border:1px solid var(--brand-amber);"></div> Flagged</div>
+          <div class="focus-nav">
+            <h3 class="focus-nav__title">Navigator</h3>
+            <div class="focus-nav__pips">${navPips}</div>
+            <div class="focus-nav__legend">
+              <div class="focus-nav__legend-item"><span class="focus-nav__legend-dot"></span> Unanswered</div>
+              <div class="focus-nav__legend-item"><span class="focus-nav__legend-dot" style="background: rgba(111, 184, 155, 0.18); border-color: var(--brand-mint);"></span> Answered</div>
+              <div class="focus-nav__legend-item"><span class="focus-nav__legend-dot" style="background: rgba(212, 162, 74, 0.18); border-color: var(--brand-amber);"></span> Flagged</div>
             </div>
           </div>
         </div>
@@ -1092,83 +1318,209 @@ window.initExamEngine = function () {
 
   // ── 4. RESULTS RENDERER ──
   function renderResults() {
+    // Reset focus-room max-width override
+    if (app) app.style.maxWidth = '';
+
     let earned = 0;
     let possible = 0;
+    state.allQs.forEach(q => {
+      const r = state.results[q.globalIdx];
+      if (r) { earned += r.score; possible += r.maxScore; }
+    });
 
-    const items = state.allQs.map((q, i) => {
-      const globalIdx = q.globalIdx;
-      const r = state.results[globalIdx];
-      const secLabel = q.sectionLabel || 'Section';
-
-      earned += r.score;
-      possible += r.maxScore;
-
-      const ruleClass = r.isCorrect ? 'card-rule-mint' : (r.isPartial ? 'card-rule-amber' : 'card-rule-rose');
-      const bgClass = r.isCorrect ? 'bg-science-tint' : (r.isPartial ? 'bg-amber-tint' : 'bg-rose-tint');
-      const icon = r.isCorrect ? '✅' : (r.isPartial ? '⚠️' : '❌');
-
-      let ansHtml = '';
-      const savedAns = state.answers[globalIdx];
-      if (typeof savedAns === 'object' && savedAns !== null) {
-        ansHtml = `<div class="p-3 bg-white rounded border border-light mt-2 text-main text-sm"><strong>Your Answer:</strong><br>${Object.entries(savedAns).map(([k, v]) => `<strong>${k}:</strong> ${esc(v)}`).join('<br>')}</div>`;
-      } else {
-        ansHtml = `<div class="p-3 bg-white rounded border border-light mt-2 text-main text-sm"><strong>Your Answer:</strong> ${esc(savedAns) || '<em>None</em>'}</div>`;
-      }
-
-      // Check if student drew anything for this question's parts
-      let drawingHtml = '';
-      Object.keys(state.drawings).filter(k => k.startsWith(globalIdx)).forEach(k => {
-        if (state.drawings[k] !== 'init' && state.drawings[k] !== 'text') {
-          drawingHtml += `<div class="mt-2"><span class="text-xs font-bold text-muted uppercase">Working Drawing:</span><br><img src="${state.drawings[k]}" class="mt-2 border border-light rounded bg-white shadow-sm" style="max-height:150px;"></div>`;
-        }
-      });
-
-      return `
-          <div class="glass-panel-1 p-6 mb-4 ${bgClass} ${ruleClass}">
-            <div class="flex justify-between items-center mb-2">
-              <span class="font-bold text-lg text-main">${secLabel} Q${i + 1}</span>
-              <span class="badge ${r.isCorrect ? 'badge-success' : 'badge-danger'} font-bold">${icon} ${r.score} / ${r.maxScore}</span>
-            </div>
-            <div class="text-main font-medium leading-relaxed mb-4">${esc(q.question_text || 'See passage/diagram')}</div>
-            ${ansHtml}
-            ${drawingHtml}
-            ${r.text ? `<div class="mt-4 p-4 text-sm bg-elevated border border-light rounded-xl"><strong class="text-brand-sage">Miss Wena's Feedback:</strong><br>${r.text}</div>` : ''}
-            ${r.workedSolution ? `<div class="mt-4 p-4 text-sm bg-white border border-light rounded-xl"><strong>Worked Solution:</strong><br>${window.formatWorkedSolution(r.workedSolution)}</div>` : ''}
-          </div>
-        `;
-    }).join('');
-
-    const pct = Math.round((earned / possible) * 100);
-    let gradeStr = 'Needs Practice', gradeCol = 'var(--brand-error)';
+    const pct = possible > 0 ? Math.round((earned / possible) * 100) : 0;
+    let gradeStr = 'Needs Practice', gradeCol = 'var(--brand-rose)';
     if (pct >= 90) { gradeStr = 'AL1'; gradeCol = 'var(--brand-mint)'; }
     else if (pct >= 85) { gradeStr = 'AL2'; gradeCol = 'var(--brand-mint)'; }
     else if (pct >= 80) { gradeStr = 'AL3'; gradeCol = 'var(--brand-sage)'; }
     else if (pct >= 75) { gradeStr = 'AL4'; gradeCol = 'var(--brand-sage)'; }
     else if (pct >= 65) { gradeStr = 'AL5'; gradeCol = 'var(--brand-amber)'; }
     else if (pct >= 45) { gradeStr = 'AL6'; gradeCol = 'var(--brand-amber)'; }
-    else if (pct >= 20) { gradeStr = 'AL7'; gradeCol = 'var(--brand-error)'; }
-    else { gradeStr = 'AL8'; }
+    else if (pct >= 20) { gradeStr = 'AL7'; gradeCol = 'var(--brand-rose)'; }
+    else { gradeStr = 'AL8'; gradeCol = 'var(--brand-rose)'; }
+
+    // Time spent — ceiling at allotted duration
+    const allotted = state.initialDuration || ((state.paper.duration || state.paper.template?.durationMinutes || 60) * 60);
+    const taken = Math.max(0, allotted - state.timerSeconds);
+    const tH = Math.floor(taken / 3600);
+    const tM = Math.floor((taken % 3600) / 60);
+    const takenStr = tH > 0 ? `${tH} h ${tM} min` : `${tM} min`;
+    const spareSecs = allotted - taken;
+    let pacingNote = '';
+    if (spareSecs > 60) {
+      const sM = Math.round(spareSecs / 60);
+      pacingNote = `${sM} min spare`;
+    } else if (spareSecs < -60) {
+      const oM = Math.round(Math.abs(spareSecs) / 60);
+      pacingNote = `${oM} min over`;
+    } else {
+      pacingNote = 'on time';
+    }
+
+    // ── Section breakdown ──
+    // Group state.allQs by sectionLabel; emit a row per section with mark bar.
+    const sections = {};
+    state.allQs.forEach(q => {
+      const lbl = q.sectionLabel || 'Section';
+      if (!sections[lbl]) sections[lbl] = [];
+      sections[lbl].push(q);
+    });
+
+    const sectionRows = Object.entries(sections).map(([lbl, qs], idx) => {
+      const sectionLetter = String.fromCharCode(65 + idx); // A, B, C...
+      let secEarned = 0, secMax = 0;
+      const segs = qs.map(q => {
+        const r = state.results[q.globalIdx];
+        if (!r) {
+          secMax += q.marks || 1;
+          return '<div class="section-row__seg is-blank"></div>';
+        }
+        secEarned += r.score;
+        secMax += r.maxScore;
+        if (r.isCorrect) return '<div class="section-row__seg is-correct"></div>';
+        if (r.isPartial) return '<div class="section-row__seg is-partial"></div>';
+        if (r.score === 0 && (typeof state.answers[q.globalIdx] === 'undefined' || state.answers[q.globalIdx] === '' || (typeof state.answers[q.globalIdx] === 'object' && Object.keys(state.answers[q.globalIdx] || {}).length === 0))) {
+          return '<div class="section-row__seg is-blank"></div>';
+        }
+        return '<div class="section-row__seg is-wrong"></div>';
+      }).join('');
+
+      return `
+        <div class="section-row">
+          <div class="section-row__head">
+            <div>
+              <span class="section-row__label">§ ${sectionLetter}</span><span class="section-row__title">${esc(lbl)}</span>
+            </div>
+            <div class="section-row__score">${secEarned} / ${secMax}</div>
+          </div>
+          <div class="section-row__bar">${segs}</div>
+        </div>`;
+    }).join('');
+
+    // ── Per-question review ──
+    const reviewItems = state.allQs.map((q, i) => {
+      const globalIdx = q.globalIdx;
+      const r = state.results[globalIdx];
+      const secLabel = q.sectionLabel || 'Section';
+
+      let outcomeClass = 'is-wrong';
+      let outcomeBadge = `<span class="badge badge-rose">${r ? r.score : 0} / ${r ? r.maxScore : (q.marks || 1)}</span>`;
+      if (r && r.isCorrect) {
+        outcomeClass = 'is-correct';
+        outcomeBadge = `<span class="badge badge-success">${r.score} / ${r.maxScore}</span>`;
+      } else if (r && r.isPartial) {
+        outcomeClass = 'is-partial';
+        outcomeBadge = `<span class="badge badge-amber">${r.score} / ${r.maxScore}</span>`;
+      }
+
+      const savedAns = state.answers[globalIdx];
+      let yourAnsHtml = '<em>No answer given</em>';
+      if (savedAns) {
+        if (typeof savedAns === 'object') {
+          yourAnsHtml = Object.entries(savedAns)
+            .map(([k, v]) => `<strong>${esc(k)}:</strong> ${esc(v)}`)
+            .join('<br>');
+        } else {
+          yourAnsHtml = esc(String(savedAns));
+        }
+      }
+
+      const correctAnsHtml = esc(String(q.correct_answer || q.model_answer || 'See worked solution'));
+
+      // Drawings (working) — preserved feature
+      let drawingHtml = '';
+      Object.keys(state.drawings).filter(k => k.startsWith(globalIdx)).forEach(k => {
+        if (state.drawings[k] !== 'init' && state.drawings[k] !== 'text') {
+          drawingHtml += `<div style="margin-top: var(--space-2);"><span style="font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted);">Your working:</span><br><img src="${state.drawings[k]}" style="max-height: 150px; margin-top: 4px; border: 1px solid var(--border-light); border-radius: 8px; background: white;"></div>`;
+        }
+      });
+
+      const feedbackHtml = r && r.text
+        ? `<div style="margin-top: var(--space-3); padding: var(--space-2); background: var(--surface); border: 1px solid var(--border-light); border-radius: 10px; font-size: 13px; color: var(--text-main); line-height: 1.5;"><strong style="color: var(--brand-sage);">Miss Wena:</strong> ${r.text}</div>`
+        : '';
+
+      const workedHtml = r && r.workedSolution
+        ? `<details style="margin-top: var(--space-2);"><summary style="cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--brand-sage);">Worked solution</summary><div style="margin-top: var(--space-2); font-size: 13px; color: var(--text-main); line-height: 1.6;">${window.formatWorkedSolution(r.workedSolution)}</div></details>`
+        : '';
+
+      return `
+        <div class="review-card ${outcomeClass}">
+          <div class="review-card__eyebrow">${esc(secLabel)} · Q ${i + 1}</div>
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-2); margin-bottom: var(--space-2);">
+            <div style="flex: 1;"><p class="review-card__stem">${esc(q.question_text || 'See passage / diagram')}</p></div>
+            <div>${outcomeBadge}</div>
+          </div>
+          <div class="review-card__compare">
+            <div class="review-card__col">
+              <div class="review-card__col-label">Your answer</div>
+              <div class="review-card__col-value">${yourAnsHtml}</div>
+            </div>
+            <div class="review-card__col">
+              <div class="review-card__col-label">Correct answer</div>
+              <div class="review-card__col-value">${correctAnsHtml}</div>
+            </div>
+          </div>
+          ${drawingHtml}
+          ${feedbackHtml}
+          ${workedHtml}
+        </div>`;
+    }).join('');
 
     app.innerHTML = `
-      <div class="w-full">
-        <div class="text-center mb-20 mt-6">
-          <h1 class="font-display text-4xl text-main mb-4">Paper Complete</h1>
-          <div class="glass-panel-1 p-6 inline-flex flex-col items-center justify-center min-w-[280px]" style="border-top: 6px solid ${gradeCol};">
-            <div class="text-6xl font-display mb-2" style="color: ${gradeCol};">${earned} <span class="text-3xl text-muted">/ ${possible}</span></div>
-            <div class="font-bold text-xl uppercase tracking-wider" style="color: ${gradeCol};">Grade: ${gradeStr} (${pct}%)</div>
-          </div>
+      <header class="exam-hero">
+        <h1 class="h1-as exam-hero__title">Paper <em>complete</em>.</h1>
+        <p class="body-lg exam-hero__lede">${esc(state.paper.template?.displayName || 'Practice Paper')} · ${esc(state.level)}</p>
+      </header>
+
+      <div class="verdict" style="border-top: 4px solid ${gradeCol};">
+        <div class="verdict__col verdict__col--left">
+          <span class="verdict__label">Marks earned</span>
+          <div class="verdict__value-lg">${earned}<span style="font-size: 32px; opacity: 0.5;"> / ${possible}</span></div>
         </div>
-        
-        <h3 class="font-display text-2xl text-main mb-6 border-b border-light pb-2">Question Breakdown</h3>
-        ${items}
-        
-        <div class="flex justify-center flex-wrap gap-4 mt-20">
-          <button class="btn btn-primary px-8 py-2 text-lg hover-lift" onclick="location.reload()">Take Another Paper</button>
-          <button class="btn btn-secondary px-8 py-2 text-lg hover-lift" onclick="window.location.href='dashboard.html'">Mission Control</button>
+        <div class="verdict__col">
+          <h2 class="verdict__band" style="color: ${gradeCol};">${esc(gradeStr)}</h2>
+          <div class="verdict__pct">${pct}%</div>
+        </div>
+        <div class="verdict__col verdict__col--right">
+          <span class="verdict__label">Time taken</span>
+          <div class="verdict__value-lg">${takenStr}</div>
+          <div class="verdict__pct" style="color: var(--text-muted);">${pacingNote}</div>
         </div>
       </div>
-    `;
+
+      <div class="mark-sheet">
+        <h3 class="h2-as" style="text-align: center; margin: var(--space-5) 0 var(--space-3); color: var(--text-main);">Section breakdown</h3>
+        ${sectionRows}
+      </div>
+
+      <div class="mark-sheet">
+        <h3 class="h2-as" style="text-align: center; margin: var(--space-5) 0 var(--space-3); color: var(--text-main);">Question by question</h3>
+        ${reviewItems}
+      </div>
+
+      <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: var(--space-2); margin: var(--space-6) auto; max-width: 960px;">
+        <button class="btn btn-primary" onclick="location.reload()">Take Another Paper</button>
+        <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'">Mission Control</button>
+        <button class="btn btn-ghost" onclick="window.printMarkSheet()">Print Mark Sheet</button>
+      </div>`;
   }
+
+  // ── PRINT MARK SHEET ──
+  // Uses ExamRenderer.renderMarkingScheme on the answered paper for a printable
+  // record. Same engine as the blank-paper print, just answer-only output.
+  window.printMarkSheet = () => {
+    const pc = document.getElementById('print-container');
+    if (pc && typeof ExamRenderer !== 'undefined' && state.paper) {
+      pc.innerHTML = '';
+      // Header for the mark sheet
+      const head = document.createElement('div');
+      head.innerHTML = `<h1 style="text-align:center;font-family:var(--font-display, 'Bebas Neue'),sans-serif;font-size:36px;letter-spacing:0.04em;margin-bottom:8px;">${esc(state.paper.template?.displayName || 'Practice Paper')}</h1>
+        <p style="text-align:center;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;color:#666;">${esc(state.level)} · Marking Scheme</p>`;
+      pc.appendChild(head);
+      ExamRenderer.renderMarkingScheme(state.paper, pc);
+      setTimeout(() => window.print(), 150);
+    }
+  };
 
   // ── 5. SUPABASE PERSISTENCE ──
   // Hardened against NOT-NULL violations on question_attempts. Same pattern as quiz.js:
@@ -1188,7 +1540,7 @@ window.initExamEngine = function () {
       // 1. Save Aggregated Exam Result and retrieve the ID
       const { data: examData, error: examError } = await sb.from('exam_results').insert({
         student_id: state.studentId,
-        subject: state.subjectKey === 'mathematics' ? 'Mathematics' : state.subjectKey,
+        subject: SYL.SUBJECT_DB_NAME[state.subjectKey] || state.subjectKey,
         level: state.level,
         exam_type: state.examType || 'PRACTICE',
         score: earned,

@@ -13,11 +13,11 @@
  * - All WA/EOY marks cross-checked against 2025 school papers
  * 
  * TERMINOLOGY (must match Supabase question_bank columns):
- *   subject:  'Mathematics' | 'Science' | 'English Language'
+ *   subject:  'Mathematics' | 'Science' | 'English'   (canonical FK values per Master_Question_Template v4.1)
  *   level:    'Primary 1' through 'Primary 6'
  *   type:     'mcq' | 'short_ans' | 'word_problem' | 'open_ended' | 'cloze' | 'editing' | 'comprehension' | 'visual_text'
- *   topic:    As per Master Question Template Section 3 taxonomy
- *   sub_topic: Optional refinement (e.g., 'Grammar', 'Vocabulary', 'Comprehension')
+ *   topic:    As per Master Question Template Section 4 taxonomy
+ *   sub_topic: Optional refinement (e.g., 'Grammar Cloze With Word Bank', 'Vocabulary Cloze With Dropdowns')
  * 
  * TEMPLATE KEY FORMAT: {subjectShort}-{levelShort}-{paperCode}
  *   subjectShort: 'maths' | 'science' | 'english'

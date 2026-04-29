@@ -146,9 +146,12 @@ async function pickQuestions(subject, level, questionType, count, options = {}) 
 
     if (!db) throw new Error("Supabase client not initialized.");
 
-    // 🚀 MASTERCLASS FIX: Map template slugs to exact database strings
+    // Map subject slug to canonical FK value. Per Master_Question_Template
+    // v4.1, English's canonical FK value is 'English' (NOT 'English Language').
+    // The legacy 'English Language' string was the cause of English exams
+    // returning empty result sets from question_bank.
     let dbSubject = subject;
-    if (subject.toLowerCase() === 'english') dbSubject = 'English Language';
+    if (subject.toLowerCase() === 'english') dbSubject = 'English';
     else if (subject.toLowerCase() === 'mathematics' || subject.toLowerCase() === 'maths') dbSubject = 'Mathematics';
     else if (subject.toLowerCase() === 'science') dbSubject = 'Science';
 
