@@ -1051,12 +1051,16 @@
        Shared markup with pages/quiz.html — keep both files in sync.
        ════════════════════════════════════════════════════════════════════════ */
     .feedback-panel {
+      display: block; /* defensive — a parent flex/grid context shouldn't collapse this */
+      width: 100%;
+      min-height: 80px; /* an in-DOM panel can't hide silently if HTML inside fails */
       margin-top: var(--space-3);
       padding: var(--space-3) var(--space-4);
       background: var(--surface-container-lowest, var(--surface));
       border: 1px solid var(--border-light);
       border-top: 3px solid var(--brand-sage);
       border-radius: var(--radius-md);
+      box-sizing: border-box;
     }
     .feedback-panel--correct  { border-top-color: var(--brand-mint); }
     .feedback-panel--wrong    { border-top-color: var(--brand-rose); }

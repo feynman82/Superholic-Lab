@@ -182,7 +182,12 @@
   // ─── renderFeedback (in-quiz live feedback) ───────────────────────────
 
   function renderFeedback(opts) {
-    try { return _renderFeedbackInner(opts, /* expanded */ false, /* showYourAnswer */ false); }
+    try {
+      const html = _renderFeedbackInner(opts, /* expanded */ false, /* showYourAnswer */ false);
+      // eslint-disable-next-line no-console
+      console.info('[SHL_FEEDBACK] renderFeedback OK', { status: opts && opts.status, type: 'inline', htmlLen: (html || '').length });
+      return html;
+    }
     catch (err) {
       // Last-line defence — bad input shouldn't crash the page.
       // eslint-disable-next-line no-console
@@ -194,7 +199,12 @@
   // ─── renderReviewFeedback (post-exam Mark Sheet) ──────────────────────
 
   function renderReviewFeedback(opts) {
-    try { return _renderFeedbackInner(opts, /* expanded */ true, /* showYourAnswer */ true); }
+    try {
+      const html = _renderFeedbackInner(opts, /* expanded */ true, /* showYourAnswer */ true);
+      // eslint-disable-next-line no-console
+      console.info('[SHL_FEEDBACK] renderReviewFeedback OK', { status: opts && opts.status, type: 'review', htmlLen: (html || '').length });
+      return html;
+    }
     catch (err) {
       // eslint-disable-next-line no-console
       console.warn('[SHL_FEEDBACK] renderReviewFeedback failed:', err && err.message);
@@ -249,7 +259,7 @@
       : '';
 
     return ''
-      + '<section class="feedback-panel feedback-panel--correct" role="status" aria-live="polite">'
+      + '<section class="feedback-panel feedback-panel--correct" data-shl-feedback="correct" role="status" aria-live="polite">'
         + '<div class="feedback-header">'
           + '<span class="feedback-header__icon" style="color:var(--brand-mint)">' + SVG.check() + '</span>'
           + '<span class="feedback-label label-caps" style="color:var(--brand-mint)">Correct</span>'
@@ -313,7 +323,7 @@
       : '';
 
     return ''
-      + '<section class="feedback-panel feedback-panel--wrong" role="status" aria-live="polite">'
+      + '<section class="feedback-panel feedback-panel--wrong" data-shl-feedback="wrong" role="status" aria-live="polite">'
         + '<div class="feedback-header">'
           + '<span class="feedback-header__icon" style="color:var(--brand-rose)">' + SVG.cross() + '</span>'
           + '<span class="feedback-label label-caps" style="color:var(--brand-rose)">Not quite</span>'
@@ -351,7 +361,7 @@
       : '';
 
     return ''
-      + '<section class="feedback-panel feedback-panel--partial" role="status" aria-live="polite">'
+      + '<section class="feedback-panel feedback-panel--partial" data-shl-feedback="partial" role="status" aria-live="polite">'
         + '<div class="feedback-header">'
           + '<span class="feedback-header__icon" style="color:var(--brand-amber)">' + SVG.halfCircle() + '</span>'
           + '<span class="feedback-label label-caps" style="color:var(--brand-amber)">Partial credit</span>'
