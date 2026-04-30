@@ -160,6 +160,7 @@ New questions MUST go into topic-specific files only.
 | batch_20260430_001 | 2026-04-30 | Mathematics P6 MCQ Standard | 5 | Addition and Subtraction, Algebra, Angles, Area and Perimeter, Area of Triangle |
 | batch_20260430_002 | 2026-04-30 | Mathematics P6 MCQ Standard (PSLE-calibrated regen) | 5 | Addition and Subtraction, Algebra, Angles, Area and Perimeter, Area of Triangle |
 | batch_20260430_003 | 2026-04-30 | Mathematics P6 MCQ Standard | 5 | Average, Circles, Data Analysis, Decimals, Factors and Multiples |
+| batch_20260430_004 | 2026-04-30 | Calibration fix: re-tier basket Q to P4 + new P6 Data Analysis Q + runningTrack visual primitive added | 1 (insert) + 2 (updates) | Data Analysis (P6 swap), Circles (visual upgrade) |
 
 **Batch 001 IDs (Supabase UUIDs):**
 - Algebra: `1743b2e1-41c4-458d-b111-f8bf12b4fedc`
@@ -186,10 +187,15 @@ New questions MUST go into topic-specific files only.
 
 **Batch 20260430_003 IDs (Supabase UUIDs):** — second PSLE-calibrated batch under Master Template v4.3
 - Average (P6): `ffc1ab19-ca43-4eb1-9588-cafc6417e9c7`
-- Circles (P6): `dcf31552-a083-4da1-99c8-ffd118f828c8` — placeholder visual for stadium track
-- Data Analysis (P6): `ea5bc160-939a-4a31-97fe-9fdbb325ba20` — dataTable visual
+- Circles (P6): `dcf31552-a083-4da1-99c8-ffd118f828c8` — visual upgraded to `runningTrack` primitive in batch 004
+- Data Analysis (P4, ex-P6): `ea5bc160-939a-4a31-97fe-9fdbb325ba20` — basket-cost question re-tiered from P6 to P4 in batch 004 (single-step, not multi-step)
 - Decimals (P6): `cc6623a8-b7d8-4ca8-bbf5-411e5fd01b97`
 - Factors and Multiples (P6): `2486863e-f8c4-4011-a391-083d6bc7bdcd`
+
+**Batch 20260430_004 IDs (Supabase UUIDs):** — calibration fix + new visual primitive
+- Data Analysis (P6, NEW): `e4a3cbfc-5366-4f49-b22a-2749c2439ea2` — bar graph + chained average (Box E = avg+4, find new 5-box average)
+- Circles (P6, visual updated): `dcf31552-a083-4da1-99c8-ffd118f828c8` — placeholder card replaced with `runningTrack` primitive
+- Data Analysis (re-tiered to P4): `ea5bc160-939a-4a31-97fe-9fdbb325ba20`
 
 > Note: `seed_id` column in Supabase is UUID type — text-based IDs not applicable.
 > Track inserted questions by UUID. Gap analysis SQL is the authoritative state source.

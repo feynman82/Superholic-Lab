@@ -1791,6 +1791,78 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     return this._svg(content, { alt: `Circle${radiusLabel ? ' with radius ' + radiusLabel : ''}${diameterLabel ? ' with diameter ' + diameterLabel : ''}.` });
   },
 
+  /**
+   * Stadium / running-track shape: two horizontal straights joined by two
+   * semicircular ends. Common in PSLE Circles questions (perimeter / area
+   * of composite figures with circles).
+   *
+   * params:
+   *   straight_length_label  (e.g. "80 m")  — labels the top straight side
+   *   diameter_label         (e.g. "70 m")  — labels the diameter of one
+   *                                            semicircular end (vertical)
+   *   straight_label_position             — 'top' (default) or 'inside'
+   */
+  runningTrack(params = {}) {
+    const w = 400, h = 220;
+    const cy = 110;          // vertical centre of the track
+    const r  = 55;           // semicircle radius (px) — enough to clearly read the labels
+    const straightW = 200;   // straight-section length (px)
+    const leftCx  = 80;      // left semicircle centre
+    const rightCx = leftCx + straightW;  // = 280
+    const topY    = cy - r;  // = 55
+    const botY    = cy + r;  // = 165
+
+    const STROKE = 'var(--text-main, #333)';
+    const LABEL  = 'var(--text-main, #333)';
+    const HINT   = 'var(--brand-sage, #51615E)';
+
+    let svg = '';
+
+    // Top + bottom straight edges
+    svg += `<line x1="${leftCx}" y1="${topY}" x2="${rightCx}" y2="${topY}" stroke="${STROKE}" stroke-width="2.5"/>`;
+    svg += `<line x1="${leftCx}" y1="${botY}" x2="${rightCx}" y2="${botY}" stroke="${STROKE}" stroke-width="2.5"/>`;
+
+    // Helper: build a 24-segment polyline arc going from start_deg to end_deg
+    // around centre (cx, cy), radius r. Math degrees: 0=right, 90=up.
+    const arcPolyline = (cx, cyc, rad, startDeg, endDeg, steps = 24) => {
+      const pts = [];
+      for (let i = 0; i <= steps; i++) {
+        const t = startDeg + (endDeg - startDeg) * (i / steps);
+        const a = t * Math.PI / 180;
+        pts.push(`${(cx + rad * Math.cos(a)).toFixed(1)},${(cyc - rad * Math.sin(a)).toFixed(1)}`);
+      }
+      return pts.join(' ');
+    };
+
+    // Left semicircle: from top (90°) round-the-left (180°) to bottom (270°)
+    svg += `<polyline points="${arcPolyline(leftCx, cy, r, 90, 270)}" fill="none" stroke="${STROKE}" stroke-width="2.5"/>`;
+    // Right semicircle: from top (90°) round-the-right (0°) to bottom (-90°)
+    svg += `<polyline points="${arcPolyline(rightCx, cy, r, 90, -90)}" fill="none" stroke="${STROKE}" stroke-width="2.5"/>`;
+
+    // Straight-length label
+    if (params.straight_length_label) {
+      const lx = leftCx + straightW / 2;
+      const ly = (params.straight_label_position === 'inside') ? cy + 4 : topY - 8;
+      svg += `<text x="${lx}" y="${ly}" font-size="13" font-weight="bold" text-anchor="middle" fill="${LABEL}">${params.straight_length_label}</text>`;
+    }
+
+    // Diameter label on the right semicircle (vertical dashed line + side text)
+    if (params.diameter_label) {
+      const dx = rightCx + r + 18;
+      svg += `<line x1="${dx}" y1="${topY}" x2="${dx}" y2="${botY}" stroke="${HINT}" stroke-width="1" stroke-dasharray="3 2"/>`;
+      // Tick marks at the two endpoints
+      svg += `<line x1="${dx - 4}" y1="${topY}" x2="${dx + 4}" y2="${topY}" stroke="${HINT}" stroke-width="1.2"/>`;
+      svg += `<line x1="${dx - 4}" y1="${botY}" x2="${dx + 4}" y2="${botY}" stroke="${HINT}" stroke-width="1.2"/>`;
+      svg += `<text x="${dx + 10}" y="${cy + 4}" font-size="13" font-weight="bold" fill="${HINT}">${params.diameter_label}</text>`;
+    }
+
+    return `
+      <svg width="100%" viewBox="0 0 ${w} ${h}" style="height: auto; max-width: 500px; display: block; margin: 0 auto;">
+        ${svg}
+      </svg>
+    `;
+  },
+
   // ── NUMBER AND FRACTION VISUALS ─────────────────────────────────────────────
 
   /**

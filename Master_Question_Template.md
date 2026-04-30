@@ -425,6 +425,9 @@ You may ONLY use the following `function_name` values and their exact parameters
   `{"sideLabel": "9 cm"}`
 * `circle`: Circle with optional radius or diameter line.
   `{"radiusLabel": "7 cm"}` OR `{"diameterLabel": "14 cm"}`
+* `runningTrack`: Stadium-shape (two horizontal straights joined by two semicircular ends). Use for PSLE-style "perimeter / area of running track" questions in the Circles topic.
+  `{"straight_length_label": "80 m", "diameter_label": "70 m"}`
+  *(Optional `straight_label_position`: `"top"` (default) or `"inside"`.)*
 * `rightTriangle`: Right-angled triangle with labelled base, height, and optional hypotenuse.
   `{"base": "8 cm", "height": "6 cm", "hypotenuse": "10 cm", "showRightAngle": true}`
 * `compositeShape`: L-shape or T-shape built from rectangles. Use for composite area/perimeter problems.

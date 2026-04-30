@@ -91,7 +91,7 @@ const DIAGRAM_ROUTING = {
     'Area and Perimeter':          ['rectangle', 'square', 'rightTriangle', 'compositeShape', 'drawRectangleOnGrid'],
     'Area of Triangle':            ['rightTriangle', 'compositeShape'],
     'Average':                     ['verticalBarChart'],
-    'Circles':                     ['circle'],
+    'Circles':                     ['circle', 'runningTrack'],
     'Data Analysis':               ['verticalBarChart', 'lineGraph', 'dataTable', 'pictogram'],
     'Decimals':                    ['numberLine'],
     'Factors and Multiples':       [],
