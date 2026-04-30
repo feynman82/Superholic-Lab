@@ -28,7 +28,51 @@
   <!-- feedback.js exposes window.SHL_FEEDBACK and must load before exam.js -->
   <script src="../js/feedback.js"></script>
   <script src="../js/exam.js" defer></script>
+<script>
+  // ── Sticky-header state toggle ──────────────────────────────────────
+  // The .focus-paper-header is `position: sticky`; CSS gives no native
+  // way to know when it's actually stuck. We watch a 1px sentinel placed
+  // immediately above it. When that sentinel scrolls out of the viewport,
+  // the header is stuck; toggle the .is-stuck class for flush styling.
+  (function setupStickyHeaderObserver() {
+    function init() {
+      const header = document.querySelector('.focus-paper-header');
+      if (!header) return;  // SPA hasn't rendered the exam yet — try again
 
+      // Insert a 1px-tall sentinel directly above the header, in the same
+      // scroll container. When viewport scrolls past it, header is stuck.
+      let sentinel = document.querySelector('.focus-paper-header__sentinel');
+      if (!sentinel) {
+        sentinel = document.createElement('div');
+        sentinel.className = 'focus-paper-header__sentinel';
+        sentinel.style.cssText = 'height:1px;width:100%;pointer-events:none;';
+        header.parentNode.insertBefore(sentinel, header);
+      }
+
+      const obs = new IntersectionObserver(
+        ([entry]) => {
+          // Sentinel above viewport → header is stuck
+          header.classList.toggle('is-stuck', !entry.isIntersecting);
+        },
+        { threshold: [0], rootMargin: `-${getComputedStyle(document.documentElement).getPropertyValue('--navbar-h') || '64px'} 0px 0px 0px` }
+      );
+      obs.observe(sentinel);
+    }
+
+    // The exam page renders dynamically — retry until the header exists.
+    if (document.querySelector('.focus-paper-header')) {
+      init();
+    } else {
+      const retryObs = new MutationObserver(() => {
+        if (document.querySelector('.focus-paper-header')) {
+          retryObs.disconnect();
+          init();
+        }
+      });
+      retryObs.observe(document.body, { childList: true, subtree: true });
+    }
+  })();
+</script>
   <script type="module">
     import { guardPage } from '/js/auth.js';
     import { initAppShell } from '/js/app-shell.js';
@@ -525,20 +569,38 @@
 
     /* ── Focus Room (exam phase) ─────────────────────────────────────── */
     .focus-paper-header {
+      /* Sticks flush against the global navbar.
+         When stuck, the rounded card + side margins flatten into a clean bar. */
       width: 100%;
       max-width: 1440px;
       margin: 0 auto var(--space-4);
       padding: var(--space-3) var(--space-4);
-      background: var(--glass-bg, rgba(255, 255, 255, 0.55));
+      background: var(--surface-container-lowest, rgba(255, 255, 255, 0.92));
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border: 1px solid var(--border-light);
       border-radius: 16px;
       text-align: center;
       position: sticky;
-      top: calc(var(--navbar-h) + 8px);
+      top: var(--navbar-h);              /* flush — was navbar + 8px */
       z-index: 40;
       box-shadow: 0 2px 8px rgba(81, 97, 94, 0.05);
+      transition: border-radius 200ms ease, box-shadow 200ms ease, max-width 200ms ease;
+    }
+
+    /* When the sticky header is "stuck" (top edge meets sticky offset),
+       flatten it into a flush bar — no rounded corners on the bottom edge,
+       slightly stronger shadow to lift it off scrolling content. */
+    .focus-paper-header.is-stuck {
+      max-width: 100vw;
+      margin-left: 0;
+      margin-right: 0;
+      margin-bottom: 0;
+      border-radius: 0;
+      border-left: none;
+      border-right: none;
+      border-top: none;
+      box-shadow: 0 4px 12px rgba(81, 97, 94, 0.10);
     }
 
     .focus-paper-header__title {
@@ -636,7 +698,10 @@
       border: 1px solid var(--border-light);
       border-radius: 20px;
       position: sticky;
-      top: calc(var(--navbar-h) + 88px);
+      /* Sits directly below the now-flush sticky header.
+         80px = navbar (64) + header band (~80) — adjust at runtime via the
+         IntersectionObserver below if header height drifts. */
+      top: calc(var(--navbar-h) + 80px);
     }
 
     .focus-nav__title {
