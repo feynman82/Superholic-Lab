@@ -161,6 +161,7 @@ New questions MUST go into topic-specific files only.
 | batch_20260430_002 | 2026-04-30 | Mathematics P6 MCQ Standard (PSLE-calibrated regen) | 5 | Addition and Subtraction, Algebra, Angles, Area and Perimeter, Area of Triangle |
 | batch_20260430_003 | 2026-04-30 | Mathematics P6 MCQ Standard | 5 | Average, Circles, Data Analysis, Decimals, Factors and Multiples |
 | batch_20260430_004 | 2026-04-30 | Calibration fix: re-tier basket Q to P4 + new P6 Data Analysis Q + runningTrack visual primitive added | 1 (insert) + 2 (updates) | Data Analysis (P6 swap), Circles (visual upgrade) |
+| batch_20260430_005 | 2026-04-30 | Mathematics P6 MCQ Standard | 5 | Fractions, Geometry, Multiplication and Division, Multiplication Tables, Percentage |
 
 **Batch 001 IDs (Supabase UUIDs):**
 - Algebra: `1743b2e1-41c4-458d-b111-f8bf12b4fedc`
@@ -196,6 +197,13 @@ New questions MUST go into topic-specific files only.
 - Data Analysis (P6, NEW): `e4a3cbfc-5366-4f49-b22a-2749c2439ea2` — bar graph + chained average (Box E = avg+4, find new 5-box average)
 - Circles (P6, visual updated): `dcf31552-a083-4da1-99c8-ffd118f828c8` — placeholder card replaced with `runningTrack` primitive
 - Data Analysis (re-tiered to P4): `ea5bc160-939a-4a31-97fe-9fdbb325ba20`
+
+**Batch 20260430_005 IDs (Supabase UUIDs):** — third PSLE-calibrated batch
+- Fractions (P6): `fc94b791-4caa-4584-b922-74f9cb24d924` — chained 1/4 then 2/3 of remainder, find English share
+- Geometry (P6): `487cdc69-e3c5-412a-bf8c-be3e5daab0e3` — rectangle ABCD with line AE, triangle + straight-line angle property
+- Multiplication and Division (P6): `46271468-91b3-4139-85a8-2346af445873` — bouquet split-rate ($12 × 1/4, $9 × 3/4)
+- Multiplication Tables (P6): `35fd45fe-2a30-477f-b1ff-44b6c88c4c97` — marble in box, mental × and ÷
+- Percentage (P6): `b451e604-cda9-4d82-8665-c32864569bc6` — 20% off then +10% of sale price (cascade)
 
 > Note: `seed_id` column in Supabase is UUID type — text-based IDs not applicable.
 > Track inserted questions by UUID. Gap analysis SQL is the authoritative state source.
