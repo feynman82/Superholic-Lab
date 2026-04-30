@@ -1694,18 +1694,13 @@ body.has-bottom-nav .footer {
   touch-action: none;
 }
 
-.feedback-panel {
-  max-height: 0;
-  opacity: 0;
-  overflow: hidden;
-  transition: max-height 0.4s ease, opacity 0.4s ease, margin 0.4s ease;
-}
-
-.feedback-panel.is-open {
-  max-height: 500px;
-  opacity: 1;
-  margin-top: var(--space-4);
-}
+/* Legacy .feedback-panel accordion (max-height: 0; opacity: 0; collapsed-
+   until-.is-open) was removed — it conflicted with the new
+   public/js/feedback.js module's .feedback-panel class, which is a
+   visible-by-default rendered card. Verified before deletion: zero
+   HTML or JS callers ever toggled .feedback-panel.is-open. The new
+   feedback panel CSS lives in pages/quiz.html and pages/exam.html
+   <style> blocks. */
 
 @keyframes flameFlicker {
   0% {

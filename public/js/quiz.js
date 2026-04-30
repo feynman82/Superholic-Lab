@@ -932,18 +932,6 @@ window.initQuizEngine = function () {
           xpAwarded:         state.xpJustAwarded || 0,
           marks:             q.marks || 1,
         });
-
-        // eslint-disable-next-line no-console
-        console.info('[quiz] feedback panel composed', {
-          qType: q.type,
-          status: fb.status,
-          htmlLen: feedbackHtml ? feedbackHtml.length : 0,
-          hasMisconception: feedbackHtml.includes('feedback-misconception__body'),
-          hasFallback: feedbackHtml.includes('The model answer'),
-          studentAnswer: String(state.answers[state.currentIndex] ?? ''),
-          wrongExplKeys: Object.keys(safeWrongExpl || {}).length,
-          optionsLen: Array.isArray(safeOptions) ? safeOptions.length : 0,
-        });
       } else if (fb.isModel) {
         feedbackHtml = `<div class="glass-panel-2 card-rule-mint bg-science-tint p-4 mt-4">
           <div class="font-bold text-sm mb-2 text-success">Worked Solution</div>
