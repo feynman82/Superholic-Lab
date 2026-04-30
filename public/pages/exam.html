@@ -582,7 +582,7 @@
       border-radius: 16px;
       text-align: center;
       position: sticky;
-      top: var(--navbar-h);              /* flush — was navbar + 8px */
+      top: 0;              /* flush — was navbar + 8px */
       z-index: 40;
       box-shadow: 0 2px 8px rgba(81, 97, 94, 0.05);
       transition: border-radius 200ms ease, box-shadow 200ms ease, max-width 200ms ease;
@@ -698,10 +698,10 @@
       border: 1px solid var(--border-light);
       border-radius: 20px;
       position: sticky;
-      /* Sits directly below the now-flush sticky header.
-         80px = navbar (64) + header band (~80) — adjust at runtime via the
-         IntersectionObserver below if header height drifts. */
-      top: calc(var(--navbar-h) + 24px);
+      /* Sits directly below the now-flush sticky header (~80px tall).
+         The global navbar scrolls away with the page so we do NOT add navbar-h here.
+         If the paper title wraps to two lines on mobile, bump 80px → 96px. */
+      top: 80px;
     }
 
     .focus-nav__title {
