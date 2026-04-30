@@ -243,6 +243,16 @@
     return _renderWrong({ studentAnswer, correctAnswer, wrongExpls, options, workedSolution, cognitiveSkill, alwaysExpanded, showYourAnswer });
   }
 
+  // Diagnostic breadcrumb prepended to every panel section. Hard inline
+  // styles (rose text, monospace, !important via specificity) so nothing
+  // can override its visibility. If this is visible but the rest of the
+  // panel isn't, the issue is downstream styling. If this is also
+  // invisible, the section's first child is being dropped during HTML
+  // parsing.
+  function _debugBreadcrumb(label) {
+    return '<div style="font-family:monospace;font-size:10px;color:#B76E79;letter-spacing:0.04em;padding:2px 0;border-bottom:1px dashed #B76E79;margin-bottom:6px;">DEBUG · panel:' + escapeHtml(label) + '</div>';
+  }
+
   // ─── Status renderers ─────────────────────────────────────────────────
 
   function _renderCorrect({ studentAnswer, cognitiveSkill, workedSolution, xpAwarded, alwaysExpanded }) {
@@ -260,6 +270,7 @@
 
     return ''
       + '<section class="feedback-panel feedback-panel--correct" data-shl-feedback="correct" role="status" aria-live="polite">'
+        + _debugBreadcrumb('correct')
         + '<div class="feedback-header">'
           + '<span class="feedback-header__icon" style="color:var(--brand-mint)">' + SVG.check() + '</span>'
           + '<span class="feedback-label label-caps" style="color:var(--brand-mint)">Correct</span>'
@@ -324,6 +335,7 @@
 
     return ''
       + '<section class="feedback-panel feedback-panel--wrong" data-shl-feedback="wrong" role="status" aria-live="polite">'
+        + _debugBreadcrumb('wrong')
         + '<div class="feedback-header">'
           + '<span class="feedback-header__icon" style="color:var(--brand-rose)">' + SVG.cross() + '</span>'
           + '<span class="feedback-label label-caps" style="color:var(--brand-rose)">Not quite</span>'
@@ -362,6 +374,7 @@
 
     return ''
       + '<section class="feedback-panel feedback-panel--partial" data-shl-feedback="partial" role="status" aria-live="polite">'
+        + _debugBreadcrumb('partial')
         + '<div class="feedback-header">'
           + '<span class="feedback-header__icon" style="color:var(--brand-amber)">' + SVG.halfCircle() + '</span>'
           + '<span class="feedback-label label-caps" style="color:var(--brand-amber)">Partial credit</span>'
