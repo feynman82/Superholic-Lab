@@ -163,6 +163,7 @@ New questions MUST go into topic-specific files only.
 | batch_20260430_004 | 2026-04-30 | Calibration fix: re-tier basket Q to P4 + new P6 Data Analysis Q + runningTrack visual primitive added | 1 (insert) + 2 (updates) | Data Analysis (P6 swap), Circles (visual upgrade) |
 | batch_20260430_005 | 2026-04-30 | Mathematics P6 MCQ Standard | 5 | Fractions, Geometry, Multiplication and Division, Multiplication Tables, Percentage |
 | batch_20260430_006 | 2026-04-30 | Q2 Geometry visual upgrade (rectangleWithLine primitive) + 5 P6 MCQs | 5 (insert) + 1 (visual) | Pie Charts, Rate, Ratio, Shapes and Patterns, Speed; Geometry visual upgrade |
+| batch_20260430_007 | 2026-04-30 | Mathematics P6 MCQ Standard (FINAL — 23/23 topics covered) | 3 | Symmetry, Volume, Whole Numbers |
 
 **Batch 001 IDs (Supabase UUIDs):**
 - Algebra: `1743b2e1-41c4-458d-b111-f8bf12b4fedc`
@@ -213,6 +214,19 @@ New questions MUST go into topic-specific files only.
 - Shapes and Patterns (P6): `e6bf784f-f8e0-41cf-bccf-a9c234147585` — n × n grid pattern, find perimeter of Figure 6
 - Speed (P6): `b61e3ed8-77c7-4990-acf1-d6a6640355d6` — round trip with 60 km/h + 40 km/h, find average for whole journey
 - Geometry (P6, visual upgraded): `487cdc69-e3c5-412a-bf8c-be3e5daab0e3` — placeholder/text replaced with `rectangleWithLine` primitive
+
+**Batch 20260430_007 IDs (Supabase UUIDs):** — final 3 topics; P6 Std MCQ bank now complete (23/23)
+- Symmetry (P6): `95efaefb-ab72-45c6-9350-c80994cf05f9` — half L-shape design reflected across vertical axis (compositeShape visual)
+- Volume (P6): `01cbd18c-fd17-4829-85a8-c4f72bb972f0` — submerge cube in tank, find new water depth (cuboid visual)
+- Whole Numbers (P6): `e04a2365-0da6-4a89-9a3a-0dcb137ac577` — order of operations 36 + 24 ÷ (8−6) × 5 − 18 = 78 (BODMAS)
+
+---
+
+## P6 Mathematics MCQ Standard — Coverage Snapshot (2026-04-30)
+
+23 / 23 canon topics covered, 1 question per topic. All under PSLE Booklet A
+Q11–Q15 calibration (Master Template v4.3 §5). Distractors mapped to named
+Singapore-classroom misconceptions; worked solutions ≥ 3 named steps each.
 
 > Note: `seed_id` column in Supabase is UUID type — text-based IDs not applicable.
 > Track inserted questions by UUID. Gap analysis SQL is the authoritative state source.
