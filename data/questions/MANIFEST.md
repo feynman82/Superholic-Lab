@@ -159,6 +159,7 @@ New questions MUST go into topic-specific files only.
 | batch_20260425_004 | 2026-04-25 | Mathematics P5 MCQ Standard | 5 | Angles and Geometry, Area of Triangle, Average, Decimals, Fractions |
 | batch_20260430_001 | 2026-04-30 | Mathematics P6 MCQ Standard | 5 | Addition and Subtraction, Algebra, Angles, Area and Perimeter, Area of Triangle |
 | batch_20260430_002 | 2026-04-30 | Mathematics P6 MCQ Standard (PSLE-calibrated regen) | 5 | Addition and Subtraction, Algebra, Angles, Area and Perimeter, Area of Triangle |
+| batch_20260430_003 | 2026-04-30 | Mathematics P6 MCQ Standard | 5 | Average, Circles, Data Analysis, Decimals, Factors and Multiples |
 
 **Batch 001 IDs (Supabase UUIDs):**
 - Algebra: `1743b2e1-41c4-458d-b111-f8bf12b4fedc`
@@ -179,9 +180,16 @@ New questions MUST go into topic-specific files only.
 **Batch 20260430_002 IDs (Supabase UUIDs):** — PSLE-calibrated regen (Master Template v4.2 §5 mcq calibration applied)
 - Addition and Subtraction (P6): `b85db378-c4bd-478a-b71f-adb518441c34`
 - Algebra (P6): `2fe46ace-a4a2-459e-89eb-fcfbc43de43b`
-- Angles (P6): `4af48218-9143-43b2-a222-95ba3e16116f`
+- Angles (P6): `4af48218-9143-43b2-a222-95ba3e16116f` — visual_payload patched to v3 explicit-rays format (T at 68°, U at 35°)
 - Area and Perimeter (P6): `d44fd910-0eb3-45d8-9013-29501cde9822`
 - Area of Triangle (P6): `520c1c14-1eb2-43a0-b86a-722796b8bd40`
+
+**Batch 20260430_003 IDs (Supabase UUIDs):** — second PSLE-calibrated batch under Master Template v4.3
+- Average (P6): `ffc1ab19-ca43-4eb1-9588-cafc6417e9c7`
+- Circles (P6): `dcf31552-a083-4da1-99c8-ffd118f828c8` — placeholder visual for stadium track
+- Data Analysis (P6): `ea5bc160-939a-4a31-97fe-9fdbb325ba20` — dataTable visual
+- Decimals (P6): `cc6623a8-b7d8-4ca8-bbf5-411e5fd01b97`
+- Factors and Multiples (P6): `2486863e-f8c4-4011-a391-083d6bc7bdcd`
 
 > Note: `seed_id` column in Supabase is UUID type — text-based IDs not applicable.
 > Track inserted questions by UUID. Gap analysis SQL is the authoritative state source.
