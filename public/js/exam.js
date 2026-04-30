@@ -833,19 +833,17 @@ window.initExamEngine = function () {
   // ── UI BUILDERS ──
 
   function renderVisualPayload(visual_payload) {
-    if (!visual_payload || typeof DiagramLibrary === 'undefined') return '';
-    try {
-      const fnName = visual_payload.function_name;
-      if (typeof DiagramLibrary[fnName] === 'function') {
-        // 🚀 MASTERCLASS FIX: Crash Shield for bad SVG generation
-        const svgHtml = DiagramLibrary[fnName](visual_payload.params || {});
-        if (String(svgHtml).includes('NaN')) throw new Error('AI generated invalid geometry (NaN)');
-        return `<div class="mb-4 mx-auto flex justify-center w-full" style="max-width: 600px; overflow-x: auto;">${svgHtml}</div>`;
-      }
-    } catch (e) {
-      console.error("[DiagramLibrary] Rendering crashed:", e);
+    if (!visual_payload) return '';
+    if (typeof DiagramLibrary === 'undefined' || typeof DiagramLibrary.render !== 'function') return '';
+
+    // Central dispatcher handles parsing (Supabase stores payload as text),
+    // missing-function placeholders, hallucination routing, and crash recovery.
+    const svgHtml = DiagramLibrary.render(visual_payload);
+    if (!svgHtml || String(svgHtml).includes('NaN')) {
+      if (svgHtml) console.warn('[DiagramLibrary] Suppressing exam diagram with invalid geometry (NaN).');
+      return '';
     }
-    return '';
+    return `<div class="mb-4 mx-auto flex justify-center w-full" style="max-width:600px;overflow-x:auto;">${svgHtml}</div>`;
   }
 
   function buildMCQOptions(q, qIndex) {

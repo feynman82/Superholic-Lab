@@ -237,43 +237,23 @@ window.initQuizEngine = function () {
   function renderVisualPayload(visual_payload) {
     if (!visual_payload) return '';
 
-    if (visual_payload.engine === 'diagram-library') {
-      try {
-        const fnName = visual_payload.function_name;
-        const params = visual_payload.params || {};
-
-        // Check if the function actually exists in your library
-        if (typeof DiagramLibrary[fnName] === 'function') {
-          // 🚀 MASTERCLASS FIX: Crash Shield for bad SVG generation
-          const svgHtml = DiagramLibrary[fnName](params);
-          if (String(svgHtml).includes('NaN')) throw new Error('AI generated invalid geometry (NaN)');
-
-          return `<div class="procedural-diagram mb-4 mx-auto flex justify-center w-full" style="max-width: 600px; overflow-x: auto;">
-                    ${svgHtml}
-                  </div>`;
-        } else {
-          // The AI invented a function you haven't built yet! Graceful fallback.
-          console.warn(`[DiagramLibrary] Missing function requested by AI: ${fnName}`, params);
-          return `<div class="procedural-diagram mb-4 mx-auto flex justify-center w-full" style="max-width: 600px; overflow-x: auto;">
-                    ${DiagramLibrary.placeholder({
-            description: `Requires DiagramLibrary.${fnName}()\nParams: ${JSON.stringify(params).substring(0, 40)}...`
-          })}
-                  </div>`;
-        }
-      } catch (err) {
-        console.error("[DiagramLibrary] Rendering crashed:", err);
-        return `<div class="procedural-diagram mb-4 mx-auto flex justify-center w-full" style="max-width: 600px; overflow-x: auto;">
-                  ${DiagramLibrary.placeholder({ description: "Diagram Rendering Error" })}
-                </div>`;
-      }
+    // Mermaid engine handled separately (it's not part of DiagramLibrary)
+    const isMermaid = (typeof visual_payload === 'object' && visual_payload?.engine === 'mermaid');
+    if (isMermaid) {
+      return `<div class="mermaid-diagram mb-4 p-4 bg-page border border-light rounded">${esc(visual_payload.params?.code || '')}</div>`;
     }
 
-    // Future handling for mermaid engine
-    if (visual_payload.engine === 'mermaid') {
-      return `<div class="mermaid-diagram mb-4 p-4 bg-page border border-light rounded">${esc(visual_payload.params.code || '')}</div>`;
+    // All diagram-library payloads route through the central dispatcher.
+    // It handles: stringified payloads (Supabase returns visual_payload as text),
+    // missing functions (with hallucination router), crashes, and NaN safety.
+    // One source of truth — quiz.js and exam.js no longer duplicate dispatch logic.
+    if (typeof DiagramLibrary === 'undefined' || typeof DiagramLibrary.render !== 'function') return '';
+    const svgHtml = DiagramLibrary.render(visual_payload);
+    if (!svgHtml || String(svgHtml).includes('NaN')) {
+      if (svgHtml) console.warn('[DiagramLibrary] Suppressing diagram with invalid geometry (NaN).');
+      return '';
     }
-
-    return '';
+    return `<div class="procedural-diagram mb-4 mx-auto flex justify-center w-full" style="max-width:600px;overflow-x:auto;">${svgHtml}</div>`;
   }
 
   // ── BUILD INPUT UI BY TYPE ──

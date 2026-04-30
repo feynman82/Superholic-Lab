@@ -1450,7 +1450,8 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
    * @returns {string}
    */
   _svg(content, { viewBox = '0 0 400 260', alt = 'Diagram', maxWidth = 400 } = {}) {
-    return `<svg role="img" aria-label="${alt}" width="100%" style="height: auto;" viewBox="${viewBox}" xmlns="http://www.w3.org/2000/svg" style="max-width:${maxWidth}px;font-family:'Plus Jakarta Sans',sans-serif;display:block;">${content}</svg>`;
+    // Single style attribute — browsers silently drop a second `style=` on the same element
+    return `<svg role="img" aria-label="${alt}" width="100%" viewBox="${viewBox}" xmlns="http://www.w3.org/2000/svg" style="height:auto;max-width:${maxWidth}px;font-family:'Plus Jakarta Sans',sans-serif;display:block;margin:0 auto;">${content}</svg>`;
   },
 
   /**
@@ -1918,74 +1919,144 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
    * @returns {string} SVG string
    */
   /**
- * Line graph with connected data points.
- * Accepts BOTH param formats for backward compatibility:
- *   New format: points = [{ x: number, y: number }]
- *   Legacy format: points = [{ xText: 'Mon', yVal: 42 }]
- * For categorical x-axes (time, day names), points are spaced evenly.
- */
-lineGraph({
-  title = '',
-  xLabel = '',
-  yLabel = '',
-  points = [],
-  xTicks = [],
-  yTicks = [],
-  yMax = null,
-} = {}) {
-  const esc = this._esc.bind(this);
-  if (!points.length) return this.placeholder({ description: 'Line graph (no data)' });
+   * lineGraph — Time-series / data trend line chart.
+   *
+   * @param {object}   params
+   * @param {string}   [params.title]      Chart title
+   * @param {string}   [params.xLabel]     X-axis label
+   * @param {string}   [params.yLabel]     Y-axis label
+   * @param {number}   [params.yMax]       Optional Y max (auto-scaled with 10% headroom if omitted)
+   * @param {number}   [params.yMin=0]     Y min (default 0)
+   * @param {number[]} [params.yTicks]     Optional explicit Y tick values (overrides auto 5 ticks)
+   * @param {Array}    params.points       Array of {x, y} or legacy {xText, yVal}
+   *                                        x can be numeric OR string (categorical)
+   *
+   * Examples:
+   *   {points: [{x: 0, y: 28}, {x: 1, y: 32}]}                   // numeric
+   *   {points: [{x: "8 am", y: 28}, {x: "9 am", y: 32}]}          // categorical
+   *   {points: [{xText: "8 am", yVal: 28}]}                       // legacy
+   */
+  lineGraph({
+    title = '',
+    xLabel = '',
+    yLabel = '',
+    points = [],
+    yTicks = [],
+    yMax: yMaxIn = null,
+    yMin: yMinIn = 0,
+  } = {}) {
+    const esc = this._esc.bind(this);
 
-  // ── Normalise: accept {x, y} OR legacy {xText, yVal} ──────────────────────
-  const isLegacy = 'xText' in points[0] || 'yVal' in points[0];
-  const isCategorical = isLegacy || typeof points[0].x === 'string';
+    // ── Safety: empty / invalid input ────────────────────────────────────────
+    if (!Array.isArray(points) || points.length === 0) {
+      return this.placeholder({ description: 'Line graph (no data)' });
+    }
 
-  const normalised = points.map((p, i) => ({
-    numX:     isCategorical ? i : (Number(p.x) || 0),
-    numY:     typeof p.y === 'number' ? p.y : (Number(p.yVal) || 0),
-    displayX: p.label ?? p.xText ?? (p.x !== undefined ? String(p.x) : String(i)),
-  }));
+    // ── Normalise: accept {x, y} OR legacy {xText, yVal} ─────────────────────
+    const norm = points.map((p, i) => {
+      const xRaw = p.x !== undefined ? p.x : p.xText;
+      const yNum = Number(p.y !== undefined ? p.y : p.yVal);
+      return {
+        xRaw,
+        yNum,
+        displayX: p.label ?? p.xText ?? (p.x !== undefined ? String(p.x) : String(i)),
+      };
+    }).filter(p => p.xRaw !== undefined && Number.isFinite(p.yNum));
 
-  const chartX = 55, chartY = 30, chartW = 310, chartH = 160;
+    if (norm.length === 0) {
+      return this.placeholder({ description: 'Line graph (invalid points)' });
+    }
 
-  const xMin  = isCategorical ? 0 : Math.min(...normalised.map(p => p.numX));
-  const xMax  = isCategorical ? Math.max(normalised.length - 1, 1) : Math.max(...normalised.map(p => p.numX));
-  const autoYMax = yMax || Math.ceil(Math.max(...normalised.map(p => p.numY)) * 1.2) || 10;
-  const yMin  = 0;
+    // Numeric axis only when EVERY x is finite numeric
+    const isNumeric = norm.every(p => typeof p.xRaw === 'number' && Number.isFinite(p.xRaw));
 
-  const toSX = (v) => chartX + ((v - xMin) / (xMax - xMin || 1)) * chartW;
-  const toSY = (v) => chartY + chartH - ((v - yMin) / (autoYMax - yMin || 1)) * chartH;
+    // ── Layout (400x260 viewBox) ─────────────────────────────────────────────
+    const VB_W = 400, VB_H = 260;
+    const PAD_L = 50, PAD_R = 20, PAD_T = title ? 36 : 20, PAD_B = 50;
+    const plotW = VB_W - PAD_L - PAD_R;
+    const plotH = VB_H - PAD_T - PAD_B;
 
-  // Y gridlines
-  const yTicksArr = yTicks.length ? yTicks : [0, Math.round(autoYMax / 2), autoYMax];
-  const gridLines = yTicksArr.map(v => {
-    const y = toSY(v);
-    return `<line x1="${chartX}" y1="${y}" x2="${chartX + chartW}" y2="${y}" stroke="var(--border-light)" stroke-width="1"/>
-            <text x="${chartX - 6}" y="${y + 4}" text-anchor="end" fill="var(--text-muted)" font-size="10">${v}</text>`;
-  }).join('');
+    // ── Y range (auto-scale with 10% headroom unless yMax given) ─────────────
+    const dataMax = Math.max(...norm.map(p => p.yNum));
+    const dataMin = Math.min(...norm.map(p => p.yNum));
+    let yHi = yMaxIn !== null ? Number(yMaxIn) : dataMax * 1.1;
+    let yLo = yMinIn !== null ? Number(yMinIn) : Math.min(0, dataMin);
+    if (yHi <= yLo) yHi = yLo + 1; // safety against flat data
 
-  // X axis labels (from normalised.displayX)
-  const xLabels = normalised.map(p =>
-    `<text x="${toSX(p.numX)}" y="${chartY + chartH + 16}" text-anchor="middle" fill="var(--text-main)" font-size="10">${esc(p.displayX)}</text>`
-  ).join('');
+    // ── X mapping ────────────────────────────────────────────────────────────
+    let xAt;
+    if (isNumeric) {
+      const xMin = Math.min(...norm.map(p => p.xRaw));
+      const xMax = Math.max(...norm.map(p => p.xRaw));
+      const xRange = xMax - xMin || 1;
+      xAt = (xRaw) => PAD_L + ((xRaw - xMin) / xRange) * plotW;
+    } else {
+      xAt = (_xRaw, i) => norm.length === 1
+        ? PAD_L + plotW / 2
+        : PAD_L + (i / (norm.length - 1)) * plotW;
+    }
+    const yAt = (y) => PAD_T + plotH - ((y - yLo) / (yHi - yLo)) * plotH;
 
-  // Line path and dots
-  const pathD = normalised.map((p, i) => `${i === 0 ? 'M' : 'L'} ${toSX(p.numX)} ${toSY(p.numY)}`).join(' ');
-  const dots  = normalised.map(p =>
-    `<circle cx="${toSX(p.numX)}" cy="${toSY(p.numY)}" r="4" fill="var(--brand-rose)" stroke="white" stroke-width="1.5"/>`
-  ).join('');
+    // ── Gridlines + Y tick labels (5 evenly-spaced unless yTicks provided) ───
+    const ticksArr = yTicks.length ? yTicks : (() => {
+      const N = 5, arr = [];
+      for (let i = 0; i <= N; i++) arr.push(yLo + (i / N) * (yHi - yLo));
+      return arr;
+    })();
+    let gridlines = '', yTickLabels = '';
+    ticksArr.forEach(yVal => {
+      const yPx = yAt(yVal);
+      gridlines += `<line x1="${PAD_L}" y1="${yPx.toFixed(1)}" x2="${(PAD_L + plotW).toFixed(1)}" y2="${yPx.toFixed(1)}" stroke="var(--border-light)" stroke-width="1" stroke-dasharray="2,3"/>`;
+      const lblTxt = Number.isInteger(yVal) ? String(yVal) : Number(yVal).toFixed(1);
+      yTickLabels += `<text x="${(PAD_L - 8).toFixed(1)}" y="${(yPx + 4).toFixed(1)}" text-anchor="end" fill="var(--text-muted)" font-size="10">${lblTxt}</text>`;
+    });
 
-  const axes = `
-    <line x1="${chartX}" y1="${chartY}" x2="${chartX}" y2="${chartY + chartH}" stroke="var(--brand-sage)" stroke-width="2"/>
-    <line x1="${chartX}" y1="${chartY + chartH}" x2="${chartX + chartW}" y2="${chartY + chartH}" stroke="var(--brand-sage)" stroke-width="2"/>`;
+    // ── X tick labels ────────────────────────────────────────────────────────
+    let xTickLabels = '';
+    norm.forEach((p, i) => {
+      const xPx = xAt(p.xRaw, i);
+      xTickLabels += `<text x="${xPx.toFixed(1)}" y="${(PAD_T + plotH + 16).toFixed(1)}" text-anchor="middle" fill="var(--text-main)" font-size="10">${esc(p.displayX)}</text>`;
+    });
 
-  const titleEl = title  ? `<text x="200" y="18" text-anchor="middle" fill="var(--text-main)" font-size="13" font-weight="700">${esc(title)}</text>` : '';
-  const xLblEl  = xLabel ? `<text x="${chartX + chartW / 2}" y="255" text-anchor="middle" fill="var(--text-muted)" font-size="11">${esc(xLabel)}</text>` : '';
-  const yLblEl  = yLabel ? `<text x="14" y="${chartY + chartH / 2}" text-anchor="middle" fill="var(--text-muted)" font-size="11" transform="rotate(-90,14,${chartY + chartH / 2})">${esc(yLabel)}</text>` : '';
+    // ── Axes ─────────────────────────────────────────────────────────────────
+    const axes = `<line x1="${PAD_L}" y1="${PAD_T}" x2="${PAD_L}" y2="${(PAD_T + plotH).toFixed(1)}" stroke="var(--text-main)" stroke-width="1.5"/>` +
+                 `<line x1="${PAD_L}" y1="${(PAD_T + plotH).toFixed(1)}" x2="${(PAD_L + plotW).toFixed(1)}" y2="${(PAD_T + plotH).toFixed(1)}" stroke="var(--text-main)" stroke-width="1.5"/>`;
 
-  const content = `${titleEl}${yLblEl}${gridLines}${axes}${xLabels}<path d="${pathD}" fill="none" stroke="var(--brand-rose)" stroke-width="2.5" stroke-linejoin="round"/>${dots}${xLblEl}`;
-  return this._svg(content, { alt: `Line graph${title ? ': ' + title : ''}. ${points.length} data points.` });
-},
+    // ── Polyline + dots ──────────────────────────────────────────────────────
+    const pathD = norm.map((p, i) => {
+      const x = xAt(p.xRaw, i).toFixed(1);
+      const y = yAt(p.yNum).toFixed(1);
+      return `${i === 0 ? 'M' : 'L'} ${x},${y}`;
+    }).join(' ');
+    const polyline = `<path d="${pathD}" fill="none" stroke="var(--brand-sage)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+
+    // Value labels above each dot, but only if not too crowded
+    const showValueLabels = norm.length <= 8;
+    const dots = norm.map((p, i) => {
+      const x = xAt(p.xRaw, i);
+      const y = yAt(p.yNum);
+      const valueLabel = showValueLabels
+        ? `<text x="${x.toFixed(1)}" y="${(y - 8).toFixed(1)}" text-anchor="middle" fill="var(--text-main)" font-size="10" font-weight="600" paint-order="stroke" stroke="var(--bg-surface)" stroke-width="3">${esc(String(p.yNum))}</text>`
+        : '';
+      return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.5" fill="var(--brand-sage)" stroke="var(--bg-surface)" stroke-width="1.5"/>${valueLabel}`;
+    }).join('');
+
+    // ── Titles & axis labels ─────────────────────────────────────────────────
+    const titleEl = title
+      ? `<text x="${(VB_W / 2).toFixed(1)}" y="20" text-anchor="middle" fill="var(--text-main)" font-size="13" font-weight="700">${esc(title)}</text>`
+      : '';
+    const xLabelEl = xLabel
+      ? `<text x="${(PAD_L + plotW / 2).toFixed(1)}" y="${(VB_H - 8).toFixed(1)}" text-anchor="middle" fill="var(--text-main)" font-size="11" font-weight="600">${esc(xLabel)}</text>`
+      : '';
+    const yLabelEl = yLabel
+      ? `<text x="14" y="${(PAD_T + plotH / 2).toFixed(1)}" text-anchor="middle" fill="var(--text-main)" font-size="11" font-weight="600" transform="rotate(-90, 14, ${(PAD_T + plotH / 2).toFixed(1)})">${esc(yLabel)}</text>`
+      : '';
+
+    return this._svg(
+      `${titleEl}${gridlines}${axes}${yTickLabels}${xTickLabels}${polyline}${dots}${xLabelEl}${yLabelEl}`,
+      { viewBox: `0 0 ${VB_W} ${VB_H}`, alt: `Line graph${title ? ': ' + title : ''}. ${norm.length} data points.`, maxWidth: 460 }
+    );
+  },
 
   // ── TABLES (HTML) ────────────────────────────────────────────────────────────
 
@@ -2125,28 +2196,61 @@ lineGraph({
     </defs>`;
  
     // ── 4. Draw arrows ────────────────────────────────────────────────────────
-    const arrowEls = arrows.map(a => {
+    // Pre-compute perpendicular offsets so bidirectional / parallel arrows curve
+    // around each other instead of overlapping on a single straight line.
+    const arrowOffsets = this._adArrowOffsets(arrows);
+
+    const arrowEls = arrows.map((a, idx) => {
       const src = posMap[a.from], tgt = posMap[a.to];
       if (!src || !tgt) return '';
- 
+
+      // Arrow's own direction (used for endpoint clipping at rectangle edges)
       const angle = Math.atan2(tgt.cy - src.cy, tgt.cx - src.cx);
-      // Get edge-to-edge endpoints — no more hardcoded ±45px
       const p1 = this._adRectEdge(src.cx, src.cy, src.w, src.h, angle);
       const p2 = this._adRectEdge(tgt.cx, tgt.cy, tgt.w, tgt.h, angle + Math.PI);
- 
-      let pathEl;
+
+      const offset = arrowOffsets.get(idx) || 0;
+
+      // CANONICAL perpendicular: direction is computed from the sorted node-pair,
+      // not from src→tgt. This way, two arrows between the same pair share one
+      // reference frame, so opposite-signed offsets curve to opposite sides.
+      let perpX = 0, perpY = 0;
+      if (offset !== 0) {
+        const [loId] = [a.from, a.to].sort();
+        const loPos = posMap[loId];
+        const hiPos = loPos === src ? tgt : src;
+        const canonAngle = Math.atan2(hiPos.cy - loPos.cy, hiPos.cx - loPos.cx);
+        perpX = -Math.sin(canonAngle);
+        perpY = Math.cos(canonAngle);
+      }
+
+      let pathEl, labelX, labelY;
       if (mode === 'circular' && nodes.length >= 3) {
-        // Slight outward curve prevents arrows from crossing the centre
+        // Existing circular outward curve — kept as-is, ignores `offset`
         const midX = (p1.x + p2.x) / 2, midY = (p1.y + p2.y) / 2;
         const outX = midX + (midX - vbW / 2) * 0.2;
         const outY = midY + (midY - vbH / 2) * 0.2;
         pathEl = `<path d="M ${p1.x.toFixed(1)},${p1.y.toFixed(1)} Q ${outX.toFixed(1)},${outY.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}" fill="none" stroke="var(--brand-sage)" stroke-width="2" marker-end="url(#${MID})"/>`;
+        labelX = outX; labelY = outY - 6;
+      } else if (offset !== 0) {
+        // Bidirectional / parallel pair → quadratic Bezier curve to one side
+        const midX = (p1.x + p2.x) / 2 + perpX * offset;
+        const midY = (p1.y + p2.y) / 2 + perpY * offset;
+        pathEl = `<path d="M ${p1.x.toFixed(1)},${p1.y.toFixed(1)} Q ${midX.toFixed(1)},${midY.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}" fill="none" stroke="var(--brand-sage)" stroke-width="2" marker-end="url(#${MID})"/>`;
+        // Label at the curve apex, pushed further out so it doesn't sit on the line
+        const labelPush = offset > 0 ? 10 : -10;
+        labelX = midX + perpX * labelPush;
+        labelY = midY + perpY * labelPush + 3;
       } else {
+        // Single arrow between this pair → straight line
         pathEl = `<line x1="${p1.x.toFixed(1)}" y1="${p1.y.toFixed(1)}" x2="${p2.x.toFixed(1)}" y2="${p2.y.toFixed(1)}" stroke="var(--brand-sage)" stroke-width="2" marker-end="url(#${MID})"/>`;
+        labelX = (p1.x + p2.x) / 2;
+        labelY = (p1.y + p2.y) / 2 - 8;
       }
- 
+
+      // paint-order halo: label stays readable when it crosses an arrow line
       const lbl = a.label
-        ? `<text x="${((p1.x + p2.x) / 2).toFixed(1)}" y="${((p1.y + p2.y) / 2 - 8).toFixed(1)}" text-anchor="middle" fill="var(--text-muted)" font-size="10">${esc(a.label)}</text>`
+        ? `<text x="${labelX.toFixed(1)}" y="${labelY.toFixed(1)}" text-anchor="middle" fill="var(--text-muted)" font-size="10" paint-order="stroke" stroke="var(--bg-surface)" stroke-width="3">${esc(a.label)}</text>`
         : '';
       return pathEl + lbl;
     }).join('');
@@ -2198,6 +2302,33 @@ lineGraph({
     if (Math.abs(dy) < 1e-9) return { x: cx + hw * Math.sign(dx), y: cy };
     const t = Math.min(hw / Math.abs(dx), hh / Math.abs(dy));
     return { x: cx + dx * t, y: cy + dy * t };
+  },
+ 
+  // ── Private: assign perpendicular offsets to bidirectional / parallel arrows ──
+  // Returns Map: arrowIndex → curve offset in px (0 = straight line).
+  // Offsets are in CANONICAL space (perpendicular to the sorted-pair direction),
+  // so opposing arrows naturally curve to opposite sides.
+  _adArrowOffsets(arrows) {
+    const offsets = new Map();
+    const groups = new Map();
+    arrows.forEach((a, i) => {
+      const key = [a.from, a.to].sort().join('::');
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(i);
+    });
+    groups.forEach(idxs => {
+      if (idxs.length === 1) {
+        offsets.set(idxs[0], 0);
+        return;
+      }
+      const CURVE_STEP = 22;                   // px separation between curves
+      const n = idxs.length;
+      idxs.forEach((arrIdx, k) => {
+        const slot = k - (n - 1) / 2;          // -0.5,+0.5 for n=2; -1,0,+1 for n=3
+        offsets.set(arrIdx, slot * CURVE_STEP);
+      });
+    });
+    return offsets;
   },
  
   // ── Private: horizontal layout ──────────────────────────────────────────────
