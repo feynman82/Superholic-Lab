@@ -1,6 +1,8 @@
 ### SUPERHOLIC LAB — MASTER QUESTION TEMPLATE
-### Version 4.3 | Source of truth for all Data Generation
+### Version 4.5 | Source of truth for all Data Generation
 ### Reference: MOE/SEAB PSLE Exam Formats 2025-2026
+### v4.5 changes (2026-04-30): §5 Mathematics MCQ difficulty calibration revised after user feedback. HOTS is now anchored to PSLE Paper 2 Q26–Q30 LAQs (true non-routine, multi-heuristic) instead of generic "harder than Standard". Standard ↔ Foundational, Advanced ↔ Standard, HOTS ↔ Advanced in Singapore tuition convention.
+### v4.4 changes (2026-04-30): §7 routing patched per audit — barChart/horizontalBarChart now defaults for P3/P4 Bar Graphs (verticalBarChart reserved for ink-spill); runningTrack added to P5/P6 Circles; rectangleWithLine added to P5/P6 Geometry; conceptMap added to P3 Science Diversity. The 6 functions documented in §6 but missing from §7 are now selectable.
 ### v4.3 changes (2026-04-30): rectangleDividedRightAngle §6 spec rewritten for v3 renderer — explicit `rays[].at_deg` + `arcs[].between/label` produce geometrically faithful diagrams. Legacy `angles[]` shape kept for backwards compat.
 ### v4.2 changes (2026-04-30): added Mathematics MCQ difficulty calibration in §5 anchored to PSLE 2024/2025 Booklet A Q1–Q15; standard-tier validation rules + benchmark questions.
 ### v4.1 changes: subject 'English Language' → 'English'; full canonical sub_topic taxonomy added; FK constraints + anti-hallucination rules.
@@ -188,13 +190,37 @@ Requires exactly 4 options. Options must be full sentences for Science/English.
 - `visual_payload`: MUST include experimental variables if the question involves a setup.
   * *Example:* `{"function_name": "genericExperiment", "params": {"Setup A": "30ml water, black cloth", "Setup B": "30ml water, white cloth", "independent_variable": "color of cloth", "dependent_variable": "temperature change"}}`
 
-**MATHEMATICS DIFFICULTY CALIBRATION (PSLE BENCHMARK):**
+**MATHEMATICS DIFFICULTY CALIBRATION (SINGAPORE TUITION CONVENTION):**
 
-Authoritative reference: actual PSLE Booklet A papers in
-`data/past_year_papers/P6_Primary6_PSLE/Maths/PSLE-standard-math-paper-1-2-questions-with-answers-{2024,2025}.pdf`.
-Open the PDF and read Q11–Q15 before drafting any P6 Standard MCQ — those five
-questions are the calibration touchstone. Drafts that feel materially easier
-than Q11–Q15 are mis-tiered and must be re-labelled or rewritten.
+⚠️ **CRITICAL TIER MAPPING (revised 2026-04-30 after user feedback):**
+The Superholic Lab `difficulty` enum maps to the following Singapore tuition
+standard. Generators MUST use these calibration anchors, not naive PSLE
+Booklet A position alone.
+
+| `difficulty` | Singapore tuition equivalent | PSLE benchmark |
+|---|---|---|
+| Foundation | (transitional / lower-primary level — used for reclassified P3/P4 content; not the main P6 tier) | P3/P4-style single-step recall or one-operation problems |
+| Standard | Singapore **Foundational** | PSLE Booklet A **Q1–Q10** (1m, single-step, direct recall or simple computation) |
+| Advanced | Singapore **Standard** | PSLE Booklet A **Q11–Q15** (2m, multi-step, named-misconception distractors) |
+| HOTS | Singapore **Advanced** | PSLE Paper 2 **Q26–Q30** (4–5 marks, non-routine LAQ — multi-heuristic, requires transfer or invention of method, NOT a routine sequence of operations) |
+
+**Key takeaway: HOTS = true PSLE LAQ caliber.** A HOTS question must NOT be
+solvable by chaining 3–4 routine operations. It must require:
+  - Setting up a non-obvious unit, model, or before-after diagram, OR
+  - Combining two or more PSLE heuristics (e.g. constant-difference + ratio,
+    overlap + percentage, units-and-parts + working-backwards), OR
+  - Recognising a hidden invariant or symmetry that simplifies the problem,
+  OR
+  - A genuine "transfer" — applying a method in a context the student has
+    never seen exactly the same shape of before.
+
+If a draft labelled HOTS could be solved by a competent P6 student in under
+2 minutes with just BODMAS and table recall, **re-tier it to Advanced** and
+write a harder one for HOTS.
+
+Authoritative reference: actual PSLE Booklet A and Paper 2 papers in
+`data/past_year_papers/P6_Primary6_PSLE/Maths/`. Read Q11–Q15 (Booklet A)
+AND Q26–Q30 (Paper 2 LAQs) before drafting at the corresponding tiers.
 
 | Difficulty | Marks | PSLE Map | Cognitive Load |
 |---|---|---|---|
@@ -601,8 +627,9 @@ MATHEMATICS ROUTING MAP
 | Area and Perimeter   | `rectangle`            | Rectangle shapes                                      |
 |                      | `square`               | Square shapes                                         |
 |                      | `compositeShape`       | L-shapes, T-shapes, rectilinear figures               |
-| Bar Graphs           | `verticalBarChart`     | Always use `verticalBarChart` for P3/P4 bar graphs    |
-|                      |                        | Use `"value": "covered"` for the ink-spill question type |
+| Bar Graphs           | `barChart`             | DEFAULT for MCQ bar-graph data questions (no ink-spill) |
+|                      | `horizontalBarChart`   | When category labels are long (e.g., country / sport names) |
+|                      | `verticalBarChart`     | ONLY for "ink-spill" questions: set `"value": "covered"` on the missing bar |
 
 ── P4 ──────────────────────────────────────────────────────────
 
@@ -622,7 +649,9 @@ MATHEMATICS ROUTING MAP
 |                      | `compositeShape`               | Composite rectilinear figures                     |
 |                      | `drawRectangleOnGrid`          | Grid-based area problems with labelled corners    |
 | Symmetry             | `drawRectangleOnGrid`          | Shape on grid with axis of symmetry shown         |
-| Data Analysis        | `verticalBarChart`             | Bar graph questions (include ink-spill where set) |
+| Data Analysis        | `barChart`                     | DEFAULT for MCQ bar-graph data questions          |
+|                      | `horizontalBarChart`           | When category labels are long                     |
+|                      | `verticalBarChart`             | ONLY for "ink-spill" questions (`"value": "covered"`) |
 |                      | `lineGraph`                    | Line graph / trend questions                      |
 |                      | `dataTable`                    | Tabulated data comparison                         |
 
@@ -643,7 +672,11 @@ MATHEMATICS ROUTING MAP
 |                      | `equilateralTriangle`  | Equal-sided triangle(s); set `count` for multiple     |
 |                      | `rightAngleDivided`    | Angles in a right angle                               |
 |                      | `straightLineDividedAngles` | Angles on a straight line                       |
-| Average              | `verticalBarChart`     | Showing data bars with average line for context       |
+|                      | `rectangleWithLine`    | "Rectangle ABCD with line from corner to point on opposite side" PSLE pattern |
+| **Circles**          | `circle`               | Use `radiusLabel` OR `diameterLabel` (not both)       |
+|                      | `runningTrack`         | Stadium-shaped track perimeter / area problems        |
+| Average              | `barChart`             | Showing data bars with average line for context       |
+|                      | `verticalBarChart`     | ONLY for ink-spill avg questions (covered bar)        |
 
 ── P6 ──────────────────────────────────────────────────────────
 
@@ -655,10 +688,12 @@ MATHEMATICS ROUTING MAP
 | **Speed**            | `lineGraph`            | Distance-time graphs; use categorical x for time labels |
 | **Algebra**          | `rectangle`            | Rectangle with variable side labels (e.g., "x+3 cm") |
 | **Circles**          | `circle`               | Use `radiusLabel` OR `diameterLabel` (not both)       |
+|                      | `runningTrack`         | Stadium-shaped track perimeter / area problems        |
 | Volume               | `cuboid`               | 3D tank; before-and-after water level (two diagrams)  |
 | **Geometry (general)** | `polygon`            | Complex polygons with multiple angle labels           |
 |                      | `parallelogram`        | Rhombus and parallelogram angle properties            |
 |                      | `compositeShape`       | Shaded/unshaded composite area figures                |
+|                      | `rectangleWithLine`    | "Rectangle ABCD with line from corner to point on opposite side" PSLE pattern |
 | **Geometry (Solid Figures)** | `isometricGrid` | Use `mode: "isometric"` for 3D view questions     |
 |                      |                        | Use `mode: "orthographic"` for Top/Front/Side view questions |
 |                      |                        | Use `highlight_cubes` to mark specific cubes in rose  |
@@ -673,6 +708,7 @@ SCIENCE ROUTING MAP
 | Topic        | Use Function       | Condition / Notes                                            |
 |--------------|--------------------|--------------------------------------------------------------|
 | Diversity    | `arrowDiagram`     | Classification tree: nodes = groups, arrows = characteristics |
+|              | `conceptMap`       | Hierarchical concept web (living things → plants/animals → ...) |
 |              | `dataTable`        | Comparing features across organisms (rows = organisms)       |
 |              |                    | Set `hasFaultyNode: true` in params for misconception MCQs   |
 | Systems      | `arrowDiagram`     | Parts-and-function flow (e.g., digestive stages)             |
