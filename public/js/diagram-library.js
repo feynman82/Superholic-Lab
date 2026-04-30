@@ -4,12 +4,12 @@
  * All functions are pure — they take params and return strings. No DOM access.
  *
  * CSS variable usage (from style.css — NEVER hardcode hex values):
- *   Borders/axes/text:  var(--brand-sage)   #51615E
- *   Highlights/shaded:  var(--brand-rose)   #B76E79
- *   Light backgrounds:  var(--bg-elevated)  #F0F4F3
- *   Accent/warning:     var(--brand-amber)  #D97706
- *   Text on light bg:   var(--text-main)    #2C3E3A
- *   Muted text:         var(--text-muted)   #6B7A77
+ *   Borders/axes/text:  var(--brand-sage, #51615E)   #51615E
+ *   Highlights/shaded:  var(--brand-rose, #B76E79)   #B76E79
+ *   Light backgrounds:  var(--bg-elevated, #f0f5f2)  #F0F4F3
+ *   Accent/warning:     var(--brand-amber, #D4A24C)  #D97706
+ *   Text on light bg:   var(--text-main, #1a2e2a)    #2C3E3A
+ *   Muted text:         var(--text-muted, #5d706b)   #6B7A77
  *
  * SVG conventions:
  *   - width="100%" height="auto" (responsive)
@@ -103,8 +103,8 @@ const DiagramLibrary = {
       };
       const fill = hl
         ? { top: 'rgba(183,110,121,0.45)', left: 'rgba(183,110,121,0.30)', right: 'rgba(183,110,121,0.18)' }
-        : { top: 'var(--bg-elevated)',     left: 'rgba(81,97,94,0.16)',    right: 'rgba(81,97,94,0.08)' };
-      const stroke = hl ? 'var(--brand-rose)' : 'var(--brand-sage)';
+        : { top: 'var(--bg-elevated, #f0f5f2)',     left: 'rgba(81,97,94,0.16)',    right: 'rgba(81,97,94,0.08)' };
+      const stroke = hl ? 'var(--brand-rose, #B76E79)' : 'var(--brand-sage, #51615E)';
       return `<polygon points="${pts[which]}" fill="${fill[which]}" stroke="${stroke}" stroke-width="1.5"/>`;
     };
 
@@ -123,7 +123,7 @@ const DiagramLibrary = {
     }
 
     const lblEl = label
-      ? `<text x="${svgW/2}" y="16" text-anchor="middle" fill="var(--text-main)" font-size="12" font-weight="600">${esc(label)}</text>`
+      ? `<text x="${svgW/2}" y="16" text-anchor="middle" fill="var(--text-main, #1a2e2a)" font-size="12" font-weight="600">${esc(label)}</text>`
       : '';
 
     return this._svg(`${lblEl}${shapes}`, {
@@ -175,7 +175,7 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
   // Panel headers
   const hY = pad + lblH - 3;
   [[tx0 + cols*cs/2, 'Top View'], [fx0 + cols*cs/2, 'Front View'], [sx0 + rows*cs/2, 'Side View']].forEach(([x, t]) => {
-    svg += `<text x="${x}" y="${hY}" text-anchor="middle" fill="var(--brand-sage)" font-size="10" font-weight="700">${t}</text>`;
+    svg += `<text x="${x}" y="${hY}" text-anchor="middle" fill="var(--brand-sage, #51615E)" font-size="10" font-weight="700">${t}</text>`;
   });
 
   // ── TOP VIEW ───────────────────────────────────────────────────────────────
@@ -183,8 +183,8 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     for (let c = 0; c < cols; c++) {
       const h    = Number((grid[r] || [])[c]) || 0;
       const fill = h > 0 ? 'rgba(81,97,94,0.22)' : 'none';
-      svg += `<rect x="${tx0+c*cs}" y="${topY0+r*cs}" width="${cs}" height="${cs}" fill="${fill}" stroke="var(--brand-sage)" stroke-width="1"/>`;
-      if (h > 1) svg += `<text x="${tx0+c*cs+cs/2}" y="${topY0+r*cs+cs/2+4}" text-anchor="middle" fill="var(--brand-sage)" font-size="8" font-weight="700">${h}</text>`;
+      svg += `<rect x="${tx0+c*cs}" y="${topY0+r*cs}" width="${cs}" height="${cs}" fill="${fill}" stroke="var(--brand-sage, #51615E)" stroke-width="1"/>`;
+      if (h > 1) svg += `<text x="${tx0+c*cs+cs/2}" y="${topY0+r*cs+cs/2+4}" text-anchor="middle" fill="var(--brand-sage, #51615E)" font-size="8" font-weight="700">${h}</text>`;
     }
   }
 
@@ -192,7 +192,7 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
   for (let c = 0; c < cols; c++) {
     for (let z = 0; z < mFront; z++) {
       const fill = z < frontH[c] ? 'rgba(81,97,94,0.22)' : 'none';
-      svg += `<rect x="${fx0+c*cs}" y="${frontY0+(mFront-1-z)*cs}" width="${cs}" height="${cs}" fill="${fill}" stroke="var(--brand-sage)" stroke-width="1"/>`;
+      svg += `<rect x="${fx0+c*cs}" y="${frontY0+(mFront-1-z)*cs}" width="${cs}" height="${cs}" fill="${fill}" stroke="var(--brand-sage, #51615E)" stroke-width="1"/>`;
     }
   }
 
@@ -201,13 +201,13 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     const panelCol = rows - 1 - r;   // front row → rightmost column in panel
     for (let z = 0; z < mSide; z++) {
       const fill = z < sideH[r] ? 'rgba(81,97,94,0.22)' : 'none';
-      svg += `<rect x="${sx0+panelCol*cs}" y="${sideY0+(mSide-1-z)*cs}" width="${cs}" height="${cs}" fill="${fill}" stroke="var(--brand-sage)" stroke-width="1"/>`;
+      svg += `<rect x="${sx0+panelCol*cs}" y="${sideY0+(mSide-1-z)*cs}" width="${cs}" height="${cs}" fill="${fill}" stroke="var(--brand-sage, #51615E)" stroke-width="1"/>`;
     }
   }
 
   // Optional diagram caption
   const capEl = label
-    ? `<text x="${svgW/2}" y="${svgH-3}" text-anchor="middle" fill="var(--text-muted)" font-size="10">${esc(label)}</text>`
+    ? `<text x="${svgW/2}" y="${svgH-3}" text-anchor="middle" fill="var(--text-muted, #5d706b)" font-size="10">${esc(label)}</text>`
     : '';
 
   return this._svg(`${svg}${capEl}`, {
@@ -219,25 +219,29 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
   // ==========================================
   // P5/P6 MATH HEURISTIC ENGINE
   // ==========================================
-  unitModel(data) {
+  unitModel(params) {
+    // Backwards-compatible unwrap: master template documents the WRAPPED format
+    // `{unitModel: {models: [...]}}` but legacy callers pass `{models: [...]}` directly.
+    // Same convention as circuitDiagram (see line ~278).
+    const data = (params && params.unitModel) ? params.unitModel : (params || {});
     if (!data || !data.models) return '';
     // Uses the Sage-Rose glassmorphism design tokens
     let svg = `<rect width="100%" height="100%" fill="var(--glass-bg, rgba(255,255,255,0.7))" rx="8"/>`;
     let y = 40;
 
     data.models.forEach(model => {
-      svg += `<text x="20" y="${y + 15}" fill="var(--text-main)" font-size="14" font-weight="bold">${this._esc(model.label)}</text>`;
+      svg += `<text x="20" y="${y + 15}" fill="var(--text-main, #1a2e2a)" font-size="14" font-weight="bold">${this._esc(model.label)}</text>`;
       let x = 100;
       model.parts.forEach(part => {
         const width = part.width || 40;
-        const fill = part.shaded ? 'var(--brand-rose)' : 'var(--glass-bg, rgba(255,255,255,0.7))';
+        const fill = part.shaded ? 'var(--brand-rose, #B76E79)' : 'var(--glass-bg, rgba(255,255,255,0.7))';
         const opacity = part.shaded ? '0.3' : '1';
         const strokeDash = part.dashed ? 'stroke-dasharray="4,4"' : '';
 
-        svg += `<rect x="${x}" y="${y}" width="${width}" height="24" fill="${fill}" fill-opacity="${opacity}" stroke="var(--brand-sage)" stroke-width="2" ${strokeDash}/>`;
+        svg += `<rect x="${x}" y="${y}" width="${width}" height="24" fill="${fill}" fill-opacity="${opacity}" stroke="var(--brand-sage, #51615E)" stroke-width="2" ${strokeDash}/>`;
 
         if (part.label) {
-          svg += `<text x="${x + width / 2}" y="${y + 16}" text-anchor="middle" fill="var(--text-main)" font-size="12">${this._esc(part.label)}</text>`;
+          svg += `<text x="${x + width / 2}" y="${y + 16}" text-anchor="middle" fill="var(--text-main, #1a2e2a)" font-size="12">${this._esc(part.label)}</text>`;
         }
         x += width;
       });
@@ -282,24 +286,24 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     const VB_W = 400, VB_H = 240;
     const esc  = this._esc.bind(this);
  
-    let svg = `<rect width="100%" height="100%" fill="var(--glass-bg, rgba(255,255,255,0.7))" rx="8" stroke="var(--border-light)" />`;
+    let svg = `<rect width="100%" height="100%" fill="var(--glass-bg, rgba(255,255,255,0.7))" rx="8" stroke="var(--border-light, #d6e3dc)" />`;
  
     // Title
     if (data.title) {
-      svg += `<text x="${VB_W / 2}" y="22" text-anchor="middle" fill="var(--text-main)" font-size="13" font-weight="700">${esc(data.title)}</text>`;
+      svg += `<text x="${VB_W / 2}" y="22" text-anchor="middle" fill="var(--text-main, #1a2e2a)" font-size="13" font-weight="700">${esc(data.title)}</text>`;
     }
  
     // ── Component drawing primitives ───────────────────────────────────────
     const drawBattery = (cx, cy) => {
       // Wire-break + two vertical lines (short = −, long = +)
       let s = `<line x1="${cx - 10}" y1="${cy}" x2="${cx + 10}" y2="${cy}" stroke="var(--glass-bg, rgba(255,255,255,0.7))" stroke-width="6"/>`;
-      s    += `<line x1="${cx - 5}" y1="${cy - 10}" x2="${cx - 5}" y2="${cy + 10}" stroke="var(--text-main)" stroke-width="2"/>`;
-      s    += `<line x1="${cx + 5}" y1="${cy - 14}" x2="${cx + 5}" y2="${cy + 14}" stroke="var(--text-main)" stroke-width="2"/>`;
+      s    += `<line x1="${cx - 5}" y1="${cy - 10}" x2="${cx - 5}" y2="${cy + 10}" stroke="var(--text-main, #1a2e2a)" stroke-width="2"/>`;
+      s    += `<line x1="${cx + 5}" y1="${cy - 14}" x2="${cx + 5}" y2="${cy + 14}" stroke="var(--text-main, #1a2e2a)" stroke-width="2"/>`;
       return s;
     };
  
     const drawBulb = (cx, cy, comp) => {
-      const stroke = comp.fused ? 'var(--brand-rose)' : 'var(--brand-sage)';
+      const stroke = comp.fused ? 'var(--brand-rose, #B76E79)' : 'var(--brand-sage, #51615E)';
       const r = 13;
       let s = `<line x1="${cx - r}" y1="${cy}" x2="${cx + r}" y2="${cy}" stroke="var(--glass-bg, rgba(255,255,255,0.7))" stroke-width="6"/>`;
       s    += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="var(--glass-bg, rgba(255,255,255,0.7))" stroke="${stroke}" stroke-width="2"/>`;
@@ -307,33 +311,33 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
       s    += `<path d="M ${cx - 9} ${cy - 9} L ${cx + 9} ${cy + 9} M ${cx - 9} ${cy + 9} L ${cx + 9} ${cy - 9}" stroke="${stroke}" stroke-width="1.8"/>`;
       // Label below the bulb
       if (comp.label) {
-        s += `<text x="${cx}" y="${cy + r + 14}" text-anchor="middle" fill="var(--text-main)" font-size="11" font-weight="600">${esc(comp.label)}</text>`;
+        s += `<text x="${cx}" y="${cy + r + 14}" text-anchor="middle" fill="var(--text-main, #1a2e2a)" font-size="11" font-weight="600">${esc(comp.label)}</text>`;
       }
       return s;
     };
  
     const drawSwitch = (cx, cy, comp) => {
       let s = `<line x1="${cx - 10}" y1="${cy}" x2="${cx + 10}" y2="${cy}" stroke="var(--glass-bg, rgba(255,255,255,0.7))" stroke-width="6"/>`;
-      s    += `<circle cx="${cx - 7}" cy="${cy}" r="2.5" fill="var(--text-main)"/>`;
-      s    += `<circle cx="${cx + 7}" cy="${cy}" r="2.5" fill="var(--text-main)"/>`;
+      s    += `<circle cx="${cx - 7}" cy="${cy}" r="2.5" fill="var(--text-main, #1a2e2a)"/>`;
+      s    += `<circle cx="${cx + 7}" cy="${cy}" r="2.5" fill="var(--text-main, #1a2e2a)"/>`;
       if (comp.isOpen) {
-        s += `<line x1="${cx - 7}" y1="${cy}" x2="${cx + 6}" y2="${cy - 9}" stroke="var(--text-main)" stroke-width="2"/>`;
+        s += `<line x1="${cx - 7}" y1="${cy}" x2="${cx + 6}" y2="${cy - 9}" stroke="var(--text-main, #1a2e2a)" stroke-width="2"/>`;
       } else {
-        s += `<line x1="${cx - 7}" y1="${cy}" x2="${cx + 7}" y2="${cy}" stroke="var(--text-main)" stroke-width="2"/>`;
+        s += `<line x1="${cx - 7}" y1="${cy}" x2="${cx + 7}" y2="${cy}" stroke="var(--text-main, #1a2e2a)" stroke-width="2"/>`;
       }
       // Label above the switch
       if (comp.label) {
-        s += `<text x="${cx}" y="${cy - 12}" text-anchor="middle" fill="var(--text-main)" font-size="10" font-weight="600">${esc(comp.label)}</text>`;
+        s += `<text x="${cx}" y="${cy - 12}" text-anchor="middle" fill="var(--text-main, #1a2e2a)" font-size="10" font-weight="600">${esc(comp.label)}</text>`;
       }
       return s;
     };
  
     const drawGap = (cx, cy, comp) => {
       let s = `<line x1="${cx - 10}" y1="${cy}" x2="${cx + 10}" y2="${cy}" stroke="var(--glass-bg, rgba(255,255,255,0.7))" stroke-width="6"/>`;
-      s    += `<circle cx="${cx - 7}" cy="${cy}" r="3" fill="var(--brand-rose)"/>`;
-      s    += `<circle cx="${cx + 7}" cy="${cy}" r="3" fill="var(--brand-rose)"/>`;
+      s    += `<circle cx="${cx - 7}" cy="${cy}" r="3" fill="var(--brand-rose, #B76E79)"/>`;
+      s    += `<circle cx="${cx + 7}" cy="${cy}" r="3" fill="var(--brand-rose, #B76E79)"/>`;
       if (comp.label) {
-        s += `<text x="${cx}" y="${cy - 12}" text-anchor="middle" fill="var(--brand-rose)" font-size="10" font-weight="700">${esc(comp.label)}</text>`;
+        s += `<text x="${cx}" y="${cy - 12}" text-anchor="middle" fill="var(--brand-rose, #B76E79)" font-size="10" font-weight="700">${esc(comp.label)}</text>`;
       }
       return s;
     };
@@ -355,7 +359,7 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
       const X1 = 60, X2 = VB_W - 60, Y1 = 75, Y2 = VB_H - 50;
  
       // Wire loop
-      svg += `<path d="M ${X1} ${Y1} L ${X2} ${Y1} L ${X2} ${Y2} L ${X1} ${Y2} Z" fill="none" stroke="var(--brand-sage)" stroke-width="2"/>`;
+      svg += `<path d="M ${X1} ${Y1} L ${X2} ${Y1} L ${X2} ${Y2} L ${X1} ${Y2} Z" fill="none" stroke="var(--brand-sage, #51615E)" stroke-width="2"/>`;
  
       // Position battery first (always on top edge)
       const battery = data.components.find(c => c.type === 'battery');
@@ -426,23 +430,23 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
       // Left vertical bus (from battery to rails)
       const yMin = Math.min(...usedRails.map(r => railY[r]));
       const yMax = Math.max(...usedRails.map(r => railY[r]));
-      svg += `<line x1="${X1}" y1="${yMin}" x2="${X1}" y2="${yMax}" stroke="var(--brand-sage)" stroke-width="2"/>`;
+      svg += `<line x1="${X1}" y1="${yMin}" x2="${X1}" y2="${yMax}" stroke="var(--brand-sage, #51615E)" stroke-width="2"/>`;
       // Right vertical bus
-      svg += `<line x1="${X2}" y1="${yMin}" x2="${X2}" y2="${yMax}" stroke="var(--brand-sage)" stroke-width="2"/>`;
+      svg += `<line x1="${X2}" y1="${yMin}" x2="${X2}" y2="${yMax}" stroke="var(--brand-sage, #51615E)" stroke-width="2"/>`;
  
       // Battery wire: from middle of left bus down/up to battery position
       // Battery is drawn on a short branch to the left of the left bus
       const BAT_X = X1 - 25;
-      svg += `<line x1="${BAT_X}" y1="${Y_BAT}" x2="${X1}" y2="${Y_BAT}" stroke="var(--brand-sage)" stroke-width="2"/>`;
+      svg += `<line x1="${BAT_X}" y1="${Y_BAT}" x2="${X1}" y2="${Y_BAT}" stroke="var(--brand-sage, #51615E)" stroke-width="2"/>`;
       // If battery position isn't on the bus span, extend the bus
-      if (Y_BAT < yMin) svg += `<line x1="${X1}" y1="${Y_BAT}" x2="${X1}" y2="${yMin}" stroke="var(--brand-sage)" stroke-width="2"/>`;
-      if (Y_BAT > yMax) svg += `<line x1="${X1}" y1="${yMax}" x2="${X1}" y2="${Y_BAT}" stroke="var(--brand-sage)" stroke-width="2"/>`;
+      if (Y_BAT < yMin) svg += `<line x1="${X1}" y1="${Y_BAT}" x2="${X1}" y2="${yMin}" stroke="var(--brand-sage, #51615E)" stroke-width="2"/>`;
+      if (Y_BAT > yMax) svg += `<line x1="${X1}" y1="${yMax}" x2="${X1}" y2="${Y_BAT}" stroke="var(--brand-sage, #51615E)" stroke-width="2"/>`;
  
       // Left side wire: battery → top of left bus
-      svg += `<line x1="${BAT_X}" y1="${Y_BAT}" x2="${BAT_X}" y2="35" stroke="var(--brand-sage)" stroke-width="2"/>`;
-      svg += `<line x1="${BAT_X}" y1="35" x2="${X2 + 25}" y2="35" stroke="var(--brand-sage)" stroke-width="2"/>`;
-      svg += `<line x1="${X2 + 25}" y1="35" x2="${X2 + 25}" y2="${Y_BAT}" stroke="var(--brand-sage)" stroke-width="2"/>`;
-      svg += `<line x1="${X2 + 25}" y1="${Y_BAT}" x2="${X2}" y2="${Y_BAT}" stroke="var(--brand-sage)" stroke-width="2"/>`;
+      svg += `<line x1="${BAT_X}" y1="${Y_BAT}" x2="${BAT_X}" y2="35" stroke="var(--brand-sage, #51615E)" stroke-width="2"/>`;
+      svg += `<line x1="${BAT_X}" y1="35" x2="${X2 + 25}" y2="35" stroke="var(--brand-sage, #51615E)" stroke-width="2"/>`;
+      svg += `<line x1="${X2 + 25}" y1="35" x2="${X2 + 25}" y2="${Y_BAT}" stroke="var(--brand-sage, #51615E)" stroke-width="2"/>`;
+      svg += `<line x1="${X2 + 25}" y1="${Y_BAT}" x2="${X2}" y2="${Y_BAT}" stroke="var(--brand-sage, #51615E)" stroke-width="2"/>`;
       if (Y_BAT < yMin || Y_BAT > yMax) {
         // wire from outer right bus into the rails
       }
@@ -452,7 +456,7 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
       // Draw each rail with its components
       usedRails.forEach(rail => {
         const y = railY[rail];
-        svg += `<line x1="${X1}" y1="${y}" x2="${X2}" y2="${y}" stroke="var(--brand-sage)" stroke-width="2"/>`;
+        svg += `<line x1="${X1}" y1="${y}" x2="${X2}" y2="${y}" stroke="var(--brand-sage, #51615E)" stroke-width="2"/>`;
  
         const comps = branches[rail];
         const railLen = X2 - X1;
@@ -477,7 +481,7 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
       const bottom  = data.components.filter(c => c.branch === 'parallel' || c.branch === 'bottom');
  
       // Main upper loop
-      svg += `<path d="M ${X1} ${Y1} L ${X2} ${Y1} L ${X2} ${Y2_TOP} L ${X1} ${Y2_TOP} Z" fill="none" stroke="var(--brand-sage)" stroke-width="2"/>`;
+      svg += `<path d="M ${X1} ${Y1} L ${X2} ${Y1} L ${X2} ${Y2_TOP} L ${X1} ${Y2_TOP} Z" fill="none" stroke="var(--brand-sage, #51615E)" stroke-width="2"/>`;
  
       // Battery on top edge
       if (battery) svg += drawBattery((X1 + X2) / 2, Y1);
@@ -505,9 +509,9 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
         const subList = bottom.length ? bottom : top;
         // Drops at left and right of sub-branch
         const subX1 = X1 + 40, subX2 = X2 - 40;
-        svg += `<line x1="${subX1}" y1="${Y2_TOP}" x2="${subX1}" y2="${Y_SUB}" stroke="var(--brand-sage)" stroke-width="2"/>`;
-        svg += `<line x1="${subX2}" y1="${Y2_TOP}" x2="${subX2}" y2="${Y_SUB}" stroke="var(--brand-sage)" stroke-width="2"/>`;
-        svg += `<line x1="${subX1}" y1="${Y_SUB}" x2="${subX2}" y2="${Y_SUB}" stroke="var(--brand-sage)" stroke-width="2"/>`;
+        svg += `<line x1="${subX1}" y1="${Y2_TOP}" x2="${subX1}" y2="${Y_SUB}" stroke="var(--brand-sage, #51615E)" stroke-width="2"/>`;
+        svg += `<line x1="${subX2}" y1="${Y2_TOP}" x2="${subX2}" y2="${Y_SUB}" stroke="var(--brand-sage, #51615E)" stroke-width="2"/>`;
+        svg += `<line x1="${subX1}" y1="${Y_SUB}" x2="${subX2}" y2="${Y_SUB}" stroke="var(--brand-sage, #51615E)" stroke-width="2"/>`;
  
         // Distribute parallel components on the sub-branch
         subList.forEach((comp, i) => {
@@ -524,7 +528,7 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
         console.warn(`[circuitDiagram] Unknown arrangement "${arrangement}", rendering as series.`);
       }
       const X1 = 60, X2 = VB_W - 60, Y1 = 75, Y2 = VB_H - 50;
-      svg += `<path d="M ${X1} ${Y1} L ${X2} ${Y1} L ${X2} ${Y2} L ${X1} ${Y2} Z" fill="none" stroke="var(--brand-sage)" stroke-width="2"/>`;
+      svg += `<path d="M ${X1} ${Y1} L ${X2} ${Y1} L ${X2} ${Y2} L ${X1} ${Y2} Z" fill="none" stroke="var(--brand-sage, #51615E)" stroke-width="2"/>`;
       const battery = data.components.find(c => c.type === 'battery');
       const others  = data.components.filter(c => c !== battery);
       if (battery) svg += drawBattery((X1 + X2) / 2, Y1);
@@ -558,10 +562,10 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
 
     const width = 420, height = 260;
 
-    let svg = `<svg viewBox="0 0 ${width} ${height}" style="width: 100%; max-width: 420px; height: auto; display: block; margin: 0 auto 1.5rem auto; background: var(--bg-surface); border-radius: 8px; border: 1px solid var(--border-light);" role="img" aria-label="Concept Map">
+    let svg = `<svg viewBox="0 0 ${width} ${height}" style="width: 100%; max-width: 420px; height: auto; display: block; margin: 0 auto 1.5rem auto; background: var(--bg-surface, #ffffff); border-radius: 8px; border: 1px solid var(--border-light, #d6e3dc);" role="img" aria-label="Concept Map">
       <defs>
         <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="24" refY="3" orient="auto">
-          <polygon points="0 0, 8 3, 0 6" fill="var(--brand-sage)" />
+          <polygon points="0 0, 8 3, 0 6" fill="var(--brand-sage, #51615E)" />
         </marker>
       </defs>`;
 
@@ -573,7 +577,7 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
         const y1 = Number((Number(fromNode.y) / 100) * height) || 0;
         const x2 = Number((Number(toNode.x) / 100) * width) || 0;
         const y2 = Number((Number(toNode.y) / 100) * height) || 0;
-        svg += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--brand-sage)" stroke-width="2" marker-end="url(#arrowhead)"/>`;
+        svg += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--brand-sage, #51615E)" stroke-width="2" marker-end="url(#arrowhead)"/>`;
       }
     });
 
@@ -581,8 +585,8 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
       const nx = Number((Number(node.x) / 100) * width) || 0;
       const ny = Number((Number(node.y) / 100) * height) || 0;
       svg += `
-        <rect x="${nx - 40}" y="${ny - 12}" width="80" height="24" rx="12" fill="var(--bg-elevated)" stroke="var(--border-dark)" stroke-width="2"/>
-        <text x="${nx}" y="${ny + 4}" text-anchor="middle" font-size="11" font-weight="bold" fill="var(--text-main)" font-family="sans-serif">${this._esc(node.label)}</text>
+        <rect x="${nx - 40}" y="${ny - 12}" width="80" height="24" rx="12" fill="var(--bg-elevated, #f0f5f2)" stroke="var(--border-dark, #8da89e)" stroke-width="2"/>
+        <text x="${nx}" y="${ny + 4}" text-anchor="middle" font-size="11" font-weight="bold" fill="var(--text-main, #1a2e2a)" font-family="sans-serif">${this._esc(node.label)}</text>
       `;
     });
 
@@ -606,17 +610,17 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
         const cleanVal = typeof value === 'object' ? JSON.stringify(value) : value;
         rowsHtml += `
           <div style="margin-bottom: 12px;">
-            <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">${esc(cleanKey)}</div>
-            <div style="font-size: 15px; color: var(--text-main); line-height: 1.5;">${esc(cleanVal)}</div>
+            <div style="font-size: 11px; font-weight: 700; color: var(--text-muted, #5d706b); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">${esc(cleanKey)}</div>
+            <div style="font-size: 15px; color: var(--text-main, #1a2e2a); line-height: 1.5;">${esc(cleanVal)}</div>
           </div>`;
       }
     } else {
-      rowsHtml = `<div style="color: var(--text-main); font-size: 15px; line-height: 1.5;">${esc(params)}</div>`;
+      rowsHtml = `<div style="color: var(--text-main, #1a2e2a); font-size: 15px; line-height: 1.5;">${esc(params)}</div>`;
     }
 
     const htmlContent = `
-      <div xmlns="http://www.w3.org/1999/xhtml" style="width: 100%; height: 100%; padding: 20px; box-sizing: border-box; background: var(--bg-elevated); border: 2px dashed var(--border-light); border-radius: 12px; font-family: 'Plus Jakarta Sans', sans-serif;">
-        <div style="font-weight: 800; font-size: 18px; margin-bottom: 16px; color: var(--brand-sage); display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border-light); padding-bottom: 12px;">
+      <div xmlns="http://www.w3.org/1999/xhtml" style="width: 100%; height: 100%; padding: 20px; box-sizing: border-box; background: var(--bg-elevated, #f0f5f2); border: 2px dashed var(--border-light, #d6e3dc); border-radius: 12px; font-family: 'Plus Jakarta Sans', sans-serif;">
+        <div style="font-weight: 800; font-size: 18px; margin-bottom: 16px; color: var(--brand-sage, #51615E); display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border-light, #d6e3dc); padding-bottom: 12px;">
           <span>🔬</span> Experiment Setup
         </div>
         ${rowsHtml}
@@ -665,19 +669,19 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
       const blX = cx - drawW / 2, blY = cy + drawH / 2;
 
       const points = `${topX},${topY} ${brX},${brY} ${blX},${blY}`;
-      shapesHtml += `<polygon points="${points}" fill="rgba(81, 97, 94, 0.05)" stroke="var(--brand-sage)" stroke-width="2"/>`;
+      shapesHtml += `<polygon points="${points}" fill="rgba(81, 97, 94, 0.05)" stroke="var(--brand-sage, #51615E)" stroke-width="2"/>`;
 
       // Draw tick marks on all 3 sides to visually denote 'equilateral'
       const tickL = 6;
       // Left side tick
-      shapesHtml += `<line x1="${(topX + blX) / 2 - tickL}" y1="${(topY + blY) / 2 + tickL / 2}" x2="${(topX + blX) / 2 + tickL}" y2="${(topY + blY) / 2 - tickL / 2}" stroke="var(--brand-rose)" stroke-width="2"/>`;
+      shapesHtml += `<line x1="${(topX + blX) / 2 - tickL}" y1="${(topY + blY) / 2 + tickL / 2}" x2="${(topX + blX) / 2 + tickL}" y2="${(topY + blY) / 2 - tickL / 2}" stroke="var(--brand-rose, #B76E79)" stroke-width="2"/>`;
       // Right side tick
-      shapesHtml += `<line x1="${(topX + brX) / 2 - tickL}" y1="${(topY + brY) / 2 - tickL / 2}" x2="${(topX + brX) / 2 + tickL}" y2="${(topY + brY) / 2 + tickL / 2}" stroke="var(--brand-rose)" stroke-width="2"/>`;
+      shapesHtml += `<line x1="${(topX + brX) / 2 - tickL}" y1="${(topY + brY) / 2 - tickL / 2}" x2="${(topX + brX) / 2 + tickL}" y2="${(topY + brY) / 2 + tickL / 2}" stroke="var(--brand-rose, #B76E79)" stroke-width="2"/>`;
       // Bottom base tick
-      shapesHtml += `<line x1="${cx}" y1="${brY - tickL}" x2="${cx}" y2="${brY + tickL}" stroke="var(--brand-rose)" stroke-width="2"/>`;
+      shapesHtml += `<line x1="${cx}" y1="${brY - tickL}" x2="${cx}" y2="${brY + tickL}" stroke="var(--brand-rose, #B76E79)" stroke-width="2"/>`;
 
       // Base dimension label
-      shapesHtml += `<text x="${cx}" y="${brY + 24}" text-anchor="middle" font-size="14" font-weight="bold" fill="var(--text-main)">${esc(sideLength)}${esc(unit)}</text>`;
+      shapesHtml += `<text x="${cx}" y="${brY + 24}" text-anchor="middle" font-size="14" font-weight="bold" fill="var(--text-main, #1a2e2a)">${esc(sideLength)}${esc(unit)}</text>`;
     }
 
     return this._svg(shapesHtml, { alt: `${count} equilateral triangle(s) with side length ${sideLength}${unit}` });
@@ -886,7 +890,7 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
 
     // Calculate total to determine the angles
     const total = data.reduce((sum, item) => sum + (Number(item.value) || 0), 0);
-    if (total === 0) return this._svg(`<text x="200" y="130" text-anchor="middle" fill="var(--text-muted)">No data provided</text>`, { alt: "Empty Pie Chart" });
+    if (total === 0) return this._svg(`<text x="200" y="130" text-anchor="middle" fill="var(--text-muted, #5d706b)">No data provided</text>`, { alt: "Empty Pie Chart" });
 
     // Superholic-themed palette (Rose, Sage, Amber, Muted Blue, Gold, Slate)
     const colors = ['#B76E79', '#51615E', '#D97706', '#728984', '#E6B885', '#A5B5B1'];
@@ -943,11 +947,11 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
 
       legend += `
         <rect x="${legX}" y="${legY - 11}" width="14" height="14" fill="${color}" rx="3"/>
-        <text x="${legX + 22}" y="${legY}" font-size="12" fill="var(--text-main)" font-weight="500">${esc(item.label)}</text>
+        <text x="${legX + 22}" y="${legY}" font-size="12" fill="var(--text-main, #1a2e2a)" font-weight="500">${esc(item.label)}</text>
       `;
     });
 
-    const titleEl = title ? `<text x="200" y="30" text-anchor="middle" font-size="14" font-weight="bold" fill="var(--text-main)">${esc(title)}</text>` : '';
+    const titleEl = title ? `<text x="200" y="30" text-anchor="middle" font-size="14" font-weight="bold" fill="var(--text-main, #1a2e2a)">${esc(title)}</text>` : '';
 
     return this._svg(`
       ${titleEl}
@@ -993,7 +997,7 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
       const baseline = ly > cy + 10 ? 'hanging' : (ly < cy - 10 ? 'auto' : 'middle');
       const anchor = lx > cx + 10 ? 'start' : (lx < cx - 10 ? 'end' : 'middle');
 
-      labelsHtml += `<text x="${lx}" y="${ly}" font-size="16" font-weight="bold" fill="var(--text-muted)" text-anchor="${anchor}" dominant-baseline="${baseline}">${vertices[i]}</text>`;
+      labelsHtml += `<text x="${lx}" y="${ly}" font-size="16" font-weight="bold" fill="var(--text-muted, #5d706b)" text-anchor="${anchor}" dominant-baseline="${baseline}">${vertices[i]}</text>`;
     }
 
     // 3. Draw the main shape
@@ -1013,7 +1017,7 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
         const tx = cx + textR * Math.cos(targetAngle);
         const ty = cy + textR * Math.sin(targetAngle);
 
-        angleArcsHtml += `<text x="${tx}" y="${ty + 6}" font-size="18" font-weight="bold" fill="var(--brand-rose)" text-anchor="middle">?</text>`;
+        angleArcsHtml += `<text x="${tx}" y="${ty + 6}" font-size="18" font-weight="bold" fill="var(--brand-rose, #B76E79)" text-anchor="middle">?</text>`;
       }
     }
 
@@ -1064,9 +1068,9 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     svg += `<rect x="${fx}" y="${fy}" width="${fw}" height="${fh}" fill="none" stroke="var(--brand-sage, #51615E)" stroke-width="2"/>`;
 
     // Dimension Labels
-    if (lLabel) svg += `<text x="${fx + fw / 2}" y="${fy + fh + 20}" font-size="14" font-weight="bold" text-anchor="middle" fill="var(--text-main)">${esc(lLabel)}</text>`;
-    if (hLabel) svg += `<text x="${fx - 10}" y="${fy + fh / 2}" font-size="14" font-weight="bold" text-anchor="end" fill="var(--text-main)">${esc(hLabel)}</text>`;
-    if (bLabel) svg += `<text x="${fx + fw + depthX / 2 + 10}" y="${fy + fh + depthY / 2 + 10}" font-size="14" font-weight="bold" fill="var(--text-main)">${esc(bLabel)}</text>`;
+    if (lLabel) svg += `<text x="${fx + fw / 2}" y="${fy + fh + 20}" font-size="14" font-weight="bold" text-anchor="middle" fill="var(--text-main, #1a2e2a)">${esc(lLabel)}</text>`;
+    if (hLabel) svg += `<text x="${fx - 10}" y="${fy + fh / 2}" font-size="14" font-weight="bold" text-anchor="end" fill="var(--text-main, #1a2e2a)">${esc(hLabel)}</text>`;
+    if (bLabel) svg += `<text x="${fx + fw + depthX / 2 + 10}" y="${fy + fh + depthY / 2 + 10}" font-size="14" font-weight="bold" fill="var(--text-main, #1a2e2a)">${esc(bLabel)}</text>`;
 
     return `<svg width="100%" viewBox="0 0 ${w} ${h}" style="height: auto; max-width: 500px; display: block; margin: 0 auto;">${svg}</svg>`;
   },
@@ -1084,7 +1088,7 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     const brX = px + width, brY = py + height;
     const blX = px, blY = py + height;
 
-    let svg = `<polygon points="${tlX},${tlY} ${trX},${trY} ${brX},${brY} ${blX},${blY}" fill="rgba(81, 97, 94, 0.05)" stroke="var(--brand-sage)" stroke-width="3"/>`;
+    let svg = `<polygon points="${tlX},${tlY} ${trX},${trY} ${brX},${brY} ${blX},${blY}" fill="rgba(81, 97, 94, 0.05)" stroke="var(--brand-sage, #51615E)" stroke-width="3"/>`;
 
     if (params.show_diagonals) {
       svg += `<line x1="${tlX}" y1="${tlY}" x2="${brX}" y2="${brY}" stroke="var(--border-dark, #ccc)" stroke-width="1.5" stroke-dasharray="4"/>`;
@@ -1092,10 +1096,10 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     }
 
     // Vertex Labels
-    svg += `<text x="${tlX - 10}" y="${tlY - 5}" font-size="16" font-weight="bold" text-anchor="end" fill="var(--text-muted)">${esc(v[0])}</text>`;
-    svg += `<text x="${trX + 10}" y="${trY - 5}" font-size="16" font-weight="bold" fill="var(--text-muted)">${esc(v[1])}</text>`;
-    svg += `<text x="${brX + 10}" y="${brY + 20}" font-size="16" font-weight="bold" fill="var(--text-muted)">${esc(v[2])}</text>`;
-    svg += `<text x="${blX - 10}" y="${brY + 20}" font-size="16" font-weight="bold" text-anchor="end" fill="var(--text-muted)">${esc(v[3])}</text>`;
+    svg += `<text x="${tlX - 10}" y="${tlY - 5}" font-size="16" font-weight="bold" text-anchor="end" fill="var(--text-muted, #5d706b)">${esc(v[0])}</text>`;
+    svg += `<text x="${trX + 10}" y="${trY - 5}" font-size="16" font-weight="bold" fill="var(--text-muted, #5d706b)">${esc(v[1])}</text>`;
+    svg += `<text x="${brX + 10}" y="${brY + 20}" font-size="16" font-weight="bold" fill="var(--text-muted, #5d706b)">${esc(v[2])}</text>`;
+    svg += `<text x="${blX - 10}" y="${brY + 20}" font-size="16" font-weight="bold" text-anchor="end" fill="var(--text-muted, #5d706b)">${esc(v[3])}</text>`;
 
     // Internal Angle Markers
     if (params.angle_arcs) {
@@ -1104,7 +1108,7 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
           arc.vertex === v[1] ? { x: trX - 25, y: trY + 22 } :
             arc.vertex === v[2] ? { x: brX - 28, y: brY - 15 } :
               { x: blX + 30, y: blY - 15 };
-        svg += `<text x="${pt.x}" y="${pt.y}" font-size="14" font-weight="bold" text-anchor="middle" fill="var(--brand-rose)">${esc(arc.label)}</text>`;
+        svg += `<text x="${pt.x}" y="${pt.y}" font-size="14" font-weight="bold" text-anchor="middle" fill="var(--brand-rose, #B76E79)">${esc(arc.label)}</text>`;
       });
     }
 
@@ -1138,9 +1142,9 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     svg += `<rect x="${cx}" y="${cy - 15}" width="15" height="15" fill="none" stroke="var(--brand-sage, #51615E)" stroke-width="1.5"/>`;
 
     let labelsHtml = `
-      <text x="${cx + r + 15}" y="${cy + 5}" font-size="16" font-weight="bold" fill="var(--text-muted)">${rightVertex}</text>
-      <text x="${cx - r - 15}" y="${cy + 5}" font-size="16" font-weight="bold" fill="var(--text-muted)">${leftVertex}</text>
-      <text x="${cx}" y="${cy + 25}" font-size="16" font-weight="bold" text-anchor="middle" fill="var(--text-muted)">${center}</text>
+      <text x="${cx + r + 15}" y="${cy + 5}" font-size="16" font-weight="bold" fill="var(--text-muted, #5d706b)">${rightVertex}</text>
+      <text x="${cx - r - 15}" y="${cy + 5}" font-size="16" font-weight="bold" fill="var(--text-muted, #5d706b)">${leftVertex}</text>
+      <text x="${cx}" y="${cy + 25}" font-size="16" font-weight="bold" text-anchor="middle" fill="var(--text-muted, #5d706b)">${center}</text>
     `;
 
     // Draw the rays (e.g., D, E, C at 30, 60, 90 degrees)
@@ -1153,7 +1157,7 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
       const rayY = cy - r * Math.sin(rad);
 
       svg += `<line x1="${cx}" y1="${cy}" x2="${rayX}" y2="${rayY}" stroke="var(--text-main, #333)" stroke-width="2"/>`;
-      labelsHtml += `<text x="${rayX + 10}" y="${rayY - 10}" font-size="16" font-weight="bold" fill="var(--text-muted)">${endVertex}</text>`;
+      labelsHtml += `<text x="${rayX + 10}" y="${rayY - 10}" font-size="16" font-weight="bold" fill="var(--text-muted, #5d706b)">${endVertex}</text>`;
     });
 
     // Angle labels (e.g., AOD, DOE, EOC)
@@ -1168,7 +1172,7 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
       const textX = cx + textRadius * Math.cos(midRad);
       const textY = cy - textRadius * Math.sin(midRad);
 
-      labelsHtml += `<text x="${textX}" y="${textY}" font-size="14" font-weight="bold" text-anchor="middle" fill="var(--brand-sage)">${label}</text>`;
+      labelsHtml += `<text x="${textX}" y="${textY}" font-size="14" font-weight="bold" text-anchor="middle" fill="var(--brand-sage, #51615E)">${label}</text>`;
     });
 
     return `
@@ -1203,9 +1207,9 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     svg += `<circle cx="${cx}" cy="${cy}" r="4" fill="var(--brand-sage, #51615E)"/>`;
 
     let labelsHtml = `
-      <text x="${cx + r + 15}" y="${cy + 5}" font-size="16" font-weight="bold" fill="var(--text-muted)">${rightVertex}</text>
-      <text x="${cx - r - 15}" y="${cy + 5}" font-size="16" font-weight="bold" fill="var(--text-muted)">${leftVertex}</text>
-      <text x="${cx}" y="${cy + 25}" font-size="16" font-weight="bold" text-anchor="middle" fill="var(--text-muted)">${center}</text>
+      <text x="${cx + r + 15}" y="${cy + 5}" font-size="16" font-weight="bold" fill="var(--text-muted, #5d706b)">${rightVertex}</text>
+      <text x="${cx - r - 15}" y="${cy + 5}" font-size="16" font-weight="bold" fill="var(--text-muted, #5d706b)">${leftVertex}</text>
+      <text x="${cx}" y="${cy + 25}" font-size="16" font-weight="bold" text-anchor="middle" fill="var(--text-muted, #5d706b)">${center}</text>
     `;
 
     // Draw the rays dynamically spaced across 180 degrees
@@ -1218,7 +1222,7 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
       const rayY = cy - r * Math.sin(rad);
 
       svg += `<line x1="${cx}" y1="${cy}" x2="${rayX}" y2="${rayY}" stroke="var(--text-main, #333)" stroke-width="2"/>`;
-      labelsHtml += `<text x="${rayX + 10}" y="${rayY - 10}" font-size="16" font-weight="bold" fill="var(--text-muted)">${endVertex}</text>`;
+      labelsHtml += `<text x="${rayX + 10}" y="${rayY - 10}" font-size="16" font-weight="bold" fill="var(--text-muted, #5d706b)">${endVertex}</text>`;
     });
 
     // Angle labels
@@ -1233,7 +1237,7 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
       const textX = cx + textRadius * Math.cos(midRad);
       const textY = cy - textRadius * Math.sin(midRad);
 
-      labelsHtml += `<text x="${textX}" y="${textY}" font-size="14" font-weight="bold" text-anchor="middle" fill="var(--brand-sage)">${label}</text>`;
+      labelsHtml += `<text x="${textX}" y="${textY}" font-size="14" font-weight="bold" text-anchor="middle" fill="var(--brand-sage, #51615E)">${label}</text>`;
     });
 
     return `
@@ -1552,6 +1556,418 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     `;
   },
 
+  /**
+   * Two parallel lines cut by a transversal. PSLE Angles questions like
+   * "lines PQ and RS are parallel; ∠QAB = 110°; find ∠SBA".
+   *
+   * params:
+   *   line1_label: "PQ"   line2_label: "RS"
+   *   point1_label: "A"   point2_label: "B"
+   *   angles: [
+   *     { at: "A", position: "top-right", label: "p" | "65°" },
+   *     { at: "B", position: "top-right", label: "q" }
+   *   ]
+   *   position ∈ {"top-left","top-right","bottom-left","bottom-right"}
+   */
+  parallelLinesTransversal(params = {}) {
+    const w = 400, h = 220;
+    const line1Y = 70, line2Y = 170;
+    const xLeft = 30, xRight = 370;
+    const trans = { x1: 110, y1: 25, x2: 290, y2: 215 };
+    // Intersection of transversal with each parallel line
+    const t1 = (line1Y - trans.y1) / (trans.y2 - trans.y1);
+    const ix1 = trans.x1 + t1 * (trans.x2 - trans.x1);
+    const t2 = (line2Y - trans.y1) / (trans.y2 - trans.y1);
+    const ix2 = trans.x1 + t2 * (trans.x2 - trans.x1);
+
+    const STROKE_LINE = 'var(--text-main, #333)';
+    const FILL_LINE_LBL = 'var(--text-muted, #666)';
+    const FILL_PT = 'var(--text-main, #333)';
+    const FILL_VAL = 'var(--brand-sage, #51615E)';
+
+    const line1Lbl = params.line1_label || 'PQ';
+    const line2Lbl = params.line2_label || 'RS';
+    const pt1Lbl = params.point1_label || 'A';
+    const pt2Lbl = params.point2_label || 'B';
+
+    let svg = '';
+    // Two parallel arrows-on-both-ends to suggest "extends infinitely"
+    svg += `<line x1="${xLeft}" y1="${line1Y}" x2="${xRight}" y2="${line1Y}" stroke="${STROKE_LINE}" stroke-width="2.5"/>`;
+    svg += `<line x1="${xLeft}" y1="${line2Y}" x2="${xRight}" y2="${line2Y}" stroke="${STROKE_LINE}" stroke-width="2.5"/>`;
+    // Transversal
+    svg += `<line x1="${trans.x1}" y1="${trans.y1}" x2="${trans.x2}" y2="${trans.y2}" stroke="${STROKE_LINE}" stroke-width="2"/>`;
+    // Parallel-marks (small ticks) to indicate parallelism
+    svg += `<line x1="${xRight - 30}" y1="${line1Y - 5}" x2="${xRight - 25}" y2="${line1Y + 5}" stroke="${STROKE_LINE}" stroke-width="1.5"/>`;
+    svg += `<line x1="${xRight - 30}" y1="${line2Y - 5}" x2="${xRight - 25}" y2="${line2Y + 5}" stroke="${STROKE_LINE}" stroke-width="1.5"/>`;
+    // Line labels at right end
+    svg += `<text x="${xRight + 4}" y="${line1Y + 4}" font-size="14" font-weight="bold" fill="${FILL_LINE_LBL}">${line1Lbl}</text>`;
+    svg += `<text x="${xRight + 4}" y="${line2Y + 4}" font-size="14" font-weight="bold" fill="${FILL_LINE_LBL}">${line2Lbl}</text>`;
+    // Intersection point dots + labels
+    svg += `<circle cx="${ix1.toFixed(1)}" cy="${line1Y}" r="3" fill="${FILL_PT}"/>`;
+    svg += `<circle cx="${ix2.toFixed(1)}" cy="${line2Y}" r="3" fill="${FILL_PT}"/>`;
+    svg += `<text x="${(ix1 - 14).toFixed(1)}" y="${line1Y - 8}" font-size="14" font-weight="bold" fill="${FILL_PT}">${pt1Lbl}</text>`;
+    svg += `<text x="${(ix2 + 8).toFixed(1)}" y="${line2Y + 16}" font-size="14" font-weight="bold" fill="${FILL_PT}">${pt2Lbl}</text>`;
+
+    // Angle labels at intersections
+    (params.angles || []).forEach(a => {
+      if (!a || !a.label || !a.at || !a.position) return;
+      const at1 = (a.at === pt1Lbl) || (a.at === 'A' && pt1Lbl === 'A');
+      const ix = at1 ? ix1 : ix2;
+      const iy = at1 ? line1Y : line2Y;
+      let dx = 0, dy = 0;
+      if (a.position.includes('right')) dx = 18;
+      else if (a.position.includes('left')) dx = -22;
+      if (a.position.includes('top')) dy = -10;
+      else if (a.position.includes('bottom')) dy = 22;
+      svg += `<text x="${(ix + dx).toFixed(1)}" y="${(iy + dy).toFixed(1)}" font-size="13" font-weight="bold" text-anchor="middle" dominant-baseline="middle" fill="${FILL_VAL}">${a.label}</text>`;
+    });
+
+    return `
+      <svg width="100%" viewBox="0 0 ${w} ${h}" style="height: auto; max-width: 500px; display: block; margin: 0 auto;">
+        ${svg}
+      </svg>
+    `;
+  },
+
+  /**
+   * Square with quarter-circle(s) inscribed at corner(s). Handles classic PSLE
+   * composite-area-with-circles questions:
+   *   - 1 quarter circle from a corner
+   *   - 2 quarter circles from opposite corners
+   *   - 4 quarter circles from each corner
+   *   - 1 full circle (configuration: "circle")
+   *
+   * params:
+   *   side_label: "14 cm"
+   *   configuration: "1corner" | "2opposite" | "4corners" | "circle"
+   *   shaded: "outside" | "inside"   (which region to highlight)
+   *   radius_label: "14 cm"          (optional radius dimension)
+   */
+  quarterCirclesInSquare(params = {}) {
+    const w = 320, h = 320;
+    const M = 30; // margin
+    const S = w - 2 * M; // square side in pixels (260)
+    const x0 = M, y0 = M, x1 = M + S, y1 = M + S;
+
+    const STROKE = 'var(--text-main, #333)';
+    const SHADE = 'rgba(183,110,121,0.18)';
+    const FILL_LBL = 'var(--text-main, #333)';
+
+    const cfg = params.configuration || '1corner';
+    const sideLabel = params.side_label || '';
+
+    let svg = '';
+    // Optional shading: simplest approach — fill square first then white-out the disc shapes.
+    // We'll draw shaded region differently per configuration, using clip-path-like layering.
+
+    // For shading "outside" we fill the square then overlay white discs.
+    if (params.shaded === 'outside') {
+      svg += `<rect x="${x0}" y="${y0}" width="${S}" height="${S}" fill="${SHADE}" stroke="none"/>`;
+      if (cfg === 'circle') {
+        const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+        svg += `<circle cx="${cx}" cy="${cy}" r="${S / 2}" fill="white" stroke="none"/>`;
+      } else {
+        const corners = [];
+        if (cfg === '1corner') corners.push([x0, y0]);
+        else if (cfg === '2opposite') corners.push([x0, y0], [x1, y1]);
+        else if (cfg === '4corners') corners.push([x0, y0], [x1, y0], [x0, y1], [x1, y1]);
+        corners.forEach(([cx, cy]) => {
+          svg += `<circle cx="${cx}" cy="${cy}" r="${S}" fill="white" stroke="none" clip-path="inset(0 0 ${cy === y0 ? 0 : '100%'} ${cx === x0 ? 0 : '100%'})"/>`;
+        });
+      }
+    }
+
+    // Square outline
+    svg += `<rect x="${x0}" y="${y0}" width="${S}" height="${S}" fill="none" stroke="${STROKE}" stroke-width="2.5"/>`;
+
+    // Draw arcs (centred at corners, radius = S, sweeping 90° into the square)
+    const drawQuarter = (cx, cy, startDeg, endDeg) => {
+      const steps = 24;
+      const pts = [];
+      for (let i = 0; i <= steps; i++) {
+        const t = startDeg + (endDeg - startDeg) * (i / steps);
+        const a = t * Math.PI / 180;
+        pts.push(`${(cx + S * Math.cos(a)).toFixed(1)},${(cy - S * Math.sin(a)).toFixed(1)}`);
+      }
+      return `<polyline points="${pts.join(' ')}" fill="none" stroke="${STROKE}" stroke-width="2"/>`;
+    };
+
+    if (cfg === 'circle') {
+      const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+      svg += `<circle cx="${cx}" cy="${cy}" r="${S / 2}" fill="none" stroke="${STROKE}" stroke-width="2"/>`;
+      // optional radius line
+      if (params.radius_label) {
+        svg += `<line x1="${cx}" y1="${cy}" x2="${cx + S / 2}" y2="${cy}" stroke="var(--brand-sage, #51615E)" stroke-width="1.2" stroke-dasharray="3 2"/>`;
+        svg += `<text x="${cx + S / 4}" y="${cy - 4}" font-size="12" font-weight="bold" text-anchor="middle" fill="var(--brand-sage, #51615E)">${params.radius_label}</text>`;
+      }
+    } else {
+      // top-left corner: arc from 0° (right) to -90° (down) — but in SVG y-down, that's start 0°, end +90° (math)? Use math angles where 0° = right, 90° = up.
+      // For top-left at (x0, y0): the quarter arc inside the square goes from (x0+S, y0) [right] to (x0, y0+S) [down]. Math: start at 0° going to -90°.
+      // top-right corner (x1, y0): from (x1-S, y0) [left, 180°] to (x1, y0+S) [down, -90°/270°].
+      // bottom-left corner (x0, y1): from (x0+S, y1) [right, 0°] to (x0, y1-S) [up, 90°].
+      // bottom-right corner (x1, y1): from (x1-S, y1) [left, 180°] to (x1, y1-S) [up, 90°].
+      const corners = [];
+      if (cfg === '1corner') corners.push({ cx: x0, cy: y0, start: 0, end: -90 });
+      else if (cfg === '2opposite') {
+        corners.push({ cx: x0, cy: y0, start: 0, end: -90 });
+        corners.push({ cx: x1, cy: y1, start: 180, end: 90 });
+      } else if (cfg === '4corners') {
+        corners.push({ cx: x0, cy: y0, start: 0, end: -90 });
+        corners.push({ cx: x1, cy: y0, start: 180, end: 270 });
+        corners.push({ cx: x0, cy: y1, start: 0, end: 90 });
+        corners.push({ cx: x1, cy: y1, start: 180, end: 90 });
+      }
+      corners.forEach(c => { svg += drawQuarter(c.cx, c.cy, c.start, c.end); });
+    }
+
+    // Side label centred on bottom edge
+    if (sideLabel) {
+      svg += `<text x="${(x0 + x1) / 2}" y="${y1 + 22}" font-size="13" font-weight="bold" text-anchor="middle" fill="${FILL_LBL}">${sideLabel}</text>`;
+    }
+
+    return `
+      <svg width="100%" viewBox="0 0 ${w} ${h}" style="height: auto; max-width: 360px; display: block; margin: 0 auto;">
+        ${svg}
+      </svg>
+    `;
+  },
+
+  /**
+   * Two equal circles overlapping, with centres separated by some distance.
+   * Default: vesica-piscis configuration where each centre lies on the other's
+   * circumference (separation = radius).
+   *
+   * params:
+   *   radius_label: "7 cm"
+   *   separation: 1.0   (factor of radius — 1.0 = vesica piscis, 0.5 = heavy overlap)
+   */
+  overlappingCircles(params = {}) {
+    const w = 320, h = 200;
+    const r = 70;
+    const sep = (typeof params.separation === 'number' ? params.separation : 1.0) * r;
+    const cy = h / 2;
+    const cx1 = w / 2 - sep / 2;
+    const cx2 = w / 2 + sep / 2;
+
+    const STROKE = 'var(--text-main, #333)';
+    const FILL_LBL = 'var(--brand-sage, #51615E)';
+
+    let svg = '';
+    svg += `<circle cx="${cx1}" cy="${cy}" r="${r}" fill="none" stroke="${STROKE}" stroke-width="2"/>`;
+    svg += `<circle cx="${cx2}" cy="${cy}" r="${r}" fill="none" stroke="${STROKE}" stroke-width="2"/>`;
+    // Centre dots
+    svg += `<circle cx="${cx1}" cy="${cy}" r="2.5" fill="${STROKE}"/>`;
+    svg += `<circle cx="${cx2}" cy="${cy}" r="2.5" fill="${STROKE}"/>`;
+    // Optional radius label (drawn as a dashed segment from centre to right edge of left circle)
+    if (params.radius_label) {
+      svg += `<line x1="${cx1}" y1="${cy}" x2="${cx1 + r}" y2="${cy}" stroke="${FILL_LBL}" stroke-width="1.2" stroke-dasharray="3 2"/>`;
+      svg += `<text x="${cx1 + r / 2}" y="${cy - 6}" font-size="12" font-weight="bold" text-anchor="middle" fill="${FILL_LBL}">${params.radius_label}</text>`;
+    }
+    return `
+      <svg width="100%" viewBox="0 0 ${w} ${h}" style="height: auto; max-width: 360px; display: block; margin: 0 auto;">
+        ${svg}
+      </svg>
+    `;
+  },
+
+  /**
+   * Rectangle with a uniform path either INSIDE or OUTSIDE the perimeter.
+   * Used for PSLE "field with path" / "pool with tile path" questions.
+   *
+   * params:
+   *   length_label: "60 m"
+   *   breadth_label: "45 m"
+   *   path_width_label: "3 m"
+   *   path_position: "inside" | "outside"
+   */
+  rectangleWithPath(params = {}) {
+    const w = 380, h = 240;
+    const M = 24;     // outermost margin
+    const PW = 18;    // path width in px (visual only)
+    const x0 = M, y0 = M, x1 = w - M, y1 = h - M;
+
+    const STROKE = 'var(--text-main, #333)';
+    const SHADE = 'rgba(183,110,121,0.18)';
+    const FILL_LBL = 'var(--text-main, #333)';
+
+    let svg = '';
+    if ((params.path_position || 'outside') === 'outside') {
+      // Outer = full rectangle (with path), Inner = the pool itself.
+      svg += `<rect x="${x0}" y="${y0}" width="${x1 - x0}" height="${y1 - y0}" fill="${SHADE}" stroke="${STROKE}" stroke-width="2"/>`;
+      svg += `<rect x="${x0 + PW}" y="${y0 + PW}" width="${x1 - x0 - 2 * PW}" height="${y1 - y0 - 2 * PW}" fill="white" stroke="${STROKE}" stroke-width="2"/>`;
+      // Length label on bottom of outer
+      if (params.length_label) {
+        svg += `<text x="${(x0 + x1) / 2}" y="${y1 + 18}" font-size="13" font-weight="bold" text-anchor="middle" fill="${FILL_LBL}">${params.length_label}</text>`;
+      }
+      // Breadth label on left of outer
+      if (params.breadth_label) {
+        svg += `<text x="${x0 - 8}" y="${(y0 + y1) / 2}" font-size="13" font-weight="bold" text-anchor="end" dominant-baseline="middle" fill="${FILL_LBL}">${params.breadth_label}</text>`;
+      }
+      // Path width label
+      if (params.path_width_label) {
+        svg += `<text x="${(x0 + x0 + PW) / 2}" y="${y0 - 6}" font-size="11" font-weight="bold" text-anchor="middle" fill="var(--brand-sage, #51615E)">${params.path_width_label}</text>`;
+      }
+    } else {
+      // INSIDE: outer = field; inner = grass region; the ring between is the path.
+      svg += `<rect x="${x0}" y="${y0}" width="${x1 - x0}" height="${y1 - y0}" fill="white" stroke="${STROKE}" stroke-width="2"/>`;
+      svg += `<rect x="${x0 + PW}" y="${y0 + PW}" width="${x1 - x0 - 2 * PW}" height="${y1 - y0 - 2 * PW}" fill="white" stroke="${STROKE}" stroke-width="2"/>`;
+      // Shade the path ring (using two overlapping rects with inner cut via fill)
+      svg += `<path d="M ${x0} ${y0} L ${x1} ${y0} L ${x1} ${y1} L ${x0} ${y1} Z M ${x0 + PW} ${y0 + PW} L ${x0 + PW} ${y1 - PW} L ${x1 - PW} ${y1 - PW} L ${x1 - PW} ${y0 + PW} Z" fill="${SHADE}" fill-rule="evenodd"/>`;
+      // Labels
+      if (params.length_label) {
+        svg += `<text x="${(x0 + x1) / 2}" y="${y1 + 18}" font-size="13" font-weight="bold" text-anchor="middle" fill="${FILL_LBL}">${params.length_label}</text>`;
+      }
+      if (params.breadth_label) {
+        svg += `<text x="${x0 - 8}" y="${(y0 + y1) / 2}" font-size="13" font-weight="bold" text-anchor="end" dominant-baseline="middle" fill="${FILL_LBL}">${params.breadth_label}</text>`;
+      }
+      if (params.path_width_label) {
+        svg += `<text x="${(x0 + x0 + PW) / 2}" y="${y0 + PW / 2 + 4}" font-size="11" font-weight="bold" text-anchor="middle" fill="var(--brand-sage, #51615E)">${params.path_width_label}</text>`;
+      }
+    }
+    return `
+      <svg width="100%" viewBox="0 0 ${w} ${h}" style="height: auto; max-width: 460px; display: block; margin: 0 auto;">
+        ${svg}
+      </svg>
+    `;
+  },
+
+  /**
+   * Triangular dot pattern for triangular-number sequences. Used for PSLE
+   * pattern questions where Figure n has n × (n + 1) / 2 dots.
+   *
+   * params:
+   *   show_figures: 4         number of figures to render side-by-side
+   */
+  dotTriangle(params = {}) {
+    const w = 400, h = 180;
+    const figures = params.show_figures || 4;
+    const dotR = 4;
+    const gap = 14;
+    const figGap = 16;
+
+    const STROKE = 'var(--brand-sage, #51615E)';
+    const FILL = 'var(--brand-rose, #B76E79)';
+    const LBL = 'var(--text-main, #333)';
+
+    // First compute total width to centre
+    const figWidths = [];
+    for (let n = 1; n <= figures; n++) {
+      figWidths.push((n - 1) * gap + 2 * dotR);
+    }
+    const totalW = figWidths.reduce((s, v) => s + v, 0) + (figures - 1) * figGap;
+    let cursorX = (w - totalW) / 2;
+
+    let svg = '';
+    for (let n = 1; n <= figures; n++) {
+      const figW = figWidths[n - 1];
+      const figCx = cursorX + figW / 2;
+      // n rows, row k (1..n) has k dots, centred horizontally
+      for (let k = 1; k <= n; k++) {
+        const rowY = 30 + (k - 1) * (gap - 2);
+        const rowOffset = ((n - k) / 2) * gap;
+        for (let i = 0; i < k; i++) {
+          const dx = cursorX + rowOffset + i * gap + dotR;
+          svg += `<circle cx="${dx.toFixed(1)}" cy="${rowY}" r="${dotR}" fill="${FILL}" stroke="${STROKE}" stroke-width="0.8"/>`;
+        }
+      }
+      // Figure label
+      svg += `<text x="${figCx.toFixed(1)}" y="${h - 16}" font-size="12" font-weight="bold" text-anchor="middle" fill="${LBL}">Figure ${n}</text>`;
+      cursorX += figW + figGap;
+    }
+    return `
+      <svg width="100%" viewBox="0 0 ${w} ${h}" style="height: auto; max-width: 480px; display: block; margin: 0 auto;">
+        ${svg}
+      </svg>
+    `;
+  },
+
+  /**
+   * Renders the first 3–4 figures of an n × n square-grid growth pattern.
+   * Used for "Figure n is an n × n grid of unit squares" PSLE questions.
+   *
+   * params:
+   *   show_figures: 3
+   *   black_fn / white_fn: optional formulas captioned at each figure
+   */
+  gridGrowth(params = {}) {
+    const w = 420, h = 200;
+    const figures = params.show_figures || 3;
+    const cell = 14;
+    const figGap = 24;
+
+    const STROKE = 'var(--text-main, #333)';
+    const FILL_BLACK = '#2a2a2a';
+    const FILL_WHITE = 'white';
+    const LBL = 'var(--text-main, #333)';
+
+    // Figure n = n × n grid, take black squares from the diagonal (1 black + (n-1)² white in the simplest variant)
+    // For pure n×n filled: every cell is shown; for mixed black/white: simple checkerboard.
+    let cursorX = 30;
+    let svg = '';
+    for (let n = 1; n <= figures; n++) {
+      const figSize = n * cell;
+      // Centre vertically within h
+      const figY = (h - figSize) / 2 - 12;
+      for (let r = 0; r < n; r++) {
+        for (let c = 0; c < n; c++) {
+          const isDiagonal = r === c;
+          const fill = isDiagonal && params.diagonal_black !== false ? FILL_BLACK : FILL_WHITE;
+          svg += `<rect x="${cursorX + c * cell}" y="${figY + r * cell}" width="${cell}" height="${cell}" fill="${fill}" stroke="${STROKE}" stroke-width="1"/>`;
+        }
+      }
+      // Figure label
+      svg += `<text x="${cursorX + figSize / 2}" y="${h - 16}" font-size="12" font-weight="bold" text-anchor="middle" fill="${LBL}">Figure ${n}</text>`;
+      cursorX += figSize + figGap;
+    }
+    return `
+      <svg width="100%" viewBox="0 0 ${w} ${h}" style="height: auto; max-width: 500px; display: block; margin: 0 auto;">
+        ${svg}
+      </svg>
+    `;
+  },
+
+  /**
+   * 3 × 3 magic-square grid with optional pre-filled values and corner highlight.
+   *
+   * params:
+   *   values: [[null,1,null],[null,5,null],[null,null,null]]   3×3 grid; null = blank
+   *   highlight: "centre" | "corners" | null
+   */
+  magicSquare(params = {}) {
+    const w = 240, h = 240;
+    const cell = 60;
+    const M = (w - 3 * cell) / 2;
+
+    const STROKE = 'var(--text-main, #333)';
+    const HILITE_FILL = 'rgba(57,255,179,0.18)';
+    const LBL = 'var(--text-main, #333)';
+
+    const values = params.values || [[null, null, null], [null, null, null], [null, null, null]];
+    const hi = params.highlight || null;
+
+    let svg = '';
+    for (let r = 0; r < 3; r++) {
+      for (let c = 0; c < 3; c++) {
+        const x = M + c * cell;
+        const y = M + r * cell;
+        const isCorner = (r === 0 || r === 2) && (c === 0 || c === 2);
+        const isCentre = (r === 1 && c === 1);
+        const fill = (hi === 'corners' && isCorner) || (hi === 'centre' && isCentre)
+          ? HILITE_FILL : 'white';
+        svg += `<rect x="${x}" y="${y}" width="${cell}" height="${cell}" fill="${fill}" stroke="${STROKE}" stroke-width="1.5"/>`;
+        const v = values[r] && values[r][c] != null ? values[r][c] : '';
+        if (v !== '') {
+          svg += `<text x="${x + cell / 2}" y="${y + cell / 2 + 6}" font-size="20" font-weight="bold" text-anchor="middle" fill="${LBL}">${v}</text>`;
+        }
+      }
+    }
+    return `
+      <svg width="100%" viewBox="0 0 ${w} ${h}" style="height: auto; max-width: 280px; display: block; margin: 0 auto;">
+        ${svg}
+      </svg>
+    `;
+  },
+
   dividedStraightLineAngle(params) {
     const cx = 200, cy = 200;
     const r = 160;
@@ -1578,13 +1994,13 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
 
     // 5. Inject the labels
     linesHtml += `
-      <text x="${cx + 50}" y="${cy - 20}" font-size="16" font-weight="bold" fill="var(--brand-sage)">${a1}</text>
-      <text x="${cx - 60}" y="${cy - 20}" font-size="16" font-weight="bold" fill="var(--text-main)">${a2}</text>
+      <text x="${cx + 50}" y="${cy - 20}" font-size="16" font-weight="bold" fill="var(--brand-sage, #51615E)">${a1}</text>
+      <text x="${cx - 60}" y="${cy - 20}" font-size="16" font-weight="bold" fill="var(--text-main, #1a2e2a)">${a2}</text>
       
-      <text x="${cx}" y="${cy + 25}" font-size="16" font-weight="bold" text-anchor="middle" fill="var(--text-muted)">${vertices[1] || 'O'}</text>
-      <text x="${cx + r + 15}" y="${cy + 5}" font-size="16" font-weight="bold" fill="var(--text-muted)">${vertices[2] || 'B'}</text>
-      <text x="${cx - r - 15}" y="${cy + 5}" font-size="16" font-weight="bold" fill="var(--text-muted)">${vertices[0] || 'A'}</text>
-      <text x="${rayX + 10}" y="${rayY - 10}" font-size="16" font-weight="bold" fill="var(--text-muted)">${vertices[3] || 'C'}</text>
+      <text x="${cx}" y="${cy + 25}" font-size="16" font-weight="bold" text-anchor="middle" fill="var(--text-muted, #5d706b)">${vertices[1] || 'O'}</text>
+      <text x="${cx + r + 15}" y="${cy + 5}" font-size="16" font-weight="bold" fill="var(--text-muted, #5d706b)">${vertices[2] || 'B'}</text>
+      <text x="${cx - r - 15}" y="${cy + 5}" font-size="16" font-weight="bold" fill="var(--text-muted, #5d706b)">${vertices[0] || 'A'}</text>
+      <text x="${rayX + 10}" y="${rayY - 10}" font-size="16" font-weight="bold" fill="var(--text-muted, #5d706b)">${vertices[3] || 'C'}</text>
     `;
 
     return `
@@ -1643,17 +2059,17 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     const TL = lbl[0], TR = lbl[1], BR = lbl[2], BL = lbl[3];
 
     let gridLines = '';
-    for (let x = 0; x <= gridW; x += cellSize) gridLines += `<line x1="${x}" y1="0" x2="${x}" y2="${gridH}" stroke="var(--border-light)" stroke-width="1"/>`;
-    for (let y = 0; y <= gridH; y += cellSize) gridLines += `<line x1="0" y1="${y}" x2="${gridW}" y2="${y}" stroke="var(--border-light)" stroke-width="1"/>`;
+    for (let x = 0; x <= gridW; x += cellSize) gridLines += `<line x1="${x}" y1="0" x2="${x}" y2="${gridH}" stroke="var(--border-light, #d6e3dc)" stroke-width="1"/>`;
+    for (let y = 0; y <= gridH; y += cellSize) gridLines += `<line x1="0" y1="${y}" x2="${gridW}" y2="${y}" stroke="var(--border-light, #d6e3dc)" stroke-width="1"/>`;
 
     const rectX = cellSize;
     const rectY = cellSize;
     const rectW = w_units * cellSize;
     const rectH = h_units * cellSize;
-    const rectSvg = `<rect x="${rectX}" y="${rectY}" width="${rectW}" height="${rectH}" fill="rgba(183, 110, 121, 0.1)" stroke="var(--brand-sage)" stroke-width="3"/>`;
+    const rectSvg = `<rect x="${rectX}" y="${rectY}" width="${rectW}" height="${rectH}" fill="rgba(183, 110, 121, 0.1)" stroke="var(--brand-sage, #51615E)" stroke-width="3"/>`;
 
     const padding = 12;
-    const txt = (chars, x, y, anchor, baseline) => `<text x="${x}" y="${y}" text-anchor="${anchor}" alignment-baseline="${baseline}" fill="var(--text-main)" font-size="16" font-weight="bold">${chars}</text>`;
+    const txt = (chars, x, y, anchor, baseline) => `<text x="${x}" y="${y}" text-anchor="${anchor}" alignment-baseline="${baseline}" fill="var(--text-main, #1a2e2a)" font-size="16" font-weight="bold">${chars}</text>`;
 
     // 🚀 THE CORNER FIX: Pin each letter to the exact vertex
     const cornerLabels = `
@@ -1662,12 +2078,12 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
       ${txt(BR, rectX + rectW + padding, rectY + rectH + padding, 'start', 'hanging')}
       ${txt(BL, rectX - padding, rectY + rectH + padding, 'end', 'hanging')}
       
-      <text x="${rectX + rectW / 2}" y="${rectY - 6}" text-anchor="middle" fill="var(--text-main)" font-size="14">${w_cm}cm</text>
-      <text x="${rectX - 6}" y="${rectY + rectH / 2}" text-anchor="end" alignment-baseline="middle" fill="var(--text-main)" font-size="14">${l_cm}cm</text>
+      <text x="${rectX + rectW / 2}" y="${rectY - 6}" text-anchor="middle" fill="var(--text-main, #1a2e2a)" font-size="14">${w_cm}cm</text>
+      <text x="${rectX - 6}" y="${rectY + rectH / 2}" text-anchor="end" alignment-baseline="middle" fill="var(--text-main, #1a2e2a)" font-size="14">${l_cm}cm</text>
     `;
 
     return `
-      <svg width="100%" style="height: auto;" viewBox="0 0 ${gridW} ${gridH}" style="max-width: 500px;">
+      <svg width="100%" viewBox="0 0 ${gridW} ${gridH}" style="height:auto;max-width:500px;display:block;margin:0 auto;font-family:'Plus Jakarta Sans',sans-serif;" role="img" aria-label="${l_cm}cm by ${w_cm}cm rectangle on grid">
         ${gridLines}
         ${rectSvg}
         ${cornerLabels}
@@ -1780,7 +2196,7 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     widthLabel = '?',
     heightLabel = '?',
     unit = 'cm',
-    fillColor = 'var(--bg-elevated)',
+    fillColor = 'var(--bg-elevated, #f0f5f2)',
     title = '',
     showNotToScale = true,
   } = {}) {
@@ -1788,24 +2204,24 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     const wLbl = esc(widthLabel);
     const hLbl = esc(heightLabel);
     const notToScale = showNotToScale
-      ? `<text x="200" y="255" text-anchor="middle" fill="var(--text-muted)" font-size="10" font-style="italic">Figure not drawn to scale.</text>`
+      ? `<text x="200" y="255" text-anchor="middle" fill="var(--text-muted, #5d706b)" font-size="10" font-style="italic">Figure not drawn to scale.</text>`
       : '';
     const titleEl = title
-      ? `<text x="200" y="20" text-anchor="middle" fill="var(--text-main)" font-size="13" font-weight="600">${esc(title)}</text>`
+      ? `<text x="200" y="20" text-anchor="middle" fill="var(--text-main, #1a2e2a)" font-size="13" font-weight="600">${esc(title)}</text>`
       : '';
     const content = `
       ${titleEl}
-      <rect x="80" y="50" width="240" height="150" fill="${fillColor}" stroke="var(--brand-sage)" stroke-width="2"/>
+      <rect x="80" y="50" width="240" height="150" fill="${fillColor}" stroke="var(--brand-sage, #51615E)" stroke-width="2"/>
       <!-- Width dimension arrow below -->
-      <line x1="80" y1="220" x2="320" y2="220" stroke="var(--brand-sage)" stroke-width="1.5" marker-start="url(#arr)" marker-end="url(#arr)"/>
-      <text x="200" y="238" text-anchor="middle" fill="var(--text-main)" font-size="13" font-weight="600">${wLbl}</text>
+      <line x1="80" y1="220" x2="320" y2="220" stroke="var(--brand-sage, #51615E)" stroke-width="1.5" marker-start="url(#arr)" marker-end="url(#arr)"/>
+      <text x="200" y="238" text-anchor="middle" fill="var(--text-main, #1a2e2a)" font-size="13" font-weight="600">${wLbl}</text>
       <!-- Height dimension arrow left -->
-      <line x1="55" y1="50" x2="55" y2="200" stroke="var(--brand-sage)" stroke-width="1.5" marker-start="url(#arr)" marker-end="url(#arr)"/>
-      <text x="30" y="130" text-anchor="middle" fill="var(--text-main)" font-size="13" font-weight="600" transform="rotate(-90,30,130)">${hLbl}</text>
+      <line x1="55" y1="50" x2="55" y2="200" stroke="var(--brand-sage, #51615E)" stroke-width="1.5" marker-start="url(#arr)" marker-end="url(#arr)"/>
+      <text x="30" y="130" text-anchor="middle" fill="var(--text-main, #1a2e2a)" font-size="13" font-weight="600" transform="rotate(-90,30,130)">${hLbl}</text>
       ${notToScale}
       <defs>
         <marker id="arr" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
-          <path d="M0,0 L6,3 L0,6 L1.5,3 Z" fill="var(--brand-sage)"/>
+          <path d="M0,0 L6,3 L0,6 L1.5,3 Z" fill="var(--brand-sage, #51615E)"/>
         </marker>
       </defs>`;
     return this._svg(content, { alt: `Rectangle with width ${widthLabel} and height ${heightLabel}.` });
@@ -1816,7 +2232,7 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
    * @param {object} opts
    * @returns {string} SVG string
    */
-  square({ sideLabel = '?', unit = 'cm', fillColor = 'var(--bg-elevated)' } = {}) {
+  square({ sideLabel = '?', unit = 'cm', fillColor = 'var(--bg-elevated, #f0f5f2)' } = {}) {
     return this.rectangle({ widthLabel: sideLabel, heightLabel: sideLabel, unit, fillColor, showNotToScale: true });
   },
 
@@ -1831,22 +2247,22 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     hypotenuse = '',
     unit = 'cm',
     showRightAngle = true,
-    fillColor = 'var(--bg-elevated)',
+    fillColor = 'var(--bg-elevated, #f0f5f2)',
   } = {}) {
     const esc = this._esc.bind(this);
     const rightAngle = showRightAngle
-      ? `<polyline points="80,200 100,200 100,180" fill="none" stroke="var(--brand-sage)" stroke-width="1.5"/>`
+      ? `<polyline points="80,200 100,200 100,180" fill="none" stroke="var(--brand-sage, #51615E)" stroke-width="1.5"/>`
       : '';
     const hypLabel = hypotenuse
-      ? `<text x="230" y="118" text-anchor="middle" fill="var(--text-main)" font-size="12" font-weight="600" transform="rotate(-50,230,118)">${esc(hypotenuse)}</text>`
+      ? `<text x="230" y="118" text-anchor="middle" fill="var(--text-main, #1a2e2a)" font-size="12" font-weight="600" transform="rotate(-50,230,118)">${esc(hypotenuse)}</text>`
       : '';
     const content = `
-      <polygon points="80,200 320,200 80,50" fill="${fillColor}" stroke="var(--brand-sage)" stroke-width="2"/>
+      <polygon points="80,200 320,200 80,50" fill="${fillColor}" stroke="var(--brand-sage, #51615E)" stroke-width="2"/>
       ${rightAngle}
       <!-- Base label -->
-      <text x="200" y="230" text-anchor="middle" fill="var(--text-main)" font-size="13" font-weight="600">${esc(base)}</text>
+      <text x="200" y="230" text-anchor="middle" fill="var(--text-main, #1a2e2a)" font-size="13" font-weight="600">${esc(base)}</text>
       <!-- Height label -->
-      <text x="42" y="130" text-anchor="middle" fill="var(--text-main)" font-size="13" font-weight="600" transform="rotate(-90,42,130)">${esc(height)}</text>
+      <text x="42" y="130" text-anchor="middle" fill="var(--text-main, #1a2e2a)" font-size="13" font-weight="600" transform="rotate(-90,42,130)">${esc(height)}</text>
       ${hypLabel}`;
     return this._svg(content, { alt: `Right-angled triangle with base ${base}, height ${height}${hypotenuse ? ', hypotenuse ' + hypotenuse : ''}.` });
   },
@@ -1864,20 +2280,20 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     showNotToScale = true,
   } = {}) {
     const partRects = parts.map(p => {
-      const fill = p.shaded ? 'var(--bg-elevated)' : 'none';
+      const fill = p.shaded ? 'var(--bg-elevated, #f0f5f2)' : 'none';
       const label = p.label
-        ? `<text x="${p.x + p.w / 2}" y="${p.y + p.h / 2 + 5}" text-anchor="middle" fill="var(--text-main)" font-size="11">${this._esc(p.label)}</text>`
+        ? `<text x="${p.x + p.w / 2}" y="${p.y + p.h / 2 + 5}" text-anchor="middle" fill="var(--text-main, #1a2e2a)" font-size="11">${this._esc(p.label)}</text>`
         : '';
-      return `<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" fill="${fill}" stroke="var(--brand-sage)" stroke-width="2"/>${label}`;
+      return `<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" fill="${fill}" stroke="var(--brand-sage, #51615E)" stroke-width="2"/>${label}`;
     }).join('');
     const totalW = totalWidthLabel
-      ? `<text x="200" y="248" text-anchor="middle" fill="var(--text-main)" font-size="12" font-weight="600">${this._esc(totalWidthLabel)}</text>`
+      ? `<text x="200" y="248" text-anchor="middle" fill="var(--text-main, #1a2e2a)" font-size="12" font-weight="600">${this._esc(totalWidthLabel)}</text>`
       : '';
     const totalH = totalHeightLabel
-      ? `<text x="20" y="130" text-anchor="middle" fill="var(--text-main)" font-size="12" font-weight="600" transform="rotate(-90,20,130)">${this._esc(totalHeightLabel)}</text>`
+      ? `<text x="20" y="130" text-anchor="middle" fill="var(--text-main, #1a2e2a)" font-size="12" font-weight="600" transform="rotate(-90,20,130)">${this._esc(totalHeightLabel)}</text>`
       : '';
     const nts = showNotToScale
-      ? `<text x="200" y="258" text-anchor="middle" fill="var(--text-muted)" font-size="10" font-style="italic">Figure not drawn to scale.</text>`
+      ? `<text x="200" y="258" text-anchor="middle" fill="var(--text-muted, #5d706b)" font-size="10" font-style="italic">Figure not drawn to scale.</text>`
       : '';
     const content = `${partRects}${totalW}${totalH}${nts}`;
     return this._svg(content, { alt: `Composite shape made up of ${parts.length} rectangle(s).` });
@@ -1892,20 +2308,20 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     radiusLabel = '',
     diameterLabel = '',
     unit = 'cm',
-    fillColor = 'var(--bg-elevated)',
+    fillColor = 'var(--bg-elevated, #f0f5f2)',
   } = {}) {
     const esc = this._esc.bind(this);
     const radiusLine = radiusLabel
-      ? `<line x1="200" y1="130" x2="310" y2="130" stroke="var(--brand-sage)" stroke-width="1.5"/>
-         <text x="258" y="120" text-anchor="middle" fill="var(--text-main)" font-size="13" font-weight="600">${esc(radiusLabel)}</text>`
+      ? `<line x1="200" y1="130" x2="310" y2="130" stroke="var(--brand-sage, #51615E)" stroke-width="1.5"/>
+         <text x="258" y="120" text-anchor="middle" fill="var(--text-main, #1a2e2a)" font-size="13" font-weight="600">${esc(radiusLabel)}</text>`
       : '';
     const diamLine = diameterLabel
-      ? `<line x1="90" y1="130" x2="310" y2="130" stroke="var(--brand-sage)" stroke-width="1.5"/>
-         <text x="200" y="118" text-anchor="middle" fill="var(--text-main)" font-size="13" font-weight="600">${esc(diameterLabel)}</text>`
+      ? `<line x1="90" y1="130" x2="310" y2="130" stroke="var(--brand-sage, #51615E)" stroke-width="1.5"/>
+         <text x="200" y="118" text-anchor="middle" fill="var(--text-main, #1a2e2a)" font-size="13" font-weight="600">${esc(diameterLabel)}</text>`
       : '';
     const content = `
-      <circle cx="200" cy="130" r="110" fill="${fillColor}" stroke="var(--brand-sage)" stroke-width="2"/>
-      <circle cx="200" cy="130" r="3" fill="var(--brand-sage)"/>
+      <circle cx="200" cy="130" r="110" fill="${fillColor}" stroke="var(--brand-sage, #51615E)" stroke-width="2"/>
+      <circle cx="200" cy="130" r="3" fill="var(--brand-sage, #51615E)"/>
       ${radiusLine}${diamLine}`;
     return this._svg(content, { alt: `Circle${radiusLabel ? ' with radius ' + radiusLabel : ''}${diameterLabel ? ' with diameter ' + diameterLabel : ''}.` });
   },
@@ -2007,29 +2423,29 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     for (let v = start; v <= end; v++) {
       const x = toX(v);
       const customLabel = labels.find(l => l.value === v);
-      ticks.push(`<line x1="${x}" y1="${y - 8}" x2="${x}" y2="${y + 8}" stroke="var(--brand-sage)" stroke-width="1.5"/>`);
-      ticks.push(`<text x="${x}" y="${y + 24}" text-anchor="middle" fill="var(--text-main)" font-size="12">${esc(customLabel ? customLabel.text : String(v))}</text>`);
+      ticks.push(`<line x1="${x}" y1="${y - 8}" x2="${x}" y2="${y + 8}" stroke="var(--brand-sage, #51615E)" stroke-width="1.5"/>`);
+      ticks.push(`<text x="${x}" y="${y + 24}" text-anchor="middle" fill="var(--text-main, #1a2e2a)" font-size="12">${esc(customLabel ? customLabel.text : String(v))}</text>`);
     }
 
     // Highlight arcs
     const highlights = highlight.map(h => {
       const x1 = toX(h.from), x2 = toX(h.to);
       const mid = (x1 + x2) / 2;
-      return `<path d="M ${x1} ${y - 12} Q ${mid} ${y - 35} ${x2} ${y - 12}" fill="none" stroke="var(--brand-rose)" stroke-width="2"/>`;
+      return `<path d="M ${x1} ${y - 12} Q ${mid} ${y - 35} ${x2} ${y - 12}" fill="none" stroke="var(--brand-rose, #B76E79)" stroke-width="2"/>`;
     }).join('');
 
     // Marked dots
     const dots = marked.map(v => {
       const x = toX(v);
-      return `<circle cx="${x}" cy="${y}" r="5" fill="var(--brand-sage)"/>`;
+      return `<circle cx="${x}" cy="${y}" r="5" fill="var(--brand-sage, #51615E)"/>`;
     }).join('');
 
     // Main axis
-    const arrowL = showArrows ? `<polygon points="${xLeft - 12},${y} ${xLeft},${y - 5} ${xLeft},${y + 5}" fill="var(--brand-sage)"/>` : '';
-    const arrowR = showArrows ? `<polygon points="${xRight + 12},${y} ${xRight},${y - 5} ${xRight},${y + 5}" fill="var(--brand-sage)"/>` : '';
+    const arrowL = showArrows ? `<polygon points="${xLeft - 12},${y} ${xLeft},${y - 5} ${xLeft},${y + 5}" fill="var(--brand-sage, #51615E)"/>` : '';
+    const arrowR = showArrows ? `<polygon points="${xRight + 12},${y} ${xRight},${y - 5} ${xRight},${y + 5}" fill="var(--brand-sage, #51615E)"/>` : '';
 
     const content = `
-      <line x1="${xLeft}" y1="${y}" x2="${xRight}" y2="${y}" stroke="var(--brand-sage)" stroke-width="2"/>
+      <line x1="${xLeft}" y1="${y}" x2="${xRight}" y2="${y}" stroke="var(--brand-sage, #51615E)" stroke-width="2"/>
       ${arrowL}${arrowR}
       ${highlights}
       ${ticks.join('')}
@@ -2046,18 +2462,18 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     numerator = 1,
     denominator = 4,
     showLabel = true,
-    fillColor = 'var(--brand-rose)',
+    fillColor = 'var(--brand-rose, #B76E79)',
   } = {}) {
     const barX = 60, barY = 80, barW = 280, barH = 60;
     const partW = barW / denominator;
     const parts = [];
     for (let i = 0; i < denominator; i++) {
       const x = barX + i * partW;
-      const fill = i < numerator ? fillColor : 'var(--bg-elevated)';
-      parts.push(`<rect x="${x}" y="${barY}" width="${partW}" height="${barH}" fill="${fill}" stroke="var(--brand-sage)" stroke-width="1.5"/>`);
+      const fill = i < numerator ? fillColor : 'var(--bg-elevated, #f0f5f2)';
+      parts.push(`<rect x="${x}" y="${barY}" width="${partW}" height="${barH}" fill="${fill}" stroke="var(--brand-sage, #51615E)" stroke-width="1.5"/>`);
     }
     const label = showLabel
-      ? `<text x="200" y="175" text-anchor="middle" fill="var(--text-main)" font-size="16" font-weight="700">${numerator}/${denominator}</text>`
+      ? `<text x="200" y="175" text-anchor="middle" fill="var(--text-main, #1a2e2a)" font-size="16" font-weight="700">${numerator}/${denominator}</text>`
       : '';
     const content = `${parts.join('')}${label}`;
     return this._svg(content, { alt: `Fraction bar showing ${numerator}/${denominator}: ${numerator} out of ${denominator} parts shaded.` });
@@ -2078,11 +2494,11 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
       const parts = [];
       for (let j = 0; j < (f.denominator || 4); j++) {
         const x = barX + j * partW;
-        const fill = j < (f.numerator || 0) ? (f.color || 'var(--brand-rose)') : 'var(--bg-elevated)';
-        parts.push(`<rect x="${x}" y="${y}" width="${partW}" height="${barH}" fill="${fill}" stroke="var(--brand-sage)" stroke-width="1"/>`);
+        const fill = j < (f.numerator || 0) ? (f.color || 'var(--brand-rose, #B76E79)') : 'var(--bg-elevated, #f0f5f2)';
+        parts.push(`<rect x="${x}" y="${y}" width="${partW}" height="${barH}" fill="${fill}" stroke="var(--brand-sage, #51615E)" stroke-width="1"/>`);
       }
       const lbl = labels[i] || `${f.numerator}/${f.denominator}`;
-      return `${parts.join('')}<text x="${barX - 10}" y="${y + barH / 2 + 5}" text-anchor="end" fill="var(--text-main)" font-size="12" font-weight="600">${this._esc(lbl)}</text>`;
+      return `${parts.join('')}<text x="${barX - 10}" y="${y + barH / 2 + 5}" text-anchor="end" fill="var(--text-main, #1a2e2a)" font-size="12" font-weight="600">${this._esc(lbl)}</text>`;
     }).join('');
     const content = rows;
     return this._svg(content, { viewBox: `0 0 400 ${vbH}`, alt: `${n} fraction bar(s) for comparison.` });
@@ -2118,8 +2534,8 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     for (let i = 0; i <= 4; i++) {
       const v = Math.round((autoMax / 4) * i);
       const y = chartY + chartH - (v / autoMax) * chartH;
-      yTicks.push(`<line x1="${chartX}" y1="${y}" x2="${chartX + chartW}" y2="${y}" stroke="var(--border-light)" stroke-width="1"/>`);
-      yTicks.push(`<text x="${chartX - 6}" y="${y + 4}" text-anchor="end" fill="var(--text-muted)" font-size="10">${v}</text>`);
+      yTicks.push(`<line x1="${chartX}" y1="${y}" x2="${chartX + chartW}" y2="${y}" stroke="var(--border-light, #d6e3dc)" stroke-width="1"/>`);
+      yTicks.push(`<text x="${chartX - 6}" y="${y + 4}" text-anchor="end" fill="var(--text-muted, #5d706b)" font-size="10">${v}</text>`);
     }
 
     // Bars
@@ -2127,22 +2543,22 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
       const bH = (b.value / autoMax) * chartH;
       const x = chartX + gap + i * (barW + gap);
       const y = chartY + chartH - bH;
-      const fill = b.color || 'var(--brand-sage)';
+      const fill = b.color || 'var(--brand-sage, #51615E)';
       const valLabel = showValues
-        ? `<text x="${x + barW / 2}" y="${y - 4}" text-anchor="middle" fill="var(--text-main)" font-size="10">${b.value}</text>`
+        ? `<text x="${x + barW / 2}" y="${y - 4}" text-anchor="middle" fill="var(--text-main, #1a2e2a)" font-size="10">${b.value}</text>`
         : '';
       return `<rect x="${x}" y="${y}" width="${barW}" height="${bH}" fill="${fill}" rx="2"/>
-              <text x="${x + barW / 2}" y="${chartY + chartH + 16}" text-anchor="middle" fill="var(--text-main)" font-size="11">${esc(b.label)}</text>
+              <text x="${x + barW / 2}" y="${chartY + chartH + 16}" text-anchor="middle" fill="var(--text-main, #1a2e2a)" font-size="11">${esc(b.label)}</text>
               ${valLabel}`;
     }).join('');
 
     // Axes
-    const axes = `<line x1="${chartX}" y1="${chartY}" x2="${chartX}" y2="${chartY + chartH}" stroke="var(--brand-sage)" stroke-width="2"/>
-                  <line x1="${chartX}" y1="${chartY + chartH}" x2="${chartX + chartW}" y2="${chartY + chartH}" stroke="var(--brand-sage)" stroke-width="2"/>`;
+    const axes = `<line x1="${chartX}" y1="${chartY}" x2="${chartX}" y2="${chartY + chartH}" stroke="var(--brand-sage, #51615E)" stroke-width="2"/>
+                  <line x1="${chartX}" y1="${chartY + chartH}" x2="${chartX + chartW}" y2="${chartY + chartH}" stroke="var(--brand-sage, #51615E)" stroke-width="2"/>`;
 
-    const titleEl = title ? `<text x="200" y="18" text-anchor="middle" fill="var(--text-main)" font-size="13" font-weight="700">${esc(title)}</text>` : '';
-    const xLblEl = xLabel ? `<text x="${chartX + chartW / 2}" y="255" text-anchor="middle" fill="var(--text-muted)" font-size="11">${esc(xLabel)}</text>` : '';
-    const yLblEl = yLabel ? `<text x="14" y="${chartY + chartH / 2}" text-anchor="middle" fill="var(--text-muted)" font-size="11" transform="rotate(-90,14,${chartY + chartH / 2})">${esc(yLabel)}</text>` : '';
+    const titleEl = title ? `<text x="200" y="18" text-anchor="middle" fill="var(--text-main, #1a2e2a)" font-size="13" font-weight="700">${esc(title)}</text>` : '';
+    const xLblEl = xLabel ? `<text x="${chartX + chartW / 2}" y="255" text-anchor="middle" fill="var(--text-muted, #5d706b)" font-size="11">${esc(xLabel)}</text>` : '';
+    const yLblEl = yLabel ? `<text x="14" y="${chartY + chartH / 2}" text-anchor="middle" fill="var(--text-muted, #5d706b)" font-size="11" transform="rotate(-90,14,${chartY + chartH / 2})">${esc(yLabel)}</text>` : '';
 
     const content = `${titleEl}${yLblEl}${yTicks.join('')}${axes}${barEls}${xLblEl}`;
     return this._svg(content, { alt: `Bar chart${title ? ': ' + title : ''}. Bars: ${bars.map(b => b.label + '=' + b.value).join(', ')}.` });
@@ -2167,13 +2583,13 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     const barEls = bars.map((b, i) => {
       const bW = (b.value / autoMax) * chartW;
       const y = chartY + i * (barH + gap);
-      return `<rect x="${chartX}" y="${y}" width="${bW}" height="${barH}" fill="var(--brand-sage)" rx="2"/>
-              <text x="${chartX - 8}" y="${y + barH / 2 + 4}" text-anchor="end" fill="var(--text-main)" font-size="11">${esc(b.label)}</text>
-              <text x="${chartX + bW + 6}" y="${y + barH / 2 + 4}" fill="var(--text-main)" font-size="11">${b.value}</text>`;
+      return `<rect x="${chartX}" y="${y}" width="${bW}" height="${barH}" fill="var(--brand-sage, #51615E)" rx="2"/>
+              <text x="${chartX - 8}" y="${y + barH / 2 + 4}" text-anchor="end" fill="var(--text-main, #1a2e2a)" font-size="11">${esc(b.label)}</text>
+              <text x="${chartX + bW + 6}" y="${y + barH / 2 + 4}" fill="var(--text-main, #1a2e2a)" font-size="11">${b.value}</text>`;
     }).join('');
 
-    const axis = `<line x1="${chartX}" y1="${chartY}" x2="${chartX}" y2="${chartY + n * (barH + gap) - gap}" stroke="var(--brand-sage)" stroke-width="2"/>`;
-    const titleEl = title ? `<text x="${chartX + chartW / 2}" y="20" text-anchor="middle" fill="var(--text-main)" font-size="13" font-weight="700">${esc(title)}</text>` : '';
+    const axis = `<line x1="${chartX}" y1="${chartY}" x2="${chartX}" y2="${chartY + n * (barH + gap) - gap}" stroke="var(--brand-sage, #51615E)" stroke-width="2"/>`;
+    const titleEl = title ? `<text x="${chartX + chartW / 2}" y="20" text-anchor="middle" fill="var(--text-main, #1a2e2a)" font-size="13" font-weight="700">${esc(title)}</text>` : '';
 
     const content = `${titleEl}${axis}${barEls}`;
     return this._svg(content, { viewBox: `0 0 400 ${vbH}`, alt: `Horizontal bar chart${title ? ': ' + title : ''}.` });
@@ -2202,16 +2618,16 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
       const y = 40 + i * 40;
       const symCount = Math.ceil(item.count / keyValue);
       const syms = Array.from({ length: symCount }, (_, j) =>
-        `<text x="${symX + j * (symSize + gap)}" y="${y + 14}" fill="var(--brand-rose)" font-size="${symSize}">${keySymbol}</text>`
+        `<text x="${symX + j * (symSize + gap)}" y="${y + 14}" fill="var(--brand-rose, #B76E79)" font-size="${symSize}">${keySymbol}</text>`
       ).join('');
-      return `<text x="${labelX - 8}" y="${y + 14}" text-anchor="end" fill="var(--text-main)" font-size="12">${esc(item.label)}</text>${syms}`;
+      return `<text x="${labelX - 8}" y="${y + 14}" text-anchor="end" fill="var(--text-main, #1a2e2a)" font-size="12">${esc(item.label)}</text>${syms}`;
     }).join('');
 
     const keyY = 45 + n * 40;
-    const keyEl = `<text x="${symX}" y="${keyY + 14}" fill="var(--brand-rose)" font-size="${symSize}">${keySymbol}</text>
-      <text x="${symX + symSize + 6}" y="${keyY + 14}" fill="var(--text-muted)" font-size="11">= ${keyValue} ${esc(keyLabel)}</text>`;
-    const titleEl = title ? `<text x="200" y="22" text-anchor="middle" fill="var(--text-main)" font-size="13" font-weight="700">${esc(title)}</text>` : '';
-    const axiX = `<line x1="${labelX}" y1="32" x2="${labelX}" y2="${keyY - 6}" stroke="var(--border-dark)" stroke-width="1"/>`;
+    const keyEl = `<text x="${symX}" y="${keyY + 14}" fill="var(--brand-rose, #B76E79)" font-size="${symSize}">${keySymbol}</text>
+      <text x="${symX + symSize + 6}" y="${keyY + 14}" fill="var(--text-muted, #5d706b)" font-size="11">= ${keyValue} ${esc(keyLabel)}</text>`;
+    const titleEl = title ? `<text x="200" y="22" text-anchor="middle" fill="var(--text-main, #1a2e2a)" font-size="13" font-weight="700">${esc(title)}</text>` : '';
+    const axiX = `<line x1="${labelX}" y1="32" x2="${labelX}" y2="${keyY - 6}" stroke="var(--border-dark, #8da89e)" stroke-width="1"/>`;
 
     const content = `${titleEl}${axiX}${rows}${keyEl}`;
     return this._svg(content, { viewBox: `0 0 400 ${vbH}`, alt: `Pictogram chart${title ? ': ' + title : ''}.` });
@@ -2310,21 +2726,21 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     let gridlines = '', yTickLabels = '';
     ticksArr.forEach(yVal => {
       const yPx = yAt(yVal);
-      gridlines += `<line x1="${PAD_L}" y1="${yPx.toFixed(1)}" x2="${(PAD_L + plotW).toFixed(1)}" y2="${yPx.toFixed(1)}" stroke="var(--border-light)" stroke-width="1" stroke-dasharray="2,3"/>`;
+      gridlines += `<line x1="${PAD_L}" y1="${yPx.toFixed(1)}" x2="${(PAD_L + plotW).toFixed(1)}" y2="${yPx.toFixed(1)}" stroke="var(--border-light, #d6e3dc)" stroke-width="1" stroke-dasharray="2,3"/>`;
       const lblTxt = Number.isInteger(yVal) ? String(yVal) : Number(yVal).toFixed(1);
-      yTickLabels += `<text x="${(PAD_L - 8).toFixed(1)}" y="${(yPx + 4).toFixed(1)}" text-anchor="end" fill="var(--text-muted)" font-size="10">${lblTxt}</text>`;
+      yTickLabels += `<text x="${(PAD_L - 8).toFixed(1)}" y="${(yPx + 4).toFixed(1)}" text-anchor="end" fill="var(--text-muted, #5d706b)" font-size="10">${lblTxt}</text>`;
     });
 
     // ── X tick labels ────────────────────────────────────────────────────────
     let xTickLabels = '';
     norm.forEach((p, i) => {
       const xPx = xAt(p.xRaw, i);
-      xTickLabels += `<text x="${xPx.toFixed(1)}" y="${(PAD_T + plotH + 16).toFixed(1)}" text-anchor="middle" fill="var(--text-main)" font-size="10">${esc(p.displayX)}</text>`;
+      xTickLabels += `<text x="${xPx.toFixed(1)}" y="${(PAD_T + plotH + 16).toFixed(1)}" text-anchor="middle" fill="var(--text-main, #1a2e2a)" font-size="10">${esc(p.displayX)}</text>`;
     });
 
     // ── Axes ─────────────────────────────────────────────────────────────────
-    const axes = `<line x1="${PAD_L}" y1="${PAD_T}" x2="${PAD_L}" y2="${(PAD_T + plotH).toFixed(1)}" stroke="var(--text-main)" stroke-width="1.5"/>` +
-                 `<line x1="${PAD_L}" y1="${(PAD_T + plotH).toFixed(1)}" x2="${(PAD_L + plotW).toFixed(1)}" y2="${(PAD_T + plotH).toFixed(1)}" stroke="var(--text-main)" stroke-width="1.5"/>`;
+    const axes = `<line x1="${PAD_L}" y1="${PAD_T}" x2="${PAD_L}" y2="${(PAD_T + plotH).toFixed(1)}" stroke="var(--text-main, #1a2e2a)" stroke-width="1.5"/>` +
+                 `<line x1="${PAD_L}" y1="${(PAD_T + plotH).toFixed(1)}" x2="${(PAD_L + plotW).toFixed(1)}" y2="${(PAD_T + plotH).toFixed(1)}" stroke="var(--text-main, #1a2e2a)" stroke-width="1.5"/>`;
 
     // ── Polyline + dots ──────────────────────────────────────────────────────
     const pathD = norm.map((p, i) => {
@@ -2332,7 +2748,7 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
       const y = yAt(p.yNum).toFixed(1);
       return `${i === 0 ? 'M' : 'L'} ${x},${y}`;
     }).join(' ');
-    const polyline = `<path d="${pathD}" fill="none" stroke="var(--brand-sage)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+    const polyline = `<path d="${pathD}" fill="none" stroke="var(--brand-sage, #51615E)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
 
     // Value labels above each dot, but only if not too crowded
     const showValueLabels = norm.length <= 8;
@@ -2340,20 +2756,20 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
       const x = xAt(p.xRaw, i);
       const y = yAt(p.yNum);
       const valueLabel = showValueLabels
-        ? `<text x="${x.toFixed(1)}" y="${(y - 8).toFixed(1)}" text-anchor="middle" fill="var(--text-main)" font-size="10" font-weight="600" paint-order="stroke" stroke="var(--bg-surface)" stroke-width="3">${esc(String(p.yNum))}</text>`
+        ? `<text x="${x.toFixed(1)}" y="${(y - 8).toFixed(1)}" text-anchor="middle" fill="var(--text-main, #1a2e2a)" font-size="10" font-weight="600" paint-order="stroke" stroke="var(--bg-surface, #ffffff)" stroke-width="3">${esc(String(p.yNum))}</text>`
         : '';
-      return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.5" fill="var(--brand-sage)" stroke="var(--bg-surface)" stroke-width="1.5"/>${valueLabel}`;
+      return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.5" fill="var(--brand-sage, #51615E)" stroke="var(--bg-surface, #ffffff)" stroke-width="1.5"/>${valueLabel}`;
     }).join('');
 
     // ── Titles & axis labels ─────────────────────────────────────────────────
     const titleEl = title
-      ? `<text x="${(VB_W / 2).toFixed(1)}" y="20" text-anchor="middle" fill="var(--text-main)" font-size="13" font-weight="700">${esc(title)}</text>`
+      ? `<text x="${(VB_W / 2).toFixed(1)}" y="20" text-anchor="middle" fill="var(--text-main, #1a2e2a)" font-size="13" font-weight="700">${esc(title)}</text>`
       : '';
     const xLabelEl = xLabel
-      ? `<text x="${(PAD_L + plotW / 2).toFixed(1)}" y="${(VB_H - 8).toFixed(1)}" text-anchor="middle" fill="var(--text-main)" font-size="11" font-weight="600">${esc(xLabel)}</text>`
+      ? `<text x="${(PAD_L + plotW / 2).toFixed(1)}" y="${(VB_H - 8).toFixed(1)}" text-anchor="middle" fill="var(--text-main, #1a2e2a)" font-size="11" font-weight="600">${esc(xLabel)}</text>`
       : '';
     const yLabelEl = yLabel
-      ? `<text x="14" y="${(PAD_T + plotH / 2).toFixed(1)}" text-anchor="middle" fill="var(--text-main)" font-size="11" font-weight="600" transform="rotate(-90, 14, ${(PAD_T + plotH / 2).toFixed(1)})">${esc(yLabel)}</text>`
+      ? `<text x="14" y="${(PAD_T + plotH / 2).toFixed(1)}" text-anchor="middle" fill="var(--text-main, #1a2e2a)" font-size="11" font-weight="600" transform="rotate(-90, 14, ${(PAD_T + plotH / 2).toFixed(1)})">${esc(yLabel)}</text>`
       : '';
 
     return this._svg(
@@ -2373,11 +2789,11 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
   dataTable({ headers = [], rows = [], caption = '', highlightCol = -1 } = {}) {
     const esc = this._esc.bind(this);
 
-    const thStyle = `style="background:var(--bg-elevated);color:var(--text-main);font-weight:700;font-size:0.875rem;padding:8px 12px;border:1px solid var(--border-dark);text-align:center;"`;
-    const tdStyleBase = `padding:8px 12px;border:1px solid var(--border-light);text-align:center;font-size:0.875rem;color:var(--text-main);`;
+    const thStyle = `style="background:var(--bg-elevated, #f0f5f2);color:var(--text-main, #1a2e2a);font-weight:700;font-size:0.875rem;padding:8px 12px;border:1px solid var(--border-dark, #8da89e);text-align:center;"`;
+    const tdStyleBase = `padding:8px 12px;border:1px solid var(--border-light, #d6e3dc);text-align:center;font-size:0.875rem;color:var(--text-main, #1a2e2a);`;
 
     const thead = headers.length
-      ? `<thead><tr>${headers.map((h, i) => `<th ${thStyle}${i === highlightCol ? ' style="background:var(--brand-rose);color:white;font-weight:700;padding:8px 12px;border:1px solid var(--border-dark);text-align:center;"' : ''}>${esc(h)}</th>`).join('')}</tr></thead>`
+      ? `<thead><tr>${headers.map((h, i) => `<th ${thStyle}${i === highlightCol ? ' style="background:var(--brand-rose, #B76E79);color:white;font-weight:700;padding:8px 12px;border:1px solid var(--border-dark, #8da89e);text-align:center;"' : ''}>${esc(h)}</th>`).join('')}</tr></thead>`
       : '';
 
     const tbody = `<tbody>${rows.map(row =>
@@ -2387,7 +2803,7 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
       }).join('')}</tr>`
     ).join('')}</tbody>`;
 
-    const cap = caption ? `<caption style="caption-side:bottom;font-size:0.75rem;color:var(--text-muted);padding-top:6px;">${esc(caption)}</caption>` : '';
+    const cap = caption ? `<caption style="caption-side:bottom;font-size:0.75rem;color:var(--text-muted, #5d706b);padding-top:6px;">${esc(caption)}</caption>` : '';
 
     return `<div style="overflow-x:auto;margin:8px 0;"><table style="border-collapse:collapse;width:100%;font-family:'Plus Jakarta Sans',sans-serif;">${cap}${thead}${tbody}</table></div>`;
   },
@@ -2417,21 +2833,21 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     for (let i = 0; i <= 4; i++) {
       const v = minTemp + ((maxTemp - minTemp) / 4) * i;
       const y = bulbY - (i / 4) * thermH;
-      ticks.push(`<line x1="${thermX + 10}" y1="${y}" x2="${thermX + 22}" y2="${y}" stroke="var(--brand-sage)" stroke-width="1.5"/>`);
-      ticks.push(`<text x="${thermX + 26}" y="${y + 4}" fill="var(--text-main)" font-size="11">${Math.round(v)}${esc(unit)}</text>`);
+      ticks.push(`<line x1="${thermX + 10}" y1="${y}" x2="${thermX + 22}" y2="${y}" stroke="var(--brand-sage, #51615E)" stroke-width="1.5"/>`);
+      ticks.push(`<text x="${thermX + 26}" y="${y + 4}" fill="var(--text-main, #1a2e2a)" font-size="11">${Math.round(v)}${esc(unit)}</text>`);
     }
 
     const content = `
       <!-- Thermometer tube -->
-      <rect x="${thermX - 8}" y="${topY}" width="16" height="${thermH}" rx="8" fill="white" stroke="var(--brand-sage)" stroke-width="2"/>
+      <rect x="${thermX - 8}" y="${topY}" width="16" height="${thermH}" rx="8" fill="white" stroke="var(--brand-sage, #51615E)" stroke-width="2"/>
       <!-- Mercury fill -->
-      <rect x="${thermX - 6}" y="${fillY}" width="12" height="${filledH}" fill="var(--brand-rose)" rx="2"/>
+      <rect x="${thermX - 6}" y="${fillY}" width="12" height="${filledH}" fill="var(--brand-rose, #B76E79)" rx="2"/>
       <!-- Bulb -->
-      <circle cx="${thermX}" cy="${bulbY + bulbR - 5}" r="${bulbR}" fill="var(--brand-rose)" stroke="var(--brand-sage)" stroke-width="2"/>
+      <circle cx="${thermX}" cy="${bulbY + bulbR - 5}" r="${bulbR}" fill="var(--brand-rose, #B76E79)" stroke="var(--brand-sage, #51615E)" stroke-width="2"/>
       ${ticks.join('')}
       <!-- Current temp label -->
-      <text x="${thermX}" y="${topY - 10}" text-anchor="middle" fill="var(--text-main)" font-size="13" font-weight="700">${currentTemp}${esc(unit)}</text>
-      ${label ? `<text x="${thermX}" y="248" text-anchor="middle" fill="var(--text-muted)" font-size="11">${esc(label)}</text>` : ''}`;
+      <text x="${thermX}" y="${topY - 10}" text-anchor="middle" fill="var(--text-main, #1a2e2a)" font-size="13" font-weight="700">${currentTemp}${esc(unit)}</text>
+      ${label ? `<text x="${thermX}" y="248" text-anchor="middle" fill="var(--text-muted, #5d706b)" font-size="11">${esc(label)}</text>` : ''}`;
     return this._svg(content, { alt: `Thermometer showing ${currentTemp}${unit} on a scale of ${minTemp}${unit} to ${maxTemp}${unit}.` });
   },
 
@@ -2495,7 +2911,7 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     const MID = 'dlab_ah';
     const defs = `<defs>
       <marker id="${MID}" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
-        <polygon points="0 0, 9 3.5, 0 7" fill="var(--brand-sage)"/>
+        <polygon points="0 0, 9 3.5, 0 7" fill="var(--brand-sage, #51615E)"/>
       </marker>
     </defs>`;
  
@@ -2534,27 +2950,27 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
         const midX = (p1.x + p2.x) / 2, midY = (p1.y + p2.y) / 2;
         const outX = midX + (midX - vbW / 2) * 0.2;
         const outY = midY + (midY - vbH / 2) * 0.2;
-        pathEl = `<path d="M ${p1.x.toFixed(1)},${p1.y.toFixed(1)} Q ${outX.toFixed(1)},${outY.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}" fill="none" stroke="var(--brand-sage)" stroke-width="2" marker-end="url(#${MID})"/>`;
+        pathEl = `<path d="M ${p1.x.toFixed(1)},${p1.y.toFixed(1)} Q ${outX.toFixed(1)},${outY.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}" fill="none" stroke="var(--brand-sage, #51615E)" stroke-width="2" marker-end="url(#${MID})"/>`;
         labelX = outX; labelY = outY - 6;
       } else if (offset !== 0) {
         // Bidirectional / parallel pair → quadratic Bezier curve to one side
         const midX = (p1.x + p2.x) / 2 + perpX * offset;
         const midY = (p1.y + p2.y) / 2 + perpY * offset;
-        pathEl = `<path d="M ${p1.x.toFixed(1)},${p1.y.toFixed(1)} Q ${midX.toFixed(1)},${midY.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}" fill="none" stroke="var(--brand-sage)" stroke-width="2" marker-end="url(#${MID})"/>`;
+        pathEl = `<path d="M ${p1.x.toFixed(1)},${p1.y.toFixed(1)} Q ${midX.toFixed(1)},${midY.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}" fill="none" stroke="var(--brand-sage, #51615E)" stroke-width="2" marker-end="url(#${MID})"/>`;
         // Label at the curve apex, pushed further out so it doesn't sit on the line
         const labelPush = offset > 0 ? 10 : -10;
         labelX = midX + perpX * labelPush;
         labelY = midY + perpY * labelPush + 3;
       } else {
         // Single arrow between this pair → straight line
-        pathEl = `<line x1="${p1.x.toFixed(1)}" y1="${p1.y.toFixed(1)}" x2="${p2.x.toFixed(1)}" y2="${p2.y.toFixed(1)}" stroke="var(--brand-sage)" stroke-width="2" marker-end="url(#${MID})"/>`;
+        pathEl = `<line x1="${p1.x.toFixed(1)}" y1="${p1.y.toFixed(1)}" x2="${p2.x.toFixed(1)}" y2="${p2.y.toFixed(1)}" stroke="var(--brand-sage, #51615E)" stroke-width="2" marker-end="url(#${MID})"/>`;
         labelX = (p1.x + p2.x) / 2;
         labelY = (p1.y + p2.y) / 2 - 8;
       }
 
       // paint-order halo: label stays readable when it crosses an arrow line
       const lbl = a.label
-        ? `<text x="${labelX.toFixed(1)}" y="${labelY.toFixed(1)}" text-anchor="middle" fill="var(--text-muted)" font-size="10" paint-order="stroke" stroke="var(--bg-surface)" stroke-width="3">${esc(a.label)}</text>`
+        ? `<text x="${labelX.toFixed(1)}" y="${labelY.toFixed(1)}" text-anchor="middle" fill="var(--text-muted, #5d706b)" font-size="10" paint-order="stroke" stroke="var(--bg-surface, #ffffff)" stroke-width="3">${esc(a.label)}</text>`
         : '';
       return pathEl + lbl;
     }).join('');
@@ -2563,13 +2979,13 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     const nodeEls = positions.map(p => `
       <rect x="${(p.cx - p.w / 2).toFixed(1)}" y="${(p.cy - NODE_H / 2).toFixed(1)}"
             width="${p.w}" height="${NODE_H}" rx="8"
-            fill="var(--bg-elevated)" stroke="var(--brand-sage)" stroke-width="1.5"/>
+            fill="var(--bg-elevated, #f0f5f2)" stroke="var(--brand-sage, #51615E)" stroke-width="1.5"/>
       <text x="${p.cx.toFixed(1)}" y="${(p.cy + 5).toFixed(1)}"
-            text-anchor="middle" fill="var(--text-main)" font-size="12" font-weight="600">${esc(p.label)}</text>
+            text-anchor="middle" fill="var(--text-main, #1a2e2a)" font-size="12" font-weight="600">${esc(p.label)}</text>
     `).join('');
  
     const titleEl = title
-      ? `<text x="${(vbW / 2).toFixed(1)}" y="16" text-anchor="middle" fill="var(--text-main)" font-size="13" font-weight="700">${esc(title)}</text>`
+      ? `<text x="${(vbW / 2).toFixed(1)}" y="16" text-anchor="middle" fill="var(--text-main, #1a2e2a)" font-size="13" font-weight="700">${esc(title)}</text>`
       : '';
  
     return this._svg(`${defs}${titleEl}${arrowEls}${nodeEls}`, {
@@ -2777,14 +3193,14 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     // ── Title ──────────────────────────────────────────────
     if (title) {
       curY += 18;
-      svg += `<text x="${SVG_W / 2}" y="${curY}" text-anchor="middle" fill="var(--text-main)" font-size="13" font-weight="700">${esc(title)}</text>`;
+      svg += `<text x="${SVG_W / 2}" y="${curY}" text-anchor="middle" fill="var(--text-main, #1a2e2a)" font-size="13" font-weight="700">${esc(title)}</text>`;
     }
  
     // ── Changed variable banner ────────────────────────────
     if (variable) {
       curY += 22;
       svg += `<rect x="${PAD}" y="${curY - 4}" width="${SVG_W - PAD * 2}" height="19" rx="4" fill="rgba(183,110,121,0.12)"/>`;
-      svg += `<text x="${SVG_W / 2}" y="${curY + 10}" text-anchor="middle" fill="var(--brand-rose)" font-size="11" font-weight="700">Changed variable: ${esc(variable)}</text>`;
+      svg += `<text x="${SVG_W / 2}" y="${curY + 10}" text-anchor="middle" fill="var(--brand-rose, #B76E79)" font-size="11" font-weight="700">Changed variable: ${esc(variable)}</text>`;
     }
     curY += 12;
  
@@ -2793,7 +3209,7 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     // ── Vertical dividers between panels ──────────────────
     for (let i = 1; i < nSetups; i++) {
       const dx = PAD + i * (panelW + PANEL_GAP) - PANEL_GAP / 2;
-      svg += `<line x1="${dx.toFixed(1)}" y1="${panelTopY}" x2="${dx.toFixed(1)}" y2="${SVG_H - 14 - commonH}" stroke="var(--border-light)" stroke-width="1" stroke-dasharray="4,3"/>`;
+      svg += `<line x1="${dx.toFixed(1)}" y1="${panelTopY}" x2="${dx.toFixed(1)}" y2="${SVG_H - 14 - commonH}" stroke="var(--border-light, #d6e3dc)" stroke-width="1" stroke-dasharray="4,3"/>`;
     }
  
     // ── Render each panel ──────────────────────────────────
@@ -2807,7 +3223,7 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
  
       // Panel label
       py += 14;
-      svg += `<text x="${panelCX.toFixed(1)}" y="${py}" text-anchor="middle" fill="var(--brand-sage)" font-size="12" font-weight="700">${esc(lbl)}</text>`;
+      svg += `<text x="${panelCX.toFixed(1)}" y="${py}" text-anchor="middle" fill="var(--brand-sage, #51615E)" font-size="12" font-weight="700">${esc(lbl)}</text>`;
  
       // Container silhouette
       py += 10;
@@ -2817,24 +3233,24 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
  
       // Conditions list
       (s.conditions || []).forEach((cond, ci) => {
-        svg += `<text x="${(panelX + 6).toFixed(1)}" y="${(py + ci * LINE_H + 12).toFixed(1)}" fill="var(--text-main)" font-size="11">• ${esc(cond)}</text>`;
+        svg += `<text x="${(panelX + 6).toFixed(1)}" y="${(py + ci * LINE_H + 12).toFixed(1)}" fill="var(--text-main, #1a2e2a)" font-size="11">• ${esc(cond)}</text>`;
       });
  
       // Result label + underline (answer space)
       if (s.result_label) {
         const ry = py + maxConds * LINE_H + 12;
-        svg += `<text x="${panelCX.toFixed(1)}" y="${ry}" text-anchor="middle" fill="var(--text-muted)" font-size="10" font-style="italic">${esc(s.result_label)}</text>`;
-        svg += `<line x1="${(panelX + 8).toFixed(1)}" y1="${(ry + 5).toFixed(1)}" x2="${(panelX + panelW - 8).toFixed(1)}" y2="${(ry + 5).toFixed(1)}" stroke="var(--border-dark)" stroke-width="1"/>`;
+        svg += `<text x="${panelCX.toFixed(1)}" y="${ry}" text-anchor="middle" fill="var(--text-muted, #5d706b)" font-size="10" font-style="italic">${esc(s.result_label)}</text>`;
+        svg += `<line x1="${(panelX + 8).toFixed(1)}" y1="${(ry + 5).toFixed(1)}" x2="${(panelX + panelW - 8).toFixed(1)}" y2="${(ry + 5).toFixed(1)}" stroke="var(--border-dark, #8da89e)" stroke-width="1"/>`;
       }
     }
  
     // ── Common conditions footer ───────────────────────────
     if (commonConditions.length) {
       const footerY = SVG_H - 14 - commonH + 14;
-      svg += `<line x1="${PAD}" y1="${footerY - 10}" x2="${SVG_W - PAD}" y2="${footerY - 10}" stroke="var(--border-light)" stroke-width="1"/>`;
-      svg += `<text x="${SVG_W / 2}" y="${footerY}" text-anchor="middle" fill="var(--text-muted)" font-size="10" font-weight="600">Same conditions in all setups:</text>`;
+      svg += `<line x1="${PAD}" y1="${footerY - 10}" x2="${SVG_W - PAD}" y2="${footerY - 10}" stroke="var(--border-light, #d6e3dc)" stroke-width="1"/>`;
+      svg += `<text x="${SVG_W / 2}" y="${footerY}" text-anchor="middle" fill="var(--text-muted, #5d706b)" font-size="10" font-weight="600">Same conditions in all setups:</text>`;
       commonConditions.forEach((c, i) => {
-        svg += `<text x="${SVG_W / 2}" y="${footerY + 14 + i * LINE_H}" text-anchor="middle" fill="var(--text-muted)" font-size="10">${esc(c)}</text>`;
+        svg += `<text x="${SVG_W / 2}" y="${footerY + 14 + i * LINE_H}" text-anchor="middle" fill="var(--text-muted, #5d706b)" font-size="10">${esc(c)}</text>`;
       });
     }
  
@@ -2853,22 +3269,22 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     switch (type) {
       case 'test_tube': {
         const w = 28, h = 70, r = 14;
-        return `<path d="M ${cx - w / 2},${baseY - h} L ${cx - w / 2},${baseY - r} A ${r},${r} 0 0 0 ${cx + w / 2},${baseY - r} L ${cx + w / 2},${baseY - h}" fill="rgba(240,244,243,0.8)" stroke="var(--brand-sage)" stroke-width="2"/>
-                <line x1="${cx - w / 2 - 5}" y1="${baseY - h}" x2="${cx + w / 2 + 5}" y2="${baseY - h}" stroke="var(--brand-sage)" stroke-width="2.5"/>`;
+        return `<path d="M ${cx - w / 2},${baseY - h} L ${cx - w / 2},${baseY - r} A ${r},${r} 0 0 0 ${cx + w / 2},${baseY - r} L ${cx + w / 2},${baseY - h}" fill="rgba(240,244,243,0.8)" stroke="var(--brand-sage, #51615E)" stroke-width="2"/>
+                <line x1="${cx - w / 2 - 5}" y1="${baseY - h}" x2="${cx + w / 2 + 5}" y2="${baseY - h}" stroke="var(--brand-sage, #51615E)" stroke-width="2.5"/>`;
       }
       case 'flask': {
         const nw = 20, bw = 66, h = 70, neck = 24;
-        return `<path d="M ${cx - nw / 2},${baseY - h} L ${cx - nw / 2},${baseY - neck} L ${cx - bw / 2},${baseY} L ${cx + bw / 2},${baseY} L ${cx + nw / 2},${baseY - neck} L ${cx + nw / 2},${baseY - h}" fill="rgba(240,244,243,0.8)" stroke="var(--brand-sage)" stroke-width="2" stroke-linejoin="round"/>
-                <line x1="${cx - nw / 2 - 4}" y1="${baseY - h}" x2="${cx + nw / 2 + 4}" y2="${baseY - h}" stroke="var(--brand-sage)" stroke-width="2.5"/>`;
+        return `<path d="M ${cx - nw / 2},${baseY - h} L ${cx - nw / 2},${baseY - neck} L ${cx - bw / 2},${baseY} L ${cx + bw / 2},${baseY} L ${cx + nw / 2},${baseY - neck} L ${cx + nw / 2},${baseY - h}" fill="rgba(240,244,243,0.8)" stroke="var(--brand-sage, #51615E)" stroke-width="2" stroke-linejoin="round"/>
+                <line x1="${cx - nw / 2 - 4}" y1="${baseY - h}" x2="${cx + nw / 2 + 4}" y2="${baseY - h}" stroke="var(--brand-sage, #51615E)" stroke-width="2.5"/>`;
       }
       case 'box': {
         const w = 74, h = 52;
-        return `<rect x="${cx - w / 2}" y="${baseY - h}" width="${w}" height="${h}" fill="rgba(240,244,243,0.8)" stroke="var(--brand-sage)" stroke-width="2" rx="3"/>`;
+        return `<rect x="${cx - w / 2}" y="${baseY - h}" width="${w}" height="${h}" fill="rgba(240,244,243,0.8)" stroke="var(--brand-sage, #51615E)" stroke-width="2" rx="3"/>`;
       }
       default: { // beaker
         const bw = 52, tw = 66, h = 68;
-        return `<path d="M ${cx - tw / 2},${baseY - h} L ${cx - bw / 2},${baseY} L ${cx + bw / 2},${baseY} L ${cx + tw / 2},${baseY - h}" fill="rgba(240,244,243,0.8)" stroke="var(--brand-sage)" stroke-width="2" stroke-linejoin="round"/>
-                <line x1="${cx - tw / 2 - 5}" y1="${baseY - h}" x2="${cx + tw / 2 + 5}" y2="${baseY - h}" stroke="var(--brand-sage)" stroke-width="2.5"/>`;
+        return `<path d="M ${cx - tw / 2},${baseY - h} L ${cx - bw / 2},${baseY} L ${cx + bw / 2},${baseY} L ${cx + tw / 2},${baseY - h}" fill="rgba(240,244,243,0.8)" stroke="var(--brand-sage, #51615E)" stroke-width="2" stroke-linejoin="round"/>
+                <line x1="${cx - tw / 2 - 5}" y1="${baseY - h}" x2="${cx + tw / 2 + 5}" y2="${baseY - h}" stroke="var(--brand-sage, #51615E)" stroke-width="2.5"/>`;
       }
     }
   },
@@ -2933,14 +3349,14 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
       // ── Title ──────────────────────────────────────────────
       if (title) {
         curY += 18;
-        svg += `<text x="${SVG_W / 2}" y="${curY}" text-anchor="middle" fill="var(--text-main)" font-size="13" font-weight="700">${esc(title)}</text>`;
+        svg += `<text x="${SVG_W / 2}" y="${curY}" text-anchor="middle" fill="var(--text-main, #1a2e2a)" font-size="13" font-weight="700">${esc(title)}</text>`;
       }
   
       // ── Changed variable banner ────────────────────────────
       if (variable) {
         curY += 22;
         svg += `<rect x="${PAD}" y="${curY - 4}" width="${SVG_W - PAD * 2}" height="19" rx="4" fill="rgba(183,110,121,0.12)"/>`;
-        svg += `<text x="${SVG_W / 2}" y="${curY + 10}" text-anchor="middle" fill="var(--brand-rose)" font-size="11" font-weight="700">Changed variable: ${esc(variable)}</text>`;
+        svg += `<text x="${SVG_W / 2}" y="${curY + 10}" text-anchor="middle" fill="var(--brand-rose, #B76E79)" font-size="11" font-weight="700">Changed variable: ${esc(variable)}</text>`;
       }
       curY += 12;
   
@@ -2949,7 +3365,7 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
       // ── Vertical dividers between panels ──────────────────
       for (let i = 1; i < nSetups; i++) {
         const dx = PAD + i * (panelW + PANEL_GAP) - PANEL_GAP / 2;
-        svg += `<line x1="${dx.toFixed(1)}" y1="${panelTopY}" x2="${dx.toFixed(1)}" y2="${SVG_H - 14 - commonH}" stroke="var(--border-light)" stroke-width="1" stroke-dasharray="4,3"/>`;
+        svg += `<line x1="${dx.toFixed(1)}" y1="${panelTopY}" x2="${dx.toFixed(1)}" y2="${SVG_H - 14 - commonH}" stroke="var(--border-light, #d6e3dc)" stroke-width="1" stroke-dasharray="4,3"/>`;
       }
   
       // ── Render each panel ──────────────────────────────────
@@ -2963,7 +3379,7 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
   
         // Panel label
         py += 14;
-        svg += `<text x="${panelCX.toFixed(1)}" y="${py}" text-anchor="middle" fill="var(--brand-sage)" font-size="12" font-weight="700">${esc(lbl)}</text>`;
+        svg += `<text x="${panelCX.toFixed(1)}" y="${py}" text-anchor="middle" fill="var(--brand-sage, #51615E)" font-size="12" font-weight="700">${esc(lbl)}</text>`;
   
         // Container silhouette
         py += 10;
@@ -2973,24 +3389,24 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
   
         // Conditions list
         (s.conditions || []).forEach((cond, ci) => {
-          svg += `<text x="${(panelX + 6).toFixed(1)}" y="${(py + ci * LINE_H + 12).toFixed(1)}" fill="var(--text-main)" font-size="11">• ${esc(cond)}</text>`;
+          svg += `<text x="${(panelX + 6).toFixed(1)}" y="${(py + ci * LINE_H + 12).toFixed(1)}" fill="var(--text-main, #1a2e2a)" font-size="11">• ${esc(cond)}</text>`;
         });
   
         // Result label + underline (answer space)
         if (s.result_label) {
           const ry = py + maxConds * LINE_H + 12;
-          svg += `<text x="${panelCX.toFixed(1)}" y="${ry}" text-anchor="middle" fill="var(--text-muted)" font-size="10" font-style="italic">${esc(s.result_label)}</text>`;
-          svg += `<line x1="${(panelX + 8).toFixed(1)}" y1="${(ry + 5).toFixed(1)}" x2="${(panelX + panelW - 8).toFixed(1)}" y2="${(ry + 5).toFixed(1)}" stroke="var(--border-dark)" stroke-width="1"/>`;
+          svg += `<text x="${panelCX.toFixed(1)}" y="${ry}" text-anchor="middle" fill="var(--text-muted, #5d706b)" font-size="10" font-style="italic">${esc(s.result_label)}</text>`;
+          svg += `<line x1="${(panelX + 8).toFixed(1)}" y1="${(ry + 5).toFixed(1)}" x2="${(panelX + panelW - 8).toFixed(1)}" y2="${(ry + 5).toFixed(1)}" stroke="var(--border-dark, #8da89e)" stroke-width="1"/>`;
         }
       }
   
       // ── Common conditions footer ───────────────────────────
       if (commonConditions.length) {
         const footerY = SVG_H - 14 - commonH + 14;
-        svg += `<line x1="${PAD}" y1="${footerY - 10}" x2="${SVG_W - PAD}" y2="${footerY - 10}" stroke="var(--border-light)" stroke-width="1"/>`;
-        svg += `<text x="${SVG_W / 2}" y="${footerY}" text-anchor="middle" fill="var(--text-muted)" font-size="10" font-weight="600">Same conditions in all setups:</text>`;
+        svg += `<line x1="${PAD}" y1="${footerY - 10}" x2="${SVG_W - PAD}" y2="${footerY - 10}" stroke="var(--border-light, #d6e3dc)" stroke-width="1"/>`;
+        svg += `<text x="${SVG_W / 2}" y="${footerY}" text-anchor="middle" fill="var(--text-muted, #5d706b)" font-size="10" font-weight="600">Same conditions in all setups:</text>`;
         commonConditions.forEach((c, i) => {
-          svg += `<text x="${SVG_W / 2}" y="${footerY + 14 + i * LINE_H}" text-anchor="middle" fill="var(--text-muted)" font-size="10">${esc(c)}</text>`;
+          svg += `<text x="${SVG_W / 2}" y="${footerY + 14 + i * LINE_H}" text-anchor="middle" fill="var(--text-muted, #5d706b)" font-size="10">${esc(c)}</text>`;
         });
       }
   
@@ -3053,10 +3469,10 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
  
       // Rod
       const rodFill = coreMaterial === 'copper' ? '#C27A35'
-                    : coreMaterial === 'plastic' ? 'var(--text-muted)'
-                    : 'var(--brand-sage)';
-      svg += `<rect x="${rodX}" y="${rodY}" width="${rodW}" height="${rodH}" rx="4" fill="${rodFill}" stroke="var(--text-main)" stroke-width="1.5"/>`;
-      svg += `<text x="${rodX + rodW / 2}" y="${rodY + rodH + 16}" text-anchor="middle" fill="var(--text-muted)" font-size="10">${esc(coreMaterial)} core</text>`;
+                    : coreMaterial === 'plastic' ? 'var(--text-muted, #5d706b)'
+                    : 'var(--brand-sage, #51615E)';
+      svg += `<rect x="${rodX}" y="${rodY}" width="${rodW}" height="${rodH}" rx="4" fill="${rodFill}" stroke="var(--text-main, #1a2e2a)" stroke-width="1.5"/>`;
+      svg += `<text x="${rodX + rodW / 2}" y="${rodY + rodH + 16}" text-anchor="middle" fill="var(--text-muted, #5d706b)" font-size="10">${esc(coreMaterial)} core</text>`;
  
       // Coil windings: quadratic bezier arcs above and below the rod
       const step = (coilX2 - coilX1) / coilsCount;
@@ -3069,27 +3485,27 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
         topPath += ` Q ${mx.toFixed(1)},${rodY - arcH} ${ex.toFixed(1)},${rodY}`;
         botPath += ` Q ${mx.toFixed(1)},${rodY + rodH + arcH} ${ex.toFixed(1)},${rodY + rodH}`;
       }
-      svg += `<path d="${topPath}" fill="none" stroke="var(--text-main)" stroke-width="2"/>`;
-      svg += `<path d="${botPath}" fill="none" stroke="var(--text-main)" stroke-width="2"/>`;
+      svg += `<path d="${topPath}" fill="none" stroke="var(--text-main, #1a2e2a)" stroke-width="2"/>`;
+      svg += `<path d="${botPath}" fill="none" stroke="var(--text-main, #1a2e2a)" stroke-width="2"/>`;
  
       // Battery (left side): long line = +, short line = −
       const batCX = 38, batCY = rodY + rodH / 2;
       const cellSpacing = 14;
       for (let i = 0; i < Math.min(batteryCount, 3); i++) {
         const bx = batCX - (batteryCount - 1) * cellSpacing / 2 + i * cellSpacing;
-        svg += `<line x1="${bx}" y1="${batCY - 16}" x2="${bx}" y2="${batCY + 16}" stroke="var(--text-main)" stroke-width="3"/>`;
+        svg += `<line x1="${bx}" y1="${batCY - 16}" x2="${bx}" y2="${batCY + 16}" stroke="var(--text-main, #1a2e2a)" stroke-width="3"/>`;
         if (i < batteryCount - 1) {
-          svg += `<line x1="${bx + cellSpacing / 2}" y1="${batCY - 9}" x2="${bx + cellSpacing / 2}" y2="${batCY + 9}" stroke="var(--text-main)" stroke-width="2"/>`;
+          svg += `<line x1="${bx + cellSpacing / 2}" y1="${batCY - 9}" x2="${bx + cellSpacing / 2}" y2="${batCY + 9}" stroke="var(--text-main, #1a2e2a)" stroke-width="2"/>`;
         }
       }
-      svg += `<text x="${batCX - 6}" y="${batCY - 22}" fill="var(--text-main)" font-size="11" font-weight="700" text-anchor="middle">+</text>`;
+      svg += `<text x="${batCX - 6}" y="${batCY - 22}" fill="var(--text-main, #1a2e2a)" font-size="11" font-weight="700" text-anchor="middle">+</text>`;
  
       // Wires connecting battery to coil (top and bottom)
-      svg += `<polyline points="${batCX},${batCY - 16} ${batCX},${rodY - arcH - 6} ${coilX1},${rodY}" fill="none" stroke="var(--text-main)" stroke-width="1.5"/>`;
-      svg += `<polyline points="${batCX},${batCY + 16} ${batCX},${rodY + rodH + arcH + 6} ${coilX1},${rodY + rodH}" fill="none" stroke="var(--text-main)" stroke-width="1.5"/>`;
+      svg += `<polyline points="${batCX},${batCY - 16} ${batCX},${rodY - arcH - 6} ${coilX1},${rodY}" fill="none" stroke="var(--text-main, #1a2e2a)" stroke-width="1.5"/>`;
+      svg += `<polyline points="${batCX},${batCY + 16} ${batCX},${rodY + rodH + arcH + 6} ${coilX1},${rodY + rodH}" fill="none" stroke="var(--text-main, #1a2e2a)" stroke-width="1.5"/>`;
  
       // Closing wire on right side
-      svg += `<polyline points="${coilX2},${rodY} ${coilX2 + 20},${rodY - arcH - 6} ${coilX2 + 20},${rodY + rodH + arcH + 6} ${coilX2},${rodY + rodH}" fill="none" stroke="var(--text-main)" stroke-width="1.5"/>`;
+      svg += `<polyline points="${coilX2},${rodY} ${coilX2 + 20},${rodY - arcH - 6} ${coilX2 + 20},${rodY + rodH + arcH + 6} ${coilX2},${rodY + rodH}" fill="none" stroke="var(--text-main, #1a2e2a)" stroke-width="1.5"/>`;
  
       // Pole labels at rod ends
       svg += `<text x="${rodX + 10}" y="${rodY - 8}" fill="${N_CLR}" font-size="15" font-weight="800">N</text>`;
@@ -3109,7 +3525,7 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
         Q ${rx},${topY + armH + 30} ${lx + gap / 2 + armW / 2},${topY + armH + 30}
         Q ${lx},${topY + armH + 30} ${lx},${topY + armH}
         L ${lx},${topY} Z`;
-      svg += `<path d="${bodyPath}" fill="var(--brand-sage)" stroke="var(--text-main)" stroke-width="2" stroke-linejoin="round"/>`;
+      svg += `<path d="${bodyPath}" fill="var(--brand-sage, #51615E)" stroke="var(--text-main, #1a2e2a)" stroke-width="2" stroke-linejoin="round"/>`;
  
       // Pole caps (coloured top portions)
       const m0 = (magnets[0] || { poles: ['N', 'S'] });
@@ -3138,7 +3554,7 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
         const midX  = m1x + MAG_W + GAP_BTW / 2;
         const midY  = my + MAG_H / 2;
         const IID   = interaction === 'repulsion' ? 'dlab_rep' : 'dlab_att';
-        const iClr  = interaction === 'repulsion' ? 'var(--brand-rose)' : 'var(--brand-sage)';
+        const iClr  = interaction === 'repulsion' ? 'var(--brand-rose, #B76E79)' : 'var(--brand-sage, #51615E)';
         svg += `<defs><marker id="${IID}" markerWidth="8" markerHeight="7" refX="7" refY="3.5" orient="auto"><polygon points="0 0,8 3.5,0 7" fill="${iClr}"/></marker></defs>`;
  
         if (interaction === 'repulsion') {
@@ -3156,7 +3572,7 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     }
  
     if (label) {
-      svg += `<text x="${vbW / 2}" y="${vbH - 5}" text-anchor="middle" fill="var(--text-muted)" font-size="10" font-style="italic">${esc(label)}</text>`;
+      svg += `<text x="${vbW / 2}" y="${vbH - 5}" text-anchor="middle" fill="var(--text-muted, #5d706b)" font-size="10" font-style="italic">${esc(label)}</text>`;
     }
  
     return this._svg(svg, {
@@ -3172,9 +3588,9 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     const p0 = String((poles || [])[0] || 'N').toUpperCase();
     const p1 = String((poles || [])[1] || 'S').toUpperCase();
     return `
-      <rect x="${x}"      y="${y}" width="${hw}" height="${h}" fill="${pClr(p0)}" rx="6" stroke="var(--text-main)" stroke-width="1.5"/>
-      <rect x="${x + hw}" y="${y}" width="${hw}" height="${h}" fill="${pClr(p1)}" rx="6" stroke="var(--text-main)" stroke-width="1.5"/>
-      <line x1="${x + hw}" y1="${y}" x2="${x + hw}" y2="${y + h}" stroke="var(--text-main)" stroke-width="1.5"/>
+      <rect x="${x}"      y="${y}" width="${hw}" height="${h}" fill="${pClr(p0)}" rx="6" stroke="var(--text-main, #1a2e2a)" stroke-width="1.5"/>
+      <rect x="${x + hw}" y="${y}" width="${hw}" height="${h}" fill="${pClr(p1)}" rx="6" stroke="var(--text-main, #1a2e2a)" stroke-width="1.5"/>
+      <line x1="${x + hw}" y1="${y}" x2="${x + hw}" y2="${y + h}" stroke="var(--text-main, #1a2e2a)" stroke-width="1.5"/>
       <text x="${x + hw / 2}"      y="${y + h / 2 + 6}" text-anchor="middle" fill="white" font-size="16" font-weight="800">${esc(p0)}</text>
       <text x="${x + hw + hw / 2}" y="${y + h / 2 + 6}" text-anchor="middle" fill="white" font-size="16" font-weight="800">${esc(p1)}</text>
     `;
@@ -3188,22 +3604,22 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     switch (type) {
       case 'test_tube': {
         const w = 28, h = 70, r = 14;
-        return `<path d="M ${cx - w / 2},${baseY - h} L ${cx - w / 2},${baseY - r} A ${r},${r} 0 0 0 ${cx + w / 2},${baseY - r} L ${cx + w / 2},${baseY - h}" fill="rgba(240,244,243,0.8)" stroke="var(--brand-sage)" stroke-width="2"/>
-                <line x1="${cx - w / 2 - 5}" y1="${baseY - h}" x2="${cx + w / 2 + 5}" y2="${baseY - h}" stroke="var(--brand-sage)" stroke-width="2.5"/>`;
+        return `<path d="M ${cx - w / 2},${baseY - h} L ${cx - w / 2},${baseY - r} A ${r},${r} 0 0 0 ${cx + w / 2},${baseY - r} L ${cx + w / 2},${baseY - h}" fill="rgba(240,244,243,0.8)" stroke="var(--brand-sage, #51615E)" stroke-width="2"/>
+                <line x1="${cx - w / 2 - 5}" y1="${baseY - h}" x2="${cx + w / 2 + 5}" y2="${baseY - h}" stroke="var(--brand-sage, #51615E)" stroke-width="2.5"/>`;
       }
       case 'flask': {
         const nw = 20, bw = 66, h = 70, neck = 24;
-        return `<path d="M ${cx - nw / 2},${baseY - h} L ${cx - nw / 2},${baseY - neck} L ${cx - bw / 2},${baseY} L ${cx + bw / 2},${baseY} L ${cx + nw / 2},${baseY - neck} L ${cx + nw / 2},${baseY - h}" fill="rgba(240,244,243,0.8)" stroke="var(--brand-sage)" stroke-width="2" stroke-linejoin="round"/>
-                <line x1="${cx - nw / 2 - 4}" y1="${baseY - h}" x2="${cx + nw / 2 + 4}" y2="${baseY - h}" stroke="var(--brand-sage)" stroke-width="2.5"/>`;
+        return `<path d="M ${cx - nw / 2},${baseY - h} L ${cx - nw / 2},${baseY - neck} L ${cx - bw / 2},${baseY} L ${cx + bw / 2},${baseY} L ${cx + nw / 2},${baseY - neck} L ${cx + nw / 2},${baseY - h}" fill="rgba(240,244,243,0.8)" stroke="var(--brand-sage, #51615E)" stroke-width="2" stroke-linejoin="round"/>
+                <line x1="${cx - nw / 2 - 4}" y1="${baseY - h}" x2="${cx + nw / 2 + 4}" y2="${baseY - h}" stroke="var(--brand-sage, #51615E)" stroke-width="2.5"/>`;
       }
       case 'box': {
         const w = 74, h = 52;
-        return `<rect x="${cx - w / 2}" y="${baseY - h}" width="${w}" height="${h}" fill="rgba(240,244,243,0.8)" stroke="var(--brand-sage)" stroke-width="2" rx="3"/>`;
+        return `<rect x="${cx - w / 2}" y="${baseY - h}" width="${w}" height="${h}" fill="rgba(240,244,243,0.8)" stroke="var(--brand-sage, #51615E)" stroke-width="2" rx="3"/>`;
       }
       default: { // beaker
         const bw = 52, tw = 66, h = 68;
-        return `<path d="M ${cx - tw / 2},${baseY - h} L ${cx - bw / 2},${baseY} L ${cx + bw / 2},${baseY} L ${cx + tw / 2},${baseY - h}" fill="rgba(240,244,243,0.8)" stroke="var(--brand-sage)" stroke-width="2" stroke-linejoin="round"/>
-                <line x1="${cx - tw / 2 - 5}" y1="${baseY - h}" x2="${cx + tw / 2 + 5}" y2="${baseY - h}" stroke="var(--brand-sage)" stroke-width="2.5"/>`;
+        return `<path d="M ${cx - tw / 2},${baseY - h} L ${cx - bw / 2},${baseY} L ${cx + bw / 2},${baseY} L ${cx + tw / 2},${baseY - h}" fill="rgba(240,244,243,0.8)" stroke="var(--brand-sage, #51615E)" stroke-width="2" stroke-linejoin="round"/>
+                <line x1="${cx - tw / 2 - 5}" y1="${baseY - h}" x2="${cx + tw / 2 + 5}" y2="${baseY - h}" stroke="var(--brand-sage, #51615E)" stroke-width="2.5"/>`;
       }
     }
   },
@@ -3270,7 +3686,7 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     </defs>`;
  
     // ── Ramp triangle fill ────────────────────────────────
-    svg += `<polygon points="${bx},${baseY} ${apex.x.toFixed(1)},${apex.y.toFixed(1)} ${apex.x.toFixed(1)},${baseY}" fill="var(--bg-elevated)" stroke="var(--brand-sage)" stroke-width="2.5"/>`;
+    svg += `<polygon points="${bx},${baseY} ${apex.x.toFixed(1)},${apex.y.toFixed(1)} ${apex.x.toFixed(1)},${baseY}" fill="var(--bg-elevated, #f0f5f2)" stroke="var(--brand-sage, #51615E)" stroke-width="2.5"/>`;
  
     // ── Surface texture ───────────────────────────────────
     const steps  = 22;
@@ -3286,7 +3702,7 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
         const amp = (i % 2 === 0 ? 1 : -1) * 4;
         pts += `${(px + nx * amp).toFixed(1)},${(py + ny * amp).toFixed(1)} `;
       }
-      svg += `<polyline points="${pts.trim()}" fill="none" stroke="var(--brand-sage)" stroke-width="1.5" opacity="0.65"/>`;
+      svg += `<polyline points="${pts.trim()}" fill="none" stroke="var(--brand-sage, #51615E)" stroke-width="1.5" opacity="0.65"/>`;
  
     } else if (surfaceTexture === 'sandpaper') {
       // Dense short tick marks perpendicular to the slope
@@ -3294,7 +3710,7 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
         const t  = i / steps;
         const px = bx + t * rampBase;
         const py = baseY - t * rampH;
-        svg += `<line x1="${(px + nx * 2).toFixed(1)}" y1="${(py + ny * 2).toFixed(1)}" x2="${(px + nx * 9).toFixed(1)}" y2="${(py + ny * 9).toFixed(1)}" stroke="var(--text-muted)" stroke-width="1.5" opacity="0.55"/>`;
+        svg += `<line x1="${(px + nx * 2).toFixed(1)}" y1="${(py + ny * 2).toFixed(1)}" x2="${(px + nx * 9).toFixed(1)}" y2="${(py + ny * 9).toFixed(1)}" stroke="var(--text-muted, #5d706b)" stroke-width="1.5" opacity="0.55"/>`;
       }
  
     } else if (surfaceTexture === 'glass') {
@@ -3306,10 +3722,10 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     // smooth: no extra texture — just the outline
  
     // ── Ground line + hatching ────────────────────────────
-    svg += `<line x1="${bx - 22}" y1="${baseY}" x2="${apex.x + 28}" y2="${baseY}" stroke="var(--brand-sage)" stroke-width="2"/>`;
+    svg += `<line x1="${bx - 22}" y1="${baseY}" x2="${apex.x + 28}" y2="${baseY}" stroke="var(--brand-sage, #51615E)" stroke-width="2"/>`;
     for (let i = 0; i < 14; i++) {
       const gx = bx - 22 + i * 16;
-      svg += `<line x1="${gx}" y1="${baseY}" x2="${gx - 7}" y2="${baseY + 9}" stroke="var(--brand-sage)" stroke-width="1" opacity="0.45"/>`;
+      svg += `<line x1="${gx}" y1="${baseY}" x2="${gx - 7}" y2="${baseY + 9}" stroke="var(--brand-sage, #51615E)" stroke-width="1" opacity="0.45"/>`;
     }
  
     // ── Block on slope ────────────────────────────────────
@@ -3321,7 +3737,7 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     svg += `<g transform="rotate(${rampAngle}, ${blockCX.toFixed(1)}, ${blockCY.toFixed(1)})">
       <rect x="${(blockCX - bw / 2).toFixed(1)}" y="${(blockCY - bh).toFixed(1)}"
             width="${bw}" height="${bh}" rx="3"
-            fill="var(--brand-rose)" fill-opacity="0.72" stroke="var(--brand-rose)" stroke-width="1.5"/>`;
+            fill="var(--brand-rose, #B76E79)" fill-opacity="0.72" stroke="var(--brand-rose, #B76E79)" stroke-width="1.5"/>`;
     if (blockLabel) {
       svg += `<text x="${blockCX.toFixed(1)}" y="${(blockCY - bh / 2 + 5).toFixed(1)}"
                     text-anchor="middle" fill="white" font-size="10" font-weight="700">${esc(blockLabel)}</text>`;
@@ -3368,10 +3784,10 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
       const arcR   = 38;
       const arcEnd = { x: bx + arcR * Math.cos(θ), y: baseY - arcR * Math.sin(θ) };
       // sweep-flag=0 → counterclockwise arc from (bx+arcR, baseY) to arcEnd — short arc inside the angle
-      svg += `<path d="M ${bx + arcR},${baseY} A ${arcR},${arcR} 0 0,0 ${arcEnd.x.toFixed(1)},${arcEnd.y.toFixed(1)}" fill="none" stroke="var(--brand-sage)" stroke-width="1.5"/>`;
+      svg += `<path d="M ${bx + arcR},${baseY} A ${arcR},${arcR} 0 0,0 ${arcEnd.x.toFixed(1)},${arcEnd.y.toFixed(1)}" fill="none" stroke="var(--brand-sage, #51615E)" stroke-width="1.5"/>`;
       const midAngle = θ / 2;
       const lblR = arcR + 15;
-      svg += `<text x="${(bx + lblR * Math.cos(midAngle)).toFixed(1)}" y="${(baseY - lblR * Math.sin(midAngle)).toFixed(1)}" text-anchor="middle" fill="var(--brand-sage)" font-size="11" font-weight="600">${rampAngle}°</text>`;
+      svg += `<text x="${(bx + lblR * Math.cos(midAngle)).toFixed(1)}" y="${(baseY - lblR * Math.sin(midAngle)).toFixed(1)}" text-anchor="middle" fill="var(--brand-sage, #51615E)" font-size="11" font-weight="600">${rampAngle}°</text>`;
     }
  
     // ── Spring ────────────────────────────────────────────
@@ -3396,12 +3812,12 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
         const epy = spSY + sinT * te * spLen;
         spPath += ` Q ${mpx.toFixed(1)},${mpy.toFixed(1)} ${epx.toFixed(1)},${epy.toFixed(1)}`;
       }
-      svg += `<path d="${spPath}" fill="none" stroke="var(--brand-sage)" stroke-width="2"/>`;
+      svg += `<path d="${spPath}" fill="none" stroke="var(--brand-sage, #51615E)" stroke-width="2"/>`;
     }
  
     // ── Caption ───────────────────────────────────────────
     if (label) {
-      svg += `<text x="${vbW / 2}" y="${vbH - 5}" text-anchor="middle" fill="var(--text-muted)" font-size="10" font-style="italic">${esc(label)}</text>`;
+      svg += `<text x="${vbW / 2}" y="${vbH - 5}" text-anchor="middle" fill="var(--text-muted, #5d706b)" font-size="10" font-style="italic">${esc(label)}</text>`;
     }
  
     return this._svg(svg, {
@@ -3437,13 +3853,13 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
 
     const midY = 130;
     const lineEls = lines.map((l, i) =>
-      `<text x="200" y="${midY + (i - (lines.length - 1) / 2) * 18}" text-anchor="middle" fill="var(--text-muted)" font-size="12">${esc(l)}</text>`
+      `<text x="200" y="${midY + (i - (lines.length - 1) / 2) * 18}" text-anchor="middle" fill="var(--text-muted, #5d706b)" font-size="12">${esc(l)}</text>`
     ).join('');
 
     const strokeDash = borderStyle === 'dashed' ? 'stroke-dasharray="8,4"' : '';
     const content = `
-      <rect x="20" y="20" width="360" height="220" rx="8" fill="var(--bg-elevated)" stroke="var(--border-dark)" stroke-width="2" ${strokeDash}/>
-      <text x="200" y="60" text-anchor="middle" fill="var(--text-muted)" font-size="11" font-style="italic">[Diagram]</text>
+      <rect x="20" y="20" width="360" height="220" rx="8" fill="var(--bg-elevated, #f0f5f2)" stroke="var(--border-dark, #8da89e)" stroke-width="2" ${strokeDash}/>
+      <text x="200" y="60" text-anchor="middle" fill="var(--text-muted, #5d706b)" font-size="11" font-style="italic">[Diagram]</text>
       ${lineEls}`;
     return this._svg(content, { alt: esc(description) });
   },
@@ -3490,10 +3906,10 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     // ── Semicircle arc (upper half) ────────────────────────────────────────────
     const arcStart = toXY(0, R), arcEnd = toXY(180, R);
     const arc = `<path d="M ${arcStart.x},${arcStart.y} A ${R},${R} 0 0,0 ${arcEnd.x},${arcEnd.y}"
-      fill="rgba(240,244,243,0.55)" stroke="var(--brand-sage)" stroke-width="2"/>`;
+      fill="rgba(240,244,243,0.55)" stroke="var(--brand-sage, #51615E)" stroke-width="2"/>`;
 
     // ── Flat baseline (the diameter) ──────────────────────────────────────────
-    const flatBase = `<line x1="${arcEnd.x}" y1="${cy}" x2="${arcStart.x}" y2="${cy}" stroke="var(--brand-sage)" stroke-width="2.5"/>`;
+    const flatBase = `<line x1="${arcEnd.x}" y1="${cy}" x2="${arcStart.x}" y2="${cy}" stroke="var(--brand-sage, #51615E)" stroke-width="2.5"/>`;
 
     // ── Tick marks + scale labels ──────────────────────────────────────────────
     let ticks = '', outerLbls = '', innerLbls = '';
@@ -3504,21 +3920,21 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
       const innerPt  = toXY(deg, R - (isMajor ? 20 : isHalf ? 12 : 8));
       ticks += `<line x1="${outerPt.x.toFixed(1)}" y1="${outerPt.y.toFixed(1)}"
                       x2="${innerPt.x.toFixed(1)}" y2="${innerPt.y.toFixed(1)}"
-                      stroke="var(--text-main)" stroke-width="${isMajor ? 2 : 1}"/>`;
+                      stroke="var(--text-main, #1a2e2a)" stroke-width="${isMajor ? 2 : 1}"/>`;
 
       if (isMajor) {
         if (show_outer_scale) {
           const lPt   = toXY(deg, R + 17);
           const anchor = deg < 75 ? 'start' : deg > 105 ? 'end' : 'middle';
           outerLbls  += `<text x="${lPt.x.toFixed(1)}" y="${(lPt.y + 4).toFixed(1)}"
-            text-anchor="${anchor}" fill="var(--text-main)" font-size="11" font-weight="600">${deg}</text>`;
+            text-anchor="${anchor}" fill="var(--text-main, #1a2e2a)" font-size="11" font-weight="600">${deg}</text>`;
         }
         if (show_inner_scale) {
           const inner_deg = 180 - deg;
           const ilPt  = toXY(deg, R - 27);
           const anchor = deg < 75 ? 'start' : deg > 105 ? 'end' : 'middle';
           innerLbls  += `<text x="${ilPt.x.toFixed(1)}" y="${(ilPt.y + 4).toFixed(1)}"
-            text-anchor="${anchor}" fill="var(--text-muted)" font-size="9">${inner_deg}</text>`;
+            text-anchor="${anchor}" fill="var(--text-muted, #5d706b)" font-size="9">${inner_deg}</text>`;
         }
       }
     }
@@ -3527,14 +3943,14 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     const baseArmPt   = toXY(baseline_offset, R - 4);
     const baseArm     = baseline_offset !== 0
       ? `<line x1="${cx}" y1="${cy}" x2="${baseArmPt.x.toFixed(1)}" y2="${baseArmPt.y.toFixed(1)}"
-          stroke="var(--brand-sage)" stroke-width="2.5" stroke-dasharray="6,3"/>`
+          stroke="var(--brand-sage, #51615E)" stroke-width="2.5" stroke-dasharray="6,3"/>`
       : '';
 
     // ── Pointer arm (at the measured angle) ───────────────────────────────────
     const pointerDeg  = baseline_offset + angle_to_measure;
     const pointerPt   = toXY(pointerDeg, R - 4);
     const pointer     = `<line x1="${cx}" y1="${cy}" x2="${pointerPt.x.toFixed(1)}" y2="${pointerPt.y.toFixed(1)}"
-      stroke="var(--brand-rose)" stroke-width="2.5"/>`;
+      stroke="var(--brand-rose, #B76E79)" stroke-width="2.5"/>`;
 
     // ── Arc indicator (shows the angle sector) ────────────────────────────────
     const arcR        = 48;
@@ -3543,25 +3959,25 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     const largeFlag   = angle_to_measure > 180 ? 1 : 0;
     // sweep-flag=0: counterclockwise in SVG = increasing protractor degrees (upward)
     const angArc      = `<path d="M ${arcS.x.toFixed(1)},${arcS.y.toFixed(1)} A ${arcR},${arcR} 0 ${largeFlag},0 ${arcE.x.toFixed(1)},${arcE.y.toFixed(1)}"
-      fill="none" stroke="var(--brand-rose)" stroke-width="2"/>`;
+      fill="none" stroke="var(--brand-rose, #B76E79)" stroke-width="2"/>`;
 
     // ── Angle label in the arc sector ─────────────────────────────────────────
     const midDeg      = baseline_offset + angle_to_measure / 2;
     const midPt       = toXY(midDeg, 68);
     const pLabel      = `<text x="${midPt.x.toFixed(1)}" y="${(midPt.y + 5).toFixed(1)}"
-      text-anchor="middle" fill="var(--brand-rose)" font-size="14" font-weight="700">${esc(pointer_label)}</text>`;
+      text-anchor="middle" fill="var(--brand-rose, #B76E79)" font-size="14" font-weight="700">${esc(pointer_label)}</text>`;
 
     // ── Centre dot ────────────────────────────────────────────────────────────
-    const dot         = `<circle cx="${cx}" cy="${cy}" r="4" fill="var(--brand-sage)"/>`;
+    const dot         = `<circle cx="${cx}" cy="${cy}" r="4" fill="var(--brand-sage, #51615E)"/>`;
 
     // ── Optional diagram title ─────────────────────────────────────────────────
     const titleEl     = label
-      ? `<text x="${cx}" y="18" text-anchor="middle" fill="var(--text-main)" font-size="12" font-weight="600">${esc(label)}</text>`
+      ? `<text x="${cx}" y="18" text-anchor="middle" fill="var(--text-main, #1a2e2a)" font-size="12" font-weight="600">${esc(label)}</text>`
       : '';
 
     // ── Non-zero baseline note ─────────────────────────────────────────────────
     const noteEl      = baseline_offset !== 0
-      ? `<text x="${cx}" y="256" text-anchor="middle" fill="var(--text-muted)" font-size="9" font-style="italic">Baseline does not start at 0°</text>`
+      ? `<text x="${cx}" y="256" text-anchor="middle" fill="var(--text-muted, #5d706b)" font-size="9" font-style="italic">Baseline does not start at 0°</text>`
       : '';
 
     const content = `${titleEl}${arc}${flatBase}${ticks}${outerLbls}${innerLbls}${baseArm}${pointer}${angArc}${pLabel}${dot}${noteEl}`;

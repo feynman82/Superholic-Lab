@@ -1,6 +1,7 @@
 ### SUPERHOLIC LAB — MASTER QUESTION TEMPLATE
-### Version 4.5 | Source of truth for all Data Generation
+### Version 4.6 | Source of truth for all Data Generation
 ### Reference: MOE/SEAB PSLE Exam Formats 2025-2026
+### v4.6 changes (2026-04-30): §6 expanded with 7 new diagram primitives — parallelLinesTransversal, quarterCirclesInSquare, overlappingCircles, rectangleWithPath, dotTriangle, gridGrowth, magicSquare. Each fills a previously-uncovered visual category in the P6 question bank. 61/141 P6 MCQs now carry a visual_payload (43%); the remaining 80 are pure numerical word problems where a diagram would not add pedagogical value.
 ### v4.5 changes (2026-04-30): §5 Mathematics MCQ difficulty calibration revised after user feedback. HOTS is now anchored to PSLE Paper 2 Q26–Q30 LAQs (true non-routine, multi-heuristic) instead of generic "harder than Standard". Standard ↔ Foundational, Advanced ↔ Standard, HOTS ↔ Advanced in Singapore tuition convention.
 ### v4.4 changes (2026-04-30): §7 routing patched per audit — barChart/horizontalBarChart now defaults for P3/P4 Bar Graphs (verticalBarChart reserved for ink-spill); runningTrack added to P5/P6 Circles; rectangleWithLine added to P5/P6 Geometry; conceptMap added to P3 Science Diversity. The 6 functions documented in §6 but missing from §7 are now selectable.
 ### v4.3 changes (2026-04-30): rectangleDividedRightAngle §6 spec rewritten for v3 renderer — explicit `rays[].at_deg` + `arcs[].between/label` produce geometrically faithful diagrams. Legacy `angles[]` shape kept for backwards compat.
@@ -457,6 +458,31 @@ You may ONLY use the following `function_name` values and their exact parameters
 * `rectangleWithLine`: Rectangle ABCD (or any 4-letter labelling) with one extra line drawn from a corner to a labelled point on a non-adjacent side. Use for PSLE-style geometry questions like "ABCD is a rectangle. E is on BC. AE is drawn. Find ∠AEC."
   `{"vertices": ["A","B","C","D"], "from_vertex": "A", "end_label": "E", "end_side": "BC", "end_position": 0.6, "angles": [{"at": "A", "value": "25°"}, {"at": "E", "value": "?"}]}`
   *(`vertices` must list the 4 corners clockwise from top-left. `end_side` is two of those corners in cw order. `end_position` is the fractional distance along the side, 0 = first letter, 1 = second. `angles[].at` is either a corner name or `end_label` — the renderer auto-places the label at the angle's bisector.)*
+
+* `parallelLinesTransversal`: Two parallel horizontal lines cut by a slanted transversal, with intersection points labelled and angles marked at each intersection. Use for PSLE alternate / co-interior / corresponding angle questions.
+  `{"line1_label": "PQ", "line2_label": "RS", "point1_label": "A", "point2_label": "B", "angles": [{"at": "A", "position": "top-right", "label": "p"}, {"at": "B", "position": "top-right", "label": "q"}]}`
+  *(`position` ∈ {"top-left","top-right","bottom-left","bottom-right"} indicates which of the four sectors at each intersection the label belongs to.)*
+
+* `quarterCirclesInSquare`: Square containing 1, 2, or 4 quarter circles inscribed at corner(s), or one full circle inscribed centrally. Use for "shaded area = square − inscribed circle" PSLE composite-figure problems.
+  `{"side_label": "14 cm", "configuration": "1corner" | "2opposite" | "4corners" | "circle", "shaded": "outside" | "inside", "radius_label": "7 cm"}`
+  *(`shaded` controls which region is rose-tinted. `radius_label` only applies to `configuration: "circle"`.)*
+
+* `overlappingCircles`: Two equal-radius circles overlapping with adjustable separation (vesica-piscis when separation = radius). Use for the lens-shaped HOTS questions.
+  `{"radius_label": "7 cm", "separation": 1.0}`
+  *(`separation` is a multiple of the radius — `1.0` puts each centre on the other's circumference; `0.5` produces heavy overlap.)*
+
+* `rectangleWithPath`: Rectangle with a uniform-width path either INSIDE or OUTSIDE the perimeter, with the path region rose-tinted. Use for "field with path" / "pool with tile path" composite-area PSLE problems.
+  `{"length_label": "60 m", "breadth_label": "45 m", "path_width_label": "3 m", "path_position": "inside" | "outside"}`
+
+* `dotTriangle`: First N figures of a triangular-number dot pattern (Figure n has n × (n+1) / 2 dots). Use for triangular-number PSLE pattern questions.
+  `{"show_figures": 4}`
+
+* `gridGrowth`: First N figures of an n × n square-grid growth pattern. Use for "Figure n is an n × n grid of unit squares" PSLE pattern questions.
+  `{"show_figures": 4, "diagonal_black": false}`
+  *(`diagonal_black: true` shades the diagonal cells black — used for the black/white square pattern variant.)*
+
+* `magicSquare`: 3 × 3 magic-square grid with optional pre-filled values and corner / centre highlighting.
+  `{"values": [[null,null,null],[null,5,null],[null,null,null]], "highlight": "corners" | "centre" | null}`
 * `rightTriangle`: Right-angled triangle with labelled base, height, and optional hypotenuse.
   `{"base": "8 cm", "height": "6 cm", "hypotenuse": "10 cm", "showRightAngle": true}`
 * `compositeShape`: L-shape or T-shape built from rectangles. Use for composite area/perimeter problems.
