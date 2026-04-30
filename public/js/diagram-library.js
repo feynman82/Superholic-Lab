@@ -1263,24 +1263,41 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     let svg = `<rect x="${px}" y="${py}" width="${rx - px}" height="${qy - py}" fill="none" stroke="var(--border-dark, #ccc)" stroke-width="3"/>`;
     svg += `<rect x="${qx}" y="${qy - 15}" width="15" height="15" fill="none" stroke="var(--brand-sage, #51615E)" stroke-width="1.5"/>`;
 
-    // 🚀 SMART PARSER: Analyze the angles the AI actually asked for (e.g. PQT, SQT)
-    const angles = params.angles || [];
-    const endPoints = new Set();
-
-    angles.forEach(a => {
-      let label = (a.label || '').toUpperCase().replace('ANGLE', '').trim();
-      // Split the angle string by the center vertex (Q) to find the two endpoints
-      if (label.includes(qName)) {
-        const parts = label.split(qName);
-        if (parts[0]) endPoints.add(parts[0].trim());
-        if (parts[1]) endPoints.add(parts[1].trim());
-      } else if (label.length === 3) {
-        endPoints.add(label[0]);
-        endPoints.add(label[2]);
-      }
+    // Accepted angle spec shapes:
+    //   { name: "PQT", value: "35°" }  ← preferred (name = vertex chain, value = arc text)
+    //   { label: "PQT", value: "35°" } ← legacy alias for `name`
+    //   { label: "PQT" }               ← name only, no arc text rendered
+    //   "PQT"                          ← bare-string angle name
+    // A label that is purely a numeric value (e.g. "35°") is treated as a value
+    // attached to the SAME ray family as previous specs — it does NOT define
+    // endpoints. This prevents the historical bug where "35°" was tokenised
+    // into endpoints '3' and '°'.
+    const ANGLE_NAME_RE = /^[A-Z]{3}$/;
+    const angleSpecs = (params.angles || []).map(a => {
+      if (typeof a === 'string') return { name: a.toUpperCase(), value: null };
+      const rawName = (a.name || a.label || '').toString().toUpperCase().replace('ANGLE', '').trim();
+      const looksLikeName = rawName.includes(qName) || ANGLE_NAME_RE.test(rawName);
+      return {
+        name: looksLikeName ? rawName : null,
+        value: a.value != null ? String(a.value)
+             : looksLikeName ? null
+             : (a.label || a.name || '').toString(),
+      };
     });
 
-    // Remove the standard corners from our to-draw list
+    // Collect non-corner endpoints from named angles (e.g. T from "PQT")
+    const endPoints = new Set();
+    angleSpecs.forEach(spec => {
+      if (!spec.name) return;
+      if (spec.name.includes(qName)) {
+        const parts = spec.name.split(qName);
+        if (parts[0]) endPoints.add(parts[0].trim());
+        if (parts[1]) endPoints.add(parts[1].trim());
+      } else if (spec.name.length === 3) {
+        endPoints.add(spec.name[0]);
+        endPoints.add(spec.name[2]);
+      }
+    });
     endPoints.delete(pName);
     endPoints.delete(qName);
     endPoints.delete(rName);
@@ -1288,23 +1305,51 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     const extraRays = Array.from(endPoints);
     let labelsHtml = '';
 
-    // 1. If S is mentioned in the angles, draw the rectangle's diagonal
+    // Track each named ray's angle from the +x axis (radians) at vertex Q so
+    // we can place arc-value labels on the angle bisector later.
+    const rayAngles = {
+      [pName]: Math.PI / 2,            // P is straight up from Q
+      [rName]: 0,                       // R is straight right from Q
+      [sName]: Math.atan2(qy - sy, sx - qx),  // S is the rectangle's diagonal
+    };
+
+    // 1. If S is mentioned, draw the rectangle's diagonal
     if (extraRays.includes(sName)) {
       svg += `<line x1="${qx}" y1="${qy}" x2="${sx}" y2="${sy}" stroke="var(--border-dark, #ccc)" stroke-width="2"/>`;
-      extraRays.splice(extraRays.indexOf(sName), 1); // Remove S from the queue
+      extraRays.splice(extraRays.indexOf(sName), 1);
     }
 
-    // 2. Draw any remaining extra lines (like T) that were explicitly mentioned in the text
+    // 2. Draw rays for any other named endpoints (e.g. T)
     extraRays.forEach((ptName, index) => {
-      const rad = (60 - (index * 20)) * Math.PI / 180;
+      const degFromHoriz = 60 - (index * 20);
+      const rad = degFromHoriz * Math.PI / 180;
       const lineLen = 200;
       const tx = qx + lineLen * Math.cos(rad);
       const ty = qy - lineLen * Math.sin(rad);
       svg += `<line x1="${qx}" y1="${qy}" x2="${tx}" y2="${ty}" stroke="var(--text-main, #333)" stroke-width="2"/>`;
-      labelsHtml += `<text x="${tx + 10}" y="${ty + 10}" font-size="14" font-weight="bold" fill="var(--text-muted)">${ptName}</text>`;
+      labelsHtml += `<text x="${tx + 8}" y="${ty - 4}" font-size="14" font-weight="bold" fill="var(--text-main, #333)">${ptName}</text>`;
+      rayAngles[ptName] = rad;
     });
 
-    // 3. Label the 4 standard corners
+    // 3. For each angle spec carrying a value, place that value at the bisector
+    //    of the two rays it names so it sits visually inside the angle.
+    angleSpecs.forEach(spec => {
+      if (!spec.value || !spec.name || spec.name.length !== 3) return;
+      const idx = spec.name.indexOf(qName);
+      if (idx === -1) return;
+      const e1 = spec.name[0];
+      const e2 = spec.name[2];
+      const r1 = rayAngles[e1];
+      const r2 = rayAngles[e2];
+      if (r1 === undefined || r2 === undefined) return;
+      const bisector = (r1 + r2) / 2;
+      const labelDist = 42;
+      const lx = qx + labelDist * Math.cos(bisector);
+      const ly = qy - labelDist * Math.sin(bisector);
+      labelsHtml += `<text x="${lx}" y="${ly}" font-size="13" font-weight="bold" text-anchor="middle" dominant-baseline="middle" fill="var(--brand-sage, #51615E)">${spec.value}</text>`;
+    });
+
+    // 4. Standard corner labels
     labelsHtml += `
       <text x="${px - 15}" y="${py - 10}" font-size="16" font-weight="bold" fill="var(--text-muted)">${pName}</text>
       <text x="${qx - 15}" y="${qy + 20}" font-size="16" font-weight="bold" fill="var(--text-main)">${qName}</text>

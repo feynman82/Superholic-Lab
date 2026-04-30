@@ -50,9 +50,22 @@ const template = fs.readFileSync(TEMPLATE_PATH, 'utf8');
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 function extractSection(text, sectionTitle) {
+  // Master_Question_Template sections are wrapped:
+  //   ═══════
+  //   SECTION X: TITLE
+  //   ═══════
+  //   <content>
+  //   ═══════           ← next section opens here
+  // The naive lookup grabs the *closing* ═══════ of this section's own header
+  // (which sits immediately after the title) and returns an empty body. Skip
+  // past that closing line first, then locate the NEXT section's opening line.
   const start = text.indexOf(sectionTitle);
   if (start === -1) return '';
-  const nextSection = text.indexOf('\n═══════', start + sectionTitle.length);
+  const closingHeader = text.indexOf('\n═══════', start + sectionTitle.length);
+  if (closingHeader === -1) return text.slice(start);
+  const afterClosing = text.indexOf('\n', closingHeader + 1);
+  if (afterClosing === -1) return text.slice(start);
+  const nextSection = text.indexOf('\n═══════', afterClosing);
   return nextSection === -1 ? text.slice(start) : text.slice(start, nextSection);
 }
 
@@ -166,10 +179,16 @@ function extractTypeSchema(tmpl, typeName) {
   };
   const label = LABELS[typeName];
   if (!label) return '';
-  const start  = tmpl.indexOf(label);
+  const start = tmpl.indexOf(label);
   if (start === -1) return '';
+  // Section 5 sub-headers are wrapped in --- divider lines (same shape bug as
+  // extractSection): the FIRST DIVIDER after the label is the closing of this
+  // type's own header; we need the SECOND, which opens the next type's block.
   const DIVIDER = '\n---------------------------------------------------------------\n';
-  const nextDiv = tmpl.indexOf(DIVIDER, start + label.length);
+  const closingDivider = tmpl.indexOf(DIVIDER, start + label.length);
+  if (closingDivider === -1) return tmpl.slice(start);
+  const afterClosing = closingDivider + DIVIDER.length;
+  const nextDiv = tmpl.indexOf(DIVIDER, afterClosing);
   return nextDiv === -1 ? tmpl.slice(start) : tmpl.slice(start, nextDiv);
 }
 
