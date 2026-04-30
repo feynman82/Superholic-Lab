@@ -428,6 +428,9 @@ You may ONLY use the following `function_name` values and their exact parameters
 * `runningTrack`: Stadium-shape (two horizontal straights joined by two semicircular ends). Use for PSLE-style "perimeter / area of running track" questions in the Circles topic.
   `{"straight_length_label": "80 m", "diameter_label": "70 m"}`
   *(Optional `straight_label_position`: `"top"` (default) or `"inside"`.)*
+* `rectangleWithLine`: Rectangle ABCD (or any 4-letter labelling) with one extra line drawn from a corner to a labelled point on a non-adjacent side. Use for PSLE-style geometry questions like "ABCD is a rectangle. E is on BC. AE is drawn. Find ∠AEC."
+  `{"vertices": ["A","B","C","D"], "from_vertex": "A", "end_label": "E", "end_side": "BC", "end_position": 0.6, "angles": [{"at": "A", "value": "25°"}, {"at": "E", "value": "?"}]}`
+  *(`vertices` must list the 4 corners clockwise from top-left. `end_side` is two of those corners in cw order. `end_position` is the fractional distance along the side, 0 = first letter, 1 = second. `angles[].at` is either a corner name or `end_label` — the renderer auto-places the label at the angle's bisector.)*
 * `rightTriangle`: Right-angled triangle with labelled base, height, and optional hypotenuse.
   `{"base": "8 cm", "height": "6 cm", "hypotenuse": "10 cm", "showRightAngle": true}`
 * `compositeShape`: L-shape or T-shape built from rectangles. Use for composite area/perimeter problems.

@@ -1433,6 +1433,125 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     `;
   },
 
+  /**
+   * Rectangle ABCD (or any 4-letter naming) with a single line drawn from one
+   * corner to a labelled point on a non-adjacent side. Designed for PSLE-style
+   * geometry questions like:
+   *   "ABCD is a rectangle. E is on BC. AE is drawn. ∠BAE = 25°. Find ∠AEC."
+   *
+   * params:
+   *   vertices: ["A","B","C","D"]      clockwise from top-left (default)
+   *   from_vertex: "A"                 corner where the line starts
+   *   end_label: "E"                   label for the inserted point
+   *   end_side: "BC"                   which side carries the inserted point
+   *                                     (two-letter, vertices in cw order)
+   *   end_position: 0.6                fractional position along that side
+   *                                     (0 = first letter of end_side, 1 = second)
+   *   angles: [                        labels at the angle vertices
+   *     { at: "A", value: "25°" },     ← angle at corner A (between adjacent
+   *                                       cw-side and the inserted line)
+   *     { at: "E", value: "?" }        ← angle at E on the far side of the line
+   *   ]
+   */
+  rectangleWithLine(params = {}) {
+    const w = 400, h = 220;
+    const v = params.vertices || ['A', 'B', 'C', 'D'];
+    // Corner positions, clockwise from top-left
+    const TL = { x: 60,  y: 40  };
+    const TR = { x: 340, y: 40  };
+    const BR = { x: 340, y: 180 };
+    const BL = { x: 60,  y: 180 };
+    const corners = { [v[0]]: TL, [v[1]]: TR, [v[2]]: BR, [v[3]]: BL };
+
+    const fromName = params.from_vertex || v[0];
+    const fromPt   = corners[fromName];
+    const endName  = params.end_label || 'E';
+    const endSide  = params.end_side || `${v[1]}${v[2]}`;
+    const tFrac    = (typeof params.end_position === 'number') ? params.end_position : 0.6;
+
+    const sStart = corners[endSide[0]];
+    const sEnd   = corners[endSide[1]];
+    if (!fromPt || !sStart || !sEnd) {
+      return `<svg width="100%" viewBox="0 0 ${w} ${h}"><text x="200" y="110" text-anchor="middle" fill="#a55">Invalid rectangleWithLine params</text></svg>`;
+    }
+
+    const E = {
+      x: sStart.x + tFrac * (sEnd.x - sStart.x),
+      y: sStart.y + tFrac * (sEnd.y - sStart.y),
+    };
+
+    const STROKE_RECT  = 'var(--border-dark, #ccc)';
+    const STROKE_LINE  = 'var(--text-main, #333)';
+    const FILL_VAL     = 'var(--brand-sage, #51615E)';
+    const FILL_VTX     = 'var(--text-muted, #666)';
+    const FILL_E       = 'var(--text-main, #333)';
+
+    let svg = '';
+    // Rectangle outline
+    svg += `<rect x="${TL.x}" y="${TL.y}" width="${TR.x - TL.x}" height="${BR.y - TR.y}" fill="none" stroke="${STROKE_RECT}" stroke-width="2.5"/>`;
+    // Inserted line from `from` corner to E
+    svg += `<line x1="${fromPt.x}" y1="${fromPt.y}" x2="${E.x.toFixed(2)}" y2="${E.y.toFixed(2)}" stroke="${STROKE_LINE}" stroke-width="2"/>`;
+    // E marker dot
+    svg += `<circle cx="${E.x.toFixed(2)}" cy="${E.y.toFixed(2)}" r="3" fill="${STROKE_LINE}"/>`;
+
+    // Corner labels — placed outside the rectangle in each diagonal direction
+    svg += `<text x="${TL.x - 14}" y="${TL.y - 6}"  font-size="15" font-weight="bold" fill="${FILL_VTX}">${v[0]}</text>`;
+    svg += `<text x="${TR.x + 6}"  y="${TR.y - 6}"  font-size="15" font-weight="bold" fill="${FILL_VTX}">${v[1]}</text>`;
+    svg += `<text x="${BR.x + 6}"  y="${BR.y + 16}" font-size="15" font-weight="bold" fill="${FILL_VTX}">${v[2]}</text>`;
+    svg += `<text x="${BL.x - 14}" y="${BL.y + 16}" font-size="15" font-weight="bold" fill="${FILL_VTX}">${v[3]}</text>`;
+
+    // E label — placed just outside the side it sits on
+    const cx = (TL.x + BR.x) / 2;
+    const cy = (TL.y + BR.y) / 2;
+    let eDx = 0, eDy = 0;
+    if      (E.x > cx + 1) eDx =  10;
+    else if (E.x < cx - 1) eDx = -14;
+    if      (E.y > cy + 1) eDy =  16;
+    else if (E.y < cy - 1) eDy = -6;
+    if (eDx === 0 && eDy === 0) eDy = -6;
+    svg += `<text x="${(E.x + eDx).toFixed(1)}" y="${(E.y + eDy).toFixed(1)}" font-size="15" font-weight="bold" fill="${FILL_E}">${endName}</text>`;
+
+    // Angle labels (at corners or at E)
+    const norm = (vec) => {
+      const len = Math.hypot(vec.x, vec.y) || 1;
+      return { x: vec.x / len, y: vec.y / len };
+    };
+    (params.angles || []).forEach(angle => {
+      if (!angle || angle.value == null || !angle.at) return;
+      const at = angle.at;
+      const atPt = (at === endName) ? E : corners[at];
+      if (!atPt) return;
+
+      let d1, d2;
+      if (at === endName) {
+        // Angle at E: between EA (toward `from` corner) and the side
+        // toward the second letter of end_side (e.g. ∠AEC where C = endSide[1])
+        d1 = norm({ x: fromPt.x - E.x, y: fromPt.y - E.y });
+        d2 = norm({ x: sEnd.x - E.x,   y: sEnd.y - E.y });
+      } else {
+        // Angle at a corner: between the side cw-from-this-corner and the
+        // inserted line to E (this captures e.g. ∠BAE at A, assuming the
+        // line goes toward the cw-next side of the corner).
+        const idx = v.indexOf(at);
+        const cwNext = v[(idx + 1) % 4];
+        const cwPt = corners[cwNext];
+        d1 = norm({ x: cwPt.x - atPt.x, y: cwPt.y - atPt.y });
+        d2 = norm({ x: E.x - atPt.x,    y: E.y - atPt.y });
+      }
+      const bis = norm({ x: d1.x + d2.x, y: d1.y + d2.y });
+      const labelDist = 30;
+      const lx = atPt.x + labelDist * bis.x;
+      const ly = atPt.y + labelDist * bis.y;
+      svg += `<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" font-size="13" font-weight="bold" text-anchor="middle" dominant-baseline="middle" fill="${FILL_VAL}">${angle.value}</text>`;
+    });
+
+    return `
+      <svg width="100%" viewBox="0 0 ${w} ${h}" style="height: auto; max-width: 500px; display: block; margin: 0 auto;">
+        ${svg}
+      </svg>
+    `;
+  },
+
   dividedStraightLineAngle(params) {
     const cx = 200, cy = 200;
     const r = 160;

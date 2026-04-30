@@ -96,7 +96,7 @@ const DIAGRAM_ROUTING = {
     'Decimals':                    ['numberLine'],
     'Factors and Multiples':       [],
     'Fractions':                   ['fractionBars', 'fractionBar', 'unitModel', 'numberLine'],
-    'Geometry':                    ['polygon', 'parallelogram', 'compositeShape', 'isometricGrid', 'equilateralTriangle'],
+    'Geometry':                    ['polygon', 'parallelogram', 'compositeShape', 'isometricGrid', 'equilateralTriangle', 'rectangleWithLine'],
     'Multiplication and Division': [],
     'Multiplication Tables':       [],
     'Percentage':                  ['pieChart', 'unitModel'],

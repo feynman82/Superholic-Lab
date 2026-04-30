@@ -162,6 +162,7 @@ New questions MUST go into topic-specific files only.
 | batch_20260430_003 | 2026-04-30 | Mathematics P6 MCQ Standard | 5 | Average, Circles, Data Analysis, Decimals, Factors and Multiples |
 | batch_20260430_004 | 2026-04-30 | Calibration fix: re-tier basket Q to P4 + new P6 Data Analysis Q + runningTrack visual primitive added | 1 (insert) + 2 (updates) | Data Analysis (P6 swap), Circles (visual upgrade) |
 | batch_20260430_005 | 2026-04-30 | Mathematics P6 MCQ Standard | 5 | Fractions, Geometry, Multiplication and Division, Multiplication Tables, Percentage |
+| batch_20260430_006 | 2026-04-30 | Q2 Geometry visual upgrade (rectangleWithLine primitive) + 5 P6 MCQs | 5 (insert) + 1 (visual) | Pie Charts, Rate, Ratio, Shapes and Patterns, Speed; Geometry visual upgrade |
 
 **Batch 001 IDs (Supabase UUIDs):**
 - Algebra: `1743b2e1-41c4-458d-b111-f8bf12b4fedc`
@@ -200,10 +201,18 @@ New questions MUST go into topic-specific files only.
 
 **Batch 20260430_005 IDs (Supabase UUIDs):** — third PSLE-calibrated batch
 - Fractions (P6): `fc94b791-4caa-4584-b922-74f9cb24d924` — chained 1/4 then 2/3 of remainder, find English share
-- Geometry (P6): `487cdc69-e3c5-412a-bf8c-be3e5daab0e3` — rectangle ABCD with line AE, triangle + straight-line angle property
+- Geometry (P6): `487cdc69-e3c5-412a-bf8c-be3e5daab0e3` — rectangle ABCD with line AE; visual upgraded to `rectangleWithLine` in batch 006
 - Multiplication and Division (P6): `46271468-91b3-4139-85a8-2346af445873` — bouquet split-rate ($12 × 1/4, $9 × 3/4)
 - Multiplication Tables (P6): `35fd45fe-2a30-477f-b1ff-44b6c88c4c97` — marble in box, mental × and ÷
 - Percentage (P6): `b451e604-cda9-4d82-8665-c32864569bc6` — 20% off then +10% of sale price (cascade)
+
+**Batch 20260430_006 IDs (Supabase UUIDs):** — fourth PSLE-calibrated batch + Geometry visual upgrade
+- Pie Charts (P6): `3384c72f-2901-4a6f-b143-483729d83bfb` — 4-wedge pie (% + fraction mix), find difference between two wedges
+- Rate (P6): `86e78099-b272-4bbf-85de-c8effe24c140` — printer rate × time conversion (1 hr 15 min)
+- Ratio (P6): `ca153229-c8a9-4fb9-bc98-b8fa5ecd62e9` — change-of-ratio (3:5 → 1:1 after 6 boys join), find original total
+- Shapes and Patterns (P6): `e6bf784f-f8e0-41cf-bccf-a9c234147585` — n × n grid pattern, find perimeter of Figure 6
+- Speed (P6): `b61e3ed8-77c7-4990-acf1-d6a6640355d6` — round trip with 60 km/h + 40 km/h, find average for whole journey
+- Geometry (P6, visual upgraded): `487cdc69-e3c5-412a-bf8c-be3e5daab0e3` — placeholder/text replaced with `rectangleWithLine` primitive
 
 > Note: `seed_id` column in Supabase is UUID type — text-based IDs not applicable.
 > Track inserted questions by UUID. Gap analysis SQL is the authoritative state source.
