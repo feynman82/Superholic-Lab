@@ -725,6 +725,29 @@
       body.quiz-page #app { padding-right: 120px; }
     }
 
+    /* ── Synthesis connector — rose bold sentence-case, inline with line ── */
+    .synth-connector {
+      display: inline-block;
+      padding: 0 var(--space-2, 8px);
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      font-weight: 700;
+      font-size: 1.0625rem;            /* slightly larger than body for readability */
+      line-height: 1.4;
+      color: var(--brand-rose);
+      letter-spacing: 0.005em;          /* a hair of tracking, not the old "widest" */
+      text-transform: none;             /* explicitly cancel any inherited uppercase */
+      white-space: nowrap;
+      vertical-align: baseline;
+    }
+
+    .synth-connector--start { padding-left: 0; padding-right: var(--space-2, 8px); }
+    .synth-connector--end   { padding-left: var(--space-2, 8px); padding-right: 0; }
+    .synth-connector--mid   { padding: 0 var(--space-2, 8px); }
+
+    @media (max-width: 640px) {
+      .synth-connector { font-size: 1rem; }
+    }
+
     /* ── Component-specific styles preserved verbatim from legacy ────── */
     .cloze-passage, .editing-passage { line-height: 2.4; }
     .cloze-select {

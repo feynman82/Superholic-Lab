@@ -168,14 +168,12 @@ window.initQuizEngine = function () {
   // ── XP award helper (masterclass: video-game feedback) ──
   // Call awardXp(true) on a correct answer, awardXp(false) on a wrong answer.
   // Sets state.xpJustAwarded and state.showXpToast so the next render() draws
-  // the floating "+N XP" pill. Streak bonus kicks in from 3+ in a row.
-  // Note: streak counter is incremented separately in each scoring site (we
-  // can't centralise that because some sites have multi-part rules), so this
-  // helper only handles XP — it READS state.streak (already updated upstream).
+  // the floating "+N XP" pill. Per-correct XP is fixed at +1 to stay aligned
+  // with the top-right XP ticker (driven by state.score, also +1 per correct).
+  // Anything else confuses parents reading the scorecard.
   function awardXp(isCorrect) {
     if (isCorrect) {
-      const streakBonus = state.streak >= 3 ? (state.streak - 2) * 5 : 0;
-      const awarded = 10 + streakBonus;
+      const awarded = 1;
       state.xp += awarded;
       state.xpJustAwarded = awarded;
       state.showXpToast = true;
@@ -339,14 +337,15 @@ window.initQuizEngine = function () {
       const lineBlock = `<div style="flex-grow: 1; border-bottom: 2px solid var(--text-main); margin-bottom: 0.3rem; opacity: 0.5; min-width: 40px;"></div>`;
 
       let blueprintHtml = '';
+      // Connector pill — rose bold sentence-case, sits inline with the answer line
       if (rawConnector.startsWith('...') && rawConnector.endsWith('...')) {
-        blueprintHtml = `${lineBlock}<div class="font-bold text-brand-rose px-4 py-2 bg-surface rounded shadow-sm text-sm uppercase tracking-widest mx-2">${esc(cleanConnector)}</div>${lineBlock}`;
+        blueprintHtml = `${lineBlock}<span class="synth-connector synth-connector--mid">${esc(cleanConnector)}</span>${lineBlock}`;
       } else if (rawConnector.startsWith('(') && rawConnector.endsWith(')')) {
-        blueprintHtml = `${lineBlock}<div class="font-bold text-brand-rose px-4 py-2 bg-surface rounded shadow-sm text-sm uppercase tracking-widest mx-2">${esc(cleanConnector)}</div>${lineBlock}`;
+        blueprintHtml = `${lineBlock}<span class="synth-connector synth-connector--mid">${esc(cleanConnector)}</span>${lineBlock}`;
       } else if (rawConnector.startsWith('...')) {
-        blueprintHtml = `${lineBlock}<div class="font-bold text-brand-rose px-4 py-2 bg-surface rounded shadow-sm text-sm uppercase tracking-widest ml-2">${esc(cleanConnector)}</div>`;
+        blueprintHtml = `${lineBlock}<span class="synth-connector synth-connector--end">${esc(cleanConnector)}</span>`;
       } else {
-        blueprintHtml = `<div class="font-bold text-brand-rose px-4 py-2 bg-surface rounded shadow-sm text-sm uppercase tracking-widest mr-2">${esc(cleanConnector)}</div>${lineBlock}`;
+        blueprintHtml = `<span class="synth-connector synth-connector--start">${esc(cleanConnector)}</span>${lineBlock}`;
         if (!savedAns) savedAns = cleanConnector + ' ';
       }
 

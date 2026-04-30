@@ -894,14 +894,15 @@ window.initExamEngine = function () {
       const lineBlock = `<div style="flex-grow: 1; border-bottom: 2px solid var(--text-main); margin-bottom: 0.3rem; opacity: 0.5; min-width: 40px;"></div>`;
 
       let blueprintHtml = '';
+      // Connector pill — rose bold sentence-case, sits inline with the answer line
       if (rawConnector.startsWith('...') && rawConnector.endsWith('...')) {
-        blueprintHtml = `${lineBlock}<div class="font-bold text-brand-rose px-4 py-2 bg-surface rounded shadow-sm text-sm uppercase tracking-widest mx-2">${esc(cleanConnector)}</div>${lineBlock}`;
+        blueprintHtml = `${lineBlock}<span class="synth-connector synth-connector--mid">${esc(cleanConnector)}</span>${lineBlock}`;
       } else if (rawConnector.startsWith('(') && rawConnector.endsWith(')')) {
-        blueprintHtml = `${lineBlock}<div class="font-bold text-brand-rose px-4 py-2 bg-surface rounded shadow-sm text-sm uppercase tracking-widest mx-2">${esc(cleanConnector)}</div>${lineBlock}`;
+        blueprintHtml = `${lineBlock}<span class="synth-connector synth-connector--mid">${esc(cleanConnector)}</span>${lineBlock}`;
       } else if (rawConnector.startsWith('...')) {
-        blueprintHtml = `${lineBlock}<div class="font-bold text-brand-rose px-4 py-2 bg-surface rounded shadow-sm text-sm uppercase tracking-widest ml-2">${esc(cleanConnector)}</div>`;
+        blueprintHtml = `${lineBlock}<span class="synth-connector synth-connector--end">${esc(cleanConnector)}</span>`;
       } else {
-        blueprintHtml = `<div class="font-bold text-brand-rose px-4 py-2 bg-surface rounded shadow-sm text-sm uppercase tracking-widest mr-2">${esc(cleanConnector)}</div>${lineBlock}`;
+        blueprintHtml = `<span class="synth-connector synth-connector--start">${esc(cleanConnector)}</span>${lineBlock}`;
       }
 
       synthesisHtml = `<div class="flex items-end w-full mb-6 mt-2">${blueprintHtml}</div>`;
