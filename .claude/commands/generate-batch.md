@@ -36,37 +36,43 @@ Run this SQL via `supabase:execute_sql`. This returns all (subject, level, topic
 type, difficulty) combinations with their counts and a priority score.
 
 ```sql
+-- ─── Canon source of truth ───────────────────────────────────────────────
+-- All (subject, topic) values below come from canon_topics in Supabase
+-- (FK-enforced; off-canon INSERTs fail with PG 23503). Verified to match
+-- lib/api/quest-pedagogy.js SYLLABUS_DEPENDENCIES exactly:
+--   Mathematics: 23 topics  Science: 10 topics  English: 7 topics
+-- Per-level filter follows Master_Question_Template.md §4 "Level guidance"
+-- (informational; not FK-enforced). Edit there first if syllabus shifts.
 WITH target_matrix AS (
-  -- Mathematics combinations
+  -- Mathematics — 23 canonical topics
   SELECT 'Mathematics' AS subject, level, topic, type, difficulty
   FROM (VALUES
     ('Primary 1'),('Primary 2'),('Primary 3'),
     ('Primary 4'),('Primary 5'),('Primary 6')
   ) lvl(level)
   CROSS JOIN (VALUES
-    ('Whole Numbers'),('Fractions'),('Decimals'),('Percentage'),('Ratio'),
-    ('Rate'),('Speed'),('Algebra'),('Angles'),('Area and Perimeter'),
-    ('Circles'),('Volume'),('Geometry'),('Data Analysis'),('Pie Charts'),
-    ('Picture Graphs'),('Factors and Multiples'),('Symmetry'),('Average'),
-    ('Money'),('Length and Mass'),('Time'),('Shapes and Patterns'),
-    ('Addition and Subtraction'),('Multiplication and Division'),
-    ('Multiplication Tables'),('Length, Mass and Volume'),
-    ('Angles and Geometry'),('Bar Graphs'),('Area of Triangle')
+    ('Addition and Subtraction'),('Algebra'),('Angles'),
+    ('Area and Perimeter'),('Area of Triangle'),('Average'),
+    ('Circles'),('Data Analysis'),('Decimals'),
+    ('Factors and Multiples'),('Fractions'),('Geometry'),
+    ('Multiplication and Division'),('Multiplication Tables'),
+    ('Percentage'),('Pie Charts'),('Rate'),('Ratio'),
+    ('Shapes and Patterns'),('Speed'),('Symmetry'),
+    ('Volume'),('Whole Numbers')
   ) t(topic)
   CROSS JOIN (VALUES ('mcq'),('short_ans'),('word_problem')) ty(type)
   CROSS JOIN (VALUES ('Foundation'),('Standard'),('Advanced'),('HOTS')) d(difficulty)
 
   UNION ALL
 
-  -- Science combinations  
+  -- Science — 10 canonical topics (P3-P6 only; no Science syllabus at P1/P2)
   SELECT 'Science', level, topic, type, difficulty
   FROM (VALUES
     ('Primary 3'),('Primary 4'),('Primary 5'),('Primary 6')
   ) lvl(level)
   CROSS JOIN (VALUES
-    ('Diversity'),('Cycles'),('Systems'),('Interactions'),
-    ('Heat'),('Light'),('Magnets'),('Matter'),
-    ('Energy'),('Cells'),('Forces')
+    ('Cells'),('Cycles'),('Diversity'),('Energy'),('Forces'),
+    ('Heat'),('Interactions'),('Light'),('Matter'),('Systems')
   ) t(topic)
   CROSS JOIN (VALUES ('mcq'),('open_ended')) ty(type)
   CROSS JOIN (VALUES ('Foundation'),('Standard'),('Advanced'),('HOTS')) d(difficulty)
@@ -77,25 +83,38 @@ actual AS (
   GROUP BY subject, level, topic, type, difficulty
 ),
 valid_combinations AS (
-  -- Only keep combinations that are actually valid per MOE syllabus
+  -- Per-level topic gating per Master_Question_Template §4 Level guidance.
+  -- A topic is valid at level N if it's introduced at N or earlier.
   SELECT m.*
   FROM target_matrix m
   WHERE (
-    -- Maths: only combinations where the topic exists for that level
+    -- Mathematics — cumulative per level (P1/P2 → P3/P4 → P5/P6 expansion)
     (m.subject = 'Mathematics' AND (
-      (m.level = 'Primary 1' AND m.topic IN ('Whole Numbers','Addition and Subtraction','Multiplication and Division','Money','Length and Mass','Shapes and Patterns','Picture Graphs')) OR
-      (m.level = 'Primary 2' AND m.topic IN ('Whole Numbers','Multiplication Tables','Fractions','Money','Time','Length, Mass and Volume','Shapes','Picture Graphs')) OR
-      (m.level = 'Primary 3' AND m.topic IN ('Whole Numbers','Fractions','Length, Mass and Volume','Time','Angles','Area and Perimeter','Bar Graphs')) OR
-      (m.level = 'Primary 4' AND m.topic IN ('Whole Numbers','Factors and Multiples','Fractions','Decimals','Angles','Area and Perimeter','Symmetry','Data Analysis')) OR
-      (m.level = 'Primary 5' AND m.topic IN ('Whole Numbers','Fractions','Decimals','Percentage','Ratio','Rate','Area of Triangle','Volume','Angles and Geometry','Average')) OR
-      (m.level = 'Primary 6' AND m.topic IN ('Fractions','Percentage','Ratio','Speed','Algebra','Circles','Volume','Geometry','Pie Charts'))
+      (m.level IN ('Primary 1','Primary 2') AND m.topic IN (
+        'Whole Numbers','Multiplication Tables','Addition and Subtraction','Shapes and Patterns'
+      )) OR
+      (m.level IN ('Primary 3','Primary 4') AND m.topic IN (
+        'Whole Numbers','Multiplication Tables','Addition and Subtraction','Shapes and Patterns',
+        'Multiplication and Division','Fractions','Decimals','Angles','Geometry',
+        'Area and Perimeter','Symmetry','Factors and Multiples','Data Analysis'
+      )) OR
+      (m.level IN ('Primary 5','Primary 6') AND m.topic IN (
+        'Whole Numbers','Multiplication Tables','Addition and Subtraction','Shapes and Patterns',
+        'Multiplication and Division','Fractions','Decimals','Angles','Geometry',
+        'Area and Perimeter','Symmetry','Factors and Multiples','Data Analysis',
+        'Percentage','Ratio','Rate','Speed','Average','Algebra',
+        'Area of Triangle','Circles','Volume','Pie Charts'
+      ))
     )) OR
-    -- Science: only P3-P6 valid topics
+    -- Science — P3/P4 introduces 7 topics, P5/P6 adds Energy/Forces/Cells
     (m.subject = 'Science' AND (
-      (m.level = 'Primary 3' AND m.topic IN ('Diversity','Systems','Interactions')) OR
-      (m.level = 'Primary 4' AND m.topic IN ('Cycles','Energy','Heat','Light','Magnets','Matter')) OR
-      (m.level = 'Primary 5' AND m.topic IN ('Cycles','Systems','Energy','Interactions')) OR
-      (m.level = 'Primary 6' AND m.topic IN ('Interactions','Energy','Cells','Forces'))
+      (m.level IN ('Primary 3','Primary 4') AND m.topic IN (
+        'Diversity','Matter','Cycles','Systems','Interactions','Heat','Light'
+      )) OR
+      (m.level IN ('Primary 5','Primary 6') AND m.topic IN (
+        'Diversity','Matter','Cycles','Systems','Interactions','Heat','Light',
+        'Energy','Forces','Cells'
+      ))
     ))
   )
   -- HOTS only for P4+ Mathematics and P5+ Science
