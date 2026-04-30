@@ -892,13 +892,19 @@ window.initQuizEngine = function () {
       // Layer 1 (misconception-led wrong path) + Layer 3 (CER- and step-aware
       // worked solution) live in window.SHL_FEEDBACK. Multi-part open-ended,
       // comprehension, and word_problem keep their existing flows below.
-      const useNewRenderer =
-        ['mcq', 'short_ans', 'cloze', 'editing'].includes(q.type) &&
-        !fb.isModel &&
-        fb.status !== 'loading' &&
-        typeof window !== 'undefined' &&
-        window.SHL_FEEDBACK &&
-        typeof window.SHL_FEEDBACK.renderFeedback === 'function';
+      const isEligibleType = ['mcq', 'short_ans', 'cloze', 'editing'].includes(q.type);
+      const hasFeedbackModule = typeof window !== 'undefined' &&
+                                window.SHL_FEEDBACK &&
+                                typeof window.SHL_FEEDBACK.renderFeedback === 'function';
+      const useNewRenderer = isEligibleType && !fb.isModel && fb.status !== 'loading' && hasFeedbackModule;
+
+      // Diagnostic: if an eligible type didn't hit the new renderer, log why.
+      // Most common cause is a browser-cached page that pre-dates the
+      // feedback.js script tag in quiz.html — a hard refresh fixes it.
+      if (isEligibleType && !fb.isModel && fb.status !== 'loading' && !hasFeedbackModule) {
+        // eslint-disable-next-line no-console
+        console.warn('[quiz] window.SHL_FEEDBACK missing — feedback panel falling back to legacy. Hard-refresh (Ctrl+Shift+R) to pull the latest quiz.html.');
+      }
 
       if (q.type === 'comprehension') {
         feedbackHtml = ''; // Completely suppress bottom feedback for comprehension

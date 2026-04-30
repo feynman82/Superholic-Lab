@@ -1172,9 +1172,14 @@
       background: var(--surface-container-low, var(--surface));
       border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
     }
+    /* Worked-solution accents stay neutral so a kid who got the question
+       wrong doesn't see mint on the Reasoning step or step-number badges
+       and feel mistakenly OK about their answer. The "Correct answer"
+       card outside the worked solution keeps its mint border because
+       that's specifically labelling what was right. */
     .cer-step--claim     { border-left-color: var(--brand-rose); }
     .cer-step--evidence  { border-left-color: var(--brand-amber); }
-    .cer-step--reasoning { border-left-color: var(--brand-mint); }
+    .cer-step--reasoning { border-left-color: var(--brand-sage); }
     .cer-step__label {
       display: block;
       font-family: 'Plus Jakarta Sans', sans-serif;
@@ -1184,7 +1189,7 @@
     }
     .cer-step--claim     .cer-step__label { color: var(--brand-rose); }
     .cer-step--evidence  .cer-step__label { color: var(--brand-amber); }
-    .cer-step--reasoning .cer-step__label { color: var(--brand-mint); }
+    .cer-step--reasoning .cer-step__label { color: var(--brand-sage); }
     .cer-step__body {
       font-family: 'Plus Jakarta Sans', sans-serif;
       font-size: 14px; line-height: 1.55; color: var(--text-main);
@@ -1200,7 +1205,7 @@
       display: inline-flex; align-items: center; justify-content: center;
       width: 24px; height: 24px;
       border-radius: 50%;
-      background: var(--brand-mint);
+      background: var(--brand-sage);
       color: var(--white, #fff);
       font-family: 'Bebas Neue', 'Plus Jakarta Sans', sans-serif;
       font-size: 14px; letter-spacing: 0.04em;
