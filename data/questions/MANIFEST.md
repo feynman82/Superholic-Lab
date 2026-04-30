@@ -157,6 +157,7 @@ New questions MUST go into topic-specific files only.
 | batch_20260425_002 | 2026-04-25 | Mathematics P6+P5 MCQ Standard | 5 | Ratio, Speed, Volume, Pie Charts (P6); Whole Numbers (P5) |
 | batch_20260425_003 | 2026-04-25 | Science P6+P5 MCQ Standard | 5 | Cells, Energy, Forces, Interactions (P6); Cycles (P5) |
 | batch_20260425_004 | 2026-04-25 | Mathematics P5 MCQ Standard | 5 | Angles and Geometry, Area of Triangle, Average, Decimals, Fractions |
+| batch_20260430_001 | 2026-04-30 | Mathematics P6 MCQ Standard | 5 | Addition and Subtraction, Algebra, Angles, Area and Perimeter, Area of Triangle |
 
 **Batch 001 IDs (Supabase UUIDs):**
 - Algebra: `1743b2e1-41c4-458d-b111-f8bf12b4fedc`
@@ -171,6 +172,13 @@ New questions MUST go into topic-specific files only.
 - Volume (P6): `8a84fa38-a5e2-4066-aaeb-297353e48ad1`
 - Pie Charts (P6): `243613e1-c40d-4edc-a63b-e78768fd1e4b`
 - Whole Numbers (P5): `69e0af0d-c58f-43d9-83c0-1cce69d4cfd2`
+
+**Batch 20260430_001 IDs (Supabase UUIDs):** — first run of canon-aligned pipeline post-fixes
+- Addition and Subtraction (P6): `0bbfe84b-ebcc-42c5-a19b-25ad1cac41ea`
+- Algebra (P6): `d9463d2f-7b17-4fb2-9ccb-7649bbc86b8b`
+- Angles (P6): `29a42ccf-2d35-430f-bc63-f3111a9d324e`
+- Area and Perimeter (P6): `415f978c-c52e-4b73-b902-0451eea21cc8`
+- Area of Triangle (P6): `5a0f3205-30f8-4a9a-ac9c-0ff822be5c9f`
 
 > Note: `seed_id` column in Supabase is UUID type — text-based IDs not applicable.
 > Track inserted questions by UUID. Gap analysis SQL is the authoritative state source.
