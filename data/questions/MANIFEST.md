@@ -158,6 +158,7 @@ New questions MUST go into topic-specific files only.
 | batch_20260425_003 | 2026-04-25 | Science P6+P5 MCQ Standard | 5 | Cells, Energy, Forces, Interactions (P6); Cycles (P5) |
 | batch_20260425_004 | 2026-04-25 | Mathematics P5 MCQ Standard | 5 | Angles and Geometry, Area of Triangle, Average, Decimals, Fractions |
 | batch_20260430_001 | 2026-04-30 | Mathematics P6 MCQ Standard | 5 | Addition and Subtraction, Algebra, Angles, Area and Perimeter, Area of Triangle |
+| batch_20260430_002 | 2026-04-30 | Mathematics P6 MCQ Standard (PSLE-calibrated regen) | 5 | Addition and Subtraction, Algebra, Angles, Area and Perimeter, Area of Triangle |
 
 **Batch 001 IDs (Supabase UUIDs):**
 - Algebra: `1743b2e1-41c4-458d-b111-f8bf12b4fedc`
@@ -173,12 +174,14 @@ New questions MUST go into topic-specific files only.
 - Pie Charts (P6): `243613e1-c40d-4edc-a63b-e78768fd1e4b`
 - Whole Numbers (P5): `69e0af0d-c58f-43d9-83c0-1cce69d4cfd2`
 
-**Batch 20260430_001 IDs (Supabase UUIDs):** — first run of canon-aligned pipeline post-fixes
-- Addition and Subtraction (P6): `0bbfe84b-ebcc-42c5-a19b-25ad1cac41ea`
-- Algebra (P6): `d9463d2f-7b17-4fb2-9ccb-7649bbc86b8b`
-- Angles (P6): `29a42ccf-2d35-430f-bc63-f3111a9d324e`
-- Area and Perimeter (P6): `415f978c-c52e-4b73-b902-0451eea21cc8`
-- Area of Triangle (P6): `5a0f3205-30f8-4a9a-ac9c-0ff822be5c9f`
+**Batch 20260430_001 IDs (Supabase UUIDs):** — DELETED via admin panel; over-calibrated (P3/P4-level instead of P6 Standard).
+
+**Batch 20260430_002 IDs (Supabase UUIDs):** — PSLE-calibrated regen (Master Template v4.2 §5 mcq calibration applied)
+- Addition and Subtraction (P6): `b85db378-c4bd-478a-b71f-adb518441c34`
+- Algebra (P6): `2fe46ace-a4a2-459e-89eb-fcfbc43de43b`
+- Angles (P6): `4af48218-9143-43b2-a222-95ba3e16116f`
+- Area and Perimeter (P6): `d44fd910-0eb3-45d8-9013-29501cde9822`
+- Area of Triangle (P6): `520c1c14-1eb2-43a0-b86a-722796b8bd40`
 
 > Note: `seed_id` column in Supabase is UUID type — text-based IDs not applicable.
 > Track inserted questions by UUID. Gap analysis SQL is the authoritative state source.
