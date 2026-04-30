@@ -1,6 +1,7 @@
 ### SUPERHOLIC LAB — MASTER QUESTION TEMPLATE
-### Version 4.2 | Source of truth for all Data Generation
+### Version 4.3 | Source of truth for all Data Generation
 ### Reference: MOE/SEAB PSLE Exam Formats 2025-2026
+### v4.3 changes (2026-04-30): rectangleDividedRightAngle §6 spec rewritten for v3 renderer — explicit `rays[].at_deg` + `arcs[].between/label` produce geometrically faithful diagrams. Legacy `angles[]` shape kept for backwards compat.
 ### v4.2 changes (2026-04-30): added Mathematics MCQ difficulty calibration in §5 anchored to PSLE 2024/2025 Booklet A Q1–Q15; standard-tier validation rules + benchmark questions.
 ### v4.1 changes: subject 'English Language' → 'English'; full canonical sub_topic taxonomy added; FK constraints + anti-hallucination rules.
 
@@ -435,8 +436,24 @@ You may ONLY use the following `function_name` values and their exact parameters
   Standard (baseline at 0°): `{"angle_to_measure": 65, "pointer_label": "?", "show_inner_scale": true}`
   Non-zero baseline exam variant: `{"angle_to_measure": 50, "baseline_offset": 30, "pointer_label": "?"}`
   *(Use `baseline_offset` > 0 for questions where the object/angle does not start at the 0° mark.)*
-* `rectangleDividedRightAngle`: Rectangle with a diagonal line at one corner creating angles.
-  `{"vertices": ["P","Q","R","S"], "angles": [{"label": "PQT"}, {"label": "TQR"}]}`
+* `rectangleDividedRightAngle`: Rectangle PQRS with two or more rays drawn from corner Q dividing the 90° corner angle into smaller named sub-angles. v3 renderer (2026-04-30) supports geometrically faithful ray placement.
+  **Preferred (use this for new content):** specify each ray's exact angle so the diagram matches the question text.
+  ```
+  {
+    "vertices": ["P","Q","R","S"],
+    "rays": [
+      { "name": "T", "at_deg": 68 },                       // T at 68° from +x axis (= 22° from QP, since QP is 90°)
+      { "name": "U", "from_side": "QR", "rotate_deg": 35 } // OR rotate from a side toward interior
+    ],
+    "arcs": [
+      { "between": ["P","T"], "label": "22°" },           // angle ∠PQT, label drawn at bisector
+      { "between": ["T","U"], "label": "?" },             // unknown angle marker
+      { "between": ["U","R"], "label": "35°" }            // angle ∠UQR
+    ]
+  }
+  ```
+  **Geometry rule:** in `at_deg`, 0° = direction of QR (right), 90° = direction of QP (up). For an angle ∠PQX of value θ, set `at_deg = 90 − θ`. For ∠XQR of value θ, set `at_deg = θ`.
+  **Legacy (still supported, but rays land at hard-coded fallback positions — use only for old rows):** `{"vertices": ["P","Q","R","S"], "angles": [{"name": "PQT", "value": "22°"}, {"name": "TQU", "value": "?"}]}`
 * `dividedStraightLineAngle`: A straight line divided by one intersecting ray showing two named angles.
   `{"vertices": ["A","O","B","C"], "angles": [{"label": "40°"}, {"label": "?"}]}`
 

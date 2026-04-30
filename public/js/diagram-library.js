@@ -1245,14 +1245,36 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
   },
 
   rectangleDividedRightAngle(params) {
-    // Canvas sizing
+    // ── v3 RENDERER ────────────────────────────────────────────────────────
+    // Rectangle PQRS with two or more rays drawn from corner Q dividing the
+    // 90° corner angle into smaller named angles.
+    //
+    // PREFERRED API (geometrically faithful — use this for new content):
+    //   {
+    //     "vertices": ["P","Q","R","S"],
+    //     "rays": [
+    //       { "name": "T", "at_deg": 68 },              // explicit position from +x axis
+    //       { "name": "U", "from_side": "QR", "rotate_deg": 35 }  // OR rotate from a side
+    //     ],
+    //     "arcs": [
+    //       { "between": ["P","T"], "label": "22°" },   // arc spans QP→QT, labelled inside
+    //       { "between": ["T","U"], "label": "?" },
+    //       { "between": ["U","R"], "label": "35°" }
+    //     ]
+    //   }
+    //
+    // LEGACY API (kept working for older question_bank rows):
+    //   { "angles": [{ "name": "PQT", "value": "22°" }, ...] }
+    //   Ray positions fall back to historical 60°/40° fallback positions.
+    //
+    // Coordinate system: SVG y is screen-flipped, but `at_deg` in the input
+    // uses standard math convention — 0° = right (toward R), 90° = up (toward
+    // P). The renderer converts internally.
     const w = 400, h = 260;
-
-    // Rectangle vertices (Q is Bottom Left, P is Top Left, R is Bottom Right, S is Top Right)
-    const qx = 50, qy = 210;
-    const px = 50, py = 50;
-    const rx = 350, ry = 210;
-    const sx = 350, sy = 50;
+    const Q = { x: 50, y: 210 };
+    const P = { x: 50, y: 50 };
+    const R = { x: 350, y: 210 };
+    const S = { x: 350, y: 50 };
 
     const v = params.vertices || ['P', 'Q', 'R', 'S'];
     const pName = v[0] || 'P';
@@ -1260,107 +1282,153 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     const rName = v[2] || 'R';
     const sName = v[3] || 'S';
 
-    let svg = `<rect x="${px}" y="${py}" width="${rx - px}" height="${qy - py}" fill="none" stroke="var(--border-dark, #ccc)" stroke-width="3"/>`;
-    svg += `<rect x="${qx}" y="${qy - 15}" width="15" height="15" fill="none" stroke="var(--brand-sage, #51615E)" stroke-width="1.5"/>`;
+    // Diagonal QS angle from +x axis (math degrees). S is up-right of Q so
+    // the angle is between 0° and 90°.
+    const sDiagDeg = Math.atan2(Q.y - S.y, S.x - Q.x) * 180 / Math.PI;
 
-    // Accepted angle spec shapes:
-    //   { name: "PQT", value: "35°" }  ← preferred (name = vertex chain, value = arc text)
-    //   { label: "PQT", value: "35°" } ← legacy alias for `name`
-    //   { label: "PQT" }               ← name only, no arc text rendered
-    //   "PQT"                          ← bare-string angle name
-    // A label that is purely a numeric value (e.g. "35°") is treated as a value
-    // attached to the SAME ray family as previous specs — it does NOT define
-    // endpoints. This prevents the historical bug where "35°" was tokenised
-    // into endpoints '3' and '°'.
-    const ANGLE_NAME_RE = /^[A-Z]{3}$/;
-    const angleSpecs = (params.angles || []).map(a => {
-      if (typeof a === 'string') return { name: a.toUpperCase(), value: null };
-      const rawName = (a.name || a.label || '').toString().toUpperCase().replace('ANGLE', '').trim();
-      const looksLikeName = rawName.includes(qName) || ANGLE_NAME_RE.test(rawName);
-      return {
-        name: looksLikeName ? rawName : null,
-        value: a.value != null ? String(a.value)
-             : looksLikeName ? null
-             : (a.label || a.name || '').toString(),
-      };
-    });
-
-    // Collect non-corner endpoints from named angles (e.g. T from "PQT")
-    const endPoints = new Set();
-    angleSpecs.forEach(spec => {
-      if (!spec.name) return;
-      if (spec.name.includes(qName)) {
-        const parts = spec.name.split(qName);
-        if (parts[0]) endPoints.add(parts[0].trim());
-        if (parts[1]) endPoints.add(parts[1].trim());
-      } else if (spec.name.length === 3) {
-        endPoints.add(spec.name[0]);
-        endPoints.add(spec.name[2]);
-      }
-    });
-    endPoints.delete(pName);
-    endPoints.delete(qName);
-    endPoints.delete(rName);
-
-    const extraRays = Array.from(endPoints);
-    let labelsHtml = '';
-
-    // Track each named ray's angle from the +x axis (radians) at vertex Q so
-    // we can place arc-value labels on the angle bisector later.
-    const rayAngles = {
-      [pName]: Math.PI / 2,            // P is straight up from Q
-      [rName]: 0,                       // R is straight right from Q
-      [sName]: Math.atan2(qy - sy, sx - qx),  // S is the rectangle's diagonal
+    // rayDeg: ray name → angle from +x axis at Q (math degrees, 0..90)
+    const rayDeg = {
+      [pName]: 90,
+      [rName]: 0,
+      [sName]: sDiagDeg,
     };
 
-    // 1. If S is mentioned, draw the rectangle's diagonal
-    if (extraRays.includes(sName)) {
-      svg += `<line x1="${qx}" y1="${qy}" x2="${sx}" y2="${sy}" stroke="var(--border-dark, #ccc)" stroke-width="2"/>`;
-      extraRays.splice(extraRays.indexOf(sName), 1);
+    // ── Resolve explicit rays ──────────────────────────────────────────────
+    const explicitRays = Array.isArray(params.rays) ? params.rays : null;
+    if (explicitRays) {
+      explicitRays.forEach(r => {
+        if (!r || !r.name) return;
+        if (typeof r.at_deg === 'number') {
+          rayDeg[r.name] = r.at_deg;
+          return;
+        }
+        if (r.from_side && typeof r.rotate_deg === 'number') {
+          const side = r.from_side.toString().toUpperCase();
+          const baseDeg = side === `${qName}${pName}` ? 90
+                        : side === `${qName}${rName}` ? 0
+                        : side === `${qName}${sName}` ? sDiagDeg
+                        : null;
+          if (baseDeg === null) return;
+          // Rotate toward the corner's interior (toward 45°)
+          const sign = baseDeg >= 45 ? -1 : +1;
+          rayDeg[r.name] = baseDeg + sign * r.rotate_deg;
+        }
+      });
     }
 
-    // 2. Draw rays for any other named endpoints (e.g. T)
-    extraRays.forEach((ptName, index) => {
-      const degFromHoriz = 60 - (index * 20);
-      const rad = degFromHoriz * Math.PI / 180;
-      const lineLen = 200;
-      const tx = qx + lineLen * Math.cos(rad);
-      const ty = qy - lineLen * Math.sin(rad);
-      svg += `<line x1="${qx}" y1="${qy}" x2="${tx}" y2="${ty}" stroke="var(--text-main, #333)" stroke-width="2"/>`;
-      labelsHtml += `<text x="${tx + 8}" y="${ty - 4}" font-size="14" font-weight="bold" fill="var(--text-main, #333)">${ptName}</text>`;
-      rayAngles[ptName] = rad;
+    // ── Resolve arcs (or derive from legacy angles list) ───────────────────
+    let arcs = Array.isArray(params.arcs) ? params.arcs.slice() : null;
+
+    if (!explicitRays && Array.isArray(params.angles)) {
+      // Legacy {name, value} path: extract endpoints by character split,
+      // assign hard-coded fallback positions, derive arcs from values.
+      const extras = new Set();
+      params.angles.forEach(a => {
+        if (!a) return;
+        const nm = (a.name || a.label || '').toString().toUpperCase().replace('ANGLE', '').trim();
+        if (nm.length === 3 && nm.includes(qName)) {
+          const parts = nm.split(qName);
+          if (parts[0]) extras.add(parts[0]);
+          if (parts[1]) extras.add(parts[1]);
+        }
+      });
+      [pName, qName, rName, sName].forEach(n => extras.delete(n));
+      Array.from(extras).forEach((nm, i) => {
+        rayDeg[nm] = 60 - (i * 20);
+      });
+      if (!arcs) {
+        arcs = [];
+        params.angles.forEach(a => {
+          if (!a || a.value == null) return;
+          const nm = (a.name || a.label || '').toString().toUpperCase().replace('ANGLE', '').trim();
+          if (nm.length === 3 && nm.includes(qName)) {
+            const parts = nm.split(qName);
+            if (parts[0] && parts[1]) {
+              arcs.push({ between: [parts[0], parts[1]], label: String(a.value) });
+            }
+          }
+        });
+      }
+    }
+
+    // ── BUILD SVG ──────────────────────────────────────────────────────────
+    const STROKE_RECT = 'var(--border-dark, #ccc)';
+    const STROKE_RAY  = 'var(--text-main, #333)';
+    const STROKE_ARC  = 'var(--brand-rose, #B76E79)';
+    const FILL_PT     = 'var(--text-main, #333)';
+    const FILL_VAL    = 'var(--brand-sage, #51615E)';
+    const FILL_CORNER = 'var(--text-muted, #666)';
+
+    let svg = '';
+
+    // Rectangle outline + corner right-angle marker
+    svg += `<rect x="${P.x}" y="${P.y}" width="${R.x - P.x}" height="${Q.y - P.y}" fill="none" stroke="${STROKE_RECT}" stroke-width="3"/>`;
+    svg += `<rect x="${Q.x}" y="${Q.y - 15}" width="15" height="15" fill="none" stroke="var(--brand-sage, #51615E)" stroke-width="1.5"/>`;
+
+    // Diagonal QS only when S is referenced as an arc/ray endpoint
+    const sReferenced =
+      (explicitRays && explicitRays.some(r => r && r.name === sName)) ||
+      (Array.isArray(arcs) && arcs.some(a => a && Array.isArray(a.between) && a.between.includes(sName)));
+    if (sReferenced) {
+      svg += `<line x1="${Q.x}" y1="${Q.y}" x2="${S.x}" y2="${S.y}" stroke="${STROKE_RECT}" stroke-width="2"/>`;
+    }
+
+    // Helper: convert math degrees → screen-coord polar point at distance d from Q
+    const polar = (deg, d) => {
+      const rad = deg * Math.PI / 180;
+      return { x: Q.x + d * Math.cos(rad), y: Q.y - d * Math.sin(rad) };
+    };
+
+    // Draw rays for each non-corner endpoint that has a position
+    const lineLen = 200;
+    Object.keys(rayDeg).forEach(name => {
+      if ([pName, qName, rName, sName].includes(name)) return;
+      const tip = polar(rayDeg[name], lineLen);
+      svg += `<line x1="${Q.x}" y1="${Q.y}" x2="${tip.x.toFixed(2)}" y2="${tip.y.toFixed(2)}" stroke="${STROKE_RAY}" stroke-width="2"/>`;
+      // Endpoint label sits just outside the ray tip
+      svg += `<text x="${(tip.x + 8).toFixed(2)}" y="${(tip.y - 4).toFixed(2)}" font-size="14" font-weight="bold" fill="${FILL_PT}">${name}</text>`;
     });
 
-    // 3. For each angle spec carrying a value, place that value at the bisector
-    //    of the two rays it names so it sits visually inside the angle.
-    angleSpecs.forEach(spec => {
-      if (!spec.value || !spec.name || spec.name.length !== 3) return;
-      const idx = spec.name.indexOf(qName);
-      if (idx === -1) return;
-      const e1 = spec.name[0];
-      const e2 = spec.name[2];
-      const r1 = rayAngles[e1];
-      const r2 = rayAngles[e2];
-      if (r1 === undefined || r2 === undefined) return;
-      const bisector = (r1 + r2) / 2;
-      const labelDist = 42;
-      const lx = qx + labelDist * Math.cos(bisector);
-      const ly = qy - labelDist * Math.sin(bisector);
-      labelsHtml += `<text x="${lx}" y="${ly}" font-size="13" font-weight="bold" text-anchor="middle" dominant-baseline="middle" fill="var(--brand-sage, #51615E)">${spec.value}</text>`;
-    });
+    // Draw arcs + value labels at each arc's angle bisector
+    if (Array.isArray(arcs)) {
+      arcs.forEach((arc, idx) => {
+        if (!arc || !Array.isArray(arc.between) || arc.between.length !== 2) return;
+        const [a, b] = arc.between;
+        const aDeg = rayDeg[a];
+        const bDeg = rayDeg[b];
+        if (aDeg === undefined || bDeg === undefined) return;
+        const startDeg = Math.min(aDeg, bDeg);
+        const endDeg = Math.max(aDeg, bDeg);
+        if (endDeg - startDeg < 1) return; // skip degenerate arcs
+        // Stagger arc radii so adjacent arcs don't overlap
+        const arcRadius = 24 + (idx * 8);
+        // Build arc as a 16-segment polyline (avoids SVG arc-direction ambiguity)
+        const steps = 16;
+        const pts = [];
+        for (let i = 0; i <= steps; i++) {
+          const t = startDeg + (endDeg - startDeg) * (i / steps);
+          const p = polar(t, arcRadius);
+          pts.push(`${p.x.toFixed(1)},${p.y.toFixed(1)}`);
+        }
+        svg += `<polyline points="${pts.join(' ')}" fill="none" stroke="${STROKE_ARC}" stroke-width="1.6"/>`;
+        // Value label at bisector, just outside the arc
+        if (arc.label != null) {
+          const midDeg = (startDeg + endDeg) / 2;
+          const labelP = polar(midDeg, arcRadius + 16);
+          svg += `<text x="${labelP.x.toFixed(2)}" y="${labelP.y.toFixed(2)}" font-size="13" font-weight="bold" text-anchor="middle" dominant-baseline="middle" fill="${FILL_VAL}">${arc.label}</text>`;
+        }
+      });
+    }
 
-    // 4. Standard corner labels
-    labelsHtml += `
-      <text x="${px - 15}" y="${py - 10}" font-size="16" font-weight="bold" fill="var(--text-muted)">${pName}</text>
-      <text x="${qx - 15}" y="${qy + 20}" font-size="16" font-weight="bold" fill="var(--text-main)">${qName}</text>
-      <text x="${rx + 15}" y="${ry + 20}" font-size="16" font-weight="bold" fill="var(--text-muted)">${rName}</text>
-      <text x="${sx + 15}" y="${sy - 10}" font-size="16" font-weight="bold" fill="var(--text-muted)">${sName}</text>
-    `;
+    // Corner labels
+    svg += `<text x="${P.x - 15}" y="${P.y - 10}" font-size="16" font-weight="bold" fill="${FILL_CORNER}">${pName}</text>`;
+    svg += `<text x="${Q.x - 15}" y="${Q.y + 20}" font-size="16" font-weight="bold" fill="${FILL_PT}">${qName}</text>`;
+    svg += `<text x="${R.x + 15}" y="${R.y + 20}" font-size="16" font-weight="bold" fill="${FILL_CORNER}">${rName}</text>`;
+    svg += `<text x="${S.x + 15}" y="${S.y - 10}" font-size="16" font-weight="bold" fill="${FILL_CORNER}">${sName}</text>`;
 
     return `
       <svg width="100%" viewBox="0 0 ${w} ${h}" style="height: auto; max-width: 500px; display: block; margin: 0 auto;">
         ${svg}
-        ${labelsHtml}
       </svg>
     `;
   },
