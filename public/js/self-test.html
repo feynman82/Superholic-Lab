@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagram Library — Full Self-Test (39 functions)</title>
+<style>
+  /* The library expects these CSS variables. Defining them here proves the diagrams
+     also work WITH theme vars present — comment out the :root block to test fallbacks. */
+  :root {
+    --bg-page: #f7faf8;
+    --bg-surface: #ffffff;
+    --bg-elevated: #f0f5f2;
+    --text-main: #1a2e2a;
+    --text-muted: #5d706b;
+    --border-light: #d6e3dc;
+    --border-dark: #8da89e;
+    --brand-sage: #51615E;
+    --brand-rose: #B76E79;
+    --brand-amber: #D4A24C;
+    --color-magnet-N: #C0392B;
+    --color-magnet-S: #2471A3;
+    --glass-bg: rgba(255,255,255,0.7);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Plus Jakarta Sans", system-ui, sans-serif;
+    background: var(--bg-page);
+    margin: 0;
+    padding: 16px;
+    color: var(--text-main);
+  }
+  header {
+    max-width: 1200px;
+    margin: 0 auto 24px;
+    padding: 16px 20px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+  }
+  header h1 { margin: 0 0 8px; font-size: 18px; }
+  header p  { margin: 4px 0; font-size: 13px; color: var(--text-muted); }
+  header .controls { margin-top: 12px; }
+  header button {
+    padding: 6px 14px; margin-right: 8px;
+    border: 1px solid var(--border-dark);
+    border-radius: 6px;
+    background: var(--bg-elevated);
+    cursor: pointer;
+    font-size: 13px;
+  }
+  header button.active { background: var(--brand-sage); color: white; border-color: var(--brand-sage); }
+
+  .grid {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 16px;
+  }
+  .card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-light);
+    border-radius: 10px;
+    padding: 14px;
+    overflow: hidden;
+  }
+  .card h3 {
+    margin: 0 0 4px; font-size: 13px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .card h3 .badge {
+    font-size: 10px; padding: 2px 8px;
+    background: var(--bg-elevated); color: var(--text-muted);
+    border-radius: 10px; font-weight: normal;
+  }
+  .card .desc { font-size: 11px; color: var(--text-muted); margin-bottom: 10px; }
+  .card .render-area {
+    background: var(--bg-page);
+    border-radius: 8px;
+    padding: 8px;
+    min-height: 100px;
+    display: flex; align-items: center; justify-content: center;
+    overflow-x: auto;
+  }
+  .card.fail { border-color: #c2364c; }
+  .card.fail .render-area { background: #ffe5e5; color: #c2364c; font-size: 11px; }
+  .card .status { margin-top: 8px; font-size: 11px; font-weight: 600; }
+  .pass { color: #2d7a4f; }
+  .fail-text { color: #c2364c; }
+
+  /* Responsive: 1 col on mobile */
+  @media (max-width: 600px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Diagram Library — Full Self-Test</h1>
+  <p>Renders all 39 <code>function_name</code> values with realistic sample payloads from Section 6 of the Master Question Template.</p>
+  <p>✅ Pass = renders without crash, no NaN, output ≥ 50 chars. Visual correctness must be eyeballed.</p>
+  <div class="controls">
+    <button id="btn-themed" class="active">Themed (CSS vars defined)</button>
+    <button id="btn-fallback">Fallback (no CSS vars)</button>
+    <span id="summary" style="margin-left:16px;font-size:12px;color:var(--text-muted);"></span>
+  </div>
+</header>
+
+<div id="grid" class="grid"></div>
+
+<script src="diagram-library.js"></script>
+<script>
+// Every function_name from Section 6 of the master template, with a representative payload.
+// Categories used as badges: GEOM, DATA, FRAC, ANGLES, NUMBER, SOLID, FLOW, SCI, EXP, UTIL
+const TESTS = [
+  // ─── GEOMETRY (basic shapes & measurement) ───────────────────────────────
+  { name:'rectangle', cat:'GEOM', desc:'Labelled rectangle with dimension arrows.',
+    params:{ widthLabel:'12 cm', heightLabel:'7 cm', showNotToScale:true } },
+  { name:'square', cat:'GEOM', desc:'Equal-side square.',
+    params:{ sideLabel:'9 cm' } },
+  { name:'circle', cat:'GEOM', desc:'Circle with radius label.',
+    params:{ radiusLabel:'7 cm' } },
+  { name:'rightTriangle', cat:'GEOM', desc:'Right-angled triangle, 3 sides labelled.',
+    params:{ base:'8 cm', height:'6 cm', hypotenuse:'10 cm', showRightAngle:true } },
+  { name:'equilateralTriangle', cat:'GEOM', desc:'Composed of 2 unit triangles.',
+    params:{ side_length:10, unit:'cm', count:2 } },
+  { name:'parallelogram', cat:'GEOM', desc:'Parallelogram with diagonals + 60° arc.',
+    params:{ vertices:['W','X','Y','Z'], show_diagonals:true, angle_arcs:[{vertex:'W', label:'60°'}] } },
+  { name:'polygon', cat:'GEOM', desc:'4-sided polygon with measured angle.',
+    params:{ vertices:['A','B','C','D'], angle_to_measure:'ABC' } },
+  { name:'cuboid', cat:'GEOM', desc:'3D tank, half-filled.',
+    params:{ length_label:'10cm', breadth_label:'5cm', height_label:'8cm', water_level:0.5 } },
+  { name:'compositeShape', cat:'GEOM', desc:'L-shape from 2 rectangles.',
+    params:{
+      parts:[ {x:40,y:40,w:200,h:80,shaded:true,label:'A'},
+              {x:40,y:120,w:80,h:100,shaded:true,label:'B'} ],
+      unit:'cm', showNotToScale:true } },
+  { name:'rectangleWithLine', cat:'GEOM', desc:'Rectangle ABCD with line AE to point E on BC.',
+    params:{ vertices:['A','B','C','D'], from_vertex:'A',
+             end_label:'E', end_side:'BC', end_position:0.6,
+             angles:[{at:'A', value:'25°'},{at:'E', value:'?'}] } },
+  { name:'runningTrack', cat:'GEOM', desc:'Stadium shape: 2 straights + 2 semicircular ends.',
+    params:{ straight_length_label:'80 m', diameter_label:'70 m' } },
+  { name:'drawRectangleOnGrid', cat:'GEOM', desc:'Rectangle on cm-grid with corner labels.',
+    params:{ width_cm:10, length_cm:5, unit_grid_cm:1, labels:'PQRS' } },
+  { name:'isometricGrid', cat:'GEOM', desc:'3D cube arrangement (isometric view).',
+    params:{ mode:'isometric', cubes_arrangement:[[2,1,0],[1,3,1],[0,1,2]] } },
+  { name:'rulerMeasurement', cat:'GEOM', desc:'Pencil from 2.5 cm to 10.5 cm on a ruler.',
+    params:{ item:'Pencil', unit:'cm', min_value:0, max_value:15,
+             start_reading:2.5, end_reading:10.5, major_interval:1, minor_interval:0.1 } },
+
+  // ─── ANGLES ──────────────────────────────────────────────────────────────
+  { name:'protractorMeasurement', cat:'ANGLES', desc:'Protractor reading 65°.',
+    params:{ angle_to_measure:65, pointer_label:'?', show_inner_scale:true } },
+  { name:'rectangleDividedRightAngle', cat:'ANGLES', desc:'Rectangle PQRS with 2 rays from Q (v3).',
+    params:{
+      vertices:['P','Q','R','S'],
+      rays:[ {name:'T', at_deg:68}, {name:'U', from_side:'QR', rotate_deg:35} ],
+      arcs:[ {between:['P','T'], label:'22°'}, {between:['T','U'], label:'?'}, {between:['U','R'], label:'35°'} ]
+    } },
+  { name:'rightAngleDivided', cat:'ANGLES', desc:'Two rays meeting at O with named angles.',
+    params:{ lines:[{start:'O',end:'A'},{start:'O',end:'B'}], angles:['45°','y'], vertices:['X','O','Y'] } },
+  { name:'straightLineDividedAngles', cat:'ANGLES', desc:'Straight line with intersecting rays.',
+    params:{ lines:[{start:'O',end:'A'},{start:'O',end:'B'}], angles:['60°','x','y'], vertices:['X','O','Y'] } },
+  { name:'dividedStraightLineAngle', cat:'ANGLES', desc:'Straight line A-O-B with one intersecting ray.',
+    params:{ vertices:['A','O','B','C'], angles:[{label:'40°'},{label:'?'}] } },
+
+  // ─── NUMBER & FRACTIONS ──────────────────────────────────────────────────
+  { name:'numberLine', cat:'NUMBER', desc:'Number line 0–10 with 3 and 7 marked.',
+    params:{ start:0, end:10, marked:[3,7] } },
+  { name:'fractionBar', cat:'FRAC', desc:'Single bar showing 3/4.',
+    params:{ numerator:3, denominator:4, showLabel:true } },
+  { name:'fractionBars', cat:'FRAC', desc:'Two fractions side-by-side.',
+    params:{ fractions:[{numerator:1, denominator:4},{numerator:1, denominator:3}] } },
+  { name:'unitModel', cat:'FRAC', desc:'Bar model "Before" with 2 units.',
+    params:{ unitModel:{ models:[{ label:'Before',
+              parts:[{width:40,shaded:false,label:'1u'},{width:40,shaded:true,label:'Transfer'}] }]}} },
+
+  // ─── DATA ANALYSIS ────────────────────────────────────────────────────────
+  { name:'pieChart', cat:'DATA', desc:'2-slice pie (40 / 60).',
+    params:{ title:'Favourite Fruits', data:[{label:'Apples',value:40},{label:'Pears',value:60}] } },
+  { name:'lineGraph', cat:'DATA', desc:'Temperature over 6 hours.',
+    params:{ title:'Temperature', xLabel:'Hour', yLabel:'°C',
+             points:[{x:0,y:28},{x:1,y:32},{x:2,y:35},{x:3,y:33},{x:4,y:30},{x:5,y:27}] } },
+  { name:'barChart', cat:'DATA', desc:'Books read per month.',
+    params:{ title:'Books Read', xLabel:'Month', yLabel:'Number',
+             bars:[{label:'Jan',value:8},{label:'Feb',value:12},{label:'Mar',value:6}] } },
+  { name:'verticalBarChart', cat:'DATA', desc:'With "covered" ink-spill bar.',
+    params:{ title:'Books Read', xAxisLabel:'Month', yAxisLabel:'Count',
+             data:[{label:'Jan',value:15},{label:'Feb',value:'covered'},{label:'Mar',value:10}] } },
+  { name:'horizontalBarChart', cat:'DATA', desc:'Long category names — horizontal.',
+    params:{ title:'Favourite Sports',
+             bars:[{label:'Swimming',value:15},{label:'Football',value:22},{label:'Badminton',value:8}] } },
+  { name:'pictogram', cat:'DATA', desc:'Stickers — 1 ★ = 4.',
+    params:{ title:'Stickers', items:[{label:'Ali',count:12},{label:'Bina',count:8}],
+             keyValue:4, keySymbol:'★' } },
+  { name:'dataTable', cat:'DATA', desc:'HTML table with highlighted column.',
+    params:{ headers:['Material','Magnetic?','Conductor?'],
+             rows:[['Iron','Yes','Yes'],['Wood','No','No'],['Plastic','No','No']],
+             highlightCol:1 } },
+  { name:'table', cat:'DATA', desc:'Legacy HTML table (Tailwind classes).',
+    params:{ headers:['Material','Magnetic?'], rows:[['Iron','Yes'],['Wood','No']] } },
+
+  // ─── SCIENCE / FLOW ──────────────────────────────────────────────────────
+  { name:'thermometer', cat:'SCI', desc:'Beaker A reading 37 °C.',
+    params:{ minTemp:0, maxTemp:100, currentTemp:37, unit:'°C', label:'Beaker A' } },
+  { name:'arrowDiagram', cat:'FLOW', desc:'Water cycle — bidirectional pairs (Phase 1+2 fix).',
+    params:{ nodes:[{id:'1',label:'Ice'},{id:'2',label:'Water'},{id:'3',label:'Vapour'}],
+             arrows:[{from:'1',to:'2',label:'A'},{from:'2',to:'1',label:'B'},
+                     {from:'2',to:'3',label:'C'},{from:'3',to:'2',label:'D'}],
+             layout:'horizontal' } },
+  { name:'conceptMap', cat:'SCI', desc:'Living things classification tree.',
+    params:{
+      nodes:[ {id:'a',label:'Living Things',x:50,y:20},
+              {id:'b',label:'Plants',x:25,y:70},
+              {id:'c',label:'Animals',x:75,y:70} ],
+      edges:[ {from:'a',to:'b'},{from:'a',to:'c'} ] } },
+  { name:'circuitDiagram', cat:'SCI', desc:'Battery + switch + bulb circuit.',
+    params:{ circuitDiagram:{
+      title:'Setup A',
+      components:[
+        {type:'battery'},
+        {type:'switch', isOpen:true},
+        {type:'bulb', position:'right', fused:false}
+      ] } } },
+  { name:'magnetDiagram', cat:'SCI', desc:'Two bar magnets — repulsion.',
+    params:{ magnetType:'bar',
+             magnets:[{poles:['S','N']},{poles:['N','S']}], interaction:'repulsion' } },
+
+  // ─── EXPERIMENTS ─────────────────────────────────────────────────────────
+  { name:'comparativeSetup', cat:'EXP', desc:'Heat absorption — black vs white cloth.',
+    params:{ title:'Heat Absorption', variable:'Colour of cloth', containerType:'beaker',
+             setups:[
+               { label:'Setup A', conditions:['Black cloth','30 ml water','Sunny spot'],
+                 result_label:'Temperature after 1 hour:' },
+               { label:'Setup B', conditions:['White cloth','30 ml water','Sunny spot'],
+                 result_label:'Temperature after 1 hour:' }
+             ],
+             commonConditions:['Same beaker size','Same starting temperature'] } },
+  { name:'rampExperiment', cat:'EXP', desc:'Block on rough 30° incline with force arrows.',
+    params:{ rampAngle:30, surfaceTexture:'rough', blockLabel:'Block', showAngleLabel:true,
+             forceArrows:[{direction:'down',label:'Weight'},
+                          {direction:'up_slope',label:'Friction'},
+                          {direction:'normal',label:'Normal force'}] } },
+  { name:'genericExperiment', cat:'EXP', desc:'Last-resort key-value info card.',
+    params:{ apparatus:'Syringe with plunger', observation:'Air is compressible',
+             conclusion:'Gases can be compressed' } },
+
+  // ─── UTILITY ─────────────────────────────────────────────────────────────
+  { name:'placeholder', cat:'UTIL', desc:'Grey dashed box for missing diagrams.',
+    params:{ description:'Diagram of the human heart showing four chambers.' } },
+];
+
+const grid = document.getElementById('grid');
+const summary = document.getElementById('summary');
+
+function renderAll(useFallback) {
+  // Toggle the :root vars off when testing fallbacks
+  if (useFallback) {
+    document.documentElement.style.cssText = '--bg-page:#f7faf8;'; // keep page bg only
+  } else {
+    document.documentElement.style.cssText = '';
+  }
+
+  grid.innerHTML = '';
+  let pass = 0, fail = 0;
+
+  TESTS.forEach(t => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    let svgHtml = '', error = null;
+    try {
+      const fn = DiagramLibrary[t.name];
+      if (typeof fn !== 'function') throw new Error('Function not found');
+      svgHtml = fn.call(DiagramLibrary, t.params);
+      if (!svgHtml || svgHtml.length < 50) throw new Error('Empty / too-short output');
+      if (svgHtml.includes('NaN')) throw new Error('Contains NaN');
+    } catch (err) {
+      error = err.message;
+    }
+
+    const ok = !error;
+    if (ok) pass++; else fail++;
+    if (!ok) card.classList.add('fail');
+
+    card.innerHTML = `
+      <h3><span>${t.name}</span><span class="badge">${t.cat}</span></h3>
+      <div class="desc">${t.desc}</div>
+      <div class="render-area">${ok ? svgHtml : 'CRASH: ' + error}</div>
+      <div class="status ${ok ? 'pass' : 'fail-text'}">${ok ? '✅ Pass' : '❌ ' + error}</div>
+    `;
+    grid.appendChild(card);
+  });
+
+  summary.textContent = `${pass} pass · ${fail} fail · ${TESTS.length} total`;
+}
+
+document.getElementById('btn-themed').addEventListener('click', e => {
+  document.querySelectorAll('.controls button').forEach(b => b.classList.remove('active'));
+  e.target.classList.add('active');
+  renderAll(false);
+});
+document.getElementById('btn-fallback').addEventListener('click', e => {
+  document.querySelectorAll('.controls button').forEach(b => b.classList.remove('active'));
+  e.target.classList.add('active');
+  renderAll(true);
+});
+
+renderAll(false);
+</script>
+</body>
+</html>

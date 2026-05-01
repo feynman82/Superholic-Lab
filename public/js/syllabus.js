@@ -1,105 +1,103 @@
 // ─────────────────────────────────────────────────────────────────────────
-// /js/syllabus.js — Canonical Syllabus Module
+// /js/syllabus.js — Canonical Syllabus Module v5.0 (2026-05-01)
 // ─────────────────────────────────────────────────────────────────────────
-// Single source of truth for subject → topic → sub_topic taxonomy.
-// Backed by Supabase `canon_subjects`, `canon_topics`, `canon_sub_topics`
-// at runtime; falls back to the baked-in cache below if the network fails.
+// Single source of truth for subject → topic → sub_topic taxonomy AND
+// level → topic → sub_topic mapping.
+//
+// Backed by Supabase tables:
+//   • canon_subjects, canon_topics, canon_sub_topics  (existing)
+//   • canon_level_topics                              (NEW in v5)
+//
+// Falls back to baked-in cache below if network fails.
 //
 // Both subjects.html and quiz.js import from this file. Do NOT redefine
-// MOE_TOPICS, SYLLABUS_MAP, or any taxonomy lookup table elsewhere.
+// MOE_TOPICS, SYLLABUS_MAP, LEVEL_TOPICS, or any taxonomy lookup elsewhere.
 //
-// Source: Master_Question_Template.md v4.1 (Section 4 canonical taxonomy)
+// CHANGES vs v4.1:
+//   • Added topics: Money, Length and Mass, Volume of Liquid, Time
+//   • Removed Science topics: Heat, Light, Forces, Cells (folded)
+//   • Removed Maths topic: Speed (P6 dropped per 2021 syllabus)
+//   • Added English sub_topics: Visual Text Literal Retrieval / Inference
+//   • LEVEL_TOPICS now hydrated from canon_level_topics at runtime
 // ─────────────────────────────────────────────────────────────────────────
 
 // ── BAKED-IN CACHE FALLBACK ──
-// Mirrors `canon_topics` + `canon_sub_topics` at the time of last sync.
-// If the live query succeeds, this object is replaced wholesale.
-// Keys are lowercase URL-style subject slugs ('mathematics', 'science', 'english').
 export const CANONICAL_SYLLABUS = {
   mathematics: {
-    'Whole Numbers': ['Counting To One Hundred', 'Number Notation And Place Values', 'Comparing And Ordering Numbers', 'Patterns In Number Sequences', 'Rounding Numbers To The Nearest Ten, Hundred Or Thousand', 'Order Of Operations', 'Use Of Brackets'],
-    'Multiplication Tables': ['Multiplication Tables Of Two, Three, Four, Five And Ten', 'Multiplication Tables Of Six, Seven, Eight And Nine', 'Mental Calculation Involving Multiplication Within Tables'],
-    'Addition and Subtraction': ['Concepts Of Addition And Subtraction', 'Addition And Subtraction Within One Hundred', 'Addition And Subtraction Algorithms', 'Mental Calculation Involving Addition And Subtraction'],
-    'Multiplication and Division': ['Concepts Of Multiplication And Division', 'Multiplication And Division Algorithms', 'Division With Remainder', 'Multiplying And Dividing By Ten, One Hundred And One Thousand', 'Mental Calculation Involving Multiplication And Division'],
-    'Fractions': ['Fraction As Part Of A Whole', 'Equivalent Fractions', 'Comparing And Ordering Fractions', 'Mixed Numbers', 'Improper Fractions', 'Adding Unlike Fractions', 'Subtracting Unlike Fractions', 'Fractions Of A Set', 'Fraction Multiplied By Fraction', 'Division By A Proper Fraction'],
-    'Decimals': ['Notation And Place Values Of Decimals', 'Comparing And Ordering Decimals', 'Converting Fractions To Decimals', 'Converting Decimals To Fractions', 'Rounding Decimals', 'Four Operations With Decimals', 'Multiplying And Dividing Decimals By Ten, One Hundred And One Thousand'],
-    'Percentage': ['Expressing Part Of A Whole As Percentage', 'Finding Percentage Part Of A Whole', 'Discount, Goods And Services Tax And Annual Interest', 'Finding The Whole Given A Part And Percentage', 'Percentage Increase And Decrease'],
-    'Ratio': ['Part-Whole Ratio', 'Comparison Ratio', 'Equivalent Ratios', 'Expressing Ratio In Simplest Form', 'Dividing A Quantity In A Given Ratio', 'Ratio Of Three Quantities', 'Relationship Between Fraction And Ratio', 'Ratio Word Problems'],
-    'Rate': ['Rate As Amount Of Quantity Per Unit', 'Finding Rate, Total Amount Or Number Of Units'],
-    'Speed': ['Concepts Of Speed', 'Calculating Distance, Time And Speed', 'Average Speed'],
-    'Average': ['Average As Total Value Divided By Number Of Data', 'Relationship Between Average, Total Value And Number Of Data'],
-    'Algebra': ['Using A Letter To Represent An Unknown Number', 'Interpretation Of Algebraic Expressions', 'Simplifying Linear Expressions', 'Evaluating Linear Expressions By Substitution', 'Solving Simple Linear Equations'],
-    'Angles': ['Concepts Of Angle', 'Right Angles', 'Measuring Angles In Degrees', 'Drawing Angles', 'Angles On A Straight Line', 'Angles At A Point', 'Vertically Opposite Angles', 'Finding Unknown Angles'],
-    'Geometry': ['Perpendicular And Parallel Lines', 'Properties Of Rectangle And Square', 'Properties Of Triangles', 'Properties Of Parallelogram, Rhombus And Trapezium'],
-    'Area and Perimeter': ['Concepts Of Area And Perimeter', 'Area And Perimeter Of Rectangle And Square', 'Finding One Dimension Given Area Or Perimeter', 'Area And Perimeter Of Composite Rectilinear Figures'],
-    'Area of Triangle': ['Concepts Of Base And Height', 'Calculating Area Of Triangle', 'Area Of Composite Figures With Triangles'],
-    'Circles': ['Area And Circumference Of Circle', 'Area And Perimeter Of Semicircle And Quarter Circle', 'Area And Perimeter Of Composite Figures With Circles'],
-    'Volume': ['Building Solids With Unit Cubes', 'Measuring Volume In Cubic Units', 'Volume Of Cube And Cuboid', 'Finding Volume Of Liquid In Rectangular Tank', 'Finding Unknown Dimension Given Volume'],
-    'Symmetry': ['Identifying Symmetric Figures', 'Lines Of Symmetry', 'Completing Symmetric Figures'],
-    'Shapes and Patterns': ['Identifying And Naming Two-Dimensional Shapes', 'Classifying Three-Dimensional Shapes', 'Making Patterns With Two-Dimensional Shapes'],
-    'Factors and Multiples': ['Identifying Factors And Multiples', 'Finding Common Factors', 'Finding Common Multiples'],
-    'Pie Charts': ['Reading And Interpreting Pie Charts', 'Solving Problems Using Pie Chart Data'],
-    'Data Analysis': ['Reading Picture Graphs', 'Reading Bar Graphs', 'Reading Line Graphs', 'Reading Tables']
+    'Whole Numbers': ['Counting To One Hundred','Number Notation And Place Values','Comparing And Ordering Numbers','Patterns In Number Sequences','Rounding Numbers To The Nearest Ten, Hundred Or Thousand','Order Of Operations','Use Of Brackets'],
+    'Multiplication Tables': ['Multiplication Tables Of Two, Three, Four, Five And Ten','Multiplication Tables Of Six, Seven, Eight And Nine','Mental Calculation Involving Multiplication Within Tables'],
+    'Addition and Subtraction': ['Concepts Of Addition And Subtraction','Addition And Subtraction Within One Hundred','Addition And Subtraction Algorithms','Mental Calculation Involving Addition And Subtraction'],
+    'Multiplication and Division': ['Concepts Of Multiplication And Division','Multiplication And Division Algorithms','Division With Remainder','Multiplying And Dividing By Ten, One Hundred And One Thousand','Mental Calculation Involving Multiplication And Division'],
+    'Money': ['Counting Amount Of Money','Reading And Writing Money In Decimal Notation','Comparing Amounts Of Money','Converting Money Between Decimal And Cents','Adding And Subtracting Money In Decimal Notation','Word Problems Involving Money'],
+    'Length and Mass': ['Measuring Length In Centimetres And Metres','Measuring Length In Kilometres','Measuring Mass In Grams And Kilograms','Comparing And Ordering Lengths And Masses','Converting Compound Units To Smaller Unit','Word Problems Involving Length And Mass'],
+    'Volume of Liquid': ['Measuring Volume In Litres','Measuring Volume In Millilitres','Comparing And Ordering Volumes','Converting Litres And Millilitres','Word Problems Involving Volume'],
+    'Time': ['Telling Time To Five Minutes','Telling Time To The Minute','Use Of Am And Pm','Measuring Time In Hours And Minutes','Measuring Time In Seconds','Twenty-Four Hour Clock','Finding Starting Time, Finishing Time Or Duration','Word Problems Involving Time'],
+    'Fractions': ['Fraction As Part Of A Whole','Equivalent Fractions','Comparing And Ordering Fractions','Mixed Numbers','Improper Fractions','Adding Unlike Fractions','Subtracting Unlike Fractions','Fractions Of A Set','Fraction Multiplied By Fraction','Division By A Proper Fraction'],
+    'Decimals': ['Notation And Place Values Of Decimals','Comparing And Ordering Decimals','Converting Fractions To Decimals','Converting Decimals To Fractions','Rounding Decimals','Four Operations With Decimals','Multiplying And Dividing Decimals By Ten, One Hundred And One Thousand'],
+    'Percentage': ['Expressing Part Of A Whole As Percentage','Finding Percentage Part Of A Whole','Discount, Goods And Services Tax And Annual Interest','Finding The Whole Given A Part And Percentage','Percentage Increase And Decrease'],
+    'Ratio': ['Part-Whole Ratio','Comparison Ratio','Equivalent Ratios','Expressing Ratio In Simplest Form','Dividing A Quantity In A Given Ratio','Ratio Of Three Quantities','Relationship Between Fraction And Ratio','Ratio Word Problems'],
+    'Rate': ['Rate As Amount Of Quantity Per Unit','Finding Rate, Total Amount Or Number Of Units'],
+    'Average': ['Average As Total Value Divided By Number Of Data','Relationship Between Average, Total Value And Number Of Data'],
+    'Algebra': ['Using A Letter To Represent An Unknown Number','Interpretation Of Algebraic Expressions','Simplifying Linear Expressions','Evaluating Linear Expressions By Substitution','Solving Simple Linear Equations'],
+    'Angles': ['Concepts Of Angle','Right Angles','Measuring Angles In Degrees','Drawing Angles','Angles On A Straight Line','Angles At A Point','Vertically Opposite Angles','Finding Unknown Angles'],
+    'Geometry': ['Perpendicular And Parallel Lines','Properties Of Rectangle And Square','Properties Of Triangles','Properties Of Parallelogram, Rhombus And Trapezium','Identifying Two-Dimensional Representations Of Solids','Drawing Two-Dimensional Representations Of Solids','Identifying Nets Of Three-Dimensional Solids'],
+    'Area and Perimeter': ['Concepts Of Area And Perimeter','Area And Perimeter Of Rectangle And Square','Finding One Dimension Given Area Or Perimeter','Area And Perimeter Of Composite Rectilinear Figures'],
+    'Area of Triangle': ['Concepts Of Base And Height','Calculating Area Of Triangle','Area Of Composite Figures With Triangles'],
+    'Circles': ['Area And Circumference Of Circle','Area And Perimeter Of Semicircle And Quarter Circle','Area And Perimeter Of Composite Figures With Circles'],
+    'Volume': ['Building Solids With Unit Cubes','Measuring Volume In Cubic Units','Volume Of Cube And Cuboid','Finding Volume Of Liquid In Rectangular Tank','Finding Unknown Dimension Given Volume'],
+    'Symmetry': ['Identifying Symmetric Figures','Lines Of Symmetry','Completing Symmetric Figures'],
+    'Shapes and Patterns': ['Identifying And Naming Two-Dimensional Shapes','Classifying Three-Dimensional Shapes','Making Patterns With Two-Dimensional Shapes'],
+    'Factors and Multiples': ['Identifying Factors And Multiples','Finding Common Factors','Finding Common Multiples'],
+    'Pie Charts': ['Reading And Interpreting Pie Charts','Solving Problems Using Pie Chart Data'],
+    'Data Analysis': ['Reading Picture Graphs','Reading Bar Graphs','Reading Line Graphs','Reading Tables']
   },
   science: {
-    'Diversity': ['General Characteristics Of Living And Non-Living Things', 'Classification Of Living And Non-Living Things', 'Diversity Of Materials And Their Properties'],
-    'Matter': ['States Of Matter', 'Properties Of Solids, Liquids And Gases', 'Changes In State Of Matter'],
-    'Systems': ['Plant Parts And Functions', 'Human Digestive System', 'Plant Respiratory And Circulatory Systems', 'Human Respiratory And Circulatory Systems', 'Electrical Systems And Circuits'],
-    'Cycles': ['Life Cycles Of Insects', 'Life Cycles Of Amphibians', 'Life Cycles Of Flowering Plants', 'Life Cycles Of Fungi', 'Reproduction In Plants And Animals', 'Stages Of The Water Cycle'],
-    'Interactions': ['Interaction Of Magnetic Forces', 'Interaction Of Frictional, Gravitational And Elastic Spring Forces', 'Interactions Within The Environment', 'Food Chains And Food Webs'],
-    'Energy': ['Light Energy Forms And Uses', 'Heat Energy Forms And Uses', 'Photosynthesis And Energy Pathways', 'Energy Conversion In Everyday Objects'],
-    'Forces': ['Push And Pull Forces', 'Effects Of Forces On Objects', 'Frictional Force And Its Applications', 'Gravitational Force', 'Elastic Spring Force'],
-    'Heat': ['Sources Of Heat', 'Effects Of Heat Gain And Heat Loss', 'Temperature And Use Of Thermometers', 'Good And Poor Conductors Of Heat'],
-    'Light': ['Sources Of Light', 'Reflection Of Light', 'Formation Of Shadows', 'Transparent, Translucent And Opaque Materials'],
-    'Cells': ['Plant And Animal Cells', 'Parts Of A Cell And Their Functions', 'Cell Division']
+    'Diversity': ['General Characteristics Of Living And Non-Living Things','Classification Of Living And Non-Living Things','Diversity Of Materials And Their Properties'],
+    'Matter': ['States Of Matter','Properties Of Solids, Liquids And Gases','Changes In State Of Matter'],
+    'Cycles': ['Life Cycles Of Insects','Life Cycles Of Amphibians','Life Cycles Of Flowering Plants','Reproduction In Plants And Animals','Stages Of The Water Cycle'],
+    'Systems': ['Plant Parts And Functions','Human Digestive System','Plant Respiratory And Circulatory Systems','Human Respiratory And Circulatory Systems','Electrical Systems And Circuits'],
+    'Energy': ['Sources Of Light','Reflection Of Light','Formation Of Shadows','Transparent, Translucent And Opaque Materials','Sources Of Heat','Effects Of Heat Gain And Heat Loss','Temperature And Use Of Thermometers','Good And Poor Conductors Of Heat','Photosynthesis And Energy Pathways','Energy Conversion In Everyday Objects'],
+    'Interactions': ['Interaction Of Magnetic Forces','Frictional Force','Gravitational Force','Elastic Spring Force','Effects Of Forces On Objects','Interactions Within The Environment','Food Chains And Food Webs']
   },
   english: {
-    'Grammar': ['Simple Present And Past Tenses', 'Perfect And Continuous Tenses', 'Subject-Verb Agreement', 'Singular And Plural Nouns', 'Prepositions And Phrasal Verbs', 'Conjunctions', 'Active And Passive Voice', 'Relative Pronouns'],
-    'Vocabulary': ['Thematic Vocabulary Recall', 'Contextual Vocabulary Meaning', 'Synonyms And Antonyms'],
-    'Cloze': ['Grammar Cloze With Word Bank', 'Vocabulary Cloze With Dropdowns', 'Comprehension Free-Text Cloze'],
-    'Editing': ['Correcting Spelling Errors', 'Correcting Grammatical Errors'],
-    'Comprehension': ['Direct Visual Retrieval', 'True Or False With Reason', 'Pronoun Referent Table', 'Sequencing Of Events', 'Deep Inference And Claim Evidence Reasoning'],
-    'Synthesis': ['Combining With Conjunctions', 'Relative Clauses', 'Participle Phrases', 'Conditional Sentences', 'Reported Speech Transformation', 'Active To Passive Voice Transformation', 'Inversion'],
-    'Summary Writing': ['Identifying Key Information', 'Paraphrasing And Condensing Text']
+    'Grammar': ['Simple Present And Past Tenses','Perfect And Continuous Tenses','Subject-Verb Agreement','Singular And Plural Nouns','Prepositions And Phrasal Verbs','Conjunctions','Active And Passive Voice','Relative Pronouns'],
+    'Vocabulary': ['Thematic Vocabulary Recall','Contextual Vocabulary Meaning','Synonyms And Antonyms'],
+    'Cloze': ['Grammar Cloze With Word Bank','Vocabulary Cloze With Dropdowns','Comprehension Free-Text Cloze'],
+    'Editing': ['Correcting Spelling Errors','Correcting Grammatical Errors'],
+    'Comprehension': ['Direct Visual Retrieval','True Or False With Reason','Pronoun Referent Table','Sequencing Of Events','Deep Inference And Claim Evidence Reasoning','Visual Text Literal Retrieval','Visual Text Inference And Purpose'],
+    'Synthesis': ['Combining With Conjunctions','Relative Clauses','Participle Phrases','Conditional Sentences','Reported Speech Transformation','Active To Passive Voice Transformation','Inversion'],
+    'Summary Writing': ['Identifying Key Information','Paraphrasing And Condensing Text']
   }
 };
 
 // ── LEVEL → TOPICS WHITELIST ──
-// Per Master_Question_Template.md Section 4 "Level guidance".
-// Defines which canonical topics are valid at each primary level.
-// Cumulative: P3 includes P1-2 topics where applicable.
+// Hydrated from canon_level_topics at runtime via loadLiveLevelTopics().
+// Baked-in fallback derived from canon_level_topics v5 (296 rows).
 export const LEVEL_TOPICS = {
-  // P1: Math basics, no Science, English without Editing/Synthesis
-  'primary-1:mathematics': ['Whole Numbers', 'Addition and Subtraction', 'Shapes and Patterns'],
-  'primary-1:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze'],
+  'primary-1:mathematics': ['Whole Numbers','Addition and Subtraction','Multiplication and Division','Multiplication Tables','Money','Length and Mass','Time','Shapes and Patterns','Data Analysis'],
+  'primary-1:english': ['Grammar','Vocabulary','Cloze','Comprehension'],
 
-  // P2: + Multiplication Tables
-  'primary-2:mathematics': ['Whole Numbers', 'Addition and Subtraction', 'Multiplication Tables', 'Shapes and Patterns'],
-  'primary-2:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze'],
+  'primary-2:mathematics': ['Whole Numbers','Addition and Subtraction','Multiplication Tables','Multiplication and Division','Fractions','Money','Length and Mass','Volume of Liquid','Time','Shapes and Patterns','Data Analysis'],
+  'primary-2:english': ['Grammar','Vocabulary','Cloze','Comprehension'],
 
-  // P3: WAs begin. Add Multiplication and Division, Fractions, Decimals, Angles, Geometry, Area & Perimeter, Symmetry, Factors and Multiples, Data Analysis. Science begins.
-  'primary-3:mathematics': ['Whole Numbers', 'Addition and Subtraction', 'Multiplication Tables', 'Multiplication and Division', 'Fractions', 'Decimals', 'Angles', 'Geometry', 'Area and Perimeter', 'Symmetry', 'Factors and Multiples', 'Data Analysis', 'Shapes and Patterns'],
-  'primary-3:science': ['Diversity', 'Matter', 'Cycles', 'Systems', 'Interactions', 'Heat', 'Light'],
-  'primary-3:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing', 'Synthesis'],
+  'primary-3:mathematics': ['Whole Numbers','Addition and Subtraction','Multiplication Tables','Multiplication and Division','Fractions','Money','Length and Mass','Volume of Liquid','Time','Angles','Geometry','Area and Perimeter','Data Analysis'],
+  'primary-3:science': ['Diversity','Cycles','Interactions'],
+  'primary-3:english': ['Grammar','Vocabulary','Cloze','Editing','Comprehension'],
 
-  // P4: Same as P3 (cumulative).
-  'primary-4:mathematics': ['Whole Numbers', 'Addition and Subtraction', 'Multiplication Tables', 'Multiplication and Division', 'Fractions', 'Decimals', 'Angles', 'Geometry', 'Area and Perimeter', 'Symmetry', 'Factors and Multiples', 'Data Analysis', 'Shapes and Patterns'],
-  'primary-4:science': ['Diversity', 'Matter', 'Cycles', 'Systems', 'Interactions', 'Heat', 'Light'],
-  'primary-4:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing', 'Synthesis'],
+  'primary-4:mathematics': ['Whole Numbers','Multiplication and Division','Factors and Multiples','Fractions','Decimals','Money','Time','Angles','Geometry','Symmetry','Area and Perimeter','Data Analysis','Pie Charts'],
+  'primary-4:science': ['Systems','Matter','Cycles','Energy'],
+  'primary-4:english': ['Grammar','Vocabulary','Cloze','Editing','Comprehension','Synthesis'],
 
-  // P5: + Percentage, Ratio, Rate, Speed, Average, Algebra, Area of Triangle, Circles, Volume, Pie Charts. + Energy, Forces, Cells.
-  'primary-5:mathematics': ['Whole Numbers', 'Multiplication and Division', 'Fractions', 'Decimals', 'Percentage', 'Ratio', 'Rate', 'Average', 'Angles', 'Geometry', 'Area and Perimeter', 'Area of Triangle', 'Volume', 'Data Analysis', 'Factors and Multiples'],
-  'primary-5:science': ['Diversity', 'Matter', 'Cycles', 'Systems', 'Interactions', 'Heat', 'Light', 'Energy', 'Forces', 'Cells'],
-  'primary-5:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing', 'Synthesis'],
+  'primary-5:mathematics': ['Whole Numbers','Fractions','Decimals','Money','Length and Mass','Volume of Liquid','Percentage','Rate','Average','Area of Triangle','Volume','Angles','Geometry'],
+  'primary-5:science': ['Cycles','Systems'],
+  'primary-5:english': ['Grammar','Vocabulary','Cloze','Editing','Comprehension','Synthesis','Summary Writing'],
 
-  // P6: PSLE year. + Speed, Algebra, Circles, Pie Charts (full PSLE topic set).
-  'primary-6:mathematics': ['Whole Numbers', 'Fractions', 'Decimals', 'Percentage', 'Ratio', 'Rate', 'Speed', 'Average', 'Algebra', 'Angles', 'Geometry', 'Area and Perimeter', 'Area of Triangle', 'Circles', 'Volume', 'Data Analysis', 'Pie Charts'],
-  'primary-6:science': ['Diversity', 'Matter', 'Cycles', 'Systems', 'Interactions', 'Heat', 'Light', 'Energy', 'Forces', 'Cells'],
-  'primary-6:english': ['Grammar', 'Vocabulary', 'Comprehension', 'Cloze', 'Editing', 'Synthesis']
+  'primary-6:mathematics': ['Fractions','Percentage','Ratio','Algebra','Average','Circles','Volume','Geometry','Angles','Pie Charts'],
+  'primary-6:science': ['Energy','Interactions'],
+  'primary-6:english': ['Grammar','Vocabulary','Cloze','Editing','Comprehension','Synthesis','Summary Writing']
 };
 
 // ── ALLOWED QUESTION TYPES PER SUBJECT ──
-// Per Master_Question_Template.md Section 4 SUBJECT VALUES table.
 export const SUBJECT_QUESTION_TYPES = {
   mathematics: [
     { id: 'mcq', label: 'MCQ' },
@@ -120,7 +118,6 @@ export const SUBJECT_QUESTION_TYPES = {
 };
 
 // ── TOPIC → TYPE BYPASS ──
-// Topics that map directly to one question type — skip the TYPE step in the wizard.
 export const TOPIC_TYPE_BYPASS = {
   'grammar': 'mcq',
   'vocabulary': 'mcq',
@@ -131,7 +128,6 @@ export const TOPIC_TYPE_BYPASS = {
 };
 
 // ── SUBJECT DISPLAY VALUES ──
-// Maps URL slug → exact database value (FK-enforced in question_bank).
 export const SUBJECT_DB_NAME = {
   mathematics: 'Mathematics',
   science: 'Science',
@@ -139,28 +135,13 @@ export const SUBJECT_DB_NAME = {
 };
 
 // ─────────────────────────────────────────────────────────────────────────
-// SLUG HELPERS — single canonical round-trip
+// SLUG HELPERS
 // ─────────────────────────────────────────────────────────────────────────
-
-/**
- * Canonical slugifier. Lowercase, non-alphanumeric → hyphen, trim hyphens.
- * Examples:
- *   'Whole Numbers' → 'whole-numbers'
- *   'Length, Mass and Volume' → 'length-mass-and-volume'
- *   'Area & Perimeter' → 'area-perimeter'
- */
 export function slugify(name) {
   if (!name) return '';
-  return String(name)
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+  return String(name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 }
 
-/**
- * Reverse slugify → canonical topic name (within a subject scope).
- * Returns the canonical-cased topic if found, otherwise null.
- */
 export function unslugify(slug, subject) {
   if (!slug || !subject) return null;
   const subjectMap = CANONICAL_SYLLABUS[subject.toLowerCase()];
@@ -172,66 +153,35 @@ export function unslugify(slug, subject) {
   return null;
 }
 
-/**
- * Topics valid for a given (level, subject) pair.
- * Returns canonical topic names in the order defined by LEVEL_TOPICS.
- */
 export function topicsForLevelSubject(level, subject) {
   if (!level || !subject) return [];
   const key = `${level.toLowerCase()}:${subject.toLowerCase()}`;
   return LEVEL_TOPICS[key] || [];
 }
 
-/**
- * Sub-topics for a (subject, topic) pair.
- */
 export function subTopicsFor(subject, topic) {
   if (!subject || !topic) return [];
   return CANONICAL_SYLLABUS[subject.toLowerCase()]?.[topic] || [];
 }
 
-/**
- * Allowed question types for a subject.
- */
 export function questionTypesFor(subject) {
   if (!subject) return [];
   return SUBJECT_QUESTION_TYPES[subject.toLowerCase()] || [];
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// LIVE QUERY — fetches current canon from Supabase, replaces the cache
+// LIVE QUERY — fetches current canon from Supabase, replaces cache
 // ─────────────────────────────────────────────────────────────────────────
-
-/**
- * Loads live canon from Supabase. On success, mutates CANONICAL_SYLLABUS in
- * place. On failure, leaves the baked-in cache untouched and logs a warning.
- *
- * Returns { source: 'live' | 'cache', error?: Error } so callers can react.
- */
 export async function loadLiveCanon(supabaseClient) {
-  if (!supabaseClient) {
-    console.warn('[syllabus] loadLiveCanon called without Supabase client; using cache.');
-    return { source: 'cache' };
-  }
-
+  if (!supabaseClient) return { source: 'cache' };
   try {
-    // Fetch all sub-topics with their topic + subject context in one query.
-    // Schema: canon_sub_topics(subject, topic, sub_topic) — composite PK,
-    // no surrogate id column.
     const { data, error } = await supabaseClient
       .from('canon_sub_topics')
       .select('subject, topic, sub_topic')
-      .order('subject')
-      .order('topic')
-      .order('sub_topic');
-
+      .order('subject').order('topic').order('sub_topic');
     if (error) throw error;
-    if (!data || data.length === 0) {
-      console.warn('[syllabus] canon_sub_topics returned empty; using cache.');
-      return { source: 'cache' };
-    }
+    if (!data || data.length === 0) return { source: 'cache' };
 
-    // Rebuild CANONICAL_SYLLABUS from the live data.
     const live = {};
     for (const row of data) {
       const subjectKey = String(row.subject).toLowerCase();
@@ -239,49 +189,56 @@ export async function loadLiveCanon(supabaseClient) {
       if (!live[subjectKey][row.topic]) live[subjectKey][row.topic] = [];
       live[subjectKey][row.topic].push(row.sub_topic);
     }
+    if (Object.keys(live).length === 0) return { source: 'cache' };
 
-    // Atomic replace: only swap if the live payload looks reasonable
-    // (at least one subject with at least one topic).
-    const subjectCount = Object.keys(live).length;
-    if (subjectCount === 0) {
-      console.warn('[syllabus] live canon parsed to zero subjects; using cache.');
-      return { source: 'cache' };
-    }
-
-    // Replace cached entries with live data per subject (preserves any
-    // subjects in cache but not in live, defensively).
     for (const subjectKey of Object.keys(live)) {
       CANONICAL_SYLLABUS[subjectKey] = live[subjectKey];
     }
-
     return { source: 'live' };
   } catch (err) {
-    console.warn('[syllabus] live canon load failed; using cache fallback.', err);
+    console.warn('[syllabus] live canon load failed; using cache.', err);
+    return { source: 'cache', error: err };
+  }
+}
+
+// NEW: Hydrate LEVEL_TOPICS from canon_level_topics
+export async function loadLiveLevelTopics(supabaseClient) {
+  if (!supabaseClient) return { source: 'cache' };
+  try {
+    const { data, error } = await supabaseClient
+      .from('canon_level_topics')
+      .select('level, subject, topic')
+      .order('level').order('subject').order('topic');
+    if (error) throw error;
+    if (!data || data.length === 0) return { source: 'cache' };
+
+    // Group by (level, subject) → unique topics, preserving order
+    const live = {};
+    for (const row of data) {
+      const levelSlug = slugify(row.level);                    // 'primary-3'
+      const subjectKey = String(row.subject).toLowerCase();    // 'mathematics'
+      const key = `${levelSlug}:${subjectKey}`;
+      if (!live[key]) live[key] = [];
+      if (!live[key].includes(row.topic)) live[key].push(row.topic);
+    }
+    if (Object.keys(live).length === 0) return { source: 'cache' };
+
+    for (const key of Object.keys(live)) {
+      LEVEL_TOPICS[key] = live[key];
+    }
+    return { source: 'live' };
+  } catch (err) {
+    console.warn('[syllabus] live level topics load failed; using cache.', err);
     return { source: 'cache', error: err };
   }
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// QUESTION COUNTS — for "23 topics · 412 questions" UI displays
+// QUESTION COUNTS — pagination as before
 // ─────────────────────────────────────────────────────────────────────────
-//
-// IMPLEMENTATION NOTE — pagination
-// ────────────────────────────────
-// Supabase JS client caps a single .select() at 1000 rows by default. The
-// Superholic question_bank now exceeds 10,000 rows, so a single-shot select
-// truncates and tail topics return zero (the bug that made Science P6 Heat,
-// Light, Forces, etc. all show no count). We page through with .range()
-// until we've consumed the full result set, then aggregate in JS.
-//
-// Per call we expect at most ~3,000 rows (one subject × one level), so 4
-// pages of 1000 rows is the worst case. Keep PAGE_SIZE small enough that
-// the URL/header stays well within Postgres limits.
-
 const COUNT_PAGE_SIZE = 1000;
 
-async function paginatedSelect(query, columnList) {
-  // Helper: fully consume a Supabase query, returning every row.
-  // `query` must already have all .eq()/.in() filters applied.
+async function paginatedSelect(query) {
   const out = [];
   let from = 0;
   while (true) {
@@ -290,90 +247,60 @@ async function paginatedSelect(query, columnList) {
     if (error) throw error;
     if (!data || data.length === 0) break;
     out.push(...data);
-    if (data.length < COUNT_PAGE_SIZE) break;     // last page
+    if (data.length < COUNT_PAGE_SIZE) break;
     from += COUNT_PAGE_SIZE;
-    if (from > 50000) break;                       // safety guard
+    if (from > 50000) break;
   }
   return out;
 }
 
-/**
- * Returns a per-subject question count, optionally scoped by level.
- * Reads from question_bank with FK-correct casing.
- */
 export async function countsBySubject(supabaseClient, levelDisplay) {
   if (!supabaseClient) return {};
   try {
-    let query = supabaseClient.from('question_bank').select('subject');
+    let query = supabaseClient.from('question_bank').select('subject').is('deprecated_at', null);
     if (levelDisplay) query = query.eq('level', levelDisplay);
     const rows = await paginatedSelect(query);
     const out = {};
-    for (const row of rows) {
-      out[row.subject] = (out[row.subject] || 0) + 1;
-    }
+    for (const row of rows) out[row.subject] = (out[row.subject] || 0) + 1;
     return out;
-  } catch (err) {
-    console.warn('[syllabus] countsBySubject failed:', err);
-    return {};
-  }
+  } catch (err) { console.warn('[syllabus] countsBySubject failed:', err); return {}; }
 }
 
 export async function countsByTopic(supabaseClient, levelDisplay, subjectDb) {
   if (!supabaseClient || !subjectDb) return {};
   try {
-    let query = supabaseClient.from('question_bank').select('topic').eq('subject', subjectDb);
+    let query = supabaseClient.from('question_bank').select('topic').eq('subject', subjectDb).is('deprecated_at', null);
     if (levelDisplay) query = query.eq('level', levelDisplay);
     const rows = await paginatedSelect(query);
     const out = {};
-    for (const row of rows) {
-      if (!row.topic) continue;
-      out[row.topic] = (out[row.topic] || 0) + 1;
-    }
+    for (const row of rows) { if (row.topic) out[row.topic] = (out[row.topic] || 0) + 1; }
     return out;
-  } catch (err) {
-    console.warn('[syllabus] countsByTopic failed:', err);
-    return {};
-  }
+  } catch (err) { console.warn('[syllabus] countsByTopic failed:', err); return {}; }
 }
 
 export async function countsByType(supabaseClient, levelDisplay, subjectDb, topicCanonical) {
   if (!supabaseClient || !subjectDb) return {};
   try {
-    let query = supabaseClient.from('question_bank').select('type').eq('subject', subjectDb);
+    let query = supabaseClient.from('question_bank').select('type').eq('subject', subjectDb).is('deprecated_at', null);
     if (levelDisplay) query = query.eq('level', levelDisplay);
     if (topicCanonical) query = query.eq('topic', topicCanonical);
     const rows = await paginatedSelect(query);
     const out = {};
-    for (const row of rows) {
-      if (!row.type) continue;
-      out[row.type] = (out[row.type] || 0) + 1;
-    }
+    for (const row of rows) { if (row.type) out[row.type] = (out[row.type] || 0) + 1; }
     return out;
-  } catch (err) {
-    console.warn('[syllabus] countsByType failed:', err);
-    return {};
-  }
+  } catch (err) { console.warn('[syllabus] countsByType failed:', err); return {}; }
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// ADMIN TOGGLE — system_settings read for "show question counts"
+// ADMIN TOGGLE
 // ─────────────────────────────────────────────────────────────────────────
-
-/**
- * Reads the `show_question_counts` flag from system_settings.
- * Defaults to TRUE if the row is missing or the table is unreadable.
- * The admin UI in admin.html writes this flag.
- */
 export async function readShowCountsFlag(supabaseClient) {
   if (!supabaseClient) return true;
   try {
     const { data, error } = await supabaseClient
-      .from('system_settings')
-      .select('value')
-      .eq('key', 'show_question_counts')
-      .maybeSingle();
+      .from('system_settings').select('value').eq('key', 'show_question_counts').maybeSingle();
     if (error) throw error;
-    if (!data) return true;            // default ON
+    if (!data) return true;
     const v = data.value;
     if (typeof v === 'boolean') return v;
     if (typeof v === 'string') return v.toLowerCase() !== 'false';
@@ -386,27 +313,13 @@ export async function readShowCountsFlag(supabaseClient) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// LEGACY-COMPATIBLE GLOBAL EXPOSURE
+// LEGACY GLOBAL EXPOSURE (for non-module quiz.js)
 // ─────────────────────────────────────────────────────────────────────────
-// quiz.js currently runs as a non-module <script>. Until its module-ification,
-// expose the slug helpers on window so quiz.js can call them without imports.
-// subjects.html (which is a module) imports the named exports directly.
 if (typeof window !== 'undefined') {
   window.SHL_SYLLABUS = {
-    CANONICAL_SYLLABUS,
-    LEVEL_TOPICS,
-    SUBJECT_QUESTION_TYPES,
-    SUBJECT_DB_NAME,
-    TOPIC_TYPE_BYPASS,
-    slugify,
-    unslugify,
-    topicsForLevelSubject,
-    subTopicsFor,
-    questionTypesFor,
-    loadLiveCanon,
-    countsBySubject,
-    countsByTopic,
-    countsByType,
-    readShowCountsFlag
+    CANONICAL_SYLLABUS, LEVEL_TOPICS, SUBJECT_QUESTION_TYPES, SUBJECT_DB_NAME,
+    TOPIC_TYPE_BYPASS, slugify, unslugify, topicsForLevelSubject, subTopicsFor,
+    questionTypesFor, loadLiveCanon, loadLiveLevelTopics,
+    countsBySubject, countsByTopic, countsByType, readShowCountsFlag
   };
 }
