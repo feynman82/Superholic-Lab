@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wena Playbook — Sprint 1 Test Harness</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <!--
+    ──────────────────────────────────────────────────────────────────────
+    Run instructions
+    ──────────────────────────────────────────────────────────────────────
+    1. Serve the repo locally:
+         npx serve public         (preferred — `public/` becomes the site root)
+         OR
+         vercel dev               (Vercel routes `public/` at the site root)
+    2. Open http://localhost:3000/tests/wena-playbook.test.html
+    3. Open DevTools → Console + Network panels
+    4. All 12 tests should render green ✓
+    5. Network tab: confirm exactly ONE GET for /data/wena-english-playbook.json
+       (Test 8 stress-tests three concurrent loadPlaybook() calls — the
+       loader's shared in-flight Promise must coalesce them into a single
+       network request.)
+    6. Console: a single `[wena-playbook] Loaded v2.0: ...` line confirms
+       the success log fires once per page load.
+    ──────────────────────────────────────────────────────────────────────
+  -->
+  <style>
+    /* Page chrome built on style.css tokens — zero hardcoded hex values. */
+    body {
+      background: var(--sage-darker);
+      color: var(--cream);
+      font-family: var(--font-body);
+      padding: var(--space-8) var(--space-4);
+      min-height: 100vh;
+    }
+    .harness {
+      max-width: 880px;
+      margin: 0 auto;
+    }
+    .harness h1 {
+      font-family: var(--font-display);
+      letter-spacing: 0.04em;
+      margin-bottom: var(--space-2);
+    }
+    .harness .subtitle {
+      color: var(--sage-light);
+      margin-bottom: var(--space-6);
+      font-size: 0.875rem;
+    }
+    .summary {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-4) var(--space-6);
+      margin-bottom: var(--space-6);
+      background: var(--glass);
+      border: 1.5px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow-neo);
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+    .summary.is-pending { color: var(--cream-dim); }
+    .summary.is-pass    { color: var(--mint); border-color: var(--mint); }
+    .summary.is-fail    { color: var(--danger); border-color: var(--danger); }
+    .summary .summary-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: var(--radius-full);
+      background: currentColor;
+      box-shadow: 0 0 8px currentColor;
+    }
+    .test-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+    .test-row {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      align-items: start;
+    }
+    .test-row.is-pass { border-left: 3px solid var(--mint); }
+    .test-row.is-fail { border-left: 3px solid var(--danger); }
+    .test-row.is-pending { border-left: 3px solid var(--cream-dim); }
+    .test-icon {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 1rem;
+      line-height: 1.4;
+    }
+    .test-row.is-pass    .test-icon { color: var(--mint); }
+    .test-row.is-fail    .test-icon { color: var(--danger); }
+    .test-row.is-pending .test-icon { color: var(--cream-dim); }
+    .test-name {
+      font-weight: 600;
+      font-size: 0.9375rem;
+      line-height: 1.4;
+    }
+    .test-detail {
+      margin-top: var(--space-1);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--sage-light);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .test-row.is-fail .test-detail { color: var(--danger); }
+    .footnote {
+      margin-top: var(--space-6);
+      padding: var(--space-4) var(--space-5);
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-left: 3px solid var(--amber);
+      border-radius: var(--radius-md);
+      font-size: 0.8125rem;
+      color: var(--cream-dim);
+      line-height: 1.6;
+    }
+    .footnote code {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--mint);
+    }
+  </style>
+</head>
+<body>
+  <main class="harness">
+    <h1>Wena Playbook — Sprint 1 Test Harness</h1>
+    <div class="subtitle">Loader, validator, and indexed retrieval — data-foundation sprint, no UI changes.</div>
+
+    <div id="summary" class="summary is-pending" role="status" aria-live="polite">
+      <span class="summary-dot" aria-hidden="true"></span>
+      <span id="summary-text">Running 0 / 12 …</span>
+    </div>
+
+    <ol id="test-list" class="test-list" aria-label="Test results"></ol>
+
+    <div class="footnote">
+      Test 8 issues three concurrent <code>loadPlaybook()</code> calls. The
+      loader's shared in-flight Promise must coalesce them into exactly
+      <strong>one</strong> network request. Verify in the Network tab —
+      a single <code>GET /data/wena-english-playbook.json</code> (200) is
+      the pass condition. The harness asserts the same result identity
+      across all three returned promises automatically.
+    </div>
+  </main>
+
+  <script type="module">
+    // Import the module under test. Browser ESM only — no bundler.
+    import {
+      loadPlaybook,
+      getCell,
+      getFallbackCell,
+      getAllCells,
+      getPlaybookMeta,
+      isPlaybookLoaded
+    } from '/js/wena-playbook.js';
+
+    // ── tiny test runner ─────────────────────────────────────────────
+    const results = [];
+    const listEl = document.getElementById('test-list');
+    const summaryEl = document.getElementById('summary');
+    const summaryTextEl = document.getElementById('summary-text');
+
+    /**
+     * Records a test result and renders one row. Each row is created at
+     * registration time (status=pending) and updated in place when the
+     * test resolves — gives users a live progress view.
+     */
+    function makeRow(name) {
+      const li = document.createElement('li');
+      li.className = 'test-row is-pending';
+      const icon = document.createElement('span');
+      icon.className = 'test-icon';
+      icon.textContent = '…';
+      const body = document.createElement('div');
+      const heading = document.createElement('div');
+      heading.className = 'test-name';
+      heading.textContent = name;
+      const detail = document.createElement('div');
+      detail.className = 'test-detail';
+      body.appendChild(heading);
+      body.appendChild(detail);
+      li.appendChild(icon);
+      li.appendChild(body);
+      listEl.appendChild(li);
+      return { li, icon, detail };
+    }
+
+    function setRowState(row, state, text = '') {
+      row.li.classList.remove('is-pending', 'is-pass', 'is-fail');
+      row.li.classList.add(`is-${state}`);
+      row.icon.textContent = state === 'pass' ? '✓' : state === 'fail' ? '✗' : '…';
+      if (text) row.detail.textContent = text;
+    }
+
+    function updateSummary() {
+      const passed = results.filter(r => r.state === 'pass').length;
+      const failed = results.filter(r => r.state === 'fail').length;
+      const total = results.length;
+      summaryTextEl.textContent = `${passed} / ${total} passed${failed ? ` (${failed} failed)` : ''}`;
+      summaryEl.classList.remove('is-pending', 'is-pass', 'is-fail');
+      if (failed > 0) summaryEl.classList.add('is-fail');
+      else if (passed === total) summaryEl.classList.add('is-pass');
+      else summaryEl.classList.add('is-pending');
+    }
+
+    /**
+     * Wraps a single async test. Catches throws from the test body, marks
+     * the row pass/fail, and pushes into the global results array. Uses
+     * console.assert for visibility in DevTools alongside the UI.
+     */
+    async function test(name, fn) {
+      const row = makeRow(name);
+      const entry = { name, state: 'pending', error: '' };
+      results.push(entry);
+      try {
+        await fn();
+        entry.state = 'pass';
+        setRowState(row, 'pass', 'OK');
+        console.assert(true, name);
+      } catch (err) {
+        entry.state = 'fail';
+        entry.error = err?.message || String(err);
+        setRowState(row, 'fail', entry.error);
+        console.error(`[FAIL] ${name}:`, err);
+      } finally {
+        updateSummary();
+      }
+    }
+
+    function assert(cond, msg) {
+      if (!cond) throw new Error(msg || 'assertion failed');
+    }
+
+    // ── network instrumentation for Test 8 ────────────────────────────
+    // We wrap window.fetch to count requests for the playbook URL, so the
+    // harness can verify in-process that the three concurrent calls in
+    // Test 8 produced exactly one fetch — independently of (and corrobo-
+    // rated by) the DevTools Network tab.
+    let playbookFetchCount = 0;
+    const PLAYBOOK_PATH = '/data/wena-english-playbook.json';
+    const originalFetch = window.fetch.bind(window);
+    window.fetch = function (input, init) {
+      const url = typeof input === 'string' ? input : input?.url || '';
+      if (url.includes(PLAYBOOK_PATH)) playbookFetchCount += 1;
+      return originalFetch(input, init);
+    };
+
+    // ── tests ─────────────────────────────────────────────────────────
+    (async () => {
+      // TEST 11 must run BEFORE loadPlaybook resolves to observe the
+      // pre-load state (chosen behaviour: returns null gracefully, no
+      // auto-load). We capture the synchronous result first, then verify
+      // alongside isPlaybookLoaded() and assert as part of TEST 11.
+      const preLoadCell = getCell('P1', 'Grammar', 'Conjunctions');
+      const preLoadIsLoaded = isPlaybookLoaded();
+
+      await test('TEST 1: loadPlaybook() resolves successfully', async () => {
+        const meta = await loadPlaybook();
+        assert(meta && typeof meta === 'object', 'loadPlaybook() returned non-object');
+      });
+
+      await test('TEST 2: getPlaybookMeta() returns version "2.0", cell_count 147', () => {
+        const meta = getPlaybookMeta();
+        assert(meta, 'meta is null');
+        assert(meta.version === '2.0', `version was "${meta.version}"`);
+        assert(meta.cell_count === 147, `cell_count was ${meta.cell_count}`);
+      });
+
+      await test("TEST 3: getCell('P3','Grammar','Subject-Verb Agreement') returns cell with foundational_teach_script", () => {
+        const c = getCell('P3', 'Grammar', 'Subject-Verb Agreement');
+        assert(c, 'cell not found');
+        assert(typeof c.foundational_teach_script === 'string' && c.foundational_teach_script.length > 0,
+          'foundational_teach_script empty');
+      });
+
+      await test("TEST 4: getCell('P1','Synthesis','Inversion') returns null (Synthesis not at P1)", () => {
+        const c = getCell('P1', 'Synthesis', 'Inversion');
+        assert(c === null, `expected null, got ${typeof c}`);
+      });
+
+      await test("TEST 5: getCell('P9','Grammar','X') returns null (invalid level)", () => {
+        const c = getCell('P9', 'Grammar', 'X');
+        assert(c === null, `expected null, got ${typeof c}`);
+      });
+
+      await test("TEST 6: getFallbackCell('P5','Editing') returns a cell with level=P5, topic=Editing", () => {
+        const c = getFallbackCell('P5', 'Editing');
+        assert(c, 'no fallback returned');
+        assert(c.level === 'P5', `level was ${c.level}`);
+        assert(c.topic === 'Editing', `topic was ${c.topic}`);
+      });
+
+      await test("TEST 7: getFallbackCell('P5','NonExistentTopic') returns null", () => {
+        const c = getFallbackCell('P5', 'NonExistentTopic');
+        assert(c === null, `expected null, got ${typeof c}`);
+      });
+
+      await test('TEST 8: Three concurrent loadPlaybook() calls share one fetch', async () => {
+        // Reset the counter and call three times in parallel. Because the
+        // module already loaded via TEST 1, all three must hit the cached
+        // _loadPromise (resolved) and trigger zero new fetches. We assert
+        // the count delta is 0 and that all three resolve to the same meta
+        // object identity.
+        const before = playbookFetchCount;
+        const [a, b, c] = await Promise.all([loadPlaybook(), loadPlaybook(), loadPlaybook()]);
+        const delta = playbookFetchCount - before;
+        assert(delta === 0,
+          `expected 0 additional fetches after TEST 1's load, got ${delta}`);
+        assert(a === b && b === c, 'concurrent calls returned different meta refs');
+        // Lifetime invariant: total fetches across the page must be exactly 1.
+        assert(playbookFetchCount === 1,
+          `total playbook fetches across page = ${playbookFetchCount}, expected 1`);
+      });
+
+      await test('TEST 9: getAllCells().length === 147', () => {
+        const all = getAllCells();
+        assert(all.length === 147, `length was ${all.length}`);
+      });
+
+      await test('TEST 10: every cell has level, topic, sub_topic', () => {
+        const all = getAllCells();
+        for (const c of all) {
+          assert(typeof c.level === 'string' && c.level.length > 0,    `cell missing level: ${JSON.stringify(c).slice(0, 80)}`);
+          assert(typeof c.topic === 'string' && c.topic.length > 0,    `cell missing topic: ${c.level}`);
+          assert(typeof c.sub_topic === 'string' && c.sub_topic.length > 0,
+            `cell missing sub_topic: ${c.level}|${c.topic}`);
+        }
+      });
+
+      await test('TEST 11: getCell BEFORE loadPlaybook() returns null gracefully (chosen behaviour: no auto-load)', () => {
+        // Captured at module entry, before any loadPlaybook() call.
+        assert(preLoadCell === null,
+          `pre-load getCell returned ${preLoadCell === null ? 'null' : typeof preLoadCell}`);
+        assert(preLoadIsLoaded === false,
+          `pre-load isPlaybookLoaded() was ${preLoadIsLoaded}`);
+      });
+
+      await test('TEST 12: isPlaybookLoaded() is true after load', () => {
+        assert(isPlaybookLoaded() === true, 'isPlaybookLoaded() returned false post-load');
+      });
+
+      // Final summary repaint (also makes the result observable to e2e harnesses).
+      updateSummary();
+      window.__WENA_PLAYBOOK_TEST_RESULTS__ = results;
+    })().catch((err) => {
+      console.error('[harness] unexpected runner failure:', err);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wena Stall Detector — Sprint 2 Test Harness</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <!--
+    ──────────────────────────────────────────────────────────────────────
+    Run instructions
+    ──────────────────────────────────────────────────────────────────────
+    1. Serve the repo locally:
+         npx serve public         (preferred — `public/` becomes the site root)
+         OR
+         vercel dev               (Vercel routes `public/` at the site root)
+    2. Open http://localhost:3000/tests/wena-stall-detector.test.html
+    3. Open DevTools → Console
+    4. All 25 tests should render green ✓
+    5. Run the Sprint 1 harness too (/tests/wena-playbook.test.html) to
+       confirm Sprint 2 did not regress the loader.
+    ──────────────────────────────────────────────────────────────────────
+  -->
+  <style>
+    body {
+      background: var(--sage-darker);
+      color: var(--cream);
+      font-family: var(--font-body);
+      padding: var(--space-8) var(--space-4);
+      min-height: 100vh;
+    }
+    .harness {
+      max-width: 880px;
+      margin: 0 auto;
+    }
+    .harness h1 {
+      font-family: var(--font-display);
+      letter-spacing: 0.04em;
+      margin-bottom: var(--space-2);
+    }
+    .harness .subtitle {
+      color: var(--sage-light);
+      margin-bottom: var(--space-6);
+      font-size: 0.875rem;
+    }
+    .summary {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-4) var(--space-6);
+      margin-bottom: var(--space-6);
+      background: var(--glass);
+      border: 1.5px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow-neo);
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+    .summary.is-pending { color: var(--cream-dim); }
+    .summary.is-pass    { color: var(--mint); border-color: var(--mint); }
+    .summary.is-fail    { color: var(--danger); border-color: var(--danger); }
+    .summary .summary-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: var(--radius-full);
+      background: currentColor;
+      box-shadow: 0 0 8px currentColor;
+    }
+    h3.section-heading {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--mint);
+      margin: var(--space-6) 0 var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      background: var(--glass);
+      border-left: 3px solid var(--mint);
+      border-radius: var(--radius-sm);
+    }
+    h3.section-heading:first-of-type { margin-top: 0; }
+    .test-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+    .test-row {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      align-items: start;
+    }
+    .test-row.is-pass { border-left: 3px solid var(--mint); }
+    .test-row.is-fail { border-left: 3px solid var(--danger); }
+    .test-row.is-pending { border-left: 3px solid var(--cream-dim); }
+    .test-icon {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 1rem;
+      line-height: 1.4;
+    }
+    .test-row.is-pass    .test-icon { color: var(--mint); }
+    .test-row.is-fail    .test-icon { color: var(--danger); }
+    .test-row.is-pending .test-icon { color: var(--cream-dim); }
+    .test-name {
+      font-weight: 600;
+      font-size: 0.9375rem;
+      line-height: 1.4;
+    }
+    .test-detail {
+      margin-top: var(--space-1);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--sage-light);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .test-row.is-fail .test-detail { color: var(--danger); }
+  </style>
+</head>
+<body>
+  <main class="harness">
+    <h1>Wena Stall Detector — Sprint 2 Test Harness</h1>
+    <div class="subtitle">Pure-logic sprint: stall classification + 4-mode pedagogy state machine. No prompt or chat changes.</div>
+
+    <div id="summary" class="summary is-pending" role="status" aria-live="polite">
+      <span class="summary-dot" aria-hidden="true"></span>
+      <span id="summary-text">Running 0 / 25 …</span>
+    </div>
+
+    <div id="sections"></div>
+  </main>
+
+  <script type="module">
+    import {
+      detectStall,
+      consecutiveStalls,
+      selectPedagogyMode,
+      STALL_REASONS,
+      PEDAGOGY_MODES
+    } from '/js/wena-stall-detector.js';
+
+    // ── tiny test runner ─────────────────────────────────────────────
+    const results = [];
+    const summaryEl = document.getElementById('summary');
+    const summaryTextEl = document.getElementById('summary-text');
+    const sectionsEl = document.getElementById('sections');
+
+    let currentList = null;
+    function startSection(label) {
+      const h = document.createElement('h3');
+      h.className = 'section-heading';
+      h.textContent = label;
+      sectionsEl.appendChild(h);
+      const ol = document.createElement('ol');
+      ol.className = 'test-list';
+      sectionsEl.appendChild(ol);
+      currentList = ol;
+    }
+
+    function makeRow(name) {
+      const li = document.createElement('li');
+      li.className = 'test-row is-pending';
+      const icon = document.createElement('span');
+      icon.className = 'test-icon';
+      icon.textContent = '…';
+      const body = document.createElement('div');
+      const heading = document.createElement('div');
+      heading.className = 'test-name';
+      heading.textContent = name;
+      const detail = document.createElement('div');
+      detail.className = 'test-detail';
+      body.appendChild(heading);
+      body.appendChild(detail);
+      li.appendChild(icon);
+      li.appendChild(body);
+      currentList.appendChild(li);
+      return { li, icon, detail };
+    }
+
+    function setRowState(row, state, text = '') {
+      row.li.classList.remove('is-pending', 'is-pass', 'is-fail');
+      row.li.classList.add(`is-${state}`);
+      row.icon.textContent = state === 'pass' ? '✓' : state === 'fail' ? '✗' : '…';
+      if (text) row.detail.textContent = text;
+    }
+
+    function updateSummary() {
+      const passed = results.filter(r => r.state === 'pass').length;
+      const failed = results.filter(r => r.state === 'fail').length;
+      const total = results.length;
+      summaryTextEl.textContent = `${passed} / ${total} passed${failed ? ` (${failed} failed)` : ''}`;
+      summaryEl.classList.remove('is-pending', 'is-pass', 'is-fail');
+      if (failed > 0) summaryEl.classList.add('is-fail');
+      else if (passed === total) summaryEl.classList.add('is-pass');
+      else summaryEl.classList.add('is-pending');
+    }
+
+    function test(name, fn) {
+      const row = makeRow(name);
+      const entry = { name, state: 'pending', error: '' };
+      results.push(entry);
+      try {
+        fn();
+        entry.state = 'pass';
+        setRowState(row, 'pass', 'OK');
+      } catch (err) {
+        entry.state = 'fail';
+        entry.error = err?.message || String(err);
+        setRowState(row, 'fail', entry.error);
+        console.error(`[FAIL] ${name}:`, err);
+      } finally {
+        updateSummary();
+      }
+    }
+
+    function assert(cond, msg) {
+      if (!cond) throw new Error(msg || 'assertion failed');
+    }
+    function assertEq(actual, expected, label = 'value') {
+      if (actual !== expected) {
+        throw new Error(`${label}: expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`);
+      }
+    }
+
+    // Minimal valid cell shape used by selectPedagogyMode tests.
+    const mockCell = {
+      level: 'P3',
+      topic: 'Grammar',
+      sub_topic: 'Subject-Verb Agreement',
+      foundational_teach_script: 'mock',
+      scaffolding_progression: 'mock prereq'
+    };
+
+    // ── EMPTY ──────────────────────────────────────────────────────────
+    startSection('detectStall — EMPTY');
+
+    test("TEST 1: detectStall('', []) → stalled, EMPTY", () => {
+      const r = detectStall('', []);
+      assertEq(r.stalled, true, 'stalled');
+      assertEq(r.reason, STALL_REASONS.EMPTY, 'reason');
+      assertEq(r.confidence, 'high', 'confidence');
+    });
+
+    test("TEST 2: detectStall('   ', []) → stalled, EMPTY", () => {
+      const r = detectStall('   ', []);
+      assertEq(r.stalled, true);
+      assertEq(r.reason, STALL_REASONS.EMPTY);
+    });
+
+    test("TEST 3: detectStall('???', []) → stalled, EMPTY (punctuation only)", () => {
+      const r = detectStall('???', []);
+      assertEq(r.stalled, true);
+      assertEq(r.reason, STALL_REASONS.EMPTY);
+    });
+
+    test("TEST 4: detectStall('...', []) → stalled, EMPTY (dots only)", () => {
+      const r = detectStall('...', []);
+      assertEq(r.stalled, true);
+      assertEq(r.reason, STALL_REASONS.EMPTY);
+    });
+
+    // ── EXPLICIT_IDK ───────────────────────────────────────────────────
+    startSection('detectStall — EXPLICIT_IDK');
+
+    test("TEST 5: detectStall('idk', []) → stalled, EXPLICIT_IDK", () => {
+      const r = detectStall('idk', []);
+      assertEq(r.stalled, true);
+      assertEq(r.reason, STALL_REASONS.EXPLICIT_IDK);
+      assertEq(r.confidence, 'high');
+    });
+
+    test("TEST 6: detectStall(\"I don't know\", []) → stalled, EXPLICIT_IDK", () => {
+      const r = detectStall("I don't know", []);
+      assertEq(r.stalled, true);
+      assertEq(r.reason, STALL_REASONS.EXPLICIT_IDK);
+    });
+
+    test("TEST 7: detectStall('dunno', []) → stalled, EXPLICIT_IDK", () => {
+      const r = detectStall('dunno', []);
+      assertEq(r.stalled, true);
+      assertEq(r.reason, STALL_REASONS.EXPLICIT_IDK);
+    });
+
+    test("TEST 8: detectStall('hmmm', []) → stalled, EXPLICIT_IDK", () => {
+      const r = detectStall('hmmm', []);
+      assertEq(r.stalled, true);
+      assertEq(r.reason, STALL_REASONS.EXPLICIT_IDK);
+    });
+
+    test("TEST 9: detectStall('not sure', []) → stalled, EXPLICIT_IDK", () => {
+      const r = detectStall('not sure', []);
+      assertEq(r.stalled, true);
+      assertEq(r.reason, STALL_REASONS.EXPLICIT_IDK);
+    });
+
+    // ── TOO_SHORT (context-dependent) ──────────────────────────────────
+    startSection('detectStall — TOO_SHORT (context-dependent)');
+
+    test("TEST 10: detectStall('ok', [...]) → stalled, TOO_SHORT (filler after ?)", () => {
+      const r = detectStall('ok', [{ role: 'assistant', content: 'Why is that?' }]);
+      assertEq(r.stalled, true);
+      assertEq(r.reason, STALL_REASONS.TOO_SHORT);
+      assertEq(r.confidence, 'medium');
+    });
+
+    test("TEST 11: detectStall('Wei Ming', [...]) → not stalled (proper noun)", () => {
+      const r = detectStall('Wei Ming', [{ role: 'assistant', content: 'Who is the subject?' }]);
+      assertEq(r.stalled, false);
+      assertEq(r.reason, null);
+    });
+
+    test("TEST 12: detectStall('three', [...]) → not stalled (numeric/word answer)", () => {
+      const r = detectStall('three', [{ role: 'assistant', content: 'How many?' }]);
+      assertEq(r.stalled, false);
+    });
+
+    test("TEST 13: detectStall('the cat', [...]) → not stalled (multi-word phrase)", () => {
+      const r = detectStall('the cat', [{ role: 'assistant', content: 'What is the subject?' }]);
+      assertEq(r.stalled, false);
+    });
+
+    // ── non-stall genuine answers ──────────────────────────────────────
+    startSection('detectStall — genuine answers');
+
+    test("TEST 14: detectStall('Yes, I understand now.', []) → not stalled", () => {
+      const r = detectStall('Yes, I understand now.', []);
+      assertEq(r.stalled, false);
+    });
+
+    test("TEST 15: detectStall(\"I think it's because the verb needs an s\", []) → not stalled", () => {
+      const r = detectStall("I think it's because the verb needs an s", []);
+      assertEq(r.stalled, false);
+    });
+
+    test("TEST 16: detectStall('plays', [{a:'(play/plays)?'}]) → not stalled", () => {
+      const r = detectStall('plays', [{ role: 'assistant', content: '(play/plays)?' }]);
+      assertEq(r.stalled, false);
+    });
+
+    // ── consecutiveStalls ──────────────────────────────────────────────
+    startSection('consecutiveStalls');
+
+    test("TEST 17: single user 'idk' → 1", () => {
+      const n = consecutiveStalls([{ role: 'user', content: 'idk' }]);
+      assertEq(n, 1);
+    });
+
+    test("TEST 18: idk → ? → dunno → 2", () => {
+      const n = consecutiveStalls([
+        { role: 'user', content: 'idk' },
+        { role: 'assistant', content: 'Try again — what verb form?' },
+        { role: 'user', content: 'dunno' }
+      ]);
+      assertEq(n, 2);
+    });
+
+    test("TEST 19: idk → Hmm. → plays → Why? → idk → 1 (streak broken by 'plays')", () => {
+      const n = consecutiveStalls([
+        { role: 'user', content: 'idk' },
+        { role: 'assistant', content: 'Hmm.' },
+        { role: 'user', content: 'plays' },
+        { role: 'assistant', content: 'Why?' },
+        { role: 'user', content: 'idk' }
+      ]);
+      assertEq(n, 1);
+    });
+
+    test("TEST 20: empty history → 0", () => {
+      assertEq(consecutiveStalls([]), 0);
+    });
+
+    // ── selectPedagogyMode ─────────────────────────────────────────────
+    startSection('selectPedagogyMode');
+
+    test("TEST 21: empty history + cell → SOCRATIC", () => {
+      assertEq(selectPedagogyMode([], mockCell), PEDAGOGY_MODES.SOCRATIC);
+    });
+
+    test("TEST 22: 1 stall + cell → SOCRATIC_REPHRASE", () => {
+      assertEq(
+        selectPedagogyMode([{ role: 'user', content: 'idk' }], mockCell),
+        PEDAGOGY_MODES.SOCRATIC_REPHRASE
+      );
+    });
+
+    test("TEST 23: 2 stalls + cell → DIRECT_TEACH", () => {
+      const mode = selectPedagogyMode([
+        { role: 'user', content: 'idk' },
+        { role: 'assistant', content: '?' },
+        { role: 'user', content: 'dunno' }
+      ], mockCell);
+      assertEq(mode, PEDAGOGY_MODES.DIRECT_TEACH);
+    });
+
+    test("TEST 24: 3 stalls + cell with scaffolding_progression → SCAFFOLD_DOWN", () => {
+      const mode = selectPedagogyMode([
+        { role: 'user', content: 'idk' },
+        { role: 'assistant', content: '?' },
+        { role: 'user', content: 'dunno' },
+        { role: 'assistant', content: '?' },
+        { role: 'user', content: '???' }
+      ], mockCell);
+      assertEq(mode, PEDAGOGY_MODES.SCAFFOLD_DOWN);
+    });
+
+    test("TEST 25: 2 stalls, no cell → SOCRATIC_REPHRASE", () => {
+      const mode = selectPedagogyMode([
+        { role: 'user', content: 'idk' },
+        { role: 'assistant', content: '?' },
+        { role: 'user', content: 'idk' }
+      ], null);
+      assertEq(mode, PEDAGOGY_MODES.SOCRATIC_REPHRASE);
+    });
+
+    updateSummary();
+    window.__WENA_STALL_TEST_RESULTS__ = results;
+  </script>
+</body>
+</html>
