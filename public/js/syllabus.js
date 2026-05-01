@@ -406,6 +406,37 @@ export async function countsByType(supabaseClient, levelDisplay, subjectDb, topi
   } catch (err) { console.warn('[syllabus] countsByType failed:', err); return {}; }
 }
 
+/**
+ * Returns sub-topic question counts for a given level + subject + topic.
+ * Paginated to bypass the 1000-row PostgREST cap.
+ *
+ * Usage:
+ *   countsBySubTopic(sb, 'Primary 6', 'Mathematics', 'Fractions')
+ *   → { 'Adding Unlike Fractions': 12, 'Mixed Numbers': 8, ... }
+ */
+export async function countsBySubTopic(supabaseClient, levelDisplay, subjectDb, topicCanonical) {
+  if (!supabaseClient || !subjectDb || !topicCanonical) return {};
+  try {
+    const buildQuery = () => {
+      let q = supabaseClient.from('question_bank').select('sub_topic')
+        .eq('subject', subjectDb)
+        .eq('topic', topicCanonical);
+      if (levelDisplay) q = q.eq('level', levelDisplay);
+      return q;
+    };
+    const rows = await paginateAll(buildQuery);
+    const out = {};
+    for (const row of rows) {
+      if (!row.sub_topic) continue;
+      out[row.sub_topic] = (out[row.sub_topic] || 0) + 1;
+    }
+    return out;
+  } catch (err) {
+    console.warn('[syllabus] countsBySubTopic failed:', err);
+    return {};
+  }
+}
+
 // ─────────────────────────────────────────────────────────────────────────
 // ADMIN TOGGLE
 // ─────────────────────────────────────────────────────────────────────────
@@ -437,6 +468,6 @@ if (typeof window !== 'undefined') {
     slugify, unslugify, topicsForLevelSubject, subTopicsFor,
     subTopicGroupsFor, resolveSubTopicGroup,
     questionTypesFor, loadLiveCanon, loadLiveLevelTopics,
-    countsBySubject, countsByTopic, countsByType, readShowCountsFlag
+    countsBySubject, countsByTopic, countsByType, readShowCountsFlag, countsBySubTopic
   };
 }
