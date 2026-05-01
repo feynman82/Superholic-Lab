@@ -426,10 +426,18 @@ export async function countsBySubTopic(supabaseClient, levelDisplay, subjectDb, 
     };
     const rows = await paginateAll(buildQuery);
     const out = {};
+    let nullCount = 0;
     for (const row of rows) {
-      if (!row.sub_topic) continue;
+      if (!row.sub_topic) {
+        nullCount++;
+        continue;
+      }
       out[row.sub_topic] = (out[row.sub_topic] || 0) + 1;
     }
+    // Expose untagged rows under a sentinel key so the UI can decide what
+    // to do with them. Currently surfaced as part of the "All <topic>"
+    // total via Object.values() summation.
+    if (nullCount > 0) out.__untagged__ = nullCount;
     return out;
   } catch (err) {
     console.warn('[syllabus] countsBySubTopic failed:', err);

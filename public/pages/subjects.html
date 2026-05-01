@@ -1437,6 +1437,8 @@
 
         const groupKeys = Object.keys(groups);
         const allActive = state.topic === topicSlug && !state.subTopic;
+        // Total = sum of all sub_topic counts (already correct regardless
+        // of casing, since we sum values not look up by key)
         const totalCount = Object.values(state.countsBySubTopicMap || {}).reduce((a, b) => a + b, 0);
 
         const allCard = `
@@ -1459,8 +1461,16 @@
           const group = groups[key];
           const active = state.topic === topicSlug && state.subTopic === key;
           // Resolve count: sum across all canon sub_topics this UI group covers
+          // Case-insensitive sub_topic count resolution. question_bank rows
+          // may have casing drift vs canon (e.g. "interaction of magnetic
+          // forces" vs "Interaction Of Magnetic Forces"). Normalize keys
+          // on the lookup side so counts populate regardless.
+          const normalizedMap = {};
+          for (const [k, v] of Object.entries(state.countsBySubTopicMap)) {
+            normalizedMap[String(k).trim().toLowerCase()] = v;
+          }
           const groupCount = (group.subTopicsInCanon || [])
-            .reduce((sum, sub) => sum + (state.countsBySubTopicMap[sub] || 0), 0);
+            .reduce((sum, sub) => sum + (normalizedMap[String(sub).trim().toLowerCase()] || 0), 0);
           const isEmpty = state.showCounts && groupCount === 0;
 
           let subLine;
