@@ -1,247 +1,130 @@
-# QUESTION BANK MANIFEST
-# Auto-generated reference. Update with /inventory command.
-# Last updated: 2026-03-31
+# MANIFEST — Question Bank Inventory (v5.0)
 
-## Summary
+**Generated:** 2026-05-01 (post-canon-v5 migration)
+**Total active questions:** 11,261
+**Total deprecated:** 0
+**Distinct (level, subject, topic, sub_topic) combinations:** 168
+**Canon entries (canon_level_topics):** 296
+**FK enforced:** `question_bank(level, subject, topic, sub_topic)` → `canon_level_topics` (constraint `fk_qb_level_topic`, VALIDATED)
 
-| Metric | Value |
-|---|---|
-| Topic-specific files | 31 |
-| Aggregate files | 7 |
-| Questions in topic files | 125 |
-| Questions in P5 aggregates (no topic files yet) | 33 |
-| **Total unique questions** | **158** |
-| Levels covered | P1, P2, P3, P4, P5, P6 |
-| Levels with NO coverage | S1–S4 |
-| Files at 20q target | 0 of 31 — ALL under target |
+This file is regenerated from the live Supabase `question_bank` table. The
+prior MANIFEST tracked individual JSON files in `data/questions/*.json`; that
+inventory is superseded by this database-rooted view. Per-batch UUIDs are no
+longer recorded here — query Supabase by `created_at` window if needed.
 
-## Coverage Matrix
+## 1. Coverage by Subject × Level
 
-| Level | Mathematics | Science | English |
-|---|---|---|---|
-| P1 | 10q · 1 topic | n/a | ❌ 0q |
-| P2 | 12q · 5 topics | n/a | 11q · 3 topics |
-| P3 | 5q · 1 topic | 5q · 1 topic | 5q · 1 topic |
-| P4 | 15q · 4 topics | 13q · 4 topics | 19q · 5 topics |
-| P5 | 18q · aggregate only | 15q · aggregate only | 5q · 1 topic |
-| P6 | 5q · 1 topic | 5q · 1 topic | 15q · 3 topics |
+| Subject | P1 | P2 | P3 | P4 | P5 | P6 | Total |
+|---------|----|----|----|----|----|----|-------|
+| **English**     | 141 | 182 | 240 | 550 | 417 | 444 | 1 974 |
+| **Mathematics** | — | 7 | 6 | 29 | 27 | 55 | 124 |
+| **Science**     | n/a | n/a | 2 351 | 2 242 | 2 131 | 2 439 | 9 163 |
+| **Total**       | 141 | 189 | 2 597 | 2 821 | 2 575 | 2 938 | **11 261** |
 
-## File Index — Topic-Specific Files
+Notes:
+- Science has no P1/P2 syllabus (subject introduced at P3).
+- Mathematics counts are post-canon-v5 — many earlier P6-tagged questions were re-levelled to P3–P5 during Stage 6.5–6.7 reconciliation. The Mathematics bank is thin overall and is the primary growth target.
+- English Synthesis carries large counts at P4 (341), P5 (182), P6 (192) — most still have NULL `sub_topic` and are queued for sub-topic backfill.
 
-### P1 Mathematics
+## 2. Sub-topic Coverage Gaps (canon entries with 0 questions)
 
-| File | Questions | Topics |
-|---|---|---|
-| p1-mathematics-whole-numbers.json | 10 | Counting, place value, addition, subtraction, patterns, word problems |
+153 of the 296 canon (level, subject, topic, sub_topic) combinations currently
+have **zero** active questions. These are the highest-leverage targets for the
+next generation sprint.
 
-### P2 Mathematics
+### Mathematics (top priority — bank is thinnest)
 
-| File | Questions | Topics |
-|---|---|---|
-| p2-mathematics-whole-numbers.json | 3 | Place value, number patterns, odd/even |
-| p2-mathematics-addition-and-subtraction.json | 3 | Addition/subtraction with regrouping, word problems |
-| p2-mathematics-fractions.json | 2 | Fraction of a whole, comparing unit fractions |
-| p2-mathematics-money.json | 2 | Subtracting money, calculating change |
-| p2-mathematics-multiplication-and-division.json | 2 | Multiplication as repeated addition, division as sharing |
-| **P2 Maths total** | **12** | |
+**Primary 1 (16 gaps):** Add/Sub Concepts • Add/Sub Within 100 • Add/Sub Mental Calc • Reading Picture Graphs • Length & Mass Comparing/Ordering • Length & Mass cm/m • Money Counting • M&D Concepts • Mul Tables ×2/3/4/5/10 • Shapes 2D Identifying • Shapes Patterns • Time To 5 Min • Time Am/Pm • Whole Nums Comparing • Whole Nums Place Values • Whole Nums Counting To 100 • Whole Nums Patterns
 
-### P2 English
+**Primary 2 (19 gaps):** Add/Sub Algorithms • Add/Sub Mental • Reading Picture Graphs • Fractions Of A Whole • Fractions Comparing • Length & Mass Comparing • Length & Mass g/kg • Money Comparing • Money Decimal⇄Cents • Money Counting • Money Decimal Notation • M&D Algorithms • Mul Tables ×2/3/4/5/10 • Shapes 3D Classifying • Time In Hours/Minutes • Time To The Minute • Volume Of Liquid Comparing • Volume Of Liquid In Litres • Whole Nums Comparing • Whole Nums Place Values • Whole Nums Patterns
 
-| File | Questions | Topics |
-|---|---|---|
-| p2-english-grammar.json | 6 | Plurals, past tense, articles, SVA, pronouns, conjunctions |
-| p2-english-vocabulary.json | 3 | Synonyms, homophones, describing words |
-| p2-english-comprehension.json | 2 | Reading for information, inference |
-| **P2 English total** | **11** | |
+**Primary 3 (20 gaps):** Angles Concepts • Right Angles • A&P Of Rect/Sq • A&P Concepts • Fractions Adding Unlike • Fractions Comparing • Equivalent Fractions • Fractions Subtracting Unlike • Geometry Perpendicular & Parallel Lines • Length Compound→Smaller • Length In km • Money Add/Subtract Decimal • Money Word Problems • M&D Mental Calc • M&D Algorithms • Mul Tables ×6/7/8/9 • Time Start/Finish/Duration • Time In Seconds • Time 24-Hour • Volume L⇄mL • Volume In mL • Whole Nums Comparing • Whole Nums Place Values • Whole Nums Patterns
 
-### P3 Mathematics
+**Primary 4 (16 gaps):** Angles Drawing • Measuring In Degrees • Decimals Convert→Fraction • Convert→Decimal • Four Operations With Decimals • Decimals Place Values • Decimals Rounding • Identifying Factors And Multiples • Improper Fractions • Mixed Numbers • Geometry Drawing 2D Of Solids • Identifying Nets • Identifying 2D Reps • Money Word Problems • Pie Charts Reading & Interpreting (intro) • Symmetry Identifying Symmetric Figures • Time Word Problems • Whole Nums Comparing • Whole Nums Rounding To 10/100/1000
 
-| File | Questions | Topics |
-|---|---|---|
-| p3-mathematics-whole-numbers.json | 5 | Comparing 4-digit numbers, multiplication, addition, division, word problems |
+**Primary 5 (17 gaps):** Angles At A Point • Angles On A Straight Line • Finding Unknown Angles • Vertically Opposite Angles • Area Of Triangle Concepts • Average Total÷Count • Avg Total–Average–Count Relationship • Mixed Numbers • Properties Of Parallelogram, Rhombus & Trapezium • Length Word Problems • Money Word Problems • Percentage Expressing • Finding % Part Of A Whole • Volume Building With Cubes • Volume In Cubic Units • Volume Of Liquid Word Problems • Use Of Brackets
 
-### P3 Science
+**Primary 6 (8 gaps):** Algebra Interpretation • Algebra Using A Letter • Ratio Comparison • Ratio Dividing In Given Ratio • Ratio Equivalent • Ratio Simplest Form • Ratio Part-Whole • Ratio Fraction↔Ratio Relationship
 
-| File | Questions | Topics |
-|---|---|---|
-| p3-science-diversity.json | 5 | Living vs non-living, plants vs animals, needs of living things |
+### Science (0 gaps after v5 reconciliation)
 
-### P3 English
+All 80 canonical Sci (level, topic, sub_topic) entries now have ≥ 1 active question.
 
-| File | Questions | Topics |
-|---|---|---|
-| p3-english-grammar.json | 5 | Articles, comparative adjectives, past tense, prepositions, SVA (cloze + editing) |
+### English (44 gaps)
 
-### P4 Mathematics
+- **Comprehension (15):** sub-topic granularity is canon at every level (Direct Visual Retrieval, Sequencing Of Events, True Or False With Reason, Pronoun Referent Table, Visual Text Inference And Purpose, Visual Text Literal Retrieval). Most P1-P6 Comprehension questions are still tagged with `sub_topic = NULL` — backfill rather than generation needed.
+- **Editing (10):** Spelling vs Grammatical sub-topic split is canon across P3–P6; almost all current Editing rows are NULL `sub_topic`. Same backfill story.
+- **Synthesis (8):** Combining With Conjunctions, Relative Clauses, Active→Passive, Reported Speech, Conditional Sentences, Inversion, Participle Phrases — all canonical at P5/P6, all empty.
+- **Summary Writing (4):** Identifying Key Information; Paraphrasing And Condensing Text — canon at P5/P6, both empty (topic newly introduced in v5).
+- **Grammar (3):** P1 Simple Present And Past Tenses; P5 Active And Passive Voice; P6 Active And Passive Voice. The Grammar gaps are narrow because Stage 6.5/6.6 split Simple Present → Perfect/Continuous correctly at P4/P5/P6.
 
-| File | Questions | Topics |
-|---|---|---|
-| p4-mathematics-fractions.json | 5 | Equivalent fractions, improper/mixed, adding/subtracting unlike, fraction of a set |
-| p4-mathematics-decimals.json | 4 | Place value, rounding, adding, converting from fractions |
-| p4-mathematics-geometry.json | 3 | Perimeter, area, angles on a straight line |
-| p4-mathematics-whole-numbers.json | 3 | Common factors, order of operations, multiplication word problem |
-| **P4 Maths total** | **15** | |
+## 3. Highest-Density Combos (sanity / QA prioritisation)
 
-### P4 Science
+| Subject | Level | Topic | Sub_topic | Count |
+|---------|-------|-------|-----------|------:|
+| Science | P3 | Diversity | Classification Of Living And Non-Living Things | 1 081 |
+| Science | P6 | Energy | Energy Conversion In Everyday Objects | 843 |
+| Science | P5 | Systems | Plant Respiratory And Circulatory Systems | 554 |
+| Science | P3 | Diversity | Diversity Of Materials And Their Properties | 517 |
+| Science | P5 | Systems | Electrical Systems And Circuits | 476 |
+| Science | P5 | Cycles | Stages Of The Water Cycle | 466 |
+| Science | P4 | Energy | Sources Of Heat | 366 |
+| Science | P5 | Systems | Human Respiratory And Circulatory Systems | 357 |
+| Science | P3 | Diversity | General Characteristics Of Living And Non-Living Things | 346 |
+| Science | P4 | Matter | Properties Of Solids, Liquids And Gases | 327 |
+| Science | P6 | Interactions | Frictional Force | 310 |
+| Science | P6 | Interactions | Interactions Within The Environment | 309 |
+| English | P6 | Synthesis | (NULL) | 189 |
+| English | P5 | Synthesis | (NULL) | 182 |
+| English | P4 | Synthesis | Combining With Conjunctions | 171 |
+| English | P4 | Synthesis | (NULL) | 170 |
+| Science | P4 | Energy | Formation Of Shadows | 171 |
 
-| File | Questions | Topics |
-|---|---|---|
-| p4-science-heat.json | 4 | Conductors/insulators, sources of heat, thermal expansion |
-| p4-science-light.json | 3 | Sources of light, reflection, transparency |
-| p4-science-magnets.json | 2 | Magnetic materials, magnet properties |
-| p4-science-matter.json | 4 | States of matter, properties of materials |
-| **P4 Science total** | **13** | |
+## 4. Manual-Review Flags
 
-### P4 English
+Rows the v5 migration touched and tagged for content review:
+- Stage 6.5 §C4 — NULL sub_topic catch-all
+- Stage 6.6 §G6 — Diversity P4 NULL → P3 default sub_topic
+- Stage 6.7 — P6 Cycles NULL → P3 default sub_topic
 
-| File | Questions | Topics |
-|---|---|---|
-| p4-english-grammar.json | 7 | Prepositions, tenses, subject-verb agreement, pronouns |
-| p4-english-cloze.json | 3 | Grammar cloze passages (past tense, articles, prepositions) |
-| p4-english-editing.json | 3 | Spot-and-correct (SVA, tense, spelling) |
-| p4-english-vocabulary.json | 3 | Synonyms, antonyms, contextual vocabulary |
-| p4-english-comprehension.json | 3 | Inference, literal comprehension |
-| **P4 English total** | **19** | |
+Run `SELECT COUNT(*) FROM question_bank WHERE flag_review=true;` for the
+current count. These rows passed the FK (because the auto-default sub_topic
+is canonical) but the content may not match the assigned sub_topic — content
+team should re-tag.
 
-### P5 English
+## 5. Migration Anchors
 
-| File | Questions | Topics |
-|---|---|---|
-| p5-english-grammar.json | 5 | Present vs continuous, passive voice, relative clauses, connectives, tense error |
+| Stage | What | Date |
+|-------|------|------|
+| Stage 1–4 | Canon v5 schema build (`canon_subjects`, `canon_topics`, `canon_sub_topics`, `canon_level_topics`) | (pre-2026-05-01) |
+| Stage 5 | Backup tables `_backup_question_bank_20260501`, `_backup_mastery_levels_20260501` | 2026-05-01 |
+| Stage 6.5 | Orphan reconciliation (Sections A–D) — **3 058 rows fixed** | 2026-05-01 |
+| Stage 6.6 | Residual orphan reconciliation (Groups 1–7) — **508 rows fixed** | 2026-05-01 |
+| Stage 6.7 | Final leftover sweep — **5 rows fixed** | 2026-05-01 |
+| Stage 6 | FK constraint `fk_qb_level_topic` added + VALIDATED on 11 261 rows | 2026-05-01 |
 
-### P6 Mathematics
+## 6. Re-running this MANIFEST
 
-| File | Questions | Topics |
-|---|---|---|
-| p6-mathematics-fractions.json | 5 | Fraction of a set, percentage of quantity, percentage increase, part-whole model |
+```sql
+-- Coverage matrix (one row per canonical combo with counts)
+SELECT level, subject, topic, sub_topic, COUNT(*) AS qty,
+       SUM(CASE WHEN difficulty='Foundation' THEN 1 ELSE 0 END) AS f,
+       SUM(CASE WHEN difficulty='Standard'   THEN 1 ELSE 0 END) AS s,
+       SUM(CASE WHEN difficulty='Advanced'   THEN 1 ELSE 0 END) AS a,
+       SUM(CASE WHEN difficulty='HOTS'       THEN 1 ELSE 0 END) AS h,
+       ARRAY_AGG(DISTINCT type ORDER BY type) AS types
+FROM question_bank
+WHERE deprecated_at IS NULL
+GROUP BY level, subject, topic, sub_topic
+ORDER BY subject, level, topic, sub_topic;
 
-### P6 Science
-
-| File | Questions | Topics |
-|---|---|---|
-| p6-science-cells.json | 5 | Plant vs animal cells, nucleus, cell membrane, chloroplasts, HOTS open-ended |
-
-### P6 English
-
-| File | Questions | Topics |
-|---|---|---|
-| p6-english-grammar.json | 5 | Passive voice, neither/nor SVA, past perfect, reported speech, tense consistency |
-| p6-english-cloze.json | 5 | Present perfect, active/passive, modal verbs, conjunctions, reported speech |
-| p6-english-editing.json | 5 | Pronoun SVA, passive past participle, word form, relative pronoun, SVA with phrase |
-| **P6 English total** | **15** | |
-
----
-
-## Aggregate Files (compilations — DO NOT add questions here)
-
-These files merge topic-specific files for backward compatibility with older quiz engine routes.
-New questions MUST go into topic-specific files only.
-
-| File | Questions | Status |
-|---|---|---|
-| p2-english.json | 11 | Mirrors p2-english-*.json |
-| p2-mathematics.json | 12 | Mirrors p2-mathematics-*.json |
-| p4-english.json | 13 | Partial mirror of p4-english-*.json |
-| p4-mathematics.json | 15 | Mirrors p4-mathematics-*.json |
-| p4-science.json | 13 | Mirrors p4-science-*.json |
-| p5-mathematics.json | 18 | **No topic files yet** — ratio, percentage, rate/speed |
-| p5-science.json | 15 | **No topic files yet** — photosynthesis, reproduction, electricity |
-
----
-
-## Question Factory Batches (Supabase — auto-inserted)
-
-| Batch | Date | Subject | Questions | Topics |
-|---|---|---|---|---|
-| batch_20260425_001 | 2026-04-25 | Mathematics P6 MCQ Standard | 5 | Algebra, Circles, Fractions, Geometry, Percentage |
-| batch_20260425_002 | 2026-04-25 | Mathematics P6+P5 MCQ Standard | 5 | Ratio, Speed, Volume, Pie Charts (P6); Whole Numbers (P5) |
-| batch_20260425_003 | 2026-04-25 | Science P6+P5 MCQ Standard | 5 | Cells, Energy, Forces, Interactions (P6); Cycles (P5) |
-| batch_20260425_004 | 2026-04-25 | Mathematics P5 MCQ Standard | 5 | Angles and Geometry, Area of Triangle, Average, Decimals, Fractions |
-| batch_20260430_001 | 2026-04-30 | Mathematics P6 MCQ Standard | 5 | Addition and Subtraction, Algebra, Angles, Area and Perimeter, Area of Triangle |
-| batch_20260430_002 | 2026-04-30 | Mathematics P6 MCQ Standard (PSLE-calibrated regen) | 5 | Addition and Subtraction, Algebra, Angles, Area and Perimeter, Area of Triangle |
-| batch_20260430_003 | 2026-04-30 | Mathematics P6 MCQ Standard | 5 | Average, Circles, Data Analysis, Decimals, Factors and Multiples |
-| batch_20260430_004 | 2026-04-30 | Calibration fix: re-tier basket Q to P4 + new P6 Data Analysis Q + runningTrack visual primitive added | 1 (insert) + 2 (updates) | Data Analysis (P6 swap), Circles (visual upgrade) |
-| batch_20260430_005 | 2026-04-30 | Mathematics P6 MCQ Standard | 5 | Fractions, Geometry, Multiplication and Division, Multiplication Tables, Percentage |
-| batch_20260430_006 | 2026-04-30 | Q2 Geometry visual upgrade (rectangleWithLine primitive) + 5 P6 MCQs | 5 (insert) + 1 (visual) | Pie Charts, Rate, Ratio, Shapes and Patterns, Speed; Geometry visual upgrade |
-| batch_20260430_007 | 2026-04-30 | Mathematics P6 MCQ Standard (FINAL — 23/23 topics covered) | 3 | Symmetry, Volume, Whole Numbers |
-
-**Batch 001 IDs (Supabase UUIDs):**
-- Algebra: `1743b2e1-41c4-458d-b111-f8bf12b4fedc`
-- Circles: `ac3963d7-871a-4eea-baf6-e682d725616b`
-- Fractions: `5e1eae10-bea1-4a16-9e79-8b9c5fbbac63`
-- Geometry: `caf1c426-2119-44b9-a4a6-8bcfc1d44382`
-- Percentage: `e9461bc2-35b4-4ffe-85d6-18149272160c`
-
-**Batch 002 IDs (Supabase UUIDs):**
-- Ratio (P6): `0eff47e6-90f3-4710-952f-dfb82c88cdcc`
-- Speed (P6): `f4ceba87-8e60-4c13-b099-33b8e4a14cbd`
-- Volume (P6): `8a84fa38-a5e2-4066-aaeb-297353e48ad1`
-- Pie Charts (P6): `243613e1-c40d-4edc-a63b-e78768fd1e4b`
-- Whole Numbers (P5): `69e0af0d-c58f-43d9-83c0-1cce69d4cfd2`
-
-**Batch 20260430_001 IDs (Supabase UUIDs):** — DELETED via admin panel; over-calibrated (P3/P4-level instead of P6 Standard).
-
-**Batch 20260430_002 IDs (Supabase UUIDs):** — PSLE-calibrated regen (Master Template v4.2 §5 mcq calibration applied)
-- Addition and Subtraction (P6): `b85db378-c4bd-478a-b71f-adb518441c34`
-- Algebra (P6): `2fe46ace-a4a2-459e-89eb-fcfbc43de43b`
-- Angles (P6): `4af48218-9143-43b2-a222-95ba3e16116f` — visual_payload patched to v3 explicit-rays format (T at 68°, U at 35°)
-- Area and Perimeter (P6): `d44fd910-0eb3-45d8-9013-29501cde9822`
-- Area of Triangle (P6): `520c1c14-1eb2-43a0-b86a-722796b8bd40`
-
-**Batch 20260430_003 IDs (Supabase UUIDs):** — second PSLE-calibrated batch under Master Template v4.3
-- Average (P6): `ffc1ab19-ca43-4eb1-9588-cafc6417e9c7`
-- Circles (P6): `dcf31552-a083-4da1-99c8-ffd118f828c8` — visual upgraded to `runningTrack` primitive in batch 004
-- Data Analysis (P4, ex-P6): `ea5bc160-939a-4a31-97fe-9fdbb325ba20` — basket-cost question re-tiered from P6 to P4 in batch 004 (single-step, not multi-step)
-- Decimals (P6): `cc6623a8-b7d8-4ca8-bbf5-411e5fd01b97`
-- Factors and Multiples (P6): `2486863e-f8c4-4011-a391-083d6bc7bdcd`
-
-**Batch 20260430_004 IDs (Supabase UUIDs):** — calibration fix + new visual primitive
-- Data Analysis (P6, NEW): `e4a3cbfc-5366-4f49-b22a-2749c2439ea2` — bar graph + chained average (Box E = avg+4, find new 5-box average)
-- Circles (P6, visual updated): `dcf31552-a083-4da1-99c8-ffd118f828c8` — placeholder card replaced with `runningTrack` primitive
-- Data Analysis (re-tiered to P4): `ea5bc160-939a-4a31-97fe-9fdbb325ba20`
-
-**Batch 20260430_005 IDs (Supabase UUIDs):** — third PSLE-calibrated batch
-- Fractions (P6): `fc94b791-4caa-4584-b922-74f9cb24d924` — chained 1/4 then 2/3 of remainder, find English share
-- Geometry (P6): `487cdc69-e3c5-412a-bf8c-be3e5daab0e3` — rectangle ABCD with line AE; visual upgraded to `rectangleWithLine` in batch 006
-- Multiplication and Division (P6): `46271468-91b3-4139-85a8-2346af445873` — bouquet split-rate ($12 × 1/4, $9 × 3/4)
-- Multiplication Tables (P6): `35fd45fe-2a30-477f-b1ff-44b6c88c4c97` — marble in box, mental × and ÷
-- Percentage (P6): `b451e604-cda9-4d82-8665-c32864569bc6` — 20% off then +10% of sale price (cascade)
-
-**Batch 20260430_006 IDs (Supabase UUIDs):** — fourth PSLE-calibrated batch + Geometry visual upgrade
-- Pie Charts (P6): `3384c72f-2901-4a6f-b143-483729d83bfb` — 4-wedge pie (% + fraction mix), find difference between two wedges
-- Rate (P6): `86e78099-b272-4bbf-85de-c8effe24c140` — printer rate × time conversion (1 hr 15 min)
-- Ratio (P6): `ca153229-c8a9-4fb9-bc98-b8fa5ecd62e9` — change-of-ratio (3:5 → 1:1 after 6 boys join), find original total
-- Shapes and Patterns (P6): `e6bf784f-f8e0-41cf-bccf-a9c234147585` — n × n grid pattern, find perimeter of Figure 6
-- Speed (P6): `b61e3ed8-77c7-4990-acf1-d6a6640355d6` — round trip with 60 km/h + 40 km/h, find average for whole journey
-- Geometry (P6, visual upgraded): `487cdc69-e3c5-412a-bf8c-be3e5daab0e3` — placeholder/text replaced with `rectangleWithLine` primitive
-
-**Batch 20260430_007 IDs (Supabase UUIDs):** — final 3 topics; P6 Std MCQ bank now complete (23/23)
-- Symmetry (P6): `95efaefb-ab72-45c6-9350-c80994cf05f9` — half L-shape design reflected across vertical axis (compositeShape visual)
-- Volume (P6): `01cbd18c-fd17-4829-85a8-c4f72bb972f0` — submerge cube in tank, find new water depth (cuboid visual)
-- Whole Numbers (P6): `e04a2365-0da6-4a89-9a3a-0dcb137ac577` — order of operations 36 + 24 ÷ (8−6) × 5 − 18 = 78 (BODMAS)
-
----
-
-## P6 Mathematics MCQ Standard — Coverage Snapshot (2026-04-30)
-
-23 / 23 canon topics covered, 1 question per topic. All under PSLE Booklet A
-Q11–Q15 calibration (Master Template v4.3 §5). Distractors mapped to named
-Singapore-classroom misconceptions; worked solutions ≥ 3 named steps each.
-
-> Note: `seed_id` column in Supabase is UUID type — text-based IDs not applicable.
-> Track inserted questions by UUID. Gap analysis SQL is the authoritative state source.
-
----
-
-## Priority Gaps (ranked by exam impact)
-
-| Priority | Gap | Impact | Target |
-|---|---|---|---|
-| 🔴 P0 | Every file under 20q minimum | Exam engine has thin banks; WA papers may not fill sections | All files → 20q |
-| 🔴 P0 | P6 Mathematics — only Fractions topic | PSLE has 5+ topics | Add algebra, ratio, geometry, data |
-| 🔴 P0 | P5 Maths/Science in aggregates only | Cannot split into WA-style sections without topic files | Create topic-specific P5 files |
-| 🟠 P1 | P1 English — zero coverage | P1 is a paid tier | Add 10q P1 English |
-| 🟠 P1 | P3–P5 thin banks (5–8q per subject) | WA papers need ≥10q per section type | Expand to 20q per file |
-| 🟡 P2 | Type diversity — mostly MCQ | short_ans, word_problem, cloze, editing underrepresented | Add non-MCQ types per level |
-| 🟡 P2 | Difficulty diversity — mostly Standard | Foundation/Advanced/HOTS target: 20%/20%/10% | Add difficulty variety |
-| ⚪ P3 | S1–S4 zero coverage | Future roadmap | Not started |
+-- Canon entries with 0 questions (the gaps to fill)
+SELECT clt.level, clt.subject, clt.topic, clt.sub_topic
+FROM canon_level_topics clt
+LEFT JOIN question_bank qb
+  ON qb.level=clt.level AND qb.subject=clt.subject
+ AND qb.topic=clt.topic AND qb.sub_topic=clt.sub_topic
+ AND qb.deprecated_at IS NULL
+WHERE qb.id IS NULL
+ORDER BY clt.subject, clt.level, clt.topic, clt.sub_topic;
+```

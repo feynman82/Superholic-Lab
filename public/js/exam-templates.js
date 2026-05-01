@@ -1,8 +1,24 @@
 /**
  * exam-templates.js
- * UNIFIED MASTER SCHEMA 4.0 (2026 PSLE Aligned)
- * 
- * CHANGELOG from 3.0:
+ * UNIFIED MASTER SCHEMA 5.0 (2026 PSLE / canon v5 aligned, 2026-05-01)
+ *
+ * CHANGELOG v5.0 (2026-05-01):
+ * - Audited against canon_level_topics v5 (FK fk_qb_level_topic now enforced
+ *   on question_bank). The deprecated topic strings the v5 prompt called out
+ *   ('Heat', 'Light', 'Forces', 'Cells', 'Speed') are NOT present in this
+ *   file: Maths and Science templates are intentionally topic-agnostic — the
+ *   exam generator picks topics at runtime from canon_level_topics, so adding
+ *   or renaming canon topics does not require template edits. Only English
+ *   templates carry `topics: [...]` (Grammar, Vocabulary, Cloze, Editing,
+ *   Synthesis, Comprehension), and those English topics are unchanged in v5.
+ * - Visual Text comprehension already present at P5 (english-p5-wa1 § B and
+ *   english-p5-eoy § Booklet A) — no change required.
+ * - The new Maths topics ('Money', 'Length and Mass', 'Volume of Liquid',
+ *   'Time') flow into P1–P5 papers automatically via canon_level_topics —
+ *   nothing to add here.
+ * - No P1/P2 exam templates currently exist (assessable range is P3–P6).
+ *
+ * CHANGELOG v4.0:
  * - PSLE templates updated to SEAB 2026 specifications (0001, 0008, 0009)
  * - Maths PSLE split into separate Paper 1 and Paper 2 practice papers
  * - P6 'prelim' keys renamed to 'psle' / 'psle-p1' / 'psle-p2'
@@ -11,14 +27,14 @@
  * - Comprehension Cloze: topic='Cloze', sub_topic='Comprehension Free-Text Cloze'
  * - English PSLE Paper 2 Booklet A Grammar OE mapped to type='cloze'
  * - All WA/EOY marks cross-checked against 2025 school papers
- * 
+ *
  * TERMINOLOGY (must match Supabase question_bank columns):
- *   subject:  'Mathematics' | 'Science' | 'English'   (canonical FK values per Master_Question_Template v4.1)
+ *   subject:  'Mathematics' | 'Science' | 'English'   (canonical FK values per Master_Question_Template v4.6)
  *   level:    'Primary 1' through 'Primary 6'
  *   type:     'mcq' | 'short_ans' | 'word_problem' | 'open_ended' | 'cloze' | 'editing' | 'comprehension' | 'visual_text'
- *   topic:    As per Master Question Template Section 4 taxonomy
+ *   topic:    As per Master Question Template Section 4 taxonomy + canon_level_topics
  *   sub_topic: Optional refinement (e.g., 'Grammar Cloze With Word Bank', 'Vocabulary Cloze With Dropdowns')
- * 
+ *
  * TEMPLATE KEY FORMAT: {subjectShort}-{levelShort}-{paperCode}
  *   subjectShort: 'maths' | 'science' | 'english'
  *   levelShort:   'p3' | 'p4' | 'p5' | 'p6'
