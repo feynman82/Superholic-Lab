@@ -361,7 +361,7 @@ TABLE: question_bank  (PRIMARY CONTENT STORE)
   topic, sub_topic,
   difficulty ('Foundation'|'Standard'|'Advanced'|'HOTS'),
   type ('mcq'|'short_ans'|'word_problem'|'open_ended'|'cloze'|'editing'|'comprehension'),
-  marks, question_text, options (jsonb), correct_answer (letter "A"–"D"),
+  marks, question_text, options (jsonb), correct_answer (actual option string),
   wrong_explanations (jsonb), worked_solution, parts (jsonb),
   keywords (text[]), model_answer, passage, blanks (jsonb),
   passage_lines (jsonb), examiner_note, cognitive_skill,

@@ -156,8 +156,8 @@ Total questions: 22
 ### Issues Found
 
 [CRITICAL] Q p4-math-frac-005
-  Wrong answer: correct_answer is "C" but option C (7/12) is not
-  the correct sum of 1/3 + 1/4. Recalculated: 7/12 IS correct.
+  Wrong answer: correct_answer is "7/12" but the sum of 1/3 + 1/4
+  computes to 7/12. Recalculated and verified.
   → FALSE ALARM: answer is correct.
 
 [HIGH] Q p4-math-frac-012

@@ -32,167 +32,55 @@ If already > 60k tokens (large files), log a warning but continue.
 
 ## PHASE 1 — Gap Analysis
 
-> ⚠️ **KNOWN BUG (2026-05-01) — gap matrix is over-broad.** The SQL below
-> uses a HARDCODED cumulative per-level topic list (e.g. P6 = all P1–P5 topics
-> + own). The actual `canon_level_topics` table is **NOT cumulative** — each
-> topic only has rows at the level where it was first introduced. So topics
-> like "Decimals" only exist as P4 canon entries; a P6 row for Decimals will
-> fail FK `fk_qb_level_topic` with PG 23503.
->
-> **Workaround until fixed:** After running the gap query, ALWAYS verify the
-> picked (level, topic, sub_topic) combinations against `canon_level_topics`
-> via:
-> ```sql
-> SELECT topic, sub_topic FROM canon_level_topics
-> WHERE subject=$subject AND level=$level
-> ORDER BY topic, sub_topic;
-> ```
-> Discard any planned batch row whose (level, topic) is not in canon. Pick
-> only true canon-resident topics for that level.
->
-> **Permanent fix (TODO):** rewrite the WITH valid_combinations CTE to
-> read directly from `canon_level_topics` instead of the hardcoded
-> per-level lists. That removes the cumulative-vs-introduction confusion
-> and auto-tracks future syllabus changes.
-
-Run this SQL via `supabase:execute_sql`. This returns all (subject, level, topic,
-type, difficulty) combinations with their counts and a priority score.
+Run this SQL via `supabase:execute_sql`. It reads valid (level, subject, topic,
+sub_topic) quadruples directly from `canon_level_topics` — the same FK target
+that `question_bank.fk_qb_level_topic` validates against — so every row in
+the gap matrix is guaranteed FK-safe to insert. Result: one row per
+(level, subject, topic, sub_topic, type, difficulty) combination below
+`target_count`, sorted by priority.
 
 ```sql
--- ─── Canon v5 source of truth (2026-05-01) ───────────────────────────────
--- All (subject, topic) values below come from canon_topics in Supabase.
--- question_bank.(level, subject, topic, sub_topic) → canon_level_topics
--- via FK fk_qb_level_topic (VALIDATED). Off-canon INSERTs fail with PG 23503.
+-- ─── Canon-driven gap analysis (rewritten 2026-05-01) ───────────────────
+-- Source of truth: canon_level_topics (FK target of fk_qb_level_topic).
+-- Every row in the output is guaranteed FK-safe — no pre-flight canon
+-- check needed before generating.
 --
--- v5 totals: Mathematics 26 topics, Science 6 topics, English 7 topics.
--- Per-level introduction follows SYLLABUS_DEPENDENCY.json (root) and
--- Master_Question_Template.md §4. Edit those first if syllabus shifts.
---
--- NOTE: English topics are not yet in this gap query — the cloze/editing/
--- comprehension/visual_text type matrix needs separate handling.
--- TODO: extend with English (Grammar, Vocabulary, Comprehension, Cloze,
--- Editing, Synthesis) once English generation patterns are stable.
+-- NOTE: English is excluded for now — its type matrix
+-- (cloze/editing/comprehension/visual_text/short_ans) needs subject-specific
+-- handling that the surgical prompt builder doesn't yet cover. To add later:
+-- extend the type-by-subject filter and ensure prompt-builder.cjs has
+-- DIAGRAM_ROUTING entries for English (currently empty for cloze/editing).
 WITH target_matrix AS (
-  -- Mathematics — 26 canonical v5 topics (Speed removed; Money, Time,
-  -- Length and Mass, Volume of Liquid added)
-  SELECT 'Mathematics' AS subject, level, topic, type, difficulty
-  FROM (VALUES
-    ('Primary 1'),('Primary 2'),('Primary 3'),
-    ('Primary 4'),('Primary 5'),('Primary 6')
-  ) lvl(level)
-  CROSS JOIN (VALUES
-    ('Addition and Subtraction'),('Algebra'),('Angles'),
-    ('Area and Perimeter'),('Area of Triangle'),('Average'),
-    ('Circles'),('Data Analysis'),('Decimals'),
-    ('Factors and Multiples'),('Fractions'),('Geometry'),
-    ('Length and Mass'),('Money'),
-    ('Multiplication and Division'),('Multiplication Tables'),
-    ('Percentage'),('Pie Charts'),('Rate'),('Ratio'),
-    ('Shapes and Patterns'),('Symmetry'),('Time'),
-    ('Volume'),('Volume of Liquid'),('Whole Numbers')
-  ) t(topic)
-  CROSS JOIN (VALUES ('mcq'),('short_ans'),('word_problem')) ty(type)
-  CROSS JOIN (VALUES ('Foundation'),('Standard'),('Advanced'),('HOTS')) d(difficulty)
-
-  UNION ALL
-
-  -- Science — 6 canonical v5 topics (Heat/Light/Forces/Cells consolidated
-  -- into Energy/Interactions/Systems). P3-P6 only; no Science syllabus at P1/P2.
-  SELECT 'Science', level, topic, type, difficulty
-  FROM (VALUES
-    ('Primary 3'),('Primary 4'),('Primary 5'),('Primary 6')
-  ) lvl(level)
-  CROSS JOIN (VALUES
-    ('Cycles'),('Diversity'),('Energy'),
-    ('Interactions'),('Matter'),('Systems')
-  ) t(topic)
-  CROSS JOIN (VALUES ('mcq'),('open_ended')) ty(type)
-  CROSS JOIN (VALUES ('Foundation'),('Standard'),('Advanced'),('HOTS')) d(difficulty)
+  -- All FK-safe (level, subject, topic, sub_topic) quadruples × valid types
+  -- × all difficulties, with type-by-subject and HOTS-by-level gating.
+  SELECT clt.level, clt.subject, clt.topic, clt.sub_topic,
+         ty.type, d.difficulty
+  FROM canon_level_topics clt
+  CROSS JOIN (VALUES ('mcq'),('short_ans'),('word_problem'),('open_ended'))
+       ty(type)
+  CROSS JOIN (VALUES ('Foundation'),('Standard'),('Advanced'),('HOTS'))
+       d(difficulty)
+  WHERE clt.subject IN ('Mathematics','Science')
+    -- Type-by-subject gating
+    AND (
+      (clt.subject = 'Mathematics' AND ty.type IN ('mcq','short_ans','word_problem')) OR
+      (clt.subject = 'Science'     AND ty.type IN ('mcq','open_ended'))
+    )
+    -- HOTS only for P4+ Mathematics and P5+ Science
+    AND NOT (d.difficulty = 'HOTS' AND clt.subject = 'Mathematics'
+             AND clt.level IN ('Primary 1','Primary 2','Primary 3'))
+    AND NOT (d.difficulty = 'HOTS' AND clt.subject = 'Science'
+             AND clt.level IN ('Primary 3','Primary 4'))
 ),
 actual AS (
-  SELECT subject, level, topic, type, difficulty, COUNT(*) AS cnt
+  SELECT level, subject, topic, sub_topic, type, difficulty,
+         COUNT(*) AS cnt
   FROM question_bank
-  GROUP BY subject, level, topic, type, difficulty
-),
-valid_combinations AS (
-  -- Per-level topic gating from canon_level_topics (mirrors first_introduced
-  -- in SYLLABUS_DEPENDENCY.json). A topic is valid at level N if introduced
-  -- at N or earlier.
-  SELECT m.*
-  FROM target_matrix m
-  WHERE (
-    -- Mathematics — cumulative by first_introduced
-    (m.subject = 'Mathematics' AND (
-      -- P1 (8 topics)
-      (m.level = 'Primary 1' AND m.topic IN (
-        'Whole Numbers','Addition and Subtraction','Multiplication and Division',
-        'Money','Length and Mass','Time','Shapes and Patterns','Data Analysis'
-      )) OR
-      -- P2 adds 3 (Multiplication Tables, Volume of Liquid, Fractions) = 11
-      (m.level = 'Primary 2' AND m.topic IN (
-        'Whole Numbers','Addition and Subtraction','Multiplication and Division',
-        'Money','Length and Mass','Time','Shapes and Patterns','Data Analysis',
-        'Multiplication Tables','Volume of Liquid','Fractions'
-      )) OR
-      -- P3 adds 3 (Angles, Geometry, Area and Perimeter) = 14
-      (m.level = 'Primary 3' AND m.topic IN (
-        'Whole Numbers','Addition and Subtraction','Multiplication and Division',
-        'Money','Length and Mass','Time','Shapes and Patterns','Data Analysis',
-        'Multiplication Tables','Volume of Liquid','Fractions',
-        'Angles','Geometry','Area and Perimeter'
-      )) OR
-      -- P4 adds 4 (Factors and Multiples, Decimals, Symmetry, Pie Charts) = 18
-      (m.level = 'Primary 4' AND m.topic IN (
-        'Whole Numbers','Addition and Subtraction','Multiplication and Division',
-        'Money','Length and Mass','Time','Shapes and Patterns','Data Analysis',
-        'Multiplication Tables','Volume of Liquid','Fractions',
-        'Angles','Geometry','Area and Perimeter',
-        'Factors and Multiples','Decimals','Symmetry','Pie Charts'
-      )) OR
-      -- P5 adds 6 (Area of Triangle, Volume, Percentage, Ratio, Rate, Average) = 24
-      (m.level = 'Primary 5' AND m.topic IN (
-        'Whole Numbers','Addition and Subtraction','Multiplication and Division',
-        'Money','Length and Mass','Time','Shapes and Patterns','Data Analysis',
-        'Multiplication Tables','Volume of Liquid','Fractions',
-        'Angles','Geometry','Area and Perimeter',
-        'Factors and Multiples','Decimals','Symmetry','Pie Charts',
-        'Area of Triangle','Volume','Percentage','Ratio','Rate','Average'
-      )) OR
-      -- P6 adds 2 (Algebra, Circles) = 26
-      (m.level = 'Primary 6' AND m.topic IN (
-        'Whole Numbers','Addition and Subtraction','Multiplication and Division',
-        'Money','Length and Mass','Time','Shapes and Patterns','Data Analysis',
-        'Multiplication Tables','Volume of Liquid','Fractions',
-        'Angles','Geometry','Area and Perimeter',
-        'Factors and Multiples','Decimals','Symmetry','Pie Charts',
-        'Area of Triangle','Volume','Percentage','Ratio','Rate','Average',
-        'Algebra','Circles'
-      ))
-    )) OR
-    -- Science — Diversity/Cycles/Interactions at P3 (3); +Matter/Systems/Energy at P4-P6 (6)
-    (m.subject = 'Science' AND (
-      (m.level = 'Primary 3' AND m.topic IN (
-        'Diversity','Cycles','Interactions'
-      )) OR
-      (m.level IN ('Primary 4','Primary 5','Primary 6') AND m.topic IN (
-        'Diversity','Cycles','Interactions','Matter','Systems','Energy'
-      ))
-    ))
-  )
-  -- HOTS only for P4+ Mathematics and P5+ Science
-  AND NOT (m.difficulty = 'HOTS' AND m.subject = 'Mathematics' AND m.level IN ('Primary 1','Primary 2','Primary 3'))
-  AND NOT (m.difficulty = 'HOTS' AND m.subject = 'Science' AND m.level IN ('Primary 3','Primary 4'))
-  -- word_problem only for Mathematics
-  AND NOT (m.type = 'word_problem' AND m.subject = 'Science')
-  -- open_ended only for Science
-  AND NOT (m.type = 'open_ended' AND m.subject = 'Mathematics')
+  WHERE deprecated_at IS NULL
+  GROUP BY level, subject, topic, sub_topic, type, difficulty
 )
 SELECT
-  v.subject,
-  v.level,
-  v.topic,
-  v.type,
-  v.difficulty,
+  v.subject, v.level, v.topic, v.sub_topic, v.type, v.difficulty,
   COALESCE(a.cnt, 0) AS current_count,
   3 AS target_count,
   GREATEST(0, 3 - COALESCE(a.cnt, 0)) AS gap,
@@ -203,12 +91,14 @@ SELECT
     WHEN 'Primary 3' THEN 3 WHEN 'Primary 2' THEN 2 ELSE 1 END
   ) *
   (CASE v.type WHEN 'mcq' THEN 3 WHEN 'short_ans' THEN 2 ELSE 1 END) *
-  (CASE v.difficulty WHEN 'Standard' THEN 4 WHEN 'Foundation' THEN 3 WHEN 'Advanced' THEN 2 ELSE 1 END) *
+  (CASE v.difficulty WHEN 'Standard' THEN 4 WHEN 'Foundation' THEN 3
+                     WHEN 'Advanced' THEN 2 ELSE 1 END) *
   (1 + GREATEST(0, 3 - COALESCE(a.cnt, 0))) AS priority_score
-FROM valid_combinations v
-LEFT JOIN actual a USING (subject, level, topic, type, difficulty)
+FROM target_matrix v
+LEFT JOIN actual a
+  USING (level, subject, topic, sub_topic, type, difficulty)
 WHERE COALESCE(a.cnt, 0) < 3
-ORDER BY priority_score DESC, v.level DESC, v.subject, v.topic;
+ORDER BY priority_score DESC, v.level DESC, v.subject, v.topic, v.sub_topic;
 ```
 
 Store the result as `GAP_MATRIX` (array of rows, ordered by priority_score DESC).
@@ -236,11 +126,11 @@ Apply these rules:
   "subject": "Mathematics",
   "type": "mcq",
   "questions": [
-    {"level": "Primary 6", "topic": "Algebra", "difficulty": "Standard"},
-    {"level": "Primary 6", "topic": "Circles", "difficulty": "Standard"},
-    {"level": "Primary 5", "topic": "Ratio", "difficulty": "Advanced"},
-    {"level": "Primary 5", "topic": "Percentage", "difficulty": "Standard"},
-    {"level": "Primary 4", "topic": "Fractions", "difficulty": "Foundation"}
+    {"level": "Primary 6", "topic": "Algebra",  "sub_topic": "Using A Letter To Represent An Unknown Number", "difficulty": "Standard"},
+    {"level": "Primary 6", "topic": "Circles",  "sub_topic": "Area And Circumference Of Circle",              "difficulty": "Standard"},
+    {"level": "Primary 6", "topic": "Ratio",    "sub_topic": "Equivalent Ratios",                             "difficulty": "Standard"},
+    {"level": "Primary 6", "topic": "Ratio",    "sub_topic": "Part-Whole Ratio",                              "difficulty": "Standard"},
+    {"level": "Primary 6", "topic": "Algebra",  "sub_topic": "Solving Simple Linear Equations",               "difficulty": "Foundation"}
   ]
 }
 ```
@@ -313,7 +203,9 @@ fix it in-place and re-check. Do NOT skip checks.
 ☐ 3. `wrong_explanations` keys match the 3 wrong options exactly
 ☐ 4. All JSON fields are validly stringified (no unescaped quotes, no trailing commas)
 ☐ 5. SQL single-quote escaping: every apostrophe in strings is doubled ('')
-☐ 6. `topic` value exactly matches SYLLABUS_MAP for that level
+☐ 6. `(level, subject, topic, sub_topic)` quadruple exists in `canon_level_topics`
+     (the gap matrix already enforces this, but re-verify if you hand-edited
+     a row — off-canon inserts fail with PG 23503 / fk_qb_level_topic)
 ☐ 7. `type` is one of the 8 permitted types
 ☐ 8. `visual_payload` function_name is present in Section 6 of SURGICAL_PROMPT
      (or NULL — never invent a function name)

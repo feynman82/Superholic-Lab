@@ -396,7 +396,7 @@ see `ARCHITECTURE.md` → SUPABASE DATABASE SCHEMA section.
 
 **Question types (8):** `mcq`, `short_ans`, `word_problem`, `open_ended`, `cloze`, `editing`, `comprehension`, `visual_text`
 **Retired types (do not use):** `true_false`, `fill_blank`
-**Correct answer format:** Always letter string `"A"` — never index `0`
+**Correct answer format:** The actual option STRING (e.g. `"$160"`, `"5 : 8"`) — must be one of the strings in `options`. Never the letter "A" / "B" / "C" / "D" and never a numeric index. `wrong_explanations` is an object keyed by the three wrong option STRINGS, each with `{text, type}` (type ∈ misconception | calc_error | partial_logic).
 **Difficulty values:** `Foundation`, `Standard`, `Advanced`, `HOTS`
 
 **English Comprehension special-case (canon v5):** Rows for `topic = 'Comprehension'`

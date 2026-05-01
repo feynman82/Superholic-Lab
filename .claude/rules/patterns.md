@@ -55,7 +55,7 @@ Full spec: C:\SLabDrive\01 - Platform Intelligence\Master_Question_Template.md
   "type": "mcq",
   "marks": 2,
   "question_text": "Ahmad ate 1/3 of a pizza...",
-  "correct_answer": "C",
+  "correct_answer": "7/12",
   "worked_solution": "Step 1: Find LCD... Step 2: Convert...",
   "examiner_note": "Always show working for fraction addition."
 }
@@ -65,15 +65,18 @@ Full spec: C:\SLabDrive\01 - Platform Intelligence\Master_Question_Template.md
 ```json
 {
   "options": ["2/7", "2/12", "7/12", "1/7"],
-  "correct_answer": "C",
+  "correct_answer": "7/12",
   "wrong_explanations": {
-    "A": "Added numerators and denominators separately...",
-    "B": "Found LCD but added original numerators...",
-    "D": "Added denominators, kept numerator as 1..."
+    "2/7":  {"text": "Added numerators and denominators separately...", "type": "misconception"},
+    "2/12": {"text": "Found LCD but added original numerators...",       "type": "calc_error"},
+    "1/7":  {"text": "Added denominators, kept numerator as 1...",       "type": "misconception"}
   }
 }
 ```
-Badge letter = array index (0→A, 1→B, 2→C, 3→D). NEVER from option text.
+`correct_answer` = actual option STRING (must match one of the entries in `options`).
+`wrong_explanations` = object keyed by the THREE wrong option STRINGS, each with `{text, type}`.
+`type` ∈ `misconception` | `calc_error` | `partial_logic`.
+The frontend derives the A/B/C/D badge from array index — never store the letter.
 
 ### short_ans additional fields
 ```json
@@ -116,12 +119,15 @@ NOT auto-graded. Highlight keywords in model answer.
     {
       "number": 1,
       "options": ["go", "goes", "went", "going"],
-      "correct_answer": "C",
+      "correct_answer": "went",
+      "accept_also": [],
       "explanation": "Past tense required."
     }
   ]
 }
 ```
+Each blank's `correct_answer` is the actual answer STRING, not a letter.
+Comprehension-cloze blanks may omit `options` to render as free-text input.
 
 ### editing additional fields (English)
 ```json

@@ -162,7 +162,7 @@ the only authoritative count.)
 **Question types:** `mcq`, `short_ans`, `word_problem`, `open_ended`, `cloze`, `editing`
 **Retired:** `true_false`, `fill_blank` (do not use)
 **Difficulty:** `Foundation`, `Standard`, `Advanced`, `HOTS`
-**Correct answer format:** Letter (`"B"`) — never index (`0`)
+**Correct answer format:** Actual option STRING (e.g. `"$160"`) — must match one of the strings in `options`. Never letter `"A"`/`"B"` and never numeric index.
 
 ---
 
