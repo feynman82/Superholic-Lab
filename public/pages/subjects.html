@@ -1834,6 +1834,22 @@
             const canon = unslugify(slug, state.subject);
             if (sb && dbSubject && canon) {
               state.countsBySubTopicMap = await countsBySubTopic(sb, state.level, dbSubject, canon);
+
+              // English Comprehension special case: rows carry NULL sub_topic
+              // because each row's `parts` array holds 5–10 mixed sub-question
+              // classifications. The passage / visual-text split lives on the
+              // `type` column (`comprehension` vs `visual_text`), not on
+              // `sub_topic`. Override the count map with type-derived buckets,
+              // assigning the count to the FIRST canonical sub_topic of each
+              // SUB_TOPIC_GROUPS group so the chip resolver (which sums across
+              // group.subTopicsInCanon) returns the correct total.
+              if (state.subject === 'english' && canon === 'Comprehension') {
+                const typeMap = await countsByType(sb, state.level, dbSubject, canon);
+                state.countsBySubTopicMap = {
+                  'Direct Visual Retrieval':     typeMap['comprehension'] || 0,
+                  'Visual Text Literal Retrieval': typeMap['visual_text'] || 0,
+                };
+              }
             }
           }
         } catch (err) {
