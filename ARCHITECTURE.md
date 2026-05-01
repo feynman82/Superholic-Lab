@@ -591,10 +591,8 @@ D:\Git\Superholic-Lab\
 │   │   ├── qa-panel.js
 │   │   ├── quiz.js             ← 8 types incl. comprehension + visual_text
 │   │   ├── supabase-client.js
-│   │   ├── supabase.js         ← Legacy alias (do not modify)
 │   │   ├── syllabus.js         ← SUB_TOPIC_GROUPS + accordion drawer
 │   │   ├── syllabus-dependencies.js  ← Frontend mirror of canon (regenerated)
-│   │   ├── quiz copy.js        ← BACKUP — pending deletion in cleanup batch
 │   │   └── tutor.js            ← from_quest detection + Socratic mode
 │   └── assets/
 │       ├── favicon.ico
@@ -674,14 +672,14 @@ D:\Git\Superholic-Lab\
 │       ├── QUEST_BACKEND_HANDOFF.md
 │       ├── QUEST_FRONTEND_HANDOFF.md
 │       └── AI_PROVIDER_AND_COMMIT6_HANDOFF.md  ← Workstream B (NEW)
-├── scripts/                   ← Tooling (mix of current + legacy one-shots)
+├── scripts/                   ← Tooling (current only; legacy archived)
 │   ├── question-factory/         ← Surgical prompt builder (used by /generate-batch)
 │   ├── backfill/                 ← Active backfill scripts (Pass 1 / Pass 2)
 │   ├── build-syllabus-mirror.cjs ← CURRENT — regenerates frontend canon mirror
-│   └── (15+ legacy ETL/repair scripts pending cleanup)
+│   └── _legacy/                  ← 18 archived one-shot ETL/repair scripts
 ├── data/
-│   └── questions/             ← LEGACY JSON files — superseded by Supabase
-│                                question_bank; pending archive in cleanup batch
+│   └── questions/
+│       └── _legacy/           ← 38 archived JSON files (pre-Supabase) + SCHEMA.md
 ├── MANIFEST.md                ← Live question bank inventory (Supabase-rooted)
 ├── SYLLABUS_DEPENDENCY.json   ← Canon JSON twin (regenerated)
 ├── hooks/
@@ -778,10 +776,18 @@ COMPLETED
   [x] AI_*_PROVIDER + AI_*_MODEL env vars in Vercel
   [x] api/cron/snapshot-mastery.js + vercel.json cron registration (2 crons)
 
+  --- Doc & code cleanup (2026-05-01) ---
+  [x] data/questions/*.json (38 files) + SCHEMA.md archived to data/questions/_legacy/
+  [x] scripts/ legacy one-shots (18 files) archived to scripts/_legacy/
+  [x] public/js/quiz copy.js + public/js/supabase.js deleted (orphans)
+  [x] .claude/agents/design-guardian - Copy.md deleted (literal duplicate)
+  [x] scripts/prompt-builder.{js,cjs} stale copies deleted (canonical lives at
+       scripts/question-factory/prompt-builder.cjs)
+  [x] quiz.js dead resolveFile() removed
+  [x] /generate-batch.md prompt-builder paths .js → .cjs
+  [x] MANIFEST.md moved from data/questions/ to repo root (canonical location)
+
 PENDING / IN PROGRESS
-  [ ] Legacy file cleanup: data/questions/*.json (38 files), public/js/quiz copy.js,
-       scripts/ one-shots, .claude/agents/design-guardian - Copy.md
-       (pending Batch 4)
   [ ] supabase/019_seed_pedagogy_badges.sql (4 pedagogy badges) — verify status
   [ ] public/pages/faq.html (consolidated 9-section FAQ) — verify status
   [ ] docs/PARENT_FAQ.md + docs/GAMIFICATION_RULES.md — verify status

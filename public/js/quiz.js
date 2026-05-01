@@ -1506,34 +1506,9 @@ window.initQuizEngine = function () {
   }
 
   // ── DATA ENGINE ──
-  function resolveFile(subject, level, topic) {
-    const broadMap = {
-      'primary-1:mathematics': '../data/questions/p1-mathematics-whole-numbers.json',
-      'primary-2:mathematics': '../data/questions/p2-mathematics.json',
-      'primary-2:english': '../data/questions/p2-english.json',
-      'primary-4:mathematics': '../data/questions/p4-mathematics.json',
-      'primary-4:science': '../data/questions/p4-science.json',
-      'primary-4:english': '../data/questions/p4-english.json',
-      'primary-5:mathematics': '../data/questions/p5-mathematics.json',
-      'primary-5:science': '../data/questions/p5-science.json',
-    };
-
-    if (subject === 'english' && state.currentType && ['cloze', 'editing'].includes(state.currentType)) {
-      const levelShort = level.replace('primary-', 'p');
-      return `../data/questions/${levelShort}-english-${state.currentType}.json`;
-    }
-
-    const key = `${level}:${subject}`;
-    const broadPath = broadMap[key];
-    if (!broadPath) return null;
-
-    if (topic && topic !== 'all') {
-      const levelShort = level.replace('primary-', 'p');
-      return `../data/questions/${levelShort}-${subject}-${topic}.json`;
-    }
-
-    return broadPath;
-  }
+  // Question source: Supabase question_bank table (db.from('question_bank')
+  // query is below). Legacy resolveFile() that read data/questions/*.json was
+  // removed 2026-05-01 — data lives in Supabase since the canon-v5 migration.
 
   function shuffle(arr) {
     const a = [...arr];

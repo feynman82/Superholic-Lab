@@ -39,12 +39,10 @@ See `.claude/docs/adr/` for full ADRs.
 
 ## Question Bank Coverage
 
-**Live source of truth:** `data/questions/MANIFEST.md` — calibrated against
-the Supabase `question_bank` table.
-
-⚠ **MANIFEST.md is stale and needs recalibration against Supabase**
-(separate task — flagged in Known Issues below). Inline coverage tables
-have been removed from this dashboard because they drifted out of sync.
+**Live source of truth:** `MANIFEST.md` (repo root) — regenerated from
+Supabase `question_bank` table. Last calibrated 2026-05-01 against canon-v5.
+Inline coverage tables have been removed from this dashboard because they
+drifted out of sync.
 
 **Generation order for systematic expansion:** P4 → P2 → P5 → P6 → P3 → P1.
 Each round must run mandatory Step 0 deduplication (read MANIFEST.md before
@@ -165,7 +163,7 @@ generating) via `/generate-batch`.
 | Issue | Impact | Owner | Status |
 |---|---|---|---|
 | Supabase migrations 019 + 020 | (resolved) — difficulty reclassification + pedagogy badges live | Backend | ✅ Applied |
-| `data/questions/MANIFEST.md` is stale vs Supabase | Medium — generation deduplication can't be trusted | Content | Needs recalibration before next batch |
+| `MANIFEST.md` (root) regeneration cadence | Low — regenerated post-canon-v5 (2026-05-01); needs script to keep it fresh | Content | Add automated regen before next sprint |
 | Stripe in test mode | High — blocks paid customers | Platform | Switch before launch |
 | Plausible analytics on `pricing.html` only | Low — limits funnel visibility | Platform | Roll out before launch |
 
@@ -174,15 +172,19 @@ generating) via `/generate-batch`.
 The following files are local backups, legacy artefacts, or empty drafts.
 Purge before launch:
 
-| File / Dir | Reason |
-|---|---|
-| `public/js/progress - Copy.js` | Local backup file |
-| `public/js/quiz copy.js` | Local backup file |
-| `index - Copy.html` (root) | Backup of old homepage |
-| `init` (root, 0-byte file) | Empty file, unknown origin |
-| `logo draft.png` (root) | Working draft — final logo is in `public/assets/logo.svg` |
-| `sample-questions-new-standard.json` (root) | Legacy — questions now in Supabase `question_bank` |
-| `.claude/agents/design-guardian - Copy.md` | Backup of design-guardian.md |
+| File / Dir | Reason | Status |
+|---|---|---|
+| `public/js/quiz copy.js` | Local backup file | ✅ Deleted 2026-05-01 |
+| `public/js/supabase.js` | Orphan (no callers) — `supabase-client.js` is canonical | ✅ Deleted 2026-05-01 |
+| `.claude/agents/design-guardian - Copy.md` | Literal duplicate | ✅ Deleted 2026-05-01 |
+| `scripts/prompt-builder.{js,cjs}` (root copies) | Stale dups; canonical at `scripts/question-factory/prompt-builder.cjs` | ✅ Deleted 2026-05-01 |
+| `data/questions/*.json` (38 files) + `SCHEMA.md` | Pre-Supabase JSON bank | ✅ Archived to `data/questions/_legacy/` 2026-05-01 |
+| `scripts/*` legacy one-shots (18 files) | One-shot ETL/repair scripts | ✅ Archived to `scripts/_legacy/` 2026-05-01 |
+| `public/js/progress - Copy.js` | Local backup file | Pending |
+| `index - Copy.html` (root) | Backup of old homepage | Pending |
+| `init` (root, 0-byte file) | Empty file, unknown origin | Pending |
+| `logo draft.png` (root) | Working draft — final logo is in `public/assets/logo.svg` | Pending |
+| `sample-questions-new-standard.json` (root) | Legacy — questions now in Supabase `question_bank` | Pending |
 
 ### Editor/IDE config dirs to audit
 

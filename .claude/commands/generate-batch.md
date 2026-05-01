@@ -19,7 +19,7 @@ D:\Git\Superholic-Lab\CLAUDE.md
 D:\Git\Superholic-Lab\AGENTS.md
 D:\Git\Superholic-Lab\MANIFEST.md                    ← existing question IDs
 D:\Git\Superholic-Lab\Master_Question_Template.md    ← full template (read once)
-D:\Git\Superholic-Lab\scripts\question-factory\prompt-builder.js
+D:\Git\Superholic-Lab\scripts\question-factory\prompt-builder.cjs
 ```
 
 After reading, store the full template text in memory as `TEMPLATE_TEXT`.
@@ -229,7 +229,7 @@ Apply these rules:
 Run the prompt builder script to extract only the relevant template sections:
 
 ```bash
-node D:\Git\Superholic-Lab\scripts\question-factory\prompt-builder.js \
+node D:\Git\Superholic-Lab\scripts\question-factory\prompt-builder.cjs \
   --subject="Mathematics" \
   --type="mcq" \
   --levels="Primary 4,Primary 5,Primary 6" \
@@ -339,6 +339,6 @@ After Phase 7, check:
 ## ERROR RECOVERY
 
 - If Supabase insert fails: write the SQL to `D:\Git\Superholic-Lab\scripts\question-factory\failed-{batch_id}.sql` for manual review.
-- If prompt-builder.js fails: fall back to reading the full template, but log a warning.
+- If prompt-builder.cjs fails: fall back to reading the full template, but log a warning.
 - If generation produces invalid JSON: attempt to repair using the validation rules. If repair fails after 2 attempts, skip this batch row and move to the next.
 - Never silently discard a generated question — always log what happened.
