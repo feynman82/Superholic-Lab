@@ -17,7 +17,7 @@ v1.1 was the visual-prototype spec. v2.0 is the production spec.
 |---|---|---|
 | Concurrency | Single active quest at a time | **Up to 3 active, max one per subject** |
 | Day gating | Implicit (steps can be done back-to-back) | **Day N+1 unlocks at SGT midnight AND requires Day N complete** |
-| Day 1 mechanic | Single quiz, "foundation practice" | **12 questions, ramping difficulty curve (4 easy → 4 standard → 4 hard)** |
+| Day 1 mechanic | Single quiz, "foundation practice" | **≈12 graded items, ramping difficulty curve (4 easy → 4 standard → 4 hard) for single-item types; for multi-sub-question types (editing/cloze/comprehension) the outer row count is scaled down so total graded items stay ≈12, ramping where the bank allows** |
 | Day 2 mechanic | Tutor session | **Socratic dialogue: Miss Wena references Day 1 wrong answers, leading questions only for first 5 turns, min 8 messages, auto-saves a Study Note on completion** |
 | Day 3 mechanic | Mastery quiz | **8 questions (mostly hard + 2 transfer questions). Three-way exit branching by score band** |
 | Quest creation | Progress.html buttons only | **Progress.html buttons + auto-modal after any quiz with score ≤ 70%** |
@@ -51,7 +51,7 @@ Everything else from v1.1 — XP rules, level math, badge list, avatar pipeline,
 | P1 | Quest concurrency | Up to 3 active per student. Maximum one per subject. Enforced by `quest_eligibility` table at DB level. |
 | P2 | Quest creation triggers | (a) Progress.html "Generate Quest" buttons on weak topics. (b) Auto-modal after any quiz finishes with score ≤ 70% offering "Want a 3-day plan for [topic]?" |
 | P3 | Day gating rule | Day N+1 unlocks when BOTH conditions met: (a) Day N has been completed AND (b) wall clock has crossed SGT midnight since Day N completion. No "skip cooldown" button — spacing is non-negotiable. |
-| P4 | Day 1 pedagogy | 12 questions, ramping difficulty: 4 Foundation → 4 Standard → 4 Advanced/HOTS. Question order is fixed (no shuffling within bands). Wrong answers logged to `quest.day1_wrong_attempts` for Day 2 carryover. No passing score required — the mechanic is exposure + diagnostic capture. |
+| P4 | Day 1 pedagogy | ≈12 graded items, ramping difficulty: 4 Foundation → 4 Standard → 4 Advanced/HOTS. For single-item types (mcq, short_ans, word_problem, open_ended) this is 12 outer questions. For multi-sub-question types — editing/cloze (~10 items per row) and comprehension (~5 items per row) — the server scales the outer row count down (`questsBatch._subQuestionsPerItem`) so total graded items stay near 12; band ramping is preserved where the bank has rows in multiple bands, otherwise collapsed to whatever bands exist. Question order is fixed (no shuffling within bands). Wrong answers logged to `quest.day1_wrong_attempts` for Day 2 carryover. No passing score required — the mechanic is exposure + diagnostic capture. |
 | P5 | Day 2 pedagogy | Socratic dialogue with Miss Wena. Custom system prompt overlay (`SOCRATIC_QUEST_PROMPT`) instructs her to ask leading questions for the first 5 student turns, never reveal answers in that window, anchor on Day 1 wrong-answer patterns. Minimum 8 message exchanges before "Mark Day 2 Complete" enables. On completion, auto-summarise to Study Note (calls existing `/api/summarize-chat`) — saved to Backpack as the quest's reference material. |
 | P6 | Day 3 pedagogy | 8 questions: 6 hard from quest topic + 2 transfer questions from a related topic (tests depth). Score thresholds: ≥85% → `mastered`. 70-84% → `slight_improvement` (auto-applied). <70% → student picks: `redo` (spawns child quest with `parent_quest_id` linkage) / `slight_improvement` (self-report) / `no_improvement` (honest exit, suggests parent/tutor follow-up). |
 | P7 | Time zone | All "midnight" wall clocks resolve to **Asia/Singapore (SGT, UTC+8)**. Consistent across all students regardless of geography. |
@@ -335,7 +335,7 @@ This section is **non-negotiable** because it's what makes Quest defensible. Eve
 
 **Mechanic:**
 
-- 12 questions, **ramping difficulty curve**: 4 Foundation → 4 Standard → 4 Advanced (last 2 may be HOTS)
+- ≈12 **graded items**, **ramping difficulty curve**: 4 Foundation → 4 Standard → 4 Advanced (last 2 may be HOTS). For single-item types (mcq, short_ans, word_problem, open_ended) this maps 1:1 to 12 outer rows. For multi-sub-question types — editing and cloze (~10 sub-items each) and comprehension (~5 sub-items) — `questsBatch._subQuestionsPerItem` scales the outer row count down so the student-facing item count stays close to 12 (e.g. P6 English Editing → 2-3 outer rows, ~20-30 graded sub-items). Band ramping is preserved when the bank has rows across bands; if a multi-sub-question topic only has one band approved, the curve collapses to that band.
 - Question order is fixed within bands. No shuffling. The slow climb is the point.
 - Selected from `question_bank` filtered by `(quest.subject, quest.topic, quest.level)` and the difficulty band per slot
 - **Wrong answers feed Day 2 tutor context.** On submit, quiz.js writes each wrong attempt to `remedial_quests.day1_wrong_attempts`:
@@ -352,7 +352,7 @@ This section is **non-negotiable** because it's what makes Quest defensible. Eve
     }
   ]
   ```
-- **No passing score blocks completion.** All 12 questions must be answered (no skipping). Day 1 is exposure + diagnostic; the gate is participation.
+- **No passing score blocks completion.** All graded items must be answered (no skipping). Day 1 is exposure + diagnostic; the gate is participation.
 - **XP:** Standard quiz_complete (10 XP) + score-based bonus (per gamification table) + quest_step_complete (50 XP).
 
 **Why it works:** Mastery learning research (Bloom 1968, Guskey 2010) shows ramping practice rebuilds confidence faster than random difficulty. The early easy wins are pedagogically essential, not concessions.
