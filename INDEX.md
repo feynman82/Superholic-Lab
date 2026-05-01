@@ -221,8 +221,8 @@ the only authoritative count.)
 | Path | Contents |
 |---|---|
 | `.claude/rules/` | 13 always-active rules: coding-style, design-system, development-workflow, efficiency, git-workflow, moe-templates, patterns, pedagogical-standards, performance, safety, security, tech-stack, testing |
-| `.claude/commands/` | 8 slash commands: `/build-fix`, `/code-review`, `/deploy`, `/generate-batch`, `/generate-questions`, `/inventory`, `/plan`, `/security-check` |
-| `.claude/skills/` | 6 domain skills: `content-review`, `page-builder`, `question-factory`, `quiz-engine`, `supabase-patterns`, `ui-ux-pro-max` |
+| `.claude/commands/` | 7 slash commands: `/build-fix`, `/code-review`, `/deploy`, `/generate-batch`, `/inventory`, `/plan`, `/security-check` |
+| `.claude/skills/` | 5 domain skills: `content-review`, `page-builder`, `quiz-engine`, `supabase-patterns`, `ui-ux-pro-max` |
 | `.claude/agents/` | Agent prompt files (note: `AGENTS.md` is the canonical registry) |
 | `.claude/memory/` | Persistent session memory (MEMORY.md index) |
 | `.claude/docs/adr/` | Architecture Decision Records |

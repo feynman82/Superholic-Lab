@@ -36,15 +36,22 @@ Run this SQL via `supabase:execute_sql`. This returns all (subject, level, topic
 type, difficulty) combinations with their counts and a priority score.
 
 ```sql
--- ─── Canon source of truth ───────────────────────────────────────────────
--- All (subject, topic) values below come from canon_topics in Supabase
--- (FK-enforced; off-canon INSERTs fail with PG 23503). Verified to match
--- lib/api/quest-pedagogy.js SYLLABUS_DEPENDENCIES exactly:
---   Mathematics: 23 topics  Science: 10 topics  English: 7 topics
--- Per-level filter follows Master_Question_Template.md §4 "Level guidance"
--- (informational; not FK-enforced). Edit there first if syllabus shifts.
+-- ─── Canon v5 source of truth (2026-05-01) ───────────────────────────────
+-- All (subject, topic) values below come from canon_topics in Supabase.
+-- question_bank.(level, subject, topic, sub_topic) → canon_level_topics
+-- via FK fk_qb_level_topic (VALIDATED). Off-canon INSERTs fail with PG 23503.
+--
+-- v5 totals: Mathematics 26 topics, Science 6 topics, English 7 topics.
+-- Per-level introduction follows SYLLABUS_DEPENDENCY.json (root) and
+-- Master_Question_Template.md §4. Edit those first if syllabus shifts.
+--
+-- NOTE: English topics are not yet in this gap query — the cloze/editing/
+-- comprehension/visual_text type matrix needs separate handling.
+-- TODO: extend with English (Grammar, Vocabulary, Comprehension, Cloze,
+-- Editing, Synthesis) once English generation patterns are stable.
 WITH target_matrix AS (
-  -- Mathematics — 23 canonical topics
+  -- Mathematics — 26 canonical v5 topics (Speed removed; Money, Time,
+  -- Length and Mass, Volume of Liquid added)
   SELECT 'Mathematics' AS subject, level, topic, type, difficulty
   FROM (VALUES
     ('Primary 1'),('Primary 2'),('Primary 3'),
@@ -55,24 +62,26 @@ WITH target_matrix AS (
     ('Area and Perimeter'),('Area of Triangle'),('Average'),
     ('Circles'),('Data Analysis'),('Decimals'),
     ('Factors and Multiples'),('Fractions'),('Geometry'),
+    ('Length and Mass'),('Money'),
     ('Multiplication and Division'),('Multiplication Tables'),
     ('Percentage'),('Pie Charts'),('Rate'),('Ratio'),
-    ('Shapes and Patterns'),('Speed'),('Symmetry'),
-    ('Volume'),('Whole Numbers')
+    ('Shapes and Patterns'),('Symmetry'),('Time'),
+    ('Volume'),('Volume of Liquid'),('Whole Numbers')
   ) t(topic)
   CROSS JOIN (VALUES ('mcq'),('short_ans'),('word_problem')) ty(type)
   CROSS JOIN (VALUES ('Foundation'),('Standard'),('Advanced'),('HOTS')) d(difficulty)
 
   UNION ALL
 
-  -- Science — 10 canonical topics (P3-P6 only; no Science syllabus at P1/P2)
+  -- Science — 6 canonical v5 topics (Heat/Light/Forces/Cells consolidated
+  -- into Energy/Interactions/Systems). P3-P6 only; no Science syllabus at P1/P2.
   SELECT 'Science', level, topic, type, difficulty
   FROM (VALUES
     ('Primary 3'),('Primary 4'),('Primary 5'),('Primary 6')
   ) lvl(level)
   CROSS JOIN (VALUES
-    ('Cells'),('Cycles'),('Diversity'),('Energy'),('Forces'),
-    ('Heat'),('Interactions'),('Light'),('Matter'),('Systems')
+    ('Cycles'),('Diversity'),('Energy'),
+    ('Interactions'),('Matter'),('Systems')
   ) t(topic)
   CROSS JOIN (VALUES ('mcq'),('open_ended')) ty(type)
   CROSS JOIN (VALUES ('Foundation'),('Standard'),('Advanced'),('HOTS')) d(difficulty)
@@ -83,37 +92,67 @@ actual AS (
   GROUP BY subject, level, topic, type, difficulty
 ),
 valid_combinations AS (
-  -- Per-level topic gating per Master_Question_Template §4 Level guidance.
-  -- A topic is valid at level N if it's introduced at N or earlier.
+  -- Per-level topic gating from canon_level_topics (mirrors first_introduced
+  -- in SYLLABUS_DEPENDENCY.json). A topic is valid at level N if introduced
+  -- at N or earlier.
   SELECT m.*
   FROM target_matrix m
   WHERE (
-    -- Mathematics — cumulative per level (P1/P2 → P3/P4 → P5/P6 expansion)
+    -- Mathematics — cumulative by first_introduced
     (m.subject = 'Mathematics' AND (
-      (m.level IN ('Primary 1','Primary 2') AND m.topic IN (
-        'Whole Numbers','Multiplication Tables','Addition and Subtraction','Shapes and Patterns'
+      -- P1 (8 topics)
+      (m.level = 'Primary 1' AND m.topic IN (
+        'Whole Numbers','Addition and Subtraction','Multiplication and Division',
+        'Money','Length and Mass','Time','Shapes and Patterns','Data Analysis'
       )) OR
-      (m.level IN ('Primary 3','Primary 4') AND m.topic IN (
-        'Whole Numbers','Multiplication Tables','Addition and Subtraction','Shapes and Patterns',
-        'Multiplication and Division','Fractions','Decimals','Angles','Geometry',
-        'Area and Perimeter','Symmetry','Factors and Multiples','Data Analysis'
+      -- P2 adds 3 (Multiplication Tables, Volume of Liquid, Fractions) = 11
+      (m.level = 'Primary 2' AND m.topic IN (
+        'Whole Numbers','Addition and Subtraction','Multiplication and Division',
+        'Money','Length and Mass','Time','Shapes and Patterns','Data Analysis',
+        'Multiplication Tables','Volume of Liquid','Fractions'
       )) OR
-      (m.level IN ('Primary 5','Primary 6') AND m.topic IN (
-        'Whole Numbers','Multiplication Tables','Addition and Subtraction','Shapes and Patterns',
-        'Multiplication and Division','Fractions','Decimals','Angles','Geometry',
-        'Area and Perimeter','Symmetry','Factors and Multiples','Data Analysis',
-        'Percentage','Ratio','Rate','Speed','Average','Algebra',
-        'Area of Triangle','Circles','Volume','Pie Charts'
+      -- P3 adds 3 (Angles, Geometry, Area and Perimeter) = 14
+      (m.level = 'Primary 3' AND m.topic IN (
+        'Whole Numbers','Addition and Subtraction','Multiplication and Division',
+        'Money','Length and Mass','Time','Shapes and Patterns','Data Analysis',
+        'Multiplication Tables','Volume of Liquid','Fractions',
+        'Angles','Geometry','Area and Perimeter'
+      )) OR
+      -- P4 adds 4 (Factors and Multiples, Decimals, Symmetry, Pie Charts) = 18
+      (m.level = 'Primary 4' AND m.topic IN (
+        'Whole Numbers','Addition and Subtraction','Multiplication and Division',
+        'Money','Length and Mass','Time','Shapes and Patterns','Data Analysis',
+        'Multiplication Tables','Volume of Liquid','Fractions',
+        'Angles','Geometry','Area and Perimeter',
+        'Factors and Multiples','Decimals','Symmetry','Pie Charts'
+      )) OR
+      -- P5 adds 6 (Area of Triangle, Volume, Percentage, Ratio, Rate, Average) = 24
+      (m.level = 'Primary 5' AND m.topic IN (
+        'Whole Numbers','Addition and Subtraction','Multiplication and Division',
+        'Money','Length and Mass','Time','Shapes and Patterns','Data Analysis',
+        'Multiplication Tables','Volume of Liquid','Fractions',
+        'Angles','Geometry','Area and Perimeter',
+        'Factors and Multiples','Decimals','Symmetry','Pie Charts',
+        'Area of Triangle','Volume','Percentage','Ratio','Rate','Average'
+      )) OR
+      -- P6 adds 2 (Algebra, Circles) = 26
+      (m.level = 'Primary 6' AND m.topic IN (
+        'Whole Numbers','Addition and Subtraction','Multiplication and Division',
+        'Money','Length and Mass','Time','Shapes and Patterns','Data Analysis',
+        'Multiplication Tables','Volume of Liquid','Fractions',
+        'Angles','Geometry','Area and Perimeter',
+        'Factors and Multiples','Decimals','Symmetry','Pie Charts',
+        'Area of Triangle','Volume','Percentage','Ratio','Rate','Average',
+        'Algebra','Circles'
       ))
     )) OR
-    -- Science — P3/P4 introduces 7 topics, P5/P6 adds Energy/Forces/Cells
+    -- Science — Diversity/Cycles/Interactions at P3 (3); +Matter/Systems/Energy at P4-P6 (6)
     (m.subject = 'Science' AND (
-      (m.level IN ('Primary 3','Primary 4') AND m.topic IN (
-        'Diversity','Matter','Cycles','Systems','Interactions','Heat','Light'
+      (m.level = 'Primary 3' AND m.topic IN (
+        'Diversity','Cycles','Interactions'
       )) OR
-      (m.level IN ('Primary 5','Primary 6') AND m.topic IN (
-        'Diversity','Matter','Cycles','Systems','Interactions','Heat','Light',
-        'Energy','Forces','Cells'
+      (m.level IN ('Primary 4','Primary 5','Primary 6') AND m.topic IN (
+        'Diversity','Cycles','Interactions','Matter','Systems','Energy'
       ))
     ))
   )

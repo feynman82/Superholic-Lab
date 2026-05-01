@@ -11,8 +11,8 @@ Run this before committing any new questions to the repo.
 
 ## When to Use
 
-- After generating questions with `/generate-questions`
-- Before committing new content to `data/questions/`
+- After generating questions with `/generate-batch`
+- Before committing any new question bank content (Supabase `question_bank`)
 - When reviewing existing question bank for quality
 - When a user reports a question error
 - Periodic quality audits

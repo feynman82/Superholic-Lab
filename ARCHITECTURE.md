@@ -241,7 +241,7 @@ TABLE: canon_topics
   topic   text
   PRIMARY KEY (subject, topic)
 
-  Mathematics: 25 rows (Whole Numbers, Money, Time, Length and Mass,
+  Mathematics: 26 rows (Whole Numbers, Money, Time, Length and Mass,
     Volume of Liquid, Addition and Subtraction, Multiplication and Division,
     Multiplication Tables, Shapes and Patterns, Data Analysis, Fractions,
     Angles, Geometry, Area and Perimeter, Factors and Multiples, Decimals,
@@ -688,8 +688,8 @@ D:\Git\Superholic-Lab\
 │   └── hooks.json             ← Secret detection + CSS enforcement
 └── .claude/
     ├── rules/                 ← 13 always-active rule files
-    ├── commands/              ← 7 active slash commands (/generate-questions deprecated)
-    ├── skills/                ← 5 active domain skills (question-factory deprecated)
+    ├── commands/              ← 7 slash commands
+    ├── skills/                ← 5 domain skills
     ├── agents/                ← 4 file-based agents (see AGENTS.md registry)
     └── settings.local.json    ← MCP permissions (gitignored)
 
@@ -779,10 +779,6 @@ COMPLETED
   [x] api/cron/snapshot-mastery.js + vercel.json cron registration (2 crons)
 
 PENDING / IN PROGRESS
-  [ ] /generate-batch SQL canon list update (still has 23 Math + 10 Science
-       topics; needs v5 sync — pending Batch 3 of doc refresh)
-  [ ] Legacy slash commands + skills cleanup (/generate-questions,
-       question-factory skill — pending Batch 3)
   [ ] Legacy file cleanup: data/questions/*.json (38 files), public/js/quiz copy.js,
        scripts/ one-shots, .claude/agents/design-guardian - Copy.md
        (pending Batch 4)

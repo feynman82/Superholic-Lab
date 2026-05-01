@@ -211,18 +211,17 @@ Authority: `docs/QUEST_PAGE_SPEC.md` §12 (XP rules), §14 (badge list).
   `coding-style`, `design-system`, `development-workflow`, `efficiency`,
   `git-workflow`, `moe-templates`, `patterns`, `pedagogical-standards`,
   `performance`, `safety`, `security`, `tech-stack`, `testing`
+  *(`moe-templates` is now a thin pointer to `Master_Question_Template.md`
+  v5.0 — read the master template directly for question schemas,
+  difficulty calibration, and visual payload routing.)*
 
 **Commands** (`.claude/commands/`) — 7 slash commands:
   `/build-fix`, `/code-review`, `/deploy`, `/generate-batch`,
   `/inventory`, `/plan`, `/security-check`
-  *(`/generate-questions` is deprecated — use `/generate-batch` for all
-  question generation; the file is pending removal in cleanup batch.)*
 
-**Skills** (`.claude/skills/`) — 5 active domain skills:
+**Skills** (`.claude/skills/`) — 5 domain skills:
   `content-review`, `page-builder`, `quiz-engine`, `supabase-patterns`,
   `ui-ux-pro-max`
-  *(`question-factory` skill is deprecated; the live workflow is in
-  `.claude/commands/generate-batch.md`.)*
 
 **Agents** (`AGENTS.md`) — 4 file-based subagents:
   `design-guardian`, `miss_wena`, `exam-architect`, `question-coder`
@@ -372,8 +371,8 @@ The frontend mirror lives in `public/js/syllabus-dependencies.js` and the
 JSON twin at root `SYLLABUS_DEPENDENCY.json`. The build script
 `scripts/build-syllabus-mirror.cjs` regenerates the mirror from canon SQL.
 
-**Mathematics: 25 topics** (canon v5 added Money, Length and Mass,
-Volume of Liquid, Time to the existing 21).
+**Mathematics: 26 topics** (canon v5 added Money, Length and Mass,
+Volume of Liquid, Time; removed Speed).
 **Science: 6 topics** (Diversity, Cycles, Matter, Systems, Energy,
 Interactions — earlier per-grade topics like Heat/Light/Forces/Cells
 consolidated into these six).
