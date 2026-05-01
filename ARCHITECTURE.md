@@ -1,5 +1,5 @@
 # SUPERHOLIC LAB — ARCHITECTURE BRIEFING
-# Version 4.1 | Updated 2026-04-27
+# Version 5.0 | Updated 2026-05-01 (Canon v5 era)
 # Purpose: Source of truth for Claude Code on infrastructure,
 #          database schema, API routes, and build state.
 
@@ -84,13 +84,14 @@ INFRASTRUCTURE
   ✓ Cloudflare  DNS: www.superholiclab.com → Vercel
   ✓ Supabase    SG region (rlmqsbxevuutugtyysjr), RLS on all tables
   ✓ Stripe      Test mode (webhook configured, whsec set in Vercel)
-  ✓ Gemini      gemini-3-flash-preview (Miss Wena chat, summarise, exam-gen primary, quest narrative)
+  ✓ OpenAI      PRIMARY for chat, summarize, grade_open, question_gen, exam_gen,
+                quest_narrative (all default to gpt-4o-mini except question_gen
+                which uses o4-mini). All routed via AI_ROUTING + callAI() in
+                lib/api/handlers.js — provider/model swappable via env vars.
   ✓ Anthropic   claude-3-5-sonnet-20241022 (bulk question gen via /api/generate),
-                claude-haiku-4-5-20251001 (exam-gen fallback)
-  ✓ OpenAI      LIVE for grading (gpt-4o-mini in handleGradeAnswer) and
-                on-demand question gen (o4-mini in handleGenerateQuestion).
-                Migration of remaining endpoints (chat, summarize, exam,
-                quest narrative) to OpenAI is PENDING (Workstream B handoff).
+                claude-haiku-4-5-20251001 (in-handler exam-gen fallback)
+  ✓ Gemini      Legacy callGemini() helper retained in handlers.js but no longer
+                wired as the default for any task.
   ✓ Plausible   Analytics script tag (rollout in progress)
   ✓ MCP         supabase + github + filesystem (in Claude Code sessions)
   ✓ Auth        Email/password + Google OAuth
@@ -112,7 +113,7 @@ Do NOT create new api/*.js files — add handlers to lib/api/handlers.js
 and register them in api/index.js + vercel.json.
 
 ────────────────────────────────────────────────────────────
-24 ROUTES (current — as of 2026-04-27)
+31 ROUTES (current — as of 2026-05-01)
 ────────────────────────────────────────────────────────────
 
   /api/chat                    handleChat              Miss Wena tutor + Socratic Quest
@@ -139,6 +140,13 @@ and register them in api/index.js + vercel.json.
   /api/award-xp                handleAwardXP           XP grant (server-validated allow-list)
   /api/quests                  handleQuestsRouter      List + sub-routes dispatcher
   /api/quests/:path*           handleQuestsRouter      Wildcard rewrite for sub-routes
+  /api/account-activity        handleAccountActivity   Account activity feed (parent dashboard)
+  /api/log-activity            handleLogActivity       Append rows to activity log
+  /api/learner-export          handleLearnerExport     Per-child PDPA export bundle
+  /api/family-activity         handleFamilyActivity    Family-wide activity rollup
+  /api/weekly-digest           handleWeeklyDigest      Weekly progress digest payload
+  /api/syllabus-tree           handleSyllabusTree      Returns canon_level_topics tree (UI accordion)
+  /api/recent-attempts         handleRecentAttempts    Recent quiz_attempts feed
 
 ────────────────────────────────────────────────────────────
 QUEST SUB-ROUTES (handled by handleQuestsRouter)
@@ -155,40 +163,39 @@ QUEST SUB-ROUTES (handled by handleQuestsRouter)
 AI MODEL ROUTING (current — actual handlers.js state)
 ────────────────────────────────────────────────────────────
 
-Per direct inspection of lib/api/handlers.js as of 2026-04-27:
+All AI calls route through AI_ROUTING + callAI(task, opts) at the top of
+lib/api/handlers.js. Defaults below; each task is overridable via
+AI_<TASK>_PROVIDER and AI_<TASK>_MODEL env vars in Vercel.
 
-  Endpoint                    | Provider          | Model
-  ────────────────────────────────────────────────────────────────────
-  /api/chat (Miss Wena)       | Gemini            | gemini-3-flash-preview
-  /api/summarize-chat         | Gemini            | gemini-3-flash-preview
-  /api/grade-answer           | OpenAI ✅          | gpt-4o-mini (live)
-  /api/generate-question      | OpenAI ✅          | o4-mini (live)
-  /api/generate (bulk)        | Anthropic         | claude-3-5-sonnet-20241022
-  /api/generate-exam          | Gemini → Claude   | Gemini primary; claude-haiku-4-5-20251001 fallback
-  /api/generate-quest (narrative) | Gemini       | gemini-3-flash-preview
-  /api/analyze-weakness       | (no AI)           | Pure SQL + BKT heuristics
+  Task             | Default provider | Default model                | Endpoint(s)
+  ──────────────────────────────────────────────────────────────────────────────────
+  chat             | OpenAI           | gpt-4o-mini                  | /api/chat (Miss Wena)
+  summarize        | OpenAI           | gpt-4o-mini                  | /api/summarize-chat
+  grade_open       | OpenAI           | gpt-4o-mini                  | /api/grade-answer
+  question_gen     | OpenAI           | o4-mini                      | /api/generate-question
+  exam_gen         | OpenAI           | gpt-4o-mini                  | /api/generate-exam (primary)
+  quest_narrative  | OpenAI           | gpt-4o-mini                  | /api/generate-quest narrative
+  bulk_question    | Anthropic        | claude-3-5-sonnet-20241022   | /api/generate (bulk)
+
+  In-handler fallbacks (not in AI_ROUTING):
+    /api/generate-exam falls back to Anthropic claude-haiku-4-5-20251001 if
+    the OpenAI primary fails (see handleGenerateExam in handlers.js).
+
+  /api/analyze-weakness uses NO AI — pure SQL + BKT heuristics.
 
   Helper functions in lib/api/handlers.js:
-    callGemini(prompt, opts)              → gemini-3-flash-preview
-    callClaudeRaw(systemPrompt, userPrompt, opts) → claude-3-5-sonnet-20241022 default
-    OpenAI client `openai` instantiated at top of file; called via
-    direct fetch in handleGradeAnswer and via openai.chat.completions
-    in handleGenerateQuestion.
+    callAI(task, { systemPrompt, userPrompt, ... })  → routes via AI_ROUTING
+    callClaudeRaw(systemPrompt, userPrompt, opts)    → Anthropic direct
+    callGemini(prompt, opts)                         → LEGACY, no longer
+                                                       wired as default
+    openai client                                    → direct calls used by
+                                                       handleGradeAnswer /
+                                                       handleGenerateQuestion
+                                                       (also routed via callAI
+                                                       in newer paths)
 
-  PENDING (Workstream B — combined handoff):
-    Introduce AI_ROUTING config object + callAI(task, opts) wrapper.
-    Each task ('chat' | 'summarize' | 'grade_open' | 'question_gen' |
-    'exam_gen' | 'analyze' | 'quest_narrative') reads provider + model
-    from env vars. Default targets:
-      chat            → OpenAI gpt-4o-mini (migrate from Gemini)
-      summarize       → OpenAI gpt-4o-mini (migrate from Gemini)
-      grade_open      → OpenAI gpt-4o-mini (already live; just normalised)
-      question_gen    → OpenAI o4-mini (already live; just normalised)
-      exam_gen        → OpenAI gpt-4o-mini (migrate primary from Gemini)
-      quest_narrative → OpenAI gpt-4o-mini (migrate from Gemini)
-      analyze         → no migration (no AI used)
-    Bulk question gen via /api/generate stays on Anthropic Claude Sonnet.
-    To swap providers in future: change env vars in Vercel — no code change.
+  To swap providers: set AI_<TASK>_PROVIDER + AI_<TASK>_MODEL in Vercel — no
+  code change required.
 
 ────────────────────────────────────────────────────────────
 BKT WEAKNESS ANALYSIS — COGNITIVE SKILLS → MOE AOs
@@ -226,6 +233,52 @@ RLS PATTERN FOR STUDENT DATA (always use this — not auth.uid() = student_id):
   student_id IN (SELECT id FROM students WHERE parent_id = auth.uid())
 
 ────────────────────────────────────────────────────────────
+CANON TABLES (v5 — FK-enforced source of truth for syllabus)
+────────────────────────────────────────────────────────────
+
+TABLE: canon_topics
+  subject text   'Mathematics' | 'Science' | 'English'
+  topic   text
+  PRIMARY KEY (subject, topic)
+
+  Mathematics: 25 rows (Whole Numbers, Money, Time, Length and Mass,
+    Volume of Liquid, Addition and Subtraction, Multiplication and Division,
+    Multiplication Tables, Shapes and Patterns, Data Analysis, Fractions,
+    Angles, Geometry, Area and Perimeter, Factors and Multiples, Decimals,
+    Symmetry, Pie Charts, Area of Triangle, Volume, Percentage, Ratio, Rate,
+    Average, Algebra, Circles)
+  Science: 6 rows (Diversity, Cycles, Matter, Systems, Energy, Interactions)
+  English: 7 rows (Grammar, Vocabulary, Comprehension, Cloze, Editing,
+    Synthesis, Summary Writing)
+
+TABLE: canon_level_topics  (the FK target)
+  level     text   'Primary 1' .. 'Primary 6'
+  subject   text   FK → canon_topics(subject, topic) component
+  topic     text
+  sub_topic text   may be NULL for English Comprehension
+  PRIMARY KEY (level, subject, topic, sub_topic)
+  FK (subject, topic) → canon_topics(subject, topic)
+
+  ~292 rows total. The frontend mirror at public/js/syllabus-dependencies.js
+  and the JSON twin SYLLABUS_DEPENDENCY.json are regenerated by
+  scripts/build-syllabus-mirror.cjs.
+
+CONSTRAINT: fk_qb_level_topic (on question_bank, VALIDATED)
+  question_bank(level, subject, topic, sub_topic)
+    → canon_level_topics(level, subject, topic, sub_topic)
+
+  Off-canon INSERTs fail with PG 23503. This is the bedrock guarantee that
+  no question can drift outside the v5 syllabus.
+
+ENGLISH COMPREHENSION SPECIAL-CASE
+  Rows for topic='Comprehension' have sub_topic=NULL. UI groups them by
+  type instead — type='comprehension' renders as Passage Comprehension,
+  type='visual_text' renders as Visual Text Comprehension. See
+  public/js/syllabus.js (SUB_TOPIC_GROUPS, resolveSubTopicGroup).
+  When filtering quiz batches for Comprehension, filter by type, not
+  sub_topic.
+
+────────────────────────────────────────────────────────────
 CORE TABLES
 ────────────────────────────────────────────────────────────
 
@@ -234,7 +287,7 @@ TABLE: profiles
   email               text
   full_name           text
   role                text   'parent' | 'admin' | 'sub-admin'
-  subscription_tier   text   'trial' | 'all_subjects' | 'family' | 'single_subject'
+  subscription_tier   text   'trial' | 'all_subjects' | 'family'
   stripe_customer_id  text   (set by webhook on first checkout)
   trial_started_at    timestamptz
   trial_ends_at       timestamptz  (7 days after created_at)
@@ -486,7 +539,7 @@ D:\Git\Superholic-Lab\
 ├── Master_Question_Template.md  ← PSLE question type schemas (7 types)
 ├── .env                     ← All secrets (gitignored)
 ├── .mcp.json                ← MCP server config (gitignored)
-├── vercel.json              ← 24 rewrites + security headers + 1 cron
+├── vercel.json              ← 31 rewrites + security headers + 2 crons
 ├── package.json             ← Node 24.x, ESM, 3 prod deps
 ├── next.config.mjs          ← Next.js config (for /quest route)
 ├── tsconfig.json            ← TypeScript config (for src/)
@@ -524,20 +577,24 @@ D:\Git\Superholic-Lab\
 │   │   ├── app-shell.js
 │   │   ├── auth.js
 │   │   ├── bottom-nav.js       ← <global-bottom-nav> 5-item nav
-│   │   ├── diagram-library.js  ← Visual payload render
+│   │   ├── diagram-library.js  ← Visual payload render (10+ primitives)
 │   │   ├── exam-generator.js   ← Pull questions from Supabase to generate quiz
 │   │   ├── exam-renderer.js    ← Generate printable version of practice paper
 │   │   ├── exam-templates.js   ← Question set for WA, EOY and PSLE
 │   │   ├── exam.js             ← Exam runtime
-│   │   ├── footer.js           ← <global-footer> (FAQ link added in Workstream B)
+│   │   ├── feedback.js         ← Wrong-answer feedback shell
+│   │   ├── footer.js           ← <global-footer>
 │   │   ├── header.js           ← <global-header>
 │   │   ├── hud-strip.js        ← Vanilla HUD partial
 │   │   ├── icons.js            ← 13-icon set, vanilla side
 │   │   ├── progress.js         ← renderQuestTray()
 │   │   ├── qa-panel.js
-│   │   ├── quiz.js             ← from_quest detection + advance-step
+│   │   ├── quiz.js             ← 8 types incl. comprehension + visual_text
 │   │   ├── supabase-client.js
 │   │   ├── supabase.js         ← Legacy alias (do not modify)
+│   │   ├── syllabus.js         ← SUB_TOPIC_GROUPS + accordion drawer
+│   │   ├── syllabus-dependencies.js  ← Frontend mirror of canon (regenerated)
+│   │   ├── quiz copy.js        ← BACKUP — pending deletion in cleanup batch
 │   │   └── tutor.js            ← from_quest detection + Socratic mode
 │   └── assets/
 │       ├── favicon.ico
@@ -617,18 +674,27 @@ D:\Git\Superholic-Lab\
 │       ├── QUEST_BACKEND_HANDOFF.md
 │       ├── QUEST_FRONTEND_HANDOFF.md
 │       └── AI_PROVIDER_AND_COMMIT6_HANDOFF.md  ← Workstream B (NEW)
+├── scripts/                   ← Tooling (mix of current + legacy one-shots)
+│   ├── question-factory/         ← Surgical prompt builder (used by /generate-batch)
+│   ├── backfill/                 ← Active backfill scripts (Pass 1 / Pass 2)
+│   ├── build-syllabus-mirror.cjs ← CURRENT — regenerates frontend canon mirror
+│   └── (15+ legacy ETL/repair scripts pending cleanup)
+├── data/
+│   └── questions/             ← LEGACY JSON files — superseded by Supabase
+│                                question_bank; pending archive in cleanup batch
+├── MANIFEST.md                ← Live question bank inventory (Supabase-rooted)
+├── SYLLABUS_DEPENDENCY.json   ← Canon JSON twin (regenerated)
 ├── hooks/
 │   └── hooks.json             ← Secret detection + CSS enforcement
 └── .claude/
     ├── rules/                 ← 13 always-active rule files
-    ├── commands/              ← 8 slash commands
-    ├── skills/                ← 6 domain skills
-    ├── agents/                ← 5 agent prompt files (note:
-    │                           AGENTS.md is the canonical registry)
+    ├── commands/              ← 7 active slash commands (/generate-questions deprecated)
+    ├── skills/                ← 5 active domain skills (question-factory deprecated)
+    ├── agents/                ← 4 file-based agents (see AGENTS.md registry)
     └── settings.local.json    ← MCP permissions (gitignored)
 
 ═══════════════════════════════════════════════════════════════
-BUILD STATUS (as of 2026-04-27)
+BUILD STATUS (as of 2026-05-01 — Canon v5 era)
 ═══════════════════════════════════════════════════════════════
 
 COMPLETED
@@ -660,7 +726,8 @@ COMPLETED
   [x] Student photo upload (Supabase Storage, avatars bucket)
   [x] ECC framework (rules, commands, agents, hooks, skills)
   [x] Single gateway API (api/index.js → lib/api/handlers.js, 24 routes)
-  [x] vercel.json: 24 rewrites + security headers + 1 cron
+  [x] vercel.json: 31 rewrites + security headers + 2 crons
+       (auto-fill-bank weekly + snapshot-mastery daily)
   [x] subscriptions table: UNIQUE constraint on stripe_subscription_id (009)
   [x] Subject-specific pages (subject-mathematics/science/english.html)
 
@@ -689,30 +756,45 @@ COMPLETED
   [x] bottom-nav.js (canonical 5-item layout, setQuestActive API)
   [x] icons.js + src/components/icons/index.tsx (13-icon set)
 
-PENDING / IN PROGRESS
-  Currently: E2E testing the Lily Tan flow (docs/QUEST_PAGE_SPEC.md §18)
+  --- Canon v5 migration (2026-04-27 → 2026-05-01) ---
+  [x] canon_topics + canon_level_topics tables seeded
+  [x] fk_qb_level_topic FK constraint VALIDATED on question_bank
+  [x] 3,571 orphan rows reconciled to canon (0 orphans remaining)
+  [x] 4 new Math topics added (Money, Time, Length and Mass, Volume of Liquid)
+  [x] Science consolidated to 6 topics
+  [x] Frontend mirror (public/js/syllabus-dependencies.js) + JSON twin
+       (SYLLABUS_DEPENDENCY.json) regenerated by build-syllabus-mirror.cjs
+  [x] Master Question Template bumped to v5.0 (8 question types — adds visual_text)
+  [x] Sub-topic accordion drawer in subjects.html (English Comprehension/Cloze
+       + extended to Math/Science)
+  [x] English Comprehension type-based filtering (rows have sub_topic=NULL;
+       UI groups by type='comprehension' / 'visual_text')
 
-  [ ] Workstream B handoff (combined: AI Provider Migration + Phase 3 Commit 6):
-      - lib/api/handlers.js: AI_ROUTING config + callAI() wrapper
-      - Migrate /api/chat, /api/summarize-chat, /api/generate-exam (primary),
-        /api/generate-quest narrative to OpenAI gpt-4o-mini
-      - Normalise existing OpenAI calls (handleGradeAnswer, handleGenerateQuestion)
-        through the same callAI() wrapper
-      - api/cron/snapshot-mastery.js (daily 03:00 SGT)
-      - vercel.json cron registration
-      - public/pages/faq.html (consolidated 9-section FAQ with search pill)
-      - public/js/footer.js — add FAQ dropdown link
-      - supabase/019_seed_pedagogy_badges.sql (4 pedagogy badges)
-      - docs/PARENT_FAQ.md (extracted from spec §16, plus other 3 pillars)
-      - docs/GAMIFICATION_RULES.md (extracted from spec §12)
-      - Add OPENAI_API_KEY (already present), AI_*_PROVIDER + AI_*_MODEL env vars
+  --- Workstream B (AI Provider Migration) — COMPLETE ---
+  [x] AI_ROUTING config + callAI() wrapper in lib/api/handlers.js
+  [x] /api/chat, /api/summarize-chat, /api/generate-exam (primary),
+       /api/generate-quest narrative migrated to OpenAI gpt-4o-mini
+  [x] handleGradeAnswer + handleGenerateQuestion normalised
+  [x] AI_*_PROVIDER + AI_*_MODEL env vars in Vercel
+  [x] api/cron/snapshot-mastery.js + vercel.json cron registration (2 crons)
+
+PENDING / IN PROGRESS
+  [ ] /generate-batch SQL canon list update (still has 23 Math + 10 Science
+       topics; needs v5 sync — pending Batch 3 of doc refresh)
+  [ ] Legacy slash commands + skills cleanup (/generate-questions,
+       question-factory skill — pending Batch 3)
+  [ ] Legacy file cleanup: data/questions/*.json (38 files), public/js/quiz copy.js,
+       scripts/ one-shots, .claude/agents/design-guardian - Copy.md
+       (pending Batch 4)
+  [ ] supabase/019_seed_pedagogy_badges.sql (4 pedagogy badges) — verify status
+  [ ] public/pages/faq.html (consolidated 9-section FAQ) — verify status
+  [ ] docs/PARENT_FAQ.md + docs/GAMIFICATION_RULES.md — verify status
   [ ] Analytics: Plausible script on ALL pages (currently pricing.html only)
   [ ] SEO: meta descriptions, Open Graph, JSON-LD on all pages
   [ ] Stripe: switch from test mode to live mode
-  [ ] Question bank: systematic expansion (P5 maths/science most complete;
-       P1, P3, P6 mostly empty). See data/questions/MANIFEST.md.
-  [ ] Pre-launch cleanup of legacy files (see PROJECT_DASHBOARD.md
-       Known Issues for the list)
+  [ ] Question bank: systematic expansion. Mathematics (124 active rows) is
+       the thinnest bank and the highest-leverage growth target. See root
+       MANIFEST.md for the gap list.
 
 ═══════════════════════════════════════════════════════════════
 HOW TO START A CLAUDE CODE SESSION
@@ -733,5 +815,5 @@ MCP servers available in Claude Code:
   Chrome MCP   for visual QA after deploys
 
 ═══════════════════════════════════════════════════════════════
-END OF ARCHITECTURE BRIEFING v4.1
+END OF ARCHITECTURE BRIEFING v5.0 (Canon v5 era)
 ═══════════════════════════════════════════════════════════════

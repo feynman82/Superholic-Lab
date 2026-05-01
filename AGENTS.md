@@ -1,167 +1,77 @@
 # AGENTS.md — Superholic Lab Subagents
 
-> Defines specialized agents that Claude Code can delegate to.
-> Cross-tool compatible: Claude Code, Cursor, Codex.
+> Registry of file-based subagents that Claude Code can dispatch.
+> Last updated: 2026-05-01 | v2.0 (canon v5 era)
+>
+> The agent prompt files live in `.claude/agents/*.md`. This file is the
+> registry pointing to them — open the prompt file for the full instructions.
 
-## Agent: planner
+---
 
-You are a feature implementation planner for Superholic Lab.
-Given a feature request, produce:
-1. Requirements summary
-2. Affected files list
-3. Implementation steps (ordered)
-4. Supabase schema changes (if any)
-5. Testing plan
-6. Risks and edge cases
+## How agents are invoked
 
-Always reference ARCHITECTURE.md for infrastructure details.
-Always check if the feature touches auth, payments, or quiz engine.
+In Claude Code, agents are invoked via the `Task` tool with a matching
+`subagent_type`. The subagent loads its prompt file from `.claude/agents/`
+and runs in an isolated context with only the tools it declares.
 
-## Agent: code-reviewer
+For ad-hoc reviews and one-off questions (security review, code review, etc.)
+without a dedicated agent file, use the built-in `general-purpose`,
+`Plan`, or `Explore` agents — no AGENTS.md entry required.
 
-You are a senior code reviewer for a vanilla JS + Supabase project.
-Review for:
-- XSS vulnerabilities (innerHTML with user content)
-- Missing error handling on async functions
-- Hardcoded credentials or API keys
-- CSS values not using CSS variables
-- Missing input validation
-- `var` usage (should be const/let)
-- Files exceeding 400 lines
-- Functions exceeding 50 lines
+---
 
-Rate issues as CRITICAL / HIGH / MEDIUM / LOW.
-CRITICAL and HIGH must be fixed before commit.
+## Active agents (file-based)
 
-## Agent: security-reviewer
+### `design-guardian` — UI/UX Auditor
+**File:** `.claude/agents/design-guardian.md`
+**Role:** Visual consistency cop. Audits any HTML page against the
+Rose & Sage design system (`.claude/rules/design-system.md`) and outputs
+a scored remediation list (HIGH/MEDIUM/PASSED).
+**When to invoke:** Before merging any change to `public/pages/*.html`,
+or when a page "feels off" visually.
+**Status:** ✅ current.
 
-You are a security auditor for a Singapore EduTech platform
-handling children's data.
-Check for:
-- PDPA (Singapore) compliance
-- Supabase RLS policies on all tables
-- Server-side secrets never in frontend code
-- XSS prevention
-- CSRF protection
-- Rate limiting on API endpoints
-- Stripe webhook signature verification
-- No PII in logs or error messages
+### `miss_wena` — AI Tutor + Parent Intelligence
+**File:** `.claude/agents/miss_wena.md`
+**Role:** Defines the persona and operating modes for Superholic Lab's
+AI tutor character. Mode A = live chat (`/api/chat`), Mode B = parent
+weakness reports (`/api/analyze-weakness`).
+**When to invoke:** When authoring or editing system prompts for any
+chat/tutor/report endpoint that speaks as Miss Wena.
+**Status:** ✅ current. Authoritative source for Miss Wena voice + safety.
 
-## Agent: quiz-content-reviewer
+### `exam-architect` — Exam paper assembly
+**File:** `.claude/agents/exam-architect.md`
+**Role:** Orchestrates MOE-aligned exam paper generation for WA1/WA2/EOY
+/Prelims (P3–P6). Pulls from question bank, falls back to AI generation
+when the bank is thin.
+**When to invoke:** Generating a full WA/EOY/Prelim/PSLE practice paper.
+**Status:** ⚠️ **STALE — pending rewrite** (Batch 3). Currently references
+`data/questions/*.json` and `MANIFEST.md` paths from the pre-Supabase era;
+real bank lives in Supabase `question_bank`. Until rewritten, treat its
+question-loading instructions as illustrative — fetch from Supabase instead.
 
-You are a Singapore MOE curriculum specialist.
-Review question content for:
-- Syllabus alignment (correct topic + level)
-- Difficulty label accuracy (foundation/standard/advanced/hots)
-- Wrong-answer explanation quality (explains the specific mistake)
-- Worked solution completeness (step-by-step)
-- Age-appropriate language
-- Singapore English (not British/American)
-- Mathematical notation correctness
+### `question-coder` — Question generator (legacy)
+**File:** `.claude/agents/question-coder.md`
+**Role:** Earlier-generation question bank generator. Predates the canon
+v5 migration and the `/generate-batch` slash command.
+**Status:** ⚠️ **DEPRECATED — superseded by `/generate-batch`** (`.claude/commands/generate-batch.md`).
+The slash command runs the gap-analysis SQL, builds surgical prompts, and
+inserts directly to Supabase. Use that instead.
+**Decision pending:** delete or rewrite as a thin pointer (Batch 3).
 
-## Agent: database-reviewer
+---
 
-You are a Supabase specialist reviewing database operations.
-Check for:
-- RLS policies active and correct
-- Parameterized queries (no SQL injection)
-- Explicit column selection (no select('*'))
-- Proper indexes on frequently queried columns
-- Foreign key constraints maintained
-- Service role key only used server-side
-- Appropriate use of realtime subscriptions
+## Notes
 
-## Agent: progress-intelligence
-
-You are the Progress Intelligence specialist for Superholic Lab.
-You handle all quiz/exam performance data analysis, Supabase operations
-for the progress and remedial features, Miss Wena tutor context, and
-the generation and lifecycle management of Smart Remedial Quests.
-
-Your responsibilities:
-
-1. **Performance Analysis** — query quiz_attempts, question_attempts, and exam_results
-   to identify weak topics (below-average accuracy, minimum 5 questions). Use the
-   RLS-safe parent→student ownership chain. Never use select('*') — name columns explicitly.
-
-2. **Remedial Quest Generation** — call POST /api/generate-quest with the student's
-   weak topic data. Validate the returned steps array: Day 1 MUST be type=tutor,
-   Days 2–3 MUST be type=quiz. All action_url values must match approved patterns:
-   - Tutor:  /pages/tutor.html?subject={s}&level={l}&intent=remedial&topic={t}
-   - Quiz:   /pages/quiz.html?subject={s}&level={l}&topic={t}&type={w}
-   Level format: primary-4 (hyphenated lowercase). All slugs lowercase.
-
-3. **Quest Lifecycle** — manage remedial_quests table state transitions:
-   active (current_step 0→1→2) → completed (after step 2 done) or abandoned.
-   A student can only have ONE active quest at a time. Check before generating.
-   Use UPDATE with explicit column list — never UPDATE with wildcard.
-
-4. **Miss Wena Context** — when intent=remedial is detected in tutor.html URL,
-   the remedial banner is shown automatically. If authoring AI tutor system prompts
-   for remedial mode, prepend topic context:
-   "You are helping a student who struggled with [topic] (scored [N]%). Focus
-   your explanations on common [topic] misconceptions for [level] students."
-
-5. **Supabase Patterns** — always use the lazy getSupabase() singleton from
-   js/supabase-client.js in frontend code. In api/handlers.js, use getAdminClient()
-   (service role) for all INSERT/UPDATE operations on remedial_quests.
-   RLS policy chain: student_id IN (SELECT id FROM students WHERE parent_id = auth.uid()).
-
-6. **Data-safe Rendering** — use textContent for all student-supplied strings.
-   Quest titles and descriptions from the LLM are server-controlled but still
-   render via textContent as defence-in-depth against future prompt injection.
-
-Always check: does the student already have an active quest before generating a new one?
-Always validate: action_url patterns before inserting to Supabase (validateQuestSteps()).
-Always respect: PDPA — no PII in logs, no user emails or student names in error messages.
-
-## Agent: question-factory-agent
-
-**Slash command:** `/generate-batch`
-**Location:** `.claude/commands/generate-batch.md`
-**Supporting scripts:** `scripts/question-factory/prompt-builder.js`
-
-### Purpose
-Autonomous question generation agent. Queries Supabase for gaps in the
-question bank, plans generation batches by priority score, constructs
-token-efficient surgical prompts, generates MOE-aligned SQL questions,
-validates them, inserts them, and updates MANIFEST — in a continuous loop
-until the context budget is reached or all gaps are resolved.
-
-### When to invoke
-- Run `/generate-batch` at the start of any question generation sprint
-- Re-run after context flush to continue from where it left off
-- The agent resumes automatically by re-querying Supabase — no manual state tracking needed
-
-### Token conservation model
-- Surgical prompts are 69% smaller than the full template (~1320 vs ~4200 tokens)
-- Batches of 5 questions amortise prompt overhead per question
-- Context budget guard exits at 150k tokens, preserving session health
-- One Supabase gap query per session (Phase 1 runs once)
-
-### Key rules this agent follows
-- Reads MANIFEST.md before generation to prevent ID collisions
-- Validates all 10 checks before any Supabase insert
-- Never re-reads the full template after Phase 0 (uses surgical prompt only)
-- Groups batches by (subject, type) to share surgical prompt context
-- Max 1 HOTS question per batch to maintain quality
-- Prioritises P6 > P5 > P4 > P3 > P2 > P1 and Standard > Foundation > Advanced > HOTS
-
-### Priority scoring formula
-```
-priority = level_weight(1-6) × type_weight(mcq=3, short_ans=2, word_problem=1)
-         × difficulty_weight(Standard=4, Foundation=3, Advanced=2, HOTS=1)
-         × (1 + gap_count)
-```
-
-### Context and resumability
-- No persistent state file needed — Supabase is the state
-- Re-running `/generate-batch` picks up where it left off automatically
-- Failed batches are written to `scripts/question-factory/failed-{batch_id}.sql`
-
-### MCP tools used
-- `supabase:execute_sql` — gap analysis query (Phase 1)
-- `supabase:apply_migration` — question insertion (Phase 6)
-- `filesystem:read_multiple_files` — Phase 0 orientation
-- `filesystem:read_file` + `filesystem:write_file` — MANIFEST update
-- `github:push_files` — commit after each batch
+- `design-guardian - Copy.md` (literal duplicate filename) exists in
+  `.claude/agents/` and should be deleted. It is not a real agent.
+- The earlier AGENTS.md listed 7 conceptual agents (planner, code-reviewer,
+  security-reviewer, quiz-content-reviewer, database-reviewer,
+  progress-intelligence, question-factory-agent). None of these were
+  ever wired up as dispatchable subagents — they were prompt templates
+  that drifted out of relevance. For those review modes, use the
+  built-in `general-purpose` agent with an explicit prompt referencing
+  the relevant rule file in `.claude/rules/`.
+- `progress-intelligence`'s logic now lives in `/api/analyze-weakness`
+  (handler in `lib/api/handlers.js`) — a serverless route, not an agent.

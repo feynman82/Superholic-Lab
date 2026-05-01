@@ -1,7 +1,7 @@
 # CLAUDE.md — Superholic Lab
 
 > Read this file + ARCHITECTURE.md before writing any code.
-> Last updated: 2026-04-27 | v4.1
+> Last updated: 2026-05-01 | v5.0 (Canon v5 era)
 
 ## Project Identity
 
@@ -64,21 +64,24 @@ pillars, not pillars themselves.
 | Database    | Supabase PostgreSQL, SG region (`rlmqsbxevuutugtyysjr`), RLS on all tables |
 | Auth        | Supabase: email/password + Google OAuth |
 | Payments    | Stripe (test mode — switch to live before launch) |
-| AI (chat)   | Gemini Flash (`gemini-3-flash-preview`) — current; **migration to OpenAI pending** |
-| AI (grade)  | **OpenAI `gpt-4o-mini`** — already live in `handleGradeAnswer` (direct fetch from handlers.js) |
-| AI (question gen, on-demand) | **OpenAI `o4-mini`** — already live in `handleGenerateQuestion` |
-| AI (question gen, bulk) | Anthropic Claude Sonnet (`claude-3-5-sonnet-20241022`) for `/api/generate` |
-| AI (exam gen) | Gemini primary, Anthropic Claude Haiku (`claude-haiku-4-5-20251001`) fallback |
+| AI (chat / Miss Wena) | **OpenAI `gpt-4o-mini`** (default; routed via `AI_ROUTING.chat` in `lib/api/handlers.js`) |
+| AI (grade open/word) | **OpenAI `gpt-4o-mini`** (`AI_ROUTING.grade_open`) |
+| AI (question gen, on-demand) | **OpenAI `o4-mini`** (`AI_ROUTING.question_gen`) |
+| AI (question gen, bulk) | **Anthropic Claude Sonnet `claude-3-5-sonnet-20241022`** for `/api/generate` (`AI_ROUTING.bulk_question`) |
+| AI (exam gen) | **OpenAI `gpt-4o-mini`** primary (`AI_ROUTING.exam_gen`); **Claude Haiku `claude-haiku-4-5-20251001`** as in-handler fallback |
+| AI (summarize chat) | **OpenAI `gpt-4o-mini`** (`AI_ROUTING.summarize`) |
+| AI (quest narrative) | **OpenAI `gpt-4o-mini`** (`AI_ROUTING.quest_narrative`) |
 | Deploy      | Vercel auto-deploy on push to `main`, ~60s |
 | DNS         | Cloudflare → Vercel |
 | Analytics   | Plausible (script tag — being rolled out) |
 
-> **AI provider migration in progress (Workstream B handoff next):**
-> Grading and on-demand question gen are already on OpenAI. Remaining
-> migrations: Miss Wena chat, summarise-chat, exam-gen narrative,
-> quest-narrative. The handoff introduces an `AI_ROUTING` config + `callAI()`
-> wrapper so future provider swaps are env-var-only. See
-> `docs/handoff/AI_PROVIDER_MIGRATION_HANDOFF.md` (upcoming).
+> **AI provider migration: COMPLETE.** All endpoints route through the
+> `AI_ROUTING` config object + `callAI(task, opts)` wrapper at the top of
+> `lib/api/handlers.js`. Defaults are listed in the table above; each task
+> can be overridden by `AI_<TASK>_PROVIDER` and `AI_<TASK>_MODEL` env vars
+> in Vercel. Bulk question gen stays on Anthropic Claude Sonnet. The legacy
+> `callGemini()` helper still exists in handlers.js but is no longer wired
+> as the default for any task.
 
 ## API Architecture — Single Gateway Pattern
 
@@ -89,7 +92,7 @@ one function via rewrites in `vercel.json`:
 /api/{route}  →  api/index.js  →  lib/api/handlers.js (named export)
 ```
 
-**24 routes (add new ones in 3 places: `lib/api/handlers.js` + `api/index.js` switch + `vercel.json` rewrites):**
+**31 routes (add new ones in 3 places: `lib/api/handlers.js` + `api/index.js` switch + `vercel.json` rewrites):**
 
 | Route                          | Handler               | Purpose |
 |--------------------------------|-----------------------|---------|
@@ -117,6 +120,13 @@ one function via rewrites in `vercel.json`:
 | /api/award-xp                  | handleAwardXP         | Single source of truth for XP grants |
 | /api/quests                    | handleQuestsRouter    | Sub-routes: list, fetch, advance-step, day3-outcome, abandon, quiz-batch |
 | /api/quests/:path*             | handleQuestsRouter    | Wildcard rewrite for all quest sub-routes |
+| /api/account-activity          | handleAccountActivity | Account activity feed (parent dashboard) |
+| /api/log-activity              | handleLogActivity     | Append rows to activity log |
+| /api/learner-export            | handleLearnerExport   | Per-child PDPA export bundle |
+| /api/family-activity           | handleFamilyActivity  | Family-wide activity rollup |
+| /api/weekly-digest             | handleWeeklyDigest    | Weekly progress digest payload |
+| /api/syllabus-tree             | handleSyllabusTree    | Returns canon\_level\_topics tree (for UI accordion) |
+| /api/recent-attempts           | handleRecentAttempts  | Recent quiz_attempts feed |
 
 **Important:** `/api/webhook` must receive the raw unparsed body for
 Stripe signature verification — do NOT attach `parseJsonBody` to it.
@@ -202,17 +212,23 @@ Authority: `docs/QUEST_PAGE_SPEC.md` §12 (XP rules), §14 (badge list).
   `git-workflow`, `moe-templates`, `patterns`, `pedagogical-standards`,
   `performance`, `safety`, `security`, `tech-stack`, `testing`
 
-**Commands** (`.claude/commands/`) — 8 slash commands:
+**Commands** (`.claude/commands/`) — 7 slash commands:
   `/build-fix`, `/code-review`, `/deploy`, `/generate-batch`,
-  `/generate-questions`, `/inventory`, `/plan`, `/security-check`
+  `/inventory`, `/plan`, `/security-check`
+  *(`/generate-questions` is deprecated — use `/generate-batch` for all
+  question generation; the file is pending removal in cleanup batch.)*
 
-**Skills** (`.claude/skills/`) — 6 domain skills:
-  `content-review`, `page-builder`, `question-factory`, `quiz-engine`,
-  `supabase-patterns`, `ui-ux-pro-max`
+**Skills** (`.claude/skills/`) — 5 active domain skills:
+  `content-review`, `page-builder`, `quiz-engine`, `supabase-patterns`,
+  `ui-ux-pro-max`
+  *(`question-factory` skill is deprecated; the live workflow is in
+  `.claude/commands/generate-batch.md`.)*
 
-**Agents** (`AGENTS.md`) — 7 specialist subagents:
-  `planner`, `code-reviewer`, `security-reviewer`, `quiz-content-reviewer`,
-  `database-reviewer`, `progress-intelligence`, `question-factory-agent`
+**Agents** (`AGENTS.md`) — 4 file-based subagents:
+  `design-guardian`, `miss_wena`, `exam-architect`, `question-coder`
+  *(`exam-architect` and `question-coder` reference pre-Supabase JSON
+  paths; treat their question-loading instructions as illustrative until
+  rewritten. See `AGENTS.md` for details.)*
 
 **Hooks** (`hooks/hooks.json`) — secret detection + CSS enforcement
 
@@ -340,22 +356,60 @@ OPENAI_API_KEY                      (server-only — grading + on-demand questio
 NEXT_PUBLIC_APP_URL                 https://www.superholiclab.com
 ```
 
+## Canon v5 — Source of Truth for Topics & Sub-topics
+
+All `(subject, topic, sub_topic)` combinations are FK-enforced against
+two canon tables in Supabase:
+
+- **`canon_topics`** — every valid `(subject, topic)` pair
+- **`canon_level_topics`** — every valid `(level, subject, topic, sub_topic)` row
+
+`question_bank.(level, subject, topic, sub_topic)` has FK constraint
+**`fk_qb_level_topic` → canon_level_topics(level, subject, topic, sub_topic)`**
+(VALIDATED). An off-canon INSERT fails with PG 23503.
+
+The frontend mirror lives in `public/js/syllabus-dependencies.js` and the
+JSON twin at root `SYLLABUS_DEPENDENCY.json`. The build script
+`scripts/build-syllabus-mirror.cjs` regenerates the mirror from canon SQL.
+
+**Mathematics: 25 topics** (canon v5 added Money, Length and Mass,
+Volume of Liquid, Time to the existing 21).
+**Science: 6 topics** (Diversity, Cycles, Matter, Systems, Energy,
+Interactions — earlier per-grade topics like Heat/Light/Forces/Cells
+consolidated into these six).
+**English: 7 topics** (Grammar, Vocabulary, Comprehension, Cloze, Editing,
+Synthesis, Summary Writing).
+
+**Active question_bank rows (2026-05-01):** 11,261 across 168 distinct
+(level, subject, topic, sub_topic) combinations. Mathematics is the
+thinnest bank (124 rows total) and the highest-leverage growth target.
+See `MANIFEST.md` (root) for current counts and gap list.
+
 ## Question Bank — Supabase-Hosted
 
 All questions live in the `question_bank` table in Supabase (NOT JSON files).
 The quiz engine and quest quiz-batch endpoint read from Supabase at runtime.
 
-For full schema, RLS patterns, and the new gamification + quest tables
-(student_xp, student_streaks, xp_events, student_badges, badge_definitions,
+For full schema, RLS patterns, the canon tables, and the gamification + quest
+tables (student_xp, student_streaks, xp_events, student_badges, badge_definitions,
 quest_eligibility, mastery_levels, mastery_levels_snapshots, avatar_rerolls),
 see `ARCHITECTURE.md` → SUPABASE DATABASE SCHEMA section.
 
-**Question types:** `mcq`, `short_ans`, `word_problem`, `open_ended`, `cloze`, `editing`, `comprehension`
+**Question types (8):** `mcq`, `short_ans`, `word_problem`, `open_ended`, `cloze`, `editing`, `comprehension`, `visual_text`
 **Retired types (do not use):** `true_false`, `fill_blank`
 **Correct answer format:** Always letter string `"A"` — never index `0`
 **Difficulty values:** `Foundation`, `Standard`, `Advanced`, `HOTS`
 
-**For current question coverage**, see `data/questions/MANIFEST.md` (live source of truth — calibrated against Supabase `question_bank`).
+**English Comprehension special-case (canon v5):** Rows for `topic = 'Comprehension'`
+have `sub_topic = NULL`. UI grouping is done by `type` instead — `comprehension`
+rows render as "Passage Comprehension"; `visual_text` rows render as "Visual Text
+Comprehension". When filtering quiz batches for Comprehension, filter by `type`,
+not `sub_topic`. See `public/js/syllabus.js` SUB_TOPIC_GROUPS + `resolveSubTopicGroup()`.
+
+**For current question coverage**, see `MANIFEST.md` (repo root — live source
+of truth, calibrated against Supabase `question_bank`). The legacy
+`data/questions/*.json` files and the old `data/questions/MANIFEST.md` are
+**superseded** and kept only for archival reference.
 
 ## Miss Wena — AI Tutor Persona
 
@@ -418,4 +472,4 @@ For Quest-related decisions, defer to `docs/QUEST_PAGE_SPEC.md` v2.0
 this file is the source of truth.
 
 ---
-*CLAUDE.md v4.1 — Updated 2026-04-27 (added 4 Pillars section; AI table reflects actual handlers.js state)*
+*CLAUDE.md v5.0 — Updated 2026-05-01 (canon v5 era: FK-enforced canon tables, OpenAI provider migration complete, 31 routes, 8 question types incl. visual_text, ECC counts corrected)*
