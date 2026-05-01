@@ -1,6 +1,7 @@
 ### SUPERHOLIC LAB — MASTER QUESTION TEMPLATE
-### Version 4.6 | Source of truth for all Data Generation
+### Version 5.0 | Source of truth for all Data Generation
 ### Reference: MOE/SEAB PSLE Exam Formats 2025-2026
+### v5.0 changes (2026-05-01): full canon-v5 alignment audit. §4 taxonomy switched to v5 set (26 Maths topics — Speed dropped + Money/Length and Mass/Volume of Liquid/Time added; 6 Science topics — Heat/Light/Forces/Cells folded into Energy/Interactions/Systems; 6 English topics — Summary Writing removed everywhere including canon DB). §7 routing: P6 Speed entry removed; P4 Heat/Light/Magnets relabelled to Energy / Interactions sub_topics; P6 Cells/Forces relabelled likewise; routing rows added for Money / Time / Length and Mass / Volume of Liquid / Pie Charts at P1–P5. §7 Hard Rules 9 + 10 updated to point at the v5 parent topics (Interactions). canon_level_topics dropped 296 → 292 rows (Summary Writing P5/P6 × 2 sub_topics deleted). Header brought into sync with v5 (was v4.6 with v5 content drifting in §4).
 ### v4.6 changes (2026-04-30): §6 expanded with 7 new diagram primitives — parallelLinesTransversal, quarterCirclesInSquare, overlappingCircles, rectangleWithPath, dotTriangle, gridGrowth, magicSquare. Each fills a previously-uncovered visual category in the P6 question bank. 61/141 P6 MCQs now carry a visual_payload (43%); the remaining 80 are pure numerical word problems where a diagram would not add pedagogical value.
 ### v4.5 changes (2026-04-30): §5 Mathematics MCQ difficulty calibration revised after user feedback. HOTS is now anchored to PSLE Paper 2 Q26–Q30 LAQs (true non-routine, multi-heuristic) instead of generic "harder than Standard". Standard ↔ Foundational, Advanced ↔ Standard, HOTS ↔ Advanced in Singapore tuition convention.
 ### v4.4 changes (2026-04-30): §7 routing patched per audit — barChart/horizontalBarChart now defaults for P3/P4 Bar Graphs (verticalBarChart reserved for ink-spill); runningTrack added to P5/P6 Circles; rectangleWithLine added to P5/P6 Geometry; conceptMap added to P3 Science Diversity. The 6 functions documented in §6 but missing from §7 are now selectable.
@@ -154,7 +155,7 @@ Step 4 — INSERT into question_bank. DB rejects if any field drifted off-canon.
 - **Interactions**: Interaction Of Magnetic Forces · Frictional Force · Gravitational Force · Elastic Spring Force · Effects Of Forces On Objects · Interactions Within The Environment · Food Chains And Food Webs
 ---
  
-**ENGLISH — 7 topics, 32 sub_topics**
+**ENGLISH — 6 topics, 30 sub_topics**
  
 - **Grammar**: Simple Present And Past Tenses · Perfect And Continuous Tenses · Subject-Verb Agreement · Singular And Plural Nouns · Prepositions And Phrasal Verbs · Conjunctions · Active And Passive Voice · Relative Pronouns
 - **Vocabulary**: Thematic Vocabulary Recall · Contextual Vocabulary Meaning · Synonyms And Antonyms
@@ -162,7 +163,6 @@ Step 4 — INSERT into question_bank. DB rejects if any field drifted off-canon.
 - **Editing**: Correcting Spelling Errors · Correcting Grammatical Errors
 - **Comprehension**: Direct Visual Retrieval · True Or False With Reason · Pronoun Referent Table · Sequencing Of Events · Deep Inference And Claim Evidence Reasoning · Visual Text Literal Retrieval · Visual Text Inference And Purpose
 - **Synthesis**: Combining With Conjunctions · Relative Clauses · Participle Phrases · Conditional Sentences · Reported Speech Transformation · Active To Passive Voice Transformation · Inversion
-- **Summary Writing**: Identifying Key Information · Paraphrasing And Condensing Text
 ---
 
 **Level guidance** (FK-ENFORCED via `canon_level_topics` — INSERTs off this map fail with PG error 23503):
@@ -173,7 +173,7 @@ Step 4 — INSERT into question_bank. DB rejects if any field drifted off-canon.
 | P2    | + Fractions, Volume of Liquid | (no Science syllabus) | (same as P1) |
 | P3    | + Angles, Geometry, Area and Perimeter | Diversity, Cycles, Interactions | + Editing |
 | P4    | + Decimals, Factors and Multiples, Symmetry, Pie Charts (reading) | + Systems, Matter, Energy | + Synthesis |
-| P5    | + Percentage, Rate, Average, Area of Triangle, Volume | (Cycles, Systems only) | + Summary Writing · Visual Text added as Comprehension sub_topics |
+| P5    | + Percentage, Rate, Average, Area of Triangle, Volume | (Cycles, Systems only) | Visual Text added as Comprehension sub_topics |
 | P6    | + Ratio, Algebra, Circles, Pie Charts (problem-solving) | + Energy (P6 — photosynthesis), Interactions (P6 — forces, environment) | (PSLE — full set) |
 
 **v5.0 changes (2026-05-01):**
@@ -526,7 +526,7 @@ You may ONLY use the following `function_name` values and their exact parameters
   *(All coordinates are SVG pixel positions within a 400×260 viewBox. Scale your shapes accordingly.)*
 
 **--- 5. MATH: ANGLES (Advanced Geometry) ---**
-* `protractorMeasurement`: ⭐ NEW — Semicircular protractor with inner/outer scale and pointer arm.
+* `protractorMeasurement`: Semicircular protractor with inner/outer scale and pointer arm.
   Standard (baseline at 0°): `{"angle_to_measure": 65, "pointer_label": "?", "show_inner_scale": true}`
   Non-zero baseline exam variant: `{"angle_to_measure": 50, "baseline_offset": 30, "pointer_label": "?"}`
   *(Use `baseline_offset` > 0 for questions where the object/angle does not start at the 0° mark.)*
@@ -570,7 +570,7 @@ You may ONLY use the following `function_name` values and their exact parameters
   *(Use `highlightCol` (0-indexed integer) to highlight a specific column in rose colour.)*
 
 **--- 8. MATH: GEOMETRY (Solid Figures) ---**
-* `isometricGrid`: ⭐ NEW — Dual-mode: 3D isometric view OR orthographic 3-panel projection.
+* `isometricGrid`: Dual-mode — 3D isometric view OR orthographic 3-panel projection.
   `cubes_arrangement` is a 2D array where each cell = number of cubes stacked at [row][col]. Row 0 = front.
 
   Isometric (3D view): `{"mode": "isometric", "cubes_arrangement": [[2,1,0],[1,3,1],[0,1,2]]}`
@@ -659,22 +659,27 @@ MATHEMATICS ROUTING MAP
 | Topic                | Use Function          | Condition / Notes                                      |
 |----------------------|-----------------------|--------------------------------------------------------|
 | Whole Numbers        | `numberLine`          | Ordering, comparing, sequences on a number line        |
-| Addition/Subtraction | `numberLine`          | "Jump" strategy visualisation only; omit for text-only |
-| Multiplication/Division | NULL               | No diagram required for basic tables                   |
-| Money                | NULL                  | Text-based questions only                              |
+| Addition and Subtraction | `numberLine`      | "Jump" strategy visualisation only; omit for text-only |
+| Multiplication and Division | NULL           | No diagram required for basic tables                   |
+| Multiplication Tables   | NULL               | No diagram for table recall                            |
+| Money                | NULL                  | Text-based; no coin-image primitive in v5              |
 | Length and Mass      | `rulerMeasurement`    | Any question requiring a measurement reading           |
+| Time                 | NULL                  | Clock-face diagrams not in library; omit visual        |
 | Shapes and Patterns  | `rectangle` / `square` / `circle` | Identifying or describing shapes          |
-| Picture Graphs       | `pictogram`           | Always use; set `keyValue` to the scale shown          |
+| Data Analysis (Picture Graphs) | `pictogram` | Always use; set `keyValue` to the scale shown          |
 
 ── P2 ──────────────────────────────────────────────────────────
 
 | Topic                | Use Function          | Condition / Notes                                      |
 |----------------------|-----------------------|--------------------------------------------------------|
 | Whole Numbers        | `numberLine`          | Number patterns, placing values on a line              |
-| Fractions            | `fractionBar`         | Visualise ½, ¼, ¾ as a single shaded bar               |
-| Length/Mass/Volume   | `rulerMeasurement`    | Scale reading questions                                |
-| Shapes               | `rectangle` / `square` / `circle` | Naming and comparing shapes              |
-| Picture Graphs       | `pictogram`           | Always; include `keySymbol` and `keyValue`             |
+| Fractions            | `fractionBar`         | Visualise ½, ¼, ¾ as a single shaded bar (introduced at P2) |
+| Length and Mass      | `rulerMeasurement`    | All scale-reading questions (cm, m, g, kg)             |
+| Volume of Liquid     | `rulerMeasurement`    | Measuring-cylinder scale reading (litres / millilitres) |
+| Money                | NULL                  | Text-based; sums and change in decimal notation        |
+| Time                 | NULL                  | Clock-face diagrams not in library; omit visual        |
+| Shapes and Patterns  | `rectangle` / `square` / `circle` | Naming and comparing 2D shapes; classifying 3D solids |
+| Data Analysis (Picture Graphs) | `pictogram` | Always; include `keySymbol` and `keyValue`             |
 
 ── P3 ──────────────────────────────────────────────────────────
 
@@ -682,8 +687,10 @@ MATHEMATICS ROUTING MAP
 |----------------------|------------------------|-------------------------------------------------------|
 | Whole Numbers        | `numberLine`           | Number sequences or ordering only                     |
 | Fractions            | `fractionBars`         | Equivalent fractions, comparison, addition            |
-| Length/Mass/Volume   | `rulerMeasurement`     | All measurement reading questions                     |
-| Time                 | NULL                   | Clock-face diagrams not supported; omit visual        |
+| Length and Mass      | `rulerMeasurement`     | All length / mass measurement reading questions       |
+| Volume of Liquid     | `rulerMeasurement`     | Measuring-cylinder scale reading; L↔mL conversion     |
+| Money                | NULL                   | Text-based word problems (decimal addition / change)  |
+| Time                 | NULL                   | Clock-face diagrams not in library; 24-hour and duration text-only |
 | **Angles**           | `protractorMeasurement`| ⭐ Use for ALL angle measuring questions              |
 |                      |                        | `baseline_offset: 0` → standard; `> 0` → non-zero baseline |
 | Area and Perimeter   | `rectangle`            | Rectangle shapes                                      |
@@ -701,6 +708,9 @@ MATHEMATICS ROUTING MAP
 | Factors and Multiples| NULL                           | Factor trees not in library; text only            |
 | Fractions            | `fractionBars`                 | Comparison, equivalent fractions, addition        |
 | Decimals             | `numberLine`                   | Placing decimals, ordering on a line              |
+| Money                | NULL                           | Word problems involving money (decimal arithmetic) |
+| Time                 | NULL                           | Word problems involving time (clock visuals NOT in library) |
+| Pie Charts           | `pieChart`                     | Reading And Interpreting Pie Charts (introduced at P4) |
 | **Angles (basic)**   | `protractorMeasurement`        | Reading a protractor; measuring given angles      |
 | **Angles (advanced)**| `rightAngleDivided`            | Angles divided by rays within a right angle       |
 |                      | `straightLineDividedAngles`    | Angles on a straight line (sum = 180°)            |
@@ -725,7 +735,10 @@ MATHEMATICS ROUTING MAP
 | Decimals             | `numberLine`           | Ordering decimals or placing on a line                |
 | **Percentage**       | `pieChart`             | "What percentage of the whole" circular problems      |
 | **Ratio**            | `unitModel`            | Before-and-after, constant-part, internal-transfer models |
-| **Rate**             | `lineGraph`            | Distance-time or speed-time trend questions           |
+| **Rate**             | `lineGraph`            | Distance-time or rate-trend questions                 |
+| Money                | NULL                   | Word Problems Involving Money — text-only             |
+| Length and Mass      | `rulerMeasurement` / NULL | Word Problems Involving Length And Mass — usually text-only at P5 |
+| Volume of Liquid     | NULL                   | Word Problems Involving Volume — text-only at P5      |
 | Area of Triangle     | `rightTriangle`        | Right-angled triangle; include hypotenuse if asked    |
 |                      | `compositeShape`       | Composite shapes with shaded triangular regions       |
 | **Volume**           | `cuboid`               | 3D tank; set `water_level` (0.0–1.0) for liquid problems |
@@ -747,7 +760,6 @@ MATHEMATICS ROUTING MAP
 | Fractions            | `fractionBars`         | Complex comparison or multi-step problems             |
 | Percentage           | `pieChart`             | Circular proportion problems                          |
 | Ratio                | `unitModel`            | Complex before-and-after, unequal-units models        |
-| **Speed**            | `lineGraph`            | Distance-time graphs; use categorical x for time labels |
 | **Algebra**          | `rectangle`            | Rectangle with variable side labels (e.g., "x+3 cm") |
 | **Circles**          | `circle`               | Use `radiusLabel` OR `diameterLabel` (not both)       |
 |                      | `runningTrack`         | Stadium-shaped track perimeter / area problems        |
@@ -781,18 +793,16 @@ SCIENCE ROUTING MAP
 
 | Topic        | Use Function        | Condition / Notes                                           |
 |--------------|---------------------|-------------------------------------------------------------|
-| Cycles       | `arrowDiagram`      | Life cycles: nodes = stages, arrows = direction of time     |
+| Cycles       | `arrowDiagram`      | Life cycles: nodes = stages, arrows = direction of time. Stages Of The Water Cycle (P4-only) supports flow OR circular layout. |
 |              |                     | Use `"layout": "auto"` — detects circular/horizontal automatically |
 |              |                     | Do NOT set node x/y coordinates; auto-layout handles spacing |
-| Energy       | `genericExperiment` | General energy experiment setups                            |
-| **Heat**     | `thermometer`       | Temperature reading; set `minTemp`, `maxTemp`, `currentTemp`|
-|              | `comparativeSetup`  | ⭐ Comparing heat absorption setups (e.g., black vs white cloth) |
-|              |                     | Use `containerType: "beaker"`, `variable: "colour of cloth"` |
-| Light        | `comparativeSetup`  | ⭐ Shadow/transparency A/B comparisons; use `containerType: "box"` |
-|              | `genericExperiment` | Single-setup light experiments (no A/B comparison needed)  |
-| **Magnets**  | `magnetDiagram`     | ⭐ ALL magnet questions: bar, horseshoe, electromagnet       |
-|              |                     | Set `interaction: "repulsion"` or `"attraction"` for 2-magnet setups |
-|              |                     | Set `magnetType: "electromagnet"` + `coreMaterial` for P4 coil questions |
+| **Energy** (heat sub_topics) | `thermometer`       | Temperature reading for "Sources Of Heat", "Effects Of Heat Gain And Heat Loss", "Temperature And Use Of Thermometers". Set `minTemp`, `maxTemp`, `currentTemp`. |
+|                              | `comparativeSetup`  | ⭐ "Good And Poor Conductors Of Heat": A/B comparison setups (e.g., metal vs plastic spoon, black vs white cloth). Use `containerType: "beaker"`, `variable: "colour of cloth"`. |
+| **Energy** (light sub_topics) | `comparativeSetup`  | ⭐ "Sources Of Light", "Reflection Of Light", "Formation Of Shadows", "Transparent, Translucent And Opaque Materials": shadow/transparency A/B comparisons. Use `containerType: "box"`. |
+|                              | `genericExperiment` | Single-setup light experiments (no A/B comparison needed) |
+| **Interactions** (magnets sub_topic) | `magnetDiagram` | ⭐ "Interaction Of Magnetic Forces": ALL magnet questions — bar, horseshoe, electromagnet. |
+|                                      |                 | Set `interaction: "repulsion"` or `"attraction"` for 2-magnet setups. |
+|                                      |                 | Set `magnetType: "electromagnet"` + `coreMaterial` for P4 coil questions. |
 | Matter       | `comparativeSetup`  | ⭐ A/B comparisons (e.g., syringe compressed vs extended)   |
 |              | `dataTable`         | Comparing properties of solids, liquids, gases              |
 |              | `genericExperiment` | Single-setup matter experiments (no A/B comparison)        |
@@ -817,18 +827,15 @@ SCIENCE ROUTING MAP
 
 | Topic        | Use Function        | Condition / Notes                                           |
 |--------------|---------------------|-------------------------------------------------------------|
-| Interactions | `arrowDiagram`      | Complex food web with producers + multiple consumer levels  |
-|              |                     | Ensure at least one producer node is always present         |
-| Energy       | `circuitDiagram`    | Complex series/parallel with switch states and fused bulbs  |
-|              | `rampExperiment`    | ⭐ Friction/ramp energy experiments (inclined plane)        |
-|              | `comparativeSetup`  | Non-ramp energy A/B comparisons                             |
-| Cells        | `dataTable`         | Plant cell vs animal cell feature comparison                |
-|              | `genericExperiment` | Microscope/experiment setups (no specific function covers this) |
-| Forces       | `rampExperiment`    | ⭐ ALL inclined plane questions: angle, texture, force arrows |
-|              |                     | Set `surfaceTexture: "rough"/"sandpaper"` for friction questions |
-|              |                     | Add `forceArrows` for Weight, Friction, Normal force labels |
-|              | `comparativeSetup`  | Side-by-side comparisons (e.g., rough vs smooth surface)   |
-|              | `genericExperiment` | Non-ramp Forces setups only (e.g., spring balance, pulley) |
+| **Interactions** (food chains/webs) | `arrowDiagram` | "Food Chains And Food Webs", "Interactions Within The Environment": complex food web with producers + multiple consumer levels. Ensure at least one producer node is always present. |
+| **Interactions** (forces sub_topics) | `rampExperiment` | ⭐ "Frictional Force", "Effects Of Forces On Objects": ALL inclined plane questions — angle, texture, force arrows. |
+|                                      |                  | Set `surfaceTexture: "rough"/"sandpaper"` for friction questions. |
+|                                      |                  | Add `forceArrows` for Weight, Friction, Normal force labels. |
+|                                      | `comparativeSetup` | Side-by-side comparisons (e.g., rough vs smooth surface). |
+|                                      | `genericExperiment`| Non-ramp Forces setups only (e.g., "Gravitational Force", "Elastic Spring Force" with spring balance, pulley). |
+| **Energy**   | `circuitDiagram`    | Complex series/parallel with switch states and fused bulbs (Electrical sub_topics shared with P5 Systems). |
+|              | `comparativeSetup`  | "Photosynthesis And Energy Pathways", "Energy Conversion In Everyday Objects" A/B comparisons. |
+|              | `genericExperiment` | Microscope / specific apparatus setups not covered by other functions (legacy P6 Cells content folded here in v5). |
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 SECTION 7 — HARD RULES (apply these after looking up the table above)
@@ -849,9 +856,13 @@ SECTION 7 — HARD RULES (apply these after looking up the table above)
 8. `pieChart` is for CIRCULAR proportion diagrams only. Do NOT use it for bar graphs
    labelled as "pie" in the question — use `verticalBarChart` instead.
 9. For ALL magnet questions (bar, horseshoe, electromagnet, poles), ALWAYS use
-   `magnetDiagram`. Do NOT use `genericExperiment` for P4 Magnets topic.
+   `magnetDiagram`. In v5, magnet questions live under `topic = "Interactions"`
+   with `sub_topic = "Interaction Of Magnetic Forces"` (the legacy `topic = "Magnets"`
+   was retired). Do NOT use `genericExperiment` for any magnetic-forces sub_topic.
 10. For ALL inclined plane / ramp experiments, ALWAYS use `rampExperiment`. Set
     `forceArrows` to label Weight, Friction, and Normal force as required by the question.
+    In v5, ramp/force questions live under `topic = "Interactions"` (the legacy
+    `topic = "Forces"` was retired and folded into Interactions).
 11. `comparativeSetup` is the ONLY permitted function for A/B experiment comparisons
     where two setups differ by one variable. NEVER use `genericExperiment` for A/B setups.
 12. For `arrowDiagram`, ALWAYS set `"layout": "auto"`. Do NOT set x/y coordinates on
