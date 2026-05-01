@@ -87,13 +87,19 @@ export const SUB_TOPIC_GROUPS = {
     'Comprehension': {
       'passage-comprehension': {
         label: 'Passage Comprehension',
+        // subTopicsInCanon is used by the popover renderer for chip count
+        // display (sums the carrier-string count). It is NOT used as a
+        // Supabase filter, because comprehension rows carry sub_topic=NULL
+        // (each row's `parts` array holds 5–10 mixed sub-question classes).
+        // The row-level filter is `type`, set via questionType below.
         subTopicsInCanon: [
           'Direct Visual Retrieval',
           'True Or False With Reason',
           'Pronoun Referent Table',
           'Sequencing Of Events',
           'Deep Inference And Claim Evidence Reasoning'
-        ]
+        ],
+        questionType: 'comprehension'
       },
       'visual-text-comprehension': {
         label: 'Visual Text Comprehension',
@@ -169,9 +175,20 @@ export function resolveSubTopicGroup(subject, topic, groupKey) {
     if (!groups) return null;
     const group = groups[groupKey];
     if (!group) return null;
+    // When questionType is set (English Comprehension passage / visual-text),
+    // the row-level filter discriminator is the `type` column, NOT `sub_topic`.
+    // Comprehension rows carry sub_topic=NULL because each row's `parts` array
+    // holds 5–10 mixed sub-question classifications. Returning subTopics=[]
+    // tells quiz.js to skip the .in('sub_topic', […]) filter and apply only
+    // the .eq('type', …) filter. The popover renderer still reads
+    // subTopicsInCanon directly from SUB_TOPIC_GROUPS via subTopicGroupsFor()
+    // for chip count display (carrier-string trick), independent of this path.
+    if (group.questionType) {
+      return { subTopics: [], questionType: group.questionType };
+    }
     return {
       subTopics: group.subTopicsInCanon || [],
-      questionType: group.questionType || null
+      questionType: null
     };
   }
 
