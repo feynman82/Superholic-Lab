@@ -389,7 +389,9 @@ async function paginatedSelect(query) {
 export async function countsBySubject(supabaseClient, levelDisplay) {
   if (!supabaseClient) return {};
   try {
-    let query = supabaseClient.from('question_bank').select('subject').is('deprecated_at', null);
+    let query = supabaseClient.from('question_bank').select('subject')
+      .is('deprecated_at', null)
+      .not('approved_at', 'is', null);   // QA gate: counts must match what students can quiz
     if (levelDisplay) query = query.eq('level', levelDisplay);
     const rows = await paginatedSelect(query);
     const out = {};
@@ -401,7 +403,10 @@ export async function countsBySubject(supabaseClient, levelDisplay) {
 export async function countsByTopic(supabaseClient, levelDisplay, subjectDb) {
   if (!supabaseClient || !subjectDb) return {};
   try {
-    let query = supabaseClient.from('question_bank').select('topic').eq('subject', subjectDb).is('deprecated_at', null);
+    let query = supabaseClient.from('question_bank').select('topic')
+      .eq('subject', subjectDb)
+      .is('deprecated_at', null)
+      .not('approved_at', 'is', null);   // QA gate
     if (levelDisplay) query = query.eq('level', levelDisplay);
     const rows = await paginatedSelect(query);
     const out = {};
@@ -413,7 +418,10 @@ export async function countsByTopic(supabaseClient, levelDisplay, subjectDb) {
 export async function countsByType(supabaseClient, levelDisplay, subjectDb, topicCanonical) {
   if (!supabaseClient || !subjectDb) return {};
   try {
-    let query = supabaseClient.from('question_bank').select('type').eq('subject', subjectDb).is('deprecated_at', null);
+    let query = supabaseClient.from('question_bank').select('type')
+      .eq('subject', subjectDb)
+      .is('deprecated_at', null)
+      .not('approved_at', 'is', null);   // QA gate
     if (levelDisplay) query = query.eq('level', levelDisplay);
     if (topicCanonical) query = query.eq('topic', topicCanonical);
     const rows = await paginatedSelect(query);
@@ -437,7 +445,8 @@ export async function countsBySubTopic(supabaseClient, levelDisplay, subjectDb, 
     let query = supabaseClient.from('question_bank').select('sub_topic')
       .eq('subject', subjectDb)
       .eq('topic', topicCanonical)
-      .is('deprecated_at', null);
+      .is('deprecated_at', null)
+      .not('approved_at', 'is', null);   // QA gate
     if (levelDisplay) query = query.eq('level', levelDisplay);
     const rows = await paginatedSelect(query);
     const out = {};

@@ -215,9 +215,9 @@ Authority: `docs/QUEST_PAGE_SPEC.md` §12 (XP rules), §14 (badge list).
   v5.0 — read the master template directly for question schemas,
   difficulty calibration, and visual payload routing.)*
 
-**Commands** (`.claude/commands/`) — 7 slash commands:
+**Commands** (`.claude/commands/`) — 8 slash commands:
   `/build-fix`, `/code-review`, `/deploy`, `/generate-batch`,
-  `/inventory`, `/plan`, `/security-check`
+  `/inventory`, `/plan`, `/qa-status`, `/security-check`
 
 **Skills** (`.claude/skills/`) — 5 domain skills:
   `content-review`, `page-builder`, `quiz-engine`, `supabase-patterns`,

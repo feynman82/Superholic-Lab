@@ -268,6 +268,15 @@ for this batch as a **single SQL INSERT block**.
 - `progressive_hints`: minimum 3 hints, scaffolded from broad to specific
 - `worked_solution`: full step-by-step; never a one-liner
 
+**Pending-review gate (DO NOT bypass):**
+- Do NOT include `approved_at` in INSERT — leave it as NULL (the column default).
+- New questions land in the QA pending queue (admin.html → QA Panel).
+- Live consumers (quiz.js, exam-generator, /api/quests/quiz-batch, syllabus
+  counts) filter `approved_at IS NOT NULL`, so unreviewed questions are
+  invisible to students until a reviewer approves them.
+- This gate is the contract that makes the two-instance workflow
+  (Generator + Reviewer) safe.
+
 ---
 
 ## PHASE 5 — Validation

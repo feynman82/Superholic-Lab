@@ -163,7 +163,9 @@ async function pickQuestions(subject, level, questionType, count, options = {}) 
       .select('*')
       .ilike('subject', dbSubject)
       .ilike('level', dbLevel)
-      .eq('type', questionType);
+      .eq('type', questionType)
+      .not('approved_at', 'is', null)    // QA gate: only approved questions in exam papers
+      .is('deprecated_at', null);
 
     // 🚀 MASTERCLASS FIX: Support both singular (topic) and array (topics) template formats
     if (options.topic) {

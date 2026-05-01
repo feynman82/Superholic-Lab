@@ -1790,7 +1790,10 @@ window.initQuizEngine = function () {
         return;
       }
 
-      let query = db.from('question_bank').select('*').eq('subject', dbSubject);
+      let query = db.from('question_bank').select('*')
+        .eq('subject', dbSubject)
+        .not('approved_at', 'is', null)   // QA gate: only show approved questions to students
+        .is('deprecated_at', null);        // and only non-deprecated rows
       if (dbLevel) query = query.eq('level', dbLevel);
       if (dbTopic) query = query.eq('topic', dbTopic);
 
