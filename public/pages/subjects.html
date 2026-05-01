@@ -181,10 +181,7 @@
     }
 
     /* ── Sub-topic accordion drawer (Comprehension / Cloze only) ───────── */
-    .trio-card.has-drawer {
-      padding-bottom: var(--space-3);
-      position: relative;
-    }
+    
     .trio-card__chevron {
       position: absolute;
       top: var(--space-3);
@@ -196,10 +193,7 @@
       pointer-events: none;
     }
     .trio-card.has-drawer:hover .trio-card__chevron { color: var(--brand-rose); }
-    .trio-card.is-expanded .trio-card__chevron {
-      transform: rotate(180deg);
-      color: var(--brand-rose);
-    }
+    
     /* ── Sub-topic drawer (Comprehension / Cloze) ─────────────────────
        When a card expands, the card spans the full grid row and the
        drawer occupies the right half (or stacks below on mobile). The
@@ -239,90 +233,186 @@
       display: none;  /* the chevron is the affordance now */
     }
 
-    /* Drawer in column 2 — separated from the card's left content by a
-       hairline divider that runs the full height of the expanded card. */
-    .trio-card__drawer {
-      grid-column: 2;
-      display: none;       /* hidden by default; only renders inside expanded card */
-      flex-direction: column;
-      gap: var(--space-2);
-      padding-left: var(--space-5);
-      border-left: 1px solid var(--border-light);
-      min-width: 0;
-      animation: drawerFadeIn 360ms cubic-bezier(.2, .7, .2, 1);
-    }
+    /* ── Sub-topic popover ─────────────────────────────────────────────
+       Floating, scrim-backed sheet anchored to viewport (centered on
+       desktop, bottom-sheet on mobile). Does NOT disrupt the topic grid.
+       Cards inside use the same .trio-card design language; differentiated
+       only by a dashed border to signal "drilling deeper". */
 
-    .trio-card.is-expanded .trio-card__drawer {
-      display: flex;
+    .subtopic-pop-scrim {
+      position: fixed;
+      inset: 0;
+      z-index: 998;
+      background: rgba(44, 62, 58, 0.42);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 220ms ease;
     }
-
-    @keyframes drawerFadeIn {
-      from { opacity: 0; transform: translateY(-4px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    .trio-card__drawer-eyebrow {
-      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-      font-weight: 700;
-      font-size: 11px;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      margin-bottom: var(--space-2);
-    }
-
-    .trio-subchips {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-2);
-    }
-
-    /* Each sub-topic chip — clearly tappable, with SVG icon, hover
-       lift, and a strong selected state. Pointer-events explicit so
-       clicks register over the parent button's onclick. */
-    .trio-subchip {
-      display: flex;
-      align-items: center;
-      gap: var(--space-3);
-      width: 100%;
-      padding: var(--space-3) var(--space-4);
-      background: var(--surface-container-lowest, rgba(255, 255, 255, 0.7));
-      border: 1px solid var(--border-light);
-      border-radius: 14px;
-      cursor: pointer;
-      text-align: left;
-      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-      font-weight: 600;
-      font-size: 15px;
-      color: var(--text-main);
-      transition: border-color 200ms ease,
-                  background 200ms ease,
-                  transform 200ms ease,
-                  box-shadow 200ms ease;
+    .subtopic-pop-scrim.is-visible {
+      opacity: 1;
       pointer-events: auto;
     }
 
-    .trio-subchip:hover {
-      border-color: var(--brand-rose);
-      background: rgba(183, 110, 121, 0.05);
-      transform: translateX(4px);
-      box-shadow: 0 2px 12px rgba(183, 110, 121, 0.08);
+    .subtopic-pop {
+      position: fixed;
+      z-index: 999;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.96);
+      width: min(960px, calc(100vw - 32px));
+      max-height: min(82vh, 720px);
+      display: flex;
+      flex-direction: column;
+      background: var(--surface-container-lowest, #fff);
+      border: 1px solid var(--border-light);
+      border-radius: 24px;
+      box-shadow: 0 32px 64px rgba(44, 62, 58, 0.22);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 240ms ease, transform 280ms cubic-bezier(.2, .9, .25, 1);
+      overflow: hidden;
+    }
+    .subtopic-pop.is-visible {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translate(-50%, -50%) scale(1);
     }
 
-    .trio-subchip:active {
-      transform: translateX(4px) scale(0.99);
+    .subtopic-pop__head {
+      flex-shrink: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: var(--space-3);
+      padding: var(--space-5) var(--space-5) var(--space-4);
+      border-bottom: 1px solid var(--border-light);
     }
-
-    .trio-subchip.is-selected {
-      border-color: var(--brand-rose);
-      background: rgba(183, 110, 121, 0.10);
+    .subtopic-pop__title-block {
+      min-width: 0;
+    }
+    .subtopic-pop__eyebrow {
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--brand-rose);
+      margin-bottom: 6px;
+    }
+    .subtopic-pop__title {
+      font-family: var(--font-display, 'Bebas Neue'), sans-serif;
+      font-size: clamp(28px, 4vw, 40px);
+      letter-spacing: 0.02em;
+      color: var(--text-main);
+      line-height: 1.05;
+      margin: 0;
+    }
+    .subtopic-pop__lede {
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+    .subtopic-pop__close {
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      background: transparent;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 180ms ease, color 180ms ease;
+    }
+    .subtopic-pop__close:hover {
+      background: rgba(81, 97, 94, 0.08);
       color: var(--brand-rose);
     }
+    .subtopic-pop__close svg { width: 20px; height: 20px; }
 
-    .trio-subchip__icon {
-      flex-shrink: 0;
-      width: 32px;
-      height: 32px;
+    .subtopic-pop__body {
+      flex: 1;
+      overflow-y: auto;
+      padding: var(--space-4) var(--space-5);
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Sub-topic cards — same .trio-card design; dashed border + smaller scale */
+    .subtopic-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: var(--space-3);
+    }
+    .subtopic-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-2);
+      padding: var(--space-4);
+      background: var(--surface-container-lowest, rgba(255, 255, 255, 0.7));
+      border: 1.5px dashed var(--border-light);
+      border-radius: 16px;
+      cursor: pointer;
+      text-align: left;
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      transition: border-color 200ms ease, background 200ms ease,
+                  transform 200ms ease, box-shadow 200ms ease;
+    }
+    .subtopic-card:hover {
+      border-color: var(--brand-rose);
+      border-style: dashed;
+      background: rgba(183, 110, 121, 0.04);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(183, 110, 121, 0.10);
+    }
+    .subtopic-card.is-selected {
+      border-color: var(--brand-rose);
+      border-style: solid;     /* solid on commit — confirms the choice */
+      background: rgba(183, 110, 121, 0.08);
+    }
+    .subtopic-card.is-empty {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+    .subtopic-card.is-empty:hover {
+      transform: none;
+      box-shadow: none;
+      border-color: var(--border-light);
+      background: var(--surface-container-lowest, rgba(255, 255, 255, 0.7));
+    }
+
+    .subtopic-card__check {
+      position: absolute;
+      top: var(--space-3);
+      right: var(--space-3);
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--brand-rose);
+      color: white;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transform: scale(0.7);
+      transition: opacity 180ms ease, transform 180ms ease;
+    }
+    .subtopic-card.is-selected .subtopic-card__check {
+      opacity: 1;
+      transform: scale(1);
+    }
+    .subtopic-card__check svg { width: 12px; height: 12px; }
+
+    .subtopic-card__glyph {
+      width: 36px;
+      height: 36px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -331,66 +421,104 @@
       color: var(--text-muted);
       transition: background 200ms ease, color 200ms ease;
     }
-
-    .trio-subchip:hover .trio-subchip__icon {
-      background: rgba(183, 110, 121, 0.12);
+    .subtopic-card:hover .subtopic-card__glyph,
+    .subtopic-card.is-selected .subtopic-card__glyph {
+      background: rgba(183, 110, 121, 0.14);
       color: var(--brand-rose);
     }
+    .subtopic-card__glyph svg { width: 18px; height: 18px; }
 
-    .trio-subchip.is-selected .trio-subchip__icon {
-      background: rgba(183, 110, 121, 0.18);
-      color: var(--brand-rose);
-    }
-
-    .trio-subchip__icon svg {
-      width: 18px;
-      height: 18px;
-    }
-
-    .trio-subchip__label {
-      flex: 1;
+    .subtopic-card__title {
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--text-main);
       line-height: 1.3;
     }
-
-    .trio-subchip__arrow {
-      flex-shrink: 0;
-      width: 18px;
-      height: 18px;
+    .subtopic-card__sub {
+      font-weight: 500;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
       color: var(--text-muted);
-      opacity: 0;
-      transform: translateX(-4px);
-      transition: opacity 200ms ease, transform 200ms ease, color 200ms ease;
+    }
+    .subtopic-card.is-selected .subtopic-card__title {
+      color: var(--brand-rose);
     }
 
-    .trio-subchip:hover .trio-subchip__arrow,
-    .trio-subchip.is-selected .trio-subchip__arrow {
-      opacity: 1;
-      transform: translateX(0);
+    .subtopic-pop__foot {
+      flex-shrink: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-4) var(--space-5);
+      border-top: 1px solid var(--border-light);
+      background: var(--surface, transparent);
+    }
+    .subtopic-pop__foot-status {
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .subtopic-pop__foot-status strong {
       color: var(--brand-rose);
+      font-weight: 700;
+    }
+
+    /* Loading skeleton inside body */
+    .subtopic-skeleton-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: var(--space-3);
+    }
+    .subtopic-skeleton {
+      height: 110px;
+      border-radius: 16px;
+      background: linear-gradient(90deg,
+        rgba(81, 97, 94, 0.04) 25%,
+        rgba(81, 97, 94, 0.10) 50%,
+        rgba(81, 97, 94, 0.04) 75%);
+      background-size: 200% 100%;
+      animation: subtopicShimmer 1400ms linear infinite;
+    }
+    @keyframes subtopicShimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .trio-card__drawer { animation: none; }
-      .trio-subchip,
-      .trio-subchip__icon,
-      .trio-subchip__arrow,
-      .trio-card__chevron { transition: none !important; }
-      .trio-subchip:hover { transform: none; }
+      .subtopic-pop, .subtopic-pop-scrim,
+      .subtopic-card, .subtopic-card__glyph, .subtopic-card__check {
+        transition: none !important;
+      }
+      .subtopic-card:hover { transform: none; }
+      .subtopic-skeleton { animation: none; background: rgba(81, 97, 94, 0.06); }
     }
 
-    /* Mobile — stack the drawer below the card content instead of side-by-side */
-    @media (max-width: 768px) {
-      .trio-card.is-expanded {
-        grid-template-columns: 1fr;
-        gap: var(--space-4);
+    /* Mobile — bottom sheet */
+    @media (max-width: 640px) {
+      .subtopic-pop {
+        top: auto;
+        bottom: 0;
+        left: 0;
+        transform: translateY(20px);
+        width: 100vw;
+        max-height: 88vh;
+        border-radius: 20px 20px 0 0;
       }
-      .trio-card__drawer {
-        grid-column: 1;
-        padding-left: 0;
-        padding-top: var(--space-4);
-        border-left: none;
-        border-top: 1px solid var(--border-light);
+      .subtopic-pop.is-visible {
+        transform: translateY(0);
       }
+      .subtopic-pop__head { padding: var(--space-4); }
+      .subtopic-pop__body { padding: var(--space-3) var(--space-4); }
+      .subtopic-pop__foot {
+        padding: var(--space-3) var(--space-4) calc(var(--space-3) + env(safe-area-inset-bottom));
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .subtopic-pop__foot .btn { width: 100%; }
+      .subtopic-grid { grid-template-columns: 1fr 1fr; gap: var(--space-2); }
+      .subtopic-card { padding: var(--space-3); }
     }
 
     .trio-card.is-locked {
@@ -778,6 +906,12 @@
     style="padding-top: calc(64px + var(--space-8)); min-height: 80vh;">
   </main>
 
+  <!-- ─── Sub-topic popover (floating dialog, controlled by render()) ─── -->
+  <div id="subtopic-pop-scrim" class="subtopic-pop-scrim" aria-hidden="true"
+       onclick="window.closeSubTopicPopover()"></div>
+  <div id="subtopic-pop-host" class="subtopic-pop" role="dialog"
+       aria-modal="true" aria-labelledby="subtopic-pop-title" aria-hidden="true"></div>
+
   <global-footer></global-footer>
   <global-bottom-nav></global-bottom-nav>
 
@@ -797,6 +931,7 @@
       countsBySubject,
       countsByTopic,
       countsByType,
+      countsBySubTopic,
       readShowCountsFlag,
       TOPIC_TYPE_BYPASS,
       SUBJECT_DB_NAME
@@ -836,6 +971,7 @@
     window.initSubjectsEngine = function () {
       'use strict';
 
+      // Shared state — extended with sub-topic popover flags
       const state = {
         phase: 'INIT',
         level: '',          // e.g. 'Primary 4'
@@ -851,7 +987,9 @@
         // Cached count maps for the current resolved (level, subject, topic)
         countsBySubjectMap: {},
         countsByTopicMap: {},
-        countsByTypeMap: {}
+        countsByTypeMap: {},
+        countsBySubTopicMap: {},   // populated lazily when popover opens
+        subTopicLoading: false      // true while count query is in flight
       };
 
       const app = document.getElementById('app');
@@ -1121,6 +1259,8 @@
         if (state.phase === 'SUBJECT') renderSubject();
         else if (state.phase === 'TOPIC') renderTopic();
         else if (state.phase === 'TYPE') renderType();
+        // Sync the popover (sibling of <main>, not inside app.innerHTML)
+        renderSubTopicPopover();
       }
 
       // ── Skeleton loading ───────────────────────────────────────────────
@@ -1217,8 +1357,11 @@
           : 'Practise across every area';
         const allBtn = buildCard('all', 'All Topics', allTopicsGlyph(), allSubLine, state.topic === 'all', false);
 
-        // Canonical topic cards (with optional accordion drawer for
-        // English Comprehension and Cloze — see SUB_TOPIC_GROUPS)
+        // Canonical topic cards. Topics with sub-topics open a floating
+        // popover when clicked instead of inline expansion — keeps the
+        // grid layout stable and gives sub-topic cards proper breathing
+        // room. The popover requires explicit "Choose Question Type →"
+        // commit; chip click selects state only.
         const topicBtns = allTopics.map(canon => {
           const slug = slugify(canon);
           const count = state.countsByTopicMap[canon] || 0;
@@ -1226,40 +1369,40 @@
           const groupKeys = Object.keys(groups);
           const hasSubTopics = groupKeys.length > 0;
           const isSelected = state.topic === slug;
-          const isExpanded = hasSubTopics && state.expandedTopic === slug;
 
           let subLine;
           if (state.showCounts && count > 0) {
             subLine = hasSubTopics
-              ? `${count} question${count === 1 ? '' : 's'} · ${groupKeys.length} branch${groupKeys.length === 1 ? '' : 'es'}`
+              ? `${count} question${count === 1 ? '' : 's'} · ${groupKeys.length} sub-topic${groupKeys.length === 1 ? '' : 's'}`
               : `${count} question${count === 1 ? '' : 's'}`;
           } else {
-            subLine = hasSubTopics ? `${groupKeys.length} branch${groupKeys.length === 1 ? '' : 'es'}` : 'Practise this topic';
+            subLine = hasSubTopics
+              ? `${groupKeys.length} sub-topic${groupKeys.length === 1 ? '' : 's'}`
+              : 'Practise this topic';
           }
 
           if (!hasSubTopics) {
             return buildCard(slug, canon, topicGlyph(canon), subLine, isSelected, false);
           }
 
-          // Drawer-card path (Comprehension / Cloze)
-          const drawerHtml = isExpanded ? buildSubTopicDrawer(canon, slug, groups) : '';
+          // Topic with sub-topics — opens a floating popover. The chevron
+          // is the affordance; card itself uses the same trio-card design.
           const chevron = `
             <div class="trio-card__chevron" aria-hidden="true">
-              <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M3 4.5l3 3 3-3" stroke-linecap="round" stroke-linejoin="round"/>
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M6 4l4 4-4 4" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </div>`;
           return `
             <button type="button"
-                    class="trio-card has-drawer ${isSelected ? 'is-selected' : ''} ${isExpanded ? 'is-expanded' : ''}"
+                    class="trio-card has-drawer ${isSelected ? 'is-selected' : ''}"
                     onclick="window.toggleTopicDrawer('${slug}')"
-                    aria-expanded="${isExpanded}">
+                    aria-haspopup="dialog">
               <div class="trio-card__check"></div>
               <div class="trio-card__glyph">${topicGlyph(canon)}</div>
               <div class="trio-card__title">${esc(canon)}</div>
               <div class="trio-card__sub">${esc(subLine)}</div>
               ${chevron}
-              ${drawerHtml}
             </button>`;
         }).join('');
 
@@ -1281,12 +1424,187 @@
           <div class="wizard-actions">${continueBtn}${backBtn}</div>`;
       }
 
-      // Sub-topic drawer (UI-only grouping for English Comprehension + Cloze).
-      // Chips are direct-action: click → launch quiz immediately. No
-      // separate "Start Quiz" button. Each chip has an SVG icon matched
-      // to its semantic role (passage / visual-text / grammar / vocab /
-      // comprehension cloze / "all"). The visual hierarchy reads as
-      // "icon → label → arrow" — same rhythm as the topic card itself.
+      // Renders the floating popover content for a topic's sub-topics.
+      // Reads counts from state.countsBySubTopicMap (populated lazily
+      // on open). Shows skeletons while loading. Each sub-topic is a
+      // dashed-border .subtopic-card matching the .trio-card design.
+      function renderSubTopicPopBody(canon, topicSlug, groups) {
+        if (state.subTopicLoading) {
+          const skeletons = Array.from({ length: Math.max(4, Object.keys(groups).length) })
+            .map(() => `<div class="subtopic-skeleton" aria-hidden="true"></div>`).join('');
+          return `<div class="subtopic-skeleton-grid" role="status" aria-label="Loading sub-topics">${skeletons}</div>`;
+        }
+
+        const groupKeys = Object.keys(groups);
+        const allActive = state.topic === topicSlug && !state.subTopic;
+        const totalCount = Object.values(state.countsBySubTopicMap || {}).reduce((a, b) => a + b, 0);
+
+        const allCard = `
+          <button type="button"
+                  class="subtopic-card ${allActive ? 'is-selected' : ''}"
+                  onclick="window.pickSubTopic('${topicSlug}', '')">
+            <div class="subtopic-card__check" aria-hidden="true">
+              <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M2.5 6.5L5 9l4.5-5.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="subtopic-card__glyph">${subTopicIconSvg('all')}</div>
+            <div class="subtopic-card__title">All ${esc(canon)}</div>
+            <div class="subtopic-card__sub">${state.showCounts && totalCount > 0
+              ? `${totalCount} question${totalCount === 1 ? '' : 's'}`
+              : 'Practise across all'}</div>
+          </button>`;
+
+        const groupCards = groupKeys.map(key => {
+          const group = groups[key];
+          const active = state.topic === topicSlug && state.subTopic === key;
+          // Resolve count: sum across all canon sub_topics this UI group covers
+          const groupCount = (group.subTopicsInCanon || [])
+            .reduce((sum, sub) => sum + (state.countsBySubTopicMap[sub] || 0), 0);
+          const isEmpty = state.showCounts && groupCount === 0;
+
+          let subLine;
+          if (!state.showCounts) {
+            subLine = 'Drill in';
+          } else if (groupCount === 0) {
+            subLine = 'No questions yet';
+          } else {
+            subLine = `${groupCount} question${groupCount === 1 ? '' : 's'}`;
+          }
+
+          return `
+            <button type="button"
+                    class="subtopic-card ${active ? 'is-selected' : ''} ${isEmpty ? 'is-empty' : ''}"
+                    ${isEmpty ? 'disabled aria-disabled="true"' : ''}
+                    onclick="${isEmpty ? '' : `window.pickSubTopic('${topicSlug}', '${key}')`}">
+              <div class="subtopic-card__check" aria-hidden="true">
+                <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M2.5 6.5L5 9l4.5-5.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <div class="subtopic-card__glyph">${subTopicIconSvg(key)}</div>
+              <div class="subtopic-card__title">${esc(group.label)}</div>
+              <div class="subtopic-card__sub">${esc(subLine)}</div>
+            </button>`;
+        }).join('');
+
+        return `<div class="subtopic-grid">${allCard}${groupCards}</div>`;
+      }
+
+      // Renders the full popover (head + body + foot). Called by render()
+      // when state.expandedTopic is set. Lives inside #subtopic-pop-host.
+      function renderSubTopicPopover() {
+        const host = document.getElementById('subtopic-pop-host');
+        const scrim = document.getElementById('subtopic-pop-scrim');
+        if (!host || !scrim) return;
+
+        if (!state.expandedTopic) {
+          host.classList.remove('is-visible');
+          scrim.classList.remove('is-visible');
+          host.setAttribute('aria-hidden', 'true');
+          // Strip body content after exit transition completes
+          setTimeout(() => { if (!state.expandedTopic) host.innerHTML = ''; }, 280);
+          return;
+        }
+
+        const slug = state.expandedTopic;
+        const canon = unslugify(slug, state.subject);
+        if (!canon) return;
+        const groups = subTopicGroupsFor(state.subject, canon);
+
+        const hasSelection = !!(state.topic === slug);  // 'All' counts as a valid selection
+        const ctaDisabled = !hasSelection;
+
+        host.innerHTML = `
+          <div class="subtopic-pop__head">
+            <div class="subtopic-pop__title-block">
+              <div class="subtopic-pop__eyebrow">Drill into</div>
+              <h2 class="subtopic-pop__title">${esc(canon)}</h2>
+              <p class="subtopic-pop__lede">Pick a focus, or practise across all.</p>
+            </div>
+            <button type="button" class="subtopic-pop__close"
+                    onclick="window.closeSubTopicPopover()" aria-label="Close">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+          <div class="subtopic-pop__body">${renderSubTopicPopBody(canon, slug, groups)}</div>
+          <div class="subtopic-pop__foot">
+            <div class="subtopic-pop__foot-status">${
+              hasSelection
+                ? (state.subTopic
+                    ? `Selected: <strong>${esc(groups[state.subTopic]?.label || '')}</strong>`
+                    : `Selected: <strong>All ${esc(canon)}</strong>`)
+                : 'Pick a sub-topic to continue'
+            }</div>
+            <button type="button"
+                    class="btn btn-primary"
+                    ${ctaDisabled ? 'disabled' : ''}
+                    onclick="window.commitSubTopicChoice()">
+              Choose Question Type →
+            </button>
+          </div>`;
+
+        host.setAttribute('aria-hidden', 'false');
+        // Trigger transitions on the next frame
+        requestAnimationFrame(() => {
+          host.classList.add('is-visible');
+          scrim.classList.add('is-visible');
+        });
+      }
+
+      // SVG glyphs — same stroke language as topicGlyph(). Falls back to
+      // the parent topic's own glyph for any sub-topic we don't have a
+      // bespoke icon for (Math/Science have many).
+      function subTopicIconSvg(groupKey) {
+        const icons = {
+          'all': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <circle cx="12" cy="12" r="3"/>
+            <circle cx="5" cy="6" r="1.5"/><circle cx="5" cy="18" r="1.5"/>
+            <circle cx="19" cy="6" r="1.5"/><circle cx="19" cy="18" r="1.5"/>
+            <path d="M9.5 11l-3-3.5M9.5 13l-3 3.5M14.5 11l3-3.5M14.5 13l3 3.5" stroke-linecap="round"/>
+          </svg>`,
+          'passage-comprehension': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <path d="M4 5h7v14H4zM13 5h7v14h-7z"/>
+            <path d="M6 9h3M6 12h3M6 15h2M15 9h3M15 12h3M15 15h2" stroke-linecap="round"/>
+          </svg>`,
+          'visual-text-comprehension': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <rect x="4" y="5" width="16" height="12" rx="1.5"/>
+            <path d="M8 13l3-3 3 3 2-2 2 2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="9" cy="9" r="1" fill="currentColor" stroke="none"/>
+            <path d="M9 21h6" stroke-linecap="round"/>
+          </svg>`,
+          'grammar-cloze-with-word-bank': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <rect x="3" y="6" width="6" height="4" rx="0.5"/><rect x="11" y="6" width="6" height="4" rx="0.5"/>
+            <rect x="3" y="14" width="6" height="4" rx="0.5" stroke-dasharray="2 2"/>
+            <rect x="11" y="14" width="10" height="4" rx="0.5"/>
+          </svg>`,
+          'vocabulary-cloze-with-dropdowns': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <rect x="3" y="8" width="14" height="4" rx="0.5"/>
+            <path d="M19 9l1.5 1.5L22 9" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="3" y="14" width="14" height="4" rx="0.5" stroke-dasharray="2 2"/>
+          </svg>`,
+          'comprehension-free-text-cloze': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <path d="M4 6h16M4 10h10M4 14h16M4 18h12" stroke-linecap="round"/>
+            <path d="M14 10l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>`,
+          // Math/Science generic — atom/branch glyph, used for every
+          // canon-derived sub-topic since per-sub-topic icons would be
+          // a lot of art for low ROI. Differentiation is by label.
+          'generic': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <circle cx="12" cy="12" r="2"/>
+            <path d="M12 4v6M12 14v6M4 12h6M14 12h6" stroke-linecap="round"/>
+            <circle cx="12" cy="4" r="1.2"/><circle cx="12" cy="20" r="1.2"/>
+            <circle cx="4" cy="12" r="1.2"/><circle cx="20" cy="12" r="1.2"/>
+          </svg>`
+        };
+        return icons[groupKey] || icons['generic'];
+      }
+
+      // Legacy stub kept so any cached templates that reference it don't
+      // break; the popover replaces inline drawer entirely.
       function buildSubTopicDrawer(canon, topicSlug, groups) {
         const groupKeys = Object.keys(groups);
         const allActive = state.topic === topicSlug && !state.subTopic;
@@ -1379,49 +1697,95 @@
         return icons[groupKey] || icons['all'];
       }
 
-      window.toggleTopicDrawer = (slug) => {
+      window.toggleTopicDrawer = async (slug) => {
+        // Open: set expanded, set topic to enable "All" being the default
+        // selection, fetch counts, then re-render the popover.
         if (state.expandedTopic === slug) {
-          state.expandedTopic = '';
-          state.topic = '';
-          state.subTopic = '';
-        } else {
-          state.expandedTopic = slug;
-          state.topic = slug;
-          state.subTopic = '';
+          window.closeSubTopicPopover();
+          return;
         }
-        render();
+        state.expandedTopic = slug;
+        state.topic = slug;            // 'All <topic>' is the implicit default
+        state.subTopic = '';
+        state.subTopicLoading = true;
+        state.countsBySubTopicMap = {};
+        renderSubTopicPopover();       // shows skeleton
+
+        // Fetch sub-topic counts from Supabase (paginated helper)
+        try {
+          if (state.showCounts) {
+            const sb = await getSupabase();
+            const dbSubject = SUBJECT_DB_NAME[state.subject];
+            const canon = unslugify(slug, state.subject);
+            if (sb && dbSubject && canon) {
+              state.countsBySubTopicMap = await countsBySubTopic(sb, state.level, dbSubject, canon);
+            }
+          }
+        } catch (err) {
+          console.warn('[subjects] sub-topic counts failed:', err);
+        } finally {
+          state.subTopicLoading = false;
+          renderSubTopicPopover();
+        }
+      };
+
+      window.closeSubTopicPopover = () => {
+        state.expandedTopic = '';
+        // Don't clear state.topic/subTopic on close — preserve choice if
+        // user re-opens. Only clear when they pick a different topic.
+        renderSubTopicPopover();
       };
 
       window.pickSubTopic = (topicSlug, groupKey) => {
+        // Select state only — does NOT auto-launch. User must hit
+        // "Choose Question Type →" in the popover footer to commit.
         state.topic = topicSlug;
-        state.subTopic = groupKey;  // '' = "All <topic>"
-        // Also set qtype so launchQuiz's existing guard passes. Use the
-        // TOPIC_TYPE_BYPASS routing — comprehension/cloze map to their
-        // own types via the bypass table imported from syllabus.js.
-        state.qtype = TOPIC_TYPE_BYPASS[topicSlug] || 'mixed';
-        window.launchQuiz();
-        return;
+        state.subTopic = groupKey;     // '' = "All <topic>"
+        renderSubTopicPopover();        // re-render to highlight selection + enable CTA
+      };
+
+      window.commitSubTopicChoice = () => {
+        // User confirmed the sub-topic pick. Set qtype via TOPIC_TYPE_BYPASS
+        // (English Cloze / Comprehension), or proceed to type-picker for
+        // Math/Science where multiple question types apply.
+        if (!state.topic) return;
+
+        const topicSlug = state.topic;
+        const bypass = TOPIC_TYPE_BYPASS[topicSlug];
+
+        // Close popover first so the transition unwinds cleanly
+        state.expandedTopic = '';
+        renderSubTopicPopover();
+
+        if (bypass) {
+          // English bypass — launch directly with sub_topic param
+          state.qtype = bypass;
+          window.launchQuiz();
+        } else {
+          // Math/Science — go to question-type step (existing flow)
+          // sub_topic param is preserved on state.subTopic and forwarded
+          // by launchQuiz when called from goToType.
+          window.goToType();
+        }
       };
 
       window.pickTopic = (t) => {
         state.topic = t;
-        state.subTopic = '';  // reset on any non-drawer topic pick
+        state.subTopic = '';  // reset on any non-popover topic pick
 
-        // English: any topic pick launches directly (per existing routing)
+        // pickTopic is now only fired for cards that don't have sub-topics.
+        // Cards with sub-topics route through window.toggleTopicDrawer().
+
+        // English topic pick → launch directly (sub_topic-bearing topics
+        // never reach here because they have hasSubTopics === true)
         if (state.subject === 'english') {
           state.qtype = (t === 'all') ? 'mixed' : (TOPIC_TYPE_BYPASS[t] || 'mixed');
           window.launchQuiz();
           return;
         }
 
-        // Math/Science bypass
-        if (t !== 'all' && TOPIC_TYPE_BYPASS[t]) {
-          state.qtype = TOPIC_TYPE_BYPASS[t];
-          window.launchQuiz();
-          return;
-        }
-
-        // Otherwise refresh per-type counts and re-render
+        // 'all' topic for Math/Science → refresh per-type counts and re-render
+        // (Math/Science topics with sub-topics never reach here either)
         const canonicalTopic = (t === 'all') ? null : unslugify(t, state.subject);
         loadTypeCounts(canonicalTopic).then(() => render());
         render();
@@ -1566,6 +1930,15 @@
         if (!dbSubject) return;
         state.countsByTypeMap = await countsByType(sb, state.level, dbSubject, canonicalTopic);
       }
+
+      // ────────────────────────────────────────────────────────────────────
+      // GLOBAL: Esc key dismisses the popover
+      // ────────────────────────────────────────────────────────────────────
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && state.expandedTopic) {
+          window.closeSubTopicPopover();
+        }
+      });
 
       // ────────────────────────────────────────────────────────────────────
       // INIT
