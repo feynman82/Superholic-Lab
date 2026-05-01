@@ -841,6 +841,73 @@
     .synth-pill { font-weight: 700; color: var(--brand-rose); padding: 4px 12px; background: var(--bg-surface); border-radius: var(--radius-sm); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.05em; border: 1px solid var(--border-light); flex-shrink: 0; white-space: nowrap; }
     .qa-divider { height: 1px; background: var(--border-light); margin: var(--space-3) 0; }
     .synth-section-lbl { font-size: var(--text-xs); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: var(--space-3); }
+
+    /* ── Wena Telemetry tab (Sprint 4) — scoped to #wenaView ── */
+    /* Reuses the admin tone: light card surfaces with dark text. Bars,
+       row flags, and stat boxes mirror the standalone /admin-wena-telemetry
+       layout but inherit admin's typography and palette tokens. */
+    #wenaView .wena-panel { margin-bottom: var(--space-6); }
+    #wenaView .wena-panel-head {
+      display: flex; justify-content: space-between; align-items: center;
+      gap: var(--space-3); margin-bottom: var(--space-3);
+    }
+    #wenaView .wena-panel-title {
+      font-family: var(--font-display); font-size: 1.125rem;
+      letter-spacing: 0.04em; margin: 0; color: var(--text-main);
+    }
+    #wenaView .wena-panel-meta {
+      font-family: 'JetBrains Mono', monospace; font-size: var(--text-xs);
+      color: var(--text-muted); letter-spacing: 0.06em;
+    }
+    #wenaView .wena-grid-2 { display: grid; grid-template-columns: 1fr; gap: var(--space-4); }
+    @media (min-width: 768px) {
+      #wenaView .wena-grid-2 { grid-template-columns: 1fr 1fr; }
+    }
+    #wenaView .wena-h3 {
+      font-size: var(--text-xs); letter-spacing: 0.08em;
+      color: var(--text-muted); text-transform: uppercase;
+      font-weight: 700; margin: 0 0 var(--space-3);
+    }
+    #wenaView .wena-table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+    #wenaView .wena-table th, #wenaView .wena-table td {
+      text-align: left; padding: var(--space-2) var(--space-3);
+      border-bottom: 1px solid var(--border-light);
+    }
+    #wenaView .wena-table th {
+      color: var(--text-muted); font-weight: 700; letter-spacing: 0.06em;
+      text-transform: uppercase; font-size: 0.7rem;
+    }
+    #wenaView .wena-table td.numeric, #wenaView .wena-table th.numeric {
+      text-align: right; font-variant-numeric: tabular-nums;
+    }
+    #wenaView .wena-stat-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-3);
+    }
+    @media (min-width: 480px) { #wenaView .wena-stat-grid { grid-template-columns: repeat(4, 1fr); } }
+    #wenaView .wena-stat {
+      padding: var(--space-3); background: var(--bg-elevated);
+      border: 1px solid var(--border-light); border-left: 3px solid var(--brand-rose);
+      border-radius: var(--radius-md);
+    }
+    #wenaView .wena-stat .num {
+      font-family: 'Lexend', 'JetBrains Mono', monospace;
+      font-size: 1.5rem; font-weight: 800; color: var(--brand-rose);
+    }
+    #wenaView .wena-stat .lbl {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.7rem;
+      letter-spacing: 0.08em; color: var(--text-muted); text-transform: uppercase;
+    }
+    #wenaView .wena-stat.warn   { border-left-color: var(--brand-amber, var(--brand-rose)); }
+    #wenaView .wena-stat.warn   .num { color: var(--brand-amber, var(--brand-rose)); }
+    #wenaView .wena-stat.danger { border-left-color: var(--brand-danger, #d33); }
+    #wenaView .wena-stat.danger .num { color: var(--brand-danger, #d33); }
+    #wenaView .wena-bar {
+      display: inline-block; height: 8px; background: var(--brand-rose);
+      border-radius: var(--radius-pill); vertical-align: middle;
+    }
+    #wenaView .row-flag-low td  { background: rgba(239, 68, 68, 0.06); }
+    #wenaView .row-flag-warn td { background: rgba(255, 184, 48, 0.06); }
+    #wenaView .empty { color: var(--text-muted); font-style: italic; padding: var(--space-3) 0; }
   </style>
 </head>
 
@@ -870,6 +937,9 @@
       <button class="page-tab is-active" id="tabCRM" onclick="window.switchAdminTab('crm')">📊 CRM Dashboard</button>
       <button class="page-tab" id="tabQA" onclick="window.switchAdminTab('qa')">🔬 QA Audit <span class="radar-count"
           id="qaTabBadge" style="margin-left:2px;">…</span></button>
+      <!-- Sprint 4: Wena RAP telemetry. Master-admin-only — sub-admins do NOT
+           see this tab (loadAdminData hides it when callerRole !== 'admin'). -->
+      <button class="page-tab" id="tabWena" onclick="window.switchAdminTab('wena')" hidden>📈 Wena Telemetry</button>
     </div>
   </div>
 
@@ -1527,6 +1597,116 @@
     </div><!-- /qa-shell -->
   </div><!-- /qaView -->
 
+  <!-- ════ WENA TELEMETRY VIEW (Sprint 4) ═════════════════════════════════════ -->
+  <!-- Read-only RAP-event observability. 7 panels driven by pedagogy_events.
+       Lazy-loaded on first activation via window.switchAdminTab('wena'). -->
+  <div id="wenaView" style="display:none;">
+    <section class="py-8 bg-page texture-light-grid">
+      <div class="container">
+        <div style="margin-bottom:var(--space-6);">
+          <h2 class="zone-heading m-0">📈 Wena RAP Telemetry</h2>
+          <p class="text-sm text-muted" style="margin-top:var(--space-2);">
+            Per-turn pedagogy events. Read-only. Refresh each panel manually.
+          </p>
+        </div>
+
+        <!-- ── Panel 1: Headline counters ─────────────────────────────── -->
+        <section class="wena-panel" id="wp-headline">
+          <div class="wena-panel-head">
+            <h3 class="wena-panel-title">1. Headline counters</h3>
+            <div>
+              <span class="wena-panel-meta" id="wmeta-headline">—</span>
+              <button class="btn btn-secondary btn-sm wena-refresh" data-refresh="headline">Refresh</button>
+            </div>
+          </div>
+          <div class="card p-6">
+            <div class="wena-h3">Last 24 hours</div>
+            <div class="wena-stat-grid" id="wstats-24h"></div>
+            <div class="wena-h3" style="margin-top:var(--space-5);">Last 7 days</div>
+            <div class="wena-stat-grid" id="wstats-7d"></div>
+            <div class="wena-h3" style="margin-top:var(--space-5);">Mode distribution (7d)</div>
+            <table class="wena-table" id="wtbl-mode-dist"><thead><tr><th>Mode</th><th>Count</th><th></th></tr></thead><tbody></tbody></table>
+            <div class="wena-h3" style="margin-top:var(--space-5);">Cell hit distribution (7d, RAP only)</div>
+            <table class="wena-table" id="wtbl-cellhit-dist"><thead><tr><th>Hit kind</th><th>Count</th><th></th></tr></thead><tbody></tbody></table>
+          </div>
+        </section>
+
+        <div class="wena-grid-2">
+          <!-- ── Panel 2: Mode transitions ────────────────────────────── -->
+          <section class="wena-panel" id="wp-transitions">
+            <div class="wena-panel-head">
+              <h3 class="wena-panel-title">2. Mode transitions (7d)</h3>
+              <button class="btn btn-secondary btn-sm wena-refresh" data-refresh="transitions">Refresh</button>
+            </div>
+            <div class="card p-6">
+              <table class="wena-table" id="wtbl-transitions"><thead><tr><th>Previous</th><th>→</th><th>Current</th><th class="numeric">Count</th></tr></thead><tbody></tbody></table>
+            </div>
+          </section>
+
+          <!-- ── Panel 3: Cells that never fired ──────────────────────── -->
+          <section class="wena-panel" id="wp-orphans">
+            <div class="wena-panel-head">
+              <h3 class="wena-panel-title">3. Cells never fired (30d)</h3>
+              <button class="btn btn-secondary btn-sm wena-refresh" data-refresh="orphans">Refresh</button>
+            </div>
+            <div class="card p-6">
+              <table class="wena-table" id="wtbl-orphans"><thead><tr><th>Level</th><th>Topic</th><th>Sub-topic</th></tr></thead><tbody></tbody></table>
+            </div>
+          </section>
+
+          <!-- ── Panel 4: Top DIRECT_TEACH triggers ───────────────────── -->
+          <section class="wena-panel" id="wp-top-direct">
+            <div class="wena-panel-head">
+              <h3 class="wena-panel-title">4. Top DIRECT_TEACH sub-topics (7d)</h3>
+              <button class="btn btn-secondary btn-sm wena-refresh" data-refresh="top-direct">Refresh</button>
+            </div>
+            <div class="card p-6">
+              <table class="wena-table" id="wtbl-top-direct"><thead><tr><th>Level</th><th>Topic</th><th>Sub-topic</th><th class="numeric">Count</th></tr></thead><tbody></tbody></table>
+            </div>
+          </section>
+
+          <!-- ── Panel 5: Faithfulness ────────────────────────────────── -->
+          <section class="wena-panel" id="wp-faithfulness">
+            <div class="wena-panel-head">
+              <h3 class="wena-panel-title">5. Faithfulness — DIRECT_TEACH (7d)</h3>
+              <button class="btn btn-secondary btn-sm wena-refresh" data-refresh="faithfulness">Refresh</button>
+            </div>
+            <div class="card p-6">
+              <div class="wena-h3">Overlap histogram (token Jaccard)</div>
+              <table class="wena-table" id="wtbl-faith-hist"><thead><tr><th>Bucket</th><th class="numeric">Count</th><th></th></tr></thead><tbody></tbody></table>
+              <div class="wena-h3" style="margin-top:var(--space-5);">Recent low-overlap (&lt; 0.2) — latest 5</div>
+              <table class="wena-table" id="wtbl-faith-low"><thead><tr><th>Time</th><th>Level</th><th>Topic / Sub-topic</th><th class="numeric">Overlap</th></tr></thead><tbody></tbody></table>
+            </div>
+          </section>
+
+          <!-- ── Panel 6: Level normalisation ─────────────────────────── -->
+          <section class="wena-panel" id="wp-levels">
+            <div class="wena-panel-head">
+              <h3 class="wena-panel-title">6. Level normalisation (30d)</h3>
+              <button class="btn btn-secondary btn-sm wena-refresh" data-refresh="levels">Refresh</button>
+            </div>
+            <div class="card p-6">
+              <table class="wena-table" id="wtbl-levels"><thead><tr><th>Raw input</th><th>Normalised</th><th class="numeric">Count</th></tr></thead><tbody></tbody></table>
+            </div>
+          </section>
+
+          <!-- ── Panel 7: Vision + RAP audit ──────────────────────────── -->
+          <section class="wena-panel" id="wp-vision">
+            <div class="wena-panel-head">
+              <h3 class="wena-panel-title">7. Vision + RAP audit (7d)</h3>
+              <button class="btn btn-secondary btn-sm wena-refresh" data-refresh="vision">Refresh</button>
+            </div>
+            <div class="card p-6">
+              <div class="wena-stat-grid" id="wstats-vision"></div>
+              <div class="wena-h3" style="margin-top:var(--space-5);">Latest vision+RAP turns</div>
+              <table class="wena-table" id="wtbl-vision"><thead><tr><th>Time</th><th>Mode</th><th>Cell hit</th><th>Output len</th></tr></thead><tbody></tbody></table>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+  </div><!-- /wenaView -->
+
 
   <!-- MODALS -->
 
@@ -1592,13 +1772,231 @@
 
     /* ════ PAGE TAB SWITCHING ════════════════════════════════════════════════════ */
     var qaFirstLoad = true;
+    var wenaFirstLoad = true;
     window.switchAdminTab = function (tab) {
-      document.getElementById('crmView').style.display = tab === 'crm' ? '' : 'none';
-      document.getElementById('qaView').style.display = tab === 'qa' ? '' : 'none';
-      document.getElementById('tabCRM').classList.toggle('is-active', tab === 'crm');
-      document.getElementById('tabQA').classList.toggle('is-active', tab === 'qa');
-      if (tab === 'qa' && qaFirstLoad) { qaFirstLoad = false; loadQAQueue(); }
+      document.getElementById('crmView').style.display  = tab === 'crm'  ? '' : 'none';
+      document.getElementById('qaView').style.display   = tab === 'qa'   ? '' : 'none';
+      document.getElementById('wenaView').style.display = tab === 'wena' ? '' : 'none';
+      document.getElementById('tabCRM').classList.toggle('is-active',  tab === 'crm');
+      document.getElementById('tabQA').classList.toggle('is-active',   tab === 'qa');
+      var wenaBtn = document.getElementById('tabWena');
+      if (wenaBtn) wenaBtn.classList.toggle('is-active', tab === 'wena');
+      if (tab === 'qa'   && qaFirstLoad)   { qaFirstLoad   = false; loadQAQueue();          }
+      if (tab === 'wena' && wenaFirstLoad) { wenaFirstLoad = false; window.wenaLoadAll();   }
     };
+
+    /* ════ WENA TELEMETRY (Sprint 4) ═══════════════════════════════════════════ */
+    /* Lazy-loaded on first activation of the Wena tab via switchAdminTab.
+       All queries hit indexes added by migration 029 and cap at LIMIT clauses
+       so the worst-case row count stays bounded even under heavy traffic. */
+    (function () {
+      function $(sel)         { return document.querySelector(sel); }
+      function tbody(sel)     { return $(sel).querySelector('tbody'); }
+      function fmtTime(iso)   { try { return new Date(iso).toLocaleString(); } catch { return iso || ''; } }
+      function pct(n, d)      { if (!d) return '—'; return ((n / d) * 100).toFixed(1) + '%'; }
+      function isoSince(hrs)  { return new Date(Date.now() - hrs * 3600 * 1000).toISOString(); }
+      function statBox(num, lbl, mod) {
+        return '<div class="wena-stat' + (mod ? ' ' + mod : '') + '">' +
+               '<div class="num">' + num + '</div>' +
+               '<div class="lbl">' + lbl + '</div></div>';
+      }
+
+      async function loadHeadline() {
+        var sb = await getSupabase();
+        $('#wmeta-headline').textContent = 'loading…';
+        var { data: rows24 } = await sb.from('pedagogy_events')
+          .select('rap_enabled, mode, cell_hit_kind')
+          .gte('occurred_at', isoSince(24)).limit(50000);
+        rows24 = rows24 || [];
+        var total24 = rows24.length;
+        var rapFired24 = rows24.filter(r => r.mode && r.mode !== 'LEGACY').length;
+        var legacy24 = total24 - rapFired24;
+        $('#wstats-24h').innerHTML =
+          statBox(total24, 'total turns', '') +
+          statBox(rapFired24, 'RAP fired', rapFired24 ? '' : 'warn') +
+          statBox(legacy24, 'legacy', legacy24 ? 'warn' : '') +
+          statBox(pct(rapFired24, total24), 'RAP %', '');
+
+        var { data: rows7 } = await sb.from('pedagogy_events')
+          .select('rap_enabled, mode, cell_hit_kind')
+          .gte('occurred_at', isoSince(24*7)).limit(200000);
+        rows7 = rows7 || [];
+        var total7 = rows7.length;
+        var rapFired7 = rows7.filter(r => r.mode && r.mode !== 'LEGACY').length;
+        var legacy7 = total7 - rapFired7;
+        $('#wstats-7d').innerHTML =
+          statBox(total7, 'total turns', '') +
+          statBox(rapFired7, 'RAP fired', '') +
+          statBox(legacy7, 'legacy', legacy7 ? 'warn' : '') +
+          statBox(pct(rapFired7, total7), 'RAP %', '');
+
+        var modeCounts = {};
+        rows7.forEach(r => { var k = r.mode || '(null)'; modeCounts[k] = (modeCounts[k] || 0) + 1; });
+        var modeRows = Object.entries(modeCounts).sort((a,b) => b[1]-a[1]);
+        var maxMode = Math.max(1, ...modeRows.map(e => e[1]));
+        tbody('#wtbl-mode-dist').innerHTML = modeRows.length
+          ? modeRows.map(e => '<tr><td>' + esc(e[0]) + '</td><td class="numeric">' + e[1] +
+              '</td><td><span class="wena-bar" style="width:' + (e[1]/maxMode*200) + 'px"></span></td></tr>').join('')
+          : '<tr><td colspan="3" class="empty">no events yet</td></tr>';
+
+        var hitCounts = {};
+        rows7.forEach(r => { if (!r.mode || r.mode === 'LEGACY') return; var k = r.cell_hit_kind || '(null)'; hitCounts[k] = (hitCounts[k] || 0) + 1; });
+        var hitRows = Object.entries(hitCounts).sort((a,b) => b[1]-a[1]);
+        var maxHit = Math.max(1, ...hitRows.map(e => e[1]));
+        tbody('#wtbl-cellhit-dist').innerHTML = hitRows.length
+          ? hitRows.map(e => '<tr><td>' + esc(e[0]) + '</td><td class="numeric">' + e[1] +
+              '</td><td><span class="wena-bar" style="width:' + (e[1]/maxHit*200) + 'px"></span></td></tr>').join('')
+          : '<tr><td colspan="3" class="empty">no RAP-fired events yet</td></tr>';
+
+        $('#wmeta-headline').textContent = 'as of ' + new Date().toLocaleTimeString();
+      }
+
+      async function loadTransitions() {
+        var sb = await getSupabase();
+        var { data } = await sb.from('pedagogy_events')
+          .select('previous_mode, mode')
+          .gte('occurred_at', isoSince(24*7)).limit(200000);
+        data = data || [];
+        var trans = {};
+        data.forEach(r => { var k = (r.previous_mode || '(null)') + '→' + (r.mode || '(null)'); trans[k] = (trans[k] || 0) + 1; });
+        var rows = Object.entries(trans).sort((a,b) => b[1]-a[1]);
+        tbody('#wtbl-transitions').innerHTML = rows.length
+          ? rows.map(e => { var p = e[0].split('→'); return '<tr><td>' + esc(p[0]) + '</td><td>→</td><td>' + esc(p[1]) + '</td><td class="numeric">' + e[1] + '</td></tr>'; }).join('')
+          : '<tr><td colspan="4" class="empty">no events yet</td></tr>';
+      }
+
+      async function loadOrphans() {
+        var sb = await getSupabase();
+        var [pb, ev] = await Promise.all([
+          fetch('/data/wena-english-playbook.json').then(r => r.json()),
+          sb.from('pedagogy_events')
+            .select('level_normalised, topic, sub_topic')
+            .gte('occurred_at', isoSince(24*30))
+            .not('mode', 'in', '("LEGACY")')
+            .limit(200000)
+        ]);
+        var seen = new Set();
+        (ev.data || []).forEach(r => {
+          if (r.level_normalised && r.topic && r.sub_topic) seen.add(r.level_normalised + '|' + r.topic + '|' + r.sub_topic);
+        });
+        var orphans = (pb.cells || []).filter(c => !seen.has(c.level + '|' + c.topic + '|' + c.sub_topic));
+        tbody('#wtbl-orphans').innerHTML = orphans.length
+          ? (orphans.slice(0, 100).map(c => '<tr><td>' + esc(c.level) + '</td><td>' + esc(c.topic) + '</td><td>' + esc(c.sub_topic) + '</td></tr>').join('') +
+             (orphans.length > 100 ? '<tr><td colspan="3" class="empty">showing 100 of ' + orphans.length + '</td></tr>' : ''))
+          : '<tr><td colspan="3" class="empty">all cells have fired in the last 30 days</td></tr>';
+      }
+
+      async function loadTopDirect() {
+        var sb = await getSupabase();
+        var { data } = await sb.from('pedagogy_events')
+          .select('level_normalised, topic, sub_topic')
+          .eq('mode', 'DIRECT_TEACH')
+          .gte('occurred_at', isoSince(24*7)).limit(50000);
+        data = data || [];
+        var counts = {};
+        data.forEach(r => { var k = (r.level_normalised||'?') + '|' + (r.topic||'?') + '|' + (r.sub_topic||'?'); counts[k] = (counts[k] || 0) + 1; });
+        var rows = Object.entries(counts).sort((a,b) => b[1]-a[1]).slice(0, 100);
+        tbody('#wtbl-top-direct').innerHTML = rows.length
+          ? rows.map(e => { var p = e[0].split('|'); return '<tr><td>' + esc(p[0]) + '</td><td>' + esc(p[1]) + '</td><td>' + esc(p[2]) + '</td><td class="numeric">' + e[1] + '</td></tr>'; }).join('')
+          : '<tr><td colspan="4" class="empty">no DIRECT_TEACH events in the last 7 days</td></tr>';
+      }
+
+      async function loadFaithfulness() {
+        var sb = await getSupabase();
+        var { data } = await sb.from('pedagogy_events')
+          .select('id, occurred_at, level_normalised, topic, sub_topic, teach_script_keyword_overlap')
+          .eq('mode', 'DIRECT_TEACH')
+          .gte('occurred_at', isoSince(24*7))
+          .not('teach_script_keyword_overlap', 'is', null)
+          .order('occurred_at', { ascending: false }).limit(2000);
+        data = data || [];
+        var buckets = new Array(10).fill(0);
+        data.forEach(r => {
+          var v = Number(r.teach_script_keyword_overlap);
+          if (!Number.isFinite(v)) return;
+          var idx = Math.min(9, Math.max(0, Math.floor(v * 10)));
+          buckets[idx] += 1;
+        });
+        var maxB = Math.max(1, ...buckets);
+        tbody('#wtbl-faith-hist').innerHTML = buckets.map((c, i) => {
+          var lo = (i/10).toFixed(1), hi = ((i+1)/10).toFixed(1);
+          var flag = i < 2 ? 'row-flag-low' : (i < 4 ? 'row-flag-warn' : '');
+          return '<tr class="' + flag + '"><td>' + lo + '–' + hi + '</td><td class="numeric">' + c +
+                 '</td><td><span class="wena-bar" style="width:' + (c/maxB*200) + 'px"></span></td></tr>';
+        }).join('');
+        var low = data.filter(r => Number(r.teach_script_keyword_overlap) < 0.2).slice(0, 5);
+        tbody('#wtbl-faith-low').innerHTML = low.length
+          ? low.map(r => '<tr class="row-flag-low"><td>' + fmtTime(r.occurred_at) + '</td><td>' + esc(r.level_normalised || '—') +
+              '</td><td>' + esc(r.topic || '—') + ' / ' + esc(r.sub_topic || '—') +
+              '</td><td class="numeric">' + Number(r.teach_script_keyword_overlap).toFixed(2) + '</td></tr>').join('')
+          : '<tr><td colspan="4" class="empty">no low-overlap DIRECT_TEACH events in the last 7 days</td></tr>';
+      }
+
+      async function loadLevels() {
+        var sb = await getSupabase();
+        var { data } = await sb.from('pedagogy_events')
+          .select('level_raw, level_normalised')
+          .gte('occurred_at', isoSince(24*30)).limit(200000);
+        data = data || [];
+        var counts = {};
+        data.forEach(r => {
+          var k = (r.level_raw === null ? '(null)' : r.level_raw) + '|' + (r.level_normalised === null ? '(null)' : r.level_normalised);
+          counts[k] = (counts[k] || 0) + 1;
+        });
+        var rows = Object.entries(counts).sort((a,b) => b[1]-a[1]).slice(0, 100);
+        tbody('#wtbl-levels').innerHTML = rows.length
+          ? rows.map(e => { var p = e[0].split('|'); var flag = p[1] === '(null)' ? 'row-flag-low' : ''; return '<tr class="' + flag + '"><td>' + esc(p[0]) + '</td><td>' + esc(p[1]) + '</td><td class="numeric">' + e[1] + '</td></tr>'; }).join('')
+          : '<tr><td colspan="3" class="empty">no events yet</td></tr>';
+      }
+
+      async function loadVision() {
+        var sb = await getSupabase();
+        var { data } = await sb.from('pedagogy_events')
+          .select('id, occurred_at, mode, cell_hit_kind, output_length_chars, has_image, rap_enabled')
+          .eq('has_image', true).eq('rap_enabled', true)
+          .gte('occurred_at', isoSince(24*7))
+          .order('occurred_at', { ascending: false }).limit(100);
+        data = data || [];
+        $('#wstats-vision').innerHTML = statBox(data.length, 'vision + RAP turns (7d)', data.length ? 'warn' : '');
+        tbody('#wtbl-vision').innerHTML = data.length
+          ? data.map(r => '<tr><td>' + fmtTime(r.occurred_at) + '</td><td>' + esc(r.mode || '—') +
+              '</td><td>' + esc(r.cell_hit_kind || '—') + '</td><td class="numeric">' + (r.output_length_chars == null ? '—' : r.output_length_chars) + '</td></tr>').join('')
+          : '<tr><td colspan="4" class="empty">no vision+RAP events in the last 7 days</td></tr>';
+      }
+
+      var LOADERS = {
+        headline: loadHeadline, transitions: loadTransitions, orphans: loadOrphans,
+        'top-direct': loadTopDirect, faithfulness: loadFaithfulness, levels: loadLevels, vision: loadVision
+      };
+
+      // Wire refresh buttons inside #wenaView once on script load.
+      document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('#wenaView .wena-refresh').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            var key = btn.dataset.refresh;
+            var fn = LOADERS[key];
+            if (!fn) return;
+            btn.disabled = true;
+            var prev = btn.textContent;
+            btn.textContent = 'Loading…';
+            try { await fn(); }
+            catch (err) {
+              console.error('[wena-telemetry] panel "' + key + '" load failed:', err);
+              alert('Panel "' + key + '" failed: ' + (err && err.message || err));
+            }
+            btn.disabled = false;
+            btn.textContent = prev;
+          });
+        });
+      });
+
+      // Called once by switchAdminTab on first activation of the Wena tab.
+      window.wenaLoadAll = async function () {
+        await Promise.allSettled(Object.values(LOADERS).map(fn => fn().catch(err => {
+          console.error('[wena-telemetry] panel load failed:', err);
+        })));
+      };
+    })();
 
     /* ════ BOOT ══════════════════════════════════════════════════════════════════ */
     async function loadAdminData() {
@@ -1612,6 +2010,12 @@
         return;
       }
       callerRole = myProfile.role;
+      // Sprint 4: Wena Telemetry tab is master-admin-only. Sub-admins
+      // never see the tab (RLS would also block their SELECTs anyway).
+      if (callerRole === 'admin') {
+        var wenaBtn = document.getElementById('tabWena');
+        if (wenaBtn) wenaBtn.hidden = false;
+      }
       if (myProfile.full_name) document.getElementById('adminName').textContent = myProfile.full_name.split(' ')[0];
       var res = await fetch('/api/admin', { method: 'GET', headers: { 'Authorization': 'Bearer ' + session.access_token } });
       if (!res.ok) { showError('Failed to load admin data — server returned ' + res.status); return; }
