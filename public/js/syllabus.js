@@ -417,14 +417,12 @@ export async function countsByType(supabaseClient, levelDisplay, subjectDb, topi
 export async function countsBySubTopic(supabaseClient, levelDisplay, subjectDb, topicCanonical) {
   if (!supabaseClient || !subjectDb || !topicCanonical) return {};
   try {
-    const buildQuery = () => {
-      let q = supabaseClient.from('question_bank').select('sub_topic')
-        .eq('subject', subjectDb)
-        .eq('topic', topicCanonical);
-      if (levelDisplay) q = q.eq('level', levelDisplay);
-      return q;
-    };
-    const rows = await paginateAll(buildQuery);
+    let query = supabaseClient.from('question_bank').select('sub_topic')
+      .eq('subject', subjectDb)
+      .eq('topic', topicCanonical)
+      .is('deprecated_at', null);
+    if (levelDisplay) query = query.eq('level', levelDisplay);
+    const rows = await paginatedSelect(query);
     const out = {};
     let nullCount = 0;
     for (const row of rows) {
