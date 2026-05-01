@@ -1788,6 +1788,28 @@ window.initQuizEngine = function () {
       state.dbLevel = dbLevel;
       state.dbTopic = dbTopic;
 
+      // ── Sub-topic UI grouping resolution (English Comprehension / Cloze) ──
+      // The subjects.html accordion stores its UI groupKey in ?sub_topic=.
+      // Translate it back to the canonical sub_topic list (and optional
+      // question_type filter) via SUB_TOPIC_GROUPS in syllabus.js.
+      const subTopicGroupKey = new URLSearchParams(window.location.search).get('sub_topic') || '';
+      let resolvedSubTopics = null;
+      let resolvedQuestionType = null;
+      if (subTopicGroupKey && dbTopic) {
+        const resolveFn = (window.SHL_SYLLABUS && window.SHL_SYLLABUS.resolveSubTopicGroup) || (SYL && SYL.resolveSubTopicGroup);
+        if (typeof resolveFn === 'function') {
+          const subjectKey = (dbSubject || '').toLowerCase();
+          const resolved = resolveFn(subjectKey, dbTopic, subTopicGroupKey);
+          if (resolved) {
+            resolvedSubTopics = resolved.subTopics;
+            resolvedQuestionType = resolved.questionType;
+          }
+        }
+      }
+      state.subTopicGroupKey = subTopicGroupKey;
+      state.subTopicCanonList = resolvedSubTopics;
+      state.subTopicQuestionType = resolvedQuestionType;
+
       if (state.fromQuest) {
         await loadQuestBatch();
         return;
@@ -1796,6 +1818,16 @@ window.initQuizEngine = function () {
       let query = db.from('question_bank').select('*').eq('subject', dbSubject);
       if (dbLevel) query = query.eq('level', dbLevel);
       if (dbTopic) query = query.eq('topic', dbTopic);
+
+      // ── Sub-topic UI grouping filter ─────────────────────────────────────
+      // Applies the canonical sub_topic.in([...]) and optional question_type
+      // restriction (used for visual_text-only retrieval).
+      if (state.subTopicCanonList && state.subTopicCanonList.length > 0) {
+        query = query.in('sub_topic', state.subTopicCanonList);
+      }
+      if (state.subTopicQuestionType) {
+        query = query.eq('type', state.subTopicQuestionType);
+      }
 
       // 🚀 MASTERCLASS FIX: The Comprehension Supabase Interceptor
       if (type && type !== 'mixed') {

@@ -65,10 +65,89 @@ export const CANONICAL_SYLLABUS = {
     'Cloze': ['Grammar Cloze With Word Bank','Vocabulary Cloze With Dropdowns','Comprehension Free-Text Cloze'],
     'Editing': ['Correcting Spelling Errors','Correcting Grammatical Errors'],
     'Comprehension': ['Direct Visual Retrieval','True Or False With Reason','Pronoun Referent Table','Sequencing Of Events','Deep Inference And Claim Evidence Reasoning','Visual Text Literal Retrieval','Visual Text Inference And Purpose'],
-    'Synthesis': ['Combining With Conjunctions','Relative Clauses','Participle Phrases','Conditional Sentences','Reported Speech Transformation','Active To Passive Voice Transformation','Inversion'],
-    'Summary Writing': ['Identifying Key Information','Paraphrasing And Condensing Text']
+    'Synthesis': ['Combining With Conjunctions','Relative Clauses','Participle Phrases','Conditional Sentences','Reported Speech Transformation','Active To Passive Voice Transformation','Inversion']
   }
 };
+
+// ─────────────────────────────────────────────────────────────────────────
+// UI-ONLY SUB-TOPIC GROUPS (drives subjects.html accordion drawer)
+// ─────────────────────────────────────────────────────────────────────────
+// These groups are UI groupings ONLY. They do NOT match canon_sub_topics.
+// The canon is the source of truth for question_bank.sub_topic; this map
+// is purely for learner navigation in subjects.html.
+//
+// Empty-array means "no sub-topic selector for this topic" — subjects.html
+// falls back to topic-level quiz retrieval. Most topics intentionally
+// fall here.
+//
+// groupKey is the URL slug (?sub_topic=<groupKey>). quiz.js translates
+// it back to the canonical sub_topic list via resolveSubTopicGroup().
+export const SUB_TOPIC_GROUPS = {
+  english: {
+    'Comprehension': {
+      'passage-comprehension': {
+        label: 'Passage Comprehension',
+        subTopicsInCanon: [
+          'Direct Visual Retrieval',
+          'True Or False With Reason',
+          'Pronoun Referent Table',
+          'Sequencing Of Events',
+          'Deep Inference And Claim Evidence Reasoning'
+        ]
+      },
+      'visual-text-comprehension': {
+        label: 'Visual Text Comprehension',
+        subTopicsInCanon: [
+          'Visual Text Literal Retrieval',
+          'Visual Text Inference And Purpose'
+        ],
+        questionType: 'visual_text'
+      }
+    },
+    'Cloze': {
+      'grammar-cloze-with-word-bank': {
+        label: 'Grammar Cloze With Word Bank',
+        subTopicsInCanon: ['Grammar Cloze With Word Bank']
+      },
+      'vocabulary-cloze-with-dropdowns': {
+        label: 'Vocabulary Cloze With Dropdowns',
+        subTopicsInCanon: ['Vocabulary Cloze With Dropdowns']
+      },
+      'comprehension-free-text-cloze': {
+        label: 'Comprehension Free-Text Cloze',
+        subTopicsInCanon: ['Comprehension Free-Text Cloze']
+      }
+    }
+  }
+  // mathematics and science intentionally absent — no sub-topic UI for those
+};
+
+/**
+ * Returns { groupKey: { label, subTopicsInCanon, questionType? }, ... }
+ * for a given subject + topic, or {} if no UI sub-topic groups apply.
+ */
+export function subTopicGroupsFor(subject, topic) {
+  if (!subject || !topic) return {};
+  return SUB_TOPIC_GROUPS[subject.toLowerCase()]?.[topic] || {};
+}
+
+/**
+ * Resolves a UI groupKey back into the canonical sub_topic strings
+ * (and optional questionType) for Supabase filtering.
+ *
+ * Returns: { subTopics: string[], questionType?: string } or null if not found.
+ */
+export function resolveSubTopicGroup(subject, topic, groupKey) {
+  if (!subject || !topic || !groupKey) return null;
+  const groups = SUB_TOPIC_GROUPS[subject.toLowerCase()]?.[topic];
+  if (!groups) return null;
+  const group = groups[groupKey];
+  if (!group) return null;
+  return {
+    subTopics: group.subTopicsInCanon || [],
+    questionType: group.questionType || null
+  };
+}
 
 // ── LEVEL → TOPICS WHITELIST ──
 // Hydrated from canon_level_topics at runtime via loadLiveLevelTopics().
@@ -90,11 +169,11 @@ export const LEVEL_TOPICS = {
 
   'primary-5:mathematics': ['Whole Numbers','Fractions','Decimals','Money','Length and Mass','Volume of Liquid','Percentage','Rate','Average','Area of Triangle','Volume','Angles','Geometry'],
   'primary-5:science': ['Cycles','Systems'],
-  'primary-5:english': ['Grammar','Vocabulary','Cloze','Editing','Comprehension','Synthesis','Summary Writing'],
+  'primary-5:english': ['Grammar','Vocabulary','Cloze','Editing','Comprehension','Synthesis'],
 
   'primary-6:mathematics': ['Fractions','Percentage','Ratio','Algebra','Average','Circles','Volume','Geometry','Angles','Pie Charts'],
   'primary-6:science': ['Energy','Interactions'],
-  'primary-6:english': ['Grammar','Vocabulary','Cloze','Editing','Comprehension','Synthesis','Summary Writing']
+  'primary-6:english': ['Grammar','Vocabulary','Cloze','Editing','Comprehension','Synthesis']
 };
 
 // ── ALLOWED QUESTION TYPES PER SUBJECT ──
@@ -318,7 +397,9 @@ export async function readShowCountsFlag(supabaseClient) {
 if (typeof window !== 'undefined') {
   window.SHL_SYLLABUS = {
     CANONICAL_SYLLABUS, LEVEL_TOPICS, SUBJECT_QUESTION_TYPES, SUBJECT_DB_NAME,
-    TOPIC_TYPE_BYPASS, slugify, unslugify, topicsForLevelSubject, subTopicsFor,
+    TOPIC_TYPE_BYPASS, SUB_TOPIC_GROUPS,
+    slugify, unslugify, topicsForLevelSubject, subTopicsFor,
+    subTopicGroupsFor, resolveSubTopicGroup,
     questionTypesFor, loadLiveCanon, loadLiveLevelTopics,
     countsBySubject, countsByTopic, countsByType, readShowCountsFlag
   };
