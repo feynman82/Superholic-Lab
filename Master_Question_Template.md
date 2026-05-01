@@ -220,8 +220,16 @@ Requires exactly 4 options. Options must be full sentences for Science/English.
 - `sub_topic`: MUST be a granular micro-concept (e.g., "Unit Cost", "Experimental Fairness", "Subject-Verb Agreement").
 - `options`: `["Option A", "Option B", "Option C", "Option D"]`
 - `correct_answer`: Must be one of the strings in `options`.
-- `wrong_explanations`: MUST include a diagnostic `type` for BKT analysis.
-  * *Format:* `{"Option A": {"text": "Explanation...", "type": "misconception | calc_error | partial_logic"}}`
+- `wrong_explanations`: **MUST contain exactly one entry per distractor (3 entries for a 4-option MCQ — one for each option that is NOT the correct answer).** Keys MUST be the full option text, not letters. Each value MUST be an object with a `text` (the misconception explanation) and a `type` (`misconception` | `calc_error` | `partial_logic`) for BKT analysis. Generators that emit fewer than 3 entries will be rejected — the missing entries leave the wrong-answer feedback panel blank for any student who picks the uncovered distractor.
+  * *Format (3-of-3 required for 4-option MCQ):*
+    ```json
+    {
+      "Frictional force": { "text": "Friction is a contact force; this question describes a non-contact scenario.", "type": "misconception" },
+      "Magnetic force": { "text": "Magnetic force only acts on magnetic materials, but the object here is plastic.", "type": "misconception" },
+      "Elastic spring force": { "text": "Spring force requires physical compression or stretching, which is not happening.", "type": "misconception" }
+    }
+    ```
+    (The 4th option is the correct answer and is therefore NOT keyed in this object.)
 
 **SCIENCE EXPERIMENTAL MCQS:**
 - `visual_payload`: MUST include experimental variables if the question involves a setup.

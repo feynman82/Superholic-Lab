@@ -9,9 +9,20 @@
   let history = [];
   let isLoading = false;
   let currentStudentId = null;
+  let currentParentId = null;           // session.user.id — used by Sprint 4 telemetry RLS denorm column
   let currentStudentPhoto = '../assets/images/kid_studying.png'; // Default fallback
+  let currentStudentLevel = null;       // e.g., 'Primary 3' — server normalises to P-form
+  let currentStudentName = null;        // first name preferred; passed for warmth in RAP persona
   let currentSubjectContext = 'general';
   let currentTopicContext = 'mixed';
+  let currentSubTopicContext = null;    // populated from ?sub_topic= URL param when present
+  let lastWenaMode = null;              // Sprint 4 — echoed back to server next turn for CHECK_RESPONSE detection
+  // One conversation_id per page-load groups all turns of a single Miss Wena
+  // session for telemetry. Reload = new conversation. Quick UUIDv4 via
+  // crypto.randomUUID() (always available in modern browsers).
+  const conversationId = (typeof crypto !== 'undefined' && crypto.randomUUID)
+    ? crypto.randomUUID()
+    : 'sess-' + Date.now() + '-' + Math.random().toString(36).slice(2, 10);
   let messageQueue = [];
   let batchTimeout = null;
   const BATCH_DELAY_MS = 1500;
@@ -72,6 +83,11 @@
       insertMarkCompleteBtn();
       injectQuestChips();
     }
+
+    // Curriculum sub-topic (used by Wena RAP retrieval). Populated when the
+    // caller (quiz.html / quest tutor link) appends ?sub_topic=…. Null is fine —
+    // server falls back to topic-level retrieval.
+    currentSubTopicContext = questParams.get('sub_topic') || null;
 
     // Event Listeners
     sendBtn.addEventListener('click', handleSend);
@@ -244,7 +260,22 @@
           'Content-Type': 'application/json',
           ...(chatToken && { 'Authorization': `Bearer ${chatToken}` }),
         },
-        body: JSON.stringify({ messages: history }),
+        // Curriculum coordinates carry no behaviour change unless the
+        // server has WENA_RAP_ENABLED=true (or canary bucket includes the
+        // student) AND subject==='English'. Sprint 4 adds studentId,
+        // parentId, conversationId, lastWenaMode so canary bucketing,
+        // telemetry RLS, and CHECK_RESPONSE detection all work end-to-end.
+        body: JSON.stringify({
+          messages: history,
+          subject: currentSubjectContext,
+          level: currentStudentLevel,
+          currentQuestion: { topic: currentTopicContext, sub_topic: currentSubTopicContext },
+          studentName: currentStudentName,
+          studentId:    currentStudentId,
+          parentId:     currentParentId,
+          conversationId,
+          lastWenaMode
+        }),
       });
 
       const data = await res.json();
@@ -266,6 +297,10 @@
       } else {
         appendBubble('tutor', data.reply);
         history.push({ role: 'assistant', content: data.reply });
+
+        // Sprint 4: capture the resolved RAP mode so the next request can
+        // echo it back as `lastWenaMode` (drives CHECK_RESPONSE detection).
+        if (data.wena_mode) lastWenaMode = data.wena_mode;
 
         // AI LOGGING: Store Miss Wena's final response
         if (currentStudentId) {
@@ -434,17 +469,22 @@
       const sb = await window.getSupabase();
       const { data: { session } } = await sb.auth.getSession();
       if (!session) return;
+      currentParentId = session.user.id;  // captured for Sprint 4 telemetry denorm column
 
       const urlParams = new URLSearchParams(window.location.search);
       let activeStudentId = urlParams.get('student') || localStorage.getItem('shl_active_student_id');
 
-      // Fetch student data INCLUDING photo_url
-      const { data: students } = await sb.from('students').select('id, photo_url').eq('parent_id', session.user.id);
+      // Fetch student data INCLUDING photo_url + level/name (level + name feed
+      // the Wena RAP curriculum coordinates and persona block).
+      const { data: students } = await sb.from('students').select('id, photo_url, level, name').eq('parent_id', session.user.id);
       let student = (students || []).find(s => s.id === activeStudentId) || (students || [])[0];
 
       if (student) {
         currentStudentId = student.id;
         currentStudentPhoto = student.photo_url || '../assets/images/kid_studying.png';
+        currentStudentLevel = student.level || null;
+        // First-name only — the persona instructs Miss Wena to use it sparingly.
+        currentStudentName = student.name ? String(student.name).trim().split(/\s+/)[0] : null;
         localStorage.setItem('shl_active_student_id', currentStudentId);
       }
 
@@ -506,7 +546,17 @@
         const res = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ messages: history })
+          body: JSON.stringify({
+            messages: history,
+            subject: currentSubjectContext,
+            level: currentStudentLevel,
+            currentQuestion: { topic: currentTopicContext, sub_topic: currentSubTopicContext },
+            studentName: currentStudentName,
+            studentId:    currentStudentId,
+            parentId:     currentParentId,
+            conversationId,
+            lastWenaMode
+          })
         });
 
         const data = await res.json();
@@ -515,6 +565,7 @@
         if (res.ok && !data.error) {
           appendBubble('tutor', data.reply);
           history.push({ role: 'assistant', content: data.reply });
+          if (data.wena_mode) lastWenaMode = data.wena_mode;
         } else {
           appendBubble('tutor', "Hi " + sName + "! I saw you needed help with " + topic + ". Let's master it together. What's your first question?");
         }
@@ -587,7 +638,17 @@
           'Content-Type': 'application/json',
           ...(openerToken && { 'Authorization': `Bearer ${openerToken}` }),
         },
-        body: JSON.stringify({ messages: [{ role: 'user', content: trigger }] }),
+        body: JSON.stringify({
+          messages: [{ role: 'user', content: trigger }],
+          subject: currentSubjectContext,
+          level: currentStudentLevel,
+          currentQuestion: { topic: currentTopicContext, sub_topic: currentSubTopicContext },
+          studentName: currentStudentName,
+          studentId:    currentStudentId,
+          parentId:     currentParentId,
+          conversationId,
+          lastWenaMode
+        }),
       });
       if (currentTypingEl) { currentTypingEl.remove(); currentTypingEl = null; }
       if (res.ok) {
@@ -597,6 +658,7 @@
           // Keep hidden trigger in history so subsequent turns have context
           history.push({ role: 'user', content: trigger });
           history.push({ role: 'assistant', content: data.reply });
+          if (data.wena_mode) lastWenaMode = data.wena_mode;
           questMessageCount = data.quest_message_count ?? 1;
           updateMarkCompleteBtn();
         }

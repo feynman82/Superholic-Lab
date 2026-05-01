@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wena Prompts — Sprint 3 Test Harness</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <!--
+    ──────────────────────────────────────────────────────────────────────
+    Run instructions
+    ──────────────────────────────────────────────────────────────────────
+    1. Serve the repo locally:
+         npx serve public         (preferred)
+         OR
+         vercel dev
+    2. Open http://localhost:3000/tests/wena-prompts.test.html
+    3. Open DevTools → Console
+    4. All 20 tests should render green ✓
+    5. Each rendering test exposes a <details> block with the full
+       assembled system prompt for manual review.
+    6. Run the Sprint 1 + Sprint 2 harnesses too to confirm no regression.
+    ──────────────────────────────────────────────────────────────────────
+  -->
+  <style>
+    body {
+      background: var(--sage-darker);
+      color: var(--cream);
+      font-family: var(--font-body);
+      padding: var(--space-8) var(--space-4);
+      min-height: 100vh;
+    }
+    .harness {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    .harness h1 {
+      font-family: var(--font-display);
+      letter-spacing: 0.04em;
+      margin-bottom: var(--space-2);
+    }
+    .harness .subtitle {
+      color: var(--sage-light);
+      margin-bottom: var(--space-6);
+      font-size: 0.875rem;
+    }
+    .summary {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-4) var(--space-6);
+      margin-bottom: var(--space-6);
+      background: var(--glass);
+      border: 1.5px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow-neo);
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+    .summary.is-pending { color: var(--cream-dim); }
+    .summary.is-pass    { color: var(--mint); border-color: var(--mint); }
+    .summary.is-fail    { color: var(--danger); border-color: var(--danger); }
+    .summary .summary-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: var(--radius-full);
+      background: currentColor;
+      box-shadow: 0 0 8px currentColor;
+    }
+    h3.section-heading {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--mint);
+      margin: var(--space-6) 0 var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      background: var(--glass);
+      border-left: 3px solid var(--mint);
+      border-radius: var(--radius-sm);
+    }
+    h3.section-heading:first-of-type { margin-top: 0; }
+    .test-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+    .test-row {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      align-items: start;
+    }
+    .test-row.is-pass { border-left: 3px solid var(--mint); }
+    .test-row.is-fail { border-left: 3px solid var(--danger); }
+    .test-row.is-pending { border-left: 3px solid var(--cream-dim); }
+    .test-icon {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 1rem;
+      line-height: 1.4;
+    }
+    .test-row.is-pass    .test-icon { color: var(--mint); }
+    .test-row.is-fail    .test-icon { color: var(--danger); }
+    .test-row.is-pending .test-icon { color: var(--cream-dim); }
+    .test-name {
+      font-weight: 600;
+      font-size: 0.9375rem;
+      line-height: 1.4;
+    }
+    .test-detail {
+      margin-top: var(--space-1);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--sage-light);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .test-row.is-fail .test-detail { color: var(--danger); }
+    details.prompt-dump {
+      margin-top: var(--space-2);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+    }
+    details.prompt-dump summary {
+      cursor: pointer;
+      color: var(--cream-dim);
+      letter-spacing: 0.06em;
+    }
+    details.prompt-dump pre {
+      margin-top: var(--space-2);
+      padding: var(--space-3);
+      background: rgba(0,0,0,0.25);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      color: var(--cream);
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 380px;
+      overflow: auto;
+    }
+  </style>
+</head>
+<body>
+  <main class="harness">
+    <h1>Wena Prompts — Sprint 3 Test Harness</h1>
+    <div class="subtitle">RAP system-prompt templates: persona, 5 mode blocks, anti-leak guards. Pure-string sprint, no chat I/O.</div>
+
+    <div id="summary" class="summary is-pending" role="status" aria-live="polite">
+      <span class="summary-dot" aria-hidden="true"></span>
+      <span id="summary-text">Running 0 / 20 …</span>
+    </div>
+
+    <div id="sections"></div>
+  </main>
+
+  <script type="module">
+    import { buildWenaSystemPrompt, PROMPT_VERSION, MODE_TEMPLATES } from '/js/wena-prompts.js';
+
+    const results = [];
+    const summaryEl = document.getElementById('summary');
+    const summaryTextEl = document.getElementById('summary-text');
+    const sectionsEl = document.getElementById('sections');
+
+    let currentList = null;
+    function startSection(label) {
+      const h = document.createElement('h3');
+      h.className = 'section-heading';
+      h.textContent = label;
+      sectionsEl.appendChild(h);
+      const ol = document.createElement('ol');
+      ol.className = 'test-list';
+      sectionsEl.appendChild(ol);
+      currentList = ol;
+    }
+
+    function makeRow(name) {
+      const li = document.createElement('li');
+      li.className = 'test-row is-pending';
+      const icon = document.createElement('span');
+      icon.className = 'test-icon';
+      icon.textContent = '…';
+      const body = document.createElement('div');
+      const heading = document.createElement('div');
+      heading.className = 'test-name';
+      heading.textContent = name;
+      const detail = document.createElement('div');
+      detail.className = 'test-detail';
+      body.appendChild(heading);
+      body.appendChild(detail);
+      li.appendChild(icon);
+      li.appendChild(body);
+      currentList.appendChild(li);
+      return { li, icon, detail, body };
+    }
+
+    function attachPromptDump(row, prompt) {
+      const det = document.createElement('details');
+      det.className = 'prompt-dump';
+      const sum = document.createElement('summary');
+      sum.textContent = '▸ show assembled prompt';
+      const pre = document.createElement('pre');
+      pre.textContent = prompt;
+      det.appendChild(sum);
+      det.appendChild(pre);
+      row.body.appendChild(det);
+    }
+
+    function setRowState(row, state, text = '') {
+      row.li.classList.remove('is-pending', 'is-pass', 'is-fail');
+      row.li.classList.add(`is-${state}`);
+      row.icon.textContent = state === 'pass' ? '✓' : state === 'fail' ? '✗' : '…';
+      if (text) row.detail.textContent = text;
+    }
+
+    function updateSummary() {
+      const passed = results.filter(r => r.state === 'pass').length;
+      const failed = results.filter(r => r.state === 'fail').length;
+      const total = results.length;
+      summaryTextEl.textContent = `${passed} / ${total} passed${failed ? ` (${failed} failed)` : ''}`;
+      summaryEl.classList.remove('is-pending', 'is-pass', 'is-fail');
+      if (failed > 0) summaryEl.classList.add('is-fail');
+      else if (passed === total) summaryEl.classList.add('is-pass');
+      else summaryEl.classList.add('is-pending');
+    }
+
+    function test(name, fn) {
+      const row = makeRow(name);
+      const entry = { name, state: 'pending', error: '' };
+      results.push(entry);
+      try {
+        const out = fn(row);
+        if (typeof out === 'string') attachPromptDump(row, out);
+        entry.state = 'pass';
+        setRowState(row, 'pass', 'OK');
+      } catch (err) {
+        entry.state = 'fail';
+        entry.error = err?.message || String(err);
+        setRowState(row, 'fail', entry.error);
+        console.error(`[FAIL] ${name}:`, err);
+      } finally {
+        updateSummary();
+      }
+    }
+
+    function assert(cond, msg) {
+      if (!cond) throw new Error(msg || 'assertion failed');
+    }
+
+    // ── shared mock cell — minimal valid playbook cell shape ───────────
+    const fullCell = {
+      level: 'P3',
+      topic: 'Grammar',
+      sub_topic: 'Subject-Verb Agreement',
+      moe_outcome: 'Apply grammatical knowledge',
+      common_misconceptions: [
+        'Uses singular verb with plural subject.',
+        'Forgets that "everyone" takes a singular verb.',
+        'Confuses collective nouns.'
+      ],
+      foundational_teach_script: 'When the subject is plural, the verb must also be plural. The trick: count who is doing the action — one person needs the s on the verb, many people need no s.',
+      worked_example: {
+        question: 'Wei Ming and Aishah ___ (play / plays) at the void deck.',
+        wrong_answer_a_child_might_give: 'plays',
+        why_its_wrong: 'The child treats two people as a single subject.',
+        correct_answer: 'play',
+        step_by_step_reasoning: '1. Count the subjects: Wei Ming AND Aishah = two.\n2. Two people = plural subject.\n3. Plural subject takes plural verb without s.\n4. Answer: play.'
+      },
+      check_for_understanding: {
+        question: 'Priya and Kavin ___ (eat / eats) at the hawker centre.',
+        expected_answer: 'eat',
+        if_still_wrong_say: 'Two people are doing the action — count them. Plural subject, plural verb (no s).'
+      },
+      scaffolding_progression: 'Master the difference between one and many before doing subject-verb agreement.'
+    };
+
+    function makePersonaArgs(extra = {}) {
+      return Object.assign({
+        mode: 'SOCRATIC',
+        cell: null,
+        level: 'P3',
+        studentName: null,
+        lastUserMessage: '',
+        checkQuestionAsked: null
+      }, extra);
+    }
+
+    // ── PERSONA ─────────────────────────────────────────────────────────
+    startSection('Persona rendering');
+
+    test("TEST 1: P3 → 'Primary 3 student aged 9'", (row) => {
+      const out = buildWenaSystemPrompt(makePersonaArgs());
+      assert(out.includes('Primary 3 student aged 9'), 'persona line missing');
+      return out;
+    });
+
+    test('TEST 2: persona contains Singapore + MOE-aligned', (row) => {
+      const out = buildWenaSystemPrompt(makePersonaArgs());
+      assert(out.includes('Singapore'),     'Singapore missing');
+      assert(out.includes('MOE-aligned'),   'MOE-aligned missing');
+      return out;
+    });
+
+    test("TEST 3: studentName='Wei Ming' appears in persona", (row) => {
+      const out = buildWenaSystemPrompt(makePersonaArgs({ studentName: 'Wei Ming' }));
+      assert(out.includes('Wei Ming'), 'Wei Ming not injected');
+      return out;
+    });
+
+    test('TEST 4: studentName=null does not leak placeholder/undefined', (row) => {
+      const out = buildWenaSystemPrompt(makePersonaArgs({ studentName: null }));
+      assert(!out.includes('{studentName}'), 'placeholder leaked');
+      assert(!out.includes('undefined'),     'undefined leaked');
+      assert(!/^The student's name is/.test(out), 'name line included with null name');
+      return out;
+    });
+
+    // ── SOCRATIC ────────────────────────────────────────────────────────
+    startSection('SOCRATIC mode');
+
+    test('TEST 5: SOCRATIC + null cell → assembles without crash', (row) => {
+      const out = buildWenaSystemPrompt(makePersonaArgs({ mode: 'SOCRATIC', cell: null }));
+      assert(typeof out === 'string' && out.length > 0, 'no output');
+      return out;
+    });
+
+    test("TEST 6: SOCRATIC includes 'ONE Socratic question' and 'under 25 words'", (row) => {
+      const out = buildWenaSystemPrompt(makePersonaArgs({ mode: 'SOCRATIC', cell: fullCell }));
+      assert(out.includes('ONE Socratic question'), 'directive missing');
+      assert(out.includes('under 25 words'),        'limit missing');
+      return out;
+    });
+
+    test('TEST 7: SOCRATIC does NOT inject foundational_teach_script', (row) => {
+      const out = buildWenaSystemPrompt(makePersonaArgs({ mode: 'SOCRATIC', cell: fullCell }));
+      assert(!out.includes(fullCell.foundational_teach_script), 'teach script leaked into SOCRATIC');
+      return out;
+    });
+
+    // ── SOCRATIC_REPHRASE ────────────────────────────────────────────────
+    startSection('SOCRATIC_REPHRASE mode');
+
+    test('TEST 8: SOCRATIC_REPHRASE injects first 2 misconceptions', (row) => {
+      const out = buildWenaSystemPrompt(makePersonaArgs({ mode: 'SOCRATIC_REPHRASE', cell: fullCell }));
+      assert(out.includes(fullCell.common_misconceptions[0]), '1st misconception missing');
+      assert(out.includes(fullCell.common_misconceptions[1]), '2nd misconception missing');
+      assert(!out.includes(fullCell.common_misconceptions[2]), '3rd misconception leaked (only top 2 expected)');
+      return out;
+    });
+
+    test('TEST 9: SOCRATIC_REPHRASE + null cell → omits hint line, no placeholder leak', (row) => {
+      const out = buildWenaSystemPrompt(makePersonaArgs({ mode: 'SOCRATIC_REPHRASE', cell: null }));
+      assert(!out.includes('{common_misconceptions_short}'), 'placeholder leaked');
+      assert(!out.includes('common errors at this level'),    'hint line not omitted with null cell');
+      // Mode downgrades to SOCRATIC silently — verify SOCRATIC marker present.
+      assert(out.includes('ONE Socratic question'), 'expected SOCRATIC downgrade');
+      return out;
+    });
+
+    // ── DIRECT_TEACH ─────────────────────────────────────────────────────
+    startSection('DIRECT_TEACH mode');
+
+    test('TEST 10: DIRECT_TEACH injects foundational_teach_script verbatim', (row) => {
+      const out = buildWenaSystemPrompt(makePersonaArgs({ mode: 'DIRECT_TEACH', cell: fullCell }));
+      assert(out.includes(fullCell.foundational_teach_script), 'teach script missing');
+      return out;
+    });
+
+    test('TEST 11: DIRECT_TEACH includes worked_example.question, correct_answer, step_by_step_reasoning', (row) => {
+      const out = buildWenaSystemPrompt(makePersonaArgs({ mode: 'DIRECT_TEACH', cell: fullCell }));
+      assert(out.includes(fullCell.worked_example.question),                'WE question missing');
+      assert(out.includes(fullCell.worked_example.correct_answer),          'WE correct_answer missing');
+      assert(out.includes(fullCell.worked_example.step_by_step_reasoning),  'WE reasoning missing');
+      return out;
+    });
+
+    test('TEST 12: DIRECT_TEACH includes check_for_understanding.question', (row) => {
+      const out = buildWenaSystemPrompt(makePersonaArgs({ mode: 'DIRECT_TEACH', cell: fullCell }));
+      assert(out.includes(fullCell.check_for_understanding.question), 'check question missing');
+      return out;
+    });
+
+    test('TEST 13: DIRECT_TEACH + null cell → downgrades to SOCRATIC (chosen behaviour)', (row) => {
+      const out = buildWenaSystemPrompt(makePersonaArgs({ mode: 'DIRECT_TEACH', cell: null }));
+      assert(out.includes('ONE Socratic question'), 'expected SOCRATIC downgrade');
+      assert(!out.includes('Stop questioning'),     'DIRECT_TEACH leaked despite downgrade');
+      return out;
+    });
+
+    test('TEST 14: DIRECT_TEACH output has no unsubstituted {placeholder} text', (row) => {
+      const out = buildWenaSystemPrompt(makePersonaArgs({ mode: 'DIRECT_TEACH', cell: fullCell, studentName: 'Wei Ming' }));
+      assert(!/\{[A-Za-z_][A-Za-z0-9_]*\}/.test(out), `unsubstituted placeholder found`);
+      return out;
+    });
+
+    // ── SCAFFOLD_DOWN ────────────────────────────────────────────────────
+    startSection('SCAFFOLD_DOWN mode');
+
+    test('TEST 15: SCAFFOLD_DOWN injects scaffolding_progression', (row) => {
+      const out = buildWenaSystemPrompt(makePersonaArgs({ mode: 'SCAFFOLD_DOWN', cell: fullCell }));
+      assert(out.includes(fullCell.scaffolding_progression), 'scaffolding_progression missing');
+      return out;
+    });
+
+    test('TEST 16: SCAFFOLD_DOWN + null cell → downgrades to SOCRATIC (matches TEST 13)', (row) => {
+      const out = buildWenaSystemPrompt(makePersonaArgs({ mode: 'SCAFFOLD_DOWN', cell: null }));
+      assert(out.includes('ONE Socratic question'), 'expected SOCRATIC downgrade');
+      assert(!out.includes('prerequisite skill'),   'SCAFFOLD_DOWN leaked despite downgrade');
+      return out;
+    });
+
+    // ── CHECK_RESPONSE ───────────────────────────────────────────────────
+    startSection('CHECK_RESPONSE mode');
+
+    test('TEST 17: CHECK_RESPONSE injects user_answer, expected_answer, check_question, if_still_wrong_say', (row) => {
+      const out = buildWenaSystemPrompt(makePersonaArgs({
+        mode: 'CHECK_RESPONSE',
+        cell: fullCell,
+        lastUserMessage: 'eats',
+        checkQuestionAsked: fullCell.check_for_understanding.question
+      }));
+      assert(out.includes('eats'),                                                'user_answer missing');
+      assert(out.includes(fullCell.check_for_understanding.expected_answer),      'expected_answer missing');
+      assert(out.includes(fullCell.check_for_understanding.question),             'check_question missing');
+      assert(out.includes(fullCell.check_for_understanding.if_still_wrong_say),   'if_still_wrong_say missing');
+      return out;
+    });
+
+    test('TEST 18: CHECK_RESPONSE without checkQuestionAsked → throws (chosen behaviour)', (row) => {
+      let threw = false;
+      try {
+        buildWenaSystemPrompt(makePersonaArgs({
+          mode: 'CHECK_RESPONSE',
+          cell: fullCell,
+          lastUserMessage: 'eats',
+          checkQuestionAsked: null
+        }));
+      } catch (e) {
+        threw = true;
+        assert(/CHECK_RESPONSE requires checkQuestionAsked/.test(e.message), `unexpected error message: ${e.message}`);
+      }
+      assert(threw, 'expected CHECK_RESPONSE to throw on missing checkQuestionAsked');
+    });
+
+    // ── Anti-leak guards ────────────────────────────────────────────────
+    startSection('Anti-leak guards (all modes)');
+
+    test("TEST 19: no mode contains 'lilbutmighty' / 'playbook' / 'RAG' (outside safety-instruction line)", (row) => {
+      // The DIRECT_TEACH template legitimately contains the literal phrase
+      // `Do NOT mention "the script" or "the playbook" — just teach.` as a
+      // hallucination-resistance safety bullet (per the Sprint 3 spec).
+      // Strip that exact known-safe occurrence before the anti-leak scan so
+      // we still catch any UNINTENDED mention of the banned terms.
+      const SAFETY_LINE = /Do NOT mention "the script" or "the playbook" — just teach\./g;
+      const dumps = [];
+      const fixtures = [
+        ['SOCRATIC',          { mode: 'SOCRATIC',          cell: fullCell }],
+        ['SOCRATIC_REPHRASE', { mode: 'SOCRATIC_REPHRASE', cell: fullCell }],
+        ['DIRECT_TEACH',      { mode: 'DIRECT_TEACH',      cell: fullCell }],
+        ['SCAFFOLD_DOWN',     { mode: 'SCAFFOLD_DOWN',     cell: fullCell }],
+        ['CHECK_RESPONSE',    { mode: 'CHECK_RESPONSE',    cell: fullCell, lastUserMessage: 'eat', checkQuestionAsked: fullCell.check_for_understanding.question }]
+      ];
+      for (const [name, args] of fixtures) {
+        const out = buildWenaSystemPrompt(makePersonaArgs(args));
+        const scrubbed = out.replace(SAFETY_LINE, '');
+        assert(!/lilbutmighty/i.test(scrubbed),  `${name}: contains 'lilbutmighty'`);
+        assert(!/\bplaybook\b/i.test(scrubbed),  `${name}: contains 'playbook' outside safety line`);
+        assert(!/\bRAG\b/.test(scrubbed),        `${name}: contains 'RAG'`);
+        dumps.push(`── ${name} ──\n${out}`);
+      }
+      return dumps.join('\n\n');
+    });
+
+    test('TEST 20: no mode contains unsubstituted {placeholder} text', (row) => {
+      const fixtures = [
+        ['SOCRATIC',          { mode: 'SOCRATIC',          cell: fullCell }],
+        ['SOCRATIC_REPHRASE', { mode: 'SOCRATIC_REPHRASE', cell: fullCell }],
+        ['DIRECT_TEACH',      { mode: 'DIRECT_TEACH',      cell: fullCell }],
+        ['SCAFFOLD_DOWN',     { mode: 'SCAFFOLD_DOWN',     cell: fullCell }],
+        ['CHECK_RESPONSE',    { mode: 'CHECK_RESPONSE',    cell: fullCell, lastUserMessage: 'eats', checkQuestionAsked: fullCell.check_for_understanding.question }]
+      ];
+      for (const [name, args] of fixtures) {
+        const out = buildWenaSystemPrompt(makePersonaArgs(args));
+        const m = out.match(/\{[A-Za-z_][A-Za-z0-9_]*\}/);
+        assert(!m, `${name}: unsubstituted placeholder ${m?.[0]}`);
+      }
+    });
+
+    updateSummary();
+    window.__WENA_PROMPTS_TEST_RESULTS__ = results;
+    console.log(`[wena-prompts] PROMPT_VERSION=${PROMPT_VERSION}`);
+  </script>
+</body>
+</html>
