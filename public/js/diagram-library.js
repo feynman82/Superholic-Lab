@@ -3827,6 +3827,526 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     });
   },
 
+  // ── NEW: Phase 4 functions for v5 taxonomy alignment ───────────────────────
+
+  /**
+   * netDiagram — Unfolded 2D net of a 3D solid (P4 Geometry).
+   *
+   * Used for "Identifying Nets Of Three-Dimensional Solids" sub_topic.
+   *
+   * params:
+   *   solid:           "cube" | "cuboid" | "triangular_prism" | "square_pyramid" | "cylinder"
+   *   labels:          optional array of face labels (A, B, C, …) drawn at face centres
+   *   highlight_face:  optional label string — that face is rose-tinted
+   *   show_dimensions: optional bool — adds dimension labels (cuboid only)
+   *   length_label / breadth_label / height_label: cuboid dimensions
+   *
+   * Layout (cuboid example, length=3 breadth=2 height=2 unit cells):
+   *
+   *           ┌───┐
+   *           │ T │           ← top
+   *       ┌───┼───┼───┬───┐
+   *       │ L │ F │ R │ B │   ← left-front-right-back
+   *       └───┼───┼───┴───┘
+   *           │ U │           ← under
+   *           └───┘
+   */
+  netDiagram(params = {}) {
+    const esc = this._esc.bind(this);
+    const {
+      solid = 'cube',
+      labels = [],
+      highlight_face = null,
+      show_dimensions = false,
+      length_label = '',
+      breadth_label = '',
+      height_label = '',
+    } = params;
+
+    const VB_W = 400, VB_H = 260;
+    const STROKE = 'var(--brand-sage, #51615E)';
+    const FILL = 'var(--bg-surface, #ffffff)';
+    const HIGHLIGHT = 'var(--brand-rose, #B76E79)';
+    const TEXT = 'var(--text-main, #1a2e2a)';
+    const DIM = 'var(--text-muted, #5d706b)';
+
+    // Helper: rect with optional label & highlight
+    const cell = (x, y, w, h, label) => {
+      const isHi = label && highlight_face === label;
+      const fillColour = isHi ? HIGHLIGHT : FILL;
+      const opacity = isHi ? 0.35 : 1;
+      const labelEl = label
+        ? `<text x="${(x + w / 2).toFixed(1)}" y="${(y + h / 2 + 4).toFixed(1)}" text-anchor="middle" fill="${TEXT}" font-size="13" font-weight="600">${esc(label)}</text>`
+        : '';
+      return `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" fill="${fillColour}" fill-opacity="${opacity}" stroke="${STROKE}" stroke-width="2"/>${labelEl}`;
+    };
+
+    // Helper: filled triangle with optional label
+    const tri = (points, label) => {
+      const isHi = label && highlight_face === label;
+      const fillColour = isHi ? HIGHLIGHT : FILL;
+      const opacity = isHi ? 0.35 : 1;
+      const ptsStr = points.map(p => p.map(n => n.toFixed(1)).join(',')).join(' ');
+      // centroid
+      const cx = points.reduce((s, p) => s + p[0], 0) / points.length;
+      const cy = points.reduce((s, p) => s + p[1], 0) / points.length;
+      const labelEl = label
+        ? `<text x="${cx.toFixed(1)}" y="${(cy + 4).toFixed(1)}" text-anchor="middle" fill="${TEXT}" font-size="12" font-weight="600">${esc(label)}</text>`
+        : '';
+      return `<polygon points="${ptsStr}" fill="${fillColour}" fill-opacity="${opacity}" stroke="${STROKE}" stroke-width="2" stroke-linejoin="round"/>${labelEl}`;
+    };
+
+    let body = '';
+    let title = '';
+
+    if (solid === 'cube') {
+      // Cross net: 4 faces in a row + top above 2nd + bottom below 2nd
+      const s = 50;                                          // face size (px)
+      const cx0 = (VB_W - 4 * s) / 2;                        // start x of horizontal strip
+      const cy0 = (VB_H - 3 * s) / 2 + 8;                    // top row y
+      const lab = (i) => labels[i] || '';
+      body = [
+        cell(cx0 + s,     cy0,         s, s, lab(0)),        // top
+        cell(cx0,         cy0 + s,     s, s, lab(1)),        // left
+        cell(cx0 + s,     cy0 + s,     s, s, lab(2)),        // front
+        cell(cx0 + 2 * s, cy0 + s,     s, s, lab(3)),        // right
+        cell(cx0 + 3 * s, cy0 + s,     s, s, lab(4)),        // back
+        cell(cx0 + s,     cy0 + 2 * s, s, s, lab(5)),        // bottom
+      ].join('');
+      title = 'Net of a cube';
+    }
+    else if (solid === 'cuboid') {
+      // Same cross layout but with 3 distinct dimensions: length (L), breadth (B), height (H).
+      // Top/bottom faces: L × B. Front/back: L × H. Left/right: B × H.
+      // Pick px sizes that fit and look proportional.
+      const L = 70, B = 45, H = 45;
+      const cx0 = (VB_W - (B + L + B + L)) / 2;              // horizontal strip = left+front+right+back
+      const cy0 = (VB_H - (B + H + B)) / 2 + 6;              // 3 vertical bands
+      const lab = (i) => labels[i] || '';
+      body = [
+        cell(cx0 + B,       cy0,             L, B, lab(0)),  // top:    L × B
+        cell(cx0,           cy0 + B,         B, H, lab(1)),  // left:   B × H
+        cell(cx0 + B,       cy0 + B,         L, H, lab(2)),  // front:  L × H
+        cell(cx0 + B + L,   cy0 + B,         B, H, lab(3)),  // right:  B × H
+        cell(cx0 + B + L + B, cy0 + B,       L, H, lab(4)),  // back:   L × H
+        cell(cx0 + B,       cy0 + B + H,     L, B, lab(5)),  // bottom: L × B
+      ].join('');
+      if (show_dimensions) {
+        // Dim arrows along bottom of front face (length) + left of front face (height)
+        const fx = cx0 + B, fy = cy0 + B;
+        body += `<text x="${(fx + L / 2).toFixed(1)}" y="${(fy + H + B + 16).toFixed(1)}" text-anchor="middle" fill="${DIM}" font-size="11">${esc(length_label || 'L')}</text>`;
+        body += `<text x="${(fx - 8).toFixed(1)}" y="${(fy + H / 2 + 4).toFixed(1)}" text-anchor="end" fill="${DIM}" font-size="11">${esc(height_label || 'H')}</text>`;
+        body += `<text x="${(cx0 + B / 2).toFixed(1)}" y="${(fy + H + B - 6).toFixed(1)}" text-anchor="middle" fill="${DIM}" font-size="11">${esc(breadth_label || 'B')}</text>`;
+      }
+      title = 'Net of a cuboid';
+    }
+    else if (solid === 'triangular_prism') {
+      // 3 rectangles stacked vertically (the 3 lateral faces) with 2 triangles flanking the middle rect.
+      const recW = 90, recH = 50;                            // rectangle face sizes
+      const triH = 50;                                       // equilateral triangle height
+      const triBase = recW;                                  // shared edge with rect
+      const cx0 = (VB_W - recW) / 2;
+      const cy0 = (VB_H - (3 * recH)) / 2 + 4;
+      const lab = (i) => labels[i] || '';
+      body = [
+        cell(cx0, cy0,             recW, recH, lab(0)),       // top rect
+        cell(cx0, cy0 + recH,      recW, recH, lab(1)),       // middle rect (lateral face with triangles)
+        cell(cx0, cy0 + 2 * recH,  recW, recH, lab(2)),       // bottom rect
+        // Left triangle: apex pointing left from middle rect's left edge
+        tri([[cx0, cy0 + recH], [cx0, cy0 + 2 * recH], [cx0 - triH, cy0 + recH + triBase / 2]], lab(3)),
+        // Right triangle: apex pointing right
+        tri([[cx0 + recW, cy0 + recH], [cx0 + recW, cy0 + 2 * recH], [cx0 + recW + triH, cy0 + recH + triBase / 2]], lab(4)),
+      ].join('');
+      title = 'Net of a triangular prism';
+    }
+    else if (solid === 'square_pyramid') {
+      // Central square + 4 triangles (one on each side, apex pointing outward)
+      const s = 70;                                          // base square side
+      const triH = 60;                                       // triangle height (slant)
+      const cx0 = (VB_W - s) / 2;
+      const cy0 = (VB_H - s) / 2;
+      const lab = (i) => labels[i] || '';
+      body = [
+        cell(cx0, cy0, s, s, lab(0)),                                                       // base square
+        // Top triangle
+        tri([[cx0, cy0], [cx0 + s, cy0], [cx0 + s / 2, cy0 - triH]], lab(1)),
+        // Right triangle
+        tri([[cx0 + s, cy0], [cx0 + s, cy0 + s], [cx0 + s + triH, cy0 + s / 2]], lab(2)),
+        // Bottom triangle
+        tri([[cx0, cy0 + s], [cx0 + s, cy0 + s], [cx0 + s / 2, cy0 + s + triH]], lab(3)),
+        // Left triangle
+        tri([[cx0, cy0], [cx0, cy0 + s], [cx0 - triH, cy0 + s / 2]], lab(4)),
+      ].join('');
+      title = 'Net of a square pyramid';
+    }
+    else if (solid === 'cylinder') {
+      // 2 circles (top + bottom) + 1 rectangle (curved surface unrolled).
+      // Layout: rect in centre with circles at top-left and top-right of rect, "attached" via shared tangent.
+      const r = 28;                                          // circle radius
+      const recW = 180, recH = 60;                           // rectangle (2πr × h ideally)
+      const cx0 = (VB_W - recW) / 2;
+      const cy0 = (VB_H - recH) / 2 + 4;
+      const lab = (i) => labels[i] || '';
+      body = [
+        // Top circle (sits above rect's top edge, attached at tangent point)
+        `<circle cx="${(cx0 + r + 10).toFixed(1)}" cy="${(cy0 - r).toFixed(1)}" r="${r}" fill="${highlight_face === lab(0) ? HIGHLIGHT : FILL}" fill-opacity="${highlight_face === lab(0) ? 0.35 : 1}" stroke="${STROKE}" stroke-width="2"/>`,
+        lab(0) ? `<text x="${(cx0 + r + 10).toFixed(1)}" y="${(cy0 - r + 4).toFixed(1)}" text-anchor="middle" fill="${TEXT}" font-size="12" font-weight="600">${esc(lab(0))}</text>` : '',
+        // Rectangle
+        cell(cx0, cy0, recW, recH, lab(1)),
+        // Bottom circle (below rect)
+        `<circle cx="${(cx0 + recW - r - 10).toFixed(1)}" cy="${(cy0 + recH + r).toFixed(1)}" r="${r}" fill="${highlight_face === lab(2) ? HIGHLIGHT : FILL}" fill-opacity="${highlight_face === lab(2) ? 0.35 : 1}" stroke="${STROKE}" stroke-width="2"/>`,
+        lab(2) ? `<text x="${(cx0 + recW - r - 10).toFixed(1)}" y="${(cy0 + recH + r + 4).toFixed(1)}" text-anchor="middle" fill="${TEXT}" font-size="12" font-weight="600">${esc(lab(2))}</text>` : '',
+      ].join('');
+      title = 'Net of a cylinder';
+    }
+    else {
+      return this.placeholder({ description: `Unknown solid type: ${solid}` });
+    }
+
+    return this._svg(body, { viewBox: `0 0 ${VB_W} ${VB_H}`, alt: title, maxWidth: 480 });
+  },
+
+  /**
+   * symmetryFigure — Shape with optional dashed line of symmetry, or a partial
+   * figure to be completed across an axis (P4 Symmetry).
+   *
+   * params:
+   *   mode:         "show_axis" (default) | "complete"
+   *   shape:        "L" | "T" | "cross" | "arrow" | "letter_E" | "letter_H" |
+   *                 "diamond" | "trapezium" | "irregular"
+   *   axis:         "vertical" | "horizontal" | "diagonal_tlbr" | "diagonal_trbl" | "none"
+   *   show_correct: bool — for mode="complete", draw the mirrored half faintly
+   *   grid:         bool — render an underlying cm grid
+   *
+   * Notes:
+   *   - In "show_axis" mode, the full shape is drawn with a dashed mirror line.
+   *   - In "complete" mode, only the half on the source side of the axis is filled;
+   *     the other half is shown as a dashed outline if `show_correct` is true.
+   */
+  symmetryFigure(params = {}) {
+    const esc = this._esc.bind(this);
+    const {
+      mode = 'show_axis',
+      shape = 'L',
+      axis = 'vertical',
+      show_correct = false,
+      grid = true,
+    } = params;
+
+    const VB_W = 400, VB_H = 260;
+    const STROKE = 'var(--brand-sage, #51615E)';
+    const FILL = 'var(--brand-rose, #B76E79)';
+    const FILL_OPACITY = 0.4;
+    const AXIS = 'var(--text-muted, #5d706b)';
+    const GRID = 'var(--border-light, #d6e3dc)';
+    const GHOST = 'var(--border-dark, #8da89e)';
+
+    const cx = VB_W / 2, cy = VB_H / 2;
+
+    // ── Shape definitions: each returns an array of [x, y] vertex polygons,
+    //    centred at origin (pre-translation to cx,cy).
+    //    Sized so each fits comfortably within ~160 × 160 px.
+    const SHAPES = {
+      L: [[[-40,-60],[20,-60],[20,0],[60,0],[60,60],[-40,60]]],
+      T: [[[-60,-60],[60,-60],[60,-20],[20,-20],[20,60],[-20,60],[-20,-20],[-60,-20]]],
+      cross: [[[-20,-60],[20,-60],[20,-20],[60,-20],[60,20],[20,20],[20,60],[-20,60],[-20,20],[-60,20],[-60,-20],[-20,-20]]],
+      arrow: [[[-60,-15],[20,-15],[20,-40],[60,0],[20,40],[20,15],[-60,15]]],
+      letter_E: [[[-50,-60],[50,-60],[50,-40],[-30,-40],[-30,-10],[30,-10],[30,10],[-30,10],[-30,40],[50,40],[50,60],[-50,60]]],
+      letter_H: [[[-50,-60],[-30,-60],[-30,-10],[30,-10],[30,-60],[50,-60],[50,60],[30,60],[30,10],[-30,10],[-30,60],[-50,60]]],
+      diamond: [[[0,-60],[55,0],[0,60],[-55,0]]],
+      trapezium: [[[-60,40],[-30,-40],[30,-40],[60,40]]],
+      irregular: [[[-50,-50],[40,-50],[40,-10],[60,-10],[60,30],[20,30],[20,60],[-50,60]]],
+    };
+
+    const polys = SHAPES[shape] || SHAPES.L;
+
+    // ── Translate vertices into world coords
+    const worldPolys = polys.map(poly => poly.map(([x, y]) => [x + cx, y + cy]));
+
+    // ── Mode "complete": clip the polygon to the SOURCE side of the axis.
+    //    Source side = left of vertical axis, top of horizontal axis,
+    //    above tlbr diagonal, below trbl diagonal. (Arbitrary convention.)
+    function isOnSourceSide([x, y]) {
+      switch (axis) {
+        case 'vertical':       return x <= cx;
+        case 'horizontal':     return y <= cy;
+        case 'diagonal_tlbr':  return (x - cx) - (y - cy) <= 0;     // above the line y=x
+        case 'diagonal_trbl':  return (x - cx) + (y - cy) <= 0;     // above the line y=-x
+        default:               return true;
+      }
+    }
+
+    // Sutherland–Hodgman polygon clipping against the axis line.
+    function clipPolygon(poly, keepSourceSide) {
+      const result = [];
+      for (let i = 0; i < poly.length; i++) {
+        const cur = poly[i];
+        const prev = poly[(i - 1 + poly.length) % poly.length];
+        const curIn = keepSourceSide(cur);
+        const prevIn = keepSourceSide(prev);
+        if (curIn) {
+          if (!prevIn) {
+            // Entering: compute intersection
+            result.push(intersect(prev, cur));
+          }
+          result.push(cur);
+        } else if (prevIn) {
+          // Leaving: compute intersection
+          result.push(intersect(prev, cur));
+        }
+      }
+      return result;
+    }
+
+    // Line-line intersection between segment (p1→p2) and the axis line.
+    function intersect(p1, p2) {
+      const [x1, y1] = p1, [x2, y2] = p2;
+      let t;
+      switch (axis) {
+        case 'vertical':       t = (cx - x1) / (x2 - x1); break;
+        case 'horizontal':     t = (cy - y1) / (y2 - y1); break;
+        case 'diagonal_tlbr': {
+          // Axis: (x - cx) - (y - cy) = 0
+          const dx = x2 - x1, dy = y2 - y1;
+          t = ((cx - x1) - (cy - y1)) / (dx - dy);
+          break;
+        }
+        case 'diagonal_trbl': {
+          const dx = x2 - x1, dy = y2 - y1;
+          t = -((x1 - cx) + (y1 - cy)) / (dx + dy);
+          break;
+        }
+        default: t = 0;
+      }
+      return [x1 + t * (x2 - x1), y1 + t * (y2 - y1)];
+    }
+
+    // ── Mirror a point across the axis to get the OTHER half (for "complete" + show_correct).
+    function mirror([x, y]) {
+      switch (axis) {
+        case 'vertical':       return [2 * cx - x, y];
+        case 'horizontal':     return [x, 2 * cy - y];
+        case 'diagonal_tlbr':  return [(y - cy) + cx, (x - cx) + cy];   // reflect across y=x line through (cx,cy)
+        case 'diagonal_trbl':  return [-(y - cy) + cx, -(x - cx) + cy]; // reflect across y=-x line
+        default:               return [x, y];
+      }
+    }
+
+    // ── Grid backdrop
+    let gridSvg = '';
+    if (grid) {
+      const step = 20;
+      for (let x = step; x < VB_W; x += step) {
+        gridSvg += `<line x1="${x}" y1="0" x2="${x}" y2="${VB_H}" stroke="${GRID}" stroke-width="0.5"/>`;
+      }
+      for (let y = step; y < VB_H; y += step) {
+        gridSvg += `<line x1="0" y1="${y}" x2="${VB_W}" y2="${y}" stroke="${GRID}" stroke-width="0.5"/>`;
+      }
+    }
+
+    // ── Build the polygon(s) to render
+    const polyToPath = (poly) => 'M ' + poly.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' L ') + ' Z';
+
+    let shapeSvg = '';
+    if (mode === 'complete') {
+      // Source half: filled
+      worldPolys.forEach(poly => {
+        const clipped = clipPolygon(poly, isOnSourceSide);
+        if (clipped.length >= 3) {
+          shapeSvg += `<path d="${polyToPath(clipped)}" fill="${FILL}" fill-opacity="${FILL_OPACITY}" stroke="${STROKE}" stroke-width="2" stroke-linejoin="round"/>`;
+        }
+      });
+      // Other half (mirrored): dashed ghost outline if show_correct
+      if (show_correct) {
+        worldPolys.forEach(poly => {
+          const mirrored = poly.map(mirror);
+          const clipped = clipPolygon(mirrored, p => !isOnSourceSide(p) || onAxis(p));
+          if (clipped.length >= 3) {
+            shapeSvg += `<path d="${polyToPath(clipped)}" fill="none" stroke="${GHOST}" stroke-width="1.5" stroke-dasharray="4,3" stroke-linejoin="round"/>`;
+          }
+        });
+      }
+    } else {
+      // show_axis: full shape filled
+      worldPolys.forEach(poly => {
+        shapeSvg += `<path d="${polyToPath(poly)}" fill="${FILL}" fill-opacity="${FILL_OPACITY}" stroke="${STROKE}" stroke-width="2" stroke-linejoin="round"/>`;
+      });
+    }
+
+    function onAxis([x, y]) {
+      const eps = 0.5;
+      switch (axis) {
+        case 'vertical':       return Math.abs(x - cx) < eps;
+        case 'horizontal':     return Math.abs(y - cy) < eps;
+        case 'diagonal_tlbr':  return Math.abs((x - cx) - (y - cy)) < eps;
+        case 'diagonal_trbl':  return Math.abs((x - cx) + (y - cy)) < eps;
+        default:               return false;
+      }
+    }
+
+    // ── Axis line
+    let axisSvg = '';
+    if (axis !== 'none') {
+      let x1, y1, x2, y2;
+      switch (axis) {
+        case 'vertical':       x1 = cx; y1 = 20; x2 = cx; y2 = VB_H - 20; break;
+        case 'horizontal':     x1 = 20; y1 = cy; x2 = VB_W - 20; y2 = cy; break;
+        case 'diagonal_tlbr':  x1 = cx - 110; y1 = cy - 110; x2 = cx + 110; y2 = cy + 110; break;
+        case 'diagonal_trbl':  x1 = cx - 110; y1 = cy + 110; x2 = cx + 110; y2 = cy - 110; break;
+      }
+      axisSvg = `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${AXIS}" stroke-width="2" stroke-dasharray="6,4"/>`;
+    }
+
+    return this._svg(`${gridSvg}${shapeSvg}${axisSvg}`, {
+      viewBox: `0 0 ${VB_W} ${VB_H}`,
+      alt: `Symmetry figure: ${shape}, axis: ${axis}, mode: ${mode}.`,
+      maxWidth: 460,
+    });
+  },
+
+  /**
+   * circleSegment — Standalone semicircle or quarter circle (P6 Circles).
+   *
+   * For "Area And Perimeter Of Semicircle And Quarter Circle" sub_topic.
+   * NOT to be confused with `quarterCirclesInSquare` (which is inscribed in a square).
+   *
+   * params:
+   *   shape:               "semicircle" | "quarter_circle"
+   *   orientation:         "up" | "down" | "left" | "right"   — semicircle only (which half is shown)
+   *   corner:              "tl" | "tr" | "bl" | "br"          — quarter only (which corner the right angle sits at)
+   *   radius_label:        e.g. "7 cm" — drawn along a radius line
+   *   diameter_label:      e.g. "14 cm" — drawn along the diameter (semicircle only)
+   *   show_arc_label:      bool — labels the curved edge as "arc"
+   *   show_perimeter_dots: bool — marks endpoints with small dots
+   */
+  circleSegment(params = {}) {
+    const esc = this._esc.bind(this);
+    const {
+      shape = 'semicircle',
+      orientation = 'up',
+      corner = 'tl',
+      radius_label = '',
+      diameter_label = '',
+      show_arc_label = false,
+      show_perimeter_dots = false,
+    } = params;
+
+    const VB_W = 400, VB_H = 260;
+    const STROKE = 'var(--brand-sage, #51615E)';
+    const FILL = 'var(--brand-rose, #B76E79)';
+    const FILL_OPACITY = 0.25;
+    const TEXT = 'var(--text-main, #1a2e2a)';
+    const DIM = 'var(--text-muted, #5d706b)';
+
+    const R = 90;                                            // visual radius in px
+    const cx = VB_W / 2, cy = VB_H / 2 + 10;                 // pivot point
+
+    let pathD = '';
+    let radiusLine = '';
+    let diameterLine = '';
+    let endpointDots = '';
+    let radiusLabelEl = '';
+    let diameterLabelEl = '';
+    let arcLabelEl = '';
+    let alt = '';
+
+    if (shape === 'semicircle') {
+      // Diameter sits along one edge; arc on the opposite side
+      let p1, p2, sweepLargeArc = 0;                         // half-arc only
+      switch (orientation) {
+        case 'up':    p1 = [cx - R, cy];     p2 = [cx + R, cy];     break;
+        case 'down':  p1 = [cx + R, cy];     p2 = [cx - R, cy];     break;
+        case 'left':  p1 = [cx, cy - R];     p2 = [cx, cy + R];     break;
+        case 'right': p1 = [cx, cy + R];     p2 = [cx, cy - R];     break;
+      }
+      // sweep-flag: 0 = counter-clockwise (visually correct for these directions)
+      pathD = `M ${p1[0]},${p1[1]} A ${R},${R} 0 0 1 ${p2[0]},${p2[1]} L ${p1[0]},${p1[1]} Z`;
+      diameterLine = `<line x1="${p1[0]}" y1="${p1[1]}" x2="${p2[0]}" y2="${p2[1]}" stroke="${STROKE}" stroke-width="2"/>`;
+
+      // Radius line from centre to top of arc
+      const arcMid = orientation === 'up'    ? [cx, cy - R] :
+                     orientation === 'down'  ? [cx, cy + R] :
+                     orientation === 'left'  ? [cx - R, cy] :
+                                               [cx + R, cy];
+      radiusLine = `<line x1="${cx}" y1="${cy}" x2="${arcMid[0]}" y2="${arcMid[1]}" stroke="${STROKE}" stroke-width="1.5" stroke-dasharray="4,3"/>`;
+
+      if (radius_label) {
+        const rmx = (cx + arcMid[0]) / 2, rmy = (cy + arcMid[1]) / 2;
+        const offX = orientation === 'up' || orientation === 'down' ? 10 : 0;
+        const offY = orientation === 'left' || orientation === 'right' ? -8 : 0;
+        radiusLabelEl = `<text x="${(rmx + offX).toFixed(1)}" y="${(rmy + offY + 4).toFixed(1)}" text-anchor="start" fill="${DIM}" font-size="12">${esc(radius_label)}</text>`;
+      }
+      if (diameter_label) {
+        const dmx = (p1[0] + p2[0]) / 2, dmy = (p1[1] + p2[1]) / 2;
+        const offY = orientation === 'up' ? 18 : (orientation === 'down' ? -8 : 0);
+        const offX = orientation === 'left' ? 12 : (orientation === 'right' ? -12 : 0);
+        const anchor = orientation === 'left' ? 'start' : (orientation === 'right' ? 'end' : 'middle');
+        diameterLabelEl = `<text x="${(dmx + offX).toFixed(1)}" y="${(dmy + offY).toFixed(1)}" text-anchor="${anchor}" fill="${DIM}" font-size="12">${esc(diameter_label)}</text>`;
+      }
+      if (show_perimeter_dots) {
+        endpointDots = `<circle cx="${p1[0]}" cy="${p1[1]}" r="3" fill="${STROKE}"/><circle cx="${p2[0]}" cy="${p2[1]}" r="3" fill="${STROKE}"/>`;
+      }
+      if (show_arc_label) {
+        const ax = arcMid[0], ay = arcMid[1];
+        const dx = orientation === 'up' ? 0 : (orientation === 'down' ? 0 : (orientation === 'left' ? -16 : 16));
+        const dy = orientation === 'up' ? -8 : (orientation === 'down' ? 18 : 4);
+        arcLabelEl = `<text x="${(ax + dx).toFixed(1)}" y="${(ay + dy).toFixed(1)}" text-anchor="middle" fill="${DIM}" font-size="11" font-style="italic">arc</text>`;
+      }
+      alt = `Semicircle, opening ${orientation}.`;
+    }
+    else if (shape === 'quarter_circle') {
+      // Right-angle vertex at the chosen corner; two radii along the axes; arc connecting the radius endpoints.
+      let v;                                                  // right-angle vertex
+      let p1, p2;                                             // radius endpoints (where each radius meets the arc)
+      switch (corner) {
+        case 'tl': v = [cx - R / 2, cy - R / 2]; p1 = [v[0] + R, v[1]]; p2 = [v[0], v[1] + R]; break;
+        case 'tr': v = [cx + R / 2, cy - R / 2]; p1 = [v[0], v[1] + R]; p2 = [v[0] - R, v[1]]; break;
+        case 'bl': v = [cx - R / 2, cy + R / 2]; p1 = [v[0], v[1] - R]; p2 = [v[0] + R, v[1]]; break;
+        case 'br': v = [cx + R / 2, cy + R / 2]; p1 = [v[0] - R, v[1]]; p2 = [v[0], v[1] - R]; break;
+      }
+      // sweep direction so the arc bulges OUTWARD (away from the right-angle vertex)
+      pathD = `M ${v[0]},${v[1]} L ${p1[0]},${p1[1]} A ${R},${R} 0 0 1 ${p2[0]},${p2[1]} Z`;
+
+      // Right-angle marker (small square at vertex)
+      const ms = 8;
+      const mx = corner.includes('l') ? v[0] : v[0] - ms;
+      const my = corner.includes('t') ? v[1] : v[1] - ms;
+      const cornerMarker = `<rect x="${mx.toFixed(1)}" y="${my.toFixed(1)}" width="${ms}" height="${ms}" fill="none" stroke="${STROKE}" stroke-width="1.5"/>`;
+
+      if (radius_label) {
+        // Place along the first radius (v → p1)
+        const rmx = (v[0] + p1[0]) / 2, rmy = (v[1] + p1[1]) / 2;
+        const offY = corner.includes('t') ? -6 : 16;
+        radiusLabelEl = `<text x="${rmx.toFixed(1)}" y="${(rmy + offY).toFixed(1)}" text-anchor="middle" fill="${DIM}" font-size="12">${esc(radius_label)}</text>`;
+      }
+      if (show_perimeter_dots) {
+        endpointDots = `<circle cx="${p1[0]}" cy="${p1[1]}" r="3" fill="${STROKE}"/><circle cx="${p2[0]}" cy="${p2[1]}" r="3" fill="${STROKE}"/>`;
+      }
+      if (show_arc_label) {
+        // Arc midpoint, OUTWARD from vertex
+        const arcMidX = (p1[0] + p2[0]) / 2;
+        const arcMidY = (p1[1] + p2[1]) / 2;
+        // Offset further outward away from vertex
+        const ox = arcMidX + (arcMidX - v[0]) * 0.15;
+        const oy = arcMidY + (arcMidY - v[1]) * 0.15;
+        arcLabelEl = `<text x="${ox.toFixed(1)}" y="${oy.toFixed(1)}" text-anchor="middle" fill="${DIM}" font-size="11" font-style="italic">arc</text>`;
+      }
+      // Build composite SVG (corner marker rendered AFTER fill so it stays visible)
+      return this._svg(
+        `<path d="${pathD}" fill="${FILL}" fill-opacity="${FILL_OPACITY}" stroke="${STROKE}" stroke-width="2" stroke-linejoin="round"/>${cornerMarker}${endpointDots}${radiusLabelEl}${arcLabelEl}`,
+        { viewBox: `0 0 ${VB_W} ${VB_H}`, alt: `Quarter circle at ${corner} corner.`, maxWidth: 360 }
+      );
+    }
+    else {
+      return this.placeholder({ description: `Unknown circle segment shape: ${shape}` });
+    }
+
+    return this._svg(
+      `<path d="${pathD}" fill="${FILL}" fill-opacity="${FILL_OPACITY}" stroke="${STROKE}" stroke-width="2" stroke-linejoin="round"/>${diameterLine}${radiusLine}${endpointDots}${radiusLabelEl}${diameterLabelEl}${arcLabelEl}`,
+      { viewBox: `0 0 ${VB_W} ${VB_H}`, alt, maxWidth: 420 }
+    );
+  },
+
   // ── FALLBACK ─────────────────────────────────────────────────────────────────
 
   /**
