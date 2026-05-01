@@ -659,8 +659,10 @@ D:\Git\Superholic-Lab\
 │   ├── 015_mastery_levels.sql       (APPLIED 2026-04-25)
 │   ├── 016_quest_gamification.sql   (APPLIED 2026-04-25)
 │   ├── 017_seed_badges.sql          (APPLIED 2026-04-25)
-│   └── 018_quest_pedagogy.sql       (APPLIED — Phase 3 Commit 1)
-│   (PENDING: 019_seed_pedagogy_badges.sql — Workstream B handoff)
+│   ├── 018_quest_pedagogy.sql       (APPLIED — Phase 3 Commit 1)
+│   ├── 019_reclassify_difficulty_heuristic.sql (APPLIED 2026-04-27)
+│   ├── 020_seed_pedagogy_badges.sql (APPLIED — 4 pedagogy badges)
+│   └── 021_canon_taxonomy_and_fk_constraints.sql (APPLIED 2026-04-30 — canon v5)
 ├── docs/
 │   ├── QUEST_PAGE_SPEC.md      ← v2.0 LOCKED — quest authority
 │   ├── LAUNCH_PLAN_v1.md
@@ -775,6 +777,9 @@ COMPLETED
   [x] handleGradeAnswer + handleGenerateQuestion normalised
   [x] AI_*_PROVIDER + AI_*_MODEL env vars in Vercel
   [x] api/cron/snapshot-mastery.js + vercel.json cron registration (2 crons)
+  [x] supabase/020_seed_pedagogy_badges.sql applied (4 pedagogy badges)
+  [x] public/pages/faq.html shipped (consolidated FAQ)
+  [x] docs/PARENT_FAQ.md + docs/GAMIFICATION_RULES.md shipped
 
   --- Doc & code cleanup (2026-05-01) ---
   [x] data/questions/*.json (38 files) + SCHEMA.md archived to data/questions/_legacy/
@@ -786,11 +791,12 @@ COMPLETED
   [x] quiz.js dead resolveFile() removed
   [x] /generate-batch.md prompt-builder paths .js → .cjs
   [x] MANIFEST.md moved from data/questions/ to repo root (canonical location)
+  [x] Stale root files deleted: index - Copy.html, init (0-byte),
+       logo draft.png, sample-questions-new-standard.json
+  [x] Stale agent files deleted: .claude/agents/exam-architect.md,
+       question-coder.md (replaced by /api/generate-exam + /generate-batch)
 
 PENDING / IN PROGRESS
-  [ ] supabase/019_seed_pedagogy_badges.sql (4 pedagogy badges) — verify status
-  [ ] public/pages/faq.html (consolidated 9-section FAQ) — verify status
-  [ ] docs/PARENT_FAQ.md + docs/GAMIFICATION_RULES.md — verify status
   [ ] Analytics: Plausible script on ALL pages (currently pricing.html only)
   [ ] SEO: meta descriptions, Open Graph, JSON-LD on all pages
   [ ] Stripe: switch from test mode to live mode

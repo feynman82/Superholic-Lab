@@ -20,7 +20,7 @@ without a dedicated agent file, use the built-in `general-purpose`,
 
 ---
 
-## Active agents (file-based)
+## Active agents (file-based) — 2 total
 
 ### `design-guardian` — UI/UX Auditor
 **File:** `.claude/agents/design-guardian.md`
@@ -40,38 +40,23 @@ weakness reports (`/api/analyze-weakness`).
 chat/tutor/report endpoint that speaks as Miss Wena.
 **Status:** ✅ current. Authoritative source for Miss Wena voice + safety.
 
-### `exam-architect` — Exam paper assembly
-**File:** `.claude/agents/exam-architect.md`
-**Role:** Orchestrates MOE-aligned exam paper generation for WA1/WA2/EOY
-/Prelims (P3–P6). Pulls from question bank, falls back to AI generation
-when the bank is thin.
-**When to invoke:** Generating a full WA/EOY/Prelim/PSLE practice paper.
-**Status:** ⚠️ **STALE — pending rewrite** (Batch 3). Currently references
-`data/questions/*.json` and `MANIFEST.md` paths from the pre-Supabase era;
-real bank lives in Supabase `question_bank`. Until rewritten, treat its
-question-loading instructions as illustrative — fetch from Supabase instead.
-
-### `question-coder` — Question generator (legacy)
-**File:** `.claude/agents/question-coder.md`
-**Role:** Earlier-generation question bank generator. Predates the canon
-v5 migration and the `/generate-batch` slash command.
-**Status:** ⚠️ **DEPRECATED — superseded by `/generate-batch`** (`.claude/commands/generate-batch.md`).
-The slash command runs the gap-analysis SQL, builds surgical prompts, and
-inserts directly to Supabase. Use that instead.
-**Decision pending:** delete or rewrite as a thin pointer (Batch 3).
-
 ---
 
-## Notes
+## Removed agents
 
-- `design-guardian - Copy.md` (literal duplicate filename) exists in
-  `.claude/agents/` and should be deleted. It is not a real agent.
-- The earlier AGENTS.md listed 7 conceptual agents (planner, code-reviewer,
-  security-reviewer, quiz-content-reviewer, database-reviewer,
-  progress-intelligence, question-factory-agent). None of these were
-  ever wired up as dispatchable subagents — they were prompt templates
-  that drifted out of relevance. For those review modes, use the
-  built-in `general-purpose` agent with an explicit prompt referencing
-  the relevant rule file in `.claude/rules/`.
-- `progress-intelligence`'s logic now lives in `/api/analyze-weakness`
-  (handler in `lib/api/handlers.js`) — a serverless route, not an agent.
+The following agent files were deleted in the 2026-05-01 cleanup. Their
+roles are now served by live code paths or slash commands:
+
+| Removed agent | Replaced by |
+|---|---|
+| `exam-architect.md` | `/api/generate-exam` (handler in `lib/api/handlers.js`) — live AI assembly with Gemini → Claude Haiku fallback. Do not re-introduce a separate agent unless there is a workflow live code can't cover. |
+| `question-coder.md` | `/generate-batch` slash command (`.claude/commands/generate-batch.md`) + Master Question Template v5.0 |
+| `design-guardian - Copy.md` | Literal duplicate of `design-guardian.md` |
+
+The earlier AGENTS.md (pre-2026-05-01) also listed 7 conceptual agents
+(planner, code-reviewer, security-reviewer, quiz-content-reviewer,
+database-reviewer, progress-intelligence, question-factory-agent). None
+were ever wired up as dispatchable subagents — they were prompt templates.
+For those review modes, use the built-in `general-purpose` agent with an
+explicit prompt referencing the relevant rule file in `.claude/rules/`.
+`progress-intelligence`'s logic now lives in `/api/analyze-weakness`.

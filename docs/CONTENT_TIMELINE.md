@@ -1,6 +1,6 @@
 # Content Production Timeline — Superholic Lab
 **Created:** 2026-03-29
-**Owner:** Curriculum Team / @question-coder agent
+**Owner:** Curriculum Team / `/generate-batch` slash command
 **Target:** 20 questions per topic file, all 6 types represented, balanced difficulty
 
 ---
@@ -182,5 +182,5 @@ Proposed type/difficulty breakdown:
 5. Simple word problems (1-step)
 
 > ⚠️ **Awaiting approval before generation begins.**
-> To generate: confirm this batch plan is approved, then invoke `@question-coder`
-> with target `p1-mathematics-whole-numbers.json`.
+> To generate: confirm this batch plan is approved, then run `/generate-batch`
+> targeting Primary 1 Mathematics (Whole Numbers).

@@ -223,11 +223,11 @@ Authority: `docs/QUEST_PAGE_SPEC.md` §12 (XP rules), §14 (badge list).
   `content-review`, `page-builder`, `quiz-engine`, `supabase-patterns`,
   `ui-ux-pro-max`
 
-**Agents** (`AGENTS.md`) — 4 file-based subagents:
-  `design-guardian`, `miss_wena`, `exam-architect`, `question-coder`
-  *(`exam-architect` and `question-coder` reference pre-Supabase JSON
-  paths; treat their question-loading instructions as illustrative until
-  rewritten. See `AGENTS.md` for details.)*
+**Agents** (`AGENTS.md`) — 2 file-based subagents:
+  `design-guardian`, `miss_wena`
+  *(Earlier `exam-architect` and `question-coder` agents were removed
+  2026-05-01 — replaced by `/api/generate-exam` (live) and the
+  `/generate-batch` slash command respectively.)*
 
 **Hooks** (`hooks/hooks.json`) — secret detection + CSS enforcement
 

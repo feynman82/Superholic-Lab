@@ -180,11 +180,12 @@ Purge before launch:
 | `scripts/prompt-builder.{js,cjs}` (root copies) | Stale dups; canonical at `scripts/question-factory/prompt-builder.cjs` | ✅ Deleted 2026-05-01 |
 | `data/questions/*.json` (38 files) + `SCHEMA.md` | Pre-Supabase JSON bank | ✅ Archived to `data/questions/_legacy/` 2026-05-01 |
 | `scripts/*` legacy one-shots (18 files) | One-shot ETL/repair scripts | ✅ Archived to `scripts/_legacy/` 2026-05-01 |
-| `public/js/progress - Copy.js` | Local backup file | Pending |
-| `index - Copy.html` (root) | Backup of old homepage | Pending |
-| `init` (root, 0-byte file) | Empty file, unknown origin | Pending |
-| `logo draft.png` (root) | Working draft — final logo is in `public/assets/logo.svg` | Pending |
-| `sample-questions-new-standard.json` (root) | Legacy — questions now in Supabase `question_bank` | Pending |
+| `index - Copy.html` (root) | Backup of old homepage | ✅ Deleted 2026-05-01 |
+| `init` (root, 0-byte file) | Empty file, unknown origin | ✅ Deleted 2026-05-01 |
+| `logo draft.png` (root) | Working draft — final logo is in `public/assets/logo.svg` | ✅ Deleted 2026-05-01 |
+| `sample-questions-new-standard.json` (root) | Legacy — questions now in Supabase `question_bank` | ✅ Deleted 2026-05-01 |
+| `.claude/agents/exam-architect.md` | Stale (pre-Supabase paths); `/api/generate-exam` is the live path | ✅ Deleted 2026-05-01 |
+| `.claude/agents/question-coder.md` | Superseded by `/generate-batch` | ✅ Deleted 2026-05-01 |
 
 ### Editor/IDE config dirs to audit
 

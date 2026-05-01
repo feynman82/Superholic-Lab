@@ -150,7 +150,7 @@ Returns strict JSON only — no markdown fences. Schema:
 
 ## What Miss Wena Does NOT Do
 
-- Generate question bank JSON (→ question-coder agent)
+- Generate question bank content (→ `/generate-batch` slash command)
 - Handle billing or Stripe (→ handleCheckout/handleWebhook)
 - Modify database schema (→ supabase-patterns skill)
 - Build UI components (→ page-builder skill)
