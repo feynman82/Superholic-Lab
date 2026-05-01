@@ -211,9 +211,10 @@
                   margin-top 240ms ease;
     }
     .trio-card.is-expanded .trio-card__drawer {
-      max-height: 480px;
+      max-height: 720px;          /* Math topics can have up to 10 sub_topics */
       opacity: 1;
       margin-top: var(--space-3);
+      overflow-y: auto;           /* scroll inside drawer if list overflows */
     }
     .trio-card__drawer-divider {
       height: 1px;
@@ -279,7 +280,7 @@
       .trio-subchip:hover { transform: none; }
     }
     @media (max-width: 640px) {
-      .trio-card.is-expanded .trio-card__drawer { max-height: 600px; }
+      .trio-card.is-expanded .trio-card__drawer { max-height: 70vh; }
       .trio-card__drawer-cta { justify-content: stretch; }
       .trio-card__drawer-cta .btn { width: 100%; }
     }
@@ -1351,9 +1352,12 @@
       // ── LAUNCH ──────────────────────────────────────────────────────────
       window.launchQuiz = function () {
         // Drawer-launch path: a sub-topic drawer can fire launchQuiz before
-        // a question type was picked. Default to 'mixed' for that path.
-        if (!state.qtype && state.topic && state.subject === 'english') {
-          state.qtype = 'mixed';
+        // a question type was picked. Default to the topic's bypass type
+        // if it has one (e.g. word_problem-only topics), otherwise 'mixed'.
+        // Applies to all subjects (English, Math, Science) so drawer chips
+        // launch consistently.
+        if (!state.qtype && state.topic && state.topic !== 'all') {
+          state.qtype = TOPIC_TYPE_BYPASS[state.topic] || 'mixed';
         }
         if (!state.qtype && !state.topic) return;
         const params = new URLSearchParams({ subject: state.subject, level: state.levelSlug });

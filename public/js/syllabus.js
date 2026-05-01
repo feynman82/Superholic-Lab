@@ -124,11 +124,34 @@ export const SUB_TOPIC_GROUPS = {
 
 /**
  * Returns { groupKey: { label, subTopicsInCanon, questionType? }, ... }
- * for a given subject + topic, or {} if no UI sub-topic groups apply.
+ * for a given subject + topic.
+ *
+ * English: explicit overrides from SUB_TOPIC_GROUPS (Comprehension split,
+ * Cloze pass-through). All other English topics return {} (no drawer).
+ *
+ * Mathematics / Science: each canonical sub_topic becomes its own one-item
+ * group, with the slug as the groupKey. This means EVERY Math/Science topic
+ * card can expand into a drawer of its canonical sub_topics.
  */
 export function subTopicGroupsFor(subject, topic) {
   if (!subject || !topic) return {};
-  return SUB_TOPIC_GROUPS[subject.toLowerCase()]?.[topic] || {};
+  const subjectKey = subject.toLowerCase();
+
+  if (subjectKey === 'english') {
+    return SUB_TOPIC_GROUPS.english?.[topic] || {};
+  }
+
+  if (subjectKey === 'mathematics' || subjectKey === 'science') {
+    const canonSubs = CANONICAL_SYLLABUS[subjectKey]?.[topic] || [];
+    const groups = {};
+    for (const sub of canonSubs) {
+      const key = slugify(sub);
+      groups[key] = { label: sub, subTopicsInCanon: [sub] };
+    }
+    return groups;
+  }
+
+  return {};
 }
 
 /**
@@ -139,14 +162,27 @@ export function subTopicGroupsFor(subject, topic) {
  */
 export function resolveSubTopicGroup(subject, topic, groupKey) {
   if (!subject || !topic || !groupKey) return null;
-  const groups = SUB_TOPIC_GROUPS[subject.toLowerCase()]?.[topic];
-  if (!groups) return null;
-  const group = groups[groupKey];
-  if (!group) return null;
-  return {
-    subTopics: group.subTopicsInCanon || [],
-    questionType: group.questionType || null
-  };
+  const subjectKey = subject.toLowerCase();
+
+  if (subjectKey === 'english') {
+    const groups = SUB_TOPIC_GROUPS.english?.[topic];
+    if (!groups) return null;
+    const group = groups[groupKey];
+    if (!group) return null;
+    return {
+      subTopics: group.subTopicsInCanon || [],
+      questionType: group.questionType || null
+    };
+  }
+
+  if (subjectKey === 'mathematics' || subjectKey === 'science') {
+    const canonSubs = CANONICAL_SYLLABUS[subjectKey]?.[topic] || [];
+    const matched = canonSubs.find(s => slugify(s) === groupKey);
+    if (!matched) return null;
+    return { subTopics: [matched], questionType: null };
+  }
+
+  return null;
 }
 
 // ── LEVEL → TOPICS WHITELIST ──
