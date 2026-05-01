@@ -32,6 +32,29 @@ If already > 60k tokens (large files), log a warning but continue.
 
 ## PHASE 1 — Gap Analysis
 
+> ⚠️ **KNOWN BUG (2026-05-01) — gap matrix is over-broad.** The SQL below
+> uses a HARDCODED cumulative per-level topic list (e.g. P6 = all P1–P5 topics
+> + own). The actual `canon_level_topics` table is **NOT cumulative** — each
+> topic only has rows at the level where it was first introduced. So topics
+> like "Decimals" only exist as P4 canon entries; a P6 row for Decimals will
+> fail FK `fk_qb_level_topic` with PG 23503.
+>
+> **Workaround until fixed:** After running the gap query, ALWAYS verify the
+> picked (level, topic, sub_topic) combinations against `canon_level_topics`
+> via:
+> ```sql
+> SELECT topic, sub_topic FROM canon_level_topics
+> WHERE subject=$subject AND level=$level
+> ORDER BY topic, sub_topic;
+> ```
+> Discard any planned batch row whose (level, topic) is not in canon. Pick
+> only true canon-resident topics for that level.
+>
+> **Permanent fix (TODO):** rewrite the WITH valid_combinations CTE to
+> read directly from `canon_level_topics` instead of the hardcoded
+> per-level lists. That removes the cumulative-vs-introduction confusion
+> and auto-tracks future syllabus changes.
+
 Run this SQL via `supabase:execute_sql`. This returns all (subject, level, topic,
 type, difficulty) combinations with their counts and a priority score.
 

@@ -1,9 +1,9 @@
 # MANIFEST — Question Bank Inventory (v5.0)
 
 **Generated:** 2026-05-01 (post-canon-v5 migration)
-**Total active questions:** 11,261
+**Total active questions:** 11,266 (+5 in batch_20260501_p6_math_std_mcq, all `approved_at IS NULL` pending review)
 **Total deprecated:** 0
-**Distinct (level, subject, topic, sub_topic) combinations:** 168
+**Distinct (level, subject, topic, sub_topic) combinations:** 173
 **Canon entries (canon_level_topics):** 296
 **FK enforced:** `question_bank(level, subject, topic, sub_topic)` → `canon_level_topics` (constraint `fk_qb_level_topic`, VALIDATED)
 
@@ -17,9 +17,9 @@ longer recorded here — query Supabase by `created_at` window if needed.
 | Subject | P1 | P2 | P3 | P4 | P5 | P6 | Total |
 |---------|----|----|----|----|----|----|-------|
 | **English**     | 141 | 182 | 240 | 550 | 417 | 444 | 1 974 |
-| **Mathematics** | — | 7 | 6 | 29 | 27 | 55 | 124 |
+| **Mathematics** | — | 7 | 6 | 29 | 27 | 60 | 129 |
 | **Science**     | n/a | n/a | 2 351 | 2 242 | 2 131 | 2 439 | 9 163 |
-| **Total**       | 141 | 189 | 2 597 | 2 821 | 2 575 | 2 938 | **11 261** |
+| **Total**       | 141 | 189 | 2 597 | 2 821 | 2 575 | 2 943 | **11 266** |
 
 Notes:
 - Science has no P1/P2 syllabus (subject introduced at P3).
