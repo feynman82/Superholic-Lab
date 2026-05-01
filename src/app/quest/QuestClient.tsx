@@ -37,8 +37,9 @@ import { Day3OutcomeModal } from "./components/Day3OutcomeModal"
 const SUPABASE_URL      = "https://rlmqsbxevuutugtyysjr.supabase.co"
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJsbXFzYnhldnV1dHVndHl5c2pyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxNjIxMTgsImV4cCI6MjA4OTczODExOH0.QIgtg-1WYBV0ySqUS5RsANWaux2dg_lw5Ze5j5gOZSU"
 
+const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 function getSupabase() {
-  return createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  return _supabase
 }
 
 // ─── rankFromLevel (mirrors badge-engine.js — kept in sync manually) ─────────
