@@ -907,7 +907,8 @@
           saveBtn.className = 'btn btn-secondary btn-sm hover-lift';
         }, 3000);
       } else {
-        throw new Error(data.error || 'Save failed');
+        const detail = data.detail ? ` (stage=${data.stage}: ${data.detail})` : '';
+        throw new Error((data.error || 'Save failed') + detail);
       }
     } catch (e) {
       console.error('Save Notes error:', e);
