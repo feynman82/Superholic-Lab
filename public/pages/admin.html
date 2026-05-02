@@ -110,16 +110,15 @@
          Backing table: public.system_settings.
          RLS: only profiles.is_admin = true can write.
          Controller logic in js/admin.js §10. -->
-    <section id="admin-settings-section" class="admin-settings">
-      <header class="admin-settings__header">
-        <span class="label-caps" style="color: var(--brand-rose);">§ — System Settings</span>
-        <h2 class="h2-as" style="margin-top: var(--space-2); color: var(--text-main);">Display controls.</h2>
-        <p class="body-md" style="color: var(--text-muted); margin-top: var(--space-2); max-width: 560px;">
-          Site-wide toggles for student-facing surfaces. Changes apply to all users immediately.
-        </p>
-      </header>
+    <section class="py-8 bg-white" style="border-top: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light);">
+      <div class="container-as">
+        <h2 class="zone-heading">
+          <span data-admin-icon="check" data-icon-size="18"></span>
+          System Settings
+        </h2>
+        <p class="text-sm text-muted mb-4">Site-wide toggles for student-facing surfaces. Changes apply to all users immediately.</p>
 
-      <div class="admin-settings__grid">
+        <div id="admin-settings-section" class="admin-settings-grid">
         <div class="admin-settings__row" data-setting-key="show_question_counts">
           <div class="admin-settings__row-text">
             <h3 class="admin-settings__row-title">Show question counts in subjects wizard</h3>
@@ -142,7 +141,7 @@
       </div>
     </section>
 
-    <section class="py-8 bg-white">
+    <section class="py-8 bg-page texture-light-grid">
       <div class="container-as">
         <div class="parents-toolbar">
           <h2 class="zone-heading m-0">

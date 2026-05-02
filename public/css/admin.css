@@ -954,22 +954,17 @@
 
 
 /* ════════════════════════════════════════════════════════════════════════════
-   8. SYSTEM SETTINGS  (architecture preserved verbatim — was already A-S)
+   8. SYSTEM SETTINGS — joined with normal section rhythm
+   Container drives width (.container-as 1280px); panel itself is a flat card.
    ════════════════════════════════════════════════════════════════════════════ */
 
-.admin-settings {
-  width: 100%;
-  max-width: 880px;
-  margin: var(--space-6) auto;
-  padding: var(--space-5);
-  background: var(--glass-bg, rgba(255, 255, 255, 0.4));
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--border-light);
-  border-radius: 24px;
+.admin-settings-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
 }
 
-.admin-settings__header { margin-bottom: var(--space-4); }
+.admin-settings__header { display: none; /* moved to outer .zone-heading */ }
 
 .admin-settings__grid {
   display: flex;
@@ -1663,3 +1658,67 @@
   font-style: italic;
   padding: var(--space-2) 0;
 }
+/* ════════════════════════════════════════════════════════════════════════════
+   14. WENA TELEMETRY — uniform table heights with collapse affordance
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* Every wena-panel .card constrains its body to a consistent visual height.
+   Tables longer than the cap clip with a fade and surface a "Show all" button. */
+#wenaView .wena-panel .card {
+  position: relative;
+}
+
+#wenaView .wena-table-wrap {
+  max-height: 320px;
+  overflow: hidden;
+  position: relative;
+  transition: max-height 0.25s ease;
+}
+
+#wenaView .wena-table-wrap.is-expanded {
+  max-height: 1600px; /* practical cap; rare table will exceed this */
+  overflow-y: auto;
+}
+
+/* Bottom fade to signal there's more content */
+#wenaView .wena-table-wrap:not(.is-expanded)::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 48px;
+  background: linear-gradient(to bottom,
+    rgba(255, 255, 255, 0),
+    var(--surface-container-lowest, #fff) 90%);
+  pointer-events: none;
+}
+
+/* Hide fade when content fits anyway */
+#wenaView .wena-table-wrap.fits::after { display: none; }
+
+#wenaView .wena-expand-btn {
+  display: none;
+  width: 100%;
+  margin-top: var(--space-2);
+  padding: var(--space-2);
+  border: 1px dashed var(--border-light);
+  border-radius: var(--radius-md);
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+#wenaView .wena-expand-btn:hover {
+  color: var(--brand-rose);
+  border-color: var(--brand-rose);
+  background: rgba(183, 110, 121, 0.04);
+}
+
+#wenaView .wena-expand-btn.is-visible { display: block; }

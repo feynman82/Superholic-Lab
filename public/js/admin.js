@@ -934,7 +934,85 @@ window.loadAnalytics = async function (period, btn) {
   };
 })();
 
+/* ════════════════════════════════════════════════════════════════════════════
+   11b. WENA COLLAPSE — uniform table max-heights with "Show all" affordance
+   ----------------------------------------------------------------------------
+   Wraps every #wenaView table in a .wena-table-wrap, observes its real height
+   after data loads, and surfaces a "Show all (N rows)" button when content
+   overflows the 320px cap.
+   ════════════════════════════════════════════════════════════════════════════ */
 
+(function () {
+  function wrapWenaTables() {
+    document.querySelectorAll('#wenaView .wena-panel .card').forEach(function (card) {
+      var tables = card.querySelectorAll('.wena-table');
+      tables.forEach(function (tbl) {
+        if (tbl.parentNode.classList.contains('wena-table-wrap')) return;
+        var wrap = document.createElement('div');
+        wrap.className = 'wena-table-wrap';
+        tbl.parentNode.insertBefore(wrap, tbl);
+        wrap.appendChild(tbl);
+
+        // Add the expand button as a sibling of the wrap
+        var btn = document.createElement('button');
+        btn.className = 'wena-expand-btn';
+        btn.type = 'button';
+        btn.textContent = 'Show all';
+        btn.addEventListener('click', function () {
+          var expanded = wrap.classList.toggle('is-expanded');
+          btn.textContent = expanded ? 'Collapse' : 'Show all';
+        });
+        wrap.parentNode.insertBefore(btn, wrap.nextSibling);
+      });
+    });
+  }
+
+  // Re-evaluate which wraps overflow after each panel loads. Called by
+  // mutation observer on tbody updates.
+  function refreshWenaCollapseState() {
+    document.querySelectorAll('#wenaView .wena-table-wrap').forEach(function (wrap) {
+      var btn = wrap.nextElementSibling;
+      if (!btn || !btn.classList.contains('wena-expand-btn')) return;
+      // If currently expanded, leave alone.
+      if (wrap.classList.contains('is-expanded')) {
+        btn.classList.add('is-visible');
+        return;
+      }
+      // scrollHeight > clientHeight means content is clipped.
+      var overflowing = wrap.scrollHeight > wrap.clientHeight + 4;
+      if (overflowing) {
+        wrap.classList.remove('fits');
+        btn.classList.add('is-visible');
+        // Try to count rows for nicer label
+        var rows = wrap.querySelectorAll('tbody tr').length;
+        if (rows > 0) btn.textContent = 'Show all (' + rows + ' rows)';
+      } else {
+        wrap.classList.add('fits');
+        btn.classList.remove('is-visible');
+      }
+    });
+  }
+
+  // Initial wrap on DOM ready (Wena view exists in DOM but is hidden until tab clicked)
+  function init() {
+    wrapWenaTables();
+    // Observe tbody innerHTML changes — the wena loaders set tbody.innerHTML
+    // when their fetch resolves. We re-check overflow after each update.
+    var wenaView = document.getElementById('wenaView');
+    if (!wenaView) return;
+    var mo = new MutationObserver(function () {
+      // Debounce: collapse to single rAF
+      window.requestAnimationFrame(refreshWenaCollapseState);
+    });
+    mo.observe(wenaView, { childList: true, subtree: true });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
 /* ════════════════════════════════════════════════════════════════════════════
    12. BOOT
    ════════════════════════════════════════════════════════════════════════════ */
