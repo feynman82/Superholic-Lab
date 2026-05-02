@@ -1251,10 +1251,16 @@
     qaLoadSyllabus();
     qaPopulateTopics('');
     qaPopulateSubTopics('');
+    // Expose IIFE-scoped state to qa-power.js (Commit 4b)
+    window._qaQueueRef       = function () { return qaQueue; };
+    window._qaApprovedRef    = function () { return qaApproved; };
+    window._qaCurrentIdxRef  = function () { return qaCurrentIdx; };
+    window._qaPanelNotify    = qaNotify;
   });
 
   function qaPostSelectHook() {
     if (!qaCurrentQ) return;
+    window._qaCurrentSnapshot = qaCurrentQ;
     qaPopulateTopics(qaCurrentQ.topic || '').then(function () {
       return qaPopulateSubTopics(qaCurrentQ.sub_topic || '');
     });
