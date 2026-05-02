@@ -606,8 +606,11 @@ function renderRecommendNext(weakTopics, student, subjectSlotsTaken) {
     const sub = (t.subject || '').toLowerCase();
     const topicLabel = (t.topic || '').replace(/-/g, ' ');
     const slotTaken = subjectSlotsTaken && subjectSlotsTaken.has(sub);
+    // Sprint 8a: include level so Wena RAP can normalise it server-side.
+    // sub_topic is intentionally omitted — weakTopics aggregates at topic level
+    // only, and the handler's getFallbackCell handles topic-level retrieval.
     const ctaHref = slotTaken
-      ? `tutor.html?intent=remedial&subject=${encodeURIComponent(t.subject)}&topic=${encodeURIComponent(t.topic)}&score=${t.pct}`
+      ? `tutor.html?intent=remedial&subject=${encodeURIComponent(t.subject)}&level=${encodeURIComponent(student.level || '')}&topic=${encodeURIComponent(t.topic)}&score=${t.pct}`
       : `subjects.html?subject=${encodeURIComponent(t.subject)}&topic=${encodeURIComponent(t.topic)}&student=${encodeURIComponent(student.id)}`;
     const ctaLabel = slotTaken ? 'Ask Miss Wena →' : 'Practise this topic →';
     const reason = t.pct < 45
@@ -1593,7 +1596,7 @@ function renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subject
                 <span class="badge badge-sage">${getALBand(t.pct)}</span>
               </div>
               <div class="weakness-card__actions">
-                <a href="tutor.html?intent=remedial&subject=${t.subject}&topic=${t.topic}&score=${t.pct}" class="btn btn-secondary btn-sm">Ask Miss Wena</a>
+                <a href="tutor.html?intent=remedial&subject=${encodeURIComponent(t.subject)}&level=${encodeURIComponent(student.level || '')}&topic=${encodeURIComponent(t.topic)}&score=${t.pct}" class="btn btn-secondary btn-sm">Ask Miss Wena</a>
                 ${questBtnHtml}
               </div>
             </article>`);

@@ -89,6 +89,37 @@
     // server falls back to topic-level retrieval.
     currentSubTopicContext = questParams.get('sub_topic') || null;
 
+    // Sprint 8a: curriculum coordinates from upstream pages (progress.js
+    // weakness tiles, etc.) → tutor.html URL. Only reads from URL when NOT
+    // in quest mode (quest mode has its own param flow). Falls through to
+    // existing defaults ('general' / 'mixed' / DB-fetched level) if the URL
+    // is bare. Idempotent w.r.t. handleRemedialIntent — both set the same
+    // values from the same params; this block ALSO honours `level` which
+    // handleRemedialIntent does not.
+    if (!fromQuestId) {
+      const urlSubject = questParams.get('subject');
+      const urlLevel   = questParams.get('level');
+      const urlTopic   = questParams.get('topic');
+      // sub_topic already read above — do not duplicate.
+
+      if (urlSubject) currentSubjectContext = urlSubject;
+      if (urlTopic)   currentTopicContext   = urlTopic;
+      // Prefer URL level over the students.level fetched in checkStudentLimits —
+      // the URL value is the question's level, which is what _normaliseLevel
+      // expects on the server. Same in 99% of cases, but URL is canonical.
+      if (urlLevel) currentStudentLevel = urlLevel;
+
+      // Visibility for Sprint 8a verification — strip after canary clean.
+      if (urlSubject && urlLevel && urlTopic) {
+        console.info('[wena-rap] curriculum coordinates received:', {
+          subject:   currentSubjectContext,
+          level:     currentStudentLevel,
+          topic:     currentTopicContext,
+          sub_topic: currentSubTopicContext
+        });
+      }
+    }
+
     // Event Listeners
     sendBtn.addEventListener('click', handleSend);
     chatInput.addEventListener('keydown', e => {
