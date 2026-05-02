@@ -8,14 +8,15 @@ import { syllabusSci } from './data/syllabusSci';
 
 export default function SyllabusMapSci() {
   const [activeIdx, setActiveIdx] = useState(2); // P5 default
-  const [openTopic, setOpenTopic] = useState<string | null>(null);
+  const [activeTopicIdx, setActiveTopicIdx] = useState(0);
 
   const handleTabChange = (i: number) => {
     setActiveIdx(i);
-    setOpenTopic(null);
+    setActiveTopicIdx(0); // reset to first topic of the new level
   };
 
   const activeLevel = syllabusSci[activeIdx];
+  const activeTopic = activeLevel.topics[activeTopicIdx] ?? activeLevel.topics[0];
   const subTopicCount = activeLevel.topics.reduce((sum, t) => sum + t.subTopics.length, 0);
 
   return (
@@ -25,7 +26,7 @@ export default function SyllabusMapSci() {
           <Eyebrow num="07">SYLLABUS MAP</Eyebrow>
           <h2 className="h2-as">What your child learns, year by year.</h2>
           <p className="body-md section-sub">
-            Verified against the MOE 2023 Primary Science syllabus. Tap a topic to see all sub-topics covered.
+            Verified against the MOE 2023 Primary Science syllabus.
           </p>
         </FadeUp>
 
@@ -59,60 +60,64 @@ export default function SyllabusMapSci() {
             </div>
             <p className="body-md syllabus-callout">{activeLevel.callout}</p>
 
-            <div className="syllabus-topic-list">
-              {activeLevel.topics.map((t) => {
-                const isOpen = openTopic === t.topic;
-                return (
-                  <div key={t.topic} className={`syllabus-topic ${isOpen ? 'is-open' : ''}`}>
-                    <button
-                      type="button"
-                      className="syllabus-topic-header"
-                      onClick={() => setOpenTopic(isOpen ? null : t.topic)}
-                      aria-expanded={isOpen}
-                      aria-controls={`subs-${t.topic}`}
-                    >
-                      <span className="syllabus-topic-name">{t.topic}</span>
-                      <span className="syllabus-topic-count">
-                        {t.subTopics.length} sub-topic{t.subTopics.length === 1 ? '' : 's'}
-                      </span>
-                      <svg
-                        className={`syllabus-topic-chevron ${isOpen ? 'is-open' : ''}`}
-                        width="14" height="14" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-                        aria-hidden="true"
+            {/* Master / detail layout */}
+            <div className="syllabus-master-detail">
+              {/* Master: topic list */}
+              <ul className="syllabus-master" role="tablist" aria-label="Topics">
+                {activeLevel.topics.map((t, i) => {
+                  const isActive = i === activeTopicIdx;
+                  return (
+                    <li key={t.topic}>
+                      <button
+                        type="button"
+                        role="tab"
+                        aria-selected={isActive}
+                        className={`syllabus-master-button ${isActive ? 'is-active' : ''}`}
+                        onClick={() => setActiveTopicIdx(i)}
+                        onMouseEnter={() => setActiveTopicIdx(i)}
                       >
-                        <polyline points="6 9 12 15 18 9" />
-                      </svg>
-                    </button>
-                    <AnimatePresence initial={false}>
-                      {isOpen && (
-                        <motion.div
-                          id={`subs-${t.topic}`}
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
-                          className="syllabus-subtopic-wrap"
+                        <span className="syllabus-master-name">{t.topic}</span>
+                        <span className="syllabus-master-count">{t.subTopics.length}</span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+
+              {/* Detail: sub-topics for the active topic */}
+              <div
+                className="syllabus-detail"
+                role="tabpanel"
+                aria-label={`${activeTopic.topic} sub-topics`}
+              >
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={`${activeLevel.level}-${activeTopic.topic}`}
+                    initial={{ opacity: 0, x: 8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -8 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <h4 className="syllabus-detail-title">{activeTopic.topic}</h4>
+                    <span className="syllabus-detail-meta label-caps">
+                      {activeTopic.subTopics.length} sub-topic{activeTopic.subTopics.length === 1 ? '' : 's'}
+                    </span>
+                    <div className="syllabus-detail-grid">
+                      {activeTopic.subTopics.map((s, i) => (
+                        <motion.span
+                          key={s}
+                          className="syllabus-subtopic-chip"
+                          initial={{ opacity: 0, y: 4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.2, delay: i * 0.025 }}
                         >
-                          <div className="syllabus-subtopic-grid">
-                            {t.subTopics.map((s, i) => (
-                              <motion.span
-                                key={s}
-                                className="syllabus-subtopic-chip"
-                                initial={{ opacity: 0, y: 4 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.2, delay: i * 0.025 }}
-                              >
-                                {s}
-                              </motion.span>
-                            ))}
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                );
-              })}
+                          {s}
+                        </motion.span>
+                      ))}
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
             </div>
 
             <p className="syllabus-count label-caps">
