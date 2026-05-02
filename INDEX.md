@@ -21,7 +21,7 @@ For Plan Quest pedagogy and behaviour see `docs/QUEST_PAGE_SPEC.md` v2.0.
 | account.html | /pages/account.html | ✅ required | Parent account portal — profile, password, billing |
 | admin.html | /pages/admin.html | ✅ required | Master admin panel (role-gated) |
 | subjects.html | /pages/subjects.html | ✅ required | Level + subject selector |
-| subject-mathematics.html | /pages/subject-mathematics.html | ❌ public | Maths subject landing page |
+| Mathematics (Next.js) | /subjects/mathematics | ❌ public | Maths subject marketing page (architect-scholar, replaces vanilla subject-mathematics.html) |
 | subject-science.html | /pages/subject-science.html | ❌ public | Science subject landing page |
 | subject-english.html | /pages/subject-english.html | ❌ public | English subject landing page |
 | setup.html | /pages/setup.html | ✅ required | New learner onboarding (post-signup) |
