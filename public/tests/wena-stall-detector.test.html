@@ -231,14 +231,28 @@
       }
     }
 
-    // Minimal valid cell shape used by selectPedagogyMode tests.
-    const mockCell = {
+    // Minimal valid cell shapes for selectPedagogyMode tests.
+    // Sprint 7: subject field drives the English vs Science branch.
+    // Sprint 8b: English aggressive (DIRECT_TEACH at 1 stall); Science gentle.
+    const englishCell = {
+      subject: 'English',
       level: 'P3',
       topic: 'Grammar',
       sub_topic: 'Subject-Verb Agreement',
       foundational_teach_script: 'mock',
       scaffolding_progression: 'mock prereq'
     };
+    const scienceCell = {
+      subject: 'Science',
+      level: 'P4',
+      topic: 'Energy',
+      sub_topic: 'Sources Of Light',
+      foundational_teach_script: 'mock',
+      scaffolding_progression: 'mock prereq',
+      cer_structure: { claim_prompt: 'q1', evidence_prompt: 'q2', reasoning_prompt: 'q3' }
+    };
+    // Backward-compat alias for any earlier tests that still use mockCell.
+    const mockCell = englishCell;
 
     // ── EMPTY ──────────────────────────────────────────────────────────
     startSection('detectStall — EMPTY');
@@ -382,43 +396,67 @@
     startSection('selectPedagogyMode');
 
     test("TEST 21: empty history + cell → SOCRATIC", () => {
-      assertEq(selectPedagogyMode([], mockCell), PEDAGOGY_MODES.SOCRATIC);
+      assertEq(selectPedagogyMode([], englishCell), PEDAGOGY_MODES.SOCRATIC);
     });
 
-    test("TEST 22: 1 stall + cell → SOCRATIC_REPHRASE", () => {
+    // Sprint 8b: English now jumps to DIRECT_TEACH at 1 stall (was SOCRATIC_REPHRASE).
+    test("TEST 22: 1 stall + English cell → DIRECT_TEACH (Sprint 8b aggressive)", () => {
       assertEq(
-        selectPedagogyMode([{ role: 'user', content: 'idk' }], mockCell),
-        PEDAGOGY_MODES.SOCRATIC_REPHRASE
+        selectPedagogyMode([{ role: 'user', content: 'idk' }], englishCell),
+        PEDAGOGY_MODES.DIRECT_TEACH
       );
     });
 
-    test("TEST 23: 2 stalls + cell → DIRECT_TEACH", () => {
+    // Sprint 8b: 2 stalls with scaffolding_progression now triggers SCAFFOLD_DOWN
+    // (was DIRECT_TEACH). Maintains the 1-step-down ratio with the new threshold.
+    test("TEST 23: 2 stalls + English cell + scaffolding → SCAFFOLD_DOWN (Sprint 8b)", () => {
       const mode = selectPedagogyMode([
         { role: 'user', content: 'idk' },
         { role: 'assistant', content: '?' },
         { role: 'user', content: 'dunno' }
-      ], mockCell);
-      assertEq(mode, PEDAGOGY_MODES.DIRECT_TEACH);
-    });
-
-    test("TEST 24: 3 stalls + cell with scaffolding_progression → SCAFFOLD_DOWN", () => {
-      const mode = selectPedagogyMode([
-        { role: 'user', content: 'idk' },
-        { role: 'assistant', content: '?' },
-        { role: 'user', content: 'dunno' },
-        { role: 'assistant', content: '?' },
-        { role: 'user', content: '???' }
-      ], mockCell);
+      ], englishCell);
       assertEq(mode, PEDAGOGY_MODES.SCAFFOLD_DOWN);
     });
 
-    test("TEST 25: 2 stalls, no cell → SOCRATIC_REPHRASE", () => {
+    // Science branch is UNCHANGED — gentler 2-stall threshold + CER probing.
+    test("TEST 24: 1 stall + Science cell → SOCRATIC_REPHRASE (Science unchanged)", () => {
+      assertEq(
+        selectPedagogyMode([{ role: 'user', content: 'idk' }], scienceCell),
+        PEDAGOGY_MODES.SOCRATIC_REPHRASE
+      );
+    });
+
+    test("TEST 25: 2 stalls + Science cell → DIRECT_TEACH (Science unchanged)", () => {
       const mode = selectPedagogyMode([
         { role: 'user', content: 'idk' },
         { role: 'assistant', content: '?' },
-        { role: 'user', content: 'idk' }
-      ], null);
-      assertEq(mode, PEDAGOGY_MODES.SOCRATIC_REPHRASE);
+        { role: 'user', content: 'dunno' }
+      ], scienceCell);
+      assertEq(mode, PEDAGOGY_MODES.DIRECT_TEACH);
+    });
+
+    // Sprint 8b new: no-cell English fallback still uses SOCRATIC_REPHRASE.
+    test("TEST 26: 1 stall, no cell → SOCRATIC_REPHRASE (English no-cell fallback)", () => {
+      assertEq(
+        selectPedagogyMode([{ role: 'user', content: 'idk' }], null),
+        PEDAGOGY_MODES.SOCRATIC_REPHRASE
+      );
+    });
+
+    // Sprint 8b new: empty history + English cell stays SOCRATIC.
+    test("TEST 27: empty history + English cell → SOCRATIC", () => {
+      assertEq(selectPedagogyMode([], englishCell), PEDAGOGY_MODES.SOCRATIC);
+    });
+
+    // Sprint 8b new: a genuine attempt (not a stall) → SOCRATIC.
+    test("TEST 28: genuine attempt + English cell → SOCRATIC (no stall counted)", () => {
+      assertEq(
+        selectPedagogyMode(
+          [{ role: 'user', content: 'I think the answer is plays' }],
+          englishCell
+        ),
+        PEDAGOGY_MODES.SOCRATIC
+      );
     });
 
     updateSummary();

@@ -18,11 +18,24 @@ Read these files in a single batch. Do NOT re-read them later.
 D:\Git\Superholic-Lab\CLAUDE.md
 D:\Git\Superholic-Lab\AGENTS.md
 D:\Git\Superholic-Lab\MANIFEST.md                    ← existing question IDs
-D:\Git\Superholic-Lab\Master_Question_Template.md    ← full template (read once)
+D:\Git\Superholic-Lab\Master_Question_Template.md    ← router only (~160 lines)
 D:\Git\Superholic-Lab\scripts\question-factory\prompt-builder.cjs
 ```
 
-After reading, store the full template text in memory as `TEMPLATE_TEXT`.
+The full template is now SPLIT across `master_question_template/` (Phase 1, 2026-05-02).
+The root `Master_Question_Template.md` is a router that points at:
+- `master_question_template/_base.md` (cross-cutting rules)
+- `master_question_template/_calibration.md` (difficulty rubric)
+- `master_question_template/types/{mcq,cloze,editing,open_ended}.md` (hardened types)
+- `master_question_template/types/_phase2_remaining.md` (short_ans/word_problem/comprehension/visual_text)
+- `master_question_template/canon/canon_taxonomy.md` (FK-validated taxonomy)
+- `master_question_template/visuals/visuals_full.md` (function catalogue + routing map)
+
+You do NOT need to read those files in Phase 0. The prompt-builder.cjs script in
+PHASE 3 loads only the relevant files surgically and emits the merged prompt
+to stdout — that is what you generate from. The router file is informational
+context for the agent.
+
 Store the existing seed_ids from MANIFEST as `EXISTING_IDS` (Set).
 
 **Context budget tracker:** Estimate your current token usage after Phase 0.
@@ -152,7 +165,7 @@ node D:\Git\Superholic-Lab\scripts\question-factory\prompt-builder.cjs \
 The script outputs a compact surgical prompt to stdout. Capture this as
 `SURGICAL_PROMPT`. This replaces loading the full template.
 
-**DO NOT re-read the full Master_Question_Template.md at this point.**
+**DO NOT re-read any of the `master_question_template/` files at this point.**
 The surgical prompt is your complete generation context.
 
 ---

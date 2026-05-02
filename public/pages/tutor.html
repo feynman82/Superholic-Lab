@@ -12,6 +12,127 @@
   <link rel="icon" href="../assets/favicon.ico" />
   <meta name="robots" content="noindex, nofollow" />
 
+  <!-- Sprint 8c: free-chat picker overlay styling. Scoped to .picker-overlay
+       so nothing leaks into the rest of tutor.html. Tokens reference the
+       numeric --space-N scale that style.css v3.0 actually exports (the
+       earlier semantic --space-md/sm/xs etc do not exist in this codebase). -->
+  <style>
+    .picker-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(81, 97, 94, 0.85);  /* var(--brand-sage) at 85% — color-mix not safe across all SG browsers yet */
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-3);
+      overflow-y: auto;
+    }
+    .picker-overlay[hidden] { display: none; }
+
+    .picker-card {
+      max-width: 720px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: var(--space-5);
+      background: var(--surface);
+      border-radius: var(--radius-md);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
+    }
+
+    .picker-step {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+
+    .picker-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: var(--space-3);
+      margin-top: var(--space-3);
+    }
+
+    .picker-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      max-height: 320px;
+      overflow-y: auto;
+      margin-top: var(--space-2);
+    }
+
+    .picker-card-option {
+      padding: var(--space-3);
+      border: 2px solid var(--border-light);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      background: var(--surface);
+      transition: border-color 200ms ease, transform 200ms ease, box-shadow 200ms ease;
+      text-align: left;
+      font-family: var(--font-body);
+      width: 100%;
+    }
+    .picker-card-option:hover:not([aria-disabled="true"]),
+    .picker-card-option:focus-visible:not([aria-disabled="true"]) {
+      border-color: var(--brand-rose);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+      outline: none;
+    }
+    .picker-card-option[aria-disabled="true"] {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .picker-card-option .picker-emoji {
+      font-size: 2rem;
+      margin-bottom: var(--space-1);
+      display: block;
+    }
+    .picker-card-option .picker-label {
+      font-weight: 700;
+      color: var(--brand-sage);
+      display: block;
+    }
+    .picker-card-option .picker-hint {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+      display: block;
+    }
+    .picker-card-option .picker-badge {
+      display: inline-block;
+      font-size: 0.625rem;
+      background: var(--cream);
+      color: var(--brand-rose);
+      padding: 2px 8px;
+      border-radius: var(--radius-sm);
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 700;
+    }
+
+    .picker-back {
+      align-self: flex-start;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      cursor: pointer;
+      padding: 0;
+    }
+    .picker-back:hover { color: var(--brand-rose); }
+
+    .picker-actions {
+      display: flex;
+      justify-content: center;
+      margin-top: var(--space-3);
+    }
+  </style>
+
   <script src="/js/header.js" defer></script>
   <script src="/js/footer.js" defer></script>
   <script src="/js/icons.js" defer></script>
@@ -112,6 +233,47 @@
         <button class="btn btn-secondary btn-sm starter-prompt hover-lift">Test my Science
           Claim-Evidence-Reasoning!</button>
         <button class="btn btn-secondary btn-sm starter-prompt hover-lift">Check my grammar for this sentence.</button>
+      </div>
+    </div>
+
+    <!-- Sprint 8c: Free-chat picker overlay.
+         Hidden by default. Shown by tutor.js init() only when no URL params
+         indicate subject/topic and no quest/remedial intent is active. The
+         picker writes its selection into the existing currentSubjectContext /
+         currentTopicContext / currentSubTopicContext / currentStudentLevel
+         module vars and then closes — chat then proceeds with full
+         curriculum coordinates so RAP fires. -->
+    <div id="wena-picker-overlay" class="picker-overlay" hidden role="dialog" aria-labelledby="picker-heading" aria-modal="true">
+      <div class="picker-card">
+
+        <!-- Step 1: Subject -->
+        <section id="picker-step-subject" class="picker-step">
+          <h2 id="picker-heading" class="font-display text-2xl">What would you like to work on today?</h2>
+          <p class="text-sm text-muted">Pick a subject — Miss Wena will tailor the lesson to your level.</p>
+          <div class="picker-grid" id="picker-subject-grid"></div>
+        </section>
+
+        <!-- Step 2: Topic -->
+        <section id="picker-step-topic" class="picker-step" hidden>
+          <button class="picker-back" type="button" data-step="subject">← Choose another subject</button>
+          <h2 class="font-display text-2xl">Which topic are you working on?</h2>
+          <p class="text-sm text-muted" id="picker-topic-subhead">For your current level.</p>
+          <div class="picker-grid" id="picker-topic-grid"></div>
+        </section>
+
+        <!-- Step 3: Sub-topic -->
+        <section id="picker-step-subtopic" class="picker-step" hidden>
+          <button class="picker-back" type="button" data-step="topic">← Choose another topic</button>
+          <h2 class="font-display text-2xl">Anything specific?</h2>
+          <p class="text-sm text-muted">Pick a sub-topic for the most focused help, or skip to a general lesson.</p>
+          <div class="picker-list" id="picker-subtopic-list"></div>
+          <div class="picker-actions">
+            <button class="btn btn-ghost" type="button" id="picker-skip-subtopic">
+              Skip — general help on this topic
+            </button>
+          </div>
+        </section>
+
       </div>
     </div>
   </main>

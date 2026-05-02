@@ -175,7 +175,7 @@ async function init() {
       };
     });
 
-    // Weak topics — group by topic, calc accuracy, sort ascending
+    // Weak topics — group by topic, calc accuracy, sort ascending.
     const topicMap = {};
     attempts.forEach(a => {
       if (!a.topic) return;
@@ -184,9 +184,42 @@ async function init() {
       topicMap[key].correct += a.score || 0;
       topicMap[key].total += a.total_questions || 0;
     });
+
+    // Sprint 8b: per-(subject, topic) worst sub_topic for exact-match cell
+    // retrieval in the Ask Miss Wena URLs. quiz_attempts has no sub_topic
+    // column (it aggregates whole-quiz scores), so we query mastery_levels —
+    // which IS keyed by sub_topic — across all subjects for this student.
+    // ≥2 attempts threshold matches existing weakness gates and avoids
+    // single-attempt noise. Failure is non-fatal: URLs simply omit
+    // sub_topic and RAP falls back to topic-level cell retrieval.
+    const subTopicWorstByTopic = {};
+    try {
+      let mlQuery = db.from('mastery_levels')
+        .select('subject, topic, sub_topic, probability, attempts')
+        .eq('student_id', student.id);
+      if (rangeStartIso) mlQuery = mlQuery.gte('last_updated', rangeStartIso);
+      const { data: ml } = await mlQuery;
+      for (const r of ml || []) {
+        if (!r.sub_topic || (r.attempts ?? 0) < 2) continue;
+        const key = `${r.subject}::${r.topic}`;
+        const prev = subTopicWorstByTopic[key];
+        if (!prev || (r.probability ?? 1) < prev.probability) {
+          subTopicWorstByTopic[key] = { sub_topic: r.sub_topic, probability: r.probability ?? 1 };
+        }
+      }
+    } catch (err) {
+      console.warn('[progress] sub_topic mastery fetch failed (non-fatal):', err?.message || err);
+    }
+
     const weakTopics = Object.values(topicMap)
       .filter(t => t.total >= 5 && t.topic && t.topic.toLowerCase() !== 'mixed')
-      .map(t => ({ ...t, pct: Math.round((t.correct / t.total) * 100) }))
+      .map(t => ({
+        ...t,
+        pct: Math.round((t.correct / t.total) * 100),
+        // Sprint 8b: attach level + worstSubTopic for exact-match cell URL plumbing.
+        level: student.level,
+        worstSubTopic: subTopicWorstByTopic[`${t.subject}::${t.topic}`]?.sub_topic || null
+      }))
       .sort((a, b) => a.pct - b.pct)
       .slice(0, 5);
 
@@ -607,10 +640,14 @@ function renderRecommendNext(weakTopics, student, subjectSlotsTaken) {
     const topicLabel = (t.topic || '').replace(/-/g, ' ');
     const slotTaken = subjectSlotsTaken && subjectSlotsTaken.has(sub);
     // Sprint 8a: include level so Wena RAP can normalise it server-side.
-    // sub_topic is intentionally omitted — weakTopics aggregates at topic level
-    // only, and the handler's getFallbackCell handles topic-level retrieval.
+    // Sprint 8b: include sub_topic when the worst-mastery sub_topic is known
+    // (mastery_levels-derived) — drives exact-match cell hits instead of
+    // topic-level fallback. URL omits the param when worstSubTopic is null.
+    const subTopicParam = t.worstSubTopic
+      ? `&sub_topic=${encodeURIComponent(t.worstSubTopic)}`
+      : '';
     const ctaHref = slotTaken
-      ? `tutor.html?intent=remedial&subject=${encodeURIComponent(t.subject)}&level=${encodeURIComponent(student.level || '')}&topic=${encodeURIComponent(t.topic)}&score=${t.pct}`
+      ? `tutor.html?intent=remedial&subject=${encodeURIComponent(t.subject)}&level=${encodeURIComponent(t.level || student.level || '')}&topic=${encodeURIComponent(t.topic)}${subTopicParam}&score=${t.pct}`
       : `subjects.html?subject=${encodeURIComponent(t.subject)}&topic=${encodeURIComponent(t.topic)}&student=${encodeURIComponent(student.id)}`;
     const ctaLabel = slotTaken ? 'Ask Miss Wena →' : 'Practise this topic →';
     const reason = t.pct < 45
@@ -1596,7 +1633,7 @@ function renderActionPlanUI(totalSeconds, questionsMastered, overallPct, subject
                 <span class="badge badge-sage">${getALBand(t.pct)}</span>
               </div>
               <div class="weakness-card__actions">
-                <a href="tutor.html?intent=remedial&subject=${encodeURIComponent(t.subject)}&level=${encodeURIComponent(student.level || '')}&topic=${encodeURIComponent(t.topic)}&score=${t.pct}" class="btn btn-secondary btn-sm">Ask Miss Wena</a>
+                <a href="tutor.html?intent=remedial&subject=${encodeURIComponent(t.subject)}&level=${encodeURIComponent(t.level || student.level || '')}&topic=${encodeURIComponent(t.topic)}${t.worstSubTopic ? `&sub_topic=${encodeURIComponent(t.worstSubTopic)}` : ''}&score=${t.pct}" class="btn btn-secondary btn-sm">Ask Miss Wena</a>
                 ${questBtnHtml}
               </div>
             </article>`);

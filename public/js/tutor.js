@@ -17,6 +17,12 @@
   let currentTopicContext = 'mixed';
   let currentSubTopicContext = null;    // populated from ?sub_topic= URL param when present
   let lastWenaMode = null;              // Sprint 4 — echoed back to server next turn for CHECK_RESPONSE detection
+
+  // Sprint 8c: free-chat picker state. Driven only when init() detects bare
+  // URL (no subject/topic params, not quest, not remedial). Picker writes
+  // selection into the *Context vars above and closes.
+  let pickerActive = false;
+  let pickerSelection = { subject: null, level: null, topic: null, subTopic: null };
   // One conversation_id per page-load groups all turns of a single Miss Wena
   // session for telemetry. Reload = new conversation. Quick UUIDv4 via
   // crypto.randomUUID() (always available in modern browsers).
@@ -133,13 +139,23 @@
     modeDrawBtn.addEventListener('click', () => setMode('draw'));
     if (saveBtn) saveBtn.addEventListener('click', generateStudyNote);
 
-    // Quest mode: fire diagnostic opener. Otherwise use the standard or remedial greeting.
+    // Quest mode: fire diagnostic opener. Otherwise use picker / remedial / default greeting.
     if (fromQuestId) {
       await fireQuestOpener();
     } else {
       const isRemedial = await handleRemedialIntent();
       if (!isRemedial) {
-        appendBubble('tutor', "Hello! I'm Miss Wena. 😊 I'm your Superholic Tutor, so you can ask me about Mathematics, Science, or English all in one place! Need help with a bar model, a science experiment, or grammar? Let's figure it out together!");
+        // Sprint 8c: bare URL → show picker so free-chat sessions also produce
+        // curriculum coordinates and trigger RAP. Any URL with subject/topic
+        // (or remedial intent / quest mode) bypasses the picker entirely.
+        const hasUrlSubject = !!questParams.get('subject');
+        const hasUrlTopic   = !!questParams.get('topic');
+        const isBareTutor   = !hasUrlSubject && !hasUrlTopic;
+        if (isBareTutor) {
+          await showPicker();
+        } else {
+          appendBubble('tutor', "Hello! I'm Miss Wena. 😊 I'm your Superholic Tutor, so you can ask me about Mathematics, Science, or English all in one place! Need help with a bar model, a science experiment, or grammar? Let's figure it out together!");
+        }
       }
     }
   }
@@ -948,5 +964,188 @@
       saveBtn.disabled = false;
       saveBtn.className = 'btn btn-secondary btn-sm hover-lift';
     }
+  }
+
+  // ── Sprint 8c: Free-chat picker ─────────────────────────────────────────
+  // Three steps: subject grid → topic grid → sub-topic list. Each step
+  // hides the previous; back buttons restore the previous step. On
+  // finalize, picker writes selection to currentSubjectContext /
+  // currentTopicContext / currentSubTopicContext / currentStudentLevel and
+  // shows a tailored greeting. Existing event listeners (chat-send,
+  // chat-input, save-notes) are wired earlier in init() — picker doesn't
+  // need to re-wire anything.
+
+  async function showPicker() {
+    pickerActive = true;
+    const overlay = document.getElementById('wena-picker-overlay');
+    if (!overlay) {
+      console.error('[picker] overlay markup missing from tutor.html');
+      pickerActive = false;
+      // Fall back to the default greeting so the user isn't stranded.
+      appendBubble('tutor', "Hello! I'm Miss Wena. 😊 I'm your Superholic Tutor, so you can ask me about Mathematics, Science, or English all in one place! Need help with a bar model, a science experiment, or grammar? Let's figure it out together!");
+      return;
+    }
+
+    // Default level from student record (already loaded by checkStudentLimits).
+    pickerSelection.level = currentStudentLevel || 'Primary 3';
+
+    // Lazy-load helpers — keeps tutor.js light when picker doesn't fire.
+    const { getSubjectsForPicker } = await import('./wena-canon-helpers.js');
+
+    const grid = document.getElementById('picker-subject-grid');
+    grid.innerHTML = '';
+    const subjects = getSubjectsForPicker(pickerSelection.level);
+    for (const subj of subjects) {
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'picker-card-option';
+      card.setAttribute('aria-disabled', String(!subj.isAvailable));
+      const hint = subj.isAvailable
+        ? `<span class="picker-hint">Choose your topic next</span>`
+        : `<span class="picker-badge">Coming soon</span><span class="picker-hint">${subj.unavailableReason || ''}</span>`;
+      card.innerHTML = `
+        <span class="picker-emoji" aria-hidden="true">${subj.iconEmoji}</span>
+        <span class="picker-label">${subj.label}</span>
+        ${hint}
+      `;
+      if (subj.isAvailable) {
+        card.addEventListener('click', () => onSubjectSelected(subj.key));
+      }
+      grid.appendChild(card);
+    }
+
+    // Reset to step 1 in case picker was previously navigated.
+    document.getElementById('picker-step-subject').hidden = false;
+    document.getElementById('picker-step-topic').hidden = true;
+    document.getElementById('picker-step-subtopic').hidden = true;
+    overlay.hidden = false;
+  }
+
+  async function onSubjectSelected(subjectKey) {
+    pickerSelection.subject = subjectKey;
+    pickerSelection.topic = null;
+    pickerSelection.subTopic = null;
+
+    document.getElementById('picker-step-subject').hidden = true;
+    document.getElementById('picker-step-topic').hidden = false;
+
+    const subhead = document.getElementById('picker-topic-subhead');
+    if (subhead) subhead.textContent = `For ${pickerSelection.level} ${subjectKey}.`;
+
+    const { getTopicsForSubjectLevel } = await import('./wena-canon-helpers.js');
+    const topics = getTopicsForSubjectLevel(subjectKey, pickerSelection.level);
+
+    const grid = document.getElementById('picker-topic-grid');
+    grid.innerHTML = '';
+    if (topics.length === 0) {
+      grid.innerHTML = `<p class="text-sm text-muted">No topics available for ${subjectKey} at ${pickerSelection.level} yet.</p>`;
+    }
+    for (const t of topics) {
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'picker-card-option';
+      card.setAttribute('aria-disabled', String(!t.hasPlaybookCells));
+      const hint = t.hasPlaybookCells
+        ? `<span class="picker-hint">${t.subTopicCount} sub-topic${t.subTopicCount !== 1 ? 's' : ''}</span>`
+        : `<span class="picker-hint">Cells coming soon</span>`;
+      card.innerHTML = `
+        <span class="picker-label">${t.topic}</span>
+        ${hint}
+      `;
+      if (t.hasPlaybookCells) {
+        card.addEventListener('click', () => onTopicSelected(t.topic));
+      }
+      grid.appendChild(card);
+    }
+
+    // Wire back button (idempotent — re-binds each open).
+    const backBtn = document.querySelector('#picker-step-topic [data-step="subject"]');
+    if (backBtn) {
+      backBtn.onclick = () => {
+        document.getElementById('picker-step-topic').hidden = true;
+        document.getElementById('picker-step-subject').hidden = false;
+      };
+    }
+  }
+
+  async function onTopicSelected(topicName) {
+    pickerSelection.topic = topicName;
+    pickerSelection.subTopic = null;
+
+    const { getSubTopicsForTopic } = await import('./wena-canon-helpers.js');
+    const subTopics = getSubTopicsForTopic(
+      pickerSelection.subject,
+      pickerSelection.level,
+      topicName
+    );
+
+    if (subTopics.length === 0) {
+      // No sub-topics — go straight to chat with topic-level fallback cell.
+      finalizePicker();
+      return;
+    }
+
+    document.getElementById('picker-step-topic').hidden = true;
+    document.getElementById('picker-step-subtopic').hidden = false;
+
+    const list = document.getElementById('picker-subtopic-list');
+    list.innerHTML = '';
+    for (const sub of subTopics) {
+      const item = document.createElement('button');
+      item.type = 'button';
+      item.className = 'picker-card-option';
+      item.style.padding = 'var(--space-2) var(--space-3)';
+      item.innerHTML = `<span class="picker-label">${sub}</span>`;
+      item.addEventListener('click', () => {
+        pickerSelection.subTopic = sub;
+        finalizePicker();
+      });
+      list.appendChild(item);
+    }
+
+    const skipBtn = document.getElementById('picker-skip-subtopic');
+    if (skipBtn) {
+      skipBtn.onclick = () => {
+        pickerSelection.subTopic = null;
+        finalizePicker();
+      };
+    }
+
+    const backBtn = document.querySelector('#picker-step-subtopic [data-step="topic"]');
+    if (backBtn) {
+      backBtn.onclick = () => {
+        document.getElementById('picker-step-subtopic').hidden = true;
+        document.getElementById('picker-step-topic').hidden = false;
+      };
+    }
+  }
+
+  function finalizePicker() {
+    // Apply picker selection to module-scoped context vars.
+    currentSubjectContext  = pickerSelection.subject;
+    currentTopicContext    = pickerSelection.topic;
+    currentSubTopicContext = pickerSelection.subTopic;
+    if (pickerSelection.level && !currentStudentLevel) {
+      currentStudentLevel = pickerSelection.level;
+    }
+
+    // Verification log — Sprint 8a-style. Strip after canary clean.
+    console.info('[wena-rap] picker selection applied:', {
+      subject:   currentSubjectContext,
+      level:     currentStudentLevel,
+      topic:     currentTopicContext,
+      sub_topic: currentSubTopicContext
+    });
+
+    const overlay = document.getElementById('wena-picker-overlay');
+    if (overlay) overlay.hidden = true;
+    pickerActive = false;
+
+    // Tailored greeting reflecting selection.
+    const subPart = currentSubTopicContext ? ` — specifically ${currentSubTopicContext}` : '';
+    appendBubble(
+      'tutor',
+      `Hello! I'm Miss Wena. 😊 Let's work on ${currentTopicContext}${subPart}. What part would you like help with?`
+    );
   }
 })();

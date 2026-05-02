@@ -1,9 +1,10 @@
 # MANIFEST — Question Bank Inventory (v5.0)
 
 **Generated:** 2026-05-01 (post-canon-v5 migration)
-**Total active questions:** 11,271 (+5 in batch_20260502_p6_math_std_mcq_test, all `approved_at IS NULL` pending review)
-**Total deprecated:** 0
+**Total active questions:** 10,314 (down from 11,271 after parallel deprecation pass; +5 in batch_20260502_p6_math_std_mcq_test)
+**Total deprecated:** 1,100
 **Distinct (level, subject, topic, sub_topic) combinations:** 175
+**Auxiliary fields complete (2026-05-02):** `progressive_hints` 100% (all 10,314 active rows have ≥3 plain-string hints), `cognitive_skill` 100%, `correct_answer` 100% (10 open_ended parts backfilled). `examiner_note` deferred per user instruction.
 **Canon entries (canon_level_topics):** 296
 **FK enforced:** `question_bank(level, subject, topic, sub_topic)` → `canon_level_topics` (constraint `fk_qb_level_topic`, VALIDATED)
 

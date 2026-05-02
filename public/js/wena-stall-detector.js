@@ -317,22 +317,30 @@ export function detectCerCompleteness(userMessage) {
  * Picks a pedagogy mode based on the student's recent stall streak and,
  * for Science, on which CER components their last reply contained.
  *
- * English flow (Sprint 2, unchanged):
+ * English flow (Sprint 8b — AGGRESSIVE DIRECT_TEACH):
  *   stalls === 0          → SOCRATIC
- *   stalls === 1          → SOCRATIC_REPHRASE
- *   stalls === 2 + cell   → DIRECT_TEACH
- *   stalls === 2, no cell → SOCRATIC_REPHRASE
- *   stalls ≥ 3 + scaffold → SCAFFOLD_DOWN
- *   stalls ≥ 3 + cell     → DIRECT_TEACH (re-teach)
- *   stalls ≥ 3, no cell   → SOCRATIC_REPHRASE (last resort)
+ *   stalls ≥ 1 + cell     → DIRECT_TEACH (skip rephrase; teach immediately)
+ *   stalls ≥ 2 + scaffold → SCAFFOLD_DOWN
+ *   no cell fallback      → SOCRATIC_REPHRASE (only when cell is null)
  *
- * Science flow (Sprint 7):
- *   stall path identical to English when stalls ≥ 1.
- *   When stalls === 0, decompose by CER:
+ *   Rationale: SOCRATIC_REPHRASE adds a turn that often doesn't help younger
+ *   kids who lack the metacognitive vocabulary to articulate their confusion.
+ *   The playbook teaching scripts are MOE-aligned, Singapore-context, and
+ *   age-appropriate — strictly more useful than asking the kid to re-explain.
+ *   Skip rephrasing; teach. SCAFFOLD_DOWN now triggers at 2 stalls (down from
+ *   3 in Sprint 2) to preserve the 1-step-down ratio with the new threshold.
+ *
+ * Science flow (Sprint 7 — gentler, CER probing first):
+ *   stalls ≥ 1 path: SOCRATIC_REPHRASE → DIRECT_TEACH at 2 → SCAFFOLD_DOWN at 3.
+ *   stalls === 0 path: decompose CER from last user message:
  *     cer === 'none'           → CER_PROBE_CLAIM
  *     cer === 'claim_only'     → CER_PROBE_EVIDENCE
  *     cer === 'claim_evidence' → CER_PROBE_REASONING
  *     cer === 'complete'       → SOCRATIC (affirm + extend)
+ *
+ *   Asymmetry rationale: CER probing already provides gentler scaffolding
+ *   for Science engaged students; the rephrase tier is redundant. For stalls,
+ *   keep the 2-stall threshold so kids get one rephrase chance before pivot.
  *
  * @param {Array<{role:string,content:string}>} history
  * @param {object|null} contextCell - cell with optional `subject` field
@@ -344,15 +352,16 @@ export function selectPedagogyMode(history, contextCell, options = {}) {
   const stalls = consecutiveStalls(history);
   const subject = contextCell?.subject || 'English';
 
-  // English flow (Sprint 2 — unchanged).
+  // English flow (Sprint 8b — aggressive DIRECT_TEACH after 1 stall).
   if (subject !== 'Science') {
     if (stalls === 0) return PEDAGOGY_MODES.SOCRATIC;
-    if (stalls === 1) return PEDAGOGY_MODES.SOCRATIC_REPHRASE;
-    if (stalls === 2) {
-      return contextCell ? PEDAGOGY_MODES.DIRECT_TEACH : PEDAGOGY_MODES.SOCRATIC_REPHRASE;
+    // 2+ stalls AND we have a scaffold-progression hint → drop a level first.
+    if (stalls >= 2 && contextCell && contextCell.scaffolding_progression) {
+      return PEDAGOGY_MODES.SCAFFOLD_DOWN;
     }
-    if (contextCell && contextCell.scaffolding_progression) return PEDAGOGY_MODES.SCAFFOLD_DOWN;
-    if (contextCell) return PEDAGOGY_MODES.DIRECT_TEACH;
+    // 1+ stalls AND we have a cell → teach.
+    if (stalls >= 1 && contextCell) return PEDAGOGY_MODES.DIRECT_TEACH;
+    // Fallback when no cell is available — ask again concretely.
     return PEDAGOGY_MODES.SOCRATIC_REPHRASE;
   }
 
