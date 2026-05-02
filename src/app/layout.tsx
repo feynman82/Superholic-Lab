@@ -1,5 +1,7 @@
 import type { Metadata } from "next"
+import Script from "next/script"
 import "./globals.css"
+import SmoothScroll from "@/components/marketing/SmoothScroll"
 
 export const metadata: Metadata = {
   title: "Superholic Lab — Your Child's Path to AL1 Starts Here",
@@ -27,12 +29,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="icon" href="/assets/favicon.ico" />
         <script defer data-domain="superholiclab.com" src="https://plausible.io/js/script.js" />
-        {/* Vanilla JS web components — load in document order before use */}
+        {/* Supabase client must be available before /quest hydrates */}
         <script defer src="/js/supabase-client.js" />
-        <script defer src="/js/icons.js" />
-        <script defer src="/js/header.js" />
-        <script defer src="/js/footer.js" />
-        <script defer src="/js/bottom-nav.js" />
       </head>
       {/* body classes match the vanilla HTML pages: bg-page sets #F9FAFA, texture-light-grid adds the subtle grid watermark.
           suppressHydrationWarning on body + custom elements: deferred scripts upgrade the
@@ -42,11 +40,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="has-bottom-nav bg-page texture-light-grid" suppressHydrationWarning>
         {/* @ts-expect-error vanilla web component */}
         <global-header suppressHydrationWarning />
-        {children}
+        <SmoothScroll>{children}</SmoothScroll>
         {/* @ts-expect-error vanilla web component */}
         <global-footer suppressHydrationWarning />
         {/* @ts-expect-error vanilla web component */}
         <global-bottom-nav suppressHydrationWarning />
+        {/* Web-component upgrade scripts: run AFTER React hydrates so the
+            customElements.define() + connectedCallback DOM injection happens
+            on a stable subtree React no longer touches. */}
+        <Script src="/js/icons.js" strategy="afterInteractive" />
+        <Script src="/js/header.js" strategy="afterInteractive" />
+        <Script src="/js/footer.js" strategy="afterInteractive" />
+        <Script src="/js/bottom-nav.js" strategy="afterInteractive" />
       </body>
     </html>
   )
