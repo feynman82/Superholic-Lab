@@ -1619,7 +1619,7 @@ function QuestTimeline({
                 {isMidnightGate && status.unlocks_at ? (
                   <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
                     <Icon name="lock" size={10} />
-                    {new Date(status.unlocks_at).toLocaleTimeString("en-SG", { hour: "2-digit", minute: "2-digit" })}
+                    {new Date(status.unlocks_at).toLocaleTimeString("en-SG", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Singapore" })}
                   </span>
                 ) : step.type === "tutor" ? (
                   <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
@@ -1667,7 +1667,7 @@ function ActiveDayCard({
 
   const isMidnightGated = unlockStatus && !unlockStatus.unlocked && unlockStatus.reason === "midnight_gate"
   const unlockTime = isMidnightGated && unlockStatus?.unlocks_at
-    ? new Date(unlockStatus.unlocks_at).toLocaleTimeString("en-SG", { hour: "2-digit", minute: "2-digit" })
+    ? new Date(unlockStatus.unlocks_at).toLocaleTimeString("en-SG", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Singapore" })
     : null
 
   return (

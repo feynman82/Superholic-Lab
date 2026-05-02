@@ -344,6 +344,12 @@ Used for Booklet B Science conceptual explanations.
 ---------------------------------------------------------------
 For all cloze formats, `topic` MUST be "Cloze". You MUST specify the `sub_topic` as "Grammar", "Vocabulary", or "Comprehension". The `passage` must contain embedded blanks like `[1]`, `[2]`.
 
+**HARD RULES — VALIDATE BEFORE EMITTING (any violation = row will be rejected):**
+1. **`correct_answer` must exist verbatim in `options`**: For every blank `b`, `b.correct_answer` MUST exactly equal one of the strings in `b.options` (case + whitespace match). The student selects from `options`, so an answer not in the list is unanswerable. Common bug: emitting `"throughout"` when options only contain `"through"`, or capitalising `"Without"` when options are all lowercase. STOP and check every blank before returning.
+2. **Word-bank uniqueness (Grammar sub-topic only)**: Within a single cloze row, no two blanks may share the same `correct_answer`. The shared word bank is sized so each correct word is used EXACTLY once across all blanks. If your passage logically requires the same word twice, rewrite the passage.
+3. **Number of `[N]` markers in passage must equal `blanks.length`**: Count both. Renumber from 1 if you removed a blank.
+4. **Distractors must be plausible**: For Vocabulary dropdowns, the 3 wrong options must be the same part of speech and roughly the same level as the correct answer. No nonsense distractors.
+
 **SUB-TOPIC: Grammar (Shared Word Bank)**
 - `blanks` rules: You must create a shared Word Bank (Correct Answers + Distractors). You MUST inject this exact same full array into the `options` key of **every single blank**.
 - *Primary 1 & 2:* Passage: 40-60 words. Blanks: 6. Word Bank: Total blanks + 2 distractors. Focus: Basic pronouns (he, she, it) and singular/plural nouns.
@@ -372,6 +378,16 @@ For all cloze formats, `topic` MUST be "Cloze". You MUST specify the `sub_topic`
 - `topic`: "Editing"
 - `passage`: Continuous text. Errors MUST be single words (not phrases) wrapped in HTML `<u>` tags followed by the blank number. Example: "She <u>goed</u> [1] to the market."
 - `blanks`: `[{"number": 1, "error_type": "grammar", "correct_answer": "went", "explanation": "Past tense of go."}]` (Note: `error_type` MUST be exactly "spelling" or "grammar").
+
+**HARD RULES — VALIDATE BEFORE EMITTING (any violation = row will be rejected):**
+1. **The underlined word MUST be wrong**: For every `<u>X</u> [N]` marker, `X` MUST be different from `blanks[N-1].correct_answer`. The whole point of the question is that the student spots and corrects an error — if the underlined word is already correct, there is no error to fix and the row is broken. Common bug: emitting `<u>vegetable</u>` paired with `correct_answer: "vegetable"`. Check every blank.
+2. **`correct_answer` must be the proper fix**: It should be a real word that produces a grammatically correct sentence when substituted for `X`. Don't substitute one error for another.
+3. **Marker count consistency**: The number of `<u>...</u> [N]` markers in `passage` MUST equal `blanks.length`, with consecutive `[N]` numbers from `[1]` upward and no skipped numbers.
+4. **`error_type` precision**:
+   - `"spelling"` ONLY when the only difference between underlined and correct is letter-level (e.g., `definately` → `definitely`, `seperate` → `separate`).
+   - `"grammar"` for tense, agreement, preposition, word-class, relative-pronoun, quantifier, infinitive-after-`to`, etc.
+   - Never use any other value.
+5. **No exact-duplicate rows**: Before emitting, check that the same passage hasn't been generated under another UUID.
 
 **DIFFICULTY CALIBRATION & SCOPE (Strictly follow based on `level`):**
 - **Primary 3 & 4 (Lower Block):**
