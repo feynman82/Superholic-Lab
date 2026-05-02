@@ -14,6 +14,7 @@
   <script src="/js/header.js" defer></script>
   <script src="../js/supabase-client.js"></script>
   <script src="../js/diagram-library.js?v=6"></script>
+  <script src="../js/admin-icons.js" defer></script>
   <script src="../js/admin.js" defer></script>
   <script src="../js/qa-panel.js" defer></script>
 </head>
@@ -21,32 +22,38 @@
 <body class="bg-page">
   <global-header></global-header>
 
-  <!-- ════ HERO ═══════════════════════════════════════════════════════════════ -->
-  <section
-    style="padding-top: 64px; background: linear-gradient(135deg, var(--sage-dark) 0%, #1e2c28 100%); overflow: hidden;">
-    <div style="padding: var(--space-6) var(--space-4) var(--space-2);">
-      <h1 class="font-display text-white"
-        style="font-size: clamp(2rem, 7.5vw, 5.5rem); white-space: nowrap; line-height: 0.9; letter-spacing: 0.02em;">
-        MASTER CONTROL CENTER
-      </h1>
-    </div>
-    <div style="padding: 0 var(--space-4) var(--space-8);">
-      <p style="color: rgba(255,255,255,0.65); font-size: var(--text-lg); margin: var(--space-3) 0 0;">
-        Greetings, <strong id="adminName" class="text-white">Administrator</strong>.
-        &nbsp;<span id="liveClock" class="font-bold" style="color: var(--brand-rose);"></span>
-      </p>
+  <!-- ════ HERO — Architect-Scholar restraint ═══════════════════════════════ -->
+  <section class="admin-hero">
+    <div class="container-as">
+      <div class="admin-hero__inner">
+        <span class="label-caps admin-hero__eyebrow">§ — Master Control</span>
+        <h1 class="h1-as admin-hero__title">Master Control Center</h1>
+        <p class="admin-hero__lede">
+          Greetings, <strong id="adminName">Administrator</strong>.
+          <span id="liveClock" class="admin-hero__clock"></span>
+        </p>
+      </div>
     </div>
   </section>
 
   <!-- ════ PAGE TAB BAR ═══════════════════════════════════════════════════════ -->
   <div class="page-tab-bar">
-    <div class="container">
-      <button class="page-tab is-active" id="tabCRM" onclick="window.switchAdminTab('crm')">📊 CRM Dashboard</button>
-      <button class="page-tab" id="tabQA" onclick="window.switchAdminTab('qa')">🔬 QA Audit <span class="radar-count"
-          id="qaTabBadge" style="margin-left:2px;">…</span></button>
+    <div class="container-as">
+      <button class="page-tab is-active" id="tabCRM" onclick="window.switchAdminTab('crm')">
+        <span data-admin-icon="chart" data-icon-size="16"></span>
+        CRM Dashboard
+      </button>
+      <button class="page-tab" id="tabQA" onclick="window.switchAdminTab('qa')">
+        <span data-admin-icon="flask" data-icon-size="16"></span>
+        QA Audit
+        <span class="radar-count" id="qaTabBadge">…</span>
+      </button>
       <!-- Sprint 4: Wena RAP telemetry. Master-admin-only — sub-admins do NOT
            see this tab (loadAdminData hides it when callerRole !== 'admin'). -->
-      <button class="page-tab" id="tabWena" onclick="window.switchAdminTab('wena')" hidden>📈 Wena Telemetry</button>
+      <button class="page-tab" id="tabWena" onclick="window.switchAdminTab('wena')" hidden>
+        <span data-admin-icon="trend-up" data-icon-size="16"></span>
+        Wena Telemetry
+      </button>
     </div>
   </div>
 
@@ -54,7 +61,7 @@
   <div id="crmView">
 
     <section class="py-8 bg-white" style="border-bottom: 1px solid var(--border-light);">
-      <div class="container">
+      <div class="container-as">
         <div class="pulse-featured" id="pulseFeatured">
           <div class="pulse-card"><div class="spinner-sm"></div></div>
           <div class="pulse-card"><div class="spinner-sm"></div></div>
@@ -69,14 +76,29 @@
     </section>
 
     <section class="py-8 bg-page texture-light-grid">
-      <div class="container">
-        <h2 class="zone-heading">🔭 At-Risk Radar</h2>
+      <div class="container-as">
+        <h2 class="zone-heading">
+          <span data-admin-icon="radar" data-icon-size="18"></span>
+          At-Risk Radar
+        </h2>
         <p class="text-sm text-muted mb-4">Accounts that need attention. Act proactively to reduce churn.</p>
         <div class="radar-tabs">
-          <button class="radar-tab is-active" onclick="window.showRadarTab('failed', this)">🔴 Payment Failed <span class="radar-count" id="cnt-failed">0</span></button>
-          <button class="radar-tab" onclick="window.showRadarTab('inactive', this)">🟡 Inactive Subscribers <span class="radar-count" id="cnt-inactive">0</span></button>
-          <button class="radar-tab" onclick="window.showRadarTab('expiring', this)">🟠 Trial Expiring Soon <span class="radar-count" id="cnt-expiring">0</span></button>
-          <button class="radar-tab" onclick="window.showRadarTab('unconverted', this)">⚫ Trial Expired, Not Converted <span class="radar-count" id="cnt-unconverted">0</span></button>
+          <button class="radar-tab is-active" onclick="window.showRadarTab('failed', this)">
+            <span class="dot dot-red"></span> Payment Failed
+            <span class="radar-count" id="cnt-failed">0</span>
+          </button>
+          <button class="radar-tab" onclick="window.showRadarTab('inactive', this)">
+            <span class="dot dot-amber"></span> Inactive Subscribers
+            <span class="radar-count" id="cnt-inactive">0</span>
+          </button>
+          <button class="radar-tab" onclick="window.showRadarTab('expiring', this)">
+            <span class="dot dot-orange"></span> Trial Expiring Soon
+            <span class="radar-count" id="cnt-expiring">0</span>
+          </button>
+          <button class="radar-tab" onclick="window.showRadarTab('unconverted', this)">
+            <span class="dot dot-gray"></span> Trial Expired, Not Converted
+            <span class="radar-count" id="cnt-unconverted">0</span>
+          </button>
         </div>
         <div class="card" style="overflow-x: auto;">
           <div id="radarContent"><div class="p-6 text-center"><div class="spinner-sm mx-auto"></div></div></div>
@@ -84,16 +106,13 @@
       </div>
     </section>
 
-    <!-- ────────────────────────────────────────────────────────────────────────
-         ADMIN TOGGLE — System Settings Section
-         Backing table: public.system_settings (created in
-         sql/01-subjects-reskin-companion.sql).
+    <!-- ──── ADMIN TOGGLE — System Settings Section ────────────────────────
+         Backing table: public.system_settings.
          RLS: only profiles.is_admin = true can write.
-         Controller logic in js/admin.js §10.
-    ─────────────────────────────────────────────────────────────────────── -->
+         Controller logic in js/admin.js §10. -->
     <section id="admin-settings-section" class="admin-settings">
       <header class="admin-settings__header">
-        <span class="label-caps" style="color: var(--brand-rose);">§ — SYSTEM SETTINGS</span>
+        <span class="label-caps" style="color: var(--brand-rose);">§ — System Settings</span>
         <h2 class="h2-as" style="margin-top: var(--space-2); color: var(--text-main);">Display controls.</h2>
         <p class="body-md" style="color: var(--text-muted); margin-top: var(--space-2); max-width: 560px;">
           Site-wide toggles for student-facing surfaces. Changes apply to all users immediately.
@@ -101,7 +120,6 @@
       </header>
 
       <div class="admin-settings__grid">
-        <!-- TOGGLE: show_question_counts -->
         <div class="admin-settings__row" data-setting-key="show_question_counts">
           <div class="admin-settings__row-text">
             <h3 class="admin-settings__row-title">Show question counts in subjects wizard</h3>
@@ -125,15 +143,20 @@
     </section>
 
     <section class="py-8 bg-white">
-      <div class="container">
-        <div class="flex justify-between items-center mb-4 flex-wrap gap-3">
-          <h2 class="zone-heading m-0">👨‍👩‍👧 All Parents</h2>
+      <div class="container-as">
+        <div class="parents-toolbar">
+          <h2 class="zone-heading m-0">
+            <span data-admin-icon="users" data-icon-size="18"></span>
+            All Parents
+          </h2>
           <div class="flex gap-3">
             <input type="search" id="parentSearch" class="form-input" placeholder="Search name or email…" style="width: 240px;" oninput="window.renderParents()" />
-            <button class="btn btn-secondary btn-sm hover-lift" onclick="window.exportCSV()">⬇️ Export CSV</button>
+            <button class="btn btn-secondary btn-sm hover-lift" onclick="window.exportCSV()">
+              <span data-admin-icon="download" data-icon-size="14"></span> Export CSV
+            </button>
           </div>
         </div>
-        <div id="errorMsg" class="mb-4 p-4 text-sm font-bold rounded hidden" style="background: rgba(220,38,38,0.1); border: 1px solid rgba(220,38,38,0.3); color: var(--brand-error);"></div>
+        <div id="errorMsg" class="admin-error-banner"></div>
         <div class="card" style="overflow-x: auto;">
           <table class="admin-table">
             <thead><tr><th>Name</th><th>Email</th><th>Plan</th><th>Last Active</th><th>Students</th><th>Joined</th><th>Actions</th></tr></thead>
@@ -144,15 +167,21 @@
     </section>
 
     <section class="py-8 bg-page texture-light-grid">
-      <div class="container">
+      <div class="container-as">
         <div class="intel-grid">
           <div>
-            <h2 class="zone-heading">📬 New Subscribers</h2>
+            <h2 class="zone-heading">
+              <span data-admin-icon="mail" data-icon-size="18"></span>
+              New Subscribers
+            </h2>
             <div class="card p-4"><div id="activityFeed"><div class="text-center py-6"><div class="spinner-sm mx-auto"></div></div></div></div>
           </div>
           <div>
-            <div class="flex justify-between items-center mb-4">
-              <h2 class="zone-heading m-0">📊 Analytics</h2>
+            <div class="parents-toolbar">
+              <h2 class="zone-heading m-0">
+                <span data-admin-icon="chart" data-icon-size="18"></span>
+                Analytics
+              </h2>
               <div class="analytics-period">
                 <button class="period-btn is-active" onclick="window.loadAnalytics('30d', this)">30D</button>
                 <button class="period-btn" onclick="window.loadAnalytics('7d', this)">7D</button>
@@ -175,38 +204,40 @@
       <!-- LEFT SIDEBAR — collapsible sections; pending+approved collapsed by default, find open -->
       <aside class="qa-sidebar">
 
-        <!-- PENDING REVIEW (collapsed by default, auto-expands when queue loads) -->
-        <div class="qa-section-hdr" style="cursor:pointer;" onclick="window.qaToggleSection('pending')">
-          <span>⏳ Pending Review</span>
-          <div style="display:flex;align-items:center;gap:6px;">
+        <div class="qa-section-hdr" onclick="window.qaToggleSection('pending')">
+          <span class="qa-section-hdr__label">
+            <span data-admin-icon="clock" data-icon-size="14"></span> Pending Review
+          </span>
+          <span class="qa-section-hdr__right">
             <span class="radar-count" id="qaQueueCount">0</span>
-            <span id="qaPendingToggle" style="font-size:10px;opacity:0.5;transition:transform 0.2s;">▶</span>
-          </div>
+            <span id="qaPendingToggle" class="qa-section-hdr__caret" data-admin-icon="caret-right" data-icon-size="10"></span>
+          </span>
         </div>
         <div id="qaPendingBody" style="display:none;">
           <div id="qaPendingList"><div class="qa-empty">Loading queue…</div></div>
         </div>
 
-        <!-- APPROVED (collapsed by default) -->
-        <div class="qa-section-hdr" style="cursor:pointer;border-top:2px solid var(--border-light);" onclick="window.qaToggleSection('approved')">
-          <span>✅ Approved</span>
-          <span id="qaApprovedToggle" style="font-size:10px;opacity:0.5;transition:transform 0.2s;">▶</span>
+        <div class="qa-section-hdr" onclick="window.qaToggleSection('approved')" style="border-top: 2px solid var(--border-light);">
+          <span class="qa-section-hdr__label">
+            <span data-admin-icon="check" data-icon-size="14"></span> Approved
+          </span>
+          <span id="qaApprovedToggle" class="qa-section-hdr__caret" data-admin-icon="caret-right" data-icon-size="10"></span>
         </div>
         <div id="qaApprovedBody" style="display:none;">
           <div class="qa-filter-strip">
-            <select id="qaFSubject" class="form-select" style="font-size:var(--text-xs);" onchange="window.loadQAApproved()">
+            <select id="qaFSubject" class="form-select" onchange="window.loadQAApproved()">
               <option value="">All Subjects</option>
               <option>Mathematics</option>
               <option>Science</option>
               <option>English Language</option>
             </select>
-            <select id="qaFLevel" class="form-select" style="font-size:var(--text-xs);" onchange="window.loadQAApproved()">
+            <select id="qaFLevel" class="form-select" onchange="window.loadQAApproved()">
               <option value="">All Levels</option>
               <option>Primary 1</option><option>Primary 2</option><option>Primary 3</option>
               <option>Primary 4</option><option>Primary 5</option><option>Primary 6</option>
               <option>Secondary 1</option><option>Secondary 2</option>
             </select>
-            <select id="qaFType" class="form-select" style="font-size:var(--text-xs);" onchange="window.loadQAApproved()">
+            <select id="qaFType" class="form-select" onchange="window.loadQAApproved()">
               <option value="">All Types</option>
               <option value="mcq">MCQ</option>
               <option value="short_ans">Short Answer</option>
@@ -216,33 +247,33 @@
               <option value="editing">Editing</option>
               <option value="comprehension">Comprehension</option>
             </select>
-            <select id="qaFHasDiagram" class="form-select" style="font-size:var(--text-xs);" onchange="window.loadQAApproved()">
+            <select id="qaFHasDiagram" class="form-select" onchange="window.loadQAApproved()">
               <option value="">All (with/without diagram)</option>
-              <option value="yes">📊 Has Diagram</option>
+              <option value="yes">Has Diagram</option>
               <option value="no">No Diagram</option>
             </select>
           </div>
           <div id="qaApprovedList"><div class="qa-empty">Loading…</div></div>
         </div>
 
-        <!-- FIND QUESTION (expanded by default) -->
-        <div class="qa-section-hdr" style="cursor:pointer;border-top:2px solid var(--border-light);" onclick="window.qaToggleSection('find')">
-          <span>🔍 Find Question</span>
-          <span id="qaFindToggle" style="font-size:10px;opacity:0.5;transition:transform 0.2s;">▼</span>
+        <div class="qa-section-hdr is-open" onclick="window.qaToggleSection('find')" style="border-top: 2px solid var(--border-light);">
+          <span class="qa-section-hdr__label">
+            <span data-admin-icon="search" data-icon-size="14"></span> Find Question
+          </span>
+          <span id="qaFindToggle" class="qa-section-hdr__caret" data-admin-icon="caret-right" data-icon-size="10" style="transform: rotate(90deg);"></span>
         </div>
         <div id="qaFindBody">
           <div class="qa-filter-strip">
             <input type="search" id="qaSearchInput" class="form-input"
                    placeholder="Search text, topic, connector…"
-                   style="font-size:var(--text-xs);"
                    oninput="window.qaSearchDebounced()" />
-            <select id="qaSearchSubject" class="form-select" style="font-size:var(--text-xs);" onchange="window.qaDoSearch()">
+            <select id="qaSearchSubject" class="form-select" onchange="window.qaDoSearch()">
               <option value="">All Subjects</option>
               <option>Mathematics</option>
               <option>Science</option>
               <option>English Language</option>
             </select>
-            <select id="qaSearchMode" class="form-select" style="font-size:var(--text-xs);" onchange="window.qaDoSearch()">
+            <select id="qaSearchMode" class="form-select" onchange="window.qaDoSearch()">
               <option value="">Pending + Approved</option>
               <option value="pending">Pending Only</option>
               <option value="approved">Approved Only</option>
@@ -256,15 +287,14 @@
       <!-- MAIN: EDITOR + PREVIEW -->
       <div class="qa-main">
 
-        <!-- EDITOR PANE -->
         <div class="qa-editor-pane">
           <div id="qaEditorEmpty" class="qa-empty-state">
-            <div style="font-size:2.5rem;">🔬</div>
+            <span data-admin-icon="flask" data-icon-size="40"></span>
             <div class="text-sm">Select a question from the sidebar</div>
           </div>
           <div id="qaEditorInner" style="display:none;" class="qa-editor-inner">
 
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);">
+            <div class="qa-field-grid-2">
               <div class="qa-field">
                 <label>Subject</label>
                 <select id="qfSubject" class="form-select" onchange="window.qaLivePreview()">
@@ -283,7 +313,7 @@
               </div>
             </div>
 
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);">
+            <div class="qa-field-grid-2">
               <div class="qa-field">
                 <label>Type</label>
                 <select id="qfType" class="form-select" onchange="window.qaOnTypeChange()">
@@ -304,7 +334,7 @@
               </div>
             </div>
 
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);">
+            <div class="qa-field-grid-2">
               <div class="qa-field">
                 <label>Topic</label>
                 <input type="text" id="qfTopic" class="form-input" oninput="window.qaOnTopicChange()" />
@@ -315,7 +345,7 @@
               </div>
             </div>
 
-            <div style="display:grid;grid-template-columns:80px 1fr;gap:var(--space-3);">
+            <div class="qa-field-grid-marks">
               <div class="qa-field">
                 <label>Marks</label>
                 <input type="number" id="qfMarks" class="form-input" min="1" max="10" oninput="window.qaLivePreview()" />
@@ -347,22 +377,22 @@
               <textarea id="qfWorkedSolution" class="form-input" rows="4" oninput="window.qaLivePreview()"></textarea>
             </div>
 
-            <!-- accept_also: shown for short_ans and synthesis -->
             <div class="qa-field" id="qfAcceptAlsoGroup" style="display:none;">
-              <label>Also Accepted <span style="color:var(--text-muted);font-weight:400;text-transform:none;">one alternative per line</span></label>
+              <label>Also Accepted <span class="qa-field__hint">one alternative per line</span></label>
               <textarea id="qfAcceptAlso" class="form-input" rows="3" placeholder="Alternative correct answers, one per line…" oninput="window.qaLivePreview()"></textarea>
             </div>
 
-            <!-- Raw instructions: shown for short_ans that is NOT synthesis -->
             <div class="qa-field" id="qfInstructionsGroup" style="display:none;">
               <label>Instructions</label>
               <textarea id="qfInstructions" class="form-input" rows="2" oninput="window.qaLivePreview()"></textarea>
             </div>
 
-            <!-- Synthesis connector editor: shown when topic = "Synthesis" -->
             <div id="qfSynthesisGroup" style="display:none;">
               <div class="qa-divider"></div>
-              <div class="synth-section-lbl">✍️ Synthesis Connector</div>
+              <div class="synth-section-lbl">
+                <span data-admin-icon="pen" data-icon-size="12"></span>
+                Synthesis Connector
+              </div>
               <div class="qa-field">
                 <label>Connector Word(s)</label>
                 <input type="text" id="qfConnector" class="form-input"
@@ -371,60 +401,56 @@
               </div>
               <div class="qa-field">
                 <label>Position</label>
-                <div style="display:flex;gap:var(--space-4);flex-wrap:wrap;margin-top:var(--space-1);">
-                  <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:var(--text-sm);">
+                <div class="synth-radio-row">
+                  <label class="synth-radio">
                     <input type="radio" name="qfConnectorPos" value="front" onchange="window.qaOnConnectorChange()">
-                    Front <span style="color:var(--text-muted);font-size:11px;">(beginning with…)</span>
+                    Front <span class="synth-radio__hint">(beginning with…)</span>
                   </label>
-                  <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:var(--text-sm);">
+                  <label class="synth-radio">
                     <input type="radio" name="qfConnectorPos" value="middle" checked onchange="window.qaOnConnectorChange()">
-                    Middle <span style="color:var(--text-muted);font-size:11px;">(… word …)</span>
+                    Middle <span class="synth-radio__hint">(… word …)</span>
                   </label>
-                  <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:var(--text-sm);">
+                  <label class="synth-radio">
                     <input type="radio" name="qfConnectorPos" value="end" onchange="window.qaOnConnectorChange()">
-                    End <span style="color:var(--text-muted);font-size:11px;">(… word)</span>
+                    End <span class="synth-radio__hint">(… word)</span>
                   </label>
                 </div>
               </div>
               <div class="qa-field">
                 <label>Blueprint Preview</label>
                 <div id="qfSynthBlueprint" class="synth-blueprint">
-                  <div style="font-size:var(--text-xs);color:var(--text-muted);">Enter connector above to preview</div>
+                  <div class="qa-field__hint">Enter connector above to preview</div>
                 </div>
               </div>
               <div class="qa-field">
-                <label>Generated Instructions <span style="color:var(--text-muted);font-weight:400;text-transform:none;">(auto-built)</span></label>
-                <div id="qfInstructionsPreview"
-                     style="padding:var(--space-2) var(--space-3);border-radius:var(--radius-sm);background:var(--bg-elevated);border:1px solid var(--border-light);color:var(--text-muted);font-family:monospace;font-size:11px;min-height:32px;word-break:break-all;">—</div>
+                <label>Generated Instructions <span class="qa-field__hint">(auto-built)</span></label>
+                <div id="qfInstructionsPreview" class="synth-instructions-preview">—</div>
               </div>
               <div class="qa-divider"></div>
             </div>
 
-            <!-- JSON fields -->
             <div class="qa-field" id="qfOptGroup">
-              <label>Options <span style="color:var(--text-muted);font-weight:400;text-transform:none;">(JSON array of 4 strings)</span></label>
+              <label>Options <span class="qa-field__hint">(JSON array of 4 strings)</span></label>
               <textarea id="qfOptions" class="form-input qa-json-area" rows="5" oninput="window.qaValidateJson(this);window.qaLivePreview()"></textarea>
             </div>
             <div class="qa-field" id="qfWrongExplGroup">
-              <label>Wrong Explanations <span style="color:var(--text-muted);font-weight:400;text-transform:none;">(JSON object)</span></label>
+              <label>Wrong Explanations <span class="qa-field__hint">(JSON object)</span></label>
               <textarea id="qfWrongExpl" class="form-input qa-json-area" rows="5" oninput="window.qaValidateJson(this);window.qaLivePreview()"></textarea>
             </div>
             <div class="qa-field" id="qfPartsGroup">
-              <label>Parts <span style="color:var(--text-muted);font-weight:400;text-transform:none;">(JSON array)</span></label>
+              <label>Parts <span class="qa-field__hint">(JSON array)</span></label>
               <textarea id="qfParts" class="form-input qa-json-area" rows="7" oninput="window.qaValidateJson(this);window.qaLivePreview()"></textarea>
             </div>
 
-            <!-- Action bar — rendered by qa-panel.js -->
             <div id="qaActionBar" class="qa-action-bar"></div>
           </div>
         </div><!-- /qa-editor-pane -->
 
-        <!-- PREVIEW PANE -->
         <div class="qa-preview-pane">
           <div class="qa-preview-label">Live Preview</div>
           <div id="qaPreview">
             <div class="qa-empty-state">
-              <div style="font-size:2rem;">👆</div>
+              <span data-admin-icon="pointer" data-icon-size="32"></span>
               <div class="text-sm">Select a question to preview</div>
             </div>
           </div>
@@ -439,15 +465,17 @@
        Lazy-loaded on first activation via window.switchAdminTab('wena'). -->
   <div id="wenaView" style="display:none;">
     <section class="py-8 bg-page texture-light-grid">
-      <div class="container">
-        <div style="margin-bottom:var(--space-6);">
-          <h2 class="zone-heading m-0">📈 Wena RAP Telemetry</h2>
+      <div class="container-as">
+        <div style="margin-bottom:var(--space-5);">
+          <h2 class="zone-heading m-0">
+            <span data-admin-icon="trend-up" data-icon-size="18"></span>
+            Wena RAP Telemetry
+          </h2>
           <p class="text-sm text-muted" style="margin-top:var(--space-2);">
             Per-turn pedagogy events. Read-only. Refresh each panel manually.
           </p>
         </div>
 
-        <!-- ── Panel 1: Headline counters ─────────────────────────────── -->
         <section class="wena-panel" id="wp-headline">
           <div class="wena-panel-head">
             <h3 class="wena-panel-title">1. Headline counters</h3>
@@ -459,17 +487,16 @@
           <div class="card p-6">
             <div class="wena-h3">Last 24 hours</div>
             <div class="wena-stat-grid" id="wstats-24h"></div>
-            <div class="wena-h3" style="margin-top:var(--space-5);">Last 7 days</div>
+            <div class="wena-h3" style="margin-top:var(--space-4);">Last 7 days</div>
             <div class="wena-stat-grid" id="wstats-7d"></div>
-            <div class="wena-h3" style="margin-top:var(--space-5);">Mode distribution (7d)</div>
+            <div class="wena-h3" style="margin-top:var(--space-4);">Mode distribution (7d)</div>
             <table class="wena-table" id="wtbl-mode-dist"><thead><tr><th>Mode</th><th>Count</th><th></th></tr></thead><tbody></tbody></table>
-            <div class="wena-h3" style="margin-top:var(--space-5);">Cell hit distribution (7d, RAP only)</div>
+            <div class="wena-h3" style="margin-top:var(--space-4);">Cell hit distribution (7d, RAP only)</div>
             <table class="wena-table" id="wtbl-cellhit-dist"><thead><tr><th>Hit kind</th><th>Count</th><th></th></tr></thead><tbody></tbody></table>
           </div>
         </section>
 
         <div class="wena-grid-2">
-          <!-- ── Panel 2: Mode transitions ────────────────────────────── -->
           <section class="wena-panel" id="wp-transitions">
             <div class="wena-panel-head">
               <h3 class="wena-panel-title">2. Mode transitions (7d)</h3>
@@ -480,7 +507,6 @@
             </div>
           </section>
 
-          <!-- ── Panel 3: Cells that never fired ──────────────────────── -->
           <section class="wena-panel" id="wp-orphans">
             <div class="wena-panel-head">
               <h3 class="wena-panel-title">3. Cells never fired (30d)</h3>
@@ -491,7 +517,6 @@
             </div>
           </section>
 
-          <!-- ── Panel 4: Top DIRECT_TEACH triggers ───────────────────── -->
           <section class="wena-panel" id="wp-top-direct">
             <div class="wena-panel-head">
               <h3 class="wena-panel-title">4. Top DIRECT_TEACH sub-topics (7d)</h3>
@@ -502,7 +527,6 @@
             </div>
           </section>
 
-          <!-- ── Panel 5: Faithfulness ────────────────────────────────── -->
           <section class="wena-panel" id="wp-faithfulness">
             <div class="wena-panel-head">
               <h3 class="wena-panel-title">5. Faithfulness — DIRECT_TEACH (7d)</h3>
@@ -511,12 +535,11 @@
             <div class="card p-6">
               <div class="wena-h3">Overlap histogram (token Jaccard)</div>
               <table class="wena-table" id="wtbl-faith-hist"><thead><tr><th>Bucket</th><th class="numeric">Count</th><th></th></tr></thead><tbody></tbody></table>
-              <div class="wena-h3" style="margin-top:var(--space-5);">Recent low-overlap (&lt; 0.2) — latest 5</div>
+              <div class="wena-h3" style="margin-top:var(--space-4);">Recent low-overlap (&lt; 0.2) — latest 5</div>
               <table class="wena-table" id="wtbl-faith-low"><thead><tr><th>Time</th><th>Level</th><th>Topic / Sub-topic</th><th class="numeric">Overlap</th></tr></thead><tbody></tbody></table>
             </div>
           </section>
 
-          <!-- ── Panel 6: Level normalisation ─────────────────────────── -->
           <section class="wena-panel" id="wp-levels">
             <div class="wena-panel-head">
               <h3 class="wena-panel-title">6. Level normalisation (30d)</h3>
@@ -527,7 +550,6 @@
             </div>
           </section>
 
-          <!-- ── Panel 7: Vision + RAP audit ──────────────────────────── -->
           <section class="wena-panel" id="wp-vision">
             <div class="wena-panel-head">
               <h3 class="wena-panel-title">7. Vision + RAP audit (7d)</h3>
@@ -535,7 +557,7 @@
             </div>
             <div class="card p-6">
               <div class="wena-stat-grid" id="wstats-vision"></div>
-              <div class="wena-h3" style="margin-top:var(--space-5);">Latest vision+RAP turns</div>
+              <div class="wena-h3" style="margin-top:var(--space-4);">Latest vision+RAP turns</div>
               <table class="wena-table" id="wtbl-vision"><thead><tr><th>Time</th><th>Mode</th><th>Cell hit</th><th>Output len</th></tr></thead><tbody></tbody></table>
             </div>
           </section>
@@ -548,31 +570,31 @@
   <!-- MODALS -->
 
   <div id="subBreakdownModal" class="modal-overlay" onclick="if(event.target.id==='subBreakdownModal')this.classList.remove('is-open')">
-    <div class="card p-6 modal-box modal-md">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="font-display text-2xl text-main m-0">Subscriber Breakdown</h3>
-        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('subBreakdownModal').classList.remove('is-open')" style="font-size:1.2rem;padding:2px 8px;">×</button>
+    <div class="card modal-box modal-md p-6">
+      <div class="modal-head">
+        <h3 class="modal-title">Subscriber Breakdown</h3>
+        <button class="modal-close" onclick="document.getElementById('subBreakdownModal').classList.remove('is-open')" aria-label="Close">×</button>
       </div>
       <div id="subBreakdownContent"><div class="spinner-sm"></div></div>
     </div>
   </div>
 
   <div id="mrrModal" class="modal-overlay" onclick="if(event.target.id==='mrrModal')this.classList.remove('is-open')">
-    <div class="card p-6 modal-box modal-md">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="font-display text-2xl text-main m-0">MRR Detail</h3>
-        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('mrrModal').classList.remove('is-open')" style="font-size:1.2rem;padding:2px 8px;">×</button>
+    <div class="card modal-box modal-md p-6">
+      <div class="modal-head">
+        <h3 class="modal-title">MRR Detail</h3>
+        <button class="modal-close" onclick="document.getElementById('mrrModal').classList.remove('is-open')" aria-label="Close">×</button>
       </div>
       <div id="mrrContent"><div class="spinner-sm"></div></div>
     </div>
   </div>
 
   <div id="editTierModal" class="modal-overlay" onclick="if(event.target.id==='editTierModal')window.closeEditTierModal()">
-    <div class="card p-6 modal-box modal-sm">
-      <h3 class="font-display text-2xl text-main m-0 mb-2">Edit Subscription</h3>
+    <div class="card modal-box modal-sm p-6">
+      <h3 class="modal-title" style="margin-bottom:var(--space-1);">Edit Subscription</h3>
       <p class="text-sm text-muted m-0 mb-4" id="editTierEmail"></p>
       <div class="flex flex-col gap-2 mb-4">
-        <label class="text-sm font-bold text-muted">Plan</label>
+        <label class="text-xs font-bold text-muted" style="letter-spacing:0.08em;text-transform:uppercase;">Plan</label>
         <select id="editTierSelect" class="form-select w-full">
           <option value="trial">Free Trial</option>
           <option value="all_subjects">All Subjects</option>

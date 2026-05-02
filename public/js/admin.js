@@ -1,15 +1,22 @@
 /* ════════════════════════════════════════════════════════════════════════════
-   admin.js  —  v3.0  (Commit 1: file split, no behaviour change)
+   admin.js  —  v3.1  (Commit 2: Architect-Scholar reskin)
    ----------------------------------------------------------------------------
-   Boot, auth gate, tab switching, shared state, utilities, CRM, system
-   settings, and Wena telemetry. Extracted verbatim from admin.html v2.3.
+   Visual-only diff vs v3.0:
+     - Emoji glyphs in innerHTML strings → window.adminIcon('<name>') SVG calls
+     - Inline style="background:..." in innerHTML → BEM class names from
+       admin.css (.flag-red, .funnel-row, .feed-header, .modal-head etc.)
+     - After every innerHTML mutation that injects [data-admin-icon],
+       call window.adminIconRefresh(scopeEl) to render new SVGs.
+     - Pulse cards: pulse-card-icon now wraps an SVG instead of a font-emoji.
 
-   Loaded via <script defer> AFTER supabase-client.js and diagram-library.js
-   (both non-deferred) but BEFORE qa-panel.js (also defer). Defer-script
-   ordering guarantees admin.js completes first, exposing the bare globals
-   (adminSession, esc, renderPulse, qaPending) that qa-panel.js reads.
-
-   Section banners mirror admin.css for cross-file navigation.
+   Preserved verbatim:
+     - All var declarations, all window.* globals
+     - All fetch() URLs, payloads, headers
+     - All Supabase queries
+     - All branching logic, conditions, classNames added/removed
+     - Auth gate behaviour
+     - System-settings IIFE behaviour
+     - Wena telemetry IIFE behaviour
    ════════════════════════════════════════════════════════════════════════════ */
 
 
@@ -30,8 +37,8 @@ var currentRadarTab = 'failed'; var contactPending = 0; var qaPending = 0;
 function showError(msg) {
   var el = document.getElementById('errorMsg');
   el.textContent = msg;
-  el.classList.remove('hidden');
-  setTimeout(function () { el.classList.add('hidden'); }, 8000);
+  el.classList.add('is-visible');
+  setTimeout(function () { el.classList.remove('is-visible'); }, 8000);
 }
 
 function fmtDate(iso) {
@@ -69,6 +76,14 @@ function updateClock() {
 }
 setInterval(updateClock, 1000); updateClock();
 
+// adminIcon shorthand: returns SVG string for a given icon name. Falls back
+// to empty string if admin-icons.js failed to load — page still renders,
+// just without icons.
+function _icon(name, size) {
+  if (typeof window.adminIcon !== 'function') return '';
+  return window.adminIcon(name, { size: size || 16 });
+}
+
 
 /* ════════════════════════════════════════════════════════════════════════════
    3. PAGE TAB SWITCHING
@@ -101,12 +116,10 @@ async function loadAdminData() {
   adminSession = session;
   var { data: myProfile } = await sb.from('profiles').select('role, full_name').eq('id', session.user.id).single();
   if (!myProfile || !['admin', 'sub-admin'].includes(myProfile.role)) {
-    document.body.innerHTML = '<div style="padding:80px;text-align:center;"><h2 class="font-display text-3xl mb-4">Access Denied</h2><p class="text-muted">Admin role required.</p></div>';
+    document.body.innerHTML = '<div style="padding:80px;text-align:center;"><h2 class="h2-as" style="margin-bottom:var(--space-3);">Access Denied</h2><p class="text-muted">Admin role required.</p></div>';
     return;
   }
   callerRole = myProfile.role;
-  // Sprint 4: Wena Telemetry tab is master-admin-only. Sub-admins
-  // never see the tab (RLS would also block their SELECTs anyway).
   if (callerRole === 'admin') {
     var wenaBtn = document.getElementById('tabWena');
     if (wenaBtn) wenaBtn.hidden = false;
@@ -127,9 +140,15 @@ async function loadAdminData() {
    5. CRM — BUSINESS PULSE
    ════════════════════════════════════════════════════════════════════════════ */
 
-function makeCard(icon, value, label, sub, cls, action) {
+function makeCard(iconName, value, label, sub, cls, action) {
   var oc = action ? ' onclick="window.' + action + '()"' : '';
-  return '<div class="pulse-card ' + cls + '"' + oc + '><div class="pulse-card-icon">' + icon + '</div><div class="pulse-card-value">' + value + '</div><div class="pulse-card-label">' + label + '</div>' + (sub ? '<div class="pulse-card-sub">' + sub + '</div>' : '') + '</div>';
+  var iconHtml = '<div class="pulse-card-icon">' + _icon(iconName, 24) + '</div>';
+  return '<div class="pulse-card ' + cls + '"' + oc + '>'
+    + iconHtml
+    + '<div class="pulse-card-value">' + value + '</div>'
+    + '<div class="pulse-card-label">' + label + '</div>'
+    + (sub ? '<div class="pulse-card-sub">' + sub + '</div>' : '')
+    + '</div>';
 }
 
 function renderPulse() {
@@ -141,13 +160,17 @@ function renderPulse() {
     if (breakdown[k]) { grossMRR += breakdown[k].gross_mrr || 0; netMRR += breakdown[k].net_mrr || 0; }
   });
   document.getElementById('pulseFeatured').innerHTML =
-      makeCard('\uD83D\uDCB3', paid, 'Subscribers', 'Click for breakdown', 'pulse-card-rose clickable', 'openSubBreakdown')
-    + makeCard('\uD83D\uDCC8', fmtSGD(netMRR), 'Net MRR', 'Gross: ' + fmtSGD(grossMRR), 'pulse-card-mint clickable', 'openMRR');
+      makeCard('card', paid, 'Subscribers', 'Click for breakdown', 'pulse-card-rose clickable', 'openSubBreakdown')
+    + makeCard('trend-up', fmtSGD(netMRR), 'Net MRR', 'Gross: ' + fmtSGD(grossMRR), 'pulse-card-mint clickable', 'openMRR');
   document.getElementById('pulseStats').innerHTML =
-      makeCard('\uD83D\uDC68\u200D\uD83D\uDC69\u200D\uD83D\uDC67', total, 'Total Parents', '', '', null)
-    + makeCard('\uD83C\uDF81', trial, 'On Trial', '', '', null)
-    + makeCard('\uD83D\uDCE9', contactPending, 'Contact Pending', 'From contact page', 'pulse-card-amber clickable', 'openContactInbox')
-    + makeCard('\uD83D\uDD2C', qaPending, 'QA Queue', 'Click to audit', 'pulse-card-sage clickable', 'openQATab');
+      makeCard('users',    total,          'Total Parents',   '',                          '',                            null)
+    + makeCard('gift',     trial,          'On Trial',        '',                          '',                            null)
+    + makeCard('inbox',    contactPending, 'Contact Pending', 'From contact page',         'pulse-card-amber clickable',  'openContactInbox')
+    + makeCard('flask',    qaPending,      'QA Queue',        'Click to audit',            'pulse-card-sage clickable',   'openQATab');
+  if (typeof window.adminIconRefresh === 'function') {
+    window.adminIconRefresh(document.getElementById('pulseFeatured'));
+    window.adminIconRefresh(document.getElementById('pulseStats'));
+  }
 }
 
 window.openSubBreakdown = function () {
@@ -158,15 +181,27 @@ window.openSubBreakdown = function () {
     { label: 'Family \u2014 Monthly', key: 'family_monthly' },
     { label: 'Family \u2014 Annual', key: 'family_annual' }
   ];
-  var th = '<table class="mrr-table"><thead><tr><td style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;padding:6px 12px;">Plan</td><td style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;padding:6px 12px;text-align:center;">Count</td><td style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;padding:6px 12px;text-align:right;">Gross MRR</td><td style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;padding:6px 12px;text-align:right;">Est. Net MRR</td></tr></thead><tbody>';
+  var html = '<table class="mrr-table"><thead><tr>'
+    + '<th>Plan</th><th class="num-center">Count</th><th class="num">Gross MRR</th><th class="num">Est. Net MRR</th>'
+    + '</tr></thead><tbody>';
   rows.forEach(function (r) {
     var d = bd[r.key] || { count: 0, gross_mrr: 0, net_mrr: 0 };
     gross += d.gross_mrr; net += d.net_mrr;
-    th += '<tr><td>' + r.label + '</td><td style="text-align:center;">' + d.count + '</td><td style="text-align:right;">' + fmtSGD(d.gross_mrr) + '</td><td style="text-align:right;color:var(--brand-mint);">' + fmtSGD(d.net_mrr) + '</td></tr>';
+    html += '<tr>'
+      + '<td>' + r.label + '</td>'
+      + '<td class="num-center">' + d.count + '</td>'
+      + '<td class="num">' + fmtSGD(d.gross_mrr) + '</td>'
+      + '<td class="num is-mint">' + fmtSGD(d.net_mrr) + '</td>'
+      + '</tr>';
   });
   var pd = bd.past_due ? bd.past_due.count : 0; var pa = bd.paused ? bd.paused.count : 0;
-  th += '<tr><td colspan="4" style="padding:4px 12px;"><div style="height:1px;background:var(--border-light);"></div></td></tr><tr><td style="color:var(--brand-error);">\u26A0\uFE0F Past Due</td><td style="text-align:center;color:var(--brand-error);">' + pd + '</td><td></td><td></td></tr><tr><td style="color:#6366f1;">\u23F8 Paused</td><td style="text-align:center;color:#6366f1;">' + pa + '</td><td></td><td></td></tr><tr class="total-row"><td><strong>Total</strong></td><td></td><td style="text-align:right;">' + fmtSGD(gross) + '</td><td style="text-align:right;color:var(--brand-mint);">' + fmtSGD(net) + '</td></tr></tbody></table>';
-  document.getElementById('subBreakdownContent').innerHTML = th + '<p class="mrr-note mt-4">Annual subscriptions recognised at 1/12 per month per Singapore FRS 115. Stripe fee estimated at 3.4% + S$0.50 per transaction.</p>';
+  html += '<tr class="mrr-divider"><td colspan="4"><hr></td></tr>'
+    + '<tr><td class="is-error">Past Due</td><td class="num-center is-error">' + pd + '</td><td></td><td></td></tr>'
+    + '<tr><td class="is-paused">Paused</td><td class="num-center is-paused">' + pa + '</td><td></td><td></td></tr>'
+    + '<tr class="total-row"><td><strong>Total</strong></td><td></td><td class="num">' + fmtSGD(gross) + '</td><td class="num is-mint">' + fmtSGD(net) + '</td></tr>'
+    + '</tbody></table>'
+    + '<p class="mrr-note" style="margin-top:var(--space-3);">Annual subscriptions recognised at 1/12 per month per Singapore FRS 115. Stripe fee estimated at 3.4% + S$0.50 per transaction.</p>';
+  document.getElementById('subBreakdownContent').innerHTML = html;
   document.getElementById('subBreakdownModal').classList.add('is-open');
 };
 
@@ -176,7 +211,16 @@ window.openMRR = function () {
     if (breakdown[k]) { gross += breakdown[k].gross_mrr || 0; net += breakdown[k].net_mrr || 0; }
   });
   var fees = gross - net;
-  document.getElementById('mrrContent').innerHTML = '<table class="mrr-table"><tbody><tr><td>Gross MRR (recognised)</td><td>' + fmtSGD(gross) + '</td></tr><tr><td style="color:var(--brand-error);">Less: Est. Stripe Fees</td><td style="color:var(--brand-error);">- ' + fmtSGD(fees) + '</td></tr><tr class="total-row"><td>Net MRR</td><td style="color:var(--brand-mint);">' + fmtSGD(net) + '</td></tr></tbody></table><div class="mt-4 p-4 rounded" style="background:var(--bg-elevated);border:1px solid var(--border-light);"><p class="mrr-note"><strong>Revenue recognition (FRS 115):</strong> Annual subscriptions recognised at 1/12 of annual price per month.</p><p class="mrr-note mt-2"><strong>Stripe fee assumption:</strong> 3.4% + S$0.50 per successful charge for Singapore-issued cards.</p></div>';
+  document.getElementById('mrrContent').innerHTML =
+      '<table class="mrr-table"><tbody>'
+    +   '<tr><td>Gross MRR (recognised)</td><td class="num">' + fmtSGD(gross) + '</td></tr>'
+    +   '<tr><td class="is-error">Less: Est. Stripe Fees</td><td class="num is-error">- ' + fmtSGD(fees) + '</td></tr>'
+    +   '<tr class="total-row"><td>Net MRR</td><td class="num is-mint">' + fmtSGD(net) + '</td></tr>'
+    + '</tbody></table>'
+    + '<div class="mrr-notes-block">'
+    +   '<p class="mrr-note"><strong>Revenue recognition (FRS 115):</strong> Annual subscriptions recognised at 1/12 of annual price per month.</p>'
+    +   '<p class="mrr-note"><strong>Stripe fee assumption:</strong> 3.4% + S$0.50 per successful charge for Singapore-issued cards.</p>'
+    + '</div>';
   document.getElementById('mrrModal').classList.add('is-open');
 };
 
@@ -216,7 +260,11 @@ function renderRadarCounts() {
 function renderRadarTab(tab) {
   currentRadarTab = tab; var g = getAtRiskGroups(); var rows = g[tab] || [];
   if (rows.length === 0) {
-    document.getElementById('radarContent').innerHTML = '<div class="p-8 text-center"><div class="text-3xl mb-2">\u2705</div><p class="text-muted text-sm">No accounts in this category.</p></div>';
+    document.getElementById('radarContent').innerHTML =
+        '<div class="p-8 text-center" style="color:var(--text-muted);">'
+      +   '<div style="display:flex;justify-content:center;margin-bottom:var(--space-2);color:var(--brand-mint);">' + _icon('check', 28) + '</div>'
+      +   '<p class="text-sm">No accounts in this category.</p>'
+      + '</div>';
     return;
   }
   var subj = {
@@ -235,9 +283,18 @@ function renderRadarTab(tab) {
   var html = '<table class="risk-table"><thead><tr><th>Name</th><th>Email</th><th>Reason</th><th>Days</th><th>Action</th></tr></thead><tbody>';
   rows.sort(function (a, b) { return (b.days || 0) - (a.days || 0); }).slice(0, 50).forEach(function (r) {
     var p = r.profile; var ml = buildContactLink(p.email || '', subj[tab], body[tab](p));
-    html += '<tr><td class="font-bold">' + esc(p.full_name || '\u2014') + '</td><td style="color:var(--text-muted);">' + esc(p.email || '\u2014') + '</td><td><span class="risk-flag ' + flagCls[tab] + '">' + esc(r.reason) + '</span></td><td style="color:var(--text-muted);">' + (r.days === 999 ? 'Never' : r.days) + '</td><td><a href="' + esc(ml) + '" class="btn btn-sm btn-secondary hover-lift" target="_blank">\u2709\uFE0F Contact</a></td></tr>';
+    html += '<tr>'
+      + '<td class="font-bold">' + esc(p.full_name || '\u2014') + '</td>'
+      + '<td class="cell-muted">' + esc(p.email || '\u2014') + '</td>'
+      + '<td><span class="risk-flag ' + flagCls[tab] + '">' + esc(r.reason) + '</span></td>'
+      + '<td class="cell-muted">' + (r.days === 999 ? 'Never' : r.days) + '</td>'
+      + '<td><a href="' + esc(ml) + '" class="btn btn-sm btn-secondary hover-lift" target="_blank">' + _icon('mail', 14) + ' Contact</a></td>'
+      + '</tr>';
   });
   document.getElementById('radarContent').innerHTML = html + '</tbody></table>';
+  if (typeof window.adminIconRefresh === 'function') {
+    window.adminIconRefresh(document.getElementById('radarContent'));
+  }
 }
 
 window.showRadarTab = function (tab, btn) {
@@ -267,17 +324,49 @@ window.renderParents = function () {
     var safeId = esc(p.id); var safeEmail = esc(p.email || ''); var safeTier = p.subscription_tier || 'trial';
     var stuLabel = students.length > 0 ? students.map(function (s) { return esc(s.name); }).join(', ') : '\u2014';
     var mailto = 'mailto:' + encodeURIComponent(p.email || '');
+
     var delBtn = callerRole === 'admin'
-      ? '<button class="btn btn-sm hover-lift" style="background:rgba(220,38,38,0.08);color:var(--brand-error);border:none;" onclick="window.deleteUser(\'' + safeId + '\',\'' + safeEmail + '\')">\uD83D\uDDD1\uFE0F</button>'
+      ? '<button class="btn-row-icon is-danger" title="Delete account" onclick="window.deleteUser(\'' + safeId + '\',\'' + safeEmail + '\')">' + _icon('trash', 14) + '</button>'
       : '';
+
     var stuFields = students.map(function (s) {
       var opts = levels.map(function (l) { return '<option value="' + l + '"' + (s.level === l ? ' selected' : '') + '>' + l + '</option>'; }).join('');
-      return '<div style="border-top:1px solid var(--border-light);margin-top:var(--space-3);padding-top:var(--space-3);"><div class="text-xs font-bold text-muted mb-2">Learner: ' + esc(s.name) + '</div><div class="flex gap-3 flex-wrap"><div class="edit-group"><label>Name</label><input type="text" class="form-input" id="sn-' + s.id + '" value="' + esc(s.name || '') + '"></div><div class="edit-group"><label>Level</label><select class="form-select" id="sl-' + s.id + '">' + opts + '</select></div><div class="flex items-end pb-1"><button class="btn btn-sm btn-secondary hover-lift" onclick="window.saveStudent(\'' + s.id + '\')">Save</button></div></div></div>';
+      return '<div class="edit-student-block">'
+        +   '<div class="edit-student-block__lbl">Learner: ' + esc(s.name) + '</div>'
+        +   '<div class="edit-student-block__row">'
+        +     '<div class="edit-group"><label>Name</label><input type="text" class="form-input" id="sn-' + s.id + '" value="' + esc(s.name || '') + '"></div>'
+        +     '<div class="edit-group"><label>Level</label><select class="form-select" id="sl-' + s.id + '">' + opts + '</select></div>'
+        +     '<div class="flex items-end pb-1"><button class="btn btn-sm btn-secondary hover-lift" onclick="window.saveStudent(\'' + s.id + '\')">Save</button></div>'
+        +   '</div>'
+        + '</div>';
     }).join('');
-    html += '<tr class="data-row"><td class="font-semibold">' + esc(p.full_name || '\u2014') + '</td><td style="color:var(--text-muted);">' + safeEmail + '</td><td>' + tierPill(safeTier) + '</td><td style="color:var(--text-muted);font-size:0.8rem;">' + (lastAct ? fmtDate(lastAct) : 'Never') + '</td><td><span class="text-xs text-muted">' + students.length + ' \u00B7 </span><span class="text-xs">' + stuLabel + '</span></td><td style="color:var(--text-muted);font-size:0.8rem;">' + fmtDate(p.created_at) + '</td><td><div style="display:flex;gap:6px;align-items:center;"><button class="btn btn-sm btn-secondary hover-lift" onclick="window.toggleEdit(\'' + safeId + '\')">\u270F\uFE0F Edit</button><a href="' + esc(mailto) + '" class="btn btn-sm btn-ghost hover-lift" title="Contact">\u2709\uFE0F</a><button class="btn btn-sm btn-ghost hover-lift" onclick="window.openEditTier(\'' + safeId + '\',\'' + safeEmail + '\',\'' + safeTier + '\')">\uD83C\uDFAB Plan</button>' + delBtn + '</div></td></tr>' +
-      '<tr class="edit-row" id="editrow-' + safeId + '"><td colspan="7"><div class="edit-panel"><div class="edit-group"><label>Parent Name</label><input type="text" class="form-input" id="pname-' + safeId + '" value="' + esc(p.full_name || '') + '"></div><div class="edit-group"><label>Parent Email</label><input type="email" class="form-input" id="pemail-' + safeId + '" value="' + safeEmail + '"></div><div class="flex items-end pb-1"><button class="btn btn-sm btn-primary hover-lift" onclick="window.saveParent(\'' + safeId + '\')">Save Parent</button></div></div>' + stuFields + '</td></tr>';
+
+    html += '<tr class="data-row">'
+      + '<td class="cell-name">' + esc(p.full_name || '\u2014') + '</td>'
+      + '<td class="cell-muted">' + safeEmail + '</td>'
+      + '<td>' + tierPill(safeTier) + '</td>'
+      + '<td class="cell-meta">' + (lastAct ? fmtDate(lastAct) : 'Never') + '</td>'
+      + '<td><span class="text-xs cell-muted">' + students.length + ' \u00B7 </span><span class="text-xs">' + stuLabel + '</span></td>'
+      + '<td class="cell-meta">' + fmtDate(p.created_at) + '</td>'
+      + '<td>'
+      +   '<div class="row-actions">'
+      +     '<button class="btn-row-icon" title="Edit" onclick="window.toggleEdit(\'' + safeId + '\')">' + _icon('pencil', 14) + '</button>'
+      +     '<a href="' + esc(mailto) + '" class="btn-row-icon" title="Contact">' + _icon('mail', 14) + '</a>'
+      +     '<button class="btn-row-icon" title="Edit plan" onclick="window.openEditTier(\'' + safeId + '\',\'' + safeEmail + '\',\'' + safeTier + '\')">' + _icon('ticket', 14) + '</button>'
+      +     delBtn
+      +   '</div>'
+      + '</td>'
+      + '</tr>'
+      + '<tr class="edit-row" id="editrow-' + safeId + '"><td colspan="7"><div class="edit-panel">'
+      +   '<div class="edit-group"><label>Parent Name</label><input type="text" class="form-input" id="pname-' + safeId + '" value="' + esc(p.full_name || '') + '"></div>'
+      +   '<div class="edit-group"><label>Parent Email</label><input type="email" class="form-input" id="pemail-' + safeId + '" value="' + safeEmail + '"></div>'
+      +   '<div class="flex items-end pb-1"><button class="btn btn-sm btn-primary hover-lift" onclick="window.saveParent(\'' + safeId + '\')">Save Parent</button></div>'
+      + '</div>' + stuFields + '</td></tr>';
   });
   tbody.innerHTML = html;
+  if (typeof window.adminIconRefresh === 'function') {
+    window.adminIconRefresh(tbody);
+  }
 };
 
 window.toggleEdit = function (id) {
@@ -398,10 +487,10 @@ function renderActivityFeed() {
   var sevenDaysAgo = new Date(Date.now() - 7 * 86400000);
   var newSubs = allSubs.filter(function (s) { return s.status === 'active' && s.created_at && new Date(s.created_at) >= sevenDaysAgo; });
   var groups = [
-    { key: 'all_subjects_monthly', label: 'All Subjects \u2014 Monthly', icon: '\uD83D\uDCDA' },
-    { key: 'all_subjects_annual', label: 'All Subjects \u2014 Annual', icon: '\uD83D\uDCDA' },
-    { key: 'family_monthly', label: 'Family Plan \u2014 Monthly', icon: '\uD83D\uDC68\u200D\uD83D\uDC69\u200D\uD83D\uDC67' },
-    { key: 'family_annual', label: 'Family Plan \u2014 Annual', icon: '\uD83D\uDC68\u200D\uD83D\uDC69\u200D\uD83D\uDC67' }
+    { key: 'all_subjects_monthly', label: 'All Subjects \u2014 Monthly', icon: 'book' },
+    { key: 'all_subjects_annual',  label: 'All Subjects \u2014 Annual',  icon: 'book' },
+    { key: 'family_monthly',       label: 'Family Plan \u2014 Monthly',  icon: 'users' },
+    { key: 'family_annual',        label: 'Family Plan \u2014 Annual',   icon: 'users' }
   ];
   var counts = { all_subjects_monthly: 0, all_subjects_annual: 0, family_monthly: 0, family_annual: 0 };
   newSubs.forEach(function (s) {
@@ -409,11 +498,26 @@ function renderActivityFeed() {
     if (counts[key] !== undefined) counts[key]++;
   });
   var total = newSubs.length;
-  el.innerHTML = '<div class="text-xs font-bold text-muted uppercase mb-4" style="letter-spacing:0.06em;">New Subscribers \u2014 Last 7 Days</div>'
-    + '<div class="flex items-baseline gap-2 p-4 rounded-lg mb-4" style="background:var(--bg-elevated);"><span class="font-display" style="font-size:2.5rem;color:var(--text-main);line-height:1;">' + total + '</span><span class="text-sm text-muted">new subscriber' + (total !== 1 ? 's' : '') + '</span></div>'
-    + (groups.filter(function (g) { return counts[g.key] > 0; }).map(function (g) {
-        return '<div class="feed-item"><div class="feed-icon">' + g.icon + '</div><div class="feed-body"><div class="feed-text">' + g.label + '</div><div class="feed-sub">' + counts[g.key] + ' new subscriber' + (counts[g.key] !== 1 ? 's' : '') + '</div></div></div>';
-      }).join('') || '<p class="text-sm text-muted text-center py-2">No new subscribers in the last 7 days.</p>');
+
+  var groupItems = groups.filter(function (g) { return counts[g.key] > 0; }).map(function (g) {
+    return '<div class="feed-item">'
+      +   '<div class="feed-icon">' + _icon(g.icon, 16) + '</div>'
+      +   '<div class="feed-body">'
+      +     '<div class="feed-text">' + g.label + '</div>'
+      +     '<div class="feed-sub">' + counts[g.key] + ' new subscriber' + (counts[g.key] !== 1 ? 's' : '') + '</div>'
+      +   '</div>'
+      + '</div>';
+  }).join('') || '<p class="feed-empty">No new subscribers in the last 7 days.</p>';
+
+  el.innerHTML = '<div class="feed-header">New Subscribers \u2014 Last 7 Days</div>'
+    + '<div class="feed-total">'
+    +   '<span class="feed-total__num">' + total + '</span>'
+    +   '<span class="feed-total__lbl">new subscriber' + (total !== 1 ? 's' : '') + '</span>'
+    + '</div>'
+    + groupItems;
+  if (typeof window.adminIconRefresh === 'function') {
+    window.adminIconRefresh(el);
+  }
 }
 
 
@@ -453,19 +557,52 @@ window.loadAnalytics = async function (period, btn) {
         var y = H - pad - ((v - min) / (max - min || 1)) * (H - pad * 2);
         return x.toFixed(1) + ',' + y.toFixed(1);
       }).join(' ');
-      sparkHtml = '<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:56px;display:block;margin-bottom:var(--space-3);"><polyline points="' + pts + '" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      sparkHtml = '<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" class="analytics-spark">'
+        + '<polyline points="' + pts + '" fill="none" stroke="var(--brand-rose)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
+        + '</svg>';
     }
 
     var c1 = signups > 0 ? Math.round((subClicks / signups) * 100) : 0;
     var c2 = subClicks > 0 ? Math.round((subComp / subClicks) * 100) : 0;
     var maxF = Math.max(signups, subClicks, subComp, 1);
 
-    function fBar(label, val, color) {
+    function fBar(label, val, mod) {
       var pct = Math.round((val / maxF) * 100);
-      return '<div class="mb-2"><div class="flex justify-between text-xs mb-2"><span class="font-bold" style="color:var(--text-muted);">' + label + '</span><span class="font-bold text-main">' + val + '</span></div><div style="height:24px;background:var(--bg-elevated);border-radius:var(--radius-sm);overflow:hidden;"><div style="height:100%;width:' + pct + '%;background:' + color + ';border-radius:var(--radius-sm);transition:width 0.5s ease;"></div></div></div>';
+      return '<div class="funnel-row">'
+        +   '<div class="funnel-row__head">'
+        +     '<span class="funnel-row__lbl">' + label + '</span>'
+        +     '<span class="funnel-row__val">' + val + '</span>'
+        +   '</div>'
+        +   '<div class="funnel-row__track">'
+        +     '<div class="funnel-row__fill funnel-row__fill--' + mod + '" style="width:' + pct + '%;"></div>'
+        +   '</div>'
+        + '</div>';
     }
 
-    content.innerHTML = '<div class="mb-4">' + sparkHtml + '<div class="analytics-grid"><div class="metric-card"><div class="metric-val">' + visitors.toLocaleString() + '</div><div class="metric-lbl">Unique Visitors</div></div><div class="metric-card"><div class="metric-val">' + pageviews.toLocaleString() + '</div><div class="metric-lbl">Pageviews</div></div></div></div><div class="mb-4"><p class="text-xs font-bold text-muted uppercase mb-4" style="letter-spacing:0.06em;">Conversion Funnel</p>' + fBar('Signups', signups, 'var(--brand-sage)') + fBar('Subscribe Clicks', subClicks, 'var(--brand-rose)') + fBar('Subscribe Completes', subComp, 'var(--brand-mint)') + '<div class="flex gap-3 text-xs text-muted mt-2"><span>Signup\u2192Click: <strong class="text-main">' + c1 + '%</strong></span><span>Click\u2192Complete: <strong class="text-main">' + c2 + '%</strong></span></div></div><p class="text-xs font-bold text-muted uppercase mb-2" style="letter-spacing:0.06em;">Key Events</p><div><div class="event-row"><span>Quiz Complete</span><span class="font-bold text-main">' + quizComp + '</span></div><div class="event-row"><span>Tutor Session</span><span class="font-bold text-main">' + tutorSess + '</span></div><div class="event-row"><span>Trial Day 5 (urgency trigger)</span><span class="font-bold text-main">' + trialD5 + '</span></div></div>';
+    content.innerHTML =
+        '<div class="mb-4">'
+      +   sparkHtml
+      +   '<div class="analytics-grid">'
+      +     '<div class="metric-card"><div class="metric-val">' + visitors.toLocaleString() + '</div><div class="metric-lbl">Unique Visitors</div></div>'
+      +     '<div class="metric-card"><div class="metric-val">' + pageviews.toLocaleString() + '</div><div class="metric-lbl">Pageviews</div></div>'
+      +   '</div>'
+      + '</div>'
+      + '<div class="mb-4">'
+      +   '<p class="metric-lbl" style="margin-bottom:var(--space-2);">Conversion Funnel</p>'
+      +   fBar('Signups', signups, 'sage')
+      +   fBar('Subscribe Clicks', subClicks, 'rose')
+      +   fBar('Subscribe Completes', subComp, 'mint')
+      +   '<div class="funnel-rates">'
+      +     '<span>Signup\u2192Click: <strong>' + c1 + '%</strong></span>'
+      +     '<span>Click\u2192Complete: <strong>' + c2 + '%</strong></span>'
+      +   '</div>'
+      + '</div>'
+      + '<p class="metric-lbl" style="margin-bottom:var(--space-1);">Key Events</p>'
+      + '<div>'
+      +   '<div class="event-row"><span>Quiz Complete</span><span class="font-bold">' + quizComp + '</span></div>'
+      +   '<div class="event-row"><span>Tutor Session</span><span class="font-bold">' + tutorSess + '</span></div>'
+      +   '<div class="event-row"><span>Trial Day 5 (urgency trigger)</span><span class="font-bold">' + trialD5 + '</span></div>'
+      + '</div>';
   } catch (err) {
     content.innerHTML = '<p class="text-sm text-muted text-center py-6">Could not load analytics. ' + esc(err.message) + '</p>';
   }
@@ -479,15 +616,11 @@ window.loadAnalytics = async function (period, btn) {
    ensures only profiles.is_admin = true can write; non-admins will see
    the toggle reflect current state but writes will fail silently with
    a status message.
-   Was previously a separate <script type="module"> block in admin.html.
-   Converted to plain IIFE — only used `await window.getSupabase()`,
-   no module imports were needed.
    ════════════════════════════════════════════════════════════════════════════ */
 
 (async function initAdminSettings() {
   'use strict';
 
-  // DOM may not be parsed yet at script execution start. Wait for it.
   if (document.readyState === 'loading') {
     await new Promise(function (resolve) {
       document.addEventListener('DOMContentLoaded', resolve, { once: true });
@@ -537,7 +670,7 @@ window.loadAnalytics = async function (period, btn) {
 
       if (error) throw error;
 
-      let enabled = true; // default ON if row missing
+      let enabled = true;
       if (data) {
         const v = data.value;
         if (typeof v === 'boolean') enabled = v;
@@ -591,10 +724,7 @@ window.loadAnalytics = async function (period, btn) {
 
 /* ════════════════════════════════════════════════════════════════════════════
    11. WENA TELEMETRY (Sprint 4)
-   ----------------------------------------------------------------------------
    Lazy-loaded on first activation of the Wena tab via switchAdminTab.
-   All queries hit indexes added by migration 029 and cap at LIMIT clauses
-   so the worst-case row count stays bounded even under heavy traffic.
    ════════════════════════════════════════════════════════════════════════════ */
 
 (function () {
@@ -777,7 +907,6 @@ window.loadAnalytics = async function (period, btn) {
     'top-direct': loadTopDirect, faithfulness: loadFaithfulness, levels: loadLevels, vision: loadVision
   };
 
-  // Wire refresh buttons inside #wenaView once on script load.
   document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('#wenaView .wena-refresh').forEach(btn => {
       btn.addEventListener('click', async () => {
@@ -798,7 +927,6 @@ window.loadAnalytics = async function (period, btn) {
     });
   });
 
-  // Called once by switchAdminTab on first activation of the Wena tab.
   window.wenaLoadAll = async function () {
     await Promise.allSettled(Object.values(LOADERS).map(fn => fn().catch(err => {
       console.error('[wena-telemetry] panel load failed:', err);
