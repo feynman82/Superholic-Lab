@@ -1,0 +1,201 @@
+{
+  "subject": "Science",
+  "topic": "Systems",
+  "cells": [
+    {
+      "subject": "Science",
+      "level": "P4",
+      "topic": "Systems",
+      "sub_topic": "Plant Parts And Functions",
+      "moe_outcome": "Identify the different parts of plants (leaf, stem, root, flower, fruit) and state their functions.",
+      "common_misconceptions": [
+        "The student believes that leaves drink water directly from the rain or air, confusing the function of leaves with roots.",
+        "The student states what the plant needs but skips the reasoning about which specific plant part performs that function."
+      ],
+      "foundational_teach_script": "When explaining what plant parts do, three little steps help us. First, say what you think — 'The roots absorb water.' Next, point to what you see — 'because the water in the soil is taken up.' Finally, say the rule — 'because roots take in water and mineral salts for the plant.' Keep in mind that leaves make food and do not drink water.",
+      "cer_structure": {
+        "claim_prompt": "What do you think — which plant part is doing the work here? Just one short answer.",
+        "evidence_prompt": "What did you see happening to the plant or the water?",
+        "reasoning_prompt": "What is the science rule about the function of this plant part?"
+      },
+      "worked_example": {
+        "question": "Jia En observed a tomato plant at an NParks community garden. She said the leaves drink water from the soil to help the plant survive. Explain why she is wrong.",
+        "wrong_answer_a_child_might_give": "Leaves do not drink water because they are meant to make food.",
+        "why_its_wrong": "The student gave the correct function for leaves but skipped the evidence and the rule about which part actually absorbs water.",
+        "correct_answer": {
+          "claim": "The roots of the plant absorb water, not the leaves.",
+          "evidence": "Water from the soil is taken up from underground.",
+          "reasoning": "The function of roots is to anchor the plant and absorb water from the soil, while leaves use light to make food."
+        },
+        "step_by_step_reasoning": "1. First, say what you think by stating that the roots absorb water, not the leaves.\n2. Next, point to what you see by mentioning the water is in the soil where roots grow.\n3. Finally, say the rule explaining the separate functions of roots and leaves."
+      },
+      "check_for_understanding": {
+        "question": "Wei Ming pulled a small weed from his garden and accidentally tore off all its roots. A few days later, the weed wilted and died. Why did this happen?",
+        "expected_answer": {
+          "claim": "The weed died because it had no roots to absorb water.",
+          "evidence": "Wei Ming tore off all the roots, and the weed wilted a few days later.",
+          "reasoning": "Roots are required to absorb water and mineral salts from the soil to keep the plant alive."
+        },
+        "if_still_wrong_say": "You saw the clue about the weed wilting, but you missed the science rule. Say the rule about what the roots do for the plant."
+      },
+      "scaffolding_progression": "Builds on identifying plant parts in lower primary and prepares for understanding the internal plant transport system in Primary 5.",
+      "notes": "Plant System (Plant parts and functions) Page 50. Do not mention water-carrying or food-carrying tubes yet."
+    },
+    {
+      "subject": "Science",
+      "level": "P4",
+      "topic": "Systems",
+      "sub_topic": "Human Digestive System",
+      "moe_outcome": "Identify the organs of the human digestive system and describe their functions.",
+      "common_misconceptions": [
+        "The student believes that food is completely digested and absorbed into the blood inside the stomach.",
+        "The student names the organs the food passes through but skips the reasoning about what each specific organ does."
+      ],
+      "foundational_teach_script": "To describe how our body processes food, we use three little steps. First, say what you think — 'The small intestine absorbs food.' Next, point to what you see — 'because the food reaches there after the stomach.' Finally, say the rule — 'because digestion is completed and nutrients are absorbed there.' Remember that the stomach only breaks food down into simpler substances!",
+      "cer_structure": {
+        "claim_prompt": "What do you think — which organ is responsible for this? Just one short answer.",
+        "evidence_prompt": "What happens to the food at this stage of its journey?",
+        "reasoning_prompt": "What is the science rule about the function of this digestive organ?"
+      },
+      "worked_example": {
+        "question": "An uncle at the hawker centre ate a bowl of laksa. He believes all the digested laksa enters his blood directly from his stomach. Explain why he is wrong.",
+        "wrong_answer_a_child_might_give": "Uncle is right; the stomach absorbs the food into his blood.",
+        "why_its_wrong": "The student made the wrong claim by attributing absorption to the stomach. The stomach only breaks food down; absorption happens in the small intestine.",
+        "correct_answer": {
+          "claim": "The digested laksa enters the blood in the small intestine, not the stomach.",
+          "evidence": "The stomach only breaks down the laksa into simpler substances.",
+          "reasoning": "Digestion is completed in the small intestine, which is where the digested food is finally absorbed into the bloodstream."
+        },
+        "step_by_step_reasoning": "1. First, say what you think by claiming the small intestine absorbs the food, not the stomach.\n2. Next, point to what you see by mentioning the stomach's job is just breaking food down.\n3. Finally, say the rule that digestion finishes in the small intestine where absorption takes place."
+      },
+      "check_for_understanding": {
+        "question": "After the digested laksa is absorbed, the remaining undigested food moves into the large intestine. What is the function of the large intestine?",
+        "expected_answer": {
+          "claim": "The large intestine absorbs water from the undigested food.",
+          "evidence": "The undigested food passes through this organ before leaving the body as waste.",
+          "reasoning": "The function of the large intestine is to absorb water and mineral salts from undigested matter."
+        },
+        "if_still_wrong_say": "You identified the undigested food passing through, but you missed the science rule. Say the exact rule about what the large intestine absorbs."
+      },
+      "scaffolding_progression": "Builds on basic body awareness and prepares for understanding how the circulatory system transports digested food in Primary 5.",
+      "notes": "Human System (Digestive System) Page 49."
+    },
+    {
+      "subject": "Science",
+      "level": "P5",
+      "topic": "Systems",
+      "sub_topic": "Plant Respiratory And Circulatory Systems",
+      "moe_outcome": "Recognise how water is transported from roots to other parts and how food is transported from leaves to other parts.",
+      "common_misconceptions": [
+        "The student believes that leaves push water upwards, or that roots make food for the plant.",
+        "The student observes a swollen stem but skips the reasoning about the direction of food transport in the plant system."
+      ],
+      "foundational_teach_script": "This is the CER move for plant transport. First, make a Claim identifying the plant part responsible for the failure or outcome. Next, provide Evidence by pointing out your observation, like a swollen stem. Finally, state your Reasoning by explaining the function rule, such as how the plant transport system moves food from the leaves downwards.",
+      "cer_structure": {
+        "claim_prompt": "What part of the plant transport system is involved?",
+        "evidence_prompt": "What observation shows a change in the plant's growth or state?",
+        "reasoning_prompt": "What is the science rule about how substances move through this system?"
+      },
+      "worked_example": {
+        "question": "Aishah cut a ring around the stem of a plant along her HDB corridor, removing the outer food-carrying tubes but leaving the inner tubes intact. A week later, the stem above the cut swelled up. Explain this observation.",
+        "wrong_answer_a_child_might_give": "The stem above the cut swelled up.",
+        "why_its_wrong": "The student gave only the observation (evidence). They did not name what was happening (claim — food accumulating) or state the rule about food transport from leaves downwards (reasoning).",
+        "correct_answer": {
+          "claim": "The removal of the food-carrying tubes caused food to accumulate above the cut.",
+          "evidence": "The stem swelled up just above the cut ring after a week.",
+          "reasoning": "Leaves produce food, which is transported downwards to other parts of the plant through the food-carrying tubes."
+        },
+        "step_by_step_reasoning": "1. Write your claim by stating that removing the tubes stopped food from moving.\n2. Provide evidence by pointing out that the stem swelled above the cut.\n3. Construct your reasoning by explaining the rule that food is made in the leaves and transported downwards."
+      },
+      "check_for_understanding": {
+        "question": "Mei Ling placed a white flower with its stem in a vase of blue-coloured water. The next day, the white petals turned blue. Why did this happen?",
+        "expected_answer": {
+          "claim": "The water-carrying tubes transported the blue water to the flower.",
+          "evidence": "The white petals turned blue after the stem was placed in the blue water.",
+          "reasoning": "The plant transport system uses water-carrying tubes to transport water from the roots, up the stem, to the rest of the plant."
+        },
+        "if_still_wrong_say": "You noticed the petals turned blue, but you missed the reasoning step. Name the specific tubes and state the rule about the direction water travels."
+      },
+      "scaffolding_progression": "Builds on basic plant part functions in Primary 4 and prepares for understanding cellular processes in upper primary.",
+      "notes": "Plant System (Respiratory and circulatory systems) Page 51. The use of specific terms 'xylem' and 'phloem' is strictly not required."
+    },
+    {
+      "subject": "Science",
+      "level": "P5",
+      "topic": "Systems",
+      "sub_topic": "Human Respiratory And Circulatory Systems",
+      "moe_outcome": "Identify the parts of the human respiratory and circulatory systems and describe their functions.",
+      "common_misconceptions": [
+        "The student believes that lungs manufacture oxygen for the body.",
+        "The student states that blood moves but skips the reasoning that the heart acts as a pump to transport oxygen and nutrients."
+      ],
+      "foundational_teach_script": "This is the CER move for human systems. Start with a Claim to identify the organ's true function. Provide Evidence by describing the observation, such as heavy breathing after exercise. Conclude with Reasoning by stating the biological rule: the lungs exchange gases with the air, while the heart pumps this blood around the body to transport materials.",
+      "cer_structure": {
+        "claim_prompt": "What is the true function of the organ mentioned in the story?",
+        "evidence_prompt": "What physical reaction did you observe in the person?",
+        "reasoning_prompt": "What is the science rule about how this organ system works?"
+      },
+      "worked_example": {
+        "question": "Daniel Tan ran a fast lap around Bishan Park and started breathing heavily. His little brother thinks Daniel's lungs are working hard to manufacture oxygen for his tired body. Explain why his brother is wrong.",
+        "wrong_answer_a_child_might_give": "His brother is wrong because the lungs just breathe in the oxygen from the air.",
+        "why_its_wrong": "The student stated a basic claim but missed the reasoning explaining the exact function of the lungs in gas exchange.",
+        "correct_answer": {
+          "claim": "The lungs do not manufacture oxygen; they are the site where gas exchange happens.",
+          "evidence": "Daniel breathes heavily to take in more air from his surroundings.",
+          "reasoning": "The respiratory system takes in air containing oxygen, which enters the blood at the lungs, and removes carbon dioxide."
+        },
+        "step_by_step_reasoning": "1. Write your claim by clarifying that lungs perform gas exchange, not oxygen production.\n2. Provide evidence by noting Daniel is breathing heavily to take in air.\n3. Construct your reasoning by explaining the rule of how the respiratory system takes in oxygen and removes carbon dioxide."
+      },
+      "check_for_understanding": {
+        "question": "While Daniel Tan was resting after his run, he placed his hand over his chest and felt his heart beating very fast. What is the function of his heart?",
+        "expected_answer": {
+          "claim": "The heart pumps blood throughout his body.",
+          "evidence": "His heart was beating very fast inside his chest to recover from the run.",
+          "reasoning": "The circulatory system relies on the heart to pump blood, which transports oxygen, digested food, and waste materials."
+        },
+        "if_still_wrong_say": "You pointed out the fast heartbeat, but you missed the reasoning step. State the exact science rule about what the heart pumps and what it transports."
+      },
+      "scaffolding_progression": "Builds on digestive system knowledge in Primary 4 and prepares for integrating all body systems to explain survival.",
+      "notes": "Human System (Respiratory and circulatory systems) Page 50. Heart chambers and valves are not required."
+    },
+    {
+      "subject": "Science",
+      "level": "P5",
+      "topic": "Systems",
+      "sub_topic": "Electrical Systems And Circuits",
+      "moe_outcome": "Show an understanding that a closed circuit allows current to flow and construct simple series circuits.",
+      "common_misconceptions": [
+        "The student believes a bulb will light up as long as there is a battery connected to it, ignoring gaps in the circuit.",
+        "The student notices a broken wire but skips the reasoning stating that a closed circuit is required for electricity to flow."
+      ],
+      "foundational_teach_script": "This is the CER move for electrical circuits. First, make a Claim about why the system fails or succeeds. Next, provide Evidence by observing the setup, such as an open switch or a broken wire. Finally, give your Reasoning by stating the physics rule: a bulb only lights up when there is a closed circuit providing a complete path for electricity.",
+      "cer_structure": {
+        "claim_prompt": "Will the electrical component work, or why did it fail?",
+        "evidence_prompt": "What did you observe about the switches, wires, or connections?",
+        "reasoning_prompt": "What is the science rule about closed and open circuits?"
+      },
+      "worked_example": {
+        "question": "Kavin bought a new torch with batteries from NTUC FairPrice. He inserted the batteries correctly, but when he left the switch open, the bulb did not light up. He claims the battery is dead. Explain why he is wrong.",
+        "wrong_answer_a_child_might_give": "The bulb didn't light up because the switch is open and not pressing down.",
+        "why_its_wrong": "The student gave the claim and evidence but missed the reasoning about needing a closed circuit for electricity to flow.",
+        "correct_answer": {
+          "claim": "The battery is not dead; the circuit is simply open.",
+          "evidence": "The switch on the torch was left in the open position.",
+          "reasoning": "An electrical system requires a closed circuit without any gaps for the electric current to flow and light the bulb."
+        },
+        "step_by_step_reasoning": "1. Write your claim by stating the battery is fine but the circuit is open.\n2. Provide evidence by pointing out the switch is in the open position.\n3. Construct your reasoning by explaining the rule that electricity only flows through a closed, complete circuit."
+      },
+      "check_for_understanding": {
+        "question": "The drinks fridge at the school canteen has a light that turns on when the door is opened. However, Ahmad noticed a wire connecting the bulb had completely snapped. Will the bulb light up?",
+        "expected_answer": {
+          "claim": "The bulb will not light up.",
+          "evidence": "The wire connecting the bulb has completely snapped, creating a gap.",
+          "reasoning": "The snapped wire creates an open circuit, preventing electric current from flowing through the system."
+        },
+        "if_still_wrong_say": "You identified the snapped wire, but you missed the reasoning step. State the exact science rule about what happens to the electric current when there is a gap."
+      },
+      "scaffolding_progression": "Builds on identifying conductors of heat in Primary 4 and prepares for understanding parallel circuits and energy conversion in Primary 6.",
+      "notes": "Electrical System Page 52. Parallel circuits are not covered at P5."
+    }
+  ]
+}

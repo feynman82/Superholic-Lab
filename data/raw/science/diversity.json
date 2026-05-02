@@ -1,0 +1,123 @@
+{
+  "subject": "Science",
+  "topic": "Diversity",
+  "cells": [
+    {
+      "subject": "Science",
+      "level": "P3",
+      "topic": "Diversity",
+      "sub_topic": "General Characteristics Of Living And Non-Living Things",
+      "moe_outcome": "Describe the characteristics of living things (need water, food, air, grow, respond, reproduce).",
+      "common_misconceptions": [
+        "The student treats moving from place to place as the only test for living things, assuming a toy car is living and a plant is not.",
+        "The student states what the object is doing but skips the science rule about what living things need to survive."
+      ],
+      "foundational_teach_script": "When Miss Wena asks if something is living, three little steps help us. First, say what you think — 'I think the plant is living.' Then, point to what you see — 'because it has grown taller this week.' Then, say the rule — 'because all living things grow.' Three little steps — like climbing three stairs. Remember, just because a toy car moves does not mean it is a living thing, and just because a plant stays in one pot does not mean it is non-living.",
+      "cer_structure": {
+        "claim_prompt": "What do you think — is it living, or non-living? Just one short answer.",
+        "evidence_prompt": "What did you see that made you think that?",
+        "reasoning_prompt": "What is the science rule that helps us decide?"
+      },
+      "worked_example": {
+        "question": "Wei Ming has a toy car that zooms around the neighbourhood playground when he presses a button. He tells his friends that the toy car is a living thing because it can move. Explain why Wei Ming is wrong.",
+        "wrong_answer_a_child_might_give": "It is a non-living thing because it needs batteries to move.",
+        "why_its_wrong": "The student gave the answer and a clue, but skipped the science rule about what living things need.",
+        "correct_answer": {
+          "claim": "The toy car is a non-living thing.",
+          "evidence": "It moves but does not need food, water or air to survive.",
+          "reasoning": "Living things need food, water and air to survive, but non-living things do not."
+        },
+        "step_by_step_reasoning": "1. First, say what you think by stating that the toy car is a non-living thing.\n2. Next, point to what you see by mentioning that it does not eat, drink or breathe.\n3. Finally, say the rule that living things need food, water and air to survive."
+      },
+      "check_for_understanding": {
+        "question": "Siti spots a plant in a pot along her HDB corridor. Even though it does not move from place to place, she knows it is a living thing. Give one reason why.",
+        "expected_answer": {
+          "claim": "The plant is a living thing.",
+          "evidence": "The plant is growing taller and producing new leaves over time.",
+          "reasoning": "All living things can grow, even if they do not move from place to place."
+        },
+        "if_still_wrong_say": "You pointed to the clue about the plant, but you missed the science rule. Say the rule about what living things do over time to show they are alive."
+      },
+      "scaffolding_progression": "Builds on kindergarten awareness of the natural world and prepares for classification of living things into broad groups.",
+      "notes": "Diversity of Living and Non-Living Things (General characteristics and classification) Page 38."
+    },
+    {
+      "subject": "Science",
+      "level": "P3",
+      "topic": "Diversity",
+      "sub_topic": "Classification Of Living And Non-Living Things",
+      "moe_outcome": "Recognise broad groups of living things such as plants, animals, fungi and bacteria based on similarities and differences.",
+      "common_misconceptions": [
+        "The student groups animals based on where they live (habitat) instead of their physical characteristics.",
+        "The student identifies the animal group but skips the rule about the specific body covering that defines the group."
+      ],
+      "foundational_teach_script": "When we group animals, three little steps help us. First, say what you think — 'I think this is a bird.' Then, point to what you see — 'because it has feathers.' Finally, say the rule — 'because animals with feathers are birds.' Always look at their body parts, not where they live.",
+      "cer_structure": {
+        "claim_prompt": "What do you think — which group of living things does this belong to? Just one short answer.",
+        "evidence_prompt": "What body parts or clues did you see that made you think that?",
+        "reasoning_prompt": "What is the science rule about how this group is classified?"
+      },
+      "worked_example": {
+        "question": "Priya saw a creature swimming in Marina Bay. It has hair on its body and breathes using lungs. She says it is a fish because it swims in the sea. Explain why she is wrong.",
+        "wrong_answer_a_child_might_give": "It is a mammal because it has hair on its body.",
+        "why_its_wrong": "The student gave the answer and a clue, but skipped the science rule about how mammals are classified.",
+        "correct_answer": {
+          "claim": "The creature belongs to the mammal group, not the fish group.",
+          "evidence": "It has hair on its body and breathes using lungs.",
+          "reasoning": "Animals are classified by physical characteristics like having hair or fur, not by where they live."
+        },
+        "step_by_step_reasoning": "1. First, say what you think by stating that the creature is a mammal.\n2. Next, point to what you see by mentioning its hair and lungs.\n3. Finally, say the rule explaining that we classify animals by their body parts, not by where they live."
+      },
+      "check_for_understanding": {
+        "question": "Ahmad saw an animal with moist skin at a void deck pet corner. He thinks it is a reptile. Explain why he is incorrect.",
+        "expected_answer": {
+          "claim": "The animal is an amphibian, not a reptile.",
+          "evidence": "The animal has moist skin.",
+          "reasoning": "Amphibians have moist skin, while reptiles have dry, scaly skin."
+        },
+        "if_still_wrong_say": "You spotted the clue about its skin, but you missed the science rule. Say the rule about the outer covering of amphibians compared to reptiles."
+      },
+      "scaffolding_progression": "Builds on identifying basic characteristics of living things and prepares for classifying animals by life cycles in Primary 4.",
+      "notes": "Diversity of Living and Non-Living Things (General characteristics and classification) Page 38."
+    },
+    {
+      "subject": "Science",
+      "level": "P3",
+      "topic": "Diversity",
+      "sub_topic": "Diversity Of Materials And Their Properties",
+      "moe_outcome": "Compare physical properties of materials like strength, flexibility, waterproof nature, and ability to float/sink.",
+      "common_misconceptions": [
+        "The student confuses the word strong with heavy, or flexible with soft.",
+        "The student states the observation about the material but skips the science rule naming its specific physical property."
+      ],
+      "foundational_teach_script": "To choose the best material for an object, use three little steps. First, say what you think — 'Rubber is best.' Next, point to what you see — 'because it can bend easily.' Finally, say the rule — 'because flexible materials can bend without breaking.' Remember our special words. Instead of 'soft', we say 'flexible', and if water cannot pass through, we say it is 'waterproof'.",
+      "cer_structure": {
+        "claim_prompt": "What do you think — which material property makes it the most suitable? Just one short answer.",
+        "evidence_prompt": "What did you see the material doing or preventing?",
+        "reasoning_prompt": "What is the science rule about this material's physical property?"
+      },
+      "worked_example": {
+        "question": "An uncle at the hawker centre uses a wok made of metal to fry noodles. It does not break even when he accidentally drops it on the hard floor. Which property of metal makes it suitable for the wok?",
+        "wrong_answer_a_child_might_give": "Metal is suitable because it is heavy and hard.",
+        "why_its_wrong": "The student used everyday words like heavy and hard instead of the science property 'strong', skipping the proper rule.",
+        "correct_answer": {
+          "claim": "Metal is suitable because it is a strong material.",
+          "evidence": "The wok does not break when the uncle drops it on the floor.",
+          "reasoning": "A strong material can take heavy knocks or be dropped without breaking easily."
+        },
+        "step_by_step_reasoning": "1. First, say what you think by naming the property: metal is strong.\n2. Next, point to what you see: the wok does not break when dropped.\n3. Finally, say the rule: strong materials do not break easily."
+      },
+      "check_for_understanding": {
+        "question": "The floor of a neighbourhood playground is made of rubber mats. Children do not get wet when sitting on it after the rain has been wiped away because the water did not soak in. Why is rubber a suitable material?",
+        "expected_answer": {
+          "claim": "Rubber is a suitable material because it is waterproof.",
+          "evidence": "The rainwater did not soak into the rubber mats.",
+          "reasoning": "A waterproof material does not absorb water."
+        },
+        "if_still_wrong_say": "You saw the clue that the water did not soak in, but you missed the science rule. Say the rule using the exact science word for a material that blocks water."
+      },
+      "scaffolding_progression": "Builds on identifying everyday objects and prepares for understanding heat conductivity and light properties in Primary 4.",
+      "notes": "Diversity of Materials Page 39. Terms transparent/translucent/opaque not required at P3."
+    }
+  ]
+}

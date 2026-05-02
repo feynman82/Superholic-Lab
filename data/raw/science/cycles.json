@@ -1,0 +1,201 @@
+{
+  "subject": "Science",
+  "topic": "Cycles",
+  "cells": [
+    {
+      "subject": "Science",
+      "level": "P3",
+      "topic": "Cycles",
+      "sub_topic": "Life Cycles Of Insects",
+      "moe_outcome": "Observe and compare the life cycles of animals over a period of time.",
+      "common_misconceptions": [
+        "The student gives the observation (evidence) as the answer (claim) without the science rule.",
+        "The student claims the insect is dead instead of recognising it is in the pupa stage."
+      ],
+      "foundational_teach_script": "When we answer Science questions, we use three little steps: say the stage, point to the clue, say the rule. First, say what stage the insect is in. Next, point to the clue you read in the story. Finally, say the science rule about how insects grow and change.",
+      "cer_structure": {
+        "claim_prompt": "What stage of the life cycle is the insect in?",
+        "evidence_prompt": "What visible feature or clue did you see in the story?",
+        "reasoning_prompt": "What is the metamorphosis rule that explains how this insect changes?"
+      },
+      "worked_example": {
+        "question": "Wei Ming saw an insect resting in a hard shell on a leaf at the Singapore Zoo butterfly garden. He thinks it is dead. Explain why he is wrong.",
+        "wrong_answer_a_child_might_give": "It is in a shell.",
+        "why_its_wrong": "The student gave only an observation. They did not name the stage (claim) or explain the metamorphosis rule (reasoning), so the answer is incomplete.",
+        "correct_answer": {
+          "claim": "The insect is not dead, but it is in the pupa stage.",
+          "evidence": "It is resting inside a hard shell on the leaf.",
+          "reasoning": "In a butterfly's four-stage life cycle, the pupa rests in a shell and does not eat while its body changes."
+        },
+        "step_by_step_reasoning": "1. Say the stage by telling Wei Ming it is a pupa. \n2. Point to the clue that it is resting in a hard shell. \n3. Say the rule that a pupa rests and changes before becoming an adult butterfly."
+      },
+      "check_for_understanding": {
+        "question": "Priya sees a cockroach with no wings at her HDB void deck. What stage of the life cycle is it in?",
+        "expected_answer": {
+          "claim": "It is in the nymph stage.",
+          "evidence": "It looks like an adult but has no wings.",
+          "reasoning": "A cockroach has a three-stage life cycle and the young nymph has no wings until it becomes an adult."
+        },
+        "if_still_wrong_say": "You gave the claim and evidence, but you missed the science rule. Think about the stages a cockroach goes through to grow wings."
+      },
+      "scaffolding_progression": "Builds on recognising living things in Primary 3 and prepares for understanding plant and animal reproduction in Primary 5.",
+      "notes": "Cycles in Plants and Animals (Life Cycles) Page 41."
+    },
+    {
+      "subject": "Science",
+      "level": "P3",
+      "topic": "Cycles",
+      "sub_topic": "Life Cycles Of Amphibians",
+      "moe_outcome": "Observe and compare the life cycles of animals over a period of time.",
+      "common_misconceptions": [
+        "The student assumes that tadpoles breathe air through lungs like adult frogs.",
+        "The student gives the evidence as their answer but skips the rule about how frogs grow."
+      ],
+      "foundational_teach_script": "Remember our three little steps: say the stage, point to the clue, say the rule. Start by guessing the stage the animal is in. Then, point to the body parts you see in the pond. End with the science rule about how a frog grows up.",
+      "cer_structure": {
+        "claim_prompt": "What stage of the life cycle is the amphibian in?",
+        "evidence_prompt": "What visible feature or body part did you see in the story?",
+        "reasoning_prompt": "What is the science rule that explains how amphibians grow?"
+      },
+      "worked_example": {
+        "question": "Jia En saw a swimming animal with a tail and gills in a pond at Bishan Park. She says it is a fish. Explain why it might be the young of a frog instead.",
+        "wrong_answer_a_child_might_give": "It is a tadpole.",
+        "why_its_wrong": "The student gave only the claim. They did not point to the evidence in the question (tail, gills) or state the rule about how frogs hatch and grow in water.",
+        "correct_answer": {
+          "claim": "The animal is in the tadpole stage of a frog.",
+          "evidence": "It swims in the water, has a tail, and breathes through gills.",
+          "reasoning": "A frog lays eggs in water that hatch into tadpoles, which look like fish before they grow legs and lose their tails."
+        },
+        "step_by_step_reasoning": "1. Say the stage by naming the animal as a tadpole. \n2. Point to the clues, which are the tail and gills. \n3. Say the science rule about how a frog hatches in water and changes as it grows."
+      },
+      "check_for_understanding": {
+        "question": "Kavin caught a young frog that has four legs but still has a short tail. Can it live fully on land now?",
+        "expected_answer": {
+          "claim": "It cannot live fully on land yet because it is still growing into an adult frog.",
+          "evidence": "It still has a short tail.",
+          "reasoning": "As a tadpole grows into an adult frog, its tail must completely disappear before it is a full adult."
+        },
+        "if_still_wrong_say": "You spotted the clue about the tail, but you missed the science rule. Say the rule about what must happen to the tail before it becomes an adult."
+      },
+      "scaffolding_progression": "Builds on identifying animal groups and prepares for comparing different life cycles in upper primary.",
+      "notes": "Cycles in Plants and Animals (Life Cycles) Page 41."
+    },
+    {
+      "subject": "Science",
+      "level": "P3",
+      "topic": "Cycles",
+      "sub_topic": "Life Cycles Of Flowering Plants",
+      "moe_outcome": "Observe and compare the life cycles of plants grown from seeds over a period of time.",
+      "common_misconceptions": [
+        "The student confuses the fruit with the flower.",
+        "The student does not connect the seed inside a fruit to the start of a new plant."
+      ],
+      "foundational_teach_script": "Let us use our three little steps: say the stage, point to the clue, say the rule. First, tell me what stage the plant is at. Next, point to the exact plant parts you see. Finally, say the science rule about how a seed grows into a plant.",
+      "cer_structure": {
+        "claim_prompt": "What stage or process is the flowering plant in?",
+        "evidence_prompt": "What observable feature or plant part did you see?",
+        "reasoning_prompt": "What is the science rule about how flowering plants grow?"
+      },
+      "worked_example": {
+        "question": "Ahmad ate a rambutan at his HDB void deck and planted the hard seed in a pot of wet soil. A week later, a tiny root and shoot appeared. What stage of the life cycle is this?",
+        "wrong_answer_a_child_might_give": "Because it has roots.",
+        "why_its_wrong": "The student gave only an observation. They did not name the stage (young plant) or explain the rule about how a seed develops roots and a shoot to grow.",
+        "correct_answer": {
+          "claim": "The plant is in the young plant stage.",
+          "evidence": "A tiny root and shoot have grown from the planted rambutan seed.",
+          "reasoning": "A seed needs water to grow into a young plant, starting with roots to take in water and a shoot to reach for light."
+        },
+        "step_by_step_reasoning": "1. Say the stage by calling it a young plant. \n2. Point to the clue by stating that a root and a shoot have appeared. \n3. Say the rule explaining how a seed grows these parts to become a young plant."
+      },
+      "check_for_understanding": {
+        "question": "Siti sees an adult tomato plant in her school garden with yellow flowers. What will the flowers turn into?",
+        "expected_answer": {
+          "claim": "The yellow flowers will turn into tomato fruits.",
+          "evidence": "The adult plant has grown flowers.",
+          "reasoning": "In the life cycle of a flowering plant, the adult plant produces flowers which will develop into fruits containing seeds."
+        },
+        "if_still_wrong_say": "Your claim is correct, but you missed the science rule! State the rule about what flowers produce to help the plant reproduce."
+      },
+      "scaffolding_progression": "Builds on identifying basic plant parts like roots and stems, preparing for plant reproduction in Primary 5.",
+      "notes": "Cycles in Plants and Animals (Life Cycles) Page 41."
+    },
+    {
+      "subject": "Science",
+      "level": "P5",
+      "topic": "Cycles",
+      "sub_topic": "Reproduction In Plants And Animals",
+      "moe_outcome": "Describe processes in the sexual reproduction of flowering plants.",
+      "common_misconceptions": [
+        "The student confuses pollination with fertilisation.",
+        "The student states the evidence of pollen movement but skips naming the scientific process."
+      ],
+      "foundational_teach_script": "In Primary 5, we use a structured method. This is the CER move: Claim, Evidence, Reasoning. First, state your claim by naming the exact process happening. Next, provide evidence by describing where the pollen lands or what happens after. Finally, provide the reasoning by defining the named process scientifically.",
+      "cer_structure": {
+        "claim_prompt": "Is the process taking place pollination or fertilisation?",
+        "evidence_prompt": "Where did the pollen land, or what happened after it landed?",
+        "reasoning_prompt": "What is the scientific rule that defines this named process?"
+      },
+      "worked_example": {
+        "question": "Mei Ling watched a butterfly land on a flower at Gardens by the Bay. Yellow powder from the anther stuck to its legs. It then flew to another flower, and the yellow powder fell onto the stigma. Name the process that has taken place.",
+        "wrong_answer_a_child_might_give": "Fertilisation has taken place because the yellow powder moved to the stigma.",
+        "why_its_wrong": "The student made the wrong claim by confusing pollination with fertilisation, and missed the correct reasoning.",
+        "correct_answer": {
+          "claim": "The process that has taken place is pollination.",
+          "evidence": "The yellow powder from the anther was carried by the butterfly and fell onto the stigma.",
+          "reasoning": "Pollination is the transfer of pollen grains from the anther to the stigma of a flower."
+        },
+        "step_by_step_reasoning": "1. Formulate your claim by correctly identifying the process as pollination. \n2. State your evidence by describing the yellow powder moving from the anther to the stigma. \n3. Provide your reasoning by stating the scientific definition of pollination."
+      },
+      "check_for_understanding": {
+        "question": "After pollen lands on the stigma, a tube grows down the style, and the male cell fuses with the female cell in the ovary. What process is this?",
+        "expected_answer": {
+          "claim": "This process is fertilisation.",
+          "evidence": "The male cell fuses with the female cell inside the ovary.",
+          "reasoning": "Fertilisation occurs when a male reproductive cell fuses with a female reproductive cell to develop into a seed."
+        },
+        "if_still_wrong_say": "You identified the evidence perfectly. The missing piece is the reasoning step. State the scientific definition of fertilisation to complete your answer."
+      },
+      "scaffolding_progression": "Builds on the basic plant life cycle from Primary 3 and prepares for understanding food chains and human impact on the environment in Primary 6.",
+      "notes": "Cycles in Plants and Animals (Reproduction) Page 43."
+    },
+    {
+      "subject": "Science",
+      "level": "P5",
+      "topic": "Cycles",
+      "sub_topic": "Stages Of The Water Cycle",
+      "moe_outcome": "Show an understanding of how water changes from one state to another.",
+      "common_misconceptions": [
+        "The student says the water disappeared without naming evaporation.",
+        "The student forgets to state the reasoning that water gains heat from the Sun."
+      ],
+      "foundational_teach_script": "For water cycle questions, this is the CER move: Claim, Evidence, Reasoning. Start with a claim naming the change in state. Give evidence by pointing out how the puddle or wet item changed. Lastly, your reasoning must state that water gains heat from the Sun, turns to a gas, and rises.",
+      "cer_structure": {
+        "claim_prompt": "What is the name of the process happening to the water?",
+        "evidence_prompt": "What happened to the size of the puddle or the wet item in the story?",
+        "reasoning_prompt": "Explain how water gains heat from the Sun, turns to a gas, and rises."
+      },
+      "worked_example": {
+        "question": "After a heavy monsoon rain, Daniel Tan noticed a large puddle of water on an unsheltered MRT platform. A few hours later, when the Sun was shining brightly, the puddle was gone. Explain what happened to the water.",
+        "wrong_answer_a_child_might_give": "The puddle dried up because of the hot Sun.",
+        "why_its_wrong": "The student gave the evidence as their claim and skipped the reasoning about heat gain and state change.",
+        "correct_answer": {
+          "claim": "The water in the puddle evaporated.",
+          "evidence": "The puddle completely disappeared after a few hours in the bright Sun.",
+          "reasoning": "The liquid water gained heat from the Sun, turned into water vapour, and rose into the surrounding air."
+        },
+        "step_by_step_reasoning": "1. Write your claim by naming the process as evaporation. \n2. Provide evidence by stating the puddle disappeared under the Sun. \n3. Construct your reasoning by explaining that the water gained heat from the Sun to become a gas."
+      },
+      "check_for_understanding": {
+        "question": "Hui Xin washed her shoes and left them in the open field under the bright Sun. By the afternoon, her shoes were completely dry. What process caused this?",
+        "expected_answer": {
+          "claim": "The water on the shoes underwent evaporation.",
+          "evidence": "The wet shoes became completely dry in the afternoon.",
+          "reasoning": "The water on the shoes gained heat from the Sun, changed into a gas called water vapour, and rose into the air."
+        },
+        "if_still_wrong_say": "You provided the claim and evidence, but you missed the reasoning step. State the science rule about how water gains heat from the Sun to change state."
+      },
+      "scaffolding_progression": "Builds on states of matter from Primary 4 and prepares for understanding the water cycle's impact on the environment.",
+      "notes": "Cycles in Matter and Water (Water) Page 49."
+    }
+  ]
+}

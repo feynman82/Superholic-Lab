@@ -1,0 +1,123 @@
+{
+  "subject": "Science",
+  "topic": "Matter",
+  "cells": [
+    {
+      "subject": "Science",
+      "level": "P4",
+      "topic": "Matter",
+      "sub_topic": "States Of Matter",
+      "moe_outcome": "Differentiate among the three states of matter (solid, liquid, gas) in terms of shape and volume.",
+      "common_misconceptions": [
+        "The student believes that air is not matter and has no mass because it cannot be seen.",
+        "The student describes what the object looks like but skips the science rule stating its specific state of matter."
+      ],
+      "foundational_teach_script": "When we need to find out what state of matter something is, three little steps help us. First, say what you think — 'The helium is a gas.' Next, point to what you see — 'because it fills up the whole balloon.' Finally, say the rule — 'because gases have no fixed shape and no fixed volume.' Remember, even though we cannot see most gases, they are still matter and take up space!",
+      "cer_structure": {
+        "claim_prompt": "What do you think — is this a solid, liquid, or gas? Just one short answer.",
+        "evidence_prompt": "What did you see it do to its shape or the container?",
+        "reasoning_prompt": "What is the science rule about the shape and volume of this state of matter?"
+      },
+      "worked_example": {
+        "question": "Wei Ming bought a large balloon at the Marina Bay countdown. He tells his sister that the balloon is filled with 'nothing' because he cannot see anything inside it. Explain why Wei Ming is wrong.",
+        "wrong_answer_a_child_might_give": "The balloon is filled with nothing because air is invisible.",
+        "why_its_wrong": "The student stated what they saw but skipped the science rule that gas is matter and occupies space.",
+        "correct_answer": {
+          "claim": "The balloon is filled with a gas, which is matter.",
+          "evidence": "The invisible gas inflates the balloon and takes its shape.",
+          "reasoning": "Gases are a state of matter that have mass and occupy space, even if they cannot be seen."
+        },
+        "step_by_step_reasoning": "1. First, say what you think by stating the balloon contains a gas, which is matter.\n2. Next, point to what you see by mentioning the gas fills the balloon and takes up space.\n3. Finally, say the rule that gases are matter with mass and volume, even when invisible."
+      },
+      "check_for_understanding": {
+        "question": "Aishah transferred a cup of cold bandung from a tall, thin glass into a wide, shallow bowl at the void deck. Did the volume of the bandung change?",
+        "expected_answer": {
+          "claim": "The volume of the bandung remained the same.",
+          "evidence": "The bandung changed its shape to fit the wide bowl, but the amount of liquid did not change.",
+          "reasoning": "A liquid has a fixed volume but no fixed shape, so it takes the shape of its container without changing its volume."
+        },
+        "if_still_wrong_say": "You noticed the shape changed, but you missed the science rule. Say the rule about whether a liquid has a fixed volume."
+      },
+      "scaffolding_progression": "Builds on identifying general materials in Primary 3 and prepares for understanding the water cycle and heat transfer in Primary 5.",
+      "notes": "Cycles in Matter and Water (Matter) Page 45."
+    },
+    {
+      "subject": "Science",
+      "level": "P4",
+      "topic": "Matter",
+      "sub_topic": "Properties Of Solids, Liquids And Gases",
+      "moe_outcome": "Relate the properties of volume, shape, mass and compressibility to the states of matter.",
+      "common_misconceptions": [
+        "The student confuses dissolving with disappearing, believing that when salt dissolves, it is completely gone and loses its mass.",
+        "The student gives an observation from a test but skips the reasoning naming the correct property of the state of matter."
+      ],
+      "foundational_teach_script": "To describe how matter behaves, we use three little steps. First, say what you think — 'This liquid cannot be compressed.' Next, point to what you see — 'because the syringe plunger cannot be pushed down.' Finally, say the rule — 'because liquids have a fixed volume.' Never forget, when a solid dissolves in water, its mass is still there, just spread out!",
+      "cer_structure": {
+        "claim_prompt": "What do you think — which property does this matter show? Just one short answer.",
+        "evidence_prompt": "What happened when the matter was tested or moved?",
+        "reasoning_prompt": "What is the science rule about this property for this state of matter?"
+      },
+      "worked_example": {
+        "question": "Daniel Tan stirs a spoonful of salt into a glass of warm water at the school canteen. The salt can no longer be seen. He claims the salt is gone and the mass of the water remains the same. Explain why he is wrong.",
+        "wrong_answer_a_child_might_give": "The salt melted and disappeared so the mass is the same.",
+        "why_its_wrong": "The student confused dissolving with disappearing and skipped the rule that mass is conserved.",
+        "correct_answer": {
+          "claim": "The salt is still in the glass and the total mass has increased.",
+          "evidence": "The solid salt dissolved into the liquid water and can no longer be seen.",
+          "reasoning": "Matter has mass, and when a solid dissolves in a liquid, its mass is added to the total mass of the mixture."
+        },
+        "step_by_step_reasoning": "1. First, say what you think by stating the total mass has increased.\n2. Next, point to what you see by mentioning the salt dissolved but did not leave the glass.\n3. Finally, say the rule that matter has mass, so the salt's mass is conserved in the water."
+      },
+      "check_for_understanding": {
+        "question": "Kavin completely fills a plastic syringe with water and covers the opening with his thumb. When he tries to push the plunger down, it does not move. What property of water does this show?",
+        "expected_answer": {
+          "claim": "This shows that water cannot be compressed.",
+          "evidence": "The plunger could not be pushed down when the syringe was full of water.",
+          "reasoning": "Water is a liquid, and liquids have a fixed volume that cannot be compressed into a smaller space."
+        },
+        "if_still_wrong_say": "You pointed out the plunger not moving, but you missed the science rule. Say the rule describing the volume property of a liquid."
+      },
+      "scaffolding_progression": "Builds on recognizing everyday solids and liquids and prepares for understanding density and complex state changes.",
+      "notes": "Cycles in Matter and Water (Matter) Page 45. Emphasises mass conservation during physical changes."
+    },
+    {
+      "subject": "Science",
+      "level": "P4",
+      "topic": "Matter",
+      "sub_topic": "Changes In State Of Matter",
+      "moe_outcome": "Show an understanding that changes in state (melting, freezing, boiling, evaporation, condensation) are driven by heat.",
+      "common_misconceptions": [
+        "The student thinks that when water boils and turns to steam, it simply disappears into nothingness, skipping the rule of mass conservation.",
+        "The student states that an ice cube became smaller as evidence but skips naming the change rule (melting)."
+      ],
+      "foundational_teach_script": "When matter changes from one state to another, three little steps guide us. First, say what you think — 'The ice is melting.' Then, point to what you see — 'because it is turning into water.' Finally, say the rule — 'because a solid gains heat to melt into a liquid.' Even if water boils into an invisible gas, the mass is always conserved!",
+      "cer_structure": {
+        "claim_prompt": "What do you think — what is the name of the change in state? Just one short answer.",
+        "evidence_prompt": "What did you see happening to the matter in the story?",
+        "reasoning_prompt": "What is the science rule linking this change to heat gain or loss?"
+      },
+      "worked_example": {
+        "question": "Uncle Tan boiled a pot of water to make hot teh-tarik. He forgot about the pot, and an hour later, it was completely empty. He thought the heat had destroyed the water. Explain what actually happened to the water and its mass.",
+        "wrong_answer_a_child_might_give": "The heat destroyed the water so it is gone.",
+        "why_its_wrong": "The student skipped the reasoning that water changed its state to a gas and its mass was conserved in the air.",
+        "correct_answer": {
+          "claim": "The water boiled and changed into steam, which is a gas.",
+          "evidence": "The pot became empty after the water was heated for a long time.",
+          "reasoning": "When liquid water gains heat and boils, it changes into a gas, and its mass is conserved in the surrounding air."
+        },
+        "step_by_step_reasoning": "1. First, say what you think by naming the process: the water boiled and turned into steam.\n2. Next, point to what you see: the liquid left the pot and entered the air.\n3. Finally, say the rule: water gains heat to become a gas, and its total mass is conserved."
+      },
+      "check_for_understanding": {
+        "question": "Hui Xin ordered a bowl of ice kacang at the hawker centre. After ten minutes on the table, she noticed the mountain of shaved ice became much smaller and there was a pool of sweet liquid at the bottom. What change in state occurred?",
+        "expected_answer": {
+          "claim": "The shaved ice underwent melting.",
+          "evidence": "The mountain of ice became smaller and turned into a pool of liquid.",
+          "reasoning": "Melting occurs when a solid gains heat from the warmer surroundings and changes into a liquid."
+        },
+        "if_still_wrong_say": "You saw the ice turning into a pool of liquid, but you missed the science rule. Name the specific change in state and state whether it gained or lost heat."
+      },
+      "scaffolding_progression": "Builds on differentiating states of matter and prepares for the detailed application of the water cycle in Primary 5.",
+      "notes": "Cycles in Matter and Water (Matter) Page 45. Mass conservation across state changes is a key concept here."
+    }
+  ]
+}

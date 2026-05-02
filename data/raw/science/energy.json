@@ -1,0 +1,396 @@
+{
+  "subject": "Science",
+  "topic": "Energy",
+  "cells": [
+    {
+      "subject": "Science",
+      "level": "P4",
+      "topic": "Energy",
+      "sub_topic": "Sources Of Light",
+      "moe_outcome": "Recognise that an object can be seen when it reflects light or when it is a source of light.",
+      "common_misconceptions": [
+        "The student believes that a mirror makes its own light because it is very bright.",
+        "The student gives the evidence that an object is glowing but skips the rule that a source of light must produce its own light."
+      ],
+      "foundational_teach_script": "When we need to find out if something gives off light, three little steps help us. First, say what you think — 'The Sun is a source of light.' Next, point to what you see — 'because it is shining brightly in the sky.' Finally, say the rule — 'because a source of light makes its own light.' Remember, just because something is shiny does not mean it makes its own light!",
+      "cer_structure": {
+        "claim_prompt": "Is the object in the story a source of light?",
+        "evidence_prompt": "What did you see the object doing?",
+        "reasoning_prompt": "What is the science rule about objects that are sources of light?"
+      },
+      "worked_example": {
+        "question": "Wei Ming went into a completely dark room at his HDB flat and brought a large mirror. He told his sister that the mirror is a source of light. Explain why Wei Ming is wrong.",
+        "wrong_answer_a_child_might_give": "The mirror is shiny so it makes its own light.",
+        "why_its_wrong": "The student gave the wrong claim by confusing 'shiny' with 'making light', and did not state the rule that a source must produce its own light.",
+        "correct_answer": {
+          "claim": "The mirror is not a source of light.",
+          "evidence": "It does not give off any light in the completely dark room.",
+          "reasoning": "A source of light makes its own light, but a mirror only reflects light from another source."
+        },
+        "step_by_step_reasoning": "1. First, say what you think by stating the mirror is not a source of light.\n2. Next, point to what you see: the mirror is dark in a dark room and produces nothing.\n3. Finally, say the rule: a true source of light makes its own light instead of just reflecting it."
+      },
+      "check_for_understanding": {
+        "question": "During a blackout at the void deck, Aishah turned on her battery-powered torch to see the stairs. Is the torch a source of light?",
+        "expected_answer": {
+          "claim": "Yes, the torch is a source of light.",
+          "evidence": "The torch shines brightly and helps Aishah see the stairs in the dark.",
+          "reasoning": "A source of light is an object that produces its own light."
+        },
+        "if_still_wrong_say": "You pointed out that the torch was shining, but you missed the science rule. Say the rule about what makes an object a true source of light."
+      },
+      "scaffolding_progression": "Builds on identifying basic environmental elements in early primary and prepares for understanding light reflection and shadows.",
+      "notes": "Energy Forms and Uses (Light) Page 67."
+    },
+    {
+      "subject": "Science",
+      "level": "P4",
+      "topic": "Energy",
+      "sub_topic": "Reflection Of Light",
+      "moe_outcome": "Recognise that an object can be seen when it reflects light.",
+      "common_misconceptions": [
+        "The student thinks that only shiny objects like mirrors reflect light, while dull objects do not reflect light at all.",
+        "The student states that light bounces off an object but skips the rule that this is how the object enters our eyes to be seen."
+      ],
+      "foundational_teach_script": "To explain how we see things, use three little steps. First, say what you think — 'The wall reflects light.' Next, point to what you see — 'because the torchlight shines on it and I can see the wall.' Finally, say the rule — 'because light bounces off the wall and enters our eyes.' Everything we see that is not a light source is bouncing light into our eyes!",
+      "cer_structure": {
+        "claim_prompt": "Does the object reflect light?",
+        "evidence_prompt": "What happened to the light when it hit the surface?",
+        "reasoning_prompt": "What is the science rule about how we see objects that do not make their own light?"
+      },
+      "worked_example": {
+        "question": "Priya was cycling in Bishan Park at night. The back of her bicycle had a red plastic reflector that glowed brightly when a car's headlights shone on it. Is the reflector a source of light?",
+        "wrong_answer_a_child_might_give": "It is a source of light because it glows brightly in the dark.",
+        "why_its_wrong": "The student gave the wrong claim and evidence, skipping the rule that the reflector is bouncing light, not making it.",
+        "correct_answer": {
+          "claim": "The red plastic reflector is not a source of light; it reflects light.",
+          "evidence": "It only glows when the car's headlights shine on it.",
+          "reasoning": "We can see objects that are not sources of light because light bounces off their surface and enters our eyes."
+        },
+        "step_by_step_reasoning": "1. First, say what you think: the reflector is not a light source, it just reflects light.\n2. Next, point to what you see: it only glows when headlights hit it.\n3. Finally, say the rule: light from the car bounces off the reflector and enters our eyes so we can see it."
+      },
+      "check_for_understanding": {
+        "question": "Jia En dropped a wooden block on the floor of her bedroom. Even though the wood is dull and not shiny, she can still see it when she turns on the room lamp. Why?",
+        "expected_answer": {
+          "claim": "The wooden block reflects light from the room lamp.",
+          "evidence": "Jia En can see the wooden block when the lamp shines on it.",
+          "reasoning": "Light from the lamp bounces off the wooden block and enters her eyes, allowing her to see it."
+        },
+        "if_still_wrong_say": "You mentioned the lamp shining, but you missed the science rule. Say the rule about what the light does after hitting the block so her eyes can see it."
+      },
+      "scaffolding_progression": "Builds on identifying light sources and prepares for understanding how different materials affect the amount of light passing through.",
+      "notes": "Energy Forms and Uses (Light) Page 67."
+    },
+    {
+      "subject": "Science",
+      "level": "P4",
+      "topic": "Energy",
+      "sub_topic": "Formation Of Shadows",
+      "moe_outcome": "Recognise that light travels in straight lines and thus a shadow is formed when light is blocked by an object.",
+      "common_misconceptions": [
+        "The student claims that a shadow is caused by darkness coming out of the object.",
+        "The student provides the clue about the dark patch but skips the science rule that light travels in straight lines and is blocked."
+      ],
+      "foundational_teach_script": "When we explain how a shadow forms, we take three little steps. First, say what you think — 'A shadow is formed on the wall.' Next, point to what you see — 'because the book is placed in front of the torch.' Finally, say the rule — 'because light travels in a straight line and the opaque object blocks it.' Three little steps make a complete answer!",
+      "cer_structure": {
+        "claim_prompt": "What is the dark patch formed in the story?",
+        "evidence_prompt": "Where was the object placed compared to the light source?",
+        "reasoning_prompt": "What is the science rule about how light travels and gets blocked?"
+      },
+      "worked_example": {
+        "question": "Kavin stood under a street lamp at his HDB block. He noticed a dark shape on the ground that looked exactly like him. Explain how this dark shape was formed.",
+        "wrong_answer_a_child_might_give": "The dark shape is a shadow because Kavin is blocking the light.",
+        "why_its_wrong": "The student gave the claim and evidence, but missed the science rule that light travels in straight lines.",
+        "correct_answer": {
+          "claim": "The dark shape on the ground is Kavin's shadow.",
+          "evidence": "Kavin stood under the street lamp and blocked the light from reaching the ground.",
+          "reasoning": "Light travels in straight lines, so when an opaque object blocks the light path, a shadow is formed."
+        },
+        "step_by_step_reasoning": "1. First, say what you think by claiming the dark shape is a shadow.\n2. Next, point to what you see: Kavin's body is standing between the lamp and the ground.\n3. Finally, say the rule: light travels in straight lines and forms a shadow when it is completely blocked."
+      },
+      "check_for_understanding": {
+        "question": "Mei Ling used her hands to make the shape of a bird between a torch and a wall. A dark patch appeared on the wall. Why did the dark patch appear?",
+        "expected_answer": {
+          "claim": "The dark patch is a shadow.",
+          "evidence": "Mei Ling's hands blocked the light from the torch.",
+          "reasoning": "Light travels in straight lines, and a shadow forms when an opaque object blocks the light from reaching the wall."
+        },
+        "if_still_wrong_say": "You identified the shadow and the blocking hands, but you missed the science rule. Say the rule about how light travels in straight lines."
+      },
+      "scaffolding_progression": "Builds on recognizing that light reflects, and prepares for investigating the variables that affect the size and shape of shadows.",
+      "notes": "Energy Forms and Uses (Light) Page 67."
+    },
+    {
+      "subject": "Science",
+      "level": "P4",
+      "topic": "Energy",
+      "sub_topic": "Transparent, Translucent And Opaque Materials",
+      "moe_outcome": "Investigate the variables that affect shadows formed by using transparent, translucent, and opaque materials.",
+      "common_misconceptions": [
+        "The student confuses translucent with transparent, thinking tracing paper lets all light through.",
+        "The student points to the lightness of the shadow but skips the rule defining the specific material property."
+      ],
+      "foundational_teach_script": "To describe a material, we use three little steps. First, say what you think — 'This glass is transparent.' Next, point to what you see — 'because the shadow on the screen is very faint or missing.' Finally, say the rule — 'because transparent materials let most light pass through.' We use 'opaque' when no light passes through, and 'translucent' when only some light passes through.",
+      "cer_structure": {
+        "claim_prompt": "Is the material transparent, translucent, or opaque?",
+        "evidence_prompt": "What did you notice about the shadow or the light passing through it?",
+        "reasoning_prompt": "What is the science rule defining this material's property?"
+      },
+      "worked_example": {
+        "question": "Daniel Tan held a piece of tracing paper in front of his face at the school canteen. His friends could only see a blurry outline of his face, and it cast a lighter shadow than his textbook. What type of material is the tracing paper?",
+        "wrong_answer_a_child_might_give": "It is transparent because you can see through it a bit.",
+        "why_its_wrong": "The student made the wrong claim by confusing translucent with transparent and skipped the correct rule.",
+        "correct_answer": {
+          "claim": "The tracing paper is a translucent material.",
+          "evidence": "It only allows a blurry outline to be seen and casts a lighter shadow.",
+          "reasoning": "A translucent material allows only some light to pass through it."
+        },
+        "step_by_step_reasoning": "1. First, say what you think: the tracing paper is a translucent material.\n2. Next, point to what you see: it creates a lighter shadow and a blurry outline.\n3. Finally, say the rule: translucent materials allow only some light to pass through."
+      },
+      "check_for_understanding": {
+        "question": "Siti shone a torch at a thick cardboard box. No light could be seen on the wall behind the box, and a very dark shadow was formed. What type of material is the cardboard box?",
+        "expected_answer": {
+          "claim": "The cardboard box is an opaque material.",
+          "evidence": "It cast a very dark shadow and no light could be seen on the wall behind it.",
+          "reasoning": "An opaque material does not allow any light to pass through it."
+        },
+        "if_still_wrong_say": "You noticed the dark shadow, but you missed the science rule. Say the rule using the exact science word for a material that blocks all light."
+      },
+      "scaffolding_progression": "Builds on the concept of shadows and prepares for exploring heat conductivity in different materials.",
+      "notes": "Energy Forms and Uses (Light) Page 67. Transparent/translucent/opaque vocabulary IS introduced at P4 Light."
+    },
+    {
+      "subject": "Science",
+      "level": "P4",
+      "topic": "Energy",
+      "sub_topic": "Sources Of Heat",
+      "moe_outcome": "Identify some common sources of heat.",
+      "common_misconceptions": [
+        "The student thinks a blanket or a woollen sweater is a source of heat because it keeps them warm.",
+        "The student identifies the object but skips the reasoning that a true source must produce its own heat energy."
+      ],
+      "foundational_teach_script": "When finding heat sources, we take three little steps. First, say what you think — 'The Sun is a source of heat.' Then, point to what you see — 'because it warms up the pavement at the playground.' Finally, say the rule — 'because a source of heat gives off its own heat energy.' Remember, clothes do not make heat; they only trap the heat your body makes!",
+      "cer_structure": {
+        "claim_prompt": "Is the object a source of heat?",
+        "evidence_prompt": "What did you observe the object doing to its surroundings?",
+        "reasoning_prompt": "What is the science rule about what a source of heat does?"
+      },
+      "worked_example": {
+        "question": "During a rainy day, Ahmad wore a thick woollen sweater to stay warm at the MRT station. His friend said the sweater is a source of heat. Explain why his friend is wrong.",
+        "wrong_answer_a_child_might_give": "The sweater is not a source of heat because it is not plugged into the wall.",
+        "why_its_wrong": "The student gave a claim but used an incorrect reason, skipping the science rule about producing heat energy.",
+        "correct_answer": {
+          "claim": "The woollen sweater is not a source of heat.",
+          "evidence": "It does not produce any heat of its own.",
+          "reasoning": "A source of heat must produce its own heat energy, but the sweater only traps the body's heat."
+        },
+        "step_by_step_reasoning": "1. First, say what you think: the sweater is not a source of heat.\n2. Next, point to what you see: the sweater is just fabric and does not generate heat.\n3. Finally, say the rule: a true source of heat gives off its own heat energy."
+      },
+      "check_for_understanding": {
+        "question": "Hui Xin turned on a campfire at the barbecue pit in East Coast Park. She stood near it and felt warm. Is the fire a source of heat?",
+        "expected_answer": {
+          "claim": "Yes, the fire is a source of heat.",
+          "evidence": "Hui Xin felt warm when standing near it.",
+          "reasoning": "A source of heat gives off its own heat energy to its surroundings."
+        },
+        "if_still_wrong_say": "You pointed to the clue that she felt warm, but you missed the science rule. Say the rule about what a true heat source gives off."
+      },
+      "scaffolding_progression": "Builds on recognizing basic energy sources in daily life and prepares for understanding heat transfer and temperature changes.",
+      "notes": "Energy Forms and Uses (Heat) Page 69."
+    },
+    {
+      "subject": "Science",
+      "level": "P4",
+      "topic": "Energy",
+      "sub_topic": "Effects Of Heat Gain And Heat Loss",
+      "moe_outcome": "List some effects of heat gain or loss in our everyday life, such as expansion and contraction.",
+      "common_misconceptions": [
+        "The student thinks an object expanding means more matter was added to it.",
+        "The student states that the object changed shape but skips the rule that heat gain causes expansion."
+      ],
+      "foundational_teach_script": "To explain why things change size, we use three little steps. First, say what you think — 'The metal lid expanded.' Next, point to what you see — 'because it became looser on the glass jar.' Finally, say the rule — 'because objects expand when they gain heat.' Hot things expand, and cold things contract. That is the rule of heat!",
+      "cer_structure": {
+        "claim_prompt": "What happened to the object (did it gain or lose heat)?",
+        "evidence_prompt": "What size or shape change did you observe?",
+        "reasoning_prompt": "What is the science rule about heat gain and expansion, or heat loss and contraction?"
+      },
+      "worked_example": {
+        "question": "Wei Ming could not open a glass jar with a tight metal lid at the hawker centre. The uncle poured hot water over the metal lid, and it opened easily. Explain why.",
+        "wrong_answer_a_child_might_give": "The hot water melted the lid so it became loose.",
+        "why_its_wrong": "The student gave the wrong claim (melting instead of expanding) and skipped the rule of heat gain.",
+        "correct_answer": {
+          "claim": "The metal lid gained heat and expanded.",
+          "evidence": "When hot water was poured on it, the tight lid became slightly larger and looser.",
+          "reasoning": "When a solid gains heat, it expands and increases in volume."
+        },
+        "step_by_step_reasoning": "1. First, say what you think: the metal lid gained heat and expanded.\n2. Next, point to what you see: the hot water made the lid slightly larger so it could twist off.\n3. Finally, say the rule: solid objects expand when they gain heat from their surroundings."
+      },
+      "check_for_understanding": {
+        "question": "Aishah placed a slightly dented ping pong ball into a basin of hot water. After a few minutes, the ping pong ball became round again. Why did this happen?",
+        "expected_answer": {
+          "claim": "The air inside the ping pong ball gained heat and expanded.",
+          "evidence": "The dented ball became perfectly round again.",
+          "reasoning": "When a gas gains heat from the hot water, it expands and pushes against the inside of the ball."
+        },
+        "if_still_wrong_say": "You noticed the ball became round, but you missed the science rule. Say the rule about what happens to gas when it gains heat."
+      },
+      "scaffolding_progression": "Builds on recognizing heat sources and prepares for measuring temperature changes with instruments.",
+      "notes": "Energy Forms and Uses (Heat) Page 69."
+    },
+    {
+      "subject": "Science",
+      "level": "P4",
+      "topic": "Energy",
+      "sub_topic": "Temperature And Use Of Thermometers",
+      "moe_outcome": "Differentiate between heat and temperature, and relate temperature change to heat transfer.",
+      "common_misconceptions": [
+        "The student treats temperature and heat as the exact same thing.",
+        "The student gives the temperature reading but skips the rule explaining that heat transfer caused the change."
+      ],
+      "foundational_teach_script": "When we measure how hot something is, we take three little steps. First, say what you think — 'The water lost heat.' Next, point to what you see — 'because the thermometer reading dropped to 30 degrees.' Finally, say the rule — 'because temperature measures how hot something is, and it drops when heat is lost.' Remember, heat is the energy moving around, but temperature is just the number on the thermometer!",
+      "cer_structure": {
+        "claim_prompt": "Did the object gain or lose heat?",
+        "evidence_prompt": "What did the thermometer reading show?",
+        "reasoning_prompt": "What is the science rule linking heat transfer to temperature?"
+      },
+      "worked_example": {
+        "question": "Priya bought a cup of hot teh-tarik at the void deck. She placed a thermometer inside and it read 80°C. An hour later, she checked again and it read 30°C. What happened to the teh-tarik?",
+        "wrong_answer_a_child_might_give": "The teh-tarik became 30°C because its heat became smaller.",
+        "why_its_wrong": "The student gave the evidence but used incorrect terms, confusing heat and temperature and skipping the rule.",
+        "correct_answer": {
+          "claim": "The teh-tarik lost heat to the surrounding air.",
+          "evidence": "The temperature reading on the thermometer dropped from 80°C to 30°C.",
+          "reasoning": "Heat is a form of energy that flows to a colder place, causing the temperature of the hotter object to decrease."
+        },
+        "step_by_step_reasoning": "1. First, say what you think: the teh-tarik lost heat.\n2. Next, point to what you see: the thermometer showed a drop from 80°C to 30°C.\n3. Finally, say the rule: heat flows from hotter objects to colder surroundings, making the temperature drop."
+      },
+      "check_for_understanding": {
+        "question": "Jia En put a thermometer into a cup of iced water. She left it on the kitchen table. Why did the thermometer reading slowly rise?",
+        "expected_answer": {
+          "claim": "The iced water gained heat from the surrounding air.",
+          "evidence": "The thermometer reading slowly went up.",
+          "reasoning": "When an object gains heat from warmer surroundings, its temperature increases."
+        },
+        "if_still_wrong_say": "You saw the reading go up, but you missed the science rule. Say the rule explaining how gaining heat changes the temperature."
+      },
+      "scaffolding_progression": "Builds on the concept of heat transfer and prepares for investigating heat conductivity in different materials.",
+      "notes": "Energy Forms and Uses (Heat) Page 69."
+    },
+    {
+      "subject": "Science",
+      "level": "P4",
+      "topic": "Energy",
+      "sub_topic": "Good And Poor Conductors Of Heat",
+      "moe_outcome": "Identify good and poor conductors of heat.",
+      "common_misconceptions": [
+        "The student thinks metal is a poor conductor because it feels cold to the touch in an air-conditioned room.",
+        "The student identifies the material but skips the reasoning about the speed of heat transfer."
+      ],
+      "foundational_teach_script": "To choose the best material for hot or cold jobs, use three little steps. First, say what you think — 'Metal is a good conductor.' Next, point to what you see — 'because it caused the ice to melt very quickly.' Finally, say the rule — 'because good conductors transfer heat very fast.' Do not be tricked if metal feels cold — it just means it is stealing the heat from your hand very fast!",
+      "cer_structure": {
+        "claim_prompt": "Is the material a good or poor conductor of heat?",
+        "evidence_prompt": "What happened to the temperature or the ice in the story?",
+        "reasoning_prompt": "What is the science rule about how fast this material transfers heat?"
+      },
+      "worked_example": {
+        "question": "At the hawker centre, Kavin noticed that the uncle's wok is made of stainless steel, but the handle is made of thick plastic. Why is plastic used for the handle instead of steel?",
+        "wrong_answer_a_child_might_give": "Plastic is used because it does not have any heat inside it.",
+        "why_its_wrong": "The student gave a flawed reason and skipped the science rule about heat conductivity.",
+        "correct_answer": {
+          "claim": "Plastic is a poor conductor of heat.",
+          "evidence": "The handle does not become too hot for the uncle to hold.",
+          "reasoning": "Poor conductors transfer heat very slowly, protecting the hands from the heat of the fire."
+        },
+        "step_by_step_reasoning": "1. First, say what you think: plastic is a poor conductor of heat.\n2. Next, point to what you see: the uncle can hold the handle safely without getting burned.\n3. Finally, say the rule: poor conductors transfer heat from the fire to the hand very slowly."
+      },
+      "check_for_understanding": {
+        "question": "Siti sat on a metal bench and then a plastic chair at the neighbourhood playground on a very hot afternoon. The metal bench felt much hotter. Why?",
+        "expected_answer": {
+          "claim": "Metal is a better conductor of heat than plastic.",
+          "evidence": "The metal bench felt much hotter to sit on.",
+          "reasoning": "Good conductors transfer heat from the hot sun to Siti's body much faster than poor conductors."
+        },
+        "if_still_wrong_say": "You identified that metal felt hotter, but you missed the science rule. Say the rule using the exact science word for transferring heat fast."
+      },
+      "scaffolding_progression": "Builds on understanding heat gain/loss and prepares for complex energy conversions in upper primary.",
+      "notes": "Energy Forms and Uses (Heat) Page 69."
+    },
+    {
+      "subject": "Science",
+      "level": "P6",
+      "topic": "Energy",
+      "sub_topic": "Photosynthesis And Energy Pathways",
+      "moe_outcome": "Investigate the requirements for photosynthesis and recognise that the Sun is our primary source of energy.",
+      "common_misconceptions": [
+        "The student believes that plants get their energy by eating soil.",
+        "The student states that the plant is making food but skips the reasoning naming the full photosynthesis equation."
+      ],
+      "foundational_teach_script": "This is the CER move: Claim, Evidence, Reasoning. First, make a claim by stating that the plant is making food. Next, provide evidence by noting that the leaf is receiving sunlight, water, and carbon dioxide. Finally, provide the reasoning by defining photosynthesis: light energy, water, and carbon dioxide are used to produce glucose and oxygen.",
+      "cer_structure": {
+        "claim_prompt": "What process is the plant carrying out to survive?",
+        "evidence_prompt": "What three things did the plant take in from its environment?",
+        "reasoning_prompt": "What is the scientific rule explaining how these inputs are converted into food?"
+      },
+      "worked_example": {
+        "question": "Ahmad observed a large tree in Bishan Park growing well on a sunny day. His friend says the tree gets its energy by absorbing soil through its roots. Explain why his friend is wrong using the concept of energy pathways.",
+        "wrong_answer_a_child_might_give": "The tree gets energy from the sun to make food, not the soil.",
+        "why_its_wrong": "The student gave the claim but skipped the evidence of water and carbon dioxide, and missed the full reasoning rule.",
+        "correct_answer": {
+          "claim": "The tree does not get energy from soil; it makes its own food through photosynthesis.",
+          "evidence": "The tree's leaves take in sunlight, carbon dioxide from the air, and water from the ground.",
+          "reasoning": "During photosynthesis, light energy from the Sun is converted into chemical energy in food (glucose), while producing oxygen."
+        },
+        "step_by_step_reasoning": "1. Write your claim by stating the tree makes its own food instead of eating soil. \n2. Provide evidence by listing the three inputs: sunlight, carbon dioxide, and water. \n3. Construct your reasoning by explaining the photosynthesis rule and how light energy converts to chemical energy."
+      },
+      "check_for_understanding": {
+        "question": "Mei Ling placed a potted plant in a completely dark cupboard for a week. The plant stopped growing and its leaves turned yellow. Why did this happen?",
+        "expected_answer": {
+          "claim": "The plant could not carry out photosynthesis.",
+          "evidence": "It was placed in a dark cupboard without any sunlight.",
+          "reasoning": "Without light energy from the Sun, the plant cannot convert water and carbon dioxide into food for survival."
+        },
+        "if_still_wrong_say": "You noted the lack of sunlight, but you missed the reasoning step. State the science rule about what the plant produces during photosynthesis."
+      },
+      "scaffolding_progression": "Builds on basic plant life cycles from Primary 3 and prepares for understanding complex food webs in ecosystems.",
+      "notes": "Energy Forms and Uses (Photosynthesis) Page 71."
+    },
+    {
+      "subject": "Science",
+      "level": "P6",
+      "topic": "Energy",
+      "sub_topic": "Energy Conversion In Everyday Objects",
+      "moe_outcome": "Investigate energy conversion from one form to another.",
+      "common_misconceptions": [
+        "The student believes a battery 'makes' or 'creates' electricity out of nothing.",
+        "The student identifies the final output energy but skips naming the starting potential energy in the reasoning."
+      ],
+      "foundational_teach_script": "For everyday devices, this is the CER move: Claim, Evidence, Reasoning. Start your claim by identifying the input and output energy forms. Give evidence by describing the action you observed, like a motor turning or a bulb glowing. For your reasoning, state the law that energy is converted from one form to another, never created from nothing.",
+      "cer_structure": {
+        "claim_prompt": "What are the input and output energy forms in this device?",
+        "evidence_prompt": "What action or output did you observe when the device was used?",
+        "reasoning_prompt": "What is the science rule about energy converting from one form to another?"
+      },
+      "worked_example": {
+        "question": "Hui Xin turned on a battery-powered torch at East Coast Park to look for her dropped keys. She says the batteries inside 'created' the light energy. Explain the actual energy conversion taking place.",
+        "wrong_answer_a_child_might_give": "The battery makes electrical energy which turns into light energy.",
+        "why_its_wrong": "The student claimed the battery 'makes' electricity, skipping the chemical potential energy in the reasoning step.",
+        "correct_answer": {
+          "claim": "The batteries do not create energy; they convert chemical potential energy into electrical energy, and then into light and heat.",
+          "evidence": "When switched on, the torch bulb lights up and feels warm.",
+          "reasoning": "Energy cannot be created. The chemical potential energy in the battery is converted to electrical energy, which the bulb converts into light and heat energy."
+        },
+        "step_by_step_reasoning": "1. Write your claim by naming the sequence of energy changes. \n2. Provide evidence by pointing out the torch produces light and heat. \n3. Construct your reasoning by stating that energy is converted, starting from the chemical potential energy in the batteries."
+      },
+      "check_for_understanding": {
+        "question": "Daniel Tan switched on the ceiling fan at the school canteen. State the energy conversion that causes the fan blades to spin.",
+        "expected_answer": {
+          "claim": "Electrical energy is converted into kinetic energy and some heat energy.",
+          "evidence": "When switched on, the fan blades spin rapidly to cool the canteen.",
+          "reasoning": "The motor in the fan converts electrical energy from the mains into kinetic energy for movement."
+        },
+        "if_still_wrong_say": "You identified the spinning blades, but you missed the reasoning step. State the exact science rule naming the input and output energy forms."
+      },
+      "scaffolding_progression": "Builds on identifying basic energy forms in lower primary and prepares for applying energy conversion to interactions within the environment in Primary 6.",
+      "notes": "Energy Conversion Page 73."
+    }
+  ]
+}
