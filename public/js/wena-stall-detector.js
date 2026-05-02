@@ -36,13 +36,46 @@ export const STALL_REASONS = Object.freeze({
  *   DIRECT_TEACH      — pivot to direct teaching from the playbook cell (2 stalls)
  *   SCAFFOLD_DOWN     — drop a level: address the prerequisite from
  *                       cell.scaffolding_progression (3+ stalls)
+ *   CHECK_RESPONSE    — student is answering a check question after DIRECT_TEACH
+ *                       (Sprint 3; cross-turn detection in handlers.js)
+ *
+ *   Sprint 7 — Science CER probe modes (no stall, decompose CER):
+ *   CER_PROBE_CLAIM      — student hasn't given a claim yet
+ *   CER_PROBE_EVIDENCE   — student gave claim, ask for evidence
+ *   CER_PROBE_REASONING  — student gave claim+evidence, ask for the science rule
  */
 export const PEDAGOGY_MODES = Object.freeze({
-  SOCRATIC:          'SOCRATIC',
-  SOCRATIC_REPHRASE: 'SOCRATIC_REPHRASE',
-  DIRECT_TEACH:      'DIRECT_TEACH',
-  SCAFFOLD_DOWN:     'SCAFFOLD_DOWN'
+  SOCRATIC:            'SOCRATIC',
+  SOCRATIC_REPHRASE:   'SOCRATIC_REPHRASE',
+  DIRECT_TEACH:        'DIRECT_TEACH',
+  SCAFFOLD_DOWN:       'SCAFFOLD_DOWN',
+  CHECK_RESPONSE:      'CHECK_RESPONSE',
+  CER_PROBE_CLAIM:     'CER_PROBE_CLAIM',
+  CER_PROBE_EVIDENCE:  'CER_PROBE_EVIDENCE',
+  CER_PROBE_REASONING: 'CER_PROBE_REASONING'
 });
+
+// ─── Sprint 7: CER completeness detection (Science) ─────────────────────
+// Heuristic, deterministic. Splits the user message by sentence boundary and
+// scans for connectives that signal Evidence vs Reasoning. Singlish particles
+// (lah / leh / lor / etc.) are stripped before parsing so they don't poison
+// the tokeniser. Telemetry in Sprint 8 will measure precision/recall in
+// production traffic — the heuristic intentionally errs lenient.
+
+const EVIDENCE_CONNECTIVES = [
+  'because', 'since',
+  'i saw', 'i observed', 'i can see',
+  'the diagram shows', 'from the picture', 'the picture shows',
+  'it shows', 'you can see',
+  'got '          // Singlish "got [noun]" = "has [noun]"
+];
+const REASONING_CONNECTIVES = [
+  'this means', 'this is because', 'the rule is',
+  'scientifically', 'this happens because', 'according to'
+];
+// Word/phrase patterns that signal a generalised principle (rule-like reasoning).
+const REASONING_GENERALS = [' all ', 'always', ' every ', 'rule', 'principle'];
+const SINGLISH_PARTICLES_RX = /\b(lah|leh|lor|hor|liao|sia|meh|ah|wah|eh)\b/gi;
 
 // ── EXPLICIT_IDK regex set ─────────────────────────────────────────────
 // Matched against the LOWERCASED, trimmed message. `^...$` anchored where
@@ -206,32 +239,139 @@ export function consecutiveStalls(history) {
 }
 
 /**
- * Picks a pedagogy mode based on the student's recent stall streak.
- * Decision table (per Sprint 2 spec):
+ * Detects how much of a CER triple a student has produced in their last
+ * message. Used by the Science branch of selectPedagogyMode to decide
+ * whether to probe for Claim, Evidence, or Reasoning.
  *
- *   stalls === 0         → SOCRATIC
- *   stalls === 1         → SOCRATIC_REPHRASE
- *   stalls === 2 + cell  → DIRECT_TEACH
- *   stalls === 2, no cell → SOCRATIC_REPHRASE  (can't teach without content)
- *   stalls >= 3 + cell.scaffolding_progression → SCAFFOLD_DOWN
- *   stalls >= 3 + cell (no scaffold)           → DIRECT_TEACH (re-teach)
- *   stalls >= 3, no cell                       → SOCRATIC_REPHRASE (last resort)
+ * Heuristic — NOT LLM-based. Decision logic:
+ *   - empty / stall pattern (idk, hmm, etc.) → 'none'
+ *   - first sentence starts with an evidence connective ("because…")
+ *     and there's no preceding claim → 'claim_only' (treat as fragment
+ *     with implicit topic claim)
+ *   - any evidence-connective + any reasoning-connective/general → 'complete'
+ *   - sentCount ≥ 3 + reasoning-connective/general → 'complete'
+ *     (presume middle sentences carry the observation/evidence)
+ *   - evidence-connective only → 'claim_evidence'
+ *   - reasoning-connective only → 'claim_evidence' (lenient — treats
+ *     the rule statement as subsuming an implicit observation)
+ *   - otherwise → 'claim_only'
  *
- * @param {Array<{role:string,content:string,timestamp?:number}>} history - full conversation
- * @param {Object|null} contextCell - playbook cell (optional)
+ * Singlish particles (lah/leh/lor/hor/liao/sia/meh/ah/wah/eh) are stripped
+ * before parsing. "got [noun]" is recognised as Singlish for "has [noun]"
+ * and counted as evidence.
+ *
+ * Limitations:
+ *   - Bare single-token answers ("frog") classify as claim_only.
+ *   - Rule words ("all", "rule", "principle") embedded in evidence-only
+ *     sentences may falsely upgrade the result. Telemetry will measure.
+ *   - Multi-paragraph answers with intermixed CER components hit the
+ *     sentCount≥3+reasoning fallback path.
+ *
+ * @param {string} userMessage
+ * @returns {'none'|'claim_only'|'claim_evidence'|'complete'}
+ */
+export function detectCerCompleteness(userMessage) {
+  const trimmed = String(userMessage == null ? '' : userMessage).trim();
+  if (trimmed.length === 0) return 'none';
+  // Punctuation-only or no alphanumerics → not a real attempt.
+  if (!/[a-z0-9]/i.test(trimmed)) return 'none';
+
+  const lowerRaw = trimmed.toLowerCase();
+  // Stall pattern — same family as detectStall's IDK list.
+  if (/^(idk|dunno|hmm+|um+|uh+|er+|eh+|i don'?t know|no idea|not sure|cannot|can'?t)\b/.test(lowerRaw)) {
+    return 'none';
+  }
+
+  // Strip Singlish particles for connective scanning.
+  const lower = lowerRaw.replace(SINGLISH_PARTICLES_RX, '').replace(/\s+/g, ' ').trim();
+
+  const sents = trimmed.split(/[.!?]+/).map(s => s.trim()).filter(Boolean);
+  const sentCount = sents.length;
+
+  // Fragment guard: if the FIRST sentence starts with an evidence connective
+  // ("because of heat") there's no preceding claim sentence — treat as
+  // claim-less fragment.
+  const firstSentLower = (sents[0] || '').toLowerCase();
+  const startsWithEvidenceConnective = EVIDENCE_CONNECTIVES.some(c =>
+    firstSentLower === c.trim() || firstSentLower.startsWith(c)
+  );
+  if (startsWithEvidenceConnective) {
+    // Document choice: fragment counts as claim_only (substantive content
+    // exists, but structurally missing the claim sentence).
+    return 'claim_only';
+  }
+
+  const hasEvidenceConnective  = EVIDENCE_CONNECTIVES.some(c => lower.includes(c));
+  const hasReasoningConnective = REASONING_CONNECTIVES.some(c => lower.includes(c));
+  const hasReasoningGeneral    = REASONING_GENERALS.some(c => lower.includes(c));
+  const hasReasoning           = hasReasoningConnective || hasReasoningGeneral;
+
+  if (hasEvidenceConnective && hasReasoning) return 'complete';
+  if (sentCount >= 3 && hasReasoning)        return 'complete';
+  if (hasEvidenceConnective)                 return 'claim_evidence';
+  if (hasReasoning)                          return 'claim_evidence';
+  return 'claim_only';
+}
+
+/**
+ * Picks a pedagogy mode based on the student's recent stall streak and,
+ * for Science, on which CER components their last reply contained.
+ *
+ * English flow (Sprint 2, unchanged):
+ *   stalls === 0          → SOCRATIC
+ *   stalls === 1          → SOCRATIC_REPHRASE
+ *   stalls === 2 + cell   → DIRECT_TEACH
+ *   stalls === 2, no cell → SOCRATIC_REPHRASE
+ *   stalls ≥ 3 + scaffold → SCAFFOLD_DOWN
+ *   stalls ≥ 3 + cell     → DIRECT_TEACH (re-teach)
+ *   stalls ≥ 3, no cell   → SOCRATIC_REPHRASE (last resort)
+ *
+ * Science flow (Sprint 7):
+ *   stall path identical to English when stalls ≥ 1.
+ *   When stalls === 0, decompose by CER:
+ *     cer === 'none'           → CER_PROBE_CLAIM
+ *     cer === 'claim_only'     → CER_PROBE_EVIDENCE
+ *     cer === 'claim_evidence' → CER_PROBE_REASONING
+ *     cer === 'complete'       → SOCRATIC (affirm + extend)
+ *
+ * @param {Array<{role:string,content:string}>} history
+ * @param {object|null} contextCell - cell with optional `subject` field
+ *                                     (defaults to 'English' if absent)
+ * @param {object} [options]        - reserved for future use
  * @returns {string} one of PEDAGOGY_MODES values
  */
-export function selectPedagogyMode(history, contextCell) {
+export function selectPedagogyMode(history, contextCell, options = {}) {
   const stalls = consecutiveStalls(history);
-  if (stalls === 0) return PEDAGOGY_MODES.SOCRATIC;
-  if (stalls === 1) return PEDAGOGY_MODES.SOCRATIC_REPHRASE;
-  if (stalls === 2) {
-    return contextCell ? PEDAGOGY_MODES.DIRECT_TEACH : PEDAGOGY_MODES.SOCRATIC_REPHRASE;
+  const subject = contextCell?.subject || 'English';
+
+  // English flow (Sprint 2 — unchanged).
+  if (subject !== 'Science') {
+    if (stalls === 0) return PEDAGOGY_MODES.SOCRATIC;
+    if (stalls === 1) return PEDAGOGY_MODES.SOCRATIC_REPHRASE;
+    if (stalls === 2) {
+      return contextCell ? PEDAGOGY_MODES.DIRECT_TEACH : PEDAGOGY_MODES.SOCRATIC_REPHRASE;
+    }
+    if (contextCell && contextCell.scaffolding_progression) return PEDAGOGY_MODES.SCAFFOLD_DOWN;
+    if (contextCell) return PEDAGOGY_MODES.DIRECT_TEACH;
+    return PEDAGOGY_MODES.SOCRATIC_REPHRASE;
   }
-  // stalls >= 3
-  if (contextCell && contextCell.scaffolding_progression) {
-    return PEDAGOGY_MODES.SCAFFOLD_DOWN;
+
+  // Science flow (Sprint 7).
+  if (stalls >= 1) {
+    if (stalls === 1) return PEDAGOGY_MODES.SOCRATIC_REPHRASE;
+    if (stalls === 2) {
+      return contextCell ? PEDAGOGY_MODES.DIRECT_TEACH : PEDAGOGY_MODES.SOCRATIC_REPHRASE;
+    }
+    if (contextCell && contextCell.scaffolding_progression) return PEDAGOGY_MODES.SCAFFOLD_DOWN;
+    if (contextCell) return PEDAGOGY_MODES.DIRECT_TEACH;
+    return PEDAGOGY_MODES.SOCRATIC_REPHRASE;
   }
-  if (contextCell) return PEDAGOGY_MODES.DIRECT_TEACH;
-  return PEDAGOGY_MODES.SOCRATIC_REPHRASE;
+
+  // No stall — decompose CER from the student's last user message.
+  const lastUserMsg = [...(history || [])].reverse().find(m => m && m.role === 'user')?.content || '';
+  const cer = detectCerCompleteness(lastUserMsg);
+  if (cer === 'none')           return PEDAGOGY_MODES.CER_PROBE_CLAIM;
+  if (cer === 'claim_only')     return PEDAGOGY_MODES.CER_PROBE_EVIDENCE;
+  if (cer === 'claim_evidence') return PEDAGOGY_MODES.CER_PROBE_REASONING;
+  return PEDAGOGY_MODES.SOCRATIC;   // 'complete' — affirm + extend
 }

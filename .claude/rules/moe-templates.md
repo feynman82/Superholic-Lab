@@ -1,14 +1,16 @@
 # MOE Templates — DEPRECATED stub
-# Superholic Lab | Last updated: 2026-05-01
+# Superholic Lab | Last updated: 2026-05-02 (router pointer refresh after Phase 1 split)
 #
 # This rule file is DEPRECATED. The canonical source for question schemas,
-# difficulty calibration, visual payload routing, and Singapore context is:
+# difficulty calibration, visual payload routing, and Singapore context is
+# the SPLIT generator template under:
 #
-#   D:\Git\Superholic-Lab\Master_Question_Template.md   (v5.0)
+#   D:\Git\Superholic-Lab\Master_Question_Template.md     (router, ~160 lines)
+#   D:\Git\Superholic-Lab\master_question_template\        (the actual rule files)
 #
-# Read that file once before any question generation. It supersedes the
-# schemas, CER framework, mathematical heuristics, type matrix, and
-# distribution targets that previously lived here.
+# Always start with the router. It tells you which sub-files to load for
+# the current task. Do NOT load every sub-file — that defeats the purpose
+# of the split.
 #
 # This stub remains in `.claude/rules/` only so that any tooling counting
 # "13 active rules" still finds 13 files. Treat it as a pointer.
@@ -18,20 +20,24 @@
 
 | What you need | Read this |
 |---|---|
-| Universal base schema (all 8 question types) | `Master_Question_Template.md` §3 |
-| Per-type schemas (mcq, short_ans, word_problem, open_ended, cloze, editing, comprehension, visual_text) | `Master_Question_Template.md` §3 |
-| Level guidance (per-level topic/sub-topic introduction) | `Master_Question_Template.md` §4 |
-| Difficulty calibration (Foundation / Standard / Advanced / HOTS, anchored to PSLE Booklet A + Paper 2 LAQs) | `Master_Question_Template.md` §5 |
-| Visual payload routing + diagram primitives | `Master_Question_Template.md` §6, §7 |
-| Singapore context mandate (names, places, currency) | `Master_Question_Template.md` §1 |
-| SQL escaping + JSON stringification rules | `Master_Question_Template.md` §2 |
-| FK constraint behaviour (`fk_qb_level_topic`) | `Master_Question_Template.md` §2 + `ARCHITECTURE.md` CANON TABLES section |
+| Entry point (always start here) | `Master_Question_Template.md` (root) |
+| System persona + SQL/JSON/FK technical rules + `question_bank` schema columns + AO mapping + final QA checklist | `master_question_template/_base.md` |
+| Difficulty rubric (Foundation / Standard / Advanced / HOTS) anchored to PSLE Booklet A + Paper 2 LAQs + per-subject anchors + batch distribution targets | `master_question_template/_calibration.md` |
+| Per-type schema + hard rules + difficulty calibration for **mcq** | `master_question_template/types/mcq.md` |
+| Per-type schema + hard rules for **cloze** | `master_question_template/types/cloze.md` |
+| Per-type schema + hard rules for **editing** | `master_question_template/types/editing.md` |
+| Per-type schema + hard rules for **open_ended** | `master_question_template/types/open_ended.md` |
+| Per-type schemas for **short_ans / word_problem / comprehension / visual_text** (Phase 2 split pending) | `master_question_template/types/_phase2_remaining.md` |
+| FK-enforced canonical taxonomy + per-level topic/sub-topic guidance + anti-hallucination rules + mandatory generation workflow | `master_question_template/canon/canon_taxonomy.md` |
+| Visual payload function catalogue + per-(level, topic) diagram routing map + §7 hard rules | `master_question_template/visuals/visuals_full.md` |
 
 ## Generation workflow
 
 For autonomous batch generation, run `/generate-batch`
 (`.claude/commands/generate-batch.md`). It runs the canon-aware gap analysis
-SQL, builds surgical prompts via `scripts/question-factory/prompt-builder.js`,
+SQL, builds surgical prompts via `scripts/question-factory/prompt-builder.cjs`
+(which reads from `master_question_template/` and emits only the relevant
+slice — typically 60–80% smaller than loading the full split tree),
 generates SQL inserts, validates them against the 10-check list, applies
 to Supabase, and updates the live MANIFEST.
 

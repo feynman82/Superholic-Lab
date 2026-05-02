@@ -211,9 +211,10 @@ Authority: `docs/QUEST_PAGE_SPEC.md` §12 (XP rules), §14 (badge list).
   `coding-style`, `design-system`, `development-workflow`, `efficiency`,
   `git-workflow`, `moe-templates`, `patterns`, `pedagogical-standards`,
   `performance`, `safety`, `security`, `tech-stack`, `testing`
-  *(`moe-templates` is now a thin pointer to `Master_Question_Template.md`
-  v5.0 — read the master template directly for question schemas,
-  difficulty calibration, and visual payload routing.)*
+  *(`moe-templates` is now a thin pointer to the SPLIT generator template:
+  start at `Master_Question_Template.md` (router) → load relevant files
+  from `master_question_template/` per the router's instructions.
+  Phase 1 split landed 2026-05-02.)*
 
 **Commands** (`.claude/commands/`) — 8 slash commands:
   `/build-fix`, `/code-review`, `/deploy`, `/generate-batch`,

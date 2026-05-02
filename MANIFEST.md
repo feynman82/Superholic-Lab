@@ -1,9 +1,9 @@
 # MANIFEST — Question Bank Inventory (v5.0)
 
 **Generated:** 2026-05-01 (post-canon-v5 migration)
-**Total active questions:** 11,266 (+5 in batch_20260501_p6_math_std_mcq, all `approved_at IS NULL` pending review)
+**Total active questions:** 11,271 (+5 in batch_20260502_p6_math_std_mcq_test, all `approved_at IS NULL` pending review)
 **Total deprecated:** 0
-**Distinct (level, subject, topic, sub_topic) combinations:** 173
+**Distinct (level, subject, topic, sub_topic) combinations:** 175
 **Canon entries (canon_level_topics):** 296
 **FK enforced:** `question_bank(level, subject, topic, sub_topic)` → `canon_level_topics` (constraint `fk_qb_level_topic`, VALIDATED)
 
@@ -17,9 +17,9 @@ longer recorded here — query Supabase by `created_at` window if needed.
 | Subject | P1 | P2 | P3 | P4 | P5 | P6 | Total |
 |---------|----|----|----|----|----|----|-------|
 | **English**     | 141 | 182 | 240 | 550 | 417 | 444 | 1 974 |
-| **Mathematics** | — | 7 | 6 | 29 | 27 | 60 | 129 |
+| **Mathematics** | — | 7 | 6 | 29 | 27 | 65 | 134 |
 | **Science**     | n/a | n/a | 2 351 | 2 242 | 2 131 | 2 439 | 9 163 |
-| **Total**       | 141 | 189 | 2 597 | 2 821 | 2 575 | 2 943 | **11 266** |
+| **Total**       | 141 | 189 | 2 597 | 2 821 | 2 575 | 2 948 | **11 271** |
 
 Notes:
 - Science has no P1/P2 syllabus (subject introduced at P3).
@@ -28,7 +28,7 @@ Notes:
 
 ## 2. Sub-topic Coverage Gaps (canon entries with 0 questions)
 
-153 of the 296 canon (level, subject, topic, sub_topic) combinations currently
+151 of the 296 canon (level, subject, topic, sub_topic) combinations currently
 have **zero** active questions. These are the highest-leverage targets for the
 next generation sprint.
 
@@ -44,7 +44,7 @@ next generation sprint.
 
 **Primary 5 (17 gaps):** Angles At A Point • Angles On A Straight Line • Finding Unknown Angles • Vertically Opposite Angles • Area Of Triangle Concepts • Average Total÷Count • Avg Total–Average–Count Relationship • Mixed Numbers • Properties Of Parallelogram, Rhombus & Trapezium • Length Word Problems • Money Word Problems • Percentage Expressing • Finding % Part Of A Whole • Volume Building With Cubes • Volume In Cubic Units • Volume Of Liquid Word Problems • Use Of Brackets
 
-**Primary 6 (8 gaps):** Algebra Interpretation • Algebra Using A Letter • Ratio Comparison • Ratio Dividing In Given Ratio • Ratio Equivalent • Ratio Simplest Form • Ratio Part-Whole • Ratio Fraction↔Ratio Relationship
+**Primary 6 (6 gaps):** Algebra Interpretation • Algebra Using A Letter • Ratio Comparison • Ratio Dividing In Given Ratio • Ratio Equivalent • Ratio Part-Whole
 
 ### Science (0 gaps after v5 reconciliation)
 

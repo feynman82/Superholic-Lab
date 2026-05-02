@@ -29,7 +29,7 @@
  * - All WA/EOY marks cross-checked against 2025 school papers
  *
  * TERMINOLOGY (must match Supabase question_bank columns):
- *   subject:  'Mathematics' | 'Science' | 'English'   (canonical FK values per Master_Question_Template v4.6)
+ *   subject:  'Mathematics' | 'Science' | 'English'   (canonical FK values per master_question_template/canon/canon_taxonomy.md, router v6.0+)
  *   level:    'Primary 1' through 'Primary 6'
  *   type:     'mcq' | 'short_ans' | 'word_problem' | 'open_ended' | 'cloze' | 'editing' | 'comprehension' | 'visual_text'
  *   topic:    As per Master Question Template Section 4 taxonomy + canon_level_topics

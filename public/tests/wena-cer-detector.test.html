@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wena CER Detector — Sprint 7 Test Harness</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    body { background: var(--sage-darker); color: var(--cream); font-family: var(--font-body); padding: var(--space-8) var(--space-4); min-height: 100vh; }
+    .harness { max-width: 880px; margin: 0 auto; }
+    h1 { font-family: var(--font-display); letter-spacing: 0.04em; margin-bottom: var(--space-2); }
+    .subtitle { color: var(--sage-light); margin-bottom: var(--space-6); font-size: 0.875rem; }
+    .summary { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-4) var(--space-6); margin-bottom: var(--space-6); background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: var(--radius-lg); backdrop-filter: blur(12px); box-shadow: var(--shadow-neo); font-family: 'JetBrains Mono', monospace; font-weight: 700; letter-spacing: 0.04em; }
+    .summary.is-pending { color: var(--cream-dim); }
+    .summary.is-pass    { color: var(--mint); border-color: var(--mint); }
+    .summary.is-fail    { color: var(--danger); border-color: var(--danger); }
+    .summary .summary-dot { width: 12px; height: 12px; border-radius: var(--radius-full); background: currentColor; box-shadow: 0 0 8px currentColor; }
+    h3.section-heading { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--mint); margin: var(--space-6) 0 var(--space-2); padding: var(--space-2) var(--space-3); background: var(--glass); border-left: 3px solid var(--mint); border-radius: var(--radius-sm); }
+    h3.section-heading:first-of-type { margin-top: 0; }
+    .test-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+    .test-row { display: grid; grid-template-columns: 28px 1fr; gap: var(--space-3); padding: var(--space-3) var(--space-4); background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--radius-md); align-items: start; }
+    .test-row.is-pass { border-left: 3px solid var(--mint); }
+    .test-row.is-fail { border-left: 3px solid var(--danger); }
+    .test-row.is-pending { border-left: 3px solid var(--cream-dim); }
+    .test-icon { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 1rem; line-height: 1.4; }
+    .test-row.is-pass    .test-icon { color: var(--mint); }
+    .test-row.is-fail    .test-icon { color: var(--danger); }
+    .test-row.is-pending .test-icon { color: var(--cream-dim); }
+    .test-name { font-weight: 600; font-size: 0.9375rem; line-height: 1.4; }
+    .test-detail { margin-top: var(--space-1); font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--sage-light); white-space: pre-wrap; word-break: break-word; }
+    .test-row.is-fail .test-detail { color: var(--danger); }
+  </style>
+</head>
+<body>
+  <main class="harness">
+    <h1>Wena CER Detector — Sprint 7 Test Harness</h1>
+    <div class="subtitle">detectCerCompleteness — heuristic, deterministic. Maps user message → 'none' / 'claim_only' / 'claim_evidence' / 'complete'.</div>
+    <div id="summary" class="summary is-pending"><span class="summary-dot"></span><span id="summary-text">Running 0 / 15 …</span></div>
+    <div id="sections"></div>
+  </main>
+  <script type="module">
+    import { detectCerCompleteness } from '/js/wena-stall-detector.js';
+    const results = [];
+    const sumEl = document.getElementById('summary');
+    const sumTxt = document.getElementById('summary-text');
+    const sectionsEl = document.getElementById('sections');
+    let currentList = null;
+    function startSection(label) {
+      const h = document.createElement('h3'); h.className='section-heading'; h.textContent = label;
+      sectionsEl.appendChild(h);
+      const ol = document.createElement('ol'); ol.className='test-list'; sectionsEl.appendChild(ol); currentList = ol;
+    }
+    function row(name) {
+      const li = document.createElement('li'); li.className='test-row is-pending';
+      const icon = document.createElement('span'); icon.className='test-icon'; icon.textContent='…';
+      const body = document.createElement('div');
+      const h = document.createElement('div'); h.className='test-name'; h.textContent=name;
+      const d = document.createElement('div'); d.className='test-detail';
+      body.appendChild(h); body.appendChild(d); li.appendChild(icon); li.appendChild(body); currentList.appendChild(li);
+      return { li, icon, d };
+    }
+    function setS(r,s,t='') { r.li.classList.remove('is-pending','is-pass','is-fail'); r.li.classList.add(`is-${s}`); r.icon.textContent = s==='pass'?'✓':s==='fail'?'✗':'…'; if(t) r.d.textContent=t; }
+    function update() { const p=results.filter(r=>r.s==='pass').length, f=results.filter(r=>r.s==='fail').length, t=results.length;
+      sumTxt.textContent = `${p} / ${t} passed${f?` (${f} failed)`:''}`; sumEl.classList.remove('is-pending','is-pass','is-fail');
+      if(f>0) sumEl.classList.add('is-fail'); else if(p===t) sumEl.classList.add('is-pass'); else sumEl.classList.add('is-pending'); }
+    function test(name, fn) { const r=row(name); const e={name,s:'pending'}; results.push(e);
+      try { fn(); e.s='pass'; setS(r,'pass','OK'); } catch(err) { e.s='fail'; setS(r,'fail',err?.message||String(err)); console.error(name,err); } finally { update(); } }
+    function assertEq(a, b, l='value') { if(a!==b) throw new Error(`${l}: expected ${JSON.stringify(b)}, got ${JSON.stringify(a)}`); }
+    function assertOneOf(a, opts, l='value') { if (!opts.includes(a)) throw new Error(`${l}: expected one of ${JSON.stringify(opts)}, got ${JSON.stringify(a)}`); }
+
+    startSection('NONE');
+    test("TEST 1: '' → 'none'",   () => assertEq(detectCerCompleteness(''),    'none'));
+    test("TEST 2: 'idk' → 'none'", () => assertEq(detectCerCompleteness('idk'), 'none'));
+    test("TEST 3: 'hmm' → 'none'", () => assertEq(detectCerCompleteness('hmm'), 'none'));
+
+    startSection('CLAIM_ONLY');
+    test("TEST 4: 'It is a frog' → 'claim_only'", () => assertEq(detectCerCompleteness('It is a frog'), 'claim_only'));
+    test("TEST 5: 'The mirror is not a source of light' → 'claim_only'", () => assertEq(detectCerCompleteness('The mirror is not a source of light'), 'claim_only'));
+    test("TEST 6: 'Water turns into vapour' → 'claim_only'", () => assertEq(detectCerCompleteness('Water turns into vapour'), 'claim_only'));
+
+    startSection('CLAIM_EVIDENCE');
+    test("TEST 7: 'It is a frog because it has wet skin' → 'claim_evidence'",
+      () => assertEq(detectCerCompleteness('It is a frog because it has wet skin'), 'claim_evidence'));
+    test("TEST 8: '... I saw it does not glow ...' → 'claim_evidence'",
+      () => assertEq(detectCerCompleteness('The mirror is not a light source. I saw it does not glow in the dark.'), 'claim_evidence'));
+    test("TEST 9: '... The diagram shows ...' → 'claim_evidence'",
+      () => assertEq(detectCerCompleteness('It is a tadpole. The diagram shows gills and a tail.'), 'claim_evidence'));
+
+    startSection('COMPLETE');
+    test("TEST 10: 'It is a frog because ... This means it is an amphibian' → 'complete'",
+      () => assertEq(detectCerCompleteness('It is a frog because it has wet skin. This means it is an amphibian.'), 'complete'));
+    test("TEST 11: 3-sentence answer with rule → 'complete' (sentence-count fallback)",
+      () => assertEq(detectCerCompleteness('The mirror is not a source of light. It does not glow in the dark. The rule is that a source must make its own light.'), 'complete'));
+    test("TEST 12: 'Water evaporates. I saw the puddle dry up. This is because heat ...' → 'complete'",
+      () => assertEq(detectCerCompleteness('Water evaporates. I saw the puddle dry up. This is because heat from the sun gives water energy to become vapour.'), 'complete'));
+
+    startSection('EDGE CASES');
+    // Documented choice: fragment 'because of heat' → 'claim_only' (substantive content but missing claim sentence).
+    test("TEST 13: 'because of heat' (fragment) → 'claim_only' (documented)",
+      () => assertEq(detectCerCompleteness('because of heat'), 'claim_only'));
+    test("TEST 14: long rambling all 3 parts intermixed → 'complete'",
+      () => assertEq(detectCerCompleteness("Okay so it is evaporation, I think. I saw the puddle got smaller after the sun came out. The rule is that liquid water gains heat from the sun and turns into water vapour, which is a gas. So that's why."), 'complete'));
+    test("TEST 15: Singlish 'It is frog lah, got wet skin one' → 'claim_evidence'",
+      () => assertEq(detectCerCompleteness('It is frog lah, got wet skin one'), 'claim_evidence'));
+
+    update();
+  </script>
+</body>
+</html>

@@ -46,7 +46,6 @@
       "Bash(wc:*)",
       "Bash(rm api/chat.js api/checkout.js api/generate.js api/generate-question.js api/grade-answer.js api/save-exam-result.js api/webhook.js)",
       "Bash(rm -rf api/prompts)",
-<<<<<<< Updated upstream
       "Bash(ls D:/Git/Superholic-Lab/js/exam*)",
       "Bash(ls D:/Git/Superholic-Lab/pages/exam*)",
       "Bash(ls D:/Git/Superholic-Lab/api/generate*)",
@@ -94,22 +93,18 @@
       "Bash(npm install *)",
       "Bash(git pull *)",
       "mcp__claude_ai_Supabase__execute_sql",
-      "mcp__claude_ai_Supabase__apply_migration"
-=======
+      "mcp__claude_ai_Supabase__apply_migration",
       "Bash(claude mcp:*)",
       "Bash(find supabase:*)",
       "Bash(xargs ls:*)",
       "Bash(find . -name *.sql ! -path ./.git/*)",
       "Bash(xargs head:*)",
-      "Bash(find:*)",
       "Bash(xargs grep:*)",
       "Bash(grep -r \"students\" /d/Git/Superholic-Lab/supabase/*.sql)",
       "Bash(grep -r \"quiz_attempts\\\\|daily_usage\\\\|students\\\\|question_attempts\" /d/Git/Superholic-Lab/js/*.js)",
       "Bash(grep -E \"subject=|level=|topic=|type=\" /d/Git/Superholic-Lab/pages/*.html)",
       "Bash(grep -r \"URLSearchParams\\\\|window.location.search\\\\|?subject\\\\|?level\" /d/Git/Superholic-Lab/js/*.js)",
-      "Bash(grep -n \"function getSupabase\\\\|window.getSupabase\\\\|export.*getSupabase\" /d/Git/Superholic-Lab/js/*.js)",
-      "Bash(node -e ':*)"
->>>>>>> Stashed changes
+      "Bash(grep -n \"function getSupabase\\\\|window.getSupabase\\\\|export.*getSupabase\" /d/Git/Superholic-Lab/js/*.js)"
     ]
   },
   "enabledMcpjsonServers": [
