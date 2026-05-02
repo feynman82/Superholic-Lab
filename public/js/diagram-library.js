@@ -4754,10 +4754,26 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
    * Use for P6 Circles "Area And Perimeter Of Composite Figures With Circles".
    *
    * @param {object} params.base
-   *   {shape: "rectangle"|"square", width, height, label?, vertices: ["A","B","C","D"]}
+   *   {shape: "rectangle"|"square", width, height, label?, vertices: ["A","B","C","D"],
+   *    show_outline?: boolean}
    *   Vertices are CLOCKWISE from top-left: A=TL, B=TR, C=BR, D=BL. Square
    *   defaults height to width. width/height in display units (px-equivalent;
    *   the renderer scales to fit).
+   *   `show_outline` (default `true`) controls whether the base rectangle's
+   *   stroke is drawn at all. Set to `false` for stand-alone arc figures
+   *   (e.g. a quarter circle on its own with a cut-out) where the rectangle
+   *   is purely conceptual scaffolding for vertex naming and arc placement.
+   *   Vertex labels (A, B, C, D) still render when `show_outline: false`.
+   *
+   *   Edge auto-suppression: even with `show_outline: true`, base edges that
+   *   coincide with an `add`-mode arc's chord (e.g. the diameter of a
+   *   semicircle that bulges outward, or the full radii of a corner quarter
+   *   circle) are suppressed automatically to avoid double-stroking. Triggers:
+   *   (a) `semicircle` op with `mode: "add"` whose `diameter_endpoints` are
+   *   two adjacent base vertices → suppress that base edge;
+   *   (b) `quarterCircle` op with `mode: "add"` at a base corner whose
+   *   radius equals the adjacent base side length → suppress the two coinciding
+   *   base edges.
    *
    * @param {Array} params.operations  Ordered array. Each entry is one of:
    *   - {type: "fullCircle",    center?: {x,y}, corner?: "A"|.., midSide?: "AB"|..,
@@ -4795,6 +4811,9 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     if (shape === 'square') bh = bw;
     const verts = (base && Array.isArray(base.vertices) && base.vertices.length === 4)
       ? base.vertices : ['A', 'B', 'C', 'D'];
+    // Optional flag: when false, suppress the entire base rectangle outline.
+    // Vertex labels still render. Default true (backward compatible).
+    const showOutline = !(base && base.show_outline === false);
 
     // World units: y grows DOWNWARD to match SVG. Vertex letters
     // A=TL, B=TR, C=BR, D=BL (clockwise from top-left).
@@ -4994,7 +5013,61 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     });
 
     // 5. Base outline last (so it sits on top of overlapping arc outlines).
-    svg += `<rect x="${tx(0).toFixed(2)}" y="${ty(0).toFixed(2)}" width="${ts(bw).toFixed(2)}" height="${ts(bh).toFixed(2)}" fill="none" stroke="${STROKE}" stroke-width="2"/>`;
+    //    Drawn as 4 individual edges so we can auto-suppress edges that
+    //    coincide with an `add`-mode arc's chord (avoids double-stroking).
+    //    `showOutline === false` suppresses ALL four edges; vertex labels
+    //    still render below.
+    if (showOutline) {
+      // Identify which adjacent-vertex edges the user's "add" ops have
+      // already implicitly stroked (as part of the closed arc path).
+      // Edge keys are normalised by sorting the two vertex letters.
+      const edgeKey = (a, b) => [a, b].sort().join('-');
+      const suppressed = new Set();
+      // Adjacency map: which two vertices form each base edge.
+      const baseEdges = [
+        { from: verts[0], to: verts[1], side: 'top'    }, // A→B
+        { from: verts[1], to: verts[2], side: 'right'  }, // B→C
+        { from: verts[2], to: verts[3], side: 'bottom' }, // C→D
+        { from: verts[3], to: verts[0], side: 'left'   }, // D→A
+      ];
+      const adjacencySet = new Set(baseEdges.map(e => edgeKey(e.from, e.to)));
+
+      (operations || []).forEach((op) => {
+        if (!op || op.mode !== 'add') return;
+        if (op.type === 'semicircle') {
+          const ep = op.diameter_endpoints;
+          const sideStr = Array.isArray(ep) ? ep.join('') : (typeof ep === 'string' ? ep : '');
+          if (sideStr.length === 2) {
+            const k = edgeKey(sideStr[0], sideStr[1]);
+            if (adjacencySet.has(k)) suppressed.add(k);
+          }
+        } else if (op.type === 'quarterCircle') {
+          const cc = op.center_corner;
+          const along = Array.isArray(op.radii_along) ? op.radii_along : [];
+          const opR = Number(op.radius) || 0;
+          along.forEach((s) => {
+            if (typeof s !== 'string' || s.length !== 2) return;
+            const other = (s[0] === cc) ? s[1] : (s[1] === cc ? s[0] : null);
+            if (!other) return;
+            const k = edgeKey(cc, other);
+            if (!adjacencySet.has(k)) return;
+            // Only suppress when the radius covers the full side length;
+            // otherwise the un-arced portion of the edge still needs drawing.
+            const a = corners[cc], b = corners[other];
+            if (!a || !b) return;
+            const sideLen = Math.hypot(b.x - a.x, b.y - a.y);
+            if (Math.abs(opR - sideLen) < 1e-6) suppressed.add(k);
+          });
+        }
+      });
+
+      baseEdges.forEach(({ from, to }) => {
+        if (suppressed.has(edgeKey(from, to))) return;
+        const a = corners[from], b = corners[to];
+        if (!a || !b) return;
+        svg += `<line x1="${tx(a.x).toFixed(2)}" y1="${ty(a.y).toFixed(2)}" x2="${tx(b.x).toFixed(2)}" y2="${ty(b.y).toFixed(2)}" stroke="${STROKE}" stroke-width="2" stroke-linecap="square"/>`;
+      });
+    }
 
     // 6. Vertex labels
     if (show_vertex_labels) {
