@@ -27,9 +27,14 @@
   var qaCurrentQ    = null;
   var qaCurrentIdx  = -1;   // index in qaQueue; -1 means came from approved/find
   var qaSearchTimer = null;
+  var qaAuditOpen   = false;
+  var qaAuditCache  = {};   // { questionId: events[] }
 
   // Sidebar collapse state — pending/approved default collapsed, find default open
   var qaSectionOpen = { pending: false, approved: false, find: true };
+
+  // Syllabus canon — loaded async on first use; null until ready
+  var qaSyllabus = null;
 
   // ── TOAST NOTIFICATIONS ───────────────────────────────────────────────────
   function qaNotify(msg, type) {
@@ -908,6 +913,435 @@
     }
 
     el.innerHTML = html;
+  }
+
+
+  // ════════════════════════════════════════════════════════════════════════
+  // COMMIT 4a — SYLLABUS CANON LOADING
+  // ════════════════════════════════════════════════════════════════════════
+
+  async function qaLoadSyllabus() {
+    if (qaSyllabus) return qaSyllabus;
+    try {
+      var mod = await import('/js/syllabus.js');
+      qaSyllabus = {
+        canonical: mod.CANONICAL_SYLLABUS,
+        subjectKey: function (s) {
+          if (!s) return null;
+          var k = s.toLowerCase();
+          if (k.indexOf('math') === 0) return 'mathematics';
+          if (k.indexOf('sci')  === 0) return 'science';
+          if (k.indexOf('eng')  === 0) return 'english';
+          return null;
+        }
+      };
+      window.qaSyllabus = qaSyllabus;
+      return qaSyllabus;
+    } catch (err) {
+      console.error('[qa] failed to load syllabus.js:', err);
+      qaSyllabus = { canonical: null, subjectKey: function () { return null; } };
+      return qaSyllabus;
+    }
+  }
+
+  // ════════════════════════════════════════════════════════════════════════
+  // COMMIT 4a — CASCADING DROPDOWNS
+  // ════════════════════════════════════════════════════════════════════════
+
+  async function qaPopulateTopics(currentTopic) {
+    var sel = document.getElementById('qfTopic');
+    if (!sel) return;
+    await qaLoadSyllabus();
+    var subj = (document.getElementById('qfSubject') || {}).value || '';
+    var key  = qaSyllabus.subjectKey(subj);
+    var canon = qaSyllabus.canonical && key ? qaSyllabus.canonical[key] : null;
+
+    var html = '<option value="">— Select —</option>';
+    var seen = {};
+    if (canon) {
+      Object.keys(canon).forEach(function (t) {
+        seen[t] = true;
+        html += '<option value="' + esc(t) + '">' + esc(t) + '</option>';
+      });
+    }
+    if (currentTopic && !seen[currentTopic]) {
+      html += '<option value="' + esc(currentTopic) + '">(off-canon: ' + esc(currentTopic) + ')</option>';
+    }
+    sel.innerHTML = html;
+    if (currentTopic) sel.value = currentTopic;
+  }
+
+  async function qaPopulateSubTopics(currentSubTopic) {
+    var sel = document.getElementById('qfSubTopic');
+    if (!sel) return;
+    await qaLoadSyllabus();
+    var subj = (document.getElementById('qfSubject') || {}).value || '';
+    var topic = (document.getElementById('qfTopic') || {}).value || '';
+    var key  = qaSyllabus.subjectKey(subj);
+    var subs = (qaSyllabus.canonical && key && qaSyllabus.canonical[key] && qaSyllabus.canonical[key][topic]) || [];
+
+    var html = '<option value="">— Select —</option>';
+    var seen = {};
+    subs.forEach(function (st) {
+      seen[st] = true;
+      html += '<option value="' + esc(st) + '">' + esc(st) + '</option>';
+    });
+    if (currentSubTopic && !seen[currentSubTopic]) {
+      html += '<option value="' + esc(currentSubTopic) + '">(off-canon: ' + esc(currentSubTopic) + ')</option>';
+    }
+    sel.innerHTML = html;
+    if (currentSubTopic) sel.value = currentSubTopic;
+  }
+
+  window.qaOnSubjectChange = async function () {
+    await qaPopulateTopics('');
+    await qaPopulateSubTopics('');
+    if (typeof window.qaOnTopicChange === 'function') window.qaOnTopicChange();
+    window.qaLivePreview();
+  };
+
+  var _qaOnTopicChangeOrig = window.qaOnTopicChange;
+  window.qaOnTopicChange = async function () {
+    await qaPopulateSubTopics('');
+    if (typeof _qaOnTopicChangeOrig === 'function') _qaOnTopicChangeOrig();
+    window.qaLivePreview();
+  };
+
+
+  // ════════════════════════════════════════════════════════════════════════
+  // COMMIT 4a — MANUAL FLAG TOGGLE + AUTO-FLAG ADVISORIES
+  // ════════════════════════════════════════════════════════════════════════
+
+  function qaIsFlagged(q) { return q && q.flag_review === true; }
+
+  function qaUpdateFlagToggleUI() {
+    var btn = document.getElementById('qaFlagToggle');
+    if (!btn) return;
+    var lbl = btn.querySelector('.qa-flag-toggle__lbl');
+    var on  = qaIsFlagged(qaCurrentQ);
+    btn.classList.toggle('is-flagged', on);
+    if (lbl) lbl.textContent = on ? 'Flagged' : 'Flag for Review';
+  }
+
+  function qaRenderRuleHits() {
+    var el = document.getElementById('qaRuleHits');
+    if (!el) return;
+    if (!qaCurrentQ || !window.qaRules) { el.innerHTML = ''; return; }
+    var hits = window.qaRules.evaluateAll(qaCurrentQ);
+    if (hits.length === 0) { el.innerHTML = ''; return; }
+    el.innerHTML = hits.map(function (h) {
+      return '<div class="qa-rule-hit qa-rule-hit--' + h.severity + '">'
+        + '<span class="qa-rule-hit__rule">' + esc(h.rule) + '</span>'
+        + '<span class="qa-rule-hit__msg">' + esc(h.message) + '</span>'
+        + '</div>';
+    }).join('');
+  }
+
+  window.qaToggleFlag = async function () {
+    if (!qaCurrentQ) { qaNotify('No question selected.', 'error'); return; }
+    var newVal = !qaIsFlagged(qaCurrentQ);
+    var btn = document.getElementById('qaFlagToggle');
+    if (btn) btn.disabled = true;
+    try {
+      var res = await fetch('/api/qa-questions', {
+        method: 'PUT',
+        headers: {
+          'Authorization': 'Bearer ' + adminSession.access_token,
+          'Content-Type':  'application/json'
+        },
+        body: JSON.stringify({
+          id: qaCurrentQ.id,
+          fields: { flag_review: newVal },
+          auditAction: newVal ? 'flagged' : 'unflagged'
+        })
+      });
+      if (!res.ok) {
+        var err = await res.json().catch(function () { return {}; });
+        throw new Error(err.error || res.statusText);
+      }
+      qaCurrentQ.flag_review = newVal;
+      var inQueue = qaQueue.find(function (x) { return x.id === qaCurrentQ.id; });
+      if (inQueue) inQueue.flag_review = newVal;
+      var inApprov = qaApproved.find(function (x) { return x.id === qaCurrentQ.id; });
+      if (inApprov) inApprov.flag_review = newVal;
+      qaUpdateFlagToggleUI();
+      qaUpdateFlaggedCount();
+      qaTagFlaggedItems();
+      delete qaAuditCache[qaCurrentQ.id];
+      if (qaAuditOpen) qaLoadAuditTrail(qaCurrentQ.id, true);
+      qaNotify(newVal ? 'Flagged' : 'Unflagged', 'success');
+    } catch (err) {
+      qaNotify('Flag toggle failed: ' + err.message, 'error');
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  };
+
+  function qaUpdateFlaggedCount() {
+    var n = 0;
+    qaQueue.forEach(function (q) { if (qaIsFlagged(q)) n++; });
+    qaApproved.forEach(function (q) { if (qaIsFlagged(q)) n++; });
+    var el = document.getElementById('qaFlaggedCount');
+    if (el) el.textContent = n;
+  }
+
+  window.qaApplyFlaggedOnly = function () {
+    var on = !!(document.getElementById('qaFlaggedOnly') || {}).checked;
+    var sb = document.getElementById('qaSidebar');
+    if (sb) sb.classList.toggle('flagged-only', on);
+    if (on) {
+      qaSectionOpen.pending = true;
+      qaSectionOpen.approved = true;
+      qaSectionOpen.find = true;
+      ['pending', 'approved', 'find'].forEach(function (k) {
+        var body = document.getElementById('qa' + k.charAt(0).toUpperCase() + k.slice(1) + 'Body');
+        var caret = document.getElementById('qa' + k.charAt(0).toUpperCase() + k.slice(1) + 'Toggle');
+        if (body) body.style.display = '';
+        if (caret) caret.style.transform = 'rotate(90deg)';
+      });
+    }
+  };
+
+
+  // ════════════════════════════════════════════════════════════════════════
+  // COMMIT 4a — AUDIT TRAIL UI
+  // ════════════════════════════════════════════════════════════════════════
+
+  function qaActionLabel(action) {
+    return action.charAt(0).toUpperCase() + action.slice(1);
+  }
+
+  function qaFmtAuditTime(iso) {
+    if (!iso) return '';
+    try {
+      var d = new Date(iso);
+      return d.toLocaleString('en-SG', {
+        day: 'numeric', month: 'short', year: '2-digit',
+        hour: '2-digit', minute: '2-digit', hour12: false
+      });
+    } catch (e) { return iso; }
+  }
+
+  async function qaLoadAuditTrail(questionId, force) {
+    var body = document.getElementById('qaAuditBody');
+    var countEl = document.getElementById('qaAuditCount');
+    if (!body) return;
+    if (!force && qaAuditCache[questionId]) {
+      qaRenderAuditEvents(qaAuditCache[questionId]);
+      if (countEl) countEl.textContent = qaAuditCache[questionId].length;
+      return;
+    }
+    body.innerHTML = '<div class="qa-empty">Loading…</div>';
+    try {
+      var res = await fetch(
+        '/api/qa-questions?action=audit_trail&id=' + encodeURIComponent(questionId),
+        { headers: { 'Authorization': 'Bearer ' + adminSession.access_token } }
+      );
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      var data = await res.json();
+      var events = data.events || [];
+      qaAuditCache[questionId] = events;
+      if (countEl) countEl.textContent = events.length;
+      qaRenderAuditEvents(events);
+    } catch (err) {
+      body.innerHTML = '<div class="qa-empty">Failed to load: ' + esc(err.message) + '</div>';
+    }
+  }
+
+  function qaRenderAuditEvents(events) {
+    var body = document.getElementById('qaAuditBody');
+    if (!body) return;
+    if (!events.length) {
+      body.innerHTML = '<div class="qa-empty">No audit events.</div>';
+      return;
+    }
+    body.innerHTML = events.map(function (e) {
+      var who = e.reviewer ? esc(e.reviewer.name) : '<span class="cell-muted">system</span>';
+      var notes = e.notes ? '<div class="qa-audit-event__notes">"' + esc(e.notes) + '"</div>' : '';
+      return '<div class="qa-audit-event">'
+        + '<div class="qa-audit-event__head">'
+        +   '<span class="qa-audit-event__action qa-audit-event__action--' + esc(e.action) + '">'
+        +     qaActionLabel(e.action)
+        +   '</span>'
+        +   '<span class="qa-audit-event__when">' + qaFmtAuditTime(e.created_at) + '</span>'
+        + '</div>'
+        + '<div class="qa-audit-event__who">' + who + '</div>'
+        + notes
+        + '</div>';
+    }).join('');
+  }
+
+  window.qaToggleAuditPanel = function () {
+    qaAuditOpen = !qaAuditOpen;
+    var panel = document.getElementById('qaAuditPanel');
+    var body  = document.getElementById('qaAuditBody');
+    if (panel) panel.classList.toggle('is-open', qaAuditOpen);
+    if (body)  body.style.display = qaAuditOpen ? '' : 'none';
+    if (qaAuditOpen && qaCurrentQ) qaLoadAuditTrail(qaCurrentQ.id);
+  };
+
+
+  // ════════════════════════════════════════════════════════════════════════
+  // COMMIT 4a — PANE RESIZERS
+  // ════════════════════════════════════════════════════════════════════════
+
+  var QA_RESIZE_KEY = 'admin_pane_widths_v1';
+  var QA_DEFAULTS = { sidebar: 280, editor: 460 };
+  var QA_MINS = { sidebar: 220, editor: 360 };
+  var QA_MAXS = { sidebar: 480, editor: 720 };
+
+  function qaApplyPaneWidths() {
+    var saved;
+    try { saved = JSON.parse(localStorage.getItem(QA_RESIZE_KEY) || '{}'); } catch (e) { saved = {}; }
+    var sb = document.getElementById('qaSidebar');
+    var ed = document.getElementById('qaEditorPane');
+    if (sb) sb.style.width = (saved.sidebar || QA_DEFAULTS.sidebar) + 'px';
+    if (ed) ed.style.width = (saved.editor  || QA_DEFAULTS.editor)  + 'px';
+  }
+
+  function qaSavePaneWidths(patch) {
+    var saved;
+    try { saved = JSON.parse(localStorage.getItem(QA_RESIZE_KEY) || '{}'); } catch (e) { saved = {}; }
+    Object.keys(patch).forEach(function (k) { saved[k] = patch[k]; });
+    try { localStorage.setItem(QA_RESIZE_KEY, JSON.stringify(saved)); } catch (e) {}
+  }
+
+  function qaInitResizers() {
+    var resizers = document.querySelectorAll('.qa-resizer');
+    resizers.forEach(function (r) {
+      r.addEventListener('mousedown', function (e) {
+        e.preventDefault();
+        var target = r.getAttribute('data-resize-target');
+        var pane = document.getElementById(target === 'sidebar' ? 'qaSidebar' : 'qaEditorPane');
+        if (!pane) return;
+        var startX = e.clientX;
+        var startW = pane.getBoundingClientRect().width;
+        document.body.classList.add('qa-resizing');
+        r.classList.add('is-dragging');
+
+        function onMove(ev) {
+          var dx = ev.clientX - startX;
+          var newW = startW + dx;
+          newW = Math.max(QA_MINS[target], Math.min(QA_MAXS[target], newW));
+          pane.style.width = newW + 'px';
+        }
+        function onUp() {
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+          document.body.classList.remove('qa-resizing');
+          r.classList.remove('is-dragging');
+          var finalW = pane.getBoundingClientRect().width;
+          var patch = {}; patch[target] = Math.round(finalW);
+          qaSavePaneWidths(patch);
+        }
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+      });
+    });
+  }
+
+
+  // ════════════════════════════════════════════════════════════════════════
+  // COMMIT 4a — HOOKS INTO EXISTING qaLoadEditor + sidebar render
+  // ════════════════════════════════════════════════════════════════════════
+
+  document.addEventListener('DOMContentLoaded', function () {
+    qaApplyPaneWidths();
+    qaInitResizers();
+    qaLoadSyllabus();
+    qaPopulateTopics('');
+    qaPopulateSubTopics('');
+  });
+
+  function qaPostSelectHook() {
+    if (!qaCurrentQ) return;
+    qaPopulateTopics(qaCurrentQ.topic || '').then(function () {
+      return qaPopulateSubTopics(qaCurrentQ.sub_topic || '');
+    });
+    qaUpdateFlagToggleUI();
+    qaRenderRuleHits();
+    qaAuditOpen = false;
+    var panel = document.getElementById('qaAuditPanel');
+    var body  = document.getElementById('qaAuditBody');
+    var count = document.getElementById('qaAuditCount');
+    if (panel) panel.classList.remove('is-open');
+    if (body)  body.style.display = 'none';
+    if (count) count.textContent = '—';
+  }
+
+  ['qaSelectPending', 'qaSelectApproved', 'qaSearchSelect'].forEach(function (fnName) {
+    var orig = window[fnName];
+    if (typeof orig !== 'function') return;
+    window[fnName] = function () {
+      orig.apply(this, arguments);
+      qaPostSelectHook();
+    };
+  });
+
+  var _origQaLivePreview = window.qaLivePreview;
+  window.qaLivePreview = function () {
+    if (typeof _origQaLivePreview === 'function') _origQaLivePreview.apply(this, arguments);
+    if (qaCurrentQ) {
+      var draft = Object.assign({}, qaCurrentQ);
+      var f = ['Subject','Level','Type','Topic','SubTopic','Difficulty','QuestionText','CorrectAnswer','WorkedSolution'];
+      var keys = ['subject','level','type','topic','sub_topic','difficulty','question_text','correct_answer','worked_solution'];
+      f.forEach(function (id, i) {
+        var el = document.getElementById('qf' + id);
+        if (el) draft[keys[i]] = el.value;
+      });
+      var saved = qaCurrentQ;
+      qaCurrentQ = draft;
+      qaRenderRuleHits();
+      qaCurrentQ = saved;
+    }
+  };
+
+  function qaTagFlaggedItems() {
+    var allFlagged = {};
+    qaQueue.forEach(function (q) { if (qaIsFlagged(q)) allFlagged[q.id] = true; });
+    qaApproved.forEach(function (q) { if (qaIsFlagged(q)) allFlagged[q.id] = true; });
+
+    function tag(listEl, sourceArr) {
+      if (!listEl) return;
+      var nodes = listEl.querySelectorAll('.qa-item');
+      nodes.forEach(function (node, i) {
+        var src = sourceArr[i];
+        if (src && allFlagged[src.id]) node.classList.add('is-flagged');
+        else node.classList.remove('is-flagged');
+      });
+    }
+    tag(document.getElementById('qaPendingList'),  qaQueue);
+    tag(document.getElementById('qaApprovedList'), qaApproved);
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    var view = document.getElementById('qaView');
+    if (!view) return;
+    var mo = new MutationObserver(function () {
+      qaTagFlaggedItems();
+      qaUpdateFlaggedCount();
+    });
+    var pl = document.getElementById('qaPendingList');
+    var al = document.getElementById('qaApprovedList');
+    if (pl) mo.observe(pl, { childList: true });
+    if (al) mo.observe(al, { childList: true });
+  });
+
+  var _origLoadQueue = window.loadQAQueue;
+  if (typeof _origLoadQueue === 'function') {
+    window.loadQAQueue = async function () {
+      await _origLoadQueue.apply(this, arguments);
+      qaUpdateFlaggedCount();
+      qaTagFlaggedItems();
+    };
+  }
+  var _origLoadApproved = window.loadQAApproved;
+  if (typeof _origLoadApproved === 'function') {
+    window.loadQAApproved = async function () {
+      await _origLoadApproved.apply(this, arguments);
+      qaUpdateFlaggedCount();
+      qaTagFlaggedItems();
+    };
   }
 
 }()); // end IIFE

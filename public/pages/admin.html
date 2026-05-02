@@ -16,6 +16,7 @@
   <script src="../js/diagram-library.js?v=6"></script>
   <script src="../js/admin-icons.js" defer></script>
   <script src="../js/admin.js" defer></script>
+  <script src="../js/qa-rules.js" defer></script>
   <script src="../js/qa-panel.js" defer></script>
 </head>
 
@@ -201,7 +202,17 @@
     <div class="qa-shell">
 
       <!-- LEFT SIDEBAR — collapsible sections; pending+approved collapsed by default, find open -->
-      <aside class="qa-sidebar">
+      <aside class="qa-sidebar" id="qaSidebar">
+
+        <!-- Master "flagged only" filter — applies across all 3 sections -->
+        <div class="qa-master-filter">
+          <label class="qa-flagged-only">
+            <input type="checkbox" id="qaFlaggedOnly" onchange="window.qaApplyFlaggedOnly()">
+            <span data-admin-icon="warn" data-icon-size="12"></span>
+            <span>Flagged only</span>
+            <span class="radar-count" id="qaFlaggedCount">0</span>
+          </label>
+        </div>
 
         <div class="qa-section-hdr" onclick="window.qaToggleSection('pending')">
           <span class="qa-section-hdr__label">
@@ -283,10 +294,13 @@
 
       </aside>
 
+      <!-- Resizer between sidebar and main -->
+      <div class="qa-resizer" id="qaResizer1" data-resize-target="sidebar"></div>
+
       <!-- MAIN: EDITOR + PREVIEW -->
       <div class="qa-main">
 
-        <div class="qa-editor-pane">
+        <div class="qa-editor-pane" id="qaEditorPane">
           <div id="qaEditorEmpty" class="qa-empty-state">
             <span data-admin-icon="flask" data-icon-size="40"></span>
             <div class="text-sm">Select a question from the sidebar</div>
@@ -296,7 +310,7 @@
             <div class="qa-field-grid-2">
               <div class="qa-field">
                 <label>Subject</label>
-                <select id="qfSubject" class="form-select" onchange="window.qaLivePreview()">
+                <select id="qfSubject" class="form-select" onchange="window.qaOnSubjectChange()">
                   <option>Mathematics</option>
                   <option>Science</option>
                   <option>English Language</option>
@@ -336,12 +350,25 @@
             <div class="qa-field-grid-2">
               <div class="qa-field">
                 <label>Topic</label>
-                <input type="text" id="qfTopic" class="form-input" oninput="window.qaOnTopicChange()" />
+                <select id="qfTopic" class="form-select" onchange="window.qaOnTopicChange()">
+                  <option value="">— Select —</option>
+                </select>
               </div>
               <div class="qa-field">
                 <label>Sub-Topic</label>
-                <input type="text" id="qfSubTopic" class="form-input" oninput="window.qaLivePreview()" />
+                <select id="qfSubTopic" class="form-select" onchange="window.qaLivePreview()">
+                  <option value="">— Select —</option>
+                </select>
               </div>
+            </div>
+
+            <!-- Manual flag toggle + auto-flag rule advisories -->
+            <div class="qa-flag-banner" id="qaFlagBanner">
+              <button type="button" class="qa-flag-toggle" id="qaFlagToggle" onclick="window.qaToggleFlag()">
+                <span data-admin-icon="warn" data-icon-size="14"></span>
+                <span class="qa-flag-toggle__lbl">Flag for Review</span>
+              </button>
+              <div class="qa-rule-hits" id="qaRuleHits"></div>
             </div>
 
             <div class="qa-field-grid-marks">
@@ -441,11 +468,29 @@
               <textarea id="qfParts" class="form-input qa-json-area" rows="7" oninput="window.qaValidateJson(this);window.qaLivePreview()"></textarea>
             </div>
 
+            <!-- Audit trail panel — populated lazily on question select -->
+            <div class="qa-audit-panel" id="qaAuditPanel">
+              <div class="qa-audit-panel__hdr" onclick="window.qaToggleAuditPanel()">
+                <span class="qa-audit-panel__lbl">
+                  <span data-admin-icon="clock" data-icon-size="12"></span>
+                  Audit Trail
+                  <span class="radar-count" id="qaAuditCount">0</span>
+                </span>
+                <span class="qa-section-hdr__caret" id="qaAuditCaret" data-admin-icon="caret-right" data-icon-size="10"></span>
+              </div>
+              <div class="qa-audit-panel__body" id="qaAuditBody" style="display:none;">
+                <div class="qa-empty">Loading…</div>
+              </div>
+            </div>
+
             <div id="qaActionBar" class="qa-action-bar"></div>
           </div>
         </div><!-- /qa-editor-pane -->
 
-        <div class="qa-preview-pane">
+        <!-- Resizer between editor and preview -->
+        <div class="qa-resizer" id="qaResizer2" data-resize-target="editor"></div>
+
+        <div class="qa-preview-pane" id="qaPreviewPane">
           <div class="qa-preview-label">Live Preview</div>
           <div id="qaPreview">
             <div class="qa-empty-state">

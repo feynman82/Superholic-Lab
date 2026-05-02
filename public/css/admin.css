@@ -1722,3 +1722,257 @@
 }
 
 #wenaView .wena-expand-btn.is-visible { display: block; }
+/* ════════════════════════════════════════════════════════════════════════════
+   15. QA PANEL — Commit 4a additions
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Master filter strip at top of sidebar ─────────────────────────────── */
+.qa-master-filter {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border-light);
+  background: var(--surface-container-low, var(--bg-elevated));
+}
+
+.qa-flagged-only {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  cursor: pointer;
+  user-select: none;
+}
+
+.qa-flagged-only input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--brand-rose);
+}
+
+.qa-flagged-only:hover { color: var(--text-main); }
+
+.qa-flagged-only .radar-count {
+  margin-left: auto;
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--brand-amber);
+}
+
+/* Sidebar item with flag — rose-tinted left border */
+.qa-item.is-flagged {
+  border-left: 3px solid var(--brand-amber);
+  padding-left: calc(var(--space-3) - 3px);
+  background: rgba(245, 158, 11, 0.04);
+}
+
+.qa-item.is-flagged.is-active {
+  border-left-color: var(--brand-rose);
+}
+
+/* Hide non-flagged items when master toggle is on */
+.qa-sidebar.flagged-only .qa-item:not(.is-flagged) { display: none; }
+
+/* ── Manual flag toggle banner above editor fields ─────────────────────── */
+.qa-flag-banner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-bottom: var(--space-3);
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  background: var(--surface-container-low, var(--bg-elevated));
+  border: 1px solid var(--border-light);
+}
+
+.qa-flag-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  align-self: flex-start;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-light);
+  background: var(--surface-container-lowest, #fff);
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.qa-flag-toggle:hover {
+  color: var(--brand-amber);
+  border-color: var(--brand-amber);
+}
+
+.qa-flag-toggle.is-flagged {
+  background: var(--brand-amber);
+  color: var(--cream, #fff);
+  border-color: var(--brand-amber);
+}
+
+.qa-flag-toggle.is-flagged:hover {
+  background: var(--brand-amber-deep);
+  border-color: var(--brand-amber-deep);
+}
+
+/* Auto-flag rule hits */
+.qa-rule-hits {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.qa-rule-hits:empty { display: none; }
+
+.qa-rule-hit {
+  display: flex;
+  gap: var(--space-1);
+  align-items: flex-start;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.qa-rule-hit--warn {
+  background: rgba(245, 158, 11, 0.08);
+  color: var(--brand-amber);
+  border-left: 2px solid var(--brand-amber);
+}
+
+.qa-rule-hit--error {
+  background: rgba(220, 38, 38, 0.06);
+  color: var(--brand-error);
+  border-left: 2px solid var(--brand-error);
+}
+
+.qa-rule-hit__rule {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.qa-rule-hit__msg { color: var(--text-main); }
+
+/* ── Audit trail panel (above action bar) ──────────────────────────────── */
+.qa-audit-panel {
+  margin-top: var(--space-3);
+  border-top: 1px solid var(--border-light);
+  padding-top: var(--space-2);
+}
+
+.qa-audit-panel__hdr {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-1) 0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.qa-audit-panel__lbl {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.qa-audit-panel__hdr:hover .qa-audit-panel__lbl { color: var(--text-main); }
+
+.qa-audit-panel.is-open .qa-section-hdr__caret { transform: rotate(90deg); }
+
+.qa-audit-panel__body {
+  margin-top: var(--space-2);
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.qa-audit-event {
+  padding: var(--space-2);
+  border-left: 2px solid var(--border-light);
+  margin-bottom: var(--space-1);
+  font-size: 11px;
+}
+
+.qa-audit-event__head {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-1);
+  align-items: center;
+  margin-bottom: 2px;
+}
+
+.qa-audit-event__action {
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 10px;
+}
+
+.qa-audit-event__action--created   { color: var(--brand-sage); }
+.qa-audit-event__action--approved  { color: var(--brand-mint); }
+.qa-audit-event__action--rejected  { color: var(--brand-error); }
+.qa-audit-event__action--edited    { color: var(--text-main); }
+.qa-audit-event__action--flagged   { color: var(--brand-amber); }
+.qa-audit-event__action--unflagged { color: var(--text-muted); }
+.qa-audit-event__action--deleted   { color: var(--brand-error); }
+
+.qa-audit-event__when {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.qa-audit-event__who {
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+.qa-audit-event__notes {
+  color: var(--text-main);
+  font-style: italic;
+  margin-top: 2px;
+}
+
+/* ── Pane resizers ─────────────────────────────────────────────────────── */
+.qa-resizer {
+  width: var(--resize-handle-w, 4px);
+  flex-shrink: 0;
+  background: var(--border-light);
+  cursor: col-resize;
+  transition: background 0.15s;
+  position: relative;
+  z-index: 1;
+}
+
+.qa-resizer:hover,
+.qa-resizer.is-dragging {
+  background: var(--resize-handle-hover, rgba(183, 110, 121, 0.35));
+}
+
+/* Wider hit area without changing visual width */
+.qa-resizer::before {
+  content: '';
+  position: absolute;
+  inset: 0 -3px;
+}
+
+body.qa-resizing,
+body.qa-resizing * {
+  cursor: col-resize !important;
+  user-select: none !important;
+}
