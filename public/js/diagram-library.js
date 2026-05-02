@@ -4507,8 +4507,568 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
       alt: `Protractor showing ${angle_to_measure}° angle${baseline_offset ? ', baseline at ' + baseline_offset + '°' : ''}.`,
     });
   },
-   
-  
+
+  /**
+   * 🕒 clockFace — Analog clock face with positioned hour and minute hands.
+   * Use for P1/P2 "Telling Time" questions.
+   *
+   * @param {number}  params.hour            1–12 (12 = top). Will be normalised modulo 12.
+   * @param {number}  params.minute          0–59.
+   * @param {number}  params.size            Display max-width in px (default 240).
+   * @param {boolean} params.showSecondHand  Default false.
+   * @param {number}  params.second          0–59 (only if showSecondHand: true).
+   * @param {string}  params.label           Optional caption above the clock.
+   *
+   * Hour-hand position is computed from `hour + minute/60` so it sits between
+   * numerals when minute > 0 (e.g. hour=7, minute=20 → hand at angle 7.333 × 30°).
+   * Minute-hand from `minute × 6°`. 12 o'clock = angle 0° (straight up).
+   */
+  clockFace({
+    hour            = 12,
+    minute          = 0,
+    size            = 240,
+    showSecondHand  = false,
+    second          = 0,
+    label           = '',
+  } = {}) {
+    const esc = this._esc.bind(this);
+    // viewBox is square; centre = 100,100; outer radius 90.
+    const cx = 100, cy = 100, R = 90;
+    const STROKE   = 'var(--brand-sage, #51615E)';
+    const FACE_BG  = 'var(--bg-elevated, #f0f5f2)';
+    const HAND_HR  = 'var(--text-main, #1a2e2a)';
+    const HAND_MN  = 'var(--brand-sage, #51615E)';
+    const HAND_SC  = 'var(--brand-rose, #B76E79)';
+    const NUM_FILL = 'var(--text-main, #1a2e2a)';
+
+    // Normalise inputs defensively.
+    const h = ((Number(hour) % 12) + 12) % 12;        // 0..11 (0 means "12")
+    const m = Math.max(0, Math.min(59, Number(minute) || 0));
+    const s = Math.max(0, Math.min(59, Number(second) || 0));
+
+    // SVG angle convention: 0° = 3 o'clock, sweeping CCW. We use the clock
+    // convention internally: 0° = 12 o'clock, sweeping CW. Conversion below.
+    // Returns {x, y} of the tip at clock-angle deg, distance r from centre.
+    const tip = (clockDeg, r) => {
+      // clock 0° = up; rotate −90° to get math 0°=right, then reflect y for CW
+      const rad = (clockDeg - 90) * Math.PI / 180;
+      return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+    };
+
+    // ── Face & rim ─────────────────────────────────────────────────────────
+    let svg = '';
+    svg += `<circle cx="${cx}" cy="${cy}" r="${R}" fill="${FACE_BG}" stroke="${STROKE}" stroke-width="3"/>`;
+
+    // ── Tick marks ─────────────────────────────────────────────────────────
+    // 60 minute ticks; emphasise every 5th
+    for (let i = 0; i < 60; i++) {
+      const deg = i * 6;
+      const isHour = (i % 5 === 0);
+      const t1 = tip(deg, R - (isHour ? 8 : 4));
+      const t2 = tip(deg, R - 1);
+      svg += `<line x1="${t1.x.toFixed(2)}" y1="${t1.y.toFixed(2)}" x2="${t2.x.toFixed(2)}" y2="${t2.y.toFixed(2)}" stroke="${STROKE}" stroke-width="${isHour ? 2 : 1}" stroke-linecap="round"/>`;
+    }
+
+    // ── Numerals 1..12 ─────────────────────────────────────────────────────
+    for (let n = 1; n <= 12; n++) {
+      const p = tip(n * 30, R - 18);
+      svg += `<text x="${p.x.toFixed(2)}" y="${(p.y + 5).toFixed(2)}" text-anchor="middle" font-size="14" font-weight="700" fill="${NUM_FILL}">${n}</text>`;
+    }
+
+    // ── Hands ──────────────────────────────────────────────────────────────
+    // Hour hand: 30° per hour + 0.5° per minute. Use h (already 0..11; "12" treated as 0).
+    const hourDeg   = (h + m / 60) * 30;
+    const minuteDeg = m * 6;
+    const hourTip   = tip(hourDeg, R * 0.55);
+    const minuteTip = tip(minuteDeg, R * 0.82);
+    svg += `<line x1="${cx}" y1="${cy}" x2="${hourTip.x.toFixed(2)}" y2="${hourTip.y.toFixed(2)}" stroke="${HAND_HR}" stroke-width="5" stroke-linecap="round"/>`;
+    svg += `<line x1="${cx}" y1="${cy}" x2="${minuteTip.x.toFixed(2)}" y2="${minuteTip.y.toFixed(2)}" stroke="${HAND_MN}" stroke-width="3" stroke-linecap="round"/>`;
+    if (showSecondHand) {
+      const secTip = tip(s * 6, R * 0.88);
+      svg += `<line x1="${cx}" y1="${cy}" x2="${secTip.x.toFixed(2)}" y2="${secTip.y.toFixed(2)}" stroke="${HAND_SC}" stroke-width="1.5" stroke-linecap="round"/>`;
+    }
+    // Centre cap
+    svg += `<circle cx="${cx}" cy="${cy}" r="4" fill="${HAND_HR}"/>`;
+    svg += `<circle cx="${cx}" cy="${cy}" r="1.5" fill="${FACE_BG}"/>`;
+
+    // ── Optional caption ──────────────────────────────────────────────────
+    const captionEl = label
+      ? `<text x="${cx}" y="14" text-anchor="middle" fill="var(--text-main, #1a2e2a)" font-size="12" font-weight="600">${esc(label)}</text>`
+      : '';
+
+    // Pretty time text for alt
+    const displayHour = (h === 0) ? 12 : h;
+    const altText = `Analog clock showing ${displayHour}:${String(m).padStart(2, '0')}.`;
+
+    return this._svg(`${captionEl}${svg}`, {
+      viewBox: '0 0 200 200',
+      alt: altText,
+      maxWidth: Math.max(160, Number(size) || 240),
+    });
+  },
+
+  /**
+   * ✕ crossingLines — Two straight lines crossing at a point, with up to 4
+   * angle labels in the four sectors formed.
+   * Use for P5/P6 "Vertically Opposite Angles" / "Angles At A Point" problems.
+   *
+   * @param {object} params.line1        e.g. {label: "AB", endpoints: ["A","B"]}
+   * @param {object} params.line2        e.g. {label: "CD", endpoints: ["C","D"]}
+   * @param {Array}  params.angles       Up to 4 entries, each:
+   *                                     {at: "AOC", label: "144°"}.
+   *                                     Middle letter = crossing point letter
+   *                                     (default "O"); outer two are matched
+   *                                     by SET, so "AOC" === "COA".
+   * @param {string} params.crossing     Letter for crossing point (default "O").
+   * @param {number} params.line2_angle  Degrees between line1 and line2 (default 60).
+   *                                     line1 is horizontal (0°); line2 sweeps CCW
+   *                                     from line1 by this angle.
+   *
+   * Sectors are positioned by the bisector between adjacent ray endpoints.
+   * Missing angle entries leave their sector unlabelled.
+   */
+  crossingLines({
+    line1        = { label: 'AB', endpoints: ['A', 'B'] },
+    line2        = { label: 'CD', endpoints: ['C', 'D'] },
+    angles       = [],
+    crossing     = 'O',
+    line2_angle  = 60,
+  } = {}) {
+    const esc = this._esc.bind(this);
+    const w = 400, h = 260;
+    const cx = w / 2, cy = h / 2;
+    const r = 110;
+
+    const STROKE   = 'var(--text-main, #1a2e2a)';
+    const LBL      = 'var(--text-muted, #5d706b)';
+    const ANG_LBL  = 'var(--brand-rose, #B76E79)';
+    const DOT      = 'var(--brand-sage, #51615E)';
+
+    // Defensive defaults
+    const ep1 = (line1 && Array.isArray(line1.endpoints) && line1.endpoints.length === 2) ? line1.endpoints : ['A', 'B'];
+    const ep2 = (line2 && Array.isArray(line2.endpoints) && line2.endpoints.length === 2) ? line2.endpoints : ['C', 'D'];
+    const O   = (typeof crossing === 'string' && crossing.length > 0) ? crossing[0] : 'O';
+
+    // Normalise line2_angle into (10°, 170°) so the crossing is always visible.
+    let theta = Number(line2_angle);
+    if (!Number.isFinite(theta)) theta = 60;
+    theta = ((theta % 180) + 180) % 180;
+    if (theta < 10)  theta = 10;
+    if (theta > 170) theta = 170;
+
+    // Math helpers: 0° = right (+x), CCW positive. SVG y is inverted so we
+    // negate the sin component when rendering.
+    const polar = (deg, dist) => {
+      const rad = deg * Math.PI / 180;
+      return { x: cx + dist * Math.cos(rad), y: cy - dist * Math.sin(rad) };
+    };
+
+    // Line 1 endpoints: A at 180° (left), B at 0° (right).
+    const A = polar(180, r);
+    const B = polar(0, r);
+    // Line 2 endpoints: C "above" along +theta, D opposite (theta + 180°).
+    // Choose so that ep2[0] sits in the upper half (y < cy), ep2[1] in the lower.
+    const C = polar(theta, r);
+    const D = polar(theta + 180, r);
+
+    let svg = '';
+    // Lines
+    svg += `<line x1="${A.x.toFixed(1)}" y1="${A.y.toFixed(1)}" x2="${B.x.toFixed(1)}" y2="${B.y.toFixed(1)}" stroke="${STROKE}" stroke-width="2.5"/>`;
+    svg += `<line x1="${C.x.toFixed(1)}" y1="${C.y.toFixed(1)}" x2="${D.x.toFixed(1)}" y2="${D.y.toFixed(1)}" stroke="${STROKE}" stroke-width="2.5"/>`;
+    // Crossing dot
+    svg += `<circle cx="${cx}" cy="${cy}" r="3.5" fill="${DOT}"/>`;
+
+    // Endpoint labels — push slightly outside the line ends.
+    const offsetLabel = (pt, ang) => {
+      const padded = polar(ang, r + 14);
+      return { x: padded.x, y: padded.y };
+    };
+    const aL = offsetLabel(A, 180);
+    const bL = offsetLabel(B, 0);
+    const cL = offsetLabel(C, theta);
+    const dL = offsetLabel(D, theta + 180);
+    svg += `<text x="${aL.x.toFixed(1)}" y="${(aL.y + 5).toFixed(1)}" text-anchor="middle" font-size="15" font-weight="700" fill="${LBL}">${esc(ep1[0])}</text>`;
+    svg += `<text x="${bL.x.toFixed(1)}" y="${(bL.y + 5).toFixed(1)}" text-anchor="middle" font-size="15" font-weight="700" fill="${LBL}">${esc(ep1[1])}</text>`;
+    svg += `<text x="${cL.x.toFixed(1)}" y="${(cL.y + 5).toFixed(1)}" text-anchor="middle" font-size="15" font-weight="700" fill="${LBL}">${esc(ep2[0])}</text>`;
+    svg += `<text x="${dL.x.toFixed(1)}" y="${(dL.y + 5).toFixed(1)}" text-anchor="middle" font-size="15" font-weight="700" fill="${LBL}">${esc(ep2[1])}</text>`;
+
+    // Crossing-point label (offset SE so it doesn't overlap the lines)
+    svg += `<text x="${(cx + 10).toFixed(1)}" y="${(cy + 18).toFixed(1)}" font-size="14" font-weight="700" fill="${LBL}">${esc(O)}</text>`;
+
+    // ── Sectors and angle labels ──────────────────────────────────────────
+    // Map each ray endpoint letter → its outgoing angle (degrees, CCW).
+    const rayAngle = {
+      [ep1[0]]: 180,
+      [ep1[1]]: 0,
+      [ep2[0]]: theta,
+      [ep2[1]]: theta + 180,
+    };
+
+    // Build the 4 ordered sectors by sorting rays by angle (mod 360).
+    const rayList = Object.entries(rayAngle).map(([letter, deg]) => ({
+      letter,
+      deg: ((deg % 360) + 360) % 360,
+    })).sort((a, b) => a.deg - b.deg);
+
+    // Each sector is between rayList[i] and rayList[(i+1)%4].
+    const sectors = rayList.map((ray, i) => {
+      const next = rayList[(i + 1) % 4];
+      let span = next.deg - ray.deg;
+      if (span <= 0) span += 360;
+      const mid = (ray.deg + span / 2) % 360;
+      return {
+        outerLetters: new Set([ray.letter, next.letter]),
+        midDeg: mid,
+        spanDeg: span,
+      };
+    });
+
+    // Match angle entries by SET of outer letters (middle char = crossing).
+    (Array.isArray(angles) ? angles : []).forEach((entry) => {
+      if (!entry || typeof entry.at !== 'string' || entry.at.length < 3) return;
+      const at = entry.at.toUpperCase();
+      const outerSet = new Set([at[0], at[at.length - 1]]);
+      const sector = sectors.find(s =>
+        s.outerLetters.size === 2 &&
+        outerSet.size === 2 &&
+        [...outerSet].every(L => s.outerLetters.has(L))
+      );
+      if (!sector) return;
+      // Place label at ~0.32 × r along the bisector
+      const labelDist = Math.max(28, Math.min(48, r * 0.32));
+      const lp = polar(sector.midDeg, labelDist);
+      svg += `<text x="${lp.x.toFixed(1)}" y="${(lp.y + 4).toFixed(1)}" text-anchor="middle" font-size="14" font-weight="700" fill="${ANG_LBL}">${esc(entry.label || '?')}</text>`;
+    });
+
+    return this._svg(svg, {
+      viewBox: `0 0 ${w} ${h}`,
+      alt: `Two crossing lines ${ep1.join('')} and ${ep2.join('')} meeting at ${O}.`,
+      maxWidth: 460,
+    });
+  },
+
+  /**
+   * ⬛◯ compositeCircleFigure — Composite figure built from a base
+   * rectangle/square plus arc/disc operations (full circles, semicircles,
+   * quarter circles) added/subtracted/shaded.
+   * Use for P6 Circles "Area And Perimeter Of Composite Figures With Circles".
+   *
+   * @param {object} params.base
+   *   {shape: "rectangle"|"square", width, height, label?, vertices: ["A","B","C","D"]}
+   *   Vertices are CLOCKWISE from top-left: A=TL, B=TR, C=BR, D=BL. Square
+   *   defaults height to width. width/height in display units (px-equivalent;
+   *   the renderer scales to fit).
+   *
+   * @param {Array} params.operations  Ordered array. Each entry is one of:
+   *   - {type: "fullCircle",    center?: {x,y}, corner?: "A"|.., midSide?: "AB"|..,
+   *      radius, mode: "add"|"subtract"|"shade", label?}
+   *   - {type: "semicircle",    diameter_endpoints: ["A","B"]|"AB",
+   *      direction: "into"|"away", mode, label?}
+   *   - {type: "quarterCircle", center_corner: "A"|..,
+   *      radii_along: ["AB","AD"], radius?, mode, label?}
+   *
+   * @param {Array<number>} params.shaded  Indices of operations whose region
+   *                                       should be filled (rose tint). Other
+   *                                       ops still draw outlines.
+   *
+   * @param {boolean} params.show_vertex_labels  Default true.
+   * @param {string}  params.dimension_label     Optional secondary caption.
+   *
+   * Geometry: all coordinates are computed in the base rectangle's world units;
+   * the renderer scales to a 400-wide viewBox. Each operation contributes its
+   * own SVG path (using M/L/A commands) so any add/subtract/shade combination
+   * works out of the box.
+   */
+  compositeCircleFigure({
+    base                = { shape: 'rectangle', width: 28, height: 14, vertices: ['A', 'B', 'C', 'D'] },
+    operations          = [],
+    shaded              = [],
+    show_vertex_labels  = true,
+    dimension_label     = '',
+  } = {}) {
+    const esc = this._esc.bind(this);
+
+    // ── Resolve base ──────────────────────────────────────────────────────
+    const shape = (base && base.shape) || 'rectangle';
+    let bw = Number(base && base.width)  || 14;
+    let bh = Number(base && (shape === 'square' ? base.width : base.height)) || (shape === 'square' ? bw : 14);
+    if (shape === 'square') bh = bw;
+    const verts = (base && Array.isArray(base.vertices) && base.vertices.length === 4)
+      ? base.vertices : ['A', 'B', 'C', 'D'];
+
+    // World units: y grows DOWNWARD to match SVG. Vertex letters
+    // A=TL, B=TR, C=BR, D=BL (clockwise from top-left).
+    const corners = {
+      [verts[0]]: { x: 0,  y: 0  },   // A
+      [verts[1]]: { x: bw, y: 0  },   // B
+      [verts[2]]: { x: bw, y: bh },   // C
+      [verts[3]]: { x: 0,  y: bh },   // D
+    };
+
+    // Mid-side helper
+    const midSide = (sideStr) => {
+      if (typeof sideStr !== 'string' || sideStr.length !== 2) return null;
+      const a = corners[sideStr[0]], b = corners[sideStr[1]];
+      if (!a || !b) return null;
+      return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+    };
+
+    // ── Compute fitted viewBox with margin for labels & arcs ──────────────
+    // We pad by ~enough for any arc that bulges OUTSIDE the base.
+    const padBase = 30;       // base label / vertex label padding
+    let padN = padBase, padS = padBase, padE = padBase, padW = padBase;
+
+    // First pass: scan operations to expand padding for "away"/"add" arcs.
+    (operations || []).forEach((op) => {
+      if (!op) return;
+      if (op.type === 'semicircle' && op.direction === 'away') {
+        const ep = op.diameter_endpoints;
+        const sideStr = Array.isArray(ep) ? ep.join('') : ep;
+        const r = Math.hypot(
+          (corners[sideStr?.[0]]?.x ?? 0) - (corners[sideStr?.[1]]?.x ?? 0),
+          (corners[sideStr?.[0]]?.y ?? 0) - (corners[sideStr?.[1]]?.y ?? 0)
+        ) / 2;
+        // Expand the side that bulges outward
+        if (sideStr === 'AB' || sideStr === 'BA') padN += r;
+        if (sideStr === 'CD' || sideStr === 'DC') padS += r;
+        if (sideStr === 'BC' || sideStr === 'CB') padE += r;
+        if (sideStr === 'AD' || sideStr === 'DA') padW += r;
+      }
+      if (op.type === 'fullCircle' && op.mode === 'add') {
+        const r = Number(op.radius) || 0;
+        padN = Math.max(padN, padBase + r);
+        padS = Math.max(padS, padBase + r);
+        padE = Math.max(padE, padBase + r);
+        padW = Math.max(padW, padBase + r);
+      }
+    });
+
+    // Decide world-to-view scale so the (padded) world fits a 400-wide canvas.
+    const targetW = 400;
+    const worldW = bw + padW + padE;
+    const worldH = bh + padN + padS;
+    const scale = Math.min(targetW / worldW, 280 / worldH);
+    const vbW = Math.max(targetW, worldW * scale);
+    const vbH = Math.max(180, worldH * scale);
+
+    // World→view transform: shift world (0,0) → (padW * scale, padN * scale)
+    const tx = (x) => (x + padW) * scale;
+    const ty = (y) => (y + padN) * scale;
+    const ts = (d) => d * scale;
+
+    // ── Style tokens ──────────────────────────────────────────────────────
+    const STROKE   = 'var(--text-main, #1a2e2a)';
+    const FACE_BG  = 'var(--bg-elevated, #f0f5f2)';
+    const SHADE    = 'rgba(183,110,121,0.22)';            // rose
+    const CUTOUT   = '#FFFFFF';                            // white "subtract" fill
+    const LBL      = 'var(--text-muted, #5d706b)';
+
+    // ── Build paths for each operation ────────────────────────────────────
+    // Each op produces an SVG `d` attribute representing its CLOSED region.
+    // We do this in WORLD coords first, then map through (tx, ty, ts).
+    const pathParts = [];
+
+    const addSemicirclePath = (sideStr, direction) => {
+      // Diameter from corner 1 → corner 2; the arc bulges either INTO the
+      // rectangle interior or AWAY from it. Returns the closed-region
+      // path data (in world units).
+      const c1 = corners[sideStr[0]], c2 = corners[sideStr[1]];
+      if (!c1 || !c2) return '';
+      const r = Math.hypot(c2.x - c1.x, c2.y - c1.y) / 2;
+      // Determine which sweep flag draws the arc on the requested side.
+      // Use rectangle centre as the "inside" reference.
+      const cx = bw / 2, cy = bh / 2;
+      const mx = (c1.x + c2.x) / 2, my = (c1.y + c2.y) / 2;
+      // Try sweep 0 first; if its arc midpoint is on the wanted side, keep it.
+      // Compute arc midpoint at sweep 0 by rotating (c1→c2) by 90° CCW.
+      const ux = (c2.x - c1.x) / (2 * r), uy = (c2.y - c1.y) / (2 * r);
+      // Perpendicular (rotate 90° CW in SVG coords gives interior of rectangle
+      // for an outer side traversed clockwise — but we don't rely on it; we
+      // test both candidates).
+      const candA = { x: mx - uy * r, y: my + ux * r }; // sweep flag 0
+      const candB = { x: mx + uy * r, y: my - ux * r }; // sweep flag 1
+      const insideA = (candA.x > 0 && candA.x < bw && candA.y > 0 && candA.y < bh);
+      const insideB = (candB.x > 0 && candB.x < bw && candB.y > 0 && candB.y < bh);
+      let sweep = 0;
+      if (direction === 'into') {
+        sweep = insideA ? 0 : (insideB ? 1 : 0);
+      } else { // 'away'
+        sweep = insideA ? 1 : (insideB ? 0 : 1);
+      }
+      // Closed region: M c1 → A r,r 0 0 sweep c2 → L c1 (back along diameter)
+      return `M ${c1.x},${c1.y} A ${r},${r} 0 0 ${sweep} ${c2.x},${c2.y} Z`;
+    };
+
+    const addQuarterPath = (centerCorner, radiiAlong, radiusOverride) => {
+      const c = corners[centerCorner];
+      if (!c) return '';
+      const sides = Array.isArray(radiiAlong) ? radiiAlong : [];
+      // Each side string starts with the centerCorner letter; the "other"
+      // letter tells us the radius direction.
+      const dirs = sides.slice(0, 2).map(s => {
+        const other = (s[0] === centerCorner) ? s[1] : s[0];
+        const oc = corners[other];
+        if (!oc) return null;
+        const dx = oc.x - c.x, dy = oc.y - c.y;
+        const len = Math.hypot(dx, dy);
+        return { ux: dx / len, uy: dy / len, len };
+      }).filter(Boolean);
+      if (dirs.length < 2) return '';
+      const r = Number(radiusOverride) || Math.min(dirs[0].len, dirs[1].len);
+      const p1 = { x: c.x + dirs[0].ux * r, y: c.y + dirs[0].uy * r };
+      const p2 = { x: c.x + dirs[1].ux * r, y: c.y + dirs[1].uy * r };
+      // Sweep direction: pick the flag that gives a 90° arc (not 270°). We
+      // test sweep=0 by computing whether arc midpoint lands in the
+      // "interior between the two radii". Take the cross product sign.
+      const cross = dirs[0].ux * dirs[1].uy - dirs[0].uy * dirs[1].ux;
+      const sweep = (cross > 0) ? 0 : 1;
+      return `M ${c.x},${c.y} L ${p1.x},${p1.y} A ${r},${r} 0 0 ${sweep} ${p2.x},${p2.y} Z`;
+    };
+
+    const addFullCirclePath = (op) => {
+      let cx = 0, cy = 0;
+      if (op.center && typeof op.center.x === 'number') {
+        cx = op.center.x; cy = op.center.y;
+      } else if (op.corner && corners[op.corner]) {
+        cx = corners[op.corner].x; cy = corners[op.corner].y;
+      } else if (op.midSide) {
+        const m = midSide(op.midSide);
+        if (m) { cx = m.x; cy = m.y; }
+      } else {
+        cx = bw / 2; cy = bh / 2;
+      }
+      const r = Number(op.radius) || Math.min(bw, bh) / 4;
+      // Use two arcs to form a full circle as a closed path.
+      return `M ${cx - r},${cy} A ${r},${r} 0 1 0 ${cx + r},${cy} A ${r},${r} 0 1 0 ${cx - r},${cy} Z`;
+    };
+
+    (operations || []).forEach((op, idx) => {
+      if (!op || !op.type) return;
+      let d = '';
+      if (op.type === 'semicircle') {
+        const ep = op.diameter_endpoints;
+        const sideStr = Array.isArray(ep) ? ep.join('') : (typeof ep === 'string' ? ep : '');
+        if (sideStr.length === 2) d = addSemicirclePath(sideStr, op.direction || 'into');
+      } else if (op.type === 'quarterCircle') {
+        d = addQuarterPath(op.center_corner, op.radii_along || [], op.radius);
+      } else if (op.type === 'fullCircle') {
+        d = addFullCirclePath(op);
+      }
+      pathParts.push({ d, op, idx });
+    });
+
+    // ── Render order: (1) base fill, (2) shaded ops, (3) cut-outs from
+    //    "subtract" ops, (4) outlines for everything, (5) base outline,
+    //    (6) labels. We use sequential overpainting since fill rules differ
+    //    between ops.
+    let svg = '';
+
+    // 1. Base shape — fill with FACE_BG, no outline yet.
+    svg += `<rect x="${tx(0).toFixed(2)}" y="${ty(0).toFixed(2)}" width="${ts(bw).toFixed(2)}" height="${ts(bh).toFixed(2)}" fill="${FACE_BG}" stroke="none"/>`;
+
+    // 2. Shaded regions (rose tint), in input order.
+    const shadedSet = new Set((shaded || []).map(Number));
+    pathParts.forEach(({ d, idx }) => {
+      if (!d) return;
+      if (shadedSet.has(idx)) {
+        // Transform path into view space.
+        const dView = transformPath(d, tx, ty);
+        svg += `<path d="${dView}" fill="${SHADE}" stroke="none"/>`;
+      }
+    });
+
+    // 3. Subtract regions (mode === "subtract") — paint white over base.
+    pathParts.forEach(({ d, op }) => {
+      if (!d) return;
+      if (op.mode === 'subtract') {
+        const dView = transformPath(d, tx, ty);
+        svg += `<path d="${dView}" fill="${CUTOUT}" stroke="none"/>`;
+      }
+    });
+
+    // 4. Outlines for all operations (so cuts/adds show as crisp arcs).
+    pathParts.forEach(({ d }) => {
+      if (!d) return;
+      const dView = transformPath(d, tx, ty);
+      svg += `<path d="${dView}" fill="none" stroke="${STROKE}" stroke-width="2"/>`;
+    });
+
+    // 5. Base outline last (so it sits on top of overlapping arc outlines).
+    svg += `<rect x="${tx(0).toFixed(2)}" y="${ty(0).toFixed(2)}" width="${ts(bw).toFixed(2)}" height="${ts(bh).toFixed(2)}" fill="none" stroke="${STROKE}" stroke-width="2"/>`;
+
+    // 6. Vertex labels
+    if (show_vertex_labels) {
+      const placeVertex = (vx, vy, key, dx, dy) => {
+        const vp = { x: tx(vx) + dx, y: ty(vy) + dy };
+        svg += `<text x="${vp.x.toFixed(1)}" y="${vp.y.toFixed(1)}" text-anchor="middle" font-size="13" font-weight="700" fill="${LBL}">${esc(key)}</text>`;
+      };
+      placeVertex(0,  0,  verts[0], -10, -6);   // A — TL
+      placeVertex(bw, 0,  verts[1],  10, -6);   // B — TR
+      placeVertex(bw, bh, verts[2],  10, 16);   // C — BR
+      placeVertex(0,  bh, verts[3], -10, 16);   // D — BL
+    }
+
+    // 7. Operation labels (e.g. "r = 14 cm") placed near the arc midpoint.
+    pathParts.forEach(({ op }) => {
+      if (!op || !op.label) return;
+      // Use a coarse anchor: middle of the bounding box of the operation.
+      let ax = bw / 2, ay = bh / 2;
+      if (op.type === 'fullCircle' && op.corner && corners[op.corner]) {
+        ax = corners[op.corner].x; ay = corners[op.corner].y;
+      } else if (op.type === 'quarterCircle' && corners[op.center_corner]) {
+        ax = corners[op.center_corner].x; ay = corners[op.center_corner].y;
+      } else if (op.type === 'semicircle') {
+        const ep = op.diameter_endpoints;
+        const sideStr = Array.isArray(ep) ? ep.join('') : ep;
+        const m = midSide(sideStr); if (m) { ax = m.x; ay = m.y; }
+      }
+      svg += `<text x="${tx(ax).toFixed(1)}" y="${ty(ay).toFixed(1)}" text-anchor="middle" font-size="11" font-style="italic" fill="${LBL}">${esc(op.label)}</text>`;
+    });
+
+    // 8. Optional dimension caption beneath the figure.
+    if (dimension_label) {
+      svg += `<text x="${(vbW / 2).toFixed(1)}" y="${(vbH - 6).toFixed(1)}" text-anchor="middle" font-size="11" font-weight="600" fill="${LBL}">${esc(dimension_label)}</text>`;
+    }
+
+    return this._svg(svg, {
+      viewBox: `0 0 ${vbW.toFixed(1)} ${vbH.toFixed(1)}`,
+      alt: `Composite figure built from a ${shape} (${bw}×${bh}) with ${(operations || []).length} arc operation(s).`,
+      maxWidth: 460,
+    });
+
+    // ── Local helper: transform a path "d" string from world to view coords.
+    function transformPath(d, tx, ty) {
+      // Tokenise on commands; only M, L, A commands are emitted by us above.
+      // We rewrite numeric coords, leaving radii (rx, ry) and flags untouched
+      // for A; the renderer scales radii separately via `ts` since x and y
+      // share the same scale factor.
+      const out = [];
+      const tokens = d.match(/[MLA]\s*[^MLAZ]+|Z/g) || [];
+      tokens.forEach((tok) => {
+        const cmd = tok[0];
+        if (cmd === 'Z') { out.push('Z'); return; }
+        const tail = tok.slice(1).trim().replace(/,/g, ' ').split(/\s+/).map(Number);
+        if (cmd === 'M' || cmd === 'L') {
+          // pairs of (x, y)
+          const parts = [];
+          for (let i = 0; i < tail.length; i += 2) {
+            parts.push(`${tx(tail[i]).toFixed(2)},${ty(tail[i + 1]).toFixed(2)}`);
+          }
+          out.push(`${cmd} ${parts.join(' ')}`);
+        } else if (cmd === 'A') {
+          // rx ry x-axis-rotation large-arc-flag sweep-flag x y
+          const rx = tail[0], ry = tail[1], rot = tail[2], laf = tail[3], sf = tail[4];
+          const x  = tail[5], y  = tail[6];
+          // Scale radii uniformly (same as ts())
+          const rxV = (rx * scale).toFixed(2);
+          const ryV = (ry * scale).toFixed(2);
+          out.push(`A ${rxV},${ryV} ${rot} ${laf} ${sf} ${tx(x).toFixed(2)},${ty(y).toFixed(2)}`);
+        }
+      });
+      return out.join(' ');
+    }
+  },
+
 };
 
 // Assign to globalThis for cross-environment access (browser + Node.js ESM)

@@ -78,20 +78,21 @@ function extractBetween(text, startMarker, endMarker) {
 
 // ── Diagram function routing ──────────────────────────────────────────────
 // CANON-ALIGNED keys ONLY. Source of truth (must match exactly):
-//   - Supabase canon_topics table (23 Maths / 10 Science / 7 English)
+//   - Supabase canon_topics table (26 Maths / 6 Science / 7 English in v5)
 //   - lib/api/quest-pedagogy.js → SYLLABUS_DEPENDENCIES
-//   - Master_Question_Template.md v4.1 §4 taxonomy
-// Non-canon keys (e.g. 'Money', 'Time', 'Bar Graphs', 'Magnets') are
-// rejected by the DB FK on insert and waste inference cost. Do not add.
+//   - Master_Question_Template.md v5+ §4 taxonomy
+// Non-canon keys (e.g. 'Bar Graphs', 'Magnets') are rejected by the DB FK on
+// insert and waste inference cost. Do not add. Note: 'Money', 'Time',
+// 'Length and Mass', 'Volume of Liquid' ARE canon as of v5.
 const DIAGRAM_ROUTING = {
   Mathematics: {
     'Addition and Subtraction':    ['numberLine'],
     'Algebra':                     ['rectangle'],
-    'Angles':                      ['protractorMeasurement', 'rightAngleDivided', 'straightLineDividedAngles', 'rectangleDividedRightAngle', 'dividedStraightLineAngle'],
+    'Angles':                      ['protractorMeasurement', 'rightAngleDivided', 'straightLineDividedAngles', 'rectangleDividedRightAngle', 'dividedStraightLineAngle', 'crossingLines'],
     'Area and Perimeter':          ['rectangle', 'square', 'rightTriangle', 'compositeShape', 'drawRectangleOnGrid'],
     'Area of Triangle':            ['rightTriangle', 'compositeShape'],
     'Average':                     ['verticalBarChart'],
-    'Circles':                     ['circle', 'runningTrack'],
+    'Circles':                     ['circle', 'circleSegment', 'compositeCircleFigure', 'runningTrack', 'quarterCirclesInSquare', 'overlappingCircles', 'rectangleWithPath'],
     'Data Analysis':               ['verticalBarChart', 'lineGraph', 'dataTable', 'pictogram'],
     'Decimals':                    ['numberLine'],
     'Factors and Multiples':       [],
@@ -106,6 +107,7 @@ const DIAGRAM_ROUTING = {
     'Shapes and Patterns':         ['rectangle', 'square', 'circle'],
     'Speed':                       ['lineGraph'],
     'Symmetry':                    ['drawRectangleOnGrid'],
+    'Time':                        ['clockFace'],
     'Volume':                      ['cuboid'],
     'Whole Numbers':               ['numberLine'],
   },

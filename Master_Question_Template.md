@@ -563,6 +563,36 @@ You may ONLY use the following `function_name` values and their exact parameters
   Quarter circle: `{"shape": "quarter_circle", "corner": "tl" | "tr" | "bl" | "br", "radius_label": "10 cm", "show_arc_label": false}`
   *(NOT to be confused with `quarterCirclesInSquare`, which is inscribed in a square for composite-shading questions. Use `circleSegment` for the standalone-shape area/perimeter formulas.)*
 
+* `compositeCircleFigure`: ⭐ NEW (v5.2) — Composite figure built from a base rectangle/square plus arc/disc operations (full circles, semicircles, quarter circles) added/subtracted/shaded. Generalised renderer for the four classic P6 PSLE composite-circle figures.
+  Base + ops + optional shaded indices:
+  `{"base": {"shape": "rectangle"|"square", "width": 28, "height": 14, "vertices": ["A","B","C","D"]}, "operations": [...], "shaded": [0,1]}`
+  - Vertices clockwise from top-left: A=TL, B=TR, C=BR, D=BL. For square, `height` defaults to `width`.
+  - Each operation has a `mode` of `"add"` (extend the figure outward), `"subtract"` (cut a hole, paints white), or `"shade"` (fill rose-tint without altering the boundary). Listing an op's index in `shaded` forces a rose tint regardless of mode.
+  - **Operation types:**
+    - Full circle: `{"type": "fullCircle", "corner": "A", "radius": 7, "mode": "subtract", "label": "r = 7 cm"}` (or `"center": {"x":14,"y":7}` or `"midSide": "AB"`)
+    - Semicircle: `{"type": "semicircle", "diameter_endpoints": ["A","B"], "direction": "into"|"away", "mode": "add", "label": "d = 14 cm"}`
+    - Quarter circle: `{"type": "quarterCircle", "center_corner": "A", "radii_along": ["AB","AD"], "radius": 14, "mode": "subtract"}`
+  Worked example — 28×14 rect with two quarter-circles (r=14) cut from BL and BR corners; remaining strip is the asked region:
+  ```json
+  {
+    "base": {"shape": "rectangle", "width": 28, "height": 14, "vertices": ["A","B","C","D"]},
+    "operations": [
+      {"type": "quarterCircle", "center_corner": "D", "radii_along": ["DA","DC"], "radius": 14, "mode": "subtract", "label": "r = 14 cm"},
+      {"type": "quarterCircle", "center_corner": "C", "radii_along": ["CB","CD"], "radius": 14, "mode": "subtract"}
+    ],
+    "shaded": []
+  }
+  ```
+  *(Use for P6 Circles "Area And Perimeter Of Composite Figures With Circles". Robust enough for stadium-shapes (rect + semicircle "away"), corner cut-outs, lens-shaped subtractions, and quarter-circle-with-bite figures.)*
+
+**--- 4b. MATH: TIME ---**
+* `clockFace`: ⭐ NEW (v5.2) — Analog clock face with positioned hour and minute hands. Use for P1/P2 "Telling Time" questions.
+  `{"hour": 7, "minute": 20, "size": 240, "showSecondHand": false, "second": 0, "label": ""}`
+  - Hour-hand position is computed from `hour + minute/60` so it sits between numerals when minute > 0 (e.g. hour=7, minute=20 → hand pointing one-third of the way from 7 toward 8).
+  - Minute-hand from `minute × 6°`. 12 o'clock = straight up.
+  - hour=12 renders at the top, hour=3 on the right, etc.
+  *(Suits "What time does this clock show?" MCQ at P1/P2. Set `showSecondHand: true` and `second` for question variants involving the second hand.)*
+
 **--- 5. MATH: ANGLES (Advanced Geometry) ---**
 * `protractorMeasurement`: Semicircular protractor with inner/outer scale and pointer arm.
   Standard (baseline at 0°): `{"angle_to_measure": 65, "pointer_label": "?", "show_inner_scale": true}`
@@ -588,6 +618,26 @@ You may ONLY use the following `function_name` values and their exact parameters
   **Legacy (still supported, but rays land at hard-coded fallback positions — use only for old rows):** `{"vertices": ["P","Q","R","S"], "angles": [{"name": "PQT", "value": "22°"}, {"name": "TQU", "value": "?"}]}`
 * `dividedStraightLineAngle`: A straight line divided by one intersecting ray showing two named angles.
   `{"vertices": ["A","O","B","C"], "angles": [{"label": "40°"}, {"label": "?"}]}`
+
+* `crossingLines`: ⭐ NEW (v5.2) — Two straight lines crossing at a single point, with up to 4 angle labels in the four sectors formed. Use for P5/P6 "Vertically Opposite Angles" / "Angles At A Point" problems.
+  ```json
+  {
+    "line1": {"label": "AB", "endpoints": ["A","B"]},
+    "line2": {"label": "CD", "endpoints": ["C","D"]},
+    "crossing": "O",
+    "line2_angle": 36,
+    "angles": [
+      {"at": "AOC", "label": "144°"},
+      {"at": "BOC", "label": "36°"},
+      {"at": "BOD", "label": "144°"},
+      {"at": "AOD", "label": "?"}
+    ]
+  }
+  ```
+  - `line1` is rendered horizontal; `line2_angle` (degrees, default 60) is the angle between them.
+  - Each `angles[].at` is a 3-letter sector identifier; the middle letter is the crossing-point letter (default `"O"`). The two outer letters are matched by SET, so `"AOC"` === `"COA"`.
+  - Missing entries leave their sector unlabelled. Use `"?"` to mark the unknown angle without giving the answer away.
+  *(Suits Vertically Opposite Angles, Angles At A Point, and any "two lines intersect; find x" pattern.)*
 
 **--- 6. MATH: NUMBER & FRACTIONS ---**
 * `numberLine`: Horizontal number line with optional marked dots and highlight arcs.
@@ -684,6 +734,12 @@ Both render HTML tables. `dataTable` uses CSS variables and is preferred. `table
 - `circleSegment` — P6 Circles "Area And Perimeter Of Semicircle And Quarter Circle"
 See the catalog entries above for parameter formats.
 
+**⚠️ NEW (v5.2, 2026-05-02) — Three new primitives to retire placeholder fallbacks:**
+- `clockFace` — P1/P2 Time "Telling Time" sub_topics (analog clock with positioned hands)
+- `crossingLines` — P5/P6 Angles "Vertically Opposite Angles" / "Angles At A Point" (two lines crossing, four sector labels)
+- `compositeCircleFigure` — P6 Circles "Area And Perimeter Of Composite Figures With Circles" (rect/square base + add/subtract/shade arc operations)
+See the catalog entries above for parameter formats.
+
 **⚠️ Functions previously implemented but newly routed in v5.1:**
 - `parallelLinesTransversal` — now routed for P3/P4/P5 Geometry & Angles
 - `dotTriangle` / `gridGrowth` — now routed for "Patterns In Number Sequences" sub_topic at P1-P3
@@ -716,7 +772,7 @@ MATHEMATICS ROUTING MAP
 | Multiplication Tables       | NULL                        | No diagram for table recall                                    |
 | Money                       | NULL                        | Text-based; no coin-image primitive in v5                      |
 | Length and Mass             | `rulerMeasurement`          | Any question requiring a measurement reading                   |
-| Time                        | NULL                        | Clock-face diagrams not in library; omit visual                |
+| Time                        | `clockFace`                 | ⭐ "Telling Time" sub_topics — set `hour` (1–12) and `minute` (0–59) |
 | Shapes and Patterns         | `rectangle`/`square`/`circle`| Identifying or describing 2D shapes                           |
 | Data Analysis               | `pictogram`                 | "Reading Picture Graphs" — set `keyValue` to the scale shown   |
 
@@ -733,7 +789,7 @@ MATHEMATICS ROUTING MAP
 | Length and Mass             | `rulerMeasurement`          | All scale-reading questions (cm, m, g, kg)                     |
 | Volume of Liquid            | `rulerMeasurement`          | Measuring-cylinder scale reading (litres / millilitres)        |
 | Money                       | NULL                        | Text-based; sums and change in decimal notation                |
-| Time                        | NULL                        | Clock-face diagrams not in library; omit visual                |
+| Time                        | `clockFace`                 | ⭐ "Telling Time" / clock-reading sub_topics — analog face with hour & minute hands |
 | Shapes and Patterns         | `rectangle`/`square`/`circle`| 2D shape naming; `isometricGrid` (orthographic) for 3D solids |
 | Data Analysis               | `pictogram`                 | Always; include `keySymbol` and `keyValue`                     |
 
@@ -819,6 +875,7 @@ MATHEMATICS ROUTING MAP
 |                             | `isometricGrid`             | ⭐ "Building Solids With Unit Cubes", "Measuring Volume In Cubic Units" — use `mode: "isometric"` |
 | **Angles**                  | `rightAngleDivided`         | "Vertically Opposite Angles", "Finding Unknown Angles"         |
 |                             | `straightLineDividedAngles` | Angles on a straight line                                      |
+|                             | `crossingLines`             | ⭐ "Vertically Opposite Angles" — two lines AB and CD crossing at O, four sector labels |
 |                             | `parallelLinesTransversal`  | Alternate / co-interior angle questions                        |
 |                             | `rectangleWithLine`         | "Rectangle ABCD with line from corner to point" PSLE pattern   |
 | **Geometry**                | `parallelogram`             | "Properties Of Parallelogram, Rhombus And Trapezium"           |
@@ -837,8 +894,9 @@ MATHEMATICS ROUTING MAP
 |                             | NULL                        | Pure algebraic manipulation (Simplifying / Evaluating expressions, Solving equations) — text-only |
 | **Circles**                 | `circle`                    | "Area And Circumference Of Circle" — use `radiusLabel` OR `diameterLabel` (not both) |
 |                             | `circleSegment`             | ⭐ "Area And Perimeter Of Semicircle And Quarter Circle" — pick `shape: "semicircle"` or `"quarter_circle"` |
+|                             | `compositeCircleFigure`     | ⭐ "Area And Perimeter Of Composite Figures With Circles" — base rect/square + arc add/subtract/shade ops (preferred for new content) |
 |                             | `runningTrack`              | Stadium-shaped track perimeter / area problems                 |
-|                             | `quarterCirclesInSquare`    | "Area And Perimeter Of Composite Figures With Circles" — corners-in-square pattern |
+|                             | `quarterCirclesInSquare`    | "Area And Perimeter Of Composite Figures With Circles" — corners-in-square pattern (legacy; prefer `compositeCircleFigure`) |
 |                             | `overlappingCircles`        | "Area And Perimeter Of Composite Figures With Circles" — vesica/lens-shaped HOTS |
 |                             | `rectangleWithPath`         | "Area And Perimeter Of Composite Figures With Circles" — when path/border is involved |
 | Volume                      | `cuboid`                    | 3D tank; before-and-after water level (two diagrams)           |
