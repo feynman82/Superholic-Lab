@@ -12,3 +12,4 @@ Vanilla HTML pages superseded by their Next.js architect-scholar replacements.
 |---|---|---|
 | `public-pages/subject-mathematics.html` | `/subjects/mathematics` (`src/app/subjects/mathematics/page.tsx`) | 2026-05-02 |
 | `public-pages/subject-science.html` | `/subjects/science` (`src/app/subjects/science/page.tsx`) | 2026-05-02 |
+| `public-pages/subject-english.html` | `/subjects/english` (`src/app/subjects/english/page.tsx`) | 2026-05-03 |

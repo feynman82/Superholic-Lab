@@ -23,7 +23,7 @@ For Plan Quest pedagogy and behaviour see `docs/QUEST_PAGE_SPEC.md` v2.0.
 | subjects.html | /pages/subjects.html | ✅ required | Level + subject selector |
 | Mathematics (Next.js) | /subjects/mathematics | ❌ public | Maths subject marketing page (architect-scholar, replaces vanilla subject-mathematics.html) |
 | Science (Next.js) | /subjects/science | ❌ public | Science subject marketing page (architect-scholar, replaces vanilla subject-science.html) |
-| subject-english.html | /pages/subject-english.html | ❌ public | English subject landing page |
+| English (Next.js) | /subjects/english | ❌ public | English subject marketing page (architect-scholar, replaces vanilla subject-english.html) |
 | setup.html | /pages/setup.html | ✅ required | New learner onboarding (post-signup) |
 | pricing.html | /pages/pricing.html | ❌ public | Plans + monthly/annual toggle + FAQ |
 | login.html | /pages/login.html | ❌ public | Email + Google + Apple OAuth login |
