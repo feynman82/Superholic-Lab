@@ -38,7 +38,7 @@ class GlobalHeader extends HTMLElement {
     <a href="/subjects/science"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--science-colour)" stroke-width="2.5" stroke-linecap="round"><path d="M9 3h6v7l3 10H6L9 10V3z"/><line x1="6" y1="7" x2="18" y2="7"/></svg>Science</a>
     <a href="/subjects/english"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--english-colour)" stroke-width="2.5" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>English</a>
     <a href="/pages/pricing.html">Pricing</a>
-    <a href="/pages/about.html">About Us</a>
+    <a href="/about">About Us</a>
     <a href="/pages/contact.html">Contact Support</a>
     <a href="/pages/signup.html" id="navSignUp">Start Free Trial</a>
   </div>

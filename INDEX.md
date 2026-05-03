@@ -24,6 +24,7 @@ For Plan Quest pedagogy and behaviour see `docs/QUEST_PAGE_SPEC.md` v2.0.
 | Mathematics (Next.js) | /subjects/mathematics | ❌ public | Maths subject marketing page (architect-scholar, replaces vanilla subject-mathematics.html) |
 | Science (Next.js) | /subjects/science | ❌ public | Science subject marketing page (architect-scholar, replaces vanilla subject-science.html) |
 | English (Next.js) | /subjects/english | ❌ public | English subject marketing page (architect-scholar, replaces vanilla subject-english.html) |
+| About (Next.js) | /about | ❌ public | About page — manifesto, method, engine, shipping spec-sheet, compass, SG proof (architect-scholar, replaces vanilla about.html) |
 | setup.html | /pages/setup.html | ✅ required | New learner onboarding (post-signup) |
 | pricing.html | /pages/pricing.html | ❌ public | Plans + monthly/annual toggle + FAQ |
 | login.html | /pages/login.html | ❌ public | Email + Google + Apple OAuth login |
