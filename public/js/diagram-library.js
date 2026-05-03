@@ -4906,8 +4906,11 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     };
 
     // ── Compute fitted viewBox with margin for labels & arcs ──────────────
-    // We pad by ~enough for any arc that bulges OUTSIDE the base.
-    const padBase = 30;       // base label / vertex label padding
+    // Padding is ~proportional to figure size so small worlds don't end up
+    // dominated by margin. Floor at 12 world-units to leave room for vertex
+    // letters; cap at 30 so very large figures don't waste canvas.
+    // (Earlier hard 30 → small 14×14 figures only filled ~20% of canvas.)
+    const padBase = Math.max(12, Math.min(30, Math.max(bw, bh) * 1.0));
     let padN = padBase, padS = padBase, padE = padBase, padW = padBase;
 
     // First pass: scan operations to expand padding for "away"/"add" arcs.
@@ -5183,7 +5186,7 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     return this._svg(svg, {
       viewBox: `0 0 ${vbW.toFixed(1)} ${vbH.toFixed(1)}`,
       alt: `Composite figure built from a ${shape} (${bw}×${bh}) with ${(operations || []).length} arc operation(s).`,
-      maxWidth: 460,
+      maxWidth: 560,
     });
 
     // ── Local helper: transform a path "d" string from world to view coords.
