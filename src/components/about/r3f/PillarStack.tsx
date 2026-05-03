@@ -57,8 +57,9 @@ function PillarBlock({ position, num, name, accent, delay }: PillarProps) {
     // Scale-in over 0.8s with ease-out
     const scale = Math.min(1, 1 - Math.pow(1 - Math.min(t / 0.8, 1), 3));
     meshRef.current.scale.setScalar(scale);
-    // Slow rotate around Y
-    meshRef.current.rotation.y = t * 0.15;
+    // Rotate around Y — 0.30 rad/s (2x prior speed) so the labelled
+    // front face is in view more often instead of the blank sides.
+    meshRef.current.rotation.y = t * 0.30;
   });
 
   return (
