@@ -991,28 +991,34 @@
 
     // Lazy-load helpers — keeps tutor.js light when picker doesn't fire.
     const { getSubjectsForPicker } = await import('./wena-canon-helpers.js');
+    const { orbSvg } = await import('./wena-subject-visuals.js');
 
     const grid = document.getElementById('picker-subject-grid');
     grid.innerHTML = '';
     const subjects = getSubjectsForPicker(pickerSelection.level);
-    for (const subj of subjects) {
+    subjects.forEach((subj, idx) => {
       const card = document.createElement('button');
       card.type = 'button';
-      card.className = 'picker-card-option';
+      // Mirror subjects.html trio-card visual identity at 0.7x scale (see
+      // tutor.html <style> block). Class kept namespaced as picker-* so
+      // tutor.js still owns markup semantics.
+      card.className = 'trio-card picker-card-option';
+      card.dataset.orbStagger = String(idx);
       card.setAttribute('aria-disabled', String(!subj.isAvailable));
+      const slug = (subj.key || '').toLowerCase();
       const hint = subj.isAvailable
-        ? `<span class="picker-hint">Choose your topic next</span>`
-        : `<span class="picker-badge">Coming soon</span><span class="picker-hint">${subj.unavailableReason || ''}</span>`;
+        ? `<p class="trio-card__sub picker-hint">Choose your topic next</p>`
+        : `<span class="picker-badge">Coming soon</span><p class="trio-card__sub picker-hint">${subj.unavailableReason || ''}</p>`;
       card.innerHTML = `
-        <span class="picker-emoji" aria-hidden="true">${subj.iconEmoji}</span>
-        <span class="picker-label">${subj.label}</span>
+        <div class="trio-orb">${orbSvg(slug)}</div>
+        <h3 class="trio-card__title picker-label">${subj.label}</h3>
         ${hint}
       `;
       if (subj.isAvailable) {
         card.addEventListener('click', () => onSubjectSelected(subj.key));
       }
       grid.appendChild(card);
-    }
+    });
 
     // Reset to step 1 in case picker was previously navigated.
     document.getElementById('picker-step-subject').hidden = false;
@@ -1033,6 +1039,7 @@
     if (subhead) subhead.textContent = `For ${pickerSelection.level} ${subjectKey}.`;
 
     const { getTopicsForSubjectLevel } = await import('./wena-canon-helpers.js');
+    const { topicGlyph } = await import('./wena-subject-visuals.js');
     const topics = getTopicsForSubjectLevel(subjectKey, pickerSelection.level);
 
     const grid = document.getElementById('picker-topic-grid');
@@ -1043,13 +1050,14 @@
     for (const t of topics) {
       const card = document.createElement('button');
       card.type = 'button';
-      card.className = 'picker-card-option';
+      card.className = 'trio-card picker-card-option';
       card.setAttribute('aria-disabled', String(!t.hasPlaybookCells));
       const hint = t.hasPlaybookCells
-        ? `<span class="picker-hint">${t.subTopicCount} sub-topic${t.subTopicCount !== 1 ? 's' : ''}</span>`
-        : `<span class="picker-hint">Cells coming soon</span>`;
+        ? `<p class="trio-card__sub picker-hint">${t.subTopicCount} sub-topic${t.subTopicCount !== 1 ? 's' : ''}</p>`
+        : `<p class="trio-card__sub picker-hint">Cells coming soon</p>`;
       card.innerHTML = `
-        <span class="picker-label">${t.topic}</span>
+        ${topicGlyph(t.topic)}
+        <h3 class="trio-card__title trio-card__title--small picker-label">${t.topic}</h3>
         ${hint}
       `;
       if (t.hasPlaybookCells) {
@@ -1093,8 +1101,7 @@
     for (const sub of subTopics) {
       const item = document.createElement('button');
       item.type = 'button';
-      item.className = 'picker-card-option';
-      item.style.padding = 'var(--space-2) var(--space-3)';
+      item.className = 'trio-card picker-card-option picker-list-row';
       item.innerHTML = `<span class="picker-label">${sub}</span>`;
       item.addEventListener('click', () => {
         pickerSelection.subTopic = sub;
