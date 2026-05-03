@@ -4935,13 +4935,17 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
       }
     });
 
-    // Decide world-to-view scale so the (padded) world fits a 400-wide canvas.
+    // Decide world-to-view scale so the (padded) world fits a 400×280 canvas.
+    // The viewBox shrinks to the figure's actual size (no minimum-width floor),
+    // so when rendered at the SVG's maxWidth (460 px) small figures don't end up
+    // tiny in a sea of dead space. Floor at 200×160 to keep very small worlds
+    // from rendering as postage stamps.
     const targetW = 400;
     const worldW = bw + padW + padE;
     const worldH = bh + padN + padS;
     const scale = Math.min(targetW / worldW, 280 / worldH);
-    const vbW = Math.max(targetW, worldW * scale);
-    const vbH = Math.max(180, worldH * scale);
+    const vbW = Math.max(200, worldW * scale);
+    const vbH = Math.max(160, worldH * scale);
 
     // World→view transform: shift world (0,0) → (padW * scale, padN * scale)
     const tx = (x) => (x + padW) * scale;
