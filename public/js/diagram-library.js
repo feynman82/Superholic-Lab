@@ -18,6 +18,64 @@
  *   - Default viewBox: 0 0 400 260
  *
  * TEST: Load file and call each function — each must return a non-empty string > 50 chars.
+ *
+ * ════════════════════════════════════════════════════════════════════════════
+ * TABLE OF CONTENTS — line numbers are approximate; use Grep("functionName")
+ * to jump to a specific definition. Group order roughly matches v5.3 layout.
+ * ════════════════════════════════════════════════════════════════════════════
+ *
+ * MASTER ROUTER
+ *   render(payload)                                               ~2126
+ *
+ * PRIVATE HELPERS
+ *   _svg(content, opts)                                           ~2100
+ *   _esc(str)                                                     ~2110
+ *
+ * MATH · GEOMETRY (basic shapes)
+ *   rectangle, square, circle, rightTriangle, equilateralTriangle,
+ *   parallelogram, polygon, runningTrack, drawRectangleOnGrid     ~641, 964, 1079, 2046, 2195, 2235, 2244, 2307, 2340
+ *
+ * MATH · GEOMETRY (composite / advanced / 3D)
+ *   compositeShape, compositeCircleFigure, polygonWithInteriorPoints,
+ *   rectangleWithLine, rectangleWithPath, quarterCirclesInSquare,
+ *   overlappingCircles, circleSegment, netDiagram, symmetryFigure,
+ *   isometricGrid, cuboid, parallelLinesTransversal               ~54, 1035, 1460, 1572, 1646, 1744, 1783, 2275, 4026, 3854, 4222, 4798, 5311
+ *
+ * MATH · ANGLES
+ *   protractorMeasurement, crossingLines, raysAtPoint,
+ *   rectangleDividedRightAngle, rightAngleDivided,
+ *   straightLineDividedAngles, dividedStraightLineAngle           ~1119, 1187, 1251, 1971, 4408, 4630, 5177
+ *
+ * MATH · DATA / FRACTIONS
+ *   pieChart, barChart, horizontalBarChart, verticalBarChart,
+ *   lineGraph, pictogram, fractionBar, fractionBars,
+ *   numberLine, unitModel                                         ~222, 785, 881, 2408, 2461, 2487, 2514, 2572, 2603, 2659
+ *
+ * MATH · TIME / PATTERNS / MEASUREMENT
+ *   clockFace, dotTriangle, gridGrowth, magicSquare,
+ *   rulerMeasurement                                              ~690, 1841, 1892, 1936, 4526
+ *
+ * SCIENCE · FLOW / CLASSIFICATION / TABLES
+ *   arrowDiagram, conceptMap, table, dataTable                    ~551, 2015, 2789, 2886
+ *
+ * SCIENCE · APPARATUS / EXPERIMENTS
+ *   thermometer, circuitDiagram, comparativeSetup, magnetDiagram,
+ *   rampExperiment, genericExperiment                             ~280, 602, 2818, 3160, 3447, 3660
+ *
+ * UTILITIES
+ *   placeholder                                                   ~4357
+ *
+ * NEW IN v5.3 (2026-05-02)
+ *   raysAtPoint                — 3+ rays from a single point dividing 360°
+ *                                (P5/P6 Angles At A Point)
+ *   polygonWithInteriorPoints  — polygon + side-points + cevians, supports
+ *                                shape: "parallelogram"|"rhombus"|"rectangle"|
+ *                                "square"|"trapezium" for 4-vertex shapes
+ *
+ * KNOWN CODE SMELLS (track for cleanup)
+ *   - `comparativeSetup` is defined twice (~3160 and ~3316). The second
+ *     definition shadows the first. Worth deduping in a future refactor.
+ * ════════════════════════════════════════════════════════════════════════════
  */
 
 'use strict';
