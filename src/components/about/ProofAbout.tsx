@@ -34,7 +34,7 @@ export default function ProofAbout() {
               />
               {/* Pin dot */}
               <motion.circle
-                cx="240" cy="180" r="4"
+                cx="240" cy="170" r="4"
                 fill="var(--brand-rose)"
                 initial={reduce ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0 }}
                 whileInView={reduce ? {} : { opacity: 1, scale: 1 }}
@@ -43,7 +43,7 @@ export default function ProofAbout() {
               />
               {/* Pulse ring */}
               <motion.circle
-                cx="240" cy="180" r="4"
+                cx="240" cy="100" r="4"
                 fill="none"
                 stroke="var(--brand-rose)" strokeWidth="1"
                 initial={reduce ? { opacity: 0 } : { opacity: 0.6, scale: 1 }}
