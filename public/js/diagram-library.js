@@ -5142,6 +5142,301 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     }
   },
 
+  /**
+   * 🔆 raysAtPoint — Three-or-more rays radiating from a single point, each
+   * pair of adjacent rays forming a labelled sector. Total of all sectors = 360°.
+   *
+   * Use for P5/P6 "Angles At A Point" — questions like "Three rays from O divide
+   * the full angle at O into three parts: ∠AOB = 2n°, ∠BOC = (3n+10)°, ∠COA = (n+50)°"
+   *
+   * @param {string}   params.center  Center-point label (default "O").
+   * @param {Array}    params.rays    [{ name: "A", at_deg: 90 }, ...]
+   *                                  at_deg uses standard math convention:
+   *                                  0° = right (+x), 90° = up (+y), CCW positive.
+   * @param {Array}    params.arcs    [{ between: ["A","B"], label: "2n°" }, ...]
+   *                                  Order in `between` doesn't matter — sectors
+   *                                  are matched by SET of ray names.
+   * @param {number}   params.ray_length  px from center (default 110).
+   *
+   * Example:
+   *   { "function_name": "raysAtPoint",
+   *     "params": {
+   *       "center": "O",
+   *       "rays": [
+   *         { "name": "A", "at_deg": 90 },
+   *         { "name": "B", "at_deg": 210 },
+   *         { "name": "C", "at_deg": 330 }
+   *       ],
+   *       "arcs": [
+   *         { "between": ["A","B"], "label": "2n°" },
+   *         { "between": ["B","C"], "label": "(3n+10)°" },
+   *         { "between": ["C","A"], "label": "(n+50)°" }
+   *       ]
+   *     } }
+   */
+  raysAtPoint({
+    center      = 'O',
+    rays        = [],
+    arcs        = [],
+    ray_length  = 110,
+  } = {}) {
+    const esc = this._esc.bind(this);
+    const w = 400, h = 260;
+    const cx = w / 2, cy = h / 2;
+    const r  = Math.max(60, Math.min(120, Number(ray_length) || 110));
+
+    const STROKE  = 'var(--text-main, #1a2e2a)';
+    const LBL     = 'var(--text-muted, #5d706b)';
+    const ANG_LBL = 'var(--brand-rose, #B76E79)';
+    const DOT     = 'var(--brand-sage, #51615E)';
+    const ARC_STK = 'var(--brand-rose, #B76E79)';
+
+    // Defensive defaults
+    const rayList = Array.isArray(rays) ? rays.filter(r => r && typeof r.name === 'string') : [];
+    if (rayList.length < 2) {
+      return this._svg(
+        `<text x="${cx}" y="${cy}" text-anchor="middle" font-size="14" fill="${LBL}">raysAtPoint requires at least 2 rays</text>`,
+        { viewBox: `0 0 ${w} ${h}`, alt: 'Invalid rays diagram' }
+      );
+    }
+    const O = (typeof center === 'string' && center.length) ? center[0] : 'O';
+
+    // Math: 0° = right, 90° = up. SVG y-axis is inverted so we negate sin.
+    const polar = (deg, dist) => {
+      const rad = deg * Math.PI / 180;
+      return { x: cx + dist * Math.cos(rad), y: cy - dist * Math.sin(rad) };
+    };
+    const norm360 = (d) => ((Number(d) % 360) + 360) % 360;
+
+    // Normalise + sort rays by CCW angle for sector matching
+    const sortedRays = rayList
+      .map(rr => ({ name: rr.name, deg: norm360(rr.at_deg) }))
+      .sort((a, b) => a.deg - b.deg);
+
+    let svg = '';
+
+    // 1. Draw each ray as a line from center to its outer endpoint
+    sortedRays.forEach(rr => {
+      const end = polar(rr.deg, r);
+      svg += `<line x1="${cx}" y1="${cy}" x2="${end.x.toFixed(1)}" y2="${end.y.toFixed(1)}" stroke="${STROKE}" stroke-width="2.5" stroke-linecap="round"/>`;
+    });
+
+    // 2. Center dot + center label (offset slightly south-east)
+    svg += `<circle cx="${cx}" cy="${cy}" r="3.5" fill="${DOT}"/>`;
+    svg += `<text x="${(cx + 10).toFixed(1)}" y="${(cy + 16).toFixed(1)}" font-size="14" font-weight="700" fill="${LBL}">${esc(O)}</text>`;
+
+    // 3. Ray-end labels (push outside the ray)
+    sortedRays.forEach(rr => {
+      const lp = polar(rr.deg, r + 18);
+      // Vertical baseline depends on quadrant so labels don't overlap rays
+      const baseline = lp.y > cy + 6 ? 'hanging' : (lp.y < cy - 6 ? 'auto' : 'middle');
+      const anchor   = lp.x > cx + 6 ? 'start'   : (lp.x < cx - 6 ? 'end'  : 'middle');
+      svg += `<text x="${lp.x.toFixed(1)}" y="${lp.y.toFixed(1)}" font-size="16" font-weight="700" fill="${LBL}" text-anchor="${anchor}" dominant-baseline="${baseline}">${esc(rr.name)}</text>`;
+    });
+
+    // 4. Build sectors between adjacent rays (in CCW order) and label by SET match
+    const arcRadius = Math.min(34, r * 0.32);
+    (Array.isArray(arcs) ? arcs : []).forEach(entry => {
+      if (!entry || !Array.isArray(entry.between) || entry.between.length !== 2) return;
+      const [n1, n2] = entry.between;
+      // Find the sector whose two rays are exactly {n1, n2}
+      let chosen = null;
+      for (let i = 0; i < sortedRays.length; i++) {
+        const a = sortedRays[i];
+        const b = sortedRays[(i + 1) % sortedRays.length];
+        const set = new Set([a.name, b.name]);
+        if (set.has(n1) && set.has(n2) && set.size === 2) {
+          chosen = { from: a, to: b };
+          break;
+        }
+      }
+      if (!chosen) return;
+      let span = chosen.to.deg - chosen.from.deg;
+      if (span <= 0) span += 360;
+      const midDeg = norm360(chosen.from.deg + span / 2);
+
+      // 4a. Draw arc inside the sector
+      const arcStart = polar(chosen.from.deg, arcRadius);
+      const arcEnd   = polar(chosen.to.deg,   arcRadius);
+      const largeArc = span > 180 ? 1 : 0;
+      // SVG arcs go CW with sweep=1; our angles are CCW — so use sweep=0 to draw CCW
+      svg += `<path d="M ${arcStart.x.toFixed(1)} ${arcStart.y.toFixed(1)} A ${arcRadius} ${arcRadius} 0 ${largeArc} 0 ${arcEnd.x.toFixed(1)} ${arcEnd.y.toFixed(1)}" fill="none" stroke="${ARC_STK}" stroke-width="1.6" opacity="0.8"/>`;
+
+      // 4b. Place label at the bisector, just past the arc
+      const labelDist = arcRadius + 18;
+      const lp = polar(midDeg, labelDist);
+      svg += `<text x="${lp.x.toFixed(1)}" y="${(lp.y + 4).toFixed(1)}" text-anchor="middle" font-size="14" font-weight="700" fill="${ANG_LBL}">${esc(entry.label || '?')}</text>`;
+    });
+
+    return this._svg(svg, {
+      viewBox: `0 0 ${w} ${h}`,
+      alt: `${sortedRays.length} rays radiating from point ${O}, dividing the full angle into ${sortedRays.length} sectors.`,
+      maxWidth: 460,
+    });
+  },
+
+  /**
+   * 🔺 polygonWithInteriorPoints — A polygon with named vertices on its perimeter,
+   * named division points on sides (at fractional positions or midpoints), and
+   * optional cevians (line segments from a vertex to an interior side-point).
+   *
+   * Use for P5/P6 "Area of Triangle" composite figures, ratio-on-side, and
+   * cevian-based area problems.
+   *
+   * @param {Array<string>}  params.vertices  Polygon corners, in order. e.g. ["A","B","C"].
+   * @param {Array}          params.side_points
+   *   [{ side: "BC", name: "D", position: 0.375 }, { side: "AC", name: "E", position: "midpoint" }]
+   *   - `side` is a 2-letter string formed by two consecutive vertex names.
+   *   - `position` is the fractional distance from the FIRST letter of `side`
+   *     toward the SECOND letter (0..1). Use the literal "midpoint" for 0.5.
+   *   - `name` labels the point on the side.
+   * @param {Array<string>}  params.cevians
+   *   ["AD", "BE", ...] — each pair connects a polygon vertex to a named side-point.
+   * @param {Array}          params.side_labels
+   *   [{ side: "BC", label: "24 cm" }] — optional captions placed outside the side.
+   * @param {string}         params.shape  "triangle" (default) | "quadrilateral"
+   *
+   * Example for the cevian + midpoint pattern:
+   *   { "function_name": "polygonWithInteriorPoints",
+   *     "params": {
+   *       "vertices": ["A","B","C"],
+   *       "side_points": [
+   *         { "side": "CB", "name": "D", "position": 0.375 },
+   *         { "side": "AC", "name": "E", "position": "midpoint" }
+   *       ],
+   *       "cevians": ["AD", "BE"],
+   *       "side_labels": [{ "side": "CB", "label": "24 cm" }]
+   *     } }
+   */
+  polygonWithInteriorPoints({
+    vertices    = ['A', 'B', 'C'],
+    side_points = [],
+    cevians     = [],
+    side_labels = [],
+    shape       = 'triangle',
+  } = {}) {
+    const esc = this._esc.bind(this);
+    const w = 400, h = 280;
+    const cx = w / 2, cy = h / 2 + 4;
+    const r  = 100;
+
+    const STROKE     = 'var(--text-main, #1a2e2a)';
+    const FILL       = 'rgba(81, 97, 94, 0.05)';
+    const LBL        = 'var(--text-muted, #5d706b)';
+    const POINT_DOT  = 'var(--brand-sage, #51615E)';
+    const POINT_LBL  = 'var(--brand-rose, #B76E79)';
+    const CEVIAN     = 'var(--brand-rose, #B76E79)';
+    const SIDE_LBL   = 'var(--text-muted, #5d706b)';
+
+    // Defensive: at least 3 vertices
+    const verts = Array.isArray(vertices) && vertices.length >= 3
+      ? vertices.map(v => typeof v === 'string' ? v : (v && v.label) || '')
+      : ['A', 'B', 'C'];
+    const n = verts.length;
+
+    // Compute vertex positions in a regular n-gon, top-aligned
+    const startAngle = -Math.PI / 2;
+    const vPos = {};
+    verts.forEach((name, i) => {
+      const ang = startAngle + (i * 2 * Math.PI) / n;
+      vPos[name] = { x: cx + r * Math.cos(ang), y: cy + r * Math.sin(ang) };
+    });
+
+    // Resolve a side string ("BC") → { from: {x,y}, to: {x,y} }
+    const resolveSide = (sideStr) => {
+      if (typeof sideStr !== 'string' || sideStr.length !== 2) return null;
+      const a = vPos[sideStr[0]], b = vPos[sideStr[1]];
+      if (!a || !b) return null;
+      return { from: a, to: b };
+    };
+
+    // Compute a side-point's position from {side, position}
+    const resolveSidePoint = (sp) => {
+      if (!sp || typeof sp.side !== 'string') return null;
+      const seg = resolveSide(sp.side);
+      if (!seg) return null;
+      let t = sp.position;
+      if (t === 'midpoint' || t === undefined || t === null) t = 0.5;
+      t = Number(t);
+      if (!Number.isFinite(t)) t = 0.5;
+      t = Math.max(0, Math.min(1, t));
+      return {
+        x: seg.from.x + (seg.to.x - seg.from.x) * t,
+        y: seg.from.y + (seg.to.y - seg.from.y) * t,
+      };
+    };
+
+    // Build a quick lookup of named side-points
+    const sidePtPos = {};
+    (Array.isArray(side_points) ? side_points : []).forEach(sp => {
+      if (!sp || typeof sp.name !== 'string') return;
+      const pos = resolveSidePoint(sp);
+      if (pos) sidePtPos[sp.name] = pos;
+    });
+
+    let svg = '';
+
+    // 1. Polygon body
+    const pointsAttr = verts.map(v => `${vPos[v].x.toFixed(1)},${vPos[v].y.toFixed(1)}`).join(' ');
+    svg += `<polygon points="${pointsAttr}" fill="${FILL}" stroke="${STROKE}" stroke-width="2.5"/>`;
+
+    // 2. Cevians (drawn before points so dots render on top)
+    (Array.isArray(cevians) ? cevians : []).forEach(c => {
+      if (typeof c !== 'string' || c.length !== 2) return;
+      const [vName, pName] = [c[0], c[1]];
+      const v = vPos[vName];
+      const p = sidePtPos[pName];
+      if (!v || !p) return;
+      svg += `<line x1="${v.x.toFixed(1)}" y1="${v.y.toFixed(1)}" x2="${p.x.toFixed(1)}" y2="${p.y.toFixed(1)}" stroke="${CEVIAN}" stroke-width="2" stroke-dasharray="0" opacity="0.85"/>`;
+    });
+
+    // 3. Vertex labels (push outside)
+    verts.forEach((name, i) => {
+      const ang = startAngle + (i * 2 * Math.PI) / n;
+      const lp = { x: cx + (r + 20) * Math.cos(ang), y: cy + (r + 20) * Math.sin(ang) };
+      const baseline = lp.y > cy + 10 ? 'hanging' : (lp.y < cy - 10 ? 'auto' : 'middle');
+      const anchor   = lp.x > cx + 10 ? 'start'   : (lp.x < cx - 10 ? 'end'  : 'middle');
+      svg += `<text x="${lp.x.toFixed(1)}" y="${lp.y.toFixed(1)}" font-size="16" font-weight="700" fill="${LBL}" text-anchor="${anchor}" dominant-baseline="${baseline}">${esc(name)}</text>`;
+    });
+
+    // 4. Side-point dots and labels
+    (Array.isArray(side_points) ? side_points : []).forEach(sp => {
+      if (!sp || typeof sp.name !== 'string') return;
+      const p = sidePtPos[sp.name];
+      if (!p) return;
+      // Dot
+      svg += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3.5" fill="${POINT_DOT}"/>`;
+      // Label — push slightly outward (away from polygon centroid)
+      const dx = p.x - cx, dy = p.y - cy;
+      const mag = Math.max(1, Math.hypot(dx, dy));
+      const lx = p.x + (dx / mag) * 16;
+      const ly = p.y + (dy / mag) * 16;
+      const baseline = ly > cy + 6 ? 'hanging' : (ly < cy - 6 ? 'auto' : 'middle');
+      const anchor   = lx > cx + 6 ? 'start'   : (lx < cx - 6 ? 'end'  : 'middle');
+      svg += `<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" font-size="14" font-weight="700" fill="${POINT_LBL}" text-anchor="${anchor}" dominant-baseline="${baseline}">${esc(sp.name)}</text>`;
+    });
+
+    // 5. Side labels (caption near the midpoint of a side, pushed outward)
+    (Array.isArray(side_labels) ? side_labels : []).forEach(sl => {
+      if (!sl || typeof sl.side !== 'string' || sl.side.length !== 2) return;
+      const seg = resolveSide(sl.side);
+      if (!seg) return;
+      const mx = (seg.from.x + seg.to.x) / 2;
+      const my = (seg.from.y + seg.to.y) / 2;
+      const dx = mx - cx, dy = my - cy;
+      const mag = Math.max(1, Math.hypot(dx, dy));
+      const lx = mx + (dx / mag) * 16;
+      const ly = my + (dy / mag) * 16;
+      svg += `<text x="${lx.toFixed(1)}" y="${(ly + 4).toFixed(1)}" font-size="13" font-weight="600" fill="${SIDE_LBL}" text-anchor="middle">${esc(sl.label || '')}</text>`;
+    });
+
+    return this._svg(svg, {
+      viewBox: `0 0 ${w} ${h}`,
+      alt: `${shape} ${verts.join('')} with interior side-points and cevians.`,
+      maxWidth: 480,
+    });
+  },
+
 };
 
 // Assign to globalThis for cross-environment access (browser + Node.js ESM)

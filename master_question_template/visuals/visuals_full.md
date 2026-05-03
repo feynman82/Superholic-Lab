@@ -86,6 +86,23 @@ You may ONLY use the following `function_name` values and their exact parameters
   `{"values": [[null,null,null],[null,5,null],[null,null,null]], "highlight": "corners" | "centre" | null}`
 * `rightTriangle`: Right-angled triangle with labelled base, height, and optional hypotenuse.
   `{"base": "8 cm", "height": "6 cm", "hypotenuse": "10 cm", "showRightAngle": true}`
+
+* `polygonWithInteriorPoints`: ⭐ NEW (v5.3) — A polygon (triangle/quadrilateral) with named perimeter vertices, named interior points on sides at fractional positions or midpoints, optional cevians (line segments from a vertex to a side-point), and optional side captions. Use for P5/P6 "Area of Triangle" composite figures, BD:DC ratio splits, and cevian-based area problems.
+  ```json
+  {
+    "vertices": ["A","B","C"],
+    "side_points": [
+      { "side": "CB", "name": "D", "position": 0.375 },
+      { "side": "AC", "name": "E", "position": "midpoint" }
+    ],
+    "cevians": ["AD", "BE"],
+    "side_labels": [{ "side": "CB", "label": "24 cm" }]
+  }
+  ```
+  - `vertices` is a list of polygon corners in order (3 for triangle, 4 for quadrilateral, etc.).
+  - `side_points[].side` is a 2-letter string formed from two consecutive vertex names; `position` is the fractional distance from the FIRST letter to the SECOND (0..1), or the literal `"midpoint"` for 0.5. Example: for BD:DC = 3:5 with side written as "BC", D is at position 3/8 = 0.375 from B; if side written as "CB", D is at position 5/8 = 0.625 from C.
+  - `cevians` is an array of 2-letter strings, each connecting a polygon vertex to a named side-point (e.g. "AD" draws a line from vertex A to side-point D).
+  - `side_labels` places a caption near a side's midpoint, pushed outward.
 * `compositeShape`: L-shape or T-shape built from rectangles. Use for composite area/perimeter problems.
   `{"parts": [{"x": 40, "y": 40, "w": 200, "h": 80, "shaded": true, "label": "A"}, {"x": 40, "y": 120, "w": 80, "h": 100, "shaded": true, "label": "B"}], "unit": "cm", "showNotToScale": true}`
   *(All coordinates are SVG pixel positions within a 400×260 viewBox. Scale your shapes accordingly.)*
@@ -161,6 +178,27 @@ You may ONLY use the following `function_name` values and their exact parameters
   **Legacy (still supported, but rays land at hard-coded fallback positions — use only for old rows):** `{"vertices": ["P","Q","R","S"], "angles": [{"name": "PQT", "value": "22°"}, {"name": "TQU", "value": "?"}]}`
 * `dividedStraightLineAngle`: A straight line divided by one intersecting ray showing two named angles.
   `{"vertices": ["A","O","B","C"], "angles": [{"label": "40°"}, {"label": "?"}]}`
+
+* `raysAtPoint`: ⭐ NEW (v5.3) — Three or more rays radiating from a single point O. Each pair of adjacent rays forms a labelled sector; total of all sectors = 360°. Use for P5/P6 "Angles At A Point" with three or more rays (e.g. "Three rays from O divide the full angle at O into ∠AOB = 2n°, ∠BOC = (3n+10)°, ∠COA = (n+50)°").
+  ```json
+  {
+    "center": "O",
+    "rays": [
+      { "name": "A", "at_deg": 90 },
+      { "name": "B", "at_deg": 210 },
+      { "name": "C", "at_deg": 330 }
+    ],
+    "arcs": [
+      { "between": ["A","B"], "label": "2n°" },
+      { "between": ["B","C"], "label": "(3n+10)°" },
+      { "between": ["C","A"], "label": "(n+50)°" }
+    ]
+  }
+  ```
+  - `at_deg` uses standard math convention: 0° = right (+x), 90° = up (+y), CCW positive. Place rays at well-separated angles so labels don't overlap.
+  - `arcs[].between` is a 2-element list of ray names; the renderer matches sectors by SET, so order doesn't matter.
+  - Use `"label": "?"` to mark an unknown sector without revealing the answer.
+  - **Geometry rule:** the labels' arc-values must sum to 360° for a faithful diagram. The renderer doesn't validate this — your generation prompt does.
 
 * `crossingLines`: ⭐ NEW (v5.2) — Two straight lines crossing at a single point, with up to 4 angle labels in the four sectors formed. Use for P5/P6 "Vertically Opposite Angles" / "Angles At A Point" problems.
   ```json
