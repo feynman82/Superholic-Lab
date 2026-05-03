@@ -2234,6 +2234,21 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
       });
     }
 
+    // 3a. Defense-in-depth: legacy `polygon` rows whose params carry interior
+    //     semantics (side_points / cevians / side_labels) need the richer
+    //     `polygonWithInteriorPoints` renderer or they silently drop interior
+    //     content. Auto-route. Same applies to legacy `parallelogram` rows.
+    if (
+      (fnName === 'polygon' || fnName === 'parallelogram')
+      && (params.side_points || params.cevians || params.side_labels)
+    ) {
+      console.info(`[DiagramLibrary] Auto-routed ${fnName} → polygonWithInteriorPoints (interior params detected)`);
+      const enriched = (fnName === 'parallelogram')
+        ? Object.assign({ shape: 'parallelogram' }, params)
+        : params;
+      return this.polygonWithInteriorPoints(enriched);
+    }
+
     // 4. Execution & Fallback
     try {
       return this[fnName](params);

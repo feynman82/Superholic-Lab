@@ -52,7 +52,7 @@ export default function ProofAbout() {
               />
               {/* SUPERHOLIC LAB · SG label — kept as SVG text for crisp scaling + a11y */}
               <motion.text
-                x="240" y="142" fontSize="11" fontWeight="700"
+                x="240" y="152" fontSize="11" fontWeight="700"
                 letterSpacing="0.1em" textAnchor="middle"
                 fill="var(--brand-rose)"
                 fontFamily="var(--font-body, 'Plus Jakarta Sans')"

@@ -19,8 +19,14 @@ You may ONLY use the following `function_name` values and their exact parameters
 **--- 1. MATH: GEOMETRY & MEASUREMENT ---**
 * `cuboid`: Draws a 3D tank. `{"length_label": "10cm", "breadth_label": "5cm", "height_label": "8cm", "water_level": 0.5}` (water_level is 0.0 to 1.0).
 * `drawRectangleOnGrid`: `{"width_cm": 10, "length_cm": 5, "unit_grid_cm": 1, "labels": "PQRS"}`
-* `polygon`: Draws an n-sided shape. `{"vertices": ["A","B","C","D"], "angle_to_measure": "ABC"}`
-* `parallelogram`: `{"vertices": ["W","X","Y","Z"], "show_diagonals": true, "angle_arcs": [{"vertex": "W", "label": "60°"}]}`
+* `polygon`: Draws an n-sided shape with vertices on the perimeter only. `{"vertices": ["A","B","C","D"], "angle_to_measure": "ABC"}`
+  ⚠️ **Routing rule:** Use `polygon` ONLY when the question references vertices alone. If the question mentions ANY of the following, use `polygonWithInteriorPoints` instead:
+    - A point on a side (e.g. "D is on side AB", "E is the midpoint of AC")
+    - A ratio split on a side (e.g. "BD : DC = 3 : 5", "AE : ED = 1 : 2")
+    - A cevian or interior segment (e.g. "find the area of triangle ADC", "BE divides the parallelogram")
+    - A side caption with a measurement (e.g. labeling BC = 18 cm directly on the diagram)
+* `parallelogram`: Legacy 4-vertex parallelogram outline. `{"vertices": ["W","X","Y","Z"], "show_diagonals": true, "angle_arcs": [{"vertex": "W", "label": "60°"}]}`
+  ⚠️ **Routing rule:** Use `polygonWithInteriorPoints` with `"shape": "parallelogram"` for any parallelogram that has interior points, side-labels, or cevians. Reserve `parallelogram` for plain "this is a parallelogram, find ∠X" questions where only the outline + corner-angle markers are needed.
 * `rightAngleDivided` / `straightLineDividedAngles`: Draws intersecting angles. `{"lines": [{"start": "O", "end": "A"}, {"start": "O", "end": "B"}], "angles": ["45°", "y"], "vertices": ["X", "O", "Y"]}`
 * `equilateralTriangle`: `{"side_length": 10, "unit": "cm", "count": 2}`
 * `rulerMeasurement`: Extremely useful for PSLE length reading. `{"item": "Pencil", "unit": "cm", "min_value": 0, "max_value": 15, "start_reading": 2.5, "end_reading": 10.5, "major_interval": 1, "minor_interval": 0.1}`
