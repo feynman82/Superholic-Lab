@@ -3,7 +3,79 @@
 > Loaded when `type = 'mcq'`. Combine with `_base.md`, `_calibration.md`,
 > and the relevant `canon/` taxonomy file before generating.
 
-Requires exactly 4 options. Options must be full sentences for Science/English.
+Requires exactly 4 options. Option format depends on subject — see "OPTION FORMAT" section below. **Mathematics options are short values; English options are words/phrases; only Science options are full sentences.**
+
+## OPTION FORMAT (subject-specific, NON-NEGOTIABLE)
+
+| Subject | Option format | Example |
+|---|---|---|
+| **Mathematics** | Short answer values only (number, fraction, measurement, brief label) | `"8/5"`, `"$3.30"`, `"132°"`, `"2 : 3"` |
+| **Science** | Full sentences explaining what happens AND why | `"The metal ball contracts because cooling causes particles to lose energy."` |
+| **English** | Single words or short phrases (grammar choices, vocabulary, idiom completion) | `"ran"`, `"however"`, `"furious"`, `"call off"` |
+
+### English MCQ — banned option patterns (auto-reject during Phase 5)
+
+Generators have repeatedly emitted full-sentence options for English MCQ. This is FORBIDDEN.
+
+✗ **WRONG** (full-sentence option, will be deprecated):
+```
+"options": [
+  "She went to the market because she needed to buy vegetables.",
+  "She walks to the market because she needs to buy vegetables.",
+  ...
+]
+```
+
+✓ **CORRECT** (word/phrase option):
+```
+"question_text": "Yesterday, Siti _______ to the market to buy vegetables.",
+"options": ["go", "goes", "went", "gone"]
+```
+
+If your draft English MCQ has options longer than ~5 words, restructure the question stem to embed the context and reduce the option to the smallest distinguishing unit (a single tense, preposition, conjunction, vocabulary word, or phrasal verb). Reason: bank rule (saved as `feedback_english_mcq_options.md`) — full-sentence English options confuse students about whether the test is grammar/vocabulary or comprehension.
+
+## MATHEMATICS ARITHMETIC SANITY CHECK (mandatory pre-emit)
+
+Mathematics MCQ rows have been deprecated for arithmetic errors where `correct_answer` does not match the math in `worked_solution` (e.g. stated total of $74,526 but parts sum to a different number; algebra question where x = 14 gives total 105 not the stated 113).
+
+Before emitting any Mathematics MCQ, run this two-pass check:
+
+1. **Forward pass**: Solve the question independently from your worked_solution. Compute each step. Arrive at a final number.
+2. **Reverse pass**: Take your stated `correct_answer` and verify the worked_solution's arithmetic flows to it without rounding or off-by-one errors.
+
+**Reject and regenerate if:**
+- Forward and reverse passes give different numbers.
+- worked_solution shows a non-integer intermediate result for a problem expecting an integer answer (e.g. "x = 13.857..." when the question states whole pencils, whole dollars, whole people).
+- Any wrong_explanation references a calc_error number that doesn't actually result from the misconception described.
+- The sum of "parts" in a word problem doesn't equal the stated whole.
+- A percentage cascade leaves a non-zero unaccounted remainder.
+
+**Specific traps to guard against:**
+- Adding `$24 + $72` and getting `$95`. Compute both forward and reverse.
+- Stating "0.2 × X = $96" then claiming X = $510 (correct: $480).
+- Writing "x = 14" in a step but the equation requires x = 13.5 — flag the question as unsolvable in the integer domain and regenerate with different numbers.
+
+## DISTRACTOR ARITHMETIC DERIVATION (mandatory pre-emit)
+
+The audit pipeline keeps catching wrong_explanations whose described error path doesn't actually produce the stated distractor value (e.g. "student computed 360÷3=120°" used to explain a 90° distractor; or "5n+60=360→n≈48" used to explain a distractor of 45). These look plausible but break under inspection.
+
+**Rule:** Every wrong_explanation entry MUST include an arithmetic path that, when followed exactly, terminates at the distractor value the entry is keyed by. Verify each entry against this rule before emitting:
+
+For each wrong option `O` with explanation `E`:
+1. Read `E` as if you were a student making the described error.
+2. Perform the calculation `E` describes, step by step.
+3. Confirm the final number EQUALS `O`.
+4. If the result doesn't equal `O`, REWRITE the explanation to describe an error path that does — or pick a different distractor.
+
+**Acceptable non-arithmetic explanations:**
+- "Confused {given value} for the answer" — when the distractor literally equals a number from the question stem (e.g. picking 112° as the answer when 112° was the given DAB angle, with the misconception being "opposite vs co-interior").
+- "Confused {category}" — e.g. picking "4 cm" as the side of a rhombus because 4 is the number-of-sides count.
+
+These are misconception-typed entries where the distractor is a recognised value, not a computed one. They must still be honest: don't fabricate an arithmetic path that doesn't compute.
+
+**Validation question to ask before emitting:** "If I were a student making the error described in `wrong_explanations[O].text`, would I land on exactly `O`? If no, regenerate."
+
+
 
 **Required Fields:**
 - `type`: "mcq"

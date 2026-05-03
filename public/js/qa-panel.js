@@ -36,6 +36,21 @@
   // Syllabus canon — loaded async on first use; null until ready
   var qaSyllabus = null;
 
+  // Cache of canon_level_topics rows: { 'Primary 3|Mathematics': [{topic, sub_topic}, ...] }
+  var qaLevelCanonCache = {};
+
+  // Form value → DB value. canon_level_topics uses 'English', form has 'English Language'.
+  function qaNormSubject(s) {
+    if (!s) return '';
+    if (s === 'English Language') return 'English';
+    return s;
+  }
+  // Reverse: DB value → form display value (for select.value matching)
+  function qaDenormSubject(s) {
+    if (s === 'English') return 'English Language';
+    return s || '';
+  }
+
   // ── TOAST NOTIFICATIONS ───────────────────────────────────────────────────
   function qaNotify(msg, type) {
     type = type || 'info';
@@ -388,7 +403,7 @@
 
     function setVal(id, v) { var el = document.getElementById(id); if (el) el.value = (v !== null && v !== undefined) ? String(v) : ''; }
 
-    setVal('qfSubject',        q.subject         || '');
+    setVal('qfSubject',        qaDenormSubject(q.subject || ''));
     setVal('qfLevel',          q.level           || '');
     setVal('qfType',           q.type            || '');
     setVal('qfTopic',          q.topic           || '');
@@ -435,6 +450,7 @@
   function qaCollectFields() {
     var topic   = (document.getElementById('qfTopic') || {}).value || '';
     var type    = (document.getElementById('qfType')  || {}).value || '';
+    var rawSubj = (document.getElementById('qfSubject') || {}).value || '';
     var isSynth = topic.toLowerCase() === 'synthesis';
 
     var instructionsVal = '';
@@ -455,7 +471,7 @@
     try { partsVal     = qaGetJson('qfParts');     } catch (e) { throw new Error('Parts: ' + e.message); }
 
     return {
-      subject:            (document.getElementById('qfSubject')       || {}).value || '',
+      subject:            qaNormSubject(rawSubj),
       level:              (document.getElementById('qfLevel')         || {}).value || '',
       type:               type,
       topic:              topic,
@@ -948,23 +964,51 @@
   // COMMIT 4a — CASCADING DROPDOWNS
   // ════════════════════════════════════════════════════════════════════════
 
+  // Fetch level+subject's canonical (topic, sub_topic) pairs from Supabase.
+  // Cached — first call per (level, subject) hits DB, subsequent are instant.
+  // This is the SAME table the FK validates against on save, so dropdowns
+  // can never offer a combo that will fail to save.
+  async function qaFetchLevelCanon(level, subject) {
+    if (!level || !subject) return [];
+    var key = level + '|' + subject;
+    if (qaLevelCanonCache[key]) return qaLevelCanonCache[key];
+    try {
+      var sb = await getSupabase();
+      var res = await sb
+        .from('canon_level_topics')
+        .select('topic, sub_topic')
+        .eq('level', level)
+        .eq('subject', subject)
+        .order('topic')
+        .order('sub_topic');
+      if (res.error) throw res.error;
+      qaLevelCanonCache[key] = res.data || [];
+      return qaLevelCanonCache[key];
+    } catch (err) {
+      console.error('[qa] canon_level_topics fetch failed:', err);
+      return [];
+    }
+  }
+
   async function qaPopulateTopics(currentTopic) {
     var sel = document.getElementById('qfTopic');
     if (!sel) return;
-    await qaLoadSyllabus();
-    var subj = (document.getElementById('qfSubject') || {}).value || '';
-    var key  = qaSyllabus.subjectKey(subj);
-    var canon = qaSyllabus.canonical && key ? qaSyllabus.canonical[key] : null;
+    var formSubj = (document.getElementById('qfSubject') || {}).value || '';
+    var level    = (document.getElementById('qfLevel')   || {}).value || '';
+    var dbSubj   = qaNormSubject(formSubj);
+
+    var rows = await qaFetchLevelCanon(level, dbSubj);
+    var topics = [];
+    var seenT = {};
+    rows.forEach(function (r) {
+      if (!seenT[r.topic]) { seenT[r.topic] = true; topics.push(r.topic); }
+    });
 
     var html = '<option value="">— Select —</option>';
-    var seen = {};
-    if (canon) {
-      Object.keys(canon).forEach(function (t) {
-        seen[t] = true;
-        html += '<option value="' + esc(t) + '">' + esc(t) + '</option>';
-      });
-    }
-    if (currentTopic && !seen[currentTopic]) {
+    topics.forEach(function (t) {
+      html += '<option value="' + esc(t) + '">' + esc(t) + '</option>';
+    });
+    if (currentTopic && !seenT[currentTopic]) {
       html += '<option value="' + esc(currentTopic) + '">(off-canon: ' + esc(currentTopic) + ')</option>';
     }
     sel.innerHTML = html;
@@ -974,16 +1018,17 @@
   async function qaPopulateSubTopics(currentSubTopic) {
     var sel = document.getElementById('qfSubTopic');
     if (!sel) return;
-    await qaLoadSyllabus();
-    var subj = (document.getElementById('qfSubject') || {}).value || '';
-    var topic = (document.getElementById('qfTopic') || {}).value || '';
-    var key  = qaSyllabus.subjectKey(subj);
-    var subs = (qaSyllabus.canonical && key && qaSyllabus.canonical[key] && qaSyllabus.canonical[key][topic]) || [];
+    var formSubj = (document.getElementById('qfSubject') || {}).value || '';
+    var level    = (document.getElementById('qfLevel')   || {}).value || '';
+    var topic    = (document.getElementById('qfTopic')   || {}).value || '';
+    var dbSubj   = qaNormSubject(formSubj);
 
-    var html = '<option value="">— Select —</option>';
+    var rows = await qaFetchLevelCanon(level, dbSubj);
+    var subs = rows.filter(function (r) { return r.topic === topic; }).map(function (r) { return r.sub_topic; });
     var seen = {};
+    var html = '<option value="">— Select —</option>';
     subs.forEach(function (st) {
-      seen[st] = true;
+      if (seen[st]) return; seen[st] = true;
       html += '<option value="' + esc(st) + '">' + esc(st) + '</option>';
     });
     if (currentSubTopic && !seen[currentSubTopic]) {
@@ -994,9 +1039,15 @@
   }
 
   window.qaOnSubjectChange = async function () {
+    await qaPopulateTopics(''); // reset topic — subject changed
+    await qaPopulateSubTopics('');
+    window.qaLivePreview();
+  };
+
+  window.qaOnLevelChange = async function () {
+    // Level change invalidates topic/sub-topic — they're level-filtered.
     await qaPopulateTopics('');
     await qaPopulateSubTopics('');
-    if (typeof window.qaOnTopicChange === 'function') window.qaOnTopicChange();
     window.qaLivePreview();
   };
 
