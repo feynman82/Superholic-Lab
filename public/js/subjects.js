@@ -1,0 +1,1302 @@
+/* ════════════════════════════════════════════════════════════════════════════
+   subjects.js  —  v1.0  (Commit 1: mechanical split — no behaviour change)
+   ----------------------------------------------------------------------------
+   Source: split out of pages/subjects.html <script type="module"> block.
+   ESM imports preserved verbatim; HTML now loads this file with type="module".
+
+   Preserved verbatim:
+     - All ESM imports from /js/auth.js, /js/app-shell.js, /js/syllabus.js
+     - Top-level navbar event delegation
+     - window.initSubjectsEngine and every nested helper / window.* global
+     - All Supabase calls, getSupabase() usage, and supabase.auth.signOut path
+     - All template-string onclick references to window.* handlers
+     - Boot sequence (guardPage → initAppShell → initSubjectsEngine)
+
+   Section banners mirror subjects.css for cross-file navigation.
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* ════════════════════════════════════════════════════════════════════════════
+   1. IMPORTS
+   ════════════════════════════════════════════════════════════════════════════ */
+
+import { guardPage } from '/js/auth.js';
+import { initAppShell } from '/js/app-shell.js';
+import {
+  slugify,
+  unslugify,
+  topicsForLevelSubject,
+  questionTypesFor,
+  subTopicsFor,
+  subTopicGroupsFor,
+  resolveSubTopicGroup,
+  loadLiveCanon,
+  countsBySubject,
+  countsByTopic,
+  countsByType,
+  countsBySubTopic,
+  readShowCountsFlag,
+  TOPIC_TYPE_BYPASS,
+  SUBJECT_DB_NAME
+} from '/js/syllabus.js';
+
+/* ════════════════════════════════════════════════════════════════════════════
+   2. NAVBAR EVENT DELEGATION
+   ════════════════════════════════════════════════════════════════════════════ */
+
+// ── ROBUST EVENT DELEGATION FOR NAVBAR (preserved from legacy) ──
+document.addEventListener('click', (e) => {
+  const toggleBtn = e.target.closest('#navToggle');
+  const dropdown = document.getElementById('navDropdown');
+
+  if (toggleBtn && dropdown) {
+    e.stopPropagation();
+    dropdown.classList.toggle('is-open');
+    toggleBtn.classList.toggle('is-active');
+    return;
+  }
+
+  if (dropdown && dropdown.classList.contains('is-open') && !dropdown.contains(e.target)) {
+    dropdown.classList.remove('is-open');
+    const actualToggle = document.getElementById('navToggle');
+    if (actualToggle) actualToggle.classList.remove('is-active');
+  }
+
+  const signOutBtn = e.target.closest('#navSignOut');
+  if (signOutBtn) {
+    e.preventDefault();
+    getSupabase().then(async (sb) => {
+      await sb.auth.signOut();
+      window.location.href = '../index.html';
+    });
+  }
+});
+
+/* ════════════════════════════════════════════════════════════════════════════
+   3. SUBJECTS WIZARD ENGINE — entry
+   ════════════════════════════════════════════════════════════════════════════ */
+
+// ────────────────────────────────────────────────────────────────────
+// SUBJECTS WIZARD ENGINE
+// ────────────────────────────────────────────────────────────────────
+window.initSubjectsEngine = function () {
+  'use strict';
+
+  // Shared state — extended with sub-topic popover flags
+  const state = {
+    phase: 'INIT',
+    level: '',          // e.g. 'Primary 4'
+    levelSlug: '',      // e.g. 'primary-4'
+    subject: '',        // canonical lowercase slug ('mathematics')
+    tier: '',
+    topic: '',          // canonical topic name ('Fractions') or 'all'
+    qtype: '',
+    subTopic: '',       // groupKey from SUB_TOPIC_GROUPS (e.g. 'passage-comprehension'), '' = no filter
+    expandedTopic: '',  // which topic card is currently expanded (slug); '' = none
+    studentId: null,
+    showCounts: true,
+    // Cached count maps for the current resolved (level, subject, topic)
+    countsBySubjectMap: {},
+    countsByTopicMap: {},
+    countsByTypeMap: {},
+    countsBySubTopicMap: {},   // populated lazily when popover opens
+    subTopicLoading: false      // true while count query is in flight
+  };
+
+  const app = document.getElementById('app');
+
+  /* ════════════════════════════════════════════════════════════════════════════
+     4. SHARED STATE + UTILITIES
+     ════════════════════════════════════════════════════════════════════════════ */
+
+  // ── ESCAPE / TITLE-CASE HELPERS ────────────────────────────────────
+  const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const titleCase = (s) => String(s).replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+  // ── BREADCRUMB ──────────────────────────────────────────────────────
+  function breadcrumbHtml() {
+    const steps = state.tier === 'single_subject'
+      ? [{ key: 'TOPIC', label: '§ 01 · Topic' }, { key: 'TYPE', label: '§ 02 · Format' }]
+      : [{ key: 'SUBJECT', label: '§ 01 · Subject' }, { key: 'TOPIC', label: '§ 02 · Topic' }, { key: 'TYPE', label: '§ 03 · Format' }];
+
+    const order = ['SUBJECT', 'TOPIC', 'TYPE'];
+    const currentIdx = order.indexOf(state.phase);
+
+    return `<nav class="wizard-breadcrumb" aria-label="Wizard progress">
+      ${steps.map((s, i) => {
+      const stepIdx = order.indexOf(s.key);
+      let cls = 'wizard-breadcrumb__step';
+      if (stepIdx === currentIdx) cls += ' is-active';
+      else if (stepIdx < currentIdx) cls += ' is-done';
+      const sep = i < steps.length - 1
+        ? '<span class="wizard-breadcrumb__sep" aria-hidden="true">›</span>'
+        : '';
+      return `<span class="${cls}">${esc(s.label)}</span>${sep}`;
+    }).join('')}
+    </nav>`;
+  }
+
+  // ── HERO BLOCK BUILDER ──────────────────────────────────────────────
+  // The breadcrumb above already conveys the step (§ 01 · Subject ›
+  // § 02 · Topic › § 03 · Format), so we omit the redundant per-step
+  // eyebrow inside the hero.
+  function heroHtml(eyebrow, titleHtml, lede) {
+    return `
+      ${breadcrumbHtml()}
+      <header class="wizard-hero">
+        <h1 class="h1-as wizard-hero__title">${titleHtml}</h1>
+        <p class="body-lg wizard-hero__lede">${esc(lede)}</p>
+      </header>`;
+  }
+
+  // ────────────────────────────────────────────────────────────────────
+  /* ════════════════════════════════════════════════════════════════════════════
+     5. SVG ASSETS (orbs, glyphs, type previews)
+     ════════════════════════════════════════════════════════════════════════════ */
+
+  // ORB SVGs — glass spheres with micro-worlds
+  // ────────────────────────────────────────────────────────────────────
+  function orbSvg(subjectSlug) {
+    // Common: glass sphere base + specular highlight + rim
+    const base = `
+      <defs>
+        <radialGradient id="grad-${subjectSlug}" cx="40%" cy="35%" r="65%">
+          <stop offset="0%" stop-color="#F4FBF9" stop-opacity="0.85"/>
+          <stop offset="55%" stop-color="#A8C4BB" stop-opacity="0.18"/>
+          <stop offset="100%" stop-color="#51615E" stop-opacity="0.05"/>
+        </radialGradient>
+        <radialGradient id="spec-${subjectSlug}" cx="35%" cy="28%" r="22%">
+          <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.7"/>
+          <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <circle cx="100" cy="100" r="92" fill="url(#grad-${subjectSlug})"/>
+      <ellipse cx="78" cy="68" rx="34" ry="22" fill="url(#spec-${subjectSlug})"/>
+      <circle cx="100" cy="100" r="92" fill="none" stroke="#51615E" stroke-opacity="0.18" stroke-width="1"/>`;
+
+    if (subjectSlug === 'mathematics') {
+      // Wireframe primitives: cube, octahedron, sphere outline
+      return `<svg viewBox="0 0 200 200" aria-hidden="true">
+        ${base}
+        <g class="orb-rot-slow" stroke="#51615E" stroke-width="1.25" fill="none" stroke-linejoin="round">
+          <!-- Cube top-left -->
+          <g class="orb-drift">
+            <polygon points="55,75 75,68 75,88 55,95"/>
+            <polygon points="75,68 95,75 95,95 75,88"/>
+            <polygon points="55,75 75,68 95,75 75,82"/>
+            <line x1="75" y1="82" x2="75" y2="88"/>
+          </g>
+        </g>
+        <g class="orb-rot-med" stroke="#B76E79" stroke-width="1.25" fill="none" stroke-linejoin="round">
+          <!-- Octahedron right -->
+          <g class="orb-drift-2">
+            <polygon points="135,90 150,75 165,90 150,115 135,90"/>
+            <line x1="135" y1="90" x2="165" y2="90"/>
+            <line x1="150" y1="75" x2="150" y2="115"/>
+          </g>
+        </g>
+        <g class="orb-rot-fast" stroke="#3A4E4A" stroke-width="1" fill="none">
+          <!-- Sphere outline bottom -->
+          <g class="orb-drift-3">
+            <circle cx="95" cy="140" r="18"/>
+            <ellipse cx="95" cy="140" rx="18" ry="6"/>
+            <ellipse cx="95" cy="140" rx="6" ry="18"/>
+          </g>
+        </g>
+      </svg>`;
+    }
+
+    if (subjectSlug === 'science') {
+      // 3-atom molecule: sage central node + two rose outer + bonds
+      return `<svg viewBox="0 0 200 200" aria-hidden="true">
+        ${base}
+        <g class="orb-rot-med">
+          <line x1="100" y1="100" x2="60" y2="75" stroke="#51615E" stroke-width="1.25" stroke-opacity="0.6"/>
+          <line x1="100" y1="100" x2="140" y2="120" stroke="#51615E" stroke-width="1.25" stroke-opacity="0.6"/>
+          <line x1="100" y1="100" x2="115" y2="150" stroke="#51615E" stroke-width="1.25" stroke-opacity="0.6"/>
+          <circle cx="100" cy="100" r="11" fill="#51615E" fill-opacity="0.85"/>
+          <circle cx="60"  cy="75"  r="7"  fill="#B76E79" fill-opacity="0.8"/>
+          <circle cx="140" cy="120" r="7"  fill="#B76E79" fill-opacity="0.8"/>
+          <circle cx="115" cy="150" r="6"  fill="#D4A24A" fill-opacity="0.75"/>
+        </g>
+        <!-- Electron orbit hint -->
+        <ellipse cx="100" cy="100" rx="58" ry="20" fill="none" stroke="#51615E" stroke-width="0.75" stroke-opacity="0.25" transform="rotate(-25 100 100)"/>
+      </svg>`;
+    }
+
+    if (subjectSlug === 'english') {
+      // Three serif glyphs drifting independently
+      return `<svg viewBox="0 0 200 200" aria-hidden="true">
+        ${base}
+        <g font-family="Georgia, 'Times New Roman', serif" text-anchor="middle">
+          <text x="68" y="92" class="orb-glyph-fade" font-size="38" font-style="italic" fill="#51615E">Aa</text>
+          <text x="138" y="100" class="orb-glyph-fade-2" font-size="44" fill="#B76E79">&amp;</text>
+          <text x="100" y="148" class="orb-glyph-fade-3" font-size="36" fill="#3A4E4A">&#8220;&#8221;</text>
+        </g>
+      </svg>`;
+    }
+
+    return `<svg viewBox="0 0 200 200">${base}</svg>`;
+  }
+
+  // ────────────────────────────────────────────────────────────────────
+  // TOPIC GLYPHS — small SVG signatures per canonical topic
+  // ────────────────────────────────────────────────────────────────────
+  function topicGlyph(topicCanonical) {
+    // Map canonical topic → glyph SVG. Falls back to a generic chip-line.
+    const map = {
+      // Mathematics
+      'Whole Numbers': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><text x="32" y="40" text-anchor="middle" font-family="Bebas Neue, sans-serif" font-size="28" fill="currentColor" stroke="none">123</text></svg>`,
+      'Multiplication Tables': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="22" x2="42" y2="42"/><line x1="42" y1="22" x2="22" y2="42"/></svg>`,
+      'Addition and Subtraction': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="20" y1="22" x2="32" y2="22"/><line x1="26" y1="16" x2="26" y2="28"/><line x1="34" y1="42" x2="46" y2="42"/></svg>`,
+      'Multiplication and Division': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><line x1="20" y1="20" x2="36" y2="36"/><line x1="36" y1="20" x2="20" y2="36"/><circle cx="44" cy="44" r="2.5" fill="currentColor"/><line x1="38" y1="50" x2="50" y2="50"/><circle cx="44" cy="56" r="2.5" fill="currentColor"/></svg>`,
+      'Fractions': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><circle cx="32" cy="32" r="22"/><line x1="32" y1="10" x2="32" y2="54"/><line x1="10" y1="32" x2="54" y2="32"/><path d="M32 10 A22 22 0 0 1 54 32 L32 32 Z" fill="currentColor" fill-opacity="0.3" stroke="none"/></svg>`,
+      'Decimals': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><text x="32" y="42" text-anchor="middle" font-family="Bebas Neue, sans-serif" font-size="24" fill="currentColor" stroke="none">0.5</text></svg>`,
+      'Percentage': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="22" cy="22" r="4"/><circle cx="42" cy="42" r="4"/><line x1="42" y1="20" x2="22" y2="44"/></svg>`,
+      'Ratio': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><rect x="10" y="24" width="14" height="16" fill="currentColor" fill-opacity="0.3"/><rect x="26" y="24" width="14" height="16"/><rect x="42" y="24" width="14" height="16"/></svg>`,
+      'Rate': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><circle cx="32" cy="32" r="20"/><line x1="32" y1="32" x2="32" y2="18"/><line x1="32" y1="32" x2="44" y2="40"/></svg>`,
+      'Average': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><line x1="14" y1="48" x2="50" y2="48"/><rect x="16" y="36" width="6" height="12" fill="currentColor" fill-opacity="0.3"/><rect x="26" y="28" width="6" height="20" fill="currentColor" fill-opacity="0.3"/><rect x="36" y="32" width="6" height="16" fill="currentColor" fill-opacity="0.3"/><line x1="14" y1="22" x2="50" y2="22" stroke-dasharray="3 3"/></svg>`,
+      'Algebra': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><text x="32" y="42" text-anchor="middle" font-family="Georgia, serif" font-size="28" font-style="italic" fill="currentColor" stroke="none">x</text></svg>`,
+      'Angles': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="14" y1="50" x2="50" y2="50"/><line x1="14" y1="50" x2="44" y2="22"/><path d="M28 50 A14 14 0 0 0 25 41" fill="none"/></svg>`,
+      'Geometry': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><polygon points="32,12 52,46 12,46"/></svg>`,
+      'Area and Perimeter': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><rect x="14" y="18" width="36" height="28" fill="currentColor" fill-opacity="0.18"/></svg>`,
+      'Area of Triangle': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><polygon points="14,46 50,46 32,18" fill="currentColor" fill-opacity="0.18"/><line x1="32" y1="18" x2="32" y2="46" stroke-dasharray="3 3"/></svg>`,
+      'Circles': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><circle cx="32" cy="32" r="20"/><line x1="32" y1="32" x2="52" y2="32" stroke-dasharray="3 3"/><circle cx="32" cy="32" r="2.5" fill="currentColor"/></svg>`,
+      'Volume': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><polygon points="16,46 16,26 32,18 48,26 48,46 32,54"/><line x1="16" y1="26" x2="32" y2="34"/><line x1="48" y1="26" x2="32" y2="34"/><line x1="32" y1="34" x2="32" y2="54"/></svg>`,
+      'Symmetry': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><polygon points="32,12 22,32 32,52" fill="currentColor" fill-opacity="0.2"/><polygon points="32,12 42,32 32,52"/><line x1="32" y1="8" x2="32" y2="56" stroke-dasharray="3 3"/></svg>`,
+      'Shapes and Patterns': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><circle cx="20" cy="20" r="6"/><rect x="36" y="14" width="14" height="14"/><polygon points="20,42 14,52 26,52"/><circle cx="46" cy="48" r="5"/></svg>`,
+      'Factors and Multiples': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><circle cx="20" cy="32" r="8"/><circle cx="44" cy="22" r="6"/><circle cx="44" cy="42" r="6"/><line x1="28" y1="32" x2="38" y2="22"/><line x1="28" y1="32" x2="38" y2="42"/></svg>`,
+      'Pie Charts': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><circle cx="32" cy="32" r="20"/><path d="M32 32 L32 12 A20 20 0 0 1 52 32 Z" fill="currentColor" fill-opacity="0.3" stroke="none"/><line x1="32" y1="32" x2="32" y2="12"/><line x1="32" y1="32" x2="52" y2="32"/></svg>`,
+      'Data Analysis': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><line x1="14" y1="50" x2="50" y2="50"/><line x1="14" y1="50" x2="14" y2="14"/><polyline points="18,40 28,32 38,36 48,20"/></svg>`,
+      'Money': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="32" cy="32" r="18"/><path d="M32 22v20M28 26h6a3 3 0 010 6h-4a3 3 0 000 6h6" stroke-linejoin="round"/></svg>`,
+      'Length and Mass': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="10" y="26" width="44" height="12" rx="1"/><line x1="18" y1="26" x2="18" y2="32"/><line x1="26" y1="26" x2="26" y2="34"/><line x1="34" y1="26" x2="34" y2="30"/><line x1="42" y1="26" x2="42" y2="34"/><line x1="50" y1="26" x2="50" y2="32"/></svg>`,
+      'Volume of Liquid': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14h24v8l-4 32H24l-4-32z"/><path d="M22 36h20" stroke-dasharray="2 2"/><path d="M22 36q5 4 10 0t10 0" fill="currentColor" fill-opacity="0.3" stroke="none"/></svg>`,
+      'Time': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="32" cy="34" r="18"/><path d="M32 22v12l8 6"/><line x1="32" y1="14" x2="32" y2="18"/><line x1="48" y1="34" x2="52" y2="34"/></svg>`,
+
+      // Science
+      'Diversity': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><circle cx="20" cy="20" r="6"/><polygon points="44,14 52,28 36,28"/><rect x="14" y="36" width="14" height="14"/><circle cx="44" cy="44" r="7"/></svg>`,
+      'Matter': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><rect x="14" y="32" width="14" height="14"/><circle cx="40" cy="22" r="3" fill="currentColor"/><circle cx="48" cy="30" r="3" fill="currentColor"/><circle cx="42" cy="38" r="3" fill="currentColor"/><circle cx="50" cy="44" r="3" fill="currentColor"/></svg>`,
+      'Systems': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><rect x="14" y="22" width="36" height="20" rx="6"/><line x1="14" y1="32" x2="6" y2="32"/><line x1="50" y1="32" x2="58" y2="32"/></svg>`,
+      'Cycles': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M48 32 A16 16 0 1 1 32 16"/><polyline points="32,12 32,18 38,18"/></svg>`,
+      'Interactions': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><circle cx="22" cy="32" r="10"/><circle cx="42" cy="32" r="10"/></svg>`,
+      'Energy': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><polygon points="34,10 22,36 32,36 28,54 44,28 32,28" fill="currentColor" fill-opacity="0.3"/></svg>`,
+
+      // English
+      'Grammar': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="22" x2="40" y2="22"/><line x1="12" y1="32" x2="52" y2="32"/><line x1="12" y1="42" x2="32" y2="42"/><circle cx="44" cy="42" r="3" fill="currentColor"/></svg>`,
+      'Vocabulary': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="14" y="14" width="36" height="36" rx="3"/><line x1="22" y1="26" x2="42" y2="26"/><line x1="22" y1="34" x2="42" y2="34"/><line x1="22" y1="42" x2="34" y2="42"/></svg>`,
+      'Cloze': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="22" x2="20" y2="22"/><rect x="24" y="16" width="14" height="12" fill="currentColor" fill-opacity="0.3"/><line x1="42" y1="22" x2="52" y2="22"/><line x1="12" y1="38" x2="32" y2="38"/><rect x="36" y="32" width="14" height="12" fill="currentColor" fill-opacity="0.3"/></svg>`,
+      'Editing': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 44 L40 18 L48 26 L22 52 L14 52 Z"/><line x1="36" y1="22" x2="44" y2="30"/></svg>`,
+      'Comprehension': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M14 16 Q32 12 50 16 L50 46 Q32 42 14 46 Z"/><line x1="32" y1="14" x2="32" y2="44"/></svg>`,
+      'Synthesis': `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="22" x2="24" y2="22"/><line x1="12" y1="42" x2="24" y2="42"/><path d="M24 22 Q34 22 34 32 Q34 42 24 42"/><line x1="34" y1="32" x2="52" y2="32"/></svg>`,
+    };
+    return `<div class="trio-glyph">${map[topicCanonical] || `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><circle cx="32" cy="32" r="14"/></svg>`}</div>`;
+  }
+
+  // "All Topics" custom glyph
+  function allTopicsGlyph() {
+    return `<div class="trio-glyph">
+      <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="20" cy="20" r="6"/>
+        <circle cx="44" cy="20" r="6"/>
+        <circle cx="20" cy="44" r="6"/>
+        <circle cx="44" cy="44" r="6"/>
+        <line x1="26" y1="20" x2="38" y2="20" stroke-dasharray="2 2"/>
+        <line x1="20" y1="26" x2="20" y2="38" stroke-dasharray="2 2"/>
+        <line x1="44" y1="26" x2="44" y2="38" stroke-dasharray="2 2"/>
+        <line x1="26" y1="44" x2="38" y2="44" stroke-dasharray="2 2"/>
+      </svg>
+    </div>`;
+  }
+
+  // ────────────────────────────────────────────────────────────────────
+  // TYPE PREVIEW — typographic miniatures per question type
+  // ────────────────────────────────────────────────────────────────────
+  function typePreview(typeId) {
+    const map = {
+      'mcq': `<div class="trio-preview">
+        <div class="trio-preview__bullet"><span class="trio-preview__radio is-on"></span><span class="trio-preview__line trio-preview__line--med"></span></div>
+        <div class="trio-preview__bullet"><span class="trio-preview__radio"></span><span class="trio-preview__line trio-preview__line--full"></span></div>
+        <div class="trio-preview__bullet"><span class="trio-preview__radio"></span><span class="trio-preview__line trio-preview__line--short"></span></div>
+        <div class="trio-preview__bullet"><span class="trio-preview__radio"></span><span class="trio-preview__line trio-preview__line--med"></span></div>
+      </div>`,
+      'short_ans': `<div class="trio-preview">
+        <div class="trio-preview__line trio-preview__line--full"></div>
+        <div class="trio-preview__line trio-preview__line--short" style="background: var(--brand-rose); opacity: 0.7;"></div>
+      </div>`,
+      'word_problem': `<div class="trio-preview">
+        <div class="trio-preview__line trio-preview__line--full"></div>
+        <div class="trio-preview__line trio-preview__line--full"></div>
+        <div style="display:flex; gap:4px; margin-top:4px;">
+          <div style="flex:2; height:10px; background: var(--brand-sage); opacity:0.55; border-radius:2px;"></div>
+          <div style="flex:1; height:10px; background: var(--brand-rose); opacity:0.55; border-radius:2px;"></div>
+        </div>
+      </div>`,
+      'open_ended': `<div class="trio-preview">
+        <div class="trio-preview__line trio-preview__line--full"></div>
+        <div class="trio-preview__line trio-preview__line--full"></div>
+        <div class="trio-preview__line trio-preview__line--med"></div>
+      </div>`,
+      'cloze': `<div class="trio-preview">
+        <div style="display:flex; align-items:center; gap:4px;">
+          <span class="trio-preview__line" style="width:25%;"></span>
+          <span class="trio-preview__line trio-preview__line--blank"></span>
+          <span class="trio-preview__line" style="width:25%;"></span>
+        </div>
+        <div style="display:flex; align-items:center; gap:4px;">
+          <span class="trio-preview__line trio-preview__line--blank"></span>
+          <span class="trio-preview__line" style="width:35%;"></span>
+        </div>
+      </div>`,
+      'editing': `<div class="trio-preview">
+        <div style="display:flex; align-items:center; gap:4px;">
+          <span class="trio-preview__line" style="width:30%;"></span>
+          <span class="trio-preview__line" style="width:25%; background: var(--brand-rose); opacity:0.5; text-decoration:line-through;"></span>
+          <span class="trio-preview__line" style="width:25%;"></span>
+        </div>
+        <div class="trio-preview__line trio-preview__line--full"></div>
+      </div>`,
+      'comprehension': `<div class="trio-preview" style="flex-direction: row;">
+        <div style="flex:1; display:flex; flex-direction:column; gap:3px;">
+          <div class="trio-preview__line trio-preview__line--full"></div>
+          <div class="trio-preview__line trio-preview__line--med"></div>
+          <div class="trio-preview__line trio-preview__line--full"></div>
+        </div>
+        <div style="width:1px; background: var(--border-light); margin: 0 4px;"></div>
+        <div style="flex:1; display:flex; flex-direction:column; gap:3px;">
+          <div class="trio-preview__bullet"><span class="trio-preview__radio is-on"></span><span class="trio-preview__line trio-preview__line--med"></span></div>
+          <div class="trio-preview__bullet"><span class="trio-preview__radio"></span><span class="trio-preview__line trio-preview__line--med"></span></div>
+        </div>
+      </div>`
+    };
+    return map[typeId] || map['mcq'];
+  }
+
+  // ────────────────────────────────────────────────────────────────────
+  /* ════════════════════════════════════════════════════════════════════════════
+     6. RENDER ROUTER + SKELETON
+     ════════════════════════════════════════════════════════════════════════════ */
+
+  // RENDER ROUTER
+  // ────────────────────────────────────────────────────────────────────
+  function render() {
+    if (state.phase === 'SUBJECT') renderSubject();
+    else if (state.phase === 'TOPIC') renderTopic();
+    else if (state.phase === 'TYPE') renderType();
+    // Sync the popover (sibling of <main>, not inside app.innerHTML)
+    renderSubTopicPopover();
+  }
+
+  // ── Skeleton loading ───────────────────────────────────────────────
+  function renderSkeleton() {
+    app.innerHTML = `
+      ${breadcrumbHtml()}
+      <header class="wizard-hero">
+        <h1 class="h1-as wizard-hero__title">Preparing your lab…</h1>
+        <p class="body-lg wizard-hero__lede">Pulling the latest curriculum from the syllabus archive.</p>
+      </header>
+      <div class="wizard-skeleton">
+        <div class="wizard-skeleton__card"></div>
+        <div class="wizard-skeleton__card"></div>
+        <div class="wizard-skeleton__card"></div>
+      </div>`;
+  }
+
+  // ────────────────────────────────────────────────────────────────────
+  /* ════════════════════════════════════════════════════════════════════════════
+     7. PHASE 1 — SUBJECT
+     ════════════════════════════════════════════════════════════════════════════ */
+
+  // PHASE 1 — SUBJECT
+  // ────────────────────────────────────────────────────────────────────
+  function renderSubject() {
+    const isJunior = state.levelSlug === 'primary-1' || state.levelSlug === 'primary-2';
+    const subjects = [
+      { id: 'mathematics', label: 'Mathematics', tag: isJunior ? 'P1–P2 essentials' : 'P1–P6 syllabus' },
+      ...(isJunior ? [] : [{ id: 'science', label: 'Science', tag: 'P3–P6 syllabus' }]),
+      { id: 'english', label: 'English', tag: 'P1–P6 syllabus' }
+    ];
+
+    const cards = subjects.map((s, i) => {
+      const locked = state.tier === 'single_subject' && s.id !== state.subject;
+      const isSel = state.subject === s.id;
+      const dbName = SUBJECT_DB_NAME[s.id];
+      const count = state.countsBySubjectMap[dbName] || 0;
+      const countLine = state.showCounts && count > 0
+        ? `${count} question${count === 1 ? '' : 's'} · ${esc(s.tag)}`
+        : esc(s.tag);
+
+      return `
+        <button type="button" class="trio-card ${isSel ? 'is-selected' : ''} ${locked ? 'is-locked' : ''}"
+                data-orb-stagger="${i}"
+                ${locked ? 'aria-disabled="true"' : `onclick="window.pickSubject('${s.id}')"`}>
+          ${locked ? `<svg class="trio-card__lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>` : ''}
+          <svg class="trio-card__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="8,12 11,15 16,9"/></svg>
+          <div class="trio-orb">${orbSvg(s.id)}</div>
+          <h2 class="trio-card__title">${esc(s.label)}</h2>
+          <p class="trio-card__sub">${countLine}</p>
+        </button>`;
+    }).join('');
+
+    app.innerHTML = `
+      ${heroHtml(
+      '§ 01 — SUBJECT',
+      `Pick the subject for <em>today's</em> session.`,
+      `${esc(state.level)} · MOE-aligned curriculum across all primary levels.`
+    )}
+      <div class="trio-grid trio-grid--three">${cards}</div>`;
+  }
+
+  window.pickSubject = (subj) => {
+    state.subject = subj;
+    state.topic = '';
+    state.qtype = '';
+    state.subTopic = '';
+    state.expandedTopic = '';
+    state.phase = 'TOPIC';
+    // Refresh topic-counts for this subject
+    loadTopicCounts().then(() => render());
+    render();
+  };
+
+  // ────────────────────────────────────────────────────────────────────
+  /* ════════════════════════════════════════════════════════════════════════════
+     8. PHASE 2 — TOPIC + SUB-TOPIC POPOVER
+     ════════════════════════════════════════════════════════════════════════════ */
+
+  // PHASE 2 — TOPIC
+  // ────────────────────────────────────────────────────────────────────
+  function renderTopic() {
+    const allTopics = topicsForLevelSubject(state.levelSlug, state.subject);
+    const totalForSubject = Object.values(state.countsByTopicMap).reduce((a, b) => a + b, 0);
+
+    const buildCard = (id, title, glyph, sub, isSel, isLocked) => {
+      const cls = `trio-card ${isSel ? 'is-selected' : ''} ${isLocked ? 'is-locked' : ''}`;
+      const handler = isLocked ? 'aria-disabled="true"' : `onclick="window.pickTopic('${id}')"`;
+      return `
+        <button type="button" class="${cls}" ${handler}>
+          ${isLocked ? `<svg class="trio-card__lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>` : ''}
+          <svg class="trio-card__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="8,12 11,15 16,9"/></svg>
+          ${glyph}
+          <h2 class="trio-card__title trio-card__title--small">${esc(title)}</h2>
+          <p class="trio-card__sub">${esc(sub)}</p>
+        </button>`;
+    };
+
+    // "All Topics" — first card, always present
+    const allSubLine = state.showCounts && totalForSubject > 0
+      ? `${totalForSubject} question${totalForSubject === 1 ? '' : 's'} · all areas`
+      : 'Practise across every area';
+    const allBtn = buildCard('all', 'All Topics', allTopicsGlyph(), allSubLine, state.topic === 'all', false);
+
+    // Canonical topic cards. Topics with sub-topics open a floating
+    // popover when clicked instead of inline expansion — keeps the
+    // grid layout stable and gives sub-topic cards proper breathing
+    // room. The popover requires explicit "Choose Question Type →"
+    // commit; chip click selects state only.
+    const topicBtns = allTopics.map(canon => {
+      const slug = slugify(canon);
+      const count = state.countsByTopicMap[canon] || 0;
+      const groups = subTopicGroupsFor(state.subject, canon);
+      const groupKeys = Object.keys(groups);
+      const hasSubTopics = groupKeys.length > 0;
+      const isSelected = state.topic === slug;
+
+      let subLine;
+      if (state.showCounts && count > 0) {
+        subLine = hasSubTopics
+          ? `${count} question${count === 1 ? '' : 's'} · ${groupKeys.length} sub-topic${groupKeys.length === 1 ? '' : 's'}`
+          : `${count} question${count === 1 ? '' : 's'}`;
+      } else {
+        subLine = hasSubTopics
+          ? `${groupKeys.length} sub-topic${groupKeys.length === 1 ? '' : 's'}`
+          : 'Practise this topic';
+      }
+
+      if (!hasSubTopics) {
+        return buildCard(slug, canon, topicGlyph(canon), subLine, isSelected, false);
+      }
+
+      // Topic with sub-topics — opens a floating popover. The chevron
+      // is the affordance; card itself uses the same trio-card design.
+      const chevron = `
+        <div class="trio-card__chevron" aria-hidden="true">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M6 4l4 4-4 4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>`;
+      return `
+        <button type="button"
+                class="trio-card has-drawer ${isSelected ? 'is-selected' : ''}"
+                onclick="window.toggleTopicDrawer('${slug}')"
+                aria-haspopup="dialog">
+          <div class="trio-card__check"></div>
+          <div class="trio-card__glyph">${topicGlyph(canon)}</div>
+          <div class="trio-card__title">${esc(canon)}</div>
+          <div class="trio-card__sub">${esc(subLine)}</div>
+          ${chevron}
+        </button>`;
+    }).join('');
+
+    const selectedHasBypass = state.topic && state.topic !== 'all' && TOPIC_TYPE_BYPASS[state.topic];
+    const continueBtn = !selectedHasBypass
+      ? `<button class="btn btn-primary" ${!state.topic ? 'disabled' : ''} onclick="window.goToType()">Choose Question Type →</button>`
+      : '';
+    const backBtn = state.tier !== 'single_subject'
+      ? `<button class="btn btn-ghost" onclick="window.goBack('SUBJECT')">← Back to Subjects</button>`
+      : '';
+
+    app.innerHTML = `
+      ${heroHtml(
+      state.tier === 'single_subject' ? '§ 01 — TOPIC' : '§ 02 — TOPIC',
+      `Where shall we <em>focus</em>?`,
+      `${esc(titleCase(state.subject))} · ${esc(state.level)}`
+    )}
+      <div class="trio-grid trio-grid--many">${allBtn}${topicBtns}</div>
+      <div class="wizard-actions">${continueBtn}${backBtn}</div>`;
+  }
+
+  // Renders the floating popover content for a topic's sub-topics.
+  // Reads counts from state.countsBySubTopicMap (populated lazily
+  // on open). Shows skeletons while loading. Each sub-topic is a
+  // dashed-border .subtopic-card matching the .trio-card design.
+  function renderSubTopicPopBody(canon, topicSlug, groups) {
+    if (state.subTopicLoading) {
+      const skeletons = Array.from({ length: Math.max(4, Object.keys(groups).length) })
+        .map(() => `<div class="subtopic-skeleton" aria-hidden="true"></div>`).join('');
+      return `<div class="subtopic-skeleton-grid" role="status" aria-label="Loading sub-topics">${skeletons}</div>`;
+    }
+
+    const groupKeys = Object.keys(groups);
+    const allActive = state.topic === topicSlug && !state.subTopic;
+    // Total = sum of all sub_topic counts (already correct regardless
+    // of casing, since we sum values not look up by key)
+    const totalCount = Object.values(state.countsBySubTopicMap || {}).reduce((a, b) => a + b, 0);
+
+    const allCard = `
+      <button type="button"
+              class="subtopic-card ${allActive ? 'is-selected' : ''}"
+              onclick="window.pickSubTopic('${topicSlug}', '')">
+        <div class="subtopic-card__check" aria-hidden="true">
+          <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M2.5 6.5L5 9l4.5-5.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="subtopic-card__glyph">${subTopicIconSvg('all')}</div>
+        <div class="subtopic-card__title">All ${esc(canon)}</div>
+        <div class="subtopic-card__sub">${state.showCounts && totalCount > 0
+          ? `${totalCount} question${totalCount === 1 ? '' : 's'}`
+          : 'Practise across all'}</div>
+      </button>`;
+
+    const groupCards = groupKeys.map(key => {
+      const group = groups[key];
+      const active = state.topic === topicSlug && state.subTopic === key;
+      // Resolve count: sum across all canon sub_topics this UI group covers
+      // Case-insensitive sub_topic count resolution. question_bank rows
+      // may have casing drift vs canon (e.g. "interaction of magnetic
+      // forces" vs "Interaction Of Magnetic Forces"). Normalize keys
+      // on the lookup side so counts populate regardless.
+      const normalizedMap = {};
+      for (const [k, v] of Object.entries(state.countsBySubTopicMap)) {
+        normalizedMap[String(k).trim().toLowerCase()] = v;
+      }
+      const groupCount = (group.subTopicsInCanon || [])
+        .reduce((sum, sub) => sum + (normalizedMap[String(sub).trim().toLowerCase()] || 0), 0);
+      const isEmpty = state.showCounts && groupCount === 0;
+
+      let subLine;
+      if (!state.showCounts) {
+        subLine = 'Drill in';
+      } else if (groupCount === 0) {
+        subLine = 'No questions yet';
+      } else {
+        subLine = `${groupCount} question${groupCount === 1 ? '' : 's'}`;
+      }
+
+      return `
+        <button type="button"
+                class="subtopic-card ${active ? 'is-selected' : ''} ${isEmpty ? 'is-empty' : ''}"
+                ${isEmpty ? 'disabled aria-disabled="true"' : ''}
+                onclick="${isEmpty ? '' : `window.pickSubTopic('${topicSlug}', '${key}')`}">
+          <div class="subtopic-card__check" aria-hidden="true">
+            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M2.5 6.5L5 9l4.5-5.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="subtopic-card__glyph">${subTopicIconSvg(key)}</div>
+          <div class="subtopic-card__title">${esc(group.label)}</div>
+          <div class="subtopic-card__sub">${esc(subLine)}</div>
+        </button>`;
+    }).join('');
+
+    return `<div class="subtopic-grid">${allCard}${groupCards}</div>`;
+  }
+
+  // Renders the full popover (head + body + foot). Called by render()
+  // when state.expandedTopic is set. Lives inside #subtopic-pop-host.
+  function renderSubTopicPopover() {
+    const host = document.getElementById('subtopic-pop-host');
+    const scrim = document.getElementById('subtopic-pop-scrim');
+    if (!host || !scrim) return;
+
+    if (!state.expandedTopic) {
+      host.classList.remove('is-visible');
+      scrim.classList.remove('is-visible');
+      host.setAttribute('aria-hidden', 'true');
+      // Strip body content after exit transition completes
+      setTimeout(() => { if (!state.expandedTopic) host.innerHTML = ''; }, 280);
+      return;
+    }
+
+    const slug = state.expandedTopic;
+    const canon = unslugify(slug, state.subject);
+    if (!canon) return;
+    const groups = subTopicGroupsFor(state.subject, canon);
+
+    const hasSelection = !!(state.topic === slug);  // 'All' counts as a valid selection
+    const ctaDisabled = !hasSelection;
+
+    host.innerHTML = `
+      <div class="subtopic-pop__head">
+        <div class="subtopic-pop__title-block">
+          <div class="subtopic-pop__eyebrow">Drill into</div>
+          <h2 class="subtopic-pop__title">${esc(canon)}</h2>
+          <p class="subtopic-pop__lede">Pick a focus, or practise across all.</p>
+        </div>
+        <button type="button" class="subtopic-pop__close"
+                onclick="window.closeSubTopicPopover()" aria-label="Close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="subtopic-pop__body">${renderSubTopicPopBody(canon, slug, groups)}</div>
+      <div class="subtopic-pop__foot">
+        <div class="subtopic-pop__foot-status">${
+          hasSelection
+            ? (state.subTopic
+                ? `Selected: <strong>${esc(groups[state.subTopic]?.label || '')}</strong>`
+                : `Selected: <strong>All ${esc(canon)}</strong>`)
+            : 'Pick a sub-topic to continue'
+        }</div>
+        <button type="button"
+                class="btn btn-primary"
+                ${ctaDisabled ? 'disabled' : ''}
+                onclick="window.commitSubTopicChoice()">
+          Choose Question Type →
+        </button>
+      </div>`;
+
+    host.setAttribute('aria-hidden', 'false');
+    // Trigger transitions on the next frame
+    requestAnimationFrame(() => {
+      host.classList.add('is-visible');
+      scrim.classList.add('is-visible');
+    });
+  }
+
+  // SVG glyphs — same stroke language as topicGlyph(). Falls back to
+  // the parent topic's own glyph for any sub-topic we don't have a
+  // bespoke icon for (Math/Science have many).
+  function subTopicIconSvg(groupKey) {
+    const icons = {
+      'all': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <circle cx="12" cy="12" r="3"/>
+        <circle cx="5" cy="6" r="1.5"/><circle cx="5" cy="18" r="1.5"/>
+        <circle cx="19" cy="6" r="1.5"/><circle cx="19" cy="18" r="1.5"/>
+        <path d="M9.5 11l-3-3.5M9.5 13l-3 3.5M14.5 11l3-3.5M14.5 13l3 3.5" stroke-linecap="round"/>
+      </svg>`,
+      'passage-comprehension': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <path d="M4 5h7v14H4zM13 5h7v14h-7z"/>
+        <path d="M6 9h3M6 12h3M6 15h2M15 9h3M15 12h3M15 15h2" stroke-linecap="round"/>
+      </svg>`,
+      'visual-text-comprehension': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <rect x="4" y="5" width="16" height="12" rx="1.5"/>
+        <path d="M8 13l3-3 3 3 2-2 2 2" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="9" cy="9" r="1" fill="currentColor" stroke="none"/>
+        <path d="M9 21h6" stroke-linecap="round"/>
+      </svg>`,
+      'grammar-cloze-with-word-bank': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <rect x="3" y="6" width="6" height="4" rx="0.5"/><rect x="11" y="6" width="6" height="4" rx="0.5"/>
+        <rect x="3" y="14" width="6" height="4" rx="0.5" stroke-dasharray="2 2"/>
+        <rect x="11" y="14" width="10" height="4" rx="0.5"/>
+      </svg>`,
+      'vocabulary-cloze-with-dropdowns': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <rect x="3" y="8" width="14" height="4" rx="0.5"/>
+        <path d="M19 9l1.5 1.5L22 9" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="3" y="14" width="14" height="4" rx="0.5" stroke-dasharray="2 2"/>
+      </svg>`,
+      'comprehension-free-text-cloze': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <path d="M4 6h16M4 10h10M4 14h16M4 18h12" stroke-linecap="round"/>
+        <path d="M14 10l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>`,
+      // Math/Science generic — atom/branch glyph, used for every
+      // canon-derived sub-topic since per-sub-topic icons would be
+      // a lot of art for low ROI. Differentiation is by label.
+      'generic': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <circle cx="12" cy="12" r="2"/>
+        <path d="M12 4v6M12 14v6M4 12h6M14 12h6" stroke-linecap="round"/>
+        <circle cx="12" cy="4" r="1.2"/><circle cx="12" cy="20" r="1.2"/>
+        <circle cx="4" cy="12" r="1.2"/><circle cx="20" cy="12" r="1.2"/>
+      </svg>`
+    };
+    return icons[groupKey] || icons['generic'];
+  }
+
+  // Legacy stub kept so any cached templates that reference it don't
+  // break; the popover replaces inline drawer entirely.
+  function buildSubTopicDrawer(canon, topicSlug, groups) {
+    const groupKeys = Object.keys(groups);
+    const allActive = state.topic === topicSlug && !state.subTopic;
+
+    const arrowSvg = `
+      <svg class="trio-subchip__arrow" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M5 12h14M13 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>`;
+
+    const allChip = `
+      <button type="button"
+              class="trio-subchip ${allActive ? 'is-selected' : ''}"
+              onclick="event.stopPropagation(); window.pickSubTopic('${topicSlug}', '')">
+        <span class="trio-subchip__icon" aria-hidden="true">${subTopicIconSvg('all')}</span>
+        <span class="trio-subchip__label">All ${esc(canon)}</span>
+        ${arrowSvg}
+      </button>`;
+
+    const groupChips = groupKeys.map(key => {
+      const group = groups[key];
+      const active = state.topic === topicSlug && state.subTopic === key;
+      return `
+        <button type="button"
+                class="trio-subchip ${active ? 'is-selected' : ''}"
+                onclick="event.stopPropagation(); window.pickSubTopic('${topicSlug}', '${key}')">
+          <span class="trio-subchip__icon" aria-hidden="true">${subTopicIconSvg(key)}</span>
+          <span class="trio-subchip__label">${esc(group.label)}</span>
+          ${arrowSvg}
+        </button>`;
+    }).join('');
+
+    return `
+      <div class="trio-card__drawer" role="region" aria-label="Sub-topics for ${esc(canon)}">
+        <div class="trio-card__drawer-eyebrow">Choose a focus</div>
+        <div class="trio-subchips">${allChip}${groupChips}</div>
+      </div>`;
+  }
+
+  // Maps groupKey → architect-scholar SVG glyph. Same stroke language
+  // as the topic glyphs in topicGlyphMap; uses currentColor so the
+  // icon picks up sage (default) → rose (hover/selected).
+  // SVG icon resolver for sub-topic cards.
+  //
+  // Resolution order:
+  //   1. English bespoke icons (passage / visual-text / cloze variants)
+  //   2. Topic-family glyphs (number / geometry / measurement / science)
+  //      keyed off the PARENT topic of the current popover, then a
+  //      per-sub-topic accent applied where useful
+  //   3. Generic atom fallback
+  //
+  // The current parent topic is read from state.expandedTopic at the
+  // time of rendering; we resolve it back to canonical name to look
+  // up its family.
+  function subTopicIconSvg(groupKey) {
+    // 1. English bespoke
+    const englishIcons = {
+      'all': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <circle cx="12" cy="12" r="3"/>
+        <circle cx="5" cy="6" r="1.5"/><circle cx="5" cy="18" r="1.5"/>
+        <circle cx="19" cy="6" r="1.5"/><circle cx="19" cy="18" r="1.5"/>
+        <path d="M9.5 11l-3-3.5M9.5 13l-3 3.5M14.5 11l3-3.5M14.5 13l3 3.5" stroke-linecap="round"/>
+      </svg>`,
+      'passage-comprehension': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <path d="M4 5h7v14H4zM13 5h7v14h-7z"/>
+        <path d="M6 9h3M6 12h3M6 15h2M15 9h3M15 12h3M15 15h2" stroke-linecap="round"/>
+      </svg>`,
+      'visual-text-comprehension': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <rect x="4" y="5" width="16" height="12" rx="1.5"/>
+        <path d="M8 13l3-3 3 3 2-2 2 2" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="9" cy="9" r="1" fill="currentColor" stroke="none"/>
+        <path d="M9 21h6" stroke-linecap="round"/>
+      </svg>`,
+      'grammar-cloze-with-word-bank': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <rect x="3" y="6" width="6" height="4" rx="0.5"/><rect x="11" y="6" width="6" height="4" rx="0.5"/>
+        <rect x="3" y="14" width="6" height="4" rx="0.5" stroke-dasharray="2 2"/>
+        <rect x="11" y="14" width="10" height="4" rx="0.5"/>
+      </svg>`,
+      'vocabulary-cloze-with-dropdowns': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <rect x="3" y="8" width="14" height="4" rx="0.5"/>
+        <path d="M19 9l1.5 1.5L22 9" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="3" y="14" width="14" height="4" rx="0.5" stroke-dasharray="2 2"/>
+      </svg>`,
+      'comprehension-free-text-cloze': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <path d="M4 6h16M4 10h10M4 14h16M4 18h12" stroke-linecap="round"/>
+        <path d="M14 10l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>`
+    };
+    if (englishIcons[groupKey]) return englishIcons[groupKey];
+
+    // 2. Resolve parent topic to family
+    const parentTopicSlug = state.expandedTopic;
+    const parentTopic = parentTopicSlug ? unslugify(parentTopicSlug, state.subject) : '';
+    const family = topicFamilyFor(state.subject, parentTopic);
+
+    // Topic-family glyphs — same stroke language, family-distinctive shape
+    const families = {
+      // Number family — stylized digit "8" reflecting fractions/decimals/ratio
+      'number': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <path d="M12 4c-2.5 0-4 1.5-4 3.5s1.5 3 4 3.5c2.5 0.5 4 1.5 4 3.5s-1.5 3.5-4 3.5-4-1.5-4-3.5"
+              stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="12" cy="11" r="0.6" fill="currentColor" stroke="none"/>
+      </svg>`,
+      // Geometry family — overlapping shapes triangle + square
+      'geometry': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <rect x="4" y="9" width="11" height="11" rx="0.5"/>
+        <path d="M9 4l8 8H7z" stroke-linejoin="round"/>
+      </svg>`,
+      // Measurement family — scale/ruler tick marks
+      'measurement': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <rect x="3" y="9" width="18" height="6" rx="0.5"/>
+        <path d="M7 9v3M11 9v4M15 9v3M19 9v4" stroke-linecap="round"/>
+      </svg>`,
+      // Data family — bar chart bars
+      'data': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <path d="M5 20V13M10 20V8M15 20V11M20 20V5" stroke-linecap="round"/>
+        <path d="M3 20h18" stroke-linecap="round"/>
+      </svg>`,
+      // Science: Living things — leaf with vein
+      'science-living': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <path d="M5 19c0-9 5-14 14-14 0 9-5 14-14 14z" stroke-linejoin="round"/>
+        <path d="M5 19c4-4 8-8 14-14" stroke-linecap="round"/>
+      </svg>`,
+      // Science: Matter — three dots representing states
+      'science-matter': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <circle cx="7" cy="9" r="2"/>
+        <circle cx="17" cy="9" r="2"/>
+        <circle cx="12" cy="17" r="2"/>
+        <path d="M9 9h6M8 11l3 4M16 11l-3 4" stroke-linecap="round" stroke-dasharray="1 2"/>
+      </svg>`,
+      // Science: Energy — sun with rays
+      'science-energy': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <circle cx="12" cy="12" r="4"/>
+        <path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"
+              stroke-linecap="round"/>
+      </svg>`,
+      // Science: Forces/Interactions — arrows pulling/pushing
+      'science-forces': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M5 12h3M16 12h3M12 5v3M12 16v3" stroke-linecap="round"/>
+        <path d="M3 12l2-2M3 12l2 2M21 12l-2-2M21 12l-2 2" stroke-linecap="round"/>
+      </svg>`,
+      // Science: Cycles — circular arrow
+      'science-cycles': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <path d="M19 12a7 7 0 1 1-2-4.9" stroke-linecap="round"/>
+        <path d="M19 4v4h-4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>`,
+      // Science: Systems — interconnected nodes
+      'science-systems': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/>
+        <circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/>
+        <circle cx="12" cy="12" r="2"/>
+        <path d="M8 7l3 4M16 7l-3 4M8 17l3-4M16 17l-3-4" stroke-linecap="round"/>
+      </svg>`,
+      'generic': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <circle cx="12" cy="12" r="2"/>
+        <path d="M12 4v6M12 14v6M4 12h6M14 12h6" stroke-linecap="round"/>
+        <circle cx="12" cy="4" r="1.2"/><circle cx="12" cy="20" r="1.2"/>
+        <circle cx="4" cy="12" r="1.2"/><circle cx="20" cy="12" r="1.2"/>
+      </svg>`
+    };
+
+    // 'all' chip uses the family glyph at popover-level
+    if (groupKey === 'all') return families[family] || families['generic'];
+
+    // Per-sub-topic glyph = family glyph (consistent within a topic)
+    return families[family] || families['generic'];
+  }
+
+  // Maps a (subject, topic) pair to one of the icon families above.
+  // Centralized so future topics added to canon don't need new icons —
+  // they inherit their family glyph automatically.
+  function topicFamilyFor(subject, topic) {
+    if (!topic) return 'generic';
+    const key = String(topic).toLowerCase();
+    const subj = String(subject || '').toLowerCase();
+
+    if (subj === 'mathematics') {
+      if (/whole numbers|multiplication|fraction|decimal|percentage|ratio|rate|average|algebra|factor/.test(key)) return 'number';
+      if (/angle|geometry|area|volume|circle|symmetry|shape|perimeter|triangle/.test(key)) return 'geometry';
+      if (/money|length|mass|liquid|time/.test(key)) return 'measurement';
+      if (/data|pie chart|graph/.test(key)) return 'data';
+      return 'number';  // safe default for math
+    }
+
+    if (subj === 'science') {
+      if (/diversity|cell|cycles/.test(key)) return 'science-living';
+      if (/matter/.test(key)) return 'science-matter';
+      if (/energy|heat|light/.test(key)) return 'science-energy';
+      if (/interactions|force/.test(key)) return 'science-forces';
+      if (/systems/.test(key)) return 'science-systems';
+      return 'science-living';
+    }
+
+    return 'generic';
+  }
+
+  window.toggleTopicDrawer = async (slug) => {
+    // Open: set expanded, set topic to enable "All" being the default
+    // selection, fetch counts, then re-render the popover.
+    if (state.expandedTopic === slug) {
+      window.closeSubTopicPopover();
+      return;
+    }
+    state.expandedTopic = slug;
+    state.topic = slug;            // 'All <topic>' is the implicit default
+    state.subTopic = '';
+    state.subTopicLoading = true;
+    state.countsBySubTopicMap = {};
+    renderSubTopicPopover();       // shows skeleton
+
+    // Fetch sub-topic counts from Supabase (paginated helper)
+    try {
+      if (state.showCounts) {
+        const sb = await getSupabase();
+        const dbSubject = SUBJECT_DB_NAME[state.subject];
+        const canon = unslugify(slug, state.subject);
+        if (sb && dbSubject && canon) {
+          state.countsBySubTopicMap = await countsBySubTopic(sb, state.level, dbSubject, canon);
+
+          // English Comprehension special case: rows carry NULL sub_topic
+          // because each row's `parts` array holds 5–10 mixed sub-question
+          // classifications. The passage / visual-text split lives on the
+          // `type` column (`comprehension` vs `visual_text`), not on
+          // `sub_topic`. Override the count map with type-derived buckets,
+          // assigning the count to the FIRST canonical sub_topic of each
+          // SUB_TOPIC_GROUPS group so the chip resolver (which sums across
+          // group.subTopicsInCanon) returns the correct total.
+          if (state.subject === 'english' && canon === 'Comprehension') {
+            const typeMap = await countsByType(sb, state.level, dbSubject, canon);
+            state.countsBySubTopicMap = {
+              'Direct Visual Retrieval':     typeMap['comprehension'] || 0,
+              'Visual Text Literal Retrieval': typeMap['visual_text'] || 0,
+            };
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('[subjects] sub-topic counts failed:', err);
+    } finally {
+      state.subTopicLoading = false;
+      renderSubTopicPopover();
+    }
+  };
+
+  window.closeSubTopicPopover = () => {
+    state.expandedTopic = '';
+    // Don't clear state.topic/subTopic on close — preserve choice if
+    // user re-opens. Only clear when they pick a different topic.
+    renderSubTopicPopover();
+  };
+
+  window.pickSubTopic = (topicSlug, groupKey) => {
+    // Select state only — does NOT auto-launch. User must hit
+    // "Choose Question Type →" in the popover footer to commit.
+    state.topic = topicSlug;
+    state.subTopic = groupKey;     // '' = "All <topic>"
+    renderSubTopicPopover();        // re-render to highlight selection + enable CTA
+  };
+
+  window.commitSubTopicChoice = () => {
+    // User confirmed the sub-topic pick. Set qtype via TOPIC_TYPE_BYPASS
+    // (English Cloze / Comprehension), or proceed to type-picker for
+    // Math/Science where multiple question types apply.
+    if (!state.topic) return;
+
+    const topicSlug = state.topic;
+    const bypass = TOPIC_TYPE_BYPASS[topicSlug];
+
+    // Close popover first so the transition unwinds cleanly
+    state.expandedTopic = '';
+    renderSubTopicPopover();
+
+    if (bypass) {
+      // English bypass — launch directly with sub_topic param
+      state.qtype = bypass;
+      window.launchQuiz();
+    } else {
+      // Math/Science — go to question-type step (existing flow)
+      // sub_topic param is preserved on state.subTopic and forwarded
+      // by launchQuiz when called from goToType.
+      window.goToType();
+    }
+  };
+
+  window.pickTopic = (t) => {
+    state.topic = t;
+    state.subTopic = '';  // reset on any non-popover topic pick
+
+    // pickTopic is now only fired for cards that don't have sub-topics.
+    // Cards with sub-topics route through window.toggleTopicDrawer().
+
+    // English topic pick → launch directly (sub_topic-bearing topics
+    // never reach here because they have hasSubTopics === true)
+    if (state.subject === 'english') {
+      state.qtype = (t === 'all') ? 'mixed' : (TOPIC_TYPE_BYPASS[t] || 'mixed');
+      window.launchQuiz();
+      return;
+    }
+
+    // 'all' topic for Math/Science → refresh per-type counts and re-render
+    // (Math/Science topics with sub-topics never reach here either)
+    const canonicalTopic = (t === 'all') ? null : unslugify(t, state.subject);
+    loadTypeCounts(canonicalTopic).then(() => render());
+    render();
+  };
+
+  window.goToType = () => {
+    if (!state.topic) return;
+    state.qtype = '';
+    state.phase = 'TYPE';
+    const canonicalTopic = (state.topic === 'all') ? null : unslugify(state.topic, state.subject);
+    loadTypeCounts(canonicalTopic).then(() => render());
+    render();
+  };
+
+  // ────────────────────────────────────────────────────────────────────
+  /* ════════════════════════════════════════════════════════════════════════════
+     9. PHASE 3 — TYPE
+     ════════════════════════════════════════════════════════════════════════════ */
+
+  // PHASE 3 — TYPE
+  // ────────────────────────────────────────────────────────────────────
+  function renderType() {
+    const types = questionTypesFor(state.subject);
+    const totalForScope = Object.values(state.countsByTypeMap).reduce((a, b) => a + b, 0);
+
+    const buildCard = (id, title, sub, isSel, isLocked) => {
+      const cls = `trio-card ${isSel ? 'is-selected' : ''} ${isLocked ? 'is-locked' : ''}`;
+      const handler = isLocked ? 'aria-disabled="true"' : `onclick="window.pickType('${id}')"`;
+      return `
+        <button type="button" class="${cls}" ${handler}>
+          ${isLocked ? `<svg class="trio-card__lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>` : ''}
+          <svg class="trio-card__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="8,12 11,15 16,9"/></svg>
+          ${typePreview(id)}
+          <h2 class="trio-card__title trio-card__title--small">${esc(title)}</h2>
+          <p class="trio-card__sub">${esc(sub)}</p>
+        </button>`;
+    };
+
+    // "Mixed" first
+    const mixedSub = state.showCounts && totalForScope > 0
+      ? `${totalForScope} question${totalForScope === 1 ? '' : 's'} · all formats`
+      : 'A balanced mix of formats';
+    const mixedBtn = `
+      <button type="button" class="trio-card ${state.qtype === 'mixed' ? 'is-selected' : ''}" onclick="window.pickType('mixed')">
+        <svg class="trio-card__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="8,12 11,15 16,9"/></svg>
+        <div class="trio-preview">
+          <div class="trio-preview__bullet"><span class="trio-preview__radio is-on"></span><span class="trio-preview__line trio-preview__line--med"></span></div>
+          <div class="trio-preview__line trio-preview__line--full"></div>
+          <div style="display:flex; align-items:center; gap:4px;"><span class="trio-preview__line" style="width:30%;"></span><span class="trio-preview__line trio-preview__line--blank"></span></div>
+        </div>
+        <h2 class="trio-card__title trio-card__title--small">Mixed</h2>
+        <p class="trio-card__sub">${esc(mixedSub)}</p>
+      </button>`;
+
+    const typeBtns = types.map(t => {
+      const count = state.countsByTypeMap[t.id] || 0;
+      const sub = state.showCounts && count > 0
+        ? `${count} question${count === 1 ? '' : 's'}`
+        : 'Specific format practice';
+      return buildCard(t.id, t.label, sub, state.qtype === t.id, false);
+    }).join('');
+
+    app.innerHTML = `
+      ${heroHtml(
+      state.tier === 'single_subject' ? '§ 02 — FORMAT' : '§ 03 — FORMAT',
+      `How do you want to be <em>tested</em>?`,
+      `${esc(state.topic === 'all' ? 'All Topics' : titleCase(state.topic))} · ${esc(titleCase(state.subject))}`
+    )}
+      <div class="trio-grid trio-grid--many">${mixedBtn}${typeBtns}</div>
+      <div class="wizard-actions">
+        <button class="btn btn-primary" ${!state.qtype ? 'disabled' : ''} onclick="window.launchQuiz()">Enter Training Lab →</button>
+        <button class="btn btn-ghost" onclick="window.goBack('TOPIC')">← Back to Topics</button>
+      </div>`;
+  }
+
+  window.pickType = (t) => {
+    state.qtype = t;
+    render();
+  };
+
+  /* ════════════════════════════════════════════════════════════════════════════
+     10. NAVIGATION + LAUNCH
+     ════════════════════════════════════════════════════════════════════════════ */
+
+  // ── Navigation ─────────────────────────────────────────────────────
+  window.goBack = (phase) => {
+    if (phase === 'SUBJECT') {
+      state.subject = '';
+      state.topic = '';
+      state.qtype = '';
+      state.subTopic = '';
+      state.expandedTopic = '';
+      state.phase = 'SUBJECT';
+    } else if (phase === 'TOPIC') {
+      state.qtype = '';
+      state.subTopic = '';
+      state.expandedTopic = '';
+      state.phase = 'TOPIC';
+    }
+    render();
+  };
+
+  // ── LAUNCH ──────────────────────────────────────────────────────────
+  window.launchQuiz = function () {
+    // Drawer-launch path: a sub-topic drawer can fire launchQuiz before
+    // a question type was picked. Default to the topic's bypass type
+    // if it has one (e.g. word_problem-only topics), otherwise 'mixed'.
+    // Applies to all subjects (English, Math, Science) so drawer chips
+    // launch consistently.
+    if (!state.qtype && state.topic && state.topic !== 'all') {
+      state.qtype = TOPIC_TYPE_BYPASS[state.topic] || 'mixed';
+    }
+    if (!state.qtype && !state.topic) return;
+    const params = new URLSearchParams({ subject: state.subject, level: state.levelSlug });
+    if (state.studentId) params.set('student', state.studentId);
+    if (state.topic && state.topic !== 'all') params.set('topic', state.topic);
+    if (state.qtype && state.qtype !== 'mixed') params.set('type', state.qtype);
+    // Sub-topic UI grouping (Comprehension / Cloze). quiz.js resolves
+    // this back into canonical sub_topic strings for the Supabase query.
+    if (state.subTopic) params.set('sub_topic', state.subTopic);
+    window.location.href = 'quiz.html?' + params.toString();
+  };
+
+  // ────────────────────────────────────────────────────────────────────
+  /* ════════════════════════════════════════════════════════════════════════════
+     11. COUNTS QUERIES + INIT
+     ════════════════════════════════════════════════════════════════════════════ */
+
+  // COUNT LOADERS
+  // ────────────────────────────────────────────────────────────────────
+  async function loadSubjectCounts(sb) {
+    if (!state.showCounts) return;
+    state.countsBySubjectMap = await countsBySubject(sb, state.level);
+  }
+
+  async function loadTopicCounts() {
+    if (!state.showCounts) {
+      state.countsByTopicMap = {};
+      return;
+    }
+    const sb = await getSupabase();
+    const dbSubject = SUBJECT_DB_NAME[state.subject];
+    if (!dbSubject) return;
+    state.countsByTopicMap = await countsByTopic(sb, state.level, dbSubject);
+  }
+
+  async function loadTypeCounts(canonicalTopic) {
+    if (!state.showCounts) {
+      state.countsByTypeMap = {};
+      return;
+    }
+    const sb = await getSupabase();
+    const dbSubject = SUBJECT_DB_NAME[state.subject];
+    if (!dbSubject) return;
+    state.countsByTypeMap = await countsByType(sb, state.level, dbSubject, canonicalTopic);
+  }
+
+  // ────────────────────────────────────────────────────────────────────
+  // GLOBAL: Esc key dismisses the popover
+  // ────────────────────────────────────────────────────────────────────
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && state.expandedTopic) {
+      window.closeSubTopicPopover();
+    }
+  });
+
+  // ────────────────────────────────────────────────────────────────────
+  // INIT
+  // ────────────────────────────────────────────────────────────────────
+  async function init() {
+    renderSkeleton();
+    try {
+      const profile = window.userProfile;
+      if (!profile) return;
+
+      const sb = await getSupabase();
+
+      // Load live canon (replaces baked-in cache on success)
+      await loadLiveCanon(sb);
+
+      // Load admin toggle for question counts
+      state.showCounts = await readShowCountsFlag(sb);
+
+      // Resolve active student (existing pattern preserved verbatim)
+      const urlParams = new URLSearchParams(window.location.search);
+      const activeStudentId = urlParams.get('student') || localStorage.getItem('shl_active_student_id');
+      const { data: students } = await sb.from('students')
+        .select('id, level, selected_subject')
+        .eq('parent_id', profile.id);
+      const student = (students || []).find(s => s.id === activeStudentId) || (students || [])[0];
+
+      if (!student) {
+        app.innerHTML = `
+          <div class="wizard-empty">
+            <h2 class="h2-as" style="color: var(--text-main);">No learners found.</h2>
+            <p class="body-md" style="color: var(--text-muted); margin-top: var(--space-3);">Please set up a learner profile to begin.</p>
+            <a class="btn btn-primary" href="setup.html" style="margin-top: var(--space-4); display: inline-block;">Set up a profile →</a>
+          </div>`;
+        return;
+      }
+
+      state.studentId = student.id;
+      localStorage.setItem('shl_active_student_id', student.id);
+      state.level = student.level || 'Primary 4';
+      state.levelSlug = state.level.toLowerCase().replace(/ /g, '-');
+      state.tier = profile.subscription_tier || 'trial';
+
+      // Pre-load subject-level counts for the SUBJECT phase
+      await loadSubjectCounts(sb);
+
+      if (state.tier === 'single_subject' && student.selected_subject) {
+        state.subject = student.selected_subject.toLowerCase();
+        state.phase = 'TOPIC';
+        await loadTopicCounts();
+      } else {
+        state.phase = 'SUBJECT';
+      }
+      render();
+    } catch (err) {
+      console.error('[subjects] init failed:', err);
+      app.innerHTML = `
+        <div class="wizard-empty">
+          <h2 class="h2-as" style="color: var(--text-main);">Could not load profile.</h2>
+          <p class="body-md" style="color: var(--text-muted); margin-top: var(--space-3);">Please refresh the page or check your connection.</p>
+        </div>`;
+    }
+  }
+
+  setTimeout(init, 50);
+};
+
+/* ════════════════════════════════════════════════════════════════════════════
+   12. BOOT
+   ════════════════════════════════════════════════════════════════════════════ */
+
+// ── BOOT ────────────────────────────────────────────────────────────
+async function boot() {
+  try {
+    window.userProfile = await guardPage(true);
+    const runInit = () => {
+      if (typeof initAppShell === 'function') initAppShell(window.userProfile);
+      if (typeof window.initSubjectsEngine === 'function') window.initSubjectsEngine();
+    };
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', runInit);
+    } else {
+      runInit();
+    }
+  } catch (err) {
+    console.error('Boot sequence failed:', err);
+  }
+}
+boot();
