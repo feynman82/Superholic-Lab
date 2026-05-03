@@ -5314,6 +5314,7 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     cevians     = [],
     side_labels = [],
     shape       = 'triangle',
+    skew        = 0.18,
   } = {}) {
     const esc = this._esc.bind(this);
     const w = 400, h = 280;
@@ -5333,14 +5334,52 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
       ? vertices.map(v => typeof v === 'string' ? v : (v && v.label) || '')
       : ['A', 'B', 'C'];
     const n = verts.length;
+    const shapeKey = String(shape || 'triangle').toLowerCase();
 
-    // Compute vertex positions in a regular n-gon, top-aligned
-    const startAngle = -Math.PI / 2;
+    // Compute vertex positions. Most shapes use a regular n-gon;
+    // parallelogram/rectangle/rhombus/trapezium use explicit coordinates
+    // so the figure looks right in the standard A=TL, B=TR, C=BR, D=BL order.
     const vPos = {};
-    verts.forEach((name, i) => {
-      const ang = startAngle + (i * 2 * Math.PI) / n;
-      vPos[name] = { x: cx + r * Math.cos(ang), y: cy + r * Math.sin(ang) };
-    });
+    if (n === 4 && (shapeKey === 'parallelogram' || shapeKey === 'rhombus' || shapeKey === 'rectangle' || shapeKey === 'square' || shapeKey === 'trapezium')) {
+      // 4-vertex layouts: A=TL, B=TR, C=BR, D=BL (clockwise from top-left).
+      const halfW = 130, halfH = 70;
+      let positions;
+      if (shapeKey === 'parallelogram' || shapeKey === 'rhombus') {
+        const dx = Math.max(0, Math.min(0.6, Number(skew) || 0.18)) * (halfW * 2);
+        positions = [
+          { x: cx - halfW + dx, y: cy - halfH }, // A: top-left, shifted right
+          { x: cx + halfW + dx, y: cy - halfH }, // B: top-right, shifted right
+          { x: cx + halfW - dx, y: cy + halfH }, // C: bottom-right, shifted left
+          { x: cx - halfW - dx, y: cy + halfH }, // D: bottom-left, shifted left
+        ];
+      } else if (shapeKey === 'trapezium') {
+        const taper = Math.max(0.1, Math.min(0.5, Number(skew) || 0.25));
+        const topInset = halfW * taper;
+        positions = [
+          { x: cx - halfW + topInset, y: cy - halfH }, // A
+          { x: cx + halfW - topInset, y: cy - halfH }, // B
+          { x: cx + halfW,            y: cy + halfH }, // C
+          { x: cx - halfW,            y: cy + halfH }, // D
+        ];
+      } else {
+        // rectangle / square: aspect 1.85:1 for rectangle, 1:1 for square
+        const halfWLocal = shapeKey === 'square' ? halfH : halfW;
+        positions = [
+          { x: cx - halfWLocal, y: cy - halfH },
+          { x: cx + halfWLocal, y: cy - halfH },
+          { x: cx + halfWLocal, y: cy + halfH },
+          { x: cx - halfWLocal, y: cy + halfH },
+        ];
+      }
+      verts.forEach((name, i) => { vPos[name] = positions[i]; });
+    } else {
+      // Default: regular n-gon, top-aligned
+      const startAngle = -Math.PI / 2;
+      verts.forEach((name, i) => {
+        const ang = startAngle + (i * 2 * Math.PI) / n;
+        vPos[name] = { x: cx + r * Math.cos(ang), y: cy + r * Math.sin(ang) };
+      });
+    }
 
     // Resolve a side string ("BC") → { from: {x,y}, to: {x,y} }
     const resolveSide = (sideStr) => {
@@ -5380,20 +5419,26 @@ _isoOrthographic(grid, rows, cols, maxH, label) {
     const pointsAttr = verts.map(v => `${vPos[v].x.toFixed(1)},${vPos[v].y.toFixed(1)}`).join(' ');
     svg += `<polygon points="${pointsAttr}" fill="${FILL}" stroke="${STROKE}" stroke-width="2.5"/>`;
 
-    // 2. Cevians (drawn before points so dots render on top)
+    // 2. Cevians (drawn before points so dots render on top).
+    //    Each entry is a 2-letter string. Each letter is resolved as either
+    //    a polygon vertex OR a side-point name, so cevians work in any direction
+    //    (vertex→side-point, side-point→vertex, or side-point→side-point).
+    const resolveEnd = (letter) => vPos[letter] || sidePtPos[letter] || null;
     (Array.isArray(cevians) ? cevians : []).forEach(c => {
       if (typeof c !== 'string' || c.length !== 2) return;
-      const [vName, pName] = [c[0], c[1]];
-      const v = vPos[vName];
-      const p = sidePtPos[pName];
-      if (!v || !p) return;
-      svg += `<line x1="${v.x.toFixed(1)}" y1="${v.y.toFixed(1)}" x2="${p.x.toFixed(1)}" y2="${p.y.toFixed(1)}" stroke="${CEVIAN}" stroke-width="2" stroke-dasharray="0" opacity="0.85"/>`;
+      const a = resolveEnd(c[0]);
+      const b = resolveEnd(c[1]);
+      if (!a || !b) return;
+      svg += `<line x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}" stroke="${CEVIAN}" stroke-width="2" stroke-dasharray="0" opacity="0.85"/>`;
     });
 
-    // 3. Vertex labels (push outside)
-    verts.forEach((name, i) => {
-      const ang = startAngle + (i * 2 * Math.PI) / n;
-      const lp = { x: cx + (r + 20) * Math.cos(ang), y: cy + (r + 20) * Math.sin(ang) };
+    // 3. Vertex labels (push outward from the polygon centroid).
+    //    Works for both regular n-gons and explicit-coord shapes.
+    verts.forEach((name) => {
+      const v = vPos[name];
+      const dx = v.x - cx, dy = v.y - cy;
+      const mag = Math.max(1, Math.hypot(dx, dy));
+      const lp = { x: v.x + (dx / mag) * 18, y: v.y + (dy / mag) * 18 };
       const baseline = lp.y > cy + 10 ? 'hanging' : (lp.y < cy - 10 ? 'auto' : 'middle');
       const anchor   = lp.x > cx + 10 ? 'start'   : (lp.x < cx - 10 ? 'end'  : 'middle');
       svg += `<text x="${lp.x.toFixed(1)}" y="${lp.y.toFixed(1)}" font-size="16" font-weight="700" fill="${LBL}" text-anchor="${anchor}" dominant-baseline="${baseline}">${esc(name)}</text>`;

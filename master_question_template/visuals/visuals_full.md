@@ -87,7 +87,9 @@ You may ONLY use the following `function_name` values and their exact parameters
 * `rightTriangle`: Right-angled triangle with labelled base, height, and optional hypotenuse.
   `{"base": "8 cm", "height": "6 cm", "hypotenuse": "10 cm", "showRightAngle": true}`
 
-* `polygonWithInteriorPoints`: ⭐ NEW (v5.3) — A polygon (triangle/quadrilateral) with named perimeter vertices, named interior points on sides at fractional positions or midpoints, optional cevians (line segments from a vertex to a side-point), and optional side captions. Use for P5/P6 "Area of Triangle" composite figures, BD:DC ratio splits, and cevian-based area problems.
+* `polygonWithInteriorPoints`: ⭐ NEW (v5.3) — A polygon (triangle/quadrilateral/parallelogram/rhombus/trapezium/rectangle/square) with named perimeter vertices, named interior points on sides at fractional positions or midpoints, optional cevians (line segments connecting any two named points — vertex↔side-point or side-point↔side-point), and optional side captions. Use for P5/P6 "Area of Triangle" composite figures, BD:DC ratio splits, parallelogram-with-inscribed-triangle problems, and cevian-based area problems.
+
+  Triangle example (BD:DC = 3:5 split, E midpoint of AC, cevians AD + BE):
   ```json
   {
     "vertices": ["A","B","C"],
@@ -99,9 +101,22 @@ You may ONLY use the following `function_name` values and their exact parameters
     "side_labels": [{ "side": "CB", "label": "24 cm" }]
   }
   ```
-  - `vertices` is a list of polygon corners in order (3 for triangle, 4 for quadrilateral, etc.).
-  - `side_points[].side` is a 2-letter string formed from two consecutive vertex names; `position` is the fractional distance from the FIRST letter to the SECOND (0..1), or the literal `"midpoint"` for 0.5. Example: for BD:DC = 3:5 with side written as "BC", D is at position 3/8 = 0.375 from B; if side written as "CB", D is at position 5/8 = 0.625 from C.
-  - `cevians` is an array of 2-letter strings, each connecting a polygon vertex to a named side-point (e.g. "AD" draws a line from vertex A to side-point D).
+
+  Parallelogram example (E on AD with AE:ED = 1:2, triangle BEC inscribed):
+  ```json
+  {
+    "vertices": ["A","B","C","D"],
+    "shape": "parallelogram",
+    "side_points": [{ "side": "AD", "name": "E", "position": 0.333 }],
+    "cevians": ["BE", "EC"]
+  }
+  ```
+
+  - `vertices` is a list of polygon corners in clockwise order from the visual top-left. For 4-vertex shapes the order is **A=TL, B=TR, C=BR, D=BL**.
+  - `shape` (4-vertex shapes only): `"parallelogram"` | `"rhombus"` | `"rectangle"` | `"square"` | `"trapezium"`. Defaults to a regular n-gon (drawn as a diamond for 4 vertices). Always set `shape` explicitly when drawing a parallelogram, otherwise the figure renders as a square rotated 45°.
+  - `skew` (parallelogram/rhombus only, default 0.18): controls how slanted the figure is, as a fraction of half-width. `0` = rectangle; `0.5` = strongly slanted.
+  - `side_points[].side` is a 2-letter string formed from two consecutive vertex names; `position` is the fractional distance from the FIRST letter to the SECOND (0..1), or the literal `"midpoint"` for 0.5. For BD:DC = 3:5 with side written as "BC", D is at position 3/8 = 0.375 from B; if side written as "CB", D is at position 5/8 = 0.625 from C.
+  - `cevians` is an array of 2-letter strings. Each letter is resolved as either a polygon vertex OR a named side-point, so you can draw lines in any direction: vertex→side-point ("AD"), side-point→vertex ("EC"), or side-point→side-point ("DE").
   - `side_labels` places a caption near a side's midpoint, pushed outward.
 * `compositeShape`: L-shape or T-shape built from rectangles. Use for composite area/perimeter problems.
   `{"parts": [{"x": 40, "y": 40, "w": 200, "h": 80, "shaded": true, "label": "A"}, {"x": 40, "y": 120, "w": 80, "h": 100, "shaded": true, "label": "B"}], "unit": "cm", "showNotToScale": true}`
